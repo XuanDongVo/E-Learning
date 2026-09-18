@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { QueryProvider } from "@/lib/query-provider";
+import { AuthProvider } from "@/components/auth/auth-provider";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -15,7 +16,7 @@ export default function RootLayout({
   return (
     <html lang="vi" className="h-full antialiased">
       <body className="min-h-full flex flex-col bg-[#F8FAFC]">
-        <QueryProvider>{children}</QueryProvider>
+        <QueryProvider><AuthProvider>{children}</AuthProvider></QueryProvider>
       </body>
     </html>
   );

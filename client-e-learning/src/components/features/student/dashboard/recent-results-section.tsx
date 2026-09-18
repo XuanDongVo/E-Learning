@@ -19,7 +19,7 @@ export function RecentResultsSection({ results }: RecentResultsSectionProps) {
             Recent Results
           </h2>
           <Link
-            href="/progress"
+            href="/student/progress"
             className="text-xs font-bold text-[#4F46E5] hover:text-[#4338CA] flex items-center gap-1 transition-colors"
           >
             View all

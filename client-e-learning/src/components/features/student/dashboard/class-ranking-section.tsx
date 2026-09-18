@@ -42,7 +42,7 @@ export function ClassRankingSection({ members }: ClassRankingSectionProps) {
             Class Ranking
           </h2>
           <Link
-            href="/progress#ranking"
+            href="/student/progress#ranking"
             className="text-xs font-bold text-[#4F46E5] hover:text-[#4338CA] flex items-center gap-1 transition-colors"
           >
             View all

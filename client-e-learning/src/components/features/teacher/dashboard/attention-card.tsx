@@ -1,0 +1,7 @@
+import { AlertCircle, ArrowRight } from "lucide-react";
+
+const students = [{ name: "Nguyễn An", topic: "Superlative", score: "46%" }, { name: "Lê Chi", topic: "Past Simple", score: "54%" }, { name: "Phạm Minh", topic: "Comparative", score: "61%" }];
+
+export function AttentionCard() {
+  return <section className="rounded-[var(--radius-md)] border border-border-color bg-card-bg p-5 shadow-sm"><div className="flex items-start justify-between"><div><p className="text-xs font-bold uppercase tracking-[0.14em] text-neutral-subtle">Needs support</p><h2 className="mt-1 text-base font-extrabold">Students needing attention</h2></div><AlertCircle className="h-5 w-5 text-accent" /></div><div className="mt-4 divide-y divide-border-color">{students.map((student) => <div key={student.name} className="flex items-center justify-between py-3"><div><p className="text-sm font-bold">{student.name}</p><p className="text-xs text-neutral-muted">{student.topic}</p></div><span className="text-sm font-extrabold text-red-500">{student.score}</span></div>)}</div><button className="mt-2 inline-flex items-center gap-1 text-xs font-extrabold text-primary">Open student list <ArrowRight className="h-3.5 w-3.5" /></button></section>;
+}

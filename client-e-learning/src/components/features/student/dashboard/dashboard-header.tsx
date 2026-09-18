@@ -34,7 +34,7 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
             <span className="absolute top-2 right-2 h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-white" />
           </button>
 
-          <Link href="/profile">
+          <Link href="/student/profile">
             <Avatar className="h-10 w-10 border-2 border-white shadow-xs">
               <AvatarImage src={user.avatarUrl} alt={user.name} />
               <AvatarFallback>{user.name.slice(0, 2)}</AvatarFallback>

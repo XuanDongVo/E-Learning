@@ -51,7 +51,7 @@ export function AssignmentsSection({ assignments }: AssignmentsSectionProps) {
             Your Assignments
           </h2>
           <Link
-            href="/assignments"
+            href="/student/assignments"
             className="text-xs font-bold text-primary hover:text-primary-hover flex items-center gap-1 transition-colors"
           >
             View all
@@ -99,7 +99,7 @@ export function AssignmentsSection({ assignments }: AssignmentsSectionProps) {
                     </div>
                   </div>
 
-                  <Link href={`/assignments/${item.id}`} className="shrink-0">
+                  <Link href={`/student/assignments/${item.id}`} className="shrink-0">
                     <Button
                       size="sm"
                       variant={config.buttonVariant}

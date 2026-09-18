@@ -52,6 +52,7 @@
   --color-border-color: var(--border-color);
 
   --color-background-app: var(--background);
+  --color-card-bg: var(--card-bg);
 }
 
 body {

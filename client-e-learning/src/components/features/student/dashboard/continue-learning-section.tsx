@@ -67,7 +67,7 @@ export function ContinueLearningSection({ units }: ContinueLearningSectionProps)
             Continue Learning
           </h2>
           <Link
-            href="/units"
+            href="/student/units"
             className="text-xs font-bold text-primary hover:text-primary-hover flex items-center gap-1 transition-colors"
           >
             View all
@@ -140,7 +140,7 @@ export function ContinueLearningSection({ units }: ContinueLearningSectionProps)
                   </div>
 
                   {/* Action Button */}
-                  <Link href={`/units/${unit.id}`} className="w-full">
+                  <Link href={`/student/units/${unit.id}`} className="w-full">
                     <Button
                       size="sm"
                       className={cn(

@@ -54,7 +54,7 @@ export default function TeacherLayout({
             </span>
           </div>
         </header>
-        <main className="flex-1 p-6">{children}</main>
+        <main className="flex-1 p-6">{children}</main>  <main className="flex-1 p-6">{children}</main>
       </div>
       <RoleSwitcher />
     </div>

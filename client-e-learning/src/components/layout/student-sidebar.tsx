@@ -18,7 +18,7 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/components/auth/auth-provider";
 
 const NAV_ITEMS = [
-  { label: "Home", href: "/", icon: Home },
+  { label: "Home", href: "/student", icon: Home },
   { label: "Units", href: "/units", icon: BookOpen },
   { label: "Assignments", href: "/assignments", icon: ClipboardList },
   { label: "Progress", href: "/progress", icon: BarChart2 },

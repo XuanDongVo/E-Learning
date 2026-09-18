@@ -36,6 +36,7 @@ public class SecurityConfig {
                                 .requestMatchers("/v1/auth/login", "/v1/auth/refresh").permitAll()
                                 .requestMatchers("/v1/teacher/**").hasRole("TEACHER")
                                 .requestMatchers("/v1/users/students").hasRole("TEACHER")
+                                .requestMatchers("/v1/classes/**").hasRole("TEACHER")
                                 .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth ->

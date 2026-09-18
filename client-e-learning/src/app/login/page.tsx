@@ -59,7 +59,7 @@ export default function LoginPage() {
             </div>
             <p className="text-sm font-bold uppercase tracking-[0.16em] text-primary">Welcome back</p>
             <h2 className="mt-3 text-3xl font-extrabold tracking-tight">Sign in to your workspace</h2>
-            <p className="mt-3 text-sm leading-6 text-neutral-muted">Use the email and password provided by your school administrator.</p>
+            <p className="mt-3 text-sm leading-6 text-neutral-muted">Use the email and password provided by your teacher.</p>
 
             <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
               <label className="block text-sm font-bold" htmlFor="email">

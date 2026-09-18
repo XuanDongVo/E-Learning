@@ -1,9 +1,8 @@
 "use client";
 
-import Link from "next/link";
-import { LogOut, UserRound } from "lucide-react";
+import { LogOut } from "lucide-react";
 import { useAuth } from "@/components/auth/auth-provider";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 export function SessionActions() {
   const { user, logout } = useAuth();
@@ -19,7 +18,6 @@ export function SessionActions() {
         <p className="text-xs text-neutral-muted">{user.email}</p>
       </div>
       <Avatar className="h-10 w-10 border-2 border-white shadow-xs">
-        <AvatarImage src={user.avatarUrl} alt={user.fullName} />
         <AvatarFallback>{user.fullName.slice(0, 2)}</AvatarFallback>
       </Avatar>
 

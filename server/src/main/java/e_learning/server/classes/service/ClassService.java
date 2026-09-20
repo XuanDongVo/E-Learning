@@ -1,16 +1,16 @@
-package e_learning.server.classmanagement.service;
+package e_learning.server.classes.service;
 
-import e_learning.server.classmanagement.dto.ClassResponse;
-import e_learning.server.classmanagement.dto.CreateClassRequest;
-import e_learning.server.classmanagement.entity.ClassEntity;
-import e_learning.server.classmanagement.repository.ClassMemberRepository;
-import e_learning.server.classmanagement.repository.ClassRepository;
+import e_learning.server.classes.dto.ClassResponse;
+import e_learning.server.classes.dto.CreateClassRequest;
+import e_learning.server.classes.entity.ClassEntity;
+import e_learning.server.classes.repository.ClassMemberRepository;
+import e_learning.server.classes.repository.ClassRepository;
 import e_learning.server.common.exception.AppException;
 import e_learning.server.common.exception.ErrorCode;
 import e_learning.server.user.entity.User;
 import e_learning.server.user.repository.UserRepository;
-import e_learning.server.grademanagement.entity.Grade;
-import e_learning.server.grademanagement.repository.GradeRepository;
+import e_learning.server.grades.entity.Grade;
+import e_learning.server.grades.repository.GradeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

@@ -1,6 +1,6 @@
-package e_learning.server.classmanagement.dto;
+package e_learning.server.classes.dto;
 
-import e_learning.server.classmanagement.entity.ClassEntity;
+import e_learning.server.classes.entity.ClassEntity;
 
 public record ClassResponse(
         Long id,
@@ -14,7 +14,7 @@ public record ClassResponse(
     }
 
     public record GradeSummary(Long id, String code, String name) {
-        public static GradeSummary from(e_learning.server.grademanagement.entity.Grade grade) {
+        public static GradeSummary from(e_learning.server.grades.entity.Grade grade) {
             return new GradeSummary(grade.getId(), grade.getCode(), grade.getName());
         }
     }

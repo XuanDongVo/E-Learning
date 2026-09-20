@@ -1,8 +1,8 @@
-package e_learning.server.classmanagement.controller;
+package e_learning.server.classes.controller;
 
-import e_learning.server.classmanagement.dto.ClassResponse;
-import e_learning.server.classmanagement.dto.CreateClassRequest;
-import e_learning.server.classmanagement.service.ClassService;
+import e_learning.server.classes.dto.ClassResponse;
+import e_learning.server.classes.dto.CreateClassRequest;
+import e_learning.server.classes.service.ClassService;
 import e_learning.server.common.response.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

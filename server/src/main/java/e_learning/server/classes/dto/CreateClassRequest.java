@@ -1,4 +1,4 @@
-package e_learning.server.classmanagement.dto;
+package e_learning.server.classes.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

@@ -33,7 +33,7 @@ export default function LandingPage() {
             </span>
             <span className="text-lg font-extrabold tracking-tight">Learn<span className="text-primary">Verse</span></span>
           </Link>
-          <span className="hidden items-center gap-2 text-xs font-bold text-neutral-muted sm:flex"><Sparkles className="h-4 w-4 text-accent" /> English learning for Grades 6–8</span>
+          <span className="hidden items-center gap-2 text-xs font-bold text-neutral-muted sm:flex"><Sparkles className="h-4 w-4 text-accent" /> English learning for every class</span>
         </header>
 
         <section className="relative py-20 sm:py-28 lg:py-32">

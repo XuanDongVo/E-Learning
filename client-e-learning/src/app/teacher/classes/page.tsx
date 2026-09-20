@@ -3,7 +3,6 @@
 import { FormEvent, useEffect, useState } from "react";
 import {
   Building2,
-  CalendarDays,
   MoreHorizontal,
   Plus,
   Search,
@@ -11,18 +10,22 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { classService } from "@/services/class.service";
+import { gradeService } from "@/services/grade.service";
 import type { Class } from "@/types/class";
+import type { Grade } from "@/types/grade";
 
 export default function ClassesPage() {
   const [classes, setClasses] = useState<Class[]>([]);
+  const [grades, setGrades] = useState<Grade[]>([]);
   const [query, setQuery] = useState("");
+  const [gradeFilter, setGradeFilter] = useState("all");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [form, setForm] = useState({
     name: "",
-    grade: "6",
+    gradeId: "",
     academicYear: "2026 - 2027",
   });
 
@@ -46,11 +49,20 @@ export default function ClassesPage() {
   useEffect(() => {
     let active = true;
 
-    const loadInitialClasses = async () => {
+    const loadInitialData = async () => {
       try {
-        const response = await classService.list();
+        const [classesResponse, gradesResponse] = await Promise.all([
+          classService.list(),
+          gradeService.list(),
+        ]);
         if (active) {
-          setClasses(response.data ?? []);
+          const availableGrades = gradesResponse.data ?? [];
+          setClasses(classesResponse.data ?? []);
+          setGrades(availableGrades);
+          setForm((current) => ({
+            ...current,
+            gradeId: current.gradeId || String(availableGrades[0]?.id ?? ""),
+          }));
           setError(null);
           setIsLoading(false);
         }
@@ -59,21 +71,22 @@ export default function ClassesPage() {
           setError(
             loadError instanceof Error
               ? loadError.message
-              : "Unable to load classes",
+              : "Unable to load classes and grades",
           );
           setIsLoading(false);
         }
       }
     };
 
-    void loadInitialClasses();
+    void loadInitialData();
     return () => {
       active = false;
     };
   }, []);
 
   const filteredClasses = classes.filter((classItem) =>
-    classItem.name.toLowerCase().includes(query.toLowerCase()),
+    classItem.name.toLowerCase().includes(query.toLowerCase()) &&
+    (gradeFilter === "all" || String(classItem.grade.id) === gradeFilter),
   );
 
   async function handleCreate(event: FormEvent<HTMLFormElement>) {
@@ -82,7 +95,7 @@ export default function ClassesPage() {
     try {
       const response = await classService.create({
         name: form.name,
-        grade: Number(form.grade),
+        gradeId: Number(form.gradeId),
         academicYear: form.academicYear,
       });
       setClasses((current) =>
@@ -90,7 +103,11 @@ export default function ClassesPage() {
           a.name.localeCompare(b.name),
         ),
       );
-      setForm({ name: "", grade: "6", academicYear: "2026 - 2027" });
+      setForm({
+        name: "",
+        gradeId: String(grades[0]?.id ?? ""),
+        academicYear: "2026 - 2027",
+      });
       setIsCreating(false);
       setError(null);
     } catch (saveError) {
@@ -136,9 +153,22 @@ export default function ClassesPage() {
             className="h-10 w-full rounded-[var(--radius-md)] border border-border-color bg-background-app pl-9 pr-3 text-sm outline-none focus:border-primary"
           />
         </label>
-        {/* <div className="flex items-center gap-2 rounded-[var(--radius-md)] border border-border-color px-3 text-sm text-neutral-muted">
-          <CalendarDays className="h-4 w-4" /> 2026 - 2027
-        </div> */}
+        <label className="sm:w-48">
+          <span className="sr-only">Filter by grade</span>
+          <select
+            aria-label="Filter by grade"
+            value={gradeFilter}
+            onChange={(event) => setGradeFilter(event.target.value)}
+            className="h-10 w-full rounded-[var(--radius-md)] border border-border-color bg-background-app px-3 text-sm outline-none focus:border-primary"
+          >
+            <option value="all">All grades</option>
+            {grades.map((grade) => (
+              <option key={grade.id} value={grade.id}>
+                {grade.name}
+              </option>
+            ))}
+          </select>
+        </label>
       </div>
       {error && (
         <div
@@ -186,7 +216,7 @@ export default function ClassesPage() {
               </div>
               <h2 className="mt-5 text-lg font-extrabold">{classItem.name}</h2>
               <p className="mt-1 text-sm text-neutral-muted">
-                Grade {classItem.grade} · {classItem.studentCount} students
+                {classItem.grade.name} · {classItem.studentCount} students
               </p>
               <div className="mt-5 flex items-center justify-between border-t border-border-color pt-4 text-xs font-bold text-neutral-muted">
                 <span>{classItem.academicYear}</span>
@@ -234,16 +264,20 @@ export default function ClassesPage() {
               <label className="block text-sm font-bold">
                 Grade
                 <select
-                  value={form.grade}
+                  required
+                  value={form.gradeId}
                   onChange={(event) =>
-                    setForm({ ...form, grade: event.target.value })
+                    setForm({ ...form, gradeId: event.target.value })
                   }
+                  disabled={grades.length === 0}
                   className="mt-2 h-10 w-full rounded-[var(--radius-md)] border border-border-color bg-card-bg px-3 text-sm outline-none focus:border-primary"
                 >
-                  <option value="6">Grade 6</option>
-                  <option value="7">Grade 7</option>
-                  <option value="8">Grade 8</option>
-                  <option value="9">Grade 9</option>
+                  <option value="" disabled>Select a grade</option>
+                  {grades.map((grade) => (
+                    <option key={grade.id} value={grade.id}>
+                      {grade.name}
+                    </option>
+                  ))}
                 </select>
               </label>
               <label className="block text-sm font-bold">

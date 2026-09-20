@@ -46,7 +46,7 @@ export default function LoginPage() {
             <h1 className="max-w-lg text-5xl font-extrabold leading-[1.05]">Make every lesson count.</h1>
             <p className="mt-6 max-w-md text-base leading-7 text-white/75">One calm place to guide classes, build activities, and see student progress clearly.</p>
           </div>
-          <p className="relative text-sm text-white/60">English learning platform · Grades 6–8</p>
+          <p className="relative text-sm text-white/60">English learning platform</p>
         </section>
 
         <section className="flex items-center p-6 sm:p-10 lg:p-14">

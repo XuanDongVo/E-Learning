@@ -1,6 +1,6 @@
-package e_learning.server.classmanagement.repository;
+package e_learning.server.classes.repository;
 
-import e_learning.server.classmanagement.entity.ClassEntity;
+import e_learning.server.classes.entity.ClassEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 

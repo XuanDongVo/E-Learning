@@ -26,6 +26,7 @@ export default function TeacherLayout({
               <nav className="space-y-1">
                 <Link href="/teacher" className="flex items-center gap-3.5 rounded-xl bg-secondary-light px-4 py-3 text-sm font-semibold text-secondary-hover"><LayoutDashboard className="h-5 w-5" /><span>Dashboard</span></Link>
                 <Link href="/teacher/classes" className="flex items-center gap-3.5 rounded-xl px-4 py-3 text-sm font-semibold text-neutral-muted transition hover:bg-secondary-light hover:text-secondary-hover"><Users className="h-5 w-5" /><span>Classes</span></Link>
+                <Link href="/teacher/grades" className="flex items-center gap-3.5 rounded-xl px-4 py-3 text-sm font-semibold text-neutral-muted transition hover:bg-secondary-light hover:text-secondary-hover"><BookOpen className="h-5 w-5" /><span>Grades</span></Link>
                 <div className="my-3 border-t border-border-color" />
                 <span className="px-4 text-[10px] font-extrabold uppercase tracking-[0.16em] text-neutral-subtle">Workspace</span>
                 <Link href="#content" className="flex items-center gap-3.5 rounded-xl px-4 py-2.5 text-sm font-semibold text-neutral-muted"><BookOpen className="h-4 w-4" /><span>Content</span></Link>

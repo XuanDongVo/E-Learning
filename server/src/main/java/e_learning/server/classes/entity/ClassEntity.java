@@ -1,7 +1,7 @@
-package e_learning.server.classmanagement.entity;
+package e_learning.server.classes.entity;
 
 import e_learning.server.user.entity.User;
-import e_learning.server.grademanagement.entity.Grade;
+import e_learning.server.grades.entity.Grade;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;

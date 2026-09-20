@@ -13,6 +13,6 @@ CREATE TABLE users (
 
 INSERT INTO users (email, password_hash, full_name, role, status)
 VALUES
-    ('teacher@example.com', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'Demo Teacher', 'TEACHER', 'ACTIVE'),
-    ('student1@example.com', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'Demo Student 1', 'STUDENT', 'ACTIVE'),
-    ('student2@example.com', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'Demo Student 2', 'STUDENT', 'ACTIVE');
+    ('teacher@example.com', '$2a$10$q8WSCetUfBDPwQp2uyGrT.7AYCPc.H9Ed9N.fPKIZ6Hl4jzGDBq1e', 'Demo Teacher', 'TEACHER', 'ACTIVE'),
+    ('student1@example.com', '$2a$10$q8WSCetUfBDPwQp2uyGrT.7AYCPc.H9Ed9N.fPKIZ6Hl4jzGDBq1e', 'Demo Student 1', 'STUDENT', 'ACTIVE'),
+    ('student2@example.com', '$2a$10$q8WSCetUfBDPwQp2uyGrT.7AYCPc.H9Ed9N.fPKIZ6Hl4jzGDBq1e', 'Demo Student 2', 'STUDENT', 'ACTIVE');

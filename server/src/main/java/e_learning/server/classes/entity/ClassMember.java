@@ -1,4 +1,4 @@
-package e_learning.server.classmanagement.entity;
+package e_learning.server.classes.entity;
 
 import e_learning.server.user.entity.User;
 import jakarta.persistence.Column;

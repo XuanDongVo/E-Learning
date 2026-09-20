@@ -13,7 +13,7 @@ export function StudentHeader() {
         <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#4F46E5] text-white shadow-sm shadow-indigo-200">
           <GraduationCap className="h-5 w-5" />
         </div>
-        <span className="text-lg font-extrabold tracking-tight text-[#0F172A]">
+        <span className="text-ui-lg font-extrabold tracking-tight text-[#0F172A]">
           Learn<span className="text-[#4F46E5]">Up</span>
         </span>
       </Link>

@@ -12,10 +12,10 @@ export function SessionActions() {
   return (
     <div className="flex items-center gap-3">
       <div className="hidden text-right sm:block">
-        <p className="text-sm font-extrabold text-neutral-dark">
+        <p className="text-body font-extrabold text-neutral-dark">
           {user.fullName}
         </p>
-        <p className="text-xs text-neutral-muted">{user.email}</p>
+        <p className="text-body-sm text-neutral-muted">{user.email}</p>
       </div>
       <Avatar className="h-10 w-10 border-2 border-white shadow-xs">
         <AvatarFallback>{user.fullName.slice(0, 2)}</AvatarFallback>

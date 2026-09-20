@@ -10,10 +10,10 @@ export default function AssignmentsPlaceholderPage() {
           <ClipboardList className="h-5 w-5" />
         </div>
         <div>
-          <h1 className="text-2xl font-extrabold text-neutral-dark">
+          <h1 className="text-ui-2xl font-extrabold text-neutral-dark">
             Assignments
           </h1>
-          <p className="text-sm text-neutral-muted">
+          <p className="text-body text-neutral-muted">
             Upcoming & Completed Tasks
           </p>
         </div>

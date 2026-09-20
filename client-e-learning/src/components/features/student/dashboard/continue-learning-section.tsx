@@ -63,12 +63,12 @@ export function ContinueLearningSection({ units }: ContinueLearningSectionProps)
       <div className="p-4 lg:p-5 flex-1 flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-base font-extrabold text-neutral-dark">
+          <h2 className="text-card-title font-extrabold text-neutral-dark">
             Continue Learning
           </h2>
           <Link
             href="/student/units"
-            className="text-xs font-bold text-primary hover:text-primary-hover flex items-center gap-1 transition-colors"
+            className="text-body-sm font-bold text-primary hover:text-primary-hover flex items-center gap-1 transition-colors"
           >
             View all
             <ArrowRight className="h-3.5 w-3.5" />
@@ -103,7 +103,7 @@ export function ContinueLearningSection({ units }: ContinueLearningSectionProps)
                   <div className="absolute top-2.5 left-2.5">
                     <span
                       className={cn(
-                        "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold tracking-tight shadow-xs bg-white/95 text-neutral-dark border border-white/40"
+                        "inline-flex items-center px-2.5 py-0.5 rounded-full text-body-sm font-bold tracking-tight shadow-xs bg-white/95 text-neutral-dark border border-white/40"
                       )}
                     >
                       {visual.badge}
@@ -115,10 +115,10 @@ export function ContinueLearningSection({ units }: ContinueLearningSectionProps)
                 <div className="p-3.5 flex flex-col justify-between flex-1 gap-3">
                   {/* Title & Subtitle */}
                   <div>
-                    <h3 className="text-[15px] font-extrabold text-neutral-dark truncate">
+                    <h3 className="text-body font-extrabold text-neutral-dark truncate">
                       {unit.title}
                     </h3>
-                    <p className="text-xs font-medium text-neutral-muted mt-0.5">
+                    <p className="text-body-sm font-medium text-neutral-muted mt-0.5">
                       {unit.totalTopicsCount || (idx === 0 ? 5 : 4)} topics •{" "}
                       {unit.totalActivitiesCount || (idx === 0 ? 20 : idx === 1 ? 18 : 16)} activities
                     </p>
@@ -126,7 +126,7 @@ export function ContinueLearningSection({ units }: ContinueLearningSectionProps)
 
                   {/* Mastery & Progress bar */}
                   <div className="space-y-1.5">
-                    <div className="flex items-center justify-between text-xs">
+                    <div className="flex items-center justify-between text-body-sm">
                       <span className="font-medium text-neutral-muted">Mastery</span>
                       <span className="font-extrabold text-neutral-dark">
                         {visual.progressVal}%
@@ -144,7 +144,7 @@ export function ContinueLearningSection({ units }: ContinueLearningSectionProps)
                     <Button
                       size="sm"
                       className={cn(
-                        "w-full h-9 rounded-xl text-xs font-bold shadow-none flex items-center justify-center gap-1.5 transition-all",
+                        "w-full h-9 rounded-xl text-body-sm font-bold shadow-none flex items-center justify-center gap-1.5 transition-all",
                         visual.btnClassName
                       )}
                     >

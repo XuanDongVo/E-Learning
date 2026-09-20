@@ -15,7 +15,7 @@ export function RoleSwitcher() {
       <div className="flex items-center gap-2 rounded-full border border-[#E2E8F0] bg-white/95 p-1.5 shadow-lg backdrop-blur-md">
         <Link
           href="/student"
-          className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold transition-all ${
+          className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-body-sm font-bold transition-all ${
             !isTeacherPath
               ? "bg-[#4F46E5] text-white shadow-xs"
               : "text-[#64748B] hover:text-[#0F172A]"
@@ -26,7 +26,7 @@ export function RoleSwitcher() {
         </Link>
         <Link
           href="/teacher"
-          className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold transition-all ${
+          className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-body-sm font-bold transition-all ${
             isTeacherPath
               ? "bg-[#06B6D4] text-white shadow-xs"
               : "text-[#64748B] hover:text-[#0F172A]"

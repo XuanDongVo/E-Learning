@@ -20,15 +20,15 @@ export function ClassCard({ classItem }: ClassCardProps) {
         </button>
       </div>
 
-      <h2 className="mt-5 text-lg font-extrabold">
+      <h2 className="mt-5 text-ui-lg font-extrabold">
         {classItem.name}
       </h2>
 
-      <p className="mt-1 text-sm text-neutral-muted">
+      <p className="mt-1 text-body text-neutral-muted">
         {classItem.grade.name} · {classItem.studentCount} students
       </p>
 
-      <div className="mt-5 flex items-center justify-between border-t border-border-color pt-4 text-xs font-bold text-neutral-muted">
+      <div className="mt-5 flex items-center justify-between border-t border-border-color pt-4 text-body-sm font-bold text-neutral-muted">
         <span>{classItem.academicYear}</span>
         <span className="text-primary">View class</span>
       </div>

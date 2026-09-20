@@ -125,19 +125,19 @@
 //     <div className="mx-auto max-w-7xl space-y-6">
 //       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
 //         <div>
-//           <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-primary">
+//           <p className="text-body-sm font-extrabold uppercase tracking-[0.16em] text-primary">
 //             Teacher workspace
 //           </p>
-//           <h1 className="mt-2 text-3xl font-extrabold tracking-tight">
+//           <h1 className="mt-2 text-ui-3xl font-extrabold tracking-tight">
 //             Classes
 //           </h1>
-//           <p className="mt-2 text-sm text-neutral-muted">
+//           <p className="mt-2 text-body text-neutral-muted">
 //             Organize your classes and keep each learner connected.
 //           </p>
 //         </div>
 //         <button
 //           onClick={() => setIsCreating(true)}
-//           className="inline-flex h-10 items-center justify-center gap-2 rounded-[var(--radius-md)] bg-primary px-4 text-sm font-extrabold text-primary-foreground shadow-sm transition hover:bg-primary-hover"
+//           className="inline-flex h-10 items-center justify-center gap-2 rounded-[var(--radius-md)] bg-primary px-4 text-body font-extrabold text-primary-foreground shadow-sm transition hover:bg-primary-hover"
 //         >
 //           <Plus className="h-4 w-4" /> Create class
 //         </button>
@@ -150,7 +150,7 @@
 //             value={query}
 //             onChange={(event) => setQuery(event.target.value)}
 //             placeholder="Search classes..."
-//             className="h-10 w-full rounded-[var(--radius-md)] border border-border-color bg-background-app pl-9 pr-3 text-sm outline-none focus:border-primary"
+//             className="h-10 w-full rounded-[var(--radius-md)] border border-border-color bg-background-app pl-9 pr-3 text-body outline-none focus:border-primary"
 //           />
 //         </label>
 //         <label className="sm:w-48">
@@ -159,7 +159,7 @@
 //             aria-label="Filter by grade"
 //             value={gradeFilter}
 //             onChange={(event) => setGradeFilter(event.target.value)}
-//             className="h-10 w-full rounded-[var(--radius-md)] border border-border-color bg-background-app px-3 text-sm outline-none focus:border-primary"
+//             className="h-10 w-full rounded-[var(--radius-md)] border border-border-color bg-background-app px-3 text-body outline-none focus:border-primary"
 //           >
 //             <option value="all">All grades</option>
 //             {grades.map((grade) => (
@@ -173,7 +173,7 @@
 //       {error && (
 //         <div
 //           role="alert"
-//           className="flex items-center justify-between rounded-[var(--radius-md)] border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+//           className="flex items-center justify-between rounded-[var(--radius-md)] border border-red-200 bg-red-50 px-4 py-3 text-body text-red-700"
 //         >
 //           <span>{error}</span>
 //           <button
@@ -185,14 +185,14 @@
 //         </div>
 //       )}
 //       {isLoading ? (
-//         <div className="rounded-[var(--radius-md)] border border-border-color bg-card-bg p-10 text-center text-sm text-neutral-muted">
+//         <div className="rounded-[var(--radius-md)] border border-border-color bg-card-bg p-10 text-center text-body text-neutral-muted">
 //           Loading classes...
 //         </div>
 //       ) : filteredClasses.length === 0 ? (
 //         <div className="rounded-[var(--radius-md)] border border-dashed border-border-color bg-card-bg p-10 text-center">
 //           <Building2 className="mx-auto h-8 w-8 text-primary" />
-//           <p className="mt-3 text-sm font-bold">No classes yet</p>
-//           <p className="mt-1 text-sm text-neutral-muted">
+//           <p className="mt-3 text-body font-bold">No classes yet</p>
+//           <p className="mt-1 text-body text-neutral-muted">
 //             Create your first class to get started.
 //           </p>
 //         </div>
@@ -214,11 +214,11 @@
 //                   <MoreHorizontal className="h-5 w-5" />
 //                 </button>
 //               </div>
-//               <h2 className="mt-5 text-lg font-extrabold">{classItem.name}</h2>
-//               <p className="mt-1 text-sm text-neutral-muted">
+//               <h2 className="mt-5 text-ui-lg font-extrabold">{classItem.name}</h2>
+//               <p className="mt-1 text-body text-neutral-muted">
 //                 {classItem.grade.name} · {classItem.studentCount} students
 //               </p>
-//               <div className="mt-5 flex items-center justify-between border-t border-border-color pt-4 text-xs font-bold text-neutral-muted">
+//               <div className="mt-5 flex items-center justify-between border-t border-border-color pt-4 text-body-sm font-bold text-neutral-muted">
 //                 <span>{classItem.academicYear}</span>
 //                 <span className="text-primary">View class</span>
 //               </div>
@@ -234,8 +234,8 @@
 //           >
 //             <div className="flex items-start justify-between">
 //               <div>
-//                 <h2 className="text-xl font-extrabold">Create class</h2>
-//                 <p className="mt-1 text-sm text-neutral-muted">
+//                 <h2 className="text-ui-xl font-extrabold">Create class</h2>
+//                 <p className="mt-1 text-body text-neutral-muted">
 //                   Add a class to your teaching workspace.
 //                 </p>
 //               </div>
@@ -243,13 +243,13 @@
 //                 type="button"
 //                 onClick={() => setIsCreating(false)}
 //                 aria-label="Close"
-//                 className="text-xl text-neutral-muted"
+//                 className="text-ui-xl text-neutral-muted"
 //               >
 //                 ×
 //               </button>
 //             </div>
 //             <div className="mt-6 space-y-4">
-//               <label className="block text-sm font-bold">
+//               <label className="block text-body font-bold">
 //                 Class name
 //                 <input
 //                   required
@@ -257,11 +257,11 @@
 //                   onChange={(event) =>
 //                     setForm({ ...form, name: event.target.value })
 //                   }
-//                   className="mt-2 h-10 w-full rounded-[var(--radius-md)] border border-border-color px-3 text-sm outline-none focus:border-primary"
+//                   className="mt-2 h-10 w-full rounded-[var(--radius-md)] border border-border-color px-3 text-body outline-none focus:border-primary"
 //                   placeholder="6A"
 //                 />
 //               </label>
-//               <label className="block text-sm font-bold">
+//               <label className="block text-body font-bold">
 //                 Grade
 //                 <select
 //                   required
@@ -270,7 +270,7 @@
 //                     setForm({ ...form, gradeId: event.target.value })
 //                   }
 //                   disabled={grades.length === 0}
-//                   className="mt-2 h-10 w-full rounded-[var(--radius-md)] border border-border-color bg-card-bg px-3 text-sm outline-none focus:border-primary"
+//                   className="mt-2 h-10 w-full rounded-[var(--radius-md)] border border-border-color bg-card-bg px-3 text-body outline-none focus:border-primary"
 //                 >
 //                   <option value="" disabled>Select a grade</option>
 //                   {grades.map((grade) => (
@@ -280,7 +280,7 @@
 //                   ))}
 //                 </select>
 //               </label>
-//               <label className="block text-sm font-bold">
+//               <label className="block text-body font-bold">
 //                 Academic year
 //                 <input
 //                   required
@@ -288,7 +288,7 @@
 //                   onChange={(event) =>
 //                     setForm({ ...form, academicYear: event.target.value })
 //                   }
-//                   className="mt-2 h-10 w-full rounded-[var(--radius-md)] border border-border-color px-3 text-sm outline-none focus:border-primary"
+//                   className="mt-2 h-10 w-full rounded-[var(--radius-md)] border border-border-color px-3 text-body outline-none focus:border-primary"
 //                 />
 //               </label>
 //             </div>
@@ -475,7 +475,7 @@ export default function ClassesPage() {
       {error && (
         <div
           role="alert"
-          className="flex items-center justify-between rounded-[var(--radius-md)] border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+          className="flex items-center justify-between rounded-[var(--radius-md)] border border-red-200 bg-red-50 px-4 py-3 text-body text-red-700"
         >
           <span>{error}</span>
 

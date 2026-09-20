@@ -16,7 +16,7 @@ export function MascotBanner() {
 
       {/* Slogan */}
       <div className="relative z-10 pt-1">
-        <h3 className="text-xs sm:text-sm font-extrabold text-[#3B82F6] tracking-tight leading-snug">
+        <h3 className="text-body-sm sm:text-body font-extrabold text-[#3B82F6] tracking-tight leading-snug">
           Small steps
           <br />
           make big progress!
@@ -35,7 +35,7 @@ export function MascotBanner() {
               <div className="h-6 w-3 rounded-full bg-[#3B82F6]" />
             </div>
             {/* Face details */}
-            <span className="text-2xl select-none" role="img" aria-label="Student face">
+            <span className="text-ui-2xl select-none" role="img" aria-label="Student face">
               🧑‍💻
             </span>
           </div>
@@ -46,7 +46,7 @@ export function MascotBanner() {
               <Laptop className="h-4 w-4 text-[#38BDF8]" />
             </div>
             {/* Small plant on desk */}
-            <span className="text-sm select-none" role="img" aria-label="Plant">
+            <span className="text-body select-none" role="img" aria-label="Plant">
               🪴
             </span>
           </div>
@@ -54,7 +54,7 @@ export function MascotBanner() {
       </div>
 
       {/* Bottom subtle bar */}
-      <div className="text-[10px] font-bold text-[#64748B] bg-white/80 backdrop-blur-xs px-3 py-1 rounded-full border border-sky-100 shadow-2xs">
+      <div className="text-caption font-bold text-[#64748B] bg-white/80 backdrop-blur-xs px-3 py-1 rounded-full border border-sky-100 shadow-2xs">
         Keep learning today! 🎯
       </div>
     </Card>

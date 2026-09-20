@@ -15,7 +15,7 @@ export function ClassesGrid({
 }: ClassesGridProps) {
   if (isLoading) {
     return (
-      <div className="rounded-[var(--radius-md)] border border-border-color bg-card-bg p-10 text-center text-sm text-neutral-muted">
+      <div className="rounded-[var(--radius-md)] border border-border-color bg-card-bg p-10 text-center text-body text-neutral-muted">
         Loading classes...
       </div>
     );
@@ -26,11 +26,11 @@ export function ClassesGrid({
       <div className="rounded-[var(--radius-md)] border border-dashed border-border-color bg-card-bg p-10 text-center">
         <Building2 className="mx-auto h-8 w-8 text-primary" />
 
-        <p className="mt-3 text-sm font-bold">
+        <p className="mt-3 text-body font-bold">
           No classes found
         </p>
 
-        <p className="mt-1 text-sm text-neutral-muted">
+        <p className="mt-1 text-body text-neutral-muted">
           Create your first class to get started.
         </p>
       </div>

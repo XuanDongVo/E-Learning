@@ -15,10 +15,10 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
       {/* Top Greeting Bar with Bell & Avatar on the Right */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl lg:text-[28px] font-extrabold text-neutral-dark tracking-tight flex items-center gap-2">
+          <h1 className="text-ui-2xl lg:text-page-title font-extrabold text-neutral-dark tracking-tight flex items-center gap-2">
             Hi, {user.name}! <span className="inline-block">👋</span>
           </h1>
-          <p className="text-sm font-medium text-neutral-muted mt-0.5">
+          <p className="text-body font-medium text-neutral-muted mt-0.5">
             Keep going! You&apos;re doing great!
           </p>
         </div>
@@ -51,10 +51,10 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
             <Flame className="h-6 w-6 fill-accent text-accent" />
           </div>
           <div>
-            <div className="text-sm font-extrabold text-neutral-dark">
+            <div className="text-body font-extrabold text-neutral-dark">
               {user.streakDays} Day Streak
             </div>
-            <div className="text-xs font-semibold text-neutral-subtle">
+            <div className="text-body-sm font-semibold text-neutral-subtle">
               Keep it up!
             </div>
           </div>
@@ -66,10 +66,10 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
             <Star className="h-6 w-6 fill-accent text-accent" />
           </div>
           <div>
-            <div className="text-sm font-extrabold text-neutral-dark">
+            <div className="text-body font-extrabold text-neutral-dark">
               {new Intl.NumberFormat().format(user.xp)} XP
             </div>
-            <div className="text-xs font-semibold text-neutral-subtle">
+            <div className="text-body-sm font-semibold text-neutral-subtle">
               Next level: {new Intl.NumberFormat().format(user.nextLevelXp)}
             </div>
           </div>
@@ -82,15 +82,15 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
               <Trophy className="h-6 w-6 fill-accent text-accent" />
             </div>
             <div>
-              <div className="text-xs font-bold text-neutral-muted">Class Rank</div>
-              <div className="text-sm font-extrabold text-neutral-dark">
+              <div className="text-body-sm font-bold text-neutral-muted">Class Rank</div>
+              <div className="text-body font-extrabold text-neutral-dark">
                 #{user.classRank} / {user.totalStudentsInClass}
               </div>
             </div>
           </div>
           <Link
             href="#ranking"
-            className="text-xs font-bold text-neutral-muted hover:text-primary transition-colors whitespace-nowrap"
+            className="text-body-sm font-bold text-neutral-muted hover:text-primary transition-colors whitespace-nowrap"
           >
             View ranking
           </Link>

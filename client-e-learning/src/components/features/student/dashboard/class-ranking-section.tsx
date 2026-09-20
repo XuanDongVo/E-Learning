@@ -20,13 +20,13 @@ export function ClassRankingSection({ members }: ClassRankingSectionProps) {
         return <Trophy className="h-4 w-4 fill-[#D97706] text-[#D97706]" />;
       case 3:
         return (
-          <div className="flex h-5 w-5 items-center justify-center rounded-full bg-[#4F46E5] text-white text-[10px] font-bold">
+          <div className="flex h-5 w-5 items-center justify-center rounded-full bg-[#4F46E5] text-white text-caption font-bold">
             3
           </div>
         );
       default:
         return (
-          <span className="text-xs font-bold text-[#64748B] w-4 text-center">
+          <span className="text-body-sm font-bold text-[#64748B] w-4 text-center">
             {rank}
           </span>
         );
@@ -38,12 +38,12 @@ export function ClassRankingSection({ members }: ClassRankingSectionProps) {
       <div className="p-4 lg:p-5 flex-1 flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-base font-extrabold text-[#0F172A]">
+          <h2 className="text-card-title font-extrabold text-[#0F172A]">
             Class Ranking
           </h2>
           <Link
             href="/student/progress#ranking"
-            className="text-xs font-bold text-[#4F46E5] hover:text-[#4338CA] flex items-center gap-1 transition-colors"
+            className="text-body-sm font-bold text-[#4F46E5] hover:text-[#4338CA] flex items-center gap-1 transition-colors"
           >
             View all
             <ArrowRight className="h-3.5 w-3.5" />
@@ -75,7 +75,7 @@ export function ClassRankingSection({ members }: ClassRankingSectionProps) {
                   </Avatar>
                   <span
                     className={cn(
-                      "text-xs truncate",
+                      "text-body-sm truncate",
                       isRank3
                         ? "font-extrabold text-[#4F46E5]"
                         : "font-semibold text-[#0F172A]"
@@ -85,7 +85,7 @@ export function ClassRankingSection({ members }: ClassRankingSectionProps) {
                   </span>
                 </div>
 
-                <div className="text-xs font-bold text-[#0F172A] shrink-0">
+                <div className="text-body-sm font-bold text-[#0F172A] shrink-0">
                   {new Intl.NumberFormat().format(member.xp)}
                 </div>
               </div>

@@ -53,6 +53,34 @@
 
   --color-background-app: var(--background);
   --color-card-bg: var(--card-bg);
+
+  /* Shared typography scale. Use semantic names instead of page-specific pixel sizes. */
+  --text-display: 3rem;
+  --text-display--line-height: 1.08;
+  --text-ui-3xl: 1.875rem;
+  --text-ui-3xl--line-height: 1.2;
+  --text-ui-2xl: 1.5rem;
+  --text-ui-2xl--line-height: 1.25;
+  --text-ui-xl: 1.25rem;
+  --text-ui-xl--line-height: 1.3;
+  --text-ui-lg: 1.125rem;
+  --text-ui-lg--line-height: 1.35;
+  --text-page-title: 1.875rem;
+  --text-page-title--line-height: 1.2;
+  --text-section-title: 1.25rem;
+  --text-section-title--line-height: 1.3;
+  --text-card-title: 1rem;
+  --text-card-title--line-height: 1.35;
+  --text-body: 0.875rem;
+  --text-body--line-height: 1.5;
+  --text-body-sm: 0.75rem;
+  --text-body-sm--line-height: 1.45;
+  --text-label: 0.6875rem;
+  --text-label--line-height: 1.4;
+  --text-caption: 0.625rem;
+  --text-caption--line-height: 1.4;
+  --text-micro: 0.5625rem;
+  --text-micro--line-height: 1.35;
 }
 
 body {

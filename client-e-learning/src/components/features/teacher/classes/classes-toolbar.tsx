@@ -27,7 +27,7 @@ export function ClassesToolbar({
           value={query}
           onChange={(event) => onQueryChange(event.target.value)}
           placeholder="Search classes..."
-          className="h-10 w-full rounded-[var(--radius-md)] border border-border-color bg-background-app pl-9 pr-3 text-sm outline-none focus:border-primary"
+          className="h-10 w-full rounded-[var(--radius-md)] border border-border-color bg-background-app pl-9 pr-3 text-body outline-none focus:border-primary"
         />
       </label>
 
@@ -38,7 +38,7 @@ export function ClassesToolbar({
           aria-label="Filter by grade"
           value={gradeFilter}
           onChange={(event) => onGradeChange(event.target.value)}
-          className="h-10 w-full rounded-[var(--radius-md)] border border-border-color bg-background-app px-3 text-sm outline-none focus:border-primary"
+          className="h-10 w-full rounded-[var(--radius-md)] border border-border-color bg-background-app px-3 text-body outline-none focus:border-primary"
         >
           <option value="all">All grades</option>
 

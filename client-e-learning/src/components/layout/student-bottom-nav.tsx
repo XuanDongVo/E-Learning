@@ -38,7 +38,7 @@ export function StudentBottomNav() {
             key={item.href}
             href={item.href}
             className={cn(
-              "flex flex-col items-center justify-center gap-1 px-3 py-1 text-[11px] font-semibold transition-all",
+              "flex flex-col items-center justify-center gap-1 px-3 py-1 text-body-sm font-semibold transition-all",
               active
                 ? "text-[#4F46E5]"
                 : "text-[#94A3B8] hover:text-[#64748B]"

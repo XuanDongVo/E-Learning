@@ -29,7 +29,7 @@ export function AuthGuard({
 
   if (isLoading || !user || (requiredRole && user.role !== requiredRole)) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background-app text-sm text-neutral-muted">
+      <div className="flex min-h-screen items-center justify-center bg-background-app text-body text-neutral-muted">
         Checking your session...
       </div>
     );

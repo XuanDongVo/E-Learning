@@ -47,12 +47,12 @@ export function AssignmentsSection({ assignments }: AssignmentsSectionProps) {
       <div className="p-4 lg:p-5 flex-1 flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-base font-extrabold text-neutral-dark">
+          <h2 className="text-card-title font-extrabold text-neutral-dark">
             Your Assignments
           </h2>
           <Link
             href="/student/assignments"
-            className="text-xs font-bold text-primary hover:text-primary-hover flex items-center gap-1 transition-colors"
+            className="text-body-sm font-bold text-primary hover:text-primary-hover flex items-center gap-1 transition-colors"
           >
             View all
             <ArrowRight className="h-3.5 w-3.5" />
@@ -65,10 +65,10 @@ export function AssignmentsSection({ assignments }: AssignmentsSectionProps) {
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#ECFDF5] text-[#10B981] mb-2.5 shadow-2xs">
               <ClipboardCheck className="h-6 w-6" />
             </div>
-            <h3 className="text-sm font-bold text-neutral-dark">
+            <h3 className="text-body font-bold text-neutral-dark">
               No pending assignments!
             </h3>
-            <p className="text-xs text-neutral-muted mt-0.5 max-w-[220px]">
+            <p className="text-body-sm text-neutral-muted mt-0.5 max-w-[220px]">
               You&apos;re all caught up. Keep up the awesome work! 🎉
             </p>
           </div>
@@ -90,10 +90,10 @@ export function AssignmentsSection({ assignments }: AssignmentsSectionProps) {
                       <Icon className="h-5 w-5" />
                     </div>
                     <div className="min-w-0">
-                      <h3 className="text-sm font-bold text-neutral-dark truncate">
+                      <h3 className="text-body font-bold text-neutral-dark truncate">
                         {item.title}
                       </h3>
-                      <p className="text-xs font-medium text-neutral-subtle mt-0.5">
+                      <p className="text-body-sm font-medium text-neutral-subtle mt-0.5">
                         {item.dueDate} • {item.dueRemainingText}
                       </p>
                     </div>
@@ -103,7 +103,7 @@ export function AssignmentsSection({ assignments }: AssignmentsSectionProps) {
                     <Button
                       size="sm"
                       variant={config.buttonVariant}
-                      className="h-9 px-5 rounded-xl text-xs font-bold shadow-xs"
+                      className="h-9 px-5 rounded-xl text-body-sm font-bold shadow-xs"
                     >
                       {config.buttonText}
                     </Button>

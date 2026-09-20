@@ -10,8 +10,8 @@ export default function UnitsPlaceholderPage() {
           <BookOpen className="h-5 w-5" />
         </div>
         <div>
-          <h1 className="text-2xl font-extrabold text-neutral-dark">Units</h1>
-          <p className="text-sm text-neutral-muted">Curriculum Catalog</p>
+          <h1 className="text-ui-2xl font-extrabold text-neutral-dark">Units</h1>
+          <p className="text-body text-neutral-muted">Curriculum Catalog</p>
         </div>
       </div>
       <div className="space-y-3 rounded-2xl border border-border-color bg-card-bg p-8 text-center">

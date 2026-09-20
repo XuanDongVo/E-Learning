@@ -46,7 +46,7 @@ export function StudentSidebar() {
             <GraduationCap className="h-6 w-6" />
           </div>
           <div>
-            <span className="text-xl font-extrabold tracking-tight text-neutral-dark flex items-center gap-1">
+            <span className="text-ui-xl font-extrabold tracking-tight text-neutral-dark flex items-center gap-1">
               Learn<span className="text-primary">Up</span>
             </span>
           </div>
@@ -62,7 +62,7 @@ export function StudentSidebar() {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "flex items-center gap-3.5 rounded-[12px] px-4 py-3 text-sm font-semibold transition-all duration-200 group",
+                  "flex items-center gap-3.5 rounded-[12px] px-4 py-3 text-body font-semibold transition-all duration-200 group",
                   active
                     ? "bg-primary-light text-primary shadow-xs"
                     : "text-neutral-muted hover:bg-background-app hover:text-neutral-dark",
@@ -99,10 +99,10 @@ export function StudentSidebar() {
           </Avatar>
 
           <div className="flex min-w-0 flex-1 flex-col">
-            <span className="truncate text-sm font-bold text-neutral-dark">
+            <span className="truncate text-body font-bold text-neutral-dark">
               {mockCurrentUser.name}
             </span>
-            <span className="text-xs font-medium text-neutral-subtle">
+            <span className="text-body-sm font-medium text-neutral-subtle">
               {mockCurrentUser.className}
             </span>
           </div>

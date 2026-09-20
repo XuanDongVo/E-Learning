@@ -159,13 +159,13 @@ export default function TeacherGradesPage() {
     <div className="mx-auto max-w-7xl space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-primary">
+          <p className="text-body-sm font-extrabold uppercase tracking-[0.16em] text-primary">
             Settings
           </p>
-          <h1 className="mt-2 text-3xl font-extrabold tracking-tight">
+          <h1 className="mt-2 text-ui-3xl font-extrabold tracking-tight">
             Grade management
           </h1>
-          <p className="mt-2 text-sm text-neutral-muted">
+          <p className="mt-2 text-body text-neutral-muted">
             Manage grade codes, labels, and ordering for classes and student grouping.
           </p>
         </div>
@@ -183,7 +183,7 @@ export default function TeacherGradesPage() {
       </div>
 
       {error && (
-        <div className="flex items-center justify-between gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <div className="flex items-center justify-between gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-body text-red-700">
           <span className="flex items-center gap-2">
             <AlertTriangle className="h-4 w-4" />
             {error}
@@ -204,14 +204,14 @@ export default function TeacherGradesPage() {
           className="rounded-[var(--radius-lg)] border border-border-color bg-card-bg p-5 shadow-sm"
         >
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-xl font-extrabold">
+            <h2 className="text-ui-xl font-extrabold">
               {editingId !== null ? "Update grade" : "Create grade"}
             </h2>
             {editingId !== null && (
               <button
                 type="button"
                 onClick={resetForm}
-                className="inline-flex items-center gap-1 text-sm font-bold text-neutral-muted hover:text-neutral-dark"
+                className="inline-flex items-center gap-1 text-body font-bold text-neutral-muted hover:text-neutral-dark"
               >
                 <XCircle className="h-4 w-4" /> Cancel
               </button>
@@ -219,29 +219,29 @@ export default function TeacherGradesPage() {
           </div>
 
           <div className="space-y-4">
-            <label className="block text-sm font-bold">
+            <label className="block text-body font-bold">
               Grade code
               <input
                 required
                 value={form.code}
                 onChange={(event) => setForm({ ...form, code: event.target.value })}
                 placeholder="GRADE_6"
-                className="mt-2 h-10 w-full rounded-xl border border-border-color bg-background-app px-3 text-sm outline-none focus:border-primary"
+                className="mt-2 h-10 w-full rounded-xl border border-border-color bg-background-app px-3 text-body outline-none focus:border-primary"
               />
             </label>
 
-            <label className="block text-sm font-bold">
+            <label className="block text-body font-bold">
               Grade name
               <input
                 required
                 value={form.name}
                 onChange={(event) => setForm({ ...form, name: event.target.value })}
                 placeholder="Grade 6"
-                className="mt-2 h-10 w-full rounded-xl border border-border-color bg-background-app px-3 text-sm outline-none focus:border-primary"
+                className="mt-2 h-10 w-full rounded-xl border border-border-color bg-background-app px-3 text-body outline-none focus:border-primary"
               />
             </label>
 
-            <label className="block text-sm font-bold">
+            <label className="block text-body font-bold">
               Display order
               <input
                 required
@@ -251,7 +251,7 @@ export default function TeacherGradesPage() {
                 onChange={(event) =>
                   setForm({ ...form, displayOrder: Number(event.target.value || 1) })
                 }
-                className="mt-2 h-10 w-full rounded-xl border border-border-color bg-background-app px-3 text-sm outline-none focus:border-primary"
+                className="mt-2 h-10 w-full rounded-xl border border-border-color bg-background-app px-3 text-body outline-none focus:border-primary"
               />
             </label>
           </div>
@@ -270,22 +270,22 @@ export default function TeacherGradesPage() {
           <section className="rounded-[var(--radius-lg)] border border-border-color bg-card-bg p-5 shadow-sm">
             <div className="mb-4 flex items-center justify-between">
               <div>
-                <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-primary">
+                <p className="text-body-sm font-extrabold uppercase tracking-[0.16em] text-primary">
                   Active
                 </p>
-                <h2 className="mt-1 text-xl font-extrabold">Current grades</h2>
+                <h2 className="mt-1 text-ui-xl font-extrabold">Current grades</h2>
               </div>
-              <span className="rounded-full bg-green-100 px-2.5 py-1 text-xs font-bold text-green-700">
+              <span className="rounded-full bg-green-100 px-2.5 py-1 text-body-sm font-bold text-green-700">
                 {activeGrades.length} active
               </span>
             </div>
 
             {isLoading ? (
-              <div className="rounded-xl border border-dashed border-border-color p-8 text-center text-sm text-neutral-muted">
+              <div className="rounded-xl border border-dashed border-border-color p-8 text-center text-body text-neutral-muted">
                 Loading grades...
               </div>
             ) : activeGrades.length === 0 ? (
-              <div className="rounded-xl border border-dashed border-border-color p-8 text-center text-sm text-neutral-muted">
+              <div className="rounded-xl border border-dashed border-border-color p-8 text-center text-body text-neutral-muted">
                 No active grades yet.
               </div>
             ) : (
@@ -301,7 +301,7 @@ export default function TeacherGradesPage() {
                       </div>
                       <div>
                         <p className="font-extrabold">{grade.name}</p>
-                        <div className="mt-1 flex items-center gap-2 text-xs text-neutral-muted">
+                        <div className="mt-1 flex items-center gap-2 text-body-sm text-neutral-muted">
                           <span>{grade.code}</span>
                           <span>•</span>
                           <span className="inline-flex items-center gap-1">
@@ -334,18 +334,18 @@ export default function TeacherGradesPage() {
           <section className="rounded-[var(--radius-lg)] border border-border-color bg-card-bg p-5 shadow-sm">
             <div className="mb-4 flex items-center justify-between">
               <div>
-                <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-primary">
+                <p className="text-body-sm font-extrabold uppercase tracking-[0.16em] text-primary">
                   Inactive
                 </p>
-                <h2 className="mt-1 text-xl font-extrabold">Archived grades</h2>
+                <h2 className="mt-1 text-ui-xl font-extrabold">Archived grades</h2>
               </div>
-              <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-700">
+              <span className="rounded-full bg-slate-100 px-2.5 py-1 text-body-sm font-bold text-slate-700">
                 {inactiveGrades.length} hidden
               </span>
             </div>
 
             {inactiveGrades.length === 0 ? (
-              <div className="rounded-xl border border-dashed border-border-color p-6 text-center text-sm text-neutral-muted">
+              <div className="rounded-xl border border-dashed border-border-color p-6 text-center text-body text-neutral-muted">
                 No archived grade.
               </div>
             ) : (
@@ -357,7 +357,7 @@ export default function TeacherGradesPage() {
                   >
                     <div>
                       <p className="font-bold text-neutral-muted">{grade.name}</p>
-                      <p className="text-xs text-neutral-subtle">{grade.code}</p>
+                      <p className="text-body-sm text-neutral-subtle">{grade.code}</p>
                     </div>
                     <Button type="button" variant="secondary" size="sm" onClick={() => handleActivate(grade.id)}>
                       Reactivate

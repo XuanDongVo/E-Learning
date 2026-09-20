@@ -33,11 +33,11 @@ export function CreateClassDialog({
       >
         <div className="flex items-start justify-between">
           <div>
-            <h2 className="text-xl font-extrabold">
+            <h2 className="text-ui-xl font-extrabold">
               Create class
             </h2>
 
-            <p className="mt-1 text-sm text-neutral-muted">
+            <p className="mt-1 text-body text-neutral-muted">
               Add a class to your teaching workspace.
             </p>
           </div>
@@ -46,14 +46,14 @@ export function CreateClassDialog({
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="text-xl text-neutral-muted"
+            className="text-ui-xl text-neutral-muted"
           >
             ×
           </button>
         </div>
 
         <div className="mt-6 space-y-4">
-          <label className="block text-sm font-bold">
+          <label className="block text-body font-bold">
             Class name
 
             <input
@@ -65,12 +65,12 @@ export function CreateClassDialog({
                   name: event.target.value,
                 })
               }
-              className="mt-2 h-10 w-full rounded-[var(--radius-md)] border border-border-color px-3 text-sm outline-none focus:border-primary"
+              className="mt-2 h-10 w-full rounded-[var(--radius-md)] border border-border-color px-3 text-body outline-none focus:border-primary"
               placeholder="6A"
             />
           </label>
 
-          <label className="block text-sm font-bold">
+          <label className="block text-body font-bold">
             Grade
 
             <select
@@ -83,7 +83,7 @@ export function CreateClassDialog({
                 })
               }
               disabled={grades.length === 0}
-              className="mt-2 h-10 w-full rounded-[var(--radius-md)] border border-border-color bg-card-bg px-3 text-sm outline-none focus:border-primary"
+              className="mt-2 h-10 w-full rounded-[var(--radius-md)] border border-border-color bg-card-bg px-3 text-body outline-none focus:border-primary"
             >
               <option value="" disabled>
                 Select a grade
@@ -97,7 +97,7 @@ export function CreateClassDialog({
             </select>
           </label>
 
-          <label className="block text-sm font-bold">
+          <label className="block text-body font-bold">
             Academic year
 
             <input
@@ -109,7 +109,7 @@ export function CreateClassDialog({
                   academicYear: event.target.value,
                 })
               }
-              className="mt-2 h-10 w-full rounded-[var(--radius-md)] border border-border-color px-3 text-sm outline-none focus:border-primary"
+              className="mt-2 h-10 w-full rounded-[var(--radius-md)] border border-border-color px-3 text-body outline-none focus:border-primary"
             />
           </label>
         </div>

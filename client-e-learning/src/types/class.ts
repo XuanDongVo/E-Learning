@@ -15,3 +15,7 @@ export interface CreateClassRequest {
   gradeId: number;
   academicYear: string;
 }
+
+export type ClassCardProps = {
+  classItem: Class;
+}

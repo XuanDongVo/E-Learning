@@ -37,11 +37,12 @@ public class SecurityConfig {
                                 .requestMatchers("/v1/teacher/**").hasRole("TEACHER")
                                 .requestMatchers("/v1/users/students").hasRole("TEACHER")
                                 .requestMatchers("/v1/classes/**").hasRole("TEACHER")
+                                .requestMatchers("/v1/content/**").hasRole("TEACHER")
                                 .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth ->
                         oauth
-                                .bearerTokenResolver(bearerTokenResolver()) // các API cần đăng nhập sẽ có thể tự lấy JWT từ cookie
+                                .bearerTokenResolver(bearerTokenResolver())
                                 .jwt(jwt ->
                                         jwt.jwtAuthenticationConverter(jwtAuthenticationConverter())
                                 )

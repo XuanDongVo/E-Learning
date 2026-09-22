@@ -14,7 +14,7 @@ export function ContentTabs({
       {items.map((item) => (
         <button
           key={item}
-          className={`relative whitespace-nowrap border-0 bg-transparent px-1 py-2.5 text-caption ${active === item ? "font-bold text-primary after:absolute after:bottom-[-1px] after:left-0 after:right-0 after:h-0.5 after:bg-primary" : "text-slate-400"}`}
+          className={`relative whitespace-nowrap border-0 bg-transparent px-1 py-2.5 text-caption sm:text-body-sm ${active === item ? "font-bold text-primary after:absolute after:bottom-[-1px] after:left-0 after:right-0 after:h-0.5 after:bg-primary" : "text-slate-400"}`}
           onClick={() => onChange?.(item)}
         >
           {item}

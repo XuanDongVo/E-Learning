@@ -37,7 +37,7 @@ export function EntityHeader({
       </div>
 
       <div className="flex w-full items-center gap-2 sm:w-auto">
-        <button className="flex flex-1 items-center justify-center gap-1.5 rounded-md border border-slate-200 bg-white px-2.5 py-2 text-caption text-primary sm:flex-none" onClick={onEdit}>
+        <button className="flex flex-1 items-center justify-center gap-1.5 rounded-md border border-slate-200 bg-white px-2.5 py-2 text-body-sm text-primary sm:flex-none" onClick={onEdit}>
           <Edit3 size={14} />
           {editLabel}
         </button>

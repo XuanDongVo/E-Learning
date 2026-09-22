@@ -20,7 +20,7 @@ export function ContentToolbar({
         {children}
 
         {action && (
-          <button className="flex items-center gap-1.5 rounded-md bg-primary px-3 py-2 text-body-sm sm:text-section-text font-bold text-white shadow-[0_5px_12px_rgba(79,70,229,0.18)] hover:bg-primary-hover" onClick={onAction}>
+          <button className="flex items-center gap-1.5 rounded-md bg-primary px-3 py-2 text-body-sm font-bold text-white shadow-[0_5px_12px_rgba(79,70,229,0.18)] hover:bg-primary-hover" onClick={onAction}>
             <Plus size={15} />
             {action}
           </button>

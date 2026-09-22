@@ -19,7 +19,7 @@ export function TableTitle({
         {title} <small className="font-normal text-slate-400">({count})</small>
       </h2>
 
-      <button className="flex items-center gap-1.5 rounded-md bg-primary px-2.5 py-2 text-caption font-bold text-white hover:bg-primary-hover" onClick={onAction}>
+      <button className="flex items-center gap-1.5 rounded-md bg-primary px-2.5 py-2 text-caption sm:text-body-sm font-bold text-white hover:bg-primary-hover" onClick={onAction}>
         <Plus size={14} />
         {action}
       </button>

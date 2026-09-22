@@ -40,15 +40,15 @@ export function SectionDetail({
           onAction={() => {}}
         />
 
-        <table className="w-full min-w-[680px] border-collapse text-caption">
+        <table className="w-full min-w-[680px] border-collapse text-sm">
           <thead>
             <tr>
-              <th className="bg-slate-50 p-2.5 text-left text-micro text-slate-500">#</th>
-              <th className="bg-slate-50 p-2.5 text-left text-micro text-slate-500">Topic name</th>
-              <th className="bg-slate-50 p-2.5 text-left text-micro text-slate-500">Question Banks</th>
-              <th className="bg-slate-50 p-2.5 text-left text-micro text-slate-500">Total questions</th>
-              <th className="bg-slate-50 p-2.5 text-left text-micro text-slate-500">Status</th>
-              <th className="bg-slate-50 p-2.5 text-left text-micro text-slate-500">Actions</th>
+              <th className="bg-slate-50 p-2.5 text-left text-sm text-slate-500">#</th>
+              <th className="bg-slate-50 p-2.5 text-left text-sm text-slate-500">Topic name</th>
+              <th className="bg-slate-50 p-2.5 text-left text-sm text-slate-500">Question Banks</th>
+              <th className="bg-slate-50 p-2.5 text-left text-sm text-slate-500">Total questions</th>
+              <th className="bg-slate-50 p-2.5 text-left text-sm text-slate-500">Status</th>
+              <th className="bg-slate-50 p-2.5 text-left text-sm text-slate-500">Actions</th>
             </tr>
           </thead>
 
@@ -58,9 +58,9 @@ export function SectionDetail({
                 key={topic.name}
                 onClick={() => onNavigate("topic")}
               >
-                <td className="border-b border-slate-100 p-2.5 text-slate-400">{index + 1}</td>
+                <td className="border-b border-slate-100 p-2.5 text-slate-400 text-sm">{index + 1}</td>
 
-                <td className="border-b border-slate-100 p-2.5 text-slate-500">
+                <td className="border-b border-slate-100 p-2.5 text-slate-500 text-sm">
                   <div className="flex items-center gap-2">
                     <IconTile tone={topic.tone}>
                       <Tags size={15} />
@@ -70,18 +70,18 @@ export function SectionDetail({
                   </div>
                 </td>
 
-                <td className="border-b border-slate-100 p-2.5 text-slate-500">
+                <td className="border-b border-slate-100 p-2.5 text-slate-500 text-sm">
                   {topic.banks}{" "}
                   {topic.banks === 1 ? "bank" : "banks"}
                 </td>
 
-                <td className="border-b border-slate-100 p-2.5 text-slate-500">{topic.questions}</td>
+                <td className="border-b border-slate-100 p-2.5 text-slate-500 text-sm">{topic.questions}</td>
 
-                <td className="border-b border-slate-100 p-2.5 text-slate-500">
+                <td className="border-b border-slate-100 p-2.5 text-slate-500 text-sm">
                   <Badge>Active</Badge>
                 </td>
 
-                <td className="border-b border-slate-100 p-2.5 text-slate-500">
+                <td className="border-b border-slate-100 p-2.5 text-slate-500 text-sm">
                   <MoreHorizontal size={16} />
                 </td>
               </tr>

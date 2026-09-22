@@ -52,7 +52,7 @@ export function ContentOverview({
         <div className="flex h-9 w-full items-center gap-1.5 rounded-md border border-slate-200 bg-white px-2 text-slate-400 sm:w-[220px]">
           <Search size={14} />
           <input
-            className="w-full border-0 text-content-body text-slate-700 outline-none"
+            className="w-full border-0 text-body-sm text-slate-700 outline-none"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Search units or topics..."
@@ -65,7 +65,7 @@ export function ContentOverview({
       h-10 w-full appearance-none rounded-xl
       border border-slate-200 bg-white
       pl-3.5 pr-9
-      text-sm font-medium text-slate-600
+      text-body-sm font-medium text-slate-600
       outline-none
       transition-colors
       hover:border-slate-300
@@ -95,7 +95,7 @@ export function ContentOverview({
         {contentGrades.map((item) => (
           <button
             key={item}
-            className={`whitespace-nowrap rounded-md border px-5 py-2 text-content-body ${grade === item ? "border-primary bg-primary text-white shadow-[0_4px_10px_rgba(79,70,229,0.18)]" : "border-slate-200 bg-white text-slate-500"}`}
+            className={`whitespace-nowrap rounded-md border px-5 py-2 text-body-sm ${grade === item ? "border-primary bg-primary text-white shadow-[0_4px_10px_rgba(79,70,229,0.18)]" : "border-slate-200 bg-white text-slate-500"}`}
             onClick={() => setGrade(item)}
           >
             {item}
@@ -106,14 +106,14 @@ export function ContentOverview({
       <section className="mb-5 rounded-[9px] border border-slate-200 bg-white p-3 shadow-[0_5px_18px_rgba(94,134,173,0.04)] sm:p-[18px]">
         <div className="mb-4 flex items-center justify-between gap-3">
           <div>
-            <h2 className="m-0 text-content-heading font-bold text-slate-900">
+            <h2 className="m-0 text-card-title font-bold text-slate-900">
               Units{" "}
-              <small className="text-content-body font-normal text-slate-400">
+              <small className="text-body-sm font-normal text-slate-400">
                 ({grade})
               </small>
             </h2>
 
-            <p className="mt-1 text-content-body text-slate-400">
+            <p className="mt-1 text-body-sm text-slate-400">
               Build and organize learning experiences.
             </p>
           </div>
@@ -138,7 +138,7 @@ export function ContentOverview({
         </div>
 
         {visibleUnits.length === 0 && (
-          <p className="rounded-md border border-dashed border-slate-200 py-8 text-center text-content-body text-slate-400">
+          <p className="rounded-md border border-dashed border-slate-200 py-8 text-center text-body-sm text-slate-400">
             No units or topics found.
           </p>
         )}
@@ -152,7 +152,7 @@ export function ContentOverview({
               <span className="grid h-11 w-11 place-items-center rounded-full bg-white shadow-sm">
                 <Plus size={22} />
               </span>
-              <b className="text-content-body">Create Unit</b>
+              <b className="text-body-sm">Create Unit</b>
             </button>
 
             {visibleUnits.map((unit) => (
@@ -176,15 +176,15 @@ export function ContentOverview({
                   </div>
                 )}
 
-                <span className="mt-3 block text-content-caption text-slate-400">
+                <span className="mt-3 block text-caption text-slate-400">
                   Unit {unit.id}
                 </span>
 
-                <strong className="my-1 block text-content-heading text-slate-800">
+                <strong className="my-1 block text-card-title text-slate-800">
                   {unit.name}
                 </strong>
 
-                <span className="block text-content-caption text-slate-400">
+                <span className="block text-caption text-slate-400">
                   {unit.sections} sections · {unit.topics} topics
                 </span>
 
@@ -218,10 +218,10 @@ export function ContentOverview({
                   </IconTile>
                 )}
                 <span className="min-w-0 flex-1">
-                  <strong className="block text-content-heading text-slate-800">
+                  <strong className="block text-card-title text-slate-800">
                     Unit {unit.id} - {unit.name}
                   </strong>
-                  <span className="text-content-caption text-slate-400">
+                  <span className="text-caption text-slate-400">
                     {unit.sections} sections · {unit.topics} topics
                   </span>
                 </span>
@@ -238,10 +238,10 @@ export function ContentOverview({
       <section className="mb-5 rounded-[9px] border border-slate-200 bg-white p-3 shadow-[0_5px_18px_rgba(94,134,173,0.04)] sm:p-[18px]">
         <div className="mb-4">
           <div>
-            <h2 className="m-0 text-content-heading font-bold text-slate-900">
+            <h2 className="m-0 text-card-title font-bold text-slate-900">
               Recent Updates
             </h2>
-            <p className="mt-1 text-content-body text-slate-400">
+            <p className="mt-1 text-body-sm text-slate-400">
               Latest changes in your content library.
             </p>
           </div>
@@ -256,11 +256,11 @@ export function ContentOverview({
               <BookOpen size={15} />
             </IconTile>
 
-            <b className="flex-1 text-content-body text-slate-800">
+            <b className="flex-1 text-body-sm text-slate-800">
               Unit {unit.id} - {unit.name}
             </b>
 
-            <span className="text-content-caption text-slate-400">
+            <span className="text-caption text-slate-400">
               Updated {index + 2} days ago
             </span>
 

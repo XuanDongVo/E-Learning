@@ -41,16 +41,16 @@ export function TopicDetail({
           onAction={() => onNavigate("bank")}
         />
 
-        <table className="w-full min-w-[760px] border-collapse text-caption">
+        <table className="w-full min-w-[760px] border-collapse text-sm">
           <thead>
             <tr>
-              <th className="bg-slate-50 p-2.5 text-left text-micro text-slate-500">#</th>
-              <th className="bg-slate-50 p-2.5 text-left text-micro text-slate-500">Name</th>
-              <th className="bg-slate-50 p-2.5 text-left text-micro text-slate-500">Type</th>
-              <th className="bg-slate-50 p-2.5 text-left text-micro text-slate-500">Questions</th>
-              <th className="bg-slate-50 p-2.5 text-left text-micro text-slate-500">Difficulty</th>
-              <th className="bg-slate-50 p-2.5 text-left text-micro text-slate-500">Status</th>
-              <th className="bg-slate-50 p-2.5 text-left text-micro text-slate-500">Actions</th>
+              <th className="bg-slate-50 p-2.5 text-left text-sm text-slate-500">#</th>
+              <th className="bg-slate-50 p-2.5 text-left text-sm text-slate-500">Name</th>
+              <th className="bg-slate-50 p-2.5 text-left text-sm text-slate-500">Type</th>
+              <th className="bg-slate-50 p-2.5 text-left text-sm text-slate-500">Questions</th>
+              <th className="bg-slate-50 p-2.5 text-left text-sm text-slate-500">Difficulty</th>
+              <th className="bg-slate-50 p-2.5 text-left text-sm text-slate-500">Status</th>
+              <th className="bg-slate-50 p-2.5 text-left text-sm text-slate-500">Actions</th>
             </tr>
           </thead>
 
@@ -60,9 +60,9 @@ export function TopicDetail({
                 key={bank.name}
                 onClick={() => onNavigate("bank")}
               >
-                <td className="border-b border-slate-100 p-2.5 text-slate-400">{index + 1}</td>
+                <td className="border-b border-slate-100 p-2.5 text-sm text-slate-400">{index + 1}</td>
 
-                <td className="border-b border-slate-100 p-2.5 text-slate-500">
+                <td className="border-b border-slate-100 p-2.5 text-slate-500 text-sm">
                   <div className="flex items-center gap-2">
                     <IconTile tone="violet">
                       <FileQuestion size={15} />
@@ -72,21 +72,21 @@ export function TopicDetail({
                   </div>
                 </td>
 
-                <td className="border-b border-slate-100 p-2.5 text-slate-500">{bank.type}</td>
+                <td className="border-b border-slate-100 p-2.5 text-slate-500 text-sm">{bank.type}</td>
 
-                <td className="border-b border-slate-100 p-2.5 text-slate-500">{bank.questions}</td>
+                <td className="border-b border-slate-100 p-2.5 text-slate-500 text-sm">{bank.questions}</td>
 
-                <td className="border-b border-slate-100 p-2.5 text-slate-500">
+                <td className="border-b border-slate-100 p-2.5 text-slate-500 text-sm">
                   <Badge tone={bank.difficulty === "Easy" ? "easy" : bank.difficulty === "Medium" ? "medium" : "hard"}>
                     {bank.difficulty}
                   </Badge>
                 </td>
 
-                <td className="border-b border-slate-100 p-2.5 text-slate-500">
+                <td className="border-b border-slate-100 p-2.5 text-slate-500 text-sm">
                   <Badge>Active</Badge>
                 </td>
 
-                <td className="border-b border-slate-100 p-2.5 text-slate-500">
+                <td className="border-b border-slate-100 p-2.5 text-slate-500 text-sm">
                   <MoreHorizontal size={16} />
                 </td>
               </tr>

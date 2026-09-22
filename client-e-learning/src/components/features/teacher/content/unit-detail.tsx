@@ -25,7 +25,8 @@ export function UnitDetail({
 }: {
   onNavigate: (view: ContentView) => void;
 }) {
-  const [sectionItems, setSectionItems] = useState<ContentSection[]>(contentSections);
+  const [sectionItems, setSectionItems] =
+    useState<ContentSection[]>(contentSections);
   const [archivedSections, setArchivedSections] = useState<string[]>([]);
   const [newSection, setNewSection] = useState("");
   const [editingSection, setEditingSection] = useState<string | null>(null);
@@ -34,7 +35,10 @@ export function UnitDetail({
   const addSection = () => {
     const name = newSection.trim();
     if (!name) return;
-    setSectionItems((current) => [...current, { name, topics: 0, tone: "blue" }]);
+    setSectionItems((current) => [
+      ...current,
+      { name, topics: 0, tone: "blue" },
+    ]);
     setNewSection("");
   };
 
@@ -51,12 +55,20 @@ export function UnitDetail({
   const saveSectionName = (name: string) => {
     const nextName = editingName.trim();
     if (!nextName) return;
-    setSectionItems((current) => current.map((section) => section.name === name ? { ...section, name: nextName } : section));
+    setSectionItems((current) =>
+      current.map((section) =>
+        section.name === name ? { ...section, name: nextName } : section,
+      ),
+    );
     setEditingSection(null);
   };
 
   const toggleArchive = (name: string) => {
-    setArchivedSections((current) => current.includes(name) ? current.filter((item) => item !== name) : [...current, name]);
+    setArchivedSections((current) =>
+      current.includes(name)
+        ? current.filter((item) => item !== name)
+        : [...current, name],
+    );
   };
 
   return (
@@ -85,20 +97,48 @@ export function UnitDetail({
 
         {newSection && (
           <div className="mb-4 flex gap-2 rounded-md bg-primary-light p-2">
-            <input autoFocus className="min-w-0 flex-1 rounded border border-slate-200 px-2 py-1.5 text-caption outline-none" value={newSection} onChange={(event) => setNewSection(event.target.value)} onKeyDown={(event) => event.key === "Enter" && addSection()} />
-            <button className="rounded bg-primary px-2 text-white" onClick={addSection} aria-label="Save section"><Check size={13} /></button>
-            <button className="rounded border border-slate-200 bg-white px-2 text-slate-500" onClick={() => setNewSection("")} aria-label="Cancel"><X size={13} /></button>
+            <input
+              autoFocus
+              className="min-w-0 flex-1 rounded border border-slate-200 px-2 py-1.5  text-sm outline-none"
+              value={newSection}
+              onChange={(event) => setNewSection(event.target.value)}
+              onKeyDown={(event) => event.key === "Enter" && addSection()}
+            />
+            <button
+              className="rounded bg-primary px-2 text-white"
+              onClick={addSection}
+              aria-label="Save section"
+            >
+              <Check size={13} />
+            </button>
+            <button
+              className="rounded border border-slate-200 bg-white px-2 text-slate-500"
+              onClick={() => setNewSection("")}
+              aria-label="Cancel"
+            >
+              <X size={13} />
+            </button>
           </div>
         )}
 
-        <table className="w-full min-w-[620px] border-collapse text-caption">
+        <table className="w-full min-w-[620px] border-collapse  text-sm">
           <thead>
             <tr>
-              <th className="bg-slate-50 p-2.5 text-left text-micro text-slate-500">#</th>
-              <th className="bg-slate-50 p-2.5 text-left text-micro text-slate-500">Section name</th>
-              <th className="bg-slate-50 p-2.5 text-left text-micro text-slate-500">Topics</th>
-              <th className="bg-slate-50 p-2.5 text-left text-micro text-slate-500">Status</th>
-              <th className="bg-slate-50 p-2.5 text-left text-micro text-slate-500">Actions</th>
+              <th className="bg-slate-50 p-2.5 text-left text-sm text-slate-500">
+                #
+              </th>
+              <th className="bg-slate-50 p-2.5 text-left text-sm  text-slate-500">
+                Section name
+              </th>
+              <th className="bg-slate-50 p-2.5 text-left text-sm text-slate-500">
+                Topics
+              </th>
+              <th className="bg-slate-50 p-2.5 text-left text-sm text-slate-500">
+                Status
+              </th>
+              <th className="bg-slate-50 p-2.5 text-left text-sm text-slate-500">
+                Actions
+              </th>
             </tr>
           </thead>
 
@@ -107,9 +147,17 @@ export function UnitDetail({
               <tr
                 key={section.name}
                 onClick={() => onNavigate("section")}
-                className={archivedSections.includes(section.name) ? "opacity-50" : ""}
+                className={`
+                  group cursor-pointer
+                  transition-colors duration-150
+                  hover:bg-primary-light
+                  ${archivedSections.includes(section.name) ? "opacity-50" : ""}
+                `}
               >
-                <td className="border-b border-slate-100 p-2.5 text-slate-400">{index + 1}</td>
+                <td className="relative border-b border-slate-100 p-2.5 text-slate-400">
+                  <span className="absolute inset-y-0 left-0 w-0.5 bg-transparent transition-colors duration-150 group-hover:bg-primary" />
+                  {index + 1}
+                </td>
 
                 <td className="border-b border-slate-100 p-2.5 text-slate-500">
                   <div className="flex items-center gap-2">
@@ -117,25 +165,34 @@ export function UnitDetail({
                       <BookOpen size={15} />
                     </IconTile>
 
-                    {editingSection === section.name ? <input autoFocus className="rounded border border-slate-200 px-1.5 py-1 text-caption" value={editingName} onChange={(event) => setEditingName(event.target.value)} onKeyDown={(event) => event.key === "Enter" && saveSectionName(section.name)} /> : <b>{section.name}</b>}
+                    {editingSection === section.name ? (
+                      <input
+                        autoFocus
+                        className="rounded border border-slate-200 px-1.5 py-1 text-sm"
+                        value={editingName}
+                        onChange={(event) => setEditingName(event.target.value)}
+                        onKeyDown={(event) =>
+                          event.key === "Enter" && saveSectionName(section.name)
+                        }
+                      />
+                    ) : (
+                      <b className="transition-colors duration-150 group-hover:text-primary">
+                        {section.name}
+                      </b>
+                    )}
                   </div>
                 </td>
 
-                <td className="border-b border-slate-100 p-2.5 text-slate-500">{section.topics} topics</td>
-
-                <td className="border-b border-slate-100 p-2.5 text-slate-500">
-                  <Badge tone={archivedSections.includes(section.name) ? "gray" : "green"}>{archivedSections.includes(section.name) ? "Archived" : "Active"}</Badge>
+                <td className="border-b border-slate-100 p-2.5 text-slate-500 text-sm">
+                  {section.topics} topics
                 </td>
 
-                <td className="border-b border-slate-100 p-2.5 text-slate-500">
-                  <div className="flex items-center gap-1" onClick={(event) => event.stopPropagation()}>
-                    <button className="p-1 text-slate-400 hover:text-primary" onClick={() => moveSection(index, -1)} aria-label="Move section up"><ArrowUp size={13} /></button>
-                    <button className="p-1 text-slate-400 hover:text-primary" onClick={() => moveSection(index, 1)} aria-label="Move section down"><ArrowDown size={13} /></button>
-                    <button className="p-1 text-slate-400 hover:text-primary" onClick={() => { setEditingSection(section.name); setEditingName(section.name); }} aria-label="Edit section"><Edit3 size={13} /></button>
-                    {editingSection === section.name && <button className="p-1 text-primary" onClick={() => saveSectionName(section.name)} aria-label="Save section"><Check size={13} /></button>}
-                    <button className="p-1 text-slate-400 hover:text-rose-500" onClick={() => toggleArchive(section.name)} aria-label="Archive section"><Archive size={13} /></button>
-                    <MoreHorizontal size={15} />
-                  </div>
+                <td className="border-b border-slate-100 p-2.5 text-slate-500 text-sm">
+                  ...
+                </td>
+
+                <td className="border-b border-slate-100 p-2.5 text-slate-500 text-sm">
+                  ...
                 </td>
               </tr>
             ))}

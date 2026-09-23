@@ -1,14 +1,18 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
+  ArrowDown,
+  ArrowUp,
   BookOpen,
   ChevronDown,
+  GripVertical,
   LayoutGrid,
   List,
   MoreHorizontal,
   Plus,
   Search,
+  ArrowRight,
 } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -26,6 +30,7 @@ import type {
 import { Badge } from "./components/badge";
 import { IconTile } from "./components/icon-tile";
 import { ContentToolbar } from "./components/content-toolbar";
+import { CreateUnitModal } from "./components/create-unit-modal";
 
 export function ContentOverview({
   onNavigate,
@@ -39,13 +44,24 @@ export function ContentOverview({
   const [layout, setLayout] = useState<ContentLayout>("grid");
 
   const [formOpen, setFormOpen] = useState(false);
+  const [coverFile, setCoverFile] = useState<File | null>(null);
+  const [coverPreview, setCoverPreview] = useState<string>();
+  const [coverMediaId, setCoverMediaId] = useState<number>();
+  const [mediaError, setMediaError] = useState<string>();
 
   const [form, setForm] = useState<CreateUnitRequest>({
     gradeId: 0,
     code: "",
     name: "",
     description: "",
+    displayOrder: 0,
   });
+
+  // Drag-and-drop reorder state
+  const [orderedUnits, setOrderedUnits] = useState<ContentUnit[]>([]);
+  const [dragId, setDragId] = useState<number | null>(null);
+  const [dragOverId, setDragOverId] = useState<number | null>(null);
+  const [justMovedId, setJustMovedId] = useState<number | null>(null);
 
   const grades = useQuery({
     queryKey: ["grades"],
@@ -65,6 +81,12 @@ export function ContentOverview({
     enabled: Boolean(selectedGradeId),
   });
 
+  // Keep local order in sync whenever fresh data arrives (initial load,
+  // grade switch, or after a successful reorder/refetch).
+  useEffect(() => {
+    setOrderedUnits(units.data ?? []);
+  }, [units.data]);
+
   const createUnit = useMutation({
     mutationFn: contentService.createUnit,
 
@@ -81,17 +103,98 @@ export function ContentOverview({
     },
   });
 
+  const uploadCover = useMutation({
+    mutationFn: (file: File) => contentService.uploadMedia(file),
+    onSuccess: (response) => setCoverMediaId(response.data?.id),
+    onError: () => setMediaError("Could not upload the cover image."),
+  });
+
+  const reorder = useMutation({
+    mutationFn: (items: { id: number; displayOrder: number }[]) =>
+      contentService.reorderUnits(selectedGradeId!, { items }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: QUERY_KEYS.contentUnits(selectedGradeId ?? 0),
+      });
+    },
+  });
+
+  const normalizedQuery = query.trim().toLowerCase();
+  const isFiltering = normalizedQuery.length > 0;
+
   const visibleUnits = useMemo(() => {
-    const normalizedQuery = query.trim().toLowerCase();
-
-    if (!normalizedQuery) {
-      return units.data ?? [];
-    }
-
-    return (units.data ?? []).filter((unit) =>
+    const base = orderedUnits;
+    if (!isFiltering) return base;
+    return base.filter((unit) =>
       `${unit.code} ${unit.name}`.toLowerCase().includes(normalizedQuery),
     );
-  }, [units.data, query]);
+  }, [orderedUnits, normalizedQuery, isFiltering]);
+
+  useEffect(() => {
+    if (justMovedId === null) return;
+    const timer = setTimeout(() => setJustMovedId(null), 900);
+    return () => clearTimeout(timer);
+  }, [justMovedId]);
+
+  const reorderTo = (draggedId: number, targetId: number) => {
+    const items = [...orderedUnits];
+    const fromIndex = items.findIndex((item) => item.id === draggedId);
+    const toIndex = items.findIndex((item) => item.id === targetId);
+    if (fromIndex === -1 || toIndex === -1 || fromIndex === toIndex) return;
+    const [moved] = items.splice(fromIndex, 1);
+    items.splice(toIndex, 0, moved);
+    setOrderedUnits(items);
+    setJustMovedId(draggedId);
+    reorder.mutate(
+      items.map((item, itemIndex) => ({
+        id: item.id,
+        displayOrder: itemIndex + 1,
+      })),
+    );
+  };
+
+  // Mobile fallback — HTML5 drag doesn't work reliably on touch, so
+  // narrow screens get explicit up/down buttons instead of the handle.
+  const move = (index: number, direction: -1 | 1) => {
+    const items = [...orderedUnits];
+    const target = index + direction;
+    if (target < 0 || target >= items.length || reorder.isPending) return;
+    const movedId = items[index].id;
+    [items[index], items[target]] = [items[target], items[index]];
+    setOrderedUnits(items);
+    setJustMovedId(movedId);
+    reorder.mutate(
+      items.map((item, itemIndex) => ({
+        id: item.id,
+        displayOrder: itemIndex + 1,
+      })),
+    );
+  };
+
+  const handleDragStart = (id: number) => (event: React.DragEvent) => {
+    setDragId(id);
+    event.dataTransfer.effectAllowed = "move";
+    event.dataTransfer.setData("text/plain", String(id));
+  };
+  const handleDragOver = (id: number) => (event: React.DragEvent) => {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "move";
+    if (id !== dragId) setDragOverId(id);
+  };
+  const handleDragLeave = (id: number) => () => {
+    setDragOverId((current) => (current === id ? null : current));
+  };
+  const handleDrop = (id: number) => (event: React.DragEvent) => {
+    event.preventDefault();
+    const sourceId = dragId ?? Number(event.dataTransfer.getData("text/plain"));
+    if (sourceId && sourceId !== id) reorderTo(sourceId, id);
+    setDragId(null);
+    setDragOverId(null);
+  };
+  const handleDragEnd = () => {
+    setDragId(null);
+    setDragOverId(null);
+  };
 
   const openCreate = () => {
     if (!selectedGradeId) return;
@@ -101,16 +204,44 @@ export function ContentOverview({
       code: "",
       name: "",
       description: "",
+      displayOrder: 0,
     });
+    setCoverFile(null);
+    setCoverPreview(undefined);
+    setCoverMediaId(undefined);
+    setMediaError(undefined);
 
     setFormOpen(true);
   };
 
-  const submitCreate = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const submitCreate = () => {
+    if (coverFile && !coverMediaId) {
+      setMediaError("Please wait for the cover image to finish uploading.");
+      return;
+    }
 
-    createUnit.mutate(form);
+    createUnit.mutate({
+      ...form,
+      coverMediaId,
+    });
   };
+
+  const handleCoverChange = (file: File | undefined) => {
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      setMediaError("Cover must be an image file.");
+      return;
+    }
+
+    setMediaError(undefined);
+    setCoverFile(file);
+    setCoverMediaId(undefined);
+    setCoverPreview(URL.createObjectURL(file));
+    uploadCover.mutate(file);
+  };
+
+  // Drag is only meaningful against the full, unfiltered, server order.
+  const dragEnabled = !isFiltering;
 
   return (
     <>
@@ -217,114 +348,19 @@ export function ContentOverview({
         ))}
       </div>
 
-      {formOpen && (
-        <form
-          onSubmit={submitCreate}
-          className="
-            mb-5 grid gap-3 rounded-[9px]
-            border border-primary/20
-            bg-primary-light/40
-            p-4
-            sm:grid-cols-4
-          "
-        >
-          <input
-            required
-            placeholder="Code"
-            value={form.code}
-            onChange={(event) =>
-              setForm({
-                ...form,
-                code: event.target.value,
-              })
-            }
-            className="
-              h-10 rounded-lg
-              border border-slate-200
-              bg-white px-3
-              text-body-sm
-              outline-none
-              focus:border-primary
-              focus:ring-2 focus:ring-primary/10
-            "
-          />
-
-          <input
-            required
-            placeholder="Unit name"
-            value={form.name}
-            onChange={(event) =>
-              setForm({
-                ...form,
-                name: event.target.value,
-              })
-            }
-            className="
-              h-10 rounded-lg
-              border border-slate-200
-              bg-white px-3
-              text-body-sm
-              outline-none
-              focus:border-primary
-              focus:ring-2 focus:ring-primary/10
-            "
-          />
-
-          <input
-            placeholder="Description"
-            value={form.description ?? ""}
-            onChange={(event) =>
-              setForm({
-                ...form,
-                description: event.target.value,
-              })
-            }
-            className="
-              h-10 rounded-lg
-              border border-slate-200
-              bg-white px-3
-              text-body-sm
-              outline-none
-              focus:border-primary
-              focus:ring-2 focus:ring-primary/10
-              sm:col-span-2
-            "
-          />
-
-          <div className="flex gap-2 sm:col-span-4">
-            <button
-              type="submit"
-              disabled={createUnit.isPending}
-              className="
-                rounded-lg bg-primary
-                px-4 py-2
-                text-body-sm font-semibold text-white
-                transition-colors
-                hover:bg-primary-hover
-                disabled:cursor-not-allowed
-                disabled:opacity-60
-              "
-            >
-              {createUnit.isPending ? "Saving..." : "Create"}
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setFormOpen(false)}
-              className="
-                rounded-lg
-                border border-slate-200
-                bg-white
-                px-4 py-2
-                text-body-sm font-medium text-slate-600
-                hover:bg-slate-50
-              "
-            >
-              Cancel
-            </button>
-          </div>
-        </form>
-      )}
+      <CreateUnitModal
+        open={formOpen}
+        onClose={() => setFormOpen(false)}
+        form={form}
+        onFormChange={setForm}
+        onSubmit={submitCreate}
+        isSubmitting={createUnit.isPending}
+        coverPreview={coverPreview}
+        coverFileName={coverFile?.name}
+        isUploadingCover={uploadCover.isPending}
+        onCoverChange={handleCoverChange}
+        coverError={mediaError}
+      />
 
       <section
         className="
@@ -345,7 +381,9 @@ export function ContentOverview({
             </h2>
 
             <p className="mt-1 text-body-sm text-slate-400">
-              Build and organize learning experiences.
+              {dragEnabled
+                ? "Drag a card's handle to reorder units."
+                : "Build and organize learning experiences."}
             </p>
           </div>
 
@@ -398,7 +436,7 @@ export function ContentOverview({
 
         {!units.isLoading && !units.isError && layout === "grid" && (
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {/* Create Unit Card */}
+            {/* Create Unit Card — stays fixed, not part of drag-and-drop */}
             <button
               type="button"
               className="
@@ -423,11 +461,26 @@ export function ContentOverview({
             </button>
 
             {/* Unit Cards */}
-            {visibleUnits.map((unit) => (
+            {visibleUnits.map((unit, index) => (
               <UnitCard
                 key={unit.id}
                 unit={unit}
                 onOpen={() => onNavigate("unit", unit.id)}
+                draggable={dragEnabled}
+                isDragging={dragId === unit.id}
+                isDragOver={dragOverId === unit.id && dragId !== unit.id}
+                isJustMoved={justMovedId === unit.id}
+                onDragStart={handleDragStart(unit.id)}
+                onDragOver={handleDragOver(unit.id)}
+                onDragLeave={handleDragLeave(unit.id)}
+                onDrop={handleDrop(unit.id)}
+                onDragEnd={handleDragEnd}
+                canReorder={dragEnabled}
+                isFirst={index === 0}
+                isLast={index === visibleUnits.length - 1}
+                onMoveUp={() => move(index, -1)}
+                onMoveDown={() => move(index, 1)}
+                reorderPending={reorder.isPending}
               />
             ))}
           </div>
@@ -438,34 +491,92 @@ export function ContentOverview({
           layout === "list" &&
           visibleUnits.length > 0 && (
             <div className="divide-y divide-slate-100 rounded-md border border-slate-100">
-              {visibleUnits.map((unit) => (
-                <button
-                  type="button"
-                  className="
-                    flex w-full items-center
-                    gap-3 p-3
-                    text-left
-                    transition-colors
-                    hover:bg-primary-light/40
-                  "
-                  key={unit.id}
-                  onClick={() => onNavigate("unit", unit.id)}
-                >
-                  <UnitIcon />
+              {visibleUnits.map((unit, index) => {
+                const isDragging = dragId === unit.id;
+                const isDragOver = dragOverId === unit.id && dragId !== unit.id;
+                const isJustMoved = justMovedId === unit.id;
+                return (
+                  <div
+                    key={unit.id}
+                    onDragOver={dragEnabled ? handleDragOver(unit.id) : undefined}
+                    onDragEnter={dragEnabled ? handleDragOver(unit.id) : undefined}
+                    onDragLeave={dragEnabled ? handleDragLeave(unit.id) : undefined}
+                    onDrop={dragEnabled ? handleDrop(unit.id) : undefined}
+                    className={`flex w-full items-center gap-1 transition-colors duration-700 ${
+                      isDragging
+                        ? "opacity-40"
+                        : isDragOver
+                          ? "bg-primary-light/60 ring-1 ring-inset ring-primary/30"
+                          : isJustMoved
+                            ? "bg-primary-light/40"
+                            : ""
+                    }`}
+                  >
+                    {dragEnabled && (
+                      <>
+                        {/* Desktop: drag handle */}
+                        <span
+                          draggable="true"
+                          onDragStart={handleDragStart(unit.id)}
+                          onDragEnd={handleDragEnd}
+                          aria-label="Drag to reorder unit"
+                          title="Drag to reorder"
+                          className="ml-2 hidden shrink-0 select-none rounded p-1.5 text-slate-300 transition hover:bg-slate-100 hover:text-slate-500 active:cursor-grabbing md:block md:cursor-grab"
+                        >
+                          <GripVertical size={15} className="pointer-events-none" />
+                        </span>
 
-                  <span className="min-w-0 flex-1">
-                    <strong className="block text-card-title text-slate-800">
-                      {unit.code} - {unit.name}
-                    </strong>
+                        {/* Mobile: up/down buttons */}
+                        <div className="ml-2 flex shrink-0 gap-1 md:hidden">
+                          <button
+                            type="button"
+                            disabled={index === 0 || reorder.isPending}
+                            onClick={() => move(index, -1)}
+                            aria-label="Move unit up"
+                            className="rounded-md p-1.5 text-slate-400 transition hover:bg-primary/10 hover:text-primary disabled:pointer-events-none disabled:opacity-30"
+                          >
+                            <ArrowUp size={14} />
+                          </button>
+                          <button
+                            type="button"
+                            disabled={index === visibleUnits.length - 1 || reorder.isPending}
+                            onClick={() => move(index, 1)}
+                            aria-label="Move unit down"
+                            className="rounded-md p-1.5 text-slate-400 transition hover:bg-primary/10 hover:text-primary disabled:pointer-events-none disabled:opacity-30"
+                          >
+                            <ArrowDown size={14} />
+                          </button>
+                        </div>
+                      </>
+                    )}
+                    <button
+                      type="button"
+                      className="
+                        flex w-full min-w-0 items-center
+                        gap-3 p-3
+                        text-left
+                        transition-colors
+                        hover:bg-primary-light/40
+                      "
+                      onClick={() => onNavigate("unit", unit.id)}
+                    >
+                      <UnitIcon />
 
-                    <span className="text-caption text-slate-400">
-                      {unit.totalSection} sections · {unit.totalTopic} topics
-                    </span>
-                  </span>
+                      <span className="min-w-0 flex-1">
+                        <strong className="block truncate text-card-title text-slate-800">
+                          {unit.code} - {unit.name}
+                        </strong>
 
-                  <Badge tone={getStatusTone(unit.status)}>{unit.status}</Badge>
-                </button>
-              ))}
+                        <span className="text-body-sm text-slate-400">
+                          {unit.totalSection} sections · {unit.totalTopic} topics
+                        </span>
+                      </span>
+
+                      <Badge tone={getStatusTone(unit.status)}>{unit.status}</Badge>
+                    </button>
+                  </div>
+                );
+              })}
             </div>
           )}
       </section>
@@ -504,7 +615,7 @@ export function ContentOverview({
               {unit.code} - {unit.name}
             </b>
 
-            <span className="hidden text-caption text-slate-400 sm:block">
+            <span className="hidden text-body-sm text-slate-400 sm:block">
               Updated {index + 2} days ago
             </span>
 
@@ -522,47 +633,129 @@ export function ContentOverview({
   );
 }
 
-function UnitCard({ unit, onOpen }: { unit: ContentUnit; onOpen: () => void }) {
+function UnitCard({
+  unit,
+  onOpen,
+  draggable,
+  isDragging,
+  isDragOver,
+  isJustMoved,
+  onDragStart,
+  onDragOver,
+  onDragLeave,
+  onDrop,
+  onDragEnd,
+  canReorder,
+  isFirst,
+  isLast,
+  onMoveUp,
+  onMoveDown,
+  reorderPending,
+}: {
+  unit: ContentUnit;
+  onOpen: () => void;
+  draggable: boolean;
+  isDragging: boolean;
+  isDragOver: boolean;
+  isJustMoved: boolean;
+  onDragStart: (event: React.DragEvent) => void;
+  onDragOver: (event: React.DragEvent) => void;
+  onDragLeave: () => void;
+  onDrop: (event: React.DragEvent) => void;
+  onDragEnd: () => void;
+  canReorder: boolean;
+  isFirst: boolean;
+  isLast: boolean;
+  onMoveUp: () => void;
+  onMoveDown: () => void;
+  reorderPending: boolean;
+}) {
   return (
-    <button
-      type="button"
-      onClick={onOpen}
-      className="
-        min-h-[250px]
-        rounded-lg
-        border border-slate-200
-        bg-white
-        p-3
-        text-left
-        transition
-        hover:border-primary
-        hover:shadow-[0_5px_15px_rgba(79,70,229,0.1)]
-      "
+    <div
+      onDragOver={draggable ? onDragOver : undefined}
+      onDragEnter={draggable ? onDragOver : undefined}
+      onDragLeave={draggable ? onDragLeave : undefined}
+      onDrop={draggable ? onDrop : undefined}
+      className={`group relative min-h-[250px] rounded-lg border bg-white p-3 text-left transition ${
+        isDragging
+          ? "opacity-40"
+          : isDragOver
+            ? "border-primary bg-primary-light/40 ring-1 ring-inset ring-primary/30"
+            : isJustMoved
+              ? "border-primary/40 bg-primary-light/30"
+              : "border-slate-200 hover:border-primary hover:shadow-[0_5px_15px_rgba(79,70,229,0.1)]"
+      }`}
     >
-      <div className="flex aspect-[16/9] w-full items-center justify-center rounded-md bg-slate-50">
-        <IconTile tone={getUnitTone(unit)}>
-          <BookOpen size={24} />
-        </IconTile>
-      </div>
+      {canReorder && (
+        <>
+          {/* Desktop: drag handle */}
+          {draggable && (
+            <span
+              draggable="true"
+              onDragStart={onDragStart}
+              onDragEnd={onDragEnd}
+              aria-label="Drag to reorder unit"
+              title="Drag to reorder"
+              className="absolute right-2 top-2 z-10 hidden select-none rounded-md border border-slate-200 bg-white p-1.5 text-slate-400 shadow-sm transition hover:border-primary/40 hover:text-primary active:cursor-grabbing md:block md:cursor-grab"
+            >
+              <GripVertical size={15} className="pointer-events-none" />
+            </span>
+          )}
 
-      <span className="mt-3 block text-caption text-slate-400">
-        {unit.code}
-      </span>
+          {/* Mobile: up/down buttons — touch drag isn't reliable, so this
+              is the primary reorder control on narrow screens. */}
+          <div
+            className="absolute right-2 top-2 z-10 flex gap-1 md:hidden"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <button
+              type="button"
+              disabled={isFirst || reorderPending}
+              onClick={onMoveUp}
+              aria-label="Move unit up"
+              className="rounded-md border border-slate-200 bg-white p-1.5 text-slate-400 shadow-sm transition hover:border-primary/40 hover:text-primary disabled:pointer-events-none disabled:opacity-30"
+            >
+              <ArrowUp size={14} />
+            </button>
+            <button
+              type="button"
+              disabled={isLast || reorderPending}
+              onClick={onMoveDown}
+              aria-label="Move unit down"
+              className="rounded-md border border-slate-200 bg-white p-1.5 text-slate-400 shadow-sm transition hover:border-primary/40 hover:text-primary disabled:pointer-events-none disabled:opacity-30"
+            >
+              <ArrowDown size={14} />
+            </button>
+          </div>
+        </>
+      )}
 
-      <strong className="my-1 block text-card-title text-slate-800">
-        {unit.name}
-      </strong>
+      <button type="button" onClick={onOpen} className="block w-full text-left">
+        <div className="flex aspect-[16/9] w-full items-center justify-center rounded-md bg-slate-50">
+          <IconTile tone={getUnitTone(unit)}>
+            <BookOpen size={24} />
+          </IconTile>
+        </div>
 
-      <span className="block text-caption text-slate-400">
-        {unit.totalSection} sections · {unit.totalTopic} topics
-      </span>
+        <span className="mt-3 block text-body-sm text-slate-400">
+          {unit.code}
+        </span>
 
-      <div className="mt-3 flex items-center justify-between">
-        <Badge tone={getStatusTone(unit.status)}>{unit.status}</Badge>
+        <strong className="my-1 block text-card-title text-slate-800">
+          {unit.name}
+        </strong>
 
-        <Plus size={16} className="text-slate-300" />
-      </div>
-    </button>
+        <span className="block text-body-sm text-slate-400">
+          {unit.totalSection} sections · {unit.totalTopic} topics
+        </span>
+
+        <div className="mt-3 flex items-center justify-between">
+          <Badge tone={getStatusTone(unit.status)}>{unit.status}</Badge>
+
+          <ArrowRight size={16} className="text-slate-300" aria-hidden="true" />
+        </div>
+      </button>
+    </div>
   );
 }
 
@@ -573,10 +766,6 @@ function UnitIcon() {
     </IconTile>
   );
 }
-
-/* =========================================================
-   HELPERS
-========================================================= */
 
 function getStatusTone(status: ContentUnit["status"]): "green" | "gray" {
   return status === "PUBLISHED" ? "green" : "gray";

@@ -4,6 +4,7 @@ import e_learning.server.common.exception.AppException;
 import e_learning.server.common.exception.ErrorCode;
 import e_learning.server.content.common.enums.ContentStatus;
 import e_learning.server.content.common.dto.ReorderRequest;
+import e_learning.server.content.common.dto.UpdateStatusRequest;
 import e_learning.server.content.section.repository.SectionRepository;
 import e_learning.server.content.topic.repository.TopicRepository;
 import e_learning.server.content.unit.dto.CreateUnitRequest;
@@ -116,6 +117,12 @@ public class UnitService {
         public UnitResponse archiveUnit(Long id) {
                 Unit unit = findUnitById(id);
                 unit.setStatus(ContentStatus.ARCHIVED);
+                return toResponse(unitRepository.save(unit));
+        }
+
+        public UnitResponse updateStatus(Long id, UpdateStatusRequest request) {
+                Unit unit = findUnitById(id);
+                unit.setStatus(request.status());
                 return toResponse(unitRepository.save(unit));
         }
 

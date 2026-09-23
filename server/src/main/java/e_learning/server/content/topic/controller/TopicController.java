@@ -6,6 +6,7 @@ import e_learning.server.content.topic.dto.TopicResponse;
 import e_learning.server.content.topic.dto.UpdateTopicRequest;
 import e_learning.server.content.topic.service.TopicService;
 import e_learning.server.content.common.dto.ReorderRequest;
+import e_learning.server.content.common.dto.UpdateStatusRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -41,6 +42,14 @@ public class TopicController {
     @PatchMapping("/{id}/archive")
     public ResponseEntity<ApiResponse<TopicResponse>> archive(@PathVariable Long id) {
         return ResponseEntity.ok(ApiResponse.success("Topic archived successfully", topicService.archive(id)));
+    }
+
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<ApiResponse<TopicResponse>> updateStatus(
+            @PathVariable Long id,
+            @Valid @RequestBody UpdateStatusRequest request
+    ) {
+        return ResponseEntity.ok(ApiResponse.success("Topic status updated successfully", topicService.updateStatus(id, request)));
     }
 
     @PutMapping("/order")

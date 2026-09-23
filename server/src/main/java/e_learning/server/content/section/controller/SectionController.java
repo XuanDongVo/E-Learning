@@ -6,6 +6,7 @@ import e_learning.server.content.section.dto.SectionResponse;
 import e_learning.server.content.section.dto.UpdateSectionRequest;
 import e_learning.server.content.section.service.SectionService;
 import e_learning.server.content.common.dto.ReorderRequest;
+import e_learning.server.content.common.dto.UpdateStatusRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -58,6 +59,14 @@ public class SectionController {
     @PatchMapping("/{id}/archive")
     public ResponseEntity<ApiResponse<SectionResponse>> archive(@PathVariable Long id) {
         return ResponseEntity.ok(ApiResponse.success("Section archived successfully", sectionService.archiveSection(id)));
+    }
+
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<ApiResponse<SectionResponse>> updateStatus(
+            @PathVariable Long id,
+            @Valid @RequestBody UpdateStatusRequest request
+    ) {
+        return ResponseEntity.ok(ApiResponse.success("Section status updated successfully", sectionService.updateStatus(id, request)));
     }
 
     @PutMapping("/order")

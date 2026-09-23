@@ -6,6 +6,7 @@ import e_learning.server.content.unit.dto.UnitResponse;
 import e_learning.server.content.unit.dto.UpdateUnitRequest;
 import e_learning.server.content.unit.service.UnitService;
 import e_learning.server.content.common.dto.ReorderRequest;
+import e_learning.server.content.common.dto.UpdateStatusRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -79,6 +80,14 @@ public class UnitController {
         @PatchMapping("/{id}/archive")
         public ResponseEntity<ApiResponse<UnitResponse>> archive(@PathVariable Long id) {
                 return ResponseEntity.ok(ApiResponse.success("Unit archived successfully", unitService.archiveUnit(id)));
+        }
+
+        @PatchMapping("/{id}/status")
+        public ResponseEntity<ApiResponse<UnitResponse>> updateStatus(
+                @PathVariable Long id,
+                @Valid @RequestBody UpdateStatusRequest request
+        ) {
+                return ResponseEntity.ok(ApiResponse.success("Unit status updated successfully", unitService.updateStatus(id, request)));
         }
 
         @PutMapping("/order")

@@ -4,6 +4,7 @@ import e_learning.server.common.exception.AppException;
 import e_learning.server.common.exception.ErrorCode;
 import e_learning.server.content.common.enums.ContentStatus;
 import e_learning.server.content.common.dto.ReorderRequest;
+import e_learning.server.content.common.dto.UpdateStatusRequest;
 import e_learning.server.content.section.dto.CreateSectionRequest;
 import e_learning.server.content.section.dto.SectionResponse;
 import e_learning.server.content.section.dto.UpdateSectionRequest;
@@ -98,6 +99,12 @@ public class SectionService {
     public SectionResponse archiveSection(Long id) {
         Section section = findSectionById(id);
         section.setStatus(ContentStatus.ARCHIVED);
+        return toResponse(sectionRepository.save(section));
+    }
+
+    public SectionResponse updateStatus(Long id, UpdateStatusRequest request) {
+        Section section = findSectionById(id);
+        section.setStatus(request.status());
         return toResponse(sectionRepository.save(section));
     }
 

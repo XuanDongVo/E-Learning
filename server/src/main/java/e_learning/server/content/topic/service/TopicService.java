@@ -4,6 +4,7 @@ import e_learning.server.common.exception.AppException;
 import e_learning.server.common.exception.ErrorCode;
 import e_learning.server.content.common.enums.ContentStatus;
 import e_learning.server.content.common.dto.ReorderRequest;
+import e_learning.server.content.common.dto.UpdateStatusRequest;
 import e_learning.server.content.section.entity.Section;
 import e_learning.server.content.section.repository.SectionRepository;
 import e_learning.server.content.topic.dto.CreateTopicRequest;
@@ -55,6 +56,12 @@ public class TopicService {
 
     public TopicResponse archive(Long id) {
         Topic topic = find(id); topic.setStatus(ContentStatus.ARCHIVED); return toResponse(topicRepository.save(topic));
+    }
+
+    public TopicResponse updateStatus(Long id, UpdateStatusRequest request) {
+        Topic topic = find(id);
+        topic.setStatus(request.status());
+        return toResponse(topicRepository.save(topic));
     }
 
     public void reorder(Long sectionId, ReorderRequest request) {

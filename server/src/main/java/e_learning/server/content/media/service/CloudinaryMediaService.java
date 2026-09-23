@@ -56,7 +56,7 @@ public class CloudinaryMediaService {
                     (Map<String, Object>) cloudinary
                             .uploader()
                             .upload(
-                                    file.getInputStream(),
+                                    file.getBytes(),
                                     options
                             );
 
@@ -102,7 +102,21 @@ public class CloudinaryMediaService {
         }
     }
 
-    private Integer toInteger(Object value) {
+        public String generatedUrl(String publicId, String resourceType, String format) {
+                if (publicId == null || publicId.isBlank()) {
+                        return null;
+                }
+
+                return cloudinary.url()
+                                .resourceType(resourceType)
+                                .type("authenticated")
+                                .secure(true)
+                                .signed(true)
+                                .format(format)
+                                .generate(publicId);
+        }
+
+        private Integer toInteger(Object value) {
 
         if (value instanceof Number number) {
             return number.intValue();

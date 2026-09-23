@@ -11,7 +11,7 @@ public record UnitResponse(
         String code,
         String name,
         String description,
-        Long coverMediaId,
+        String coverUrl,
         Integer displayOrder,
         Integer totalSection,
         Integer totalTopic,
@@ -24,7 +24,8 @@ public record UnitResponse(
     public static UnitResponse from(
             Unit unit,
             Integer totalSection,
-            Integer totalTopic
+            Integer totalTopic,
+            String coverUrl
     ) {
         return new UnitResponse(
                 unit.getId(),
@@ -32,7 +33,7 @@ public record UnitResponse(
                 unit.getCode(),
                 unit.getName(),
                 unit.getDescription(),
-                unit.getCoverMediaId(),
+                coverUrl,
                 unit.getDisplayOrder(),
                 totalSection,
                 totalTopic,

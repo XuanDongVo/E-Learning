@@ -12,6 +12,9 @@ import e_learning.server.content.unit.dto.UnitResponse;
 import e_learning.server.content.unit.dto.UpdateUnitRequest;
 import e_learning.server.content.unit.entity.Unit;
 import e_learning.server.content.unit.repository.UnitRepository;
+import e_learning.server.content.media.enums.MediaStatus;
+import e_learning.server.content.media.repository.MediaRepository;
+import e_learning.server.content.media.service.CloudinaryMediaService;
 import e_learning.server.grades.entity.Grade;
 import e_learning.server.grades.repository.GradeRepository;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +32,8 @@ public class UnitService {
     private final GradeRepository gradeRepository;
     private final SectionRepository sectionRepository;
     private final TopicRepository topicRepository;
+        private final MediaRepository mediaRepository;
+        private final CloudinaryMediaService cloudinaryMediaService;
 
     public UnitResponse createUnit(CreateUnitRequest request) {
         Grade grade = gradeRepository.findById(request.gradeId())
@@ -151,10 +156,20 @@ public class UnitService {
         int totalSection = Math.toIntExact(sectionRepository.countByUnitId(unit.getId()));
         int totalTopic = Math.toIntExact(topicRepository.countBySectionUnitId(unit.getId()));
 
+        String coverUrl = null;
+        if (unit.getCoverMediaId() != null) {
+            coverUrl = mediaRepository.findById(unit.getCoverMediaId())
+                    .filter(media -> media.getStatus() == MediaStatus.READY)
+                    .map(media -> cloudinaryMediaService.generatedUrl(
+                            media.getPublicId(), media.getResourceType(), media.getFormat()))
+                    .orElse(null);
+        }
+
         return UnitResponse.from(
                 unit,
                 totalSection,
-                totalTopic
+                totalTopic,
+                coverUrl
         );
     }
 }

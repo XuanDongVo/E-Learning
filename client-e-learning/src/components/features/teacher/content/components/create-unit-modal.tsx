@@ -51,8 +51,6 @@ export function CreateUnitModal({
   // Reset local validation state each time the modal is opened, and focus the first field.
   useEffect(() => {
     if (!open) return;
-    setTouched({});
-    setAttemptedSubmit(false);
     const id = window.setTimeout(() => firstFieldRef.current?.focus(), 0);
     return () => window.clearTimeout(id);
   }, [open]);

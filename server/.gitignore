@@ -9,6 +9,7 @@ target/
 *.war
 *.ear
 *.log
+!**/src/main/**/resources/*.properties
 
 # Environment & Local Config
 .env
@@ -45,4 +46,6 @@ build/
 # OS / System
 .DS_Store
 Thumbs.db
+
+
 

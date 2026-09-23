@@ -13,6 +13,7 @@ public record MediaResponse(
         Integer width,
         Integer height,
         Integer durationSeconds,
-        MediaStatus status
+        MediaStatus status,
+        String url
 ) {
 }

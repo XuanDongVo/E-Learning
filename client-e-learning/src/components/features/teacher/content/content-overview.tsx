@@ -46,7 +46,6 @@ export function ContentOverview({
   const [formOpen, setFormOpen] = useState(false);
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [coverPreview, setCoverPreview] = useState<string>();
-  const [coverMediaId, setCoverMediaId] = useState<number>();
   const [mediaError, setMediaError] = useState<string>();
 
   const [form, setForm] = useState<CreateUnitRequest>({
@@ -81,10 +80,16 @@ export function ContentOverview({
     enabled: Boolean(selectedGradeId),
   });
 
+  console.log("Units data:", units); // Log the units data for debugging
+
   // Keep local order in sync whenever fresh data arrives (initial load,
   // grade switch, or after a successful reorder/refetch).
   useEffect(() => {
-    setOrderedUnits(units.data ?? []);
+    const timer = window.setTimeout(() => {
+      setOrderedUnits(units.data ?? []);
+    }, 0);
+
+    return () => window.clearTimeout(timer);
   }, [units.data]);
 
   const createUnit = useMutation({
@@ -105,7 +110,6 @@ export function ContentOverview({
 
   const uploadCover = useMutation({
     mutationFn: (file: File) => contentService.uploadMedia(file),
-    onSuccess: (response) => setCoverMediaId(response.data?.id),
     onError: () => setMediaError("Could not upload the cover image."),
   });
 
@@ -208,36 +212,55 @@ export function ContentOverview({
     });
     setCoverFile(null);
     setCoverPreview(undefined);
-    setCoverMediaId(undefined);
     setMediaError(undefined);
 
     setFormOpen(true);
   };
 
-  const submitCreate = () => {
-    if (coverFile && !coverMediaId) {
-      setMediaError("Please wait for the cover image to finish uploading.");
-      return;
-    }
+  const submitCreate = async () => {
+    setMediaError(undefined);
+    let uploadedMediaId: number | undefined;
 
-    createUnit.mutate({
-      ...form,
-      coverMediaId,
-    });
+    try {
+      const uploadedMedia = coverFile
+        ? await uploadCover.mutateAsync(coverFile)
+        : undefined;
+
+      uploadedMediaId = uploadedMedia?.data?.id;
+      await createUnit.mutateAsync({
+        ...form,
+        coverMediaId: uploadedMediaId,
+      });
+    } catch (error) {
+      if (uploadedMediaId) {
+        await contentService.deleteMedia(uploadedMediaId).catch(() => undefined);
+      }
+
+      setMediaError(
+        error instanceof Error
+          ? error.message
+          : "Could not upload the cover image.",
+      );
+    }
   };
 
   const handleCoverChange = (file: File | undefined) => {
     if (!file) return;
+    const maxFileSize = 5 * 1024 * 1024;
+
     if (!file.type.startsWith("image/")) {
       setMediaError("Cover must be an image file.");
       return;
     }
 
+    if (file.size > maxFileSize) {
+      setMediaError("Cover image must be 5 MB or smaller.");
+      return;
+    }
+
     setMediaError(undefined);
     setCoverFile(file);
-    setCoverMediaId(undefined);
     setCoverPreview(URL.createObjectURL(file));
-    uploadCover.mutate(file);
   };
 
   // Drag is only meaningful against the full, unfiltered, server order.
@@ -349,6 +372,7 @@ export function ContentOverview({
       </div>
 
       <CreateUnitModal
+        key={formOpen ? "create-unit-open" : "create-unit-closed"}
         open={formOpen}
         onClose={() => setFormOpen(false)}
         form={form}
@@ -731,10 +755,14 @@ function UnitCard({
       )}
 
       <button type="button" onClick={onOpen} className="block w-full text-left">
-        <div className="flex aspect-[16/9] w-full items-center justify-center rounded-md bg-slate-50">
-          <IconTile tone={getUnitTone(unit)}>
-            <BookOpen size={24} />
-          </IconTile>
+        <div className="flex aspect-[16/9] w-full items-center justify-center overflow-hidden rounded-md bg-slate-50">
+          {unit.coverUrl ? (
+            <img src={unit.coverUrl} alt={`${unit.name} cover`} className="h-full w-full object-cover" />
+          ) : (
+            <IconTile tone={getUnitTone(unit)}>
+              <BookOpen size={24} />
+            </IconTile>
+          )}
         </div>
 
         <span className="mt-3 block text-body-sm text-slate-400">

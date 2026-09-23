@@ -7,6 +7,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -28,6 +29,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<Void>> handleBadCredentials() {
         return ResponseEntity.status(ErrorCode.UNAUTHORIZED.status())
                 .body(ApiResponse.failure(ErrorCode.UNAUTHORIZED.code(), "Invalid email or password"));
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<ApiResponse<Void>> handleMaxUploadSizeExceeded() {
+        return ResponseEntity.badRequest()
+                .body(ApiResponse.failure(ErrorCode.INVALID_REQUEST.code(), "The uploaded file must be 5 MB or smaller"));
     }
 
     @ExceptionHandler(Exception.class)

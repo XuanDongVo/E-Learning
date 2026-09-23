@@ -9,6 +9,7 @@ export const contentService = {
     body.append("mediaType", "IMAGE");
     return requestMultipart<MediaResponse>("/v1/content/media", body);
   },
+  deleteMedia: (mediaId: number) => request<void>(`/v1/content/media/${mediaId}`, { method: "DELETE" }),
   listUnits: (gradeId: number) => request<ContentUnit[]>(`/v1/content/units?gradeId=${gradeId}`),
   getUnit: (id: number) => request<ContentUnit>(`/v1/content/units/${id}`),
   createUnit: (payload: CreateUnitRequest) => request<ContentUnit>("/v1/content/units", { method: "POST", body: JSON.stringify(payload) }),

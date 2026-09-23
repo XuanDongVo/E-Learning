@@ -12,4 +12,5 @@ export interface MediaResponse {
   height?: number;
   durationSeconds?: number;
   status: MediaStatus;
+  url?: string;
 }

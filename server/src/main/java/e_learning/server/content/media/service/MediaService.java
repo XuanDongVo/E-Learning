@@ -240,7 +240,14 @@ public class MediaService {
                 media.getWidth(),
                 media.getHeight(),
                 media.getDurationSeconds(),
-                media.getStatus()
+                media.getStatus(),
+                media.getStatus() == MediaStatus.READY
+                        ? cloudinaryMediaService.generatedUrl(
+                                media.getPublicId(),
+                                media.getResourceType(),
+                                media.getFormat()
+                        )
+                        : null
         );
     }
 

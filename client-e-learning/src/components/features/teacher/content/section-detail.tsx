@@ -1,94 +1,22 @@
-import {
-  MoreHorizontal,
-  Tags,
-} from "lucide-react";
+"use client";
 
-import type { ContentView } from "@/types/content";
-
+import { useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { ArrowDown, ArrowUp, Tags } from "lucide-react";
+import { contentService } from "@/services/content.service";
+import { QUERY_KEYS } from "@/services/query-keys";
+import type { ContentView, CreateTopicRequest } from "@/types/content";
 import { EntityHeader } from "./components/entity-header";
-import { ContentTabs } from "./components/content-tabs";
 import { TableTitle } from "./components/table-title";
 import { Badge } from "./components/badge";
-import { IconTile } from "./components/icon-tile";
-import { contentTopics } from "@/mock/content";
 
-export function SectionDetail({
-  onNavigate,
-}: {
-  onNavigate: (view: ContentView) => void;
-}) {
-  return (
-    <>
-      <EntityHeader
-        title="Grammar"
-        label="Section"
-        icon={<Tags size={21} />}
-        description="Learn and practice key grammar structures."
-        editLabel="Edit Section"
-      />
-
-      <ContentTabs
-        active="Topics"
-        items={["Topics", "Settings"]}
-      />
-
-      <section className="mb-5 overflow-x-auto rounded-[9px] border border-slate-200 bg-white p-3 shadow-[0_5px_18px_rgba(94,134,173,0.04)] sm:p-[18px]">
-        <TableTitle
-          title="Topics"
-          count={contentTopics.length}
-          action="Add Topic"
-          onAction={() => {}}
-        />
-
-        <table className="w-full min-w-[680px] border-collapse text-sm">
-          <thead>
-            <tr>
-              <th className="bg-slate-50 p-2.5 text-left text-sm text-slate-500">#</th>
-              <th className="bg-slate-50 p-2.5 text-left text-sm text-slate-500">Topic name</th>
-              <th className="bg-slate-50 p-2.5 text-left text-sm text-slate-500">Question Banks</th>
-              <th className="bg-slate-50 p-2.5 text-left text-sm text-slate-500">Total questions</th>
-              <th className="bg-slate-50 p-2.5 text-left text-sm text-slate-500">Status</th>
-              <th className="bg-slate-50 p-2.5 text-left text-sm text-slate-500">Actions</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {contentTopics.map((topic, index) => (
-              <tr
-                key={topic.name}
-                onClick={() => onNavigate("topic")}
-              >
-                <td className="border-b border-slate-100 p-2.5 text-slate-400 text-sm">{index + 1}</td>
-
-                <td className="border-b border-slate-100 p-2.5 text-slate-500 text-sm">
-                  <div className="flex items-center gap-2">
-                    <IconTile tone={topic.tone}>
-                      <Tags size={15} />
-                    </IconTile>
-
-                    <b>{topic.name}</b>
-                  </div>
-                </td>
-
-                <td className="border-b border-slate-100 p-2.5 text-slate-500 text-sm">
-                  {topic.banks}{" "}
-                  {topic.banks === 1 ? "bank" : "banks"}
-                </td>
-
-                <td className="border-b border-slate-100 p-2.5 text-slate-500 text-sm">{topic.questions}</td>
-
-                <td className="border-b border-slate-100 p-2.5 text-slate-500 text-sm">
-                  <Badge>Active</Badge>
-                </td>
-
-                <td className="border-b border-slate-100 p-2.5 text-slate-500 text-sm">
-                  <MoreHorizontal size={16} />
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </section>
-    </>
-  );
+export function SectionDetail({ sectionId, onNavigate }: { sectionId: number; onNavigate: (view: ContentView, id?: number) => void }) {
+  const client = useQueryClient(); const [formOpen, setFormOpen] = useState(false); const [name, setName] = useState(""); const [description, setDescription] = useState("");
+  const section = useQuery({ queryKey: QUERY_KEYS.contentSection(sectionId), queryFn: async () => (await contentService.getSection(sectionId)).data });
+  const topics = useQuery({ queryKey: QUERY_KEYS.contentTopics(sectionId), queryFn: async () => (await contentService.listTopics(sectionId)).data });
+  const create = useMutation({ mutationFn: contentService.createTopic, onSuccess: () => { client.invalidateQueries({ queryKey: QUERY_KEYS.contentTopics(sectionId) }); setFormOpen(false); setName(""); setDescription(""); } });
+  const archive = useMutation({ mutationFn: contentService.archiveTopic, onSuccess: () => client.invalidateQueries({ queryKey: QUERY_KEYS.contentTopics(sectionId) }) });
+  if (section.isLoading) return <p className="text-sm text-slate-400">Loading section...</p>;
+  if (section.isError || !section.data) return <p className="rounded bg-rose-50 p-4 text-sm text-rose-600">Could not load section.</p>;
+  return <><EntityHeader title={section.data.name} label="Section" description={section.data.description ?? "Organize topics in this section."} icon={<Tags size={21} />} editLabel="Edit Section" /><section className="rounded-lg border border-slate-200 bg-white p-4"><TableTitle title="Topics" count={topics.data?.length ?? 0} action="Add Topic" onAction={() => setFormOpen(true)} />{formOpen && <form className="mb-4 flex flex-wrap gap-2 rounded bg-primary-light p-3" onSubmit={(event) => { event.preventDefault(); const payload: CreateTopicRequest = { sectionId, name, description }; create.mutate(payload); }}><input required autoFocus placeholder="Topic name" value={name} onChange={(event) => setName(event.target.value)} className="min-w-[180px] flex-1 rounded border px-2 py-2 text-sm" /><input placeholder="Description" value={description} onChange={(event) => setDescription(event.target.value)} className="min-w-[220px] flex-1 rounded border px-2 py-2 text-sm" /><button disabled={create.isPending} className="rounded bg-primary px-3 py-2 text-sm text-white">{create.isPending ? "Saving..." : "Save"}</button><button type="button" onClick={() => setFormOpen(false)} className="rounded border bg-white px-3 py-2 text-sm">Cancel</button></form>}<div className="overflow-x-auto"><table className="w-full min-w-[680px] text-sm"><thead><tr className="bg-slate-50 text-left text-slate-500"><th className="p-2.5">#</th><th className="p-2.5">Topic</th><th className="p-2.5">Question banks</th><th className="p-2.5">Status</th><th className="p-2.5">Actions</th></tr></thead><tbody>{topics.data?.map((topic, index) => <tr key={topic.id} className="border-b border-slate-100"><td className="p-2.5 text-slate-400">{index + 1}</td><td className="p-2.5"><button className="font-semibold hover:text-primary" onClick={() => onNavigate("topic", topic.id)}>{topic.name}</button></td><td className="p-2.5 text-slate-500">{topic.totalQuestionBank}</td><td className="p-2.5"><Badge>{topic.status}</Badge></td><td className="p-2.5"><div className="flex gap-1"><button disabled={index === 0} aria-label="Move up" className="rounded border p-1 disabled:opacity-30"><ArrowUp size={14} /></button><button disabled={index === (topics.data?.length ?? 0) - 1} aria-label="Move down" className="rounded border p-1 disabled:opacity-30"><ArrowDown size={14} /></button><button onClick={() => archive.mutate(topic.id)} className="rounded border px-2 py-1 text-xs text-rose-500">Archive</button></div></td></tr>)}</tbody></table></div></section></>;
 }

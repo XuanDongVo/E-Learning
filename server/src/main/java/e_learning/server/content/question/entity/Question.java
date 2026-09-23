@@ -3,7 +3,7 @@ package e_learning.server.content.question.entity;
 import e_learning.server.content.common.enums.ContentStatus;
 import e_learning.server.content.common.enums.Difficulty;
 import e_learning.server.content.common.enums.QuestionType;
-import e_learning.server.content.questionbank.entity.QuestionBank;
+import e_learning.server.content.questionBank.entity.QuestionBank;
 import jakarta.persistence.*;
 import lombok.*;
 

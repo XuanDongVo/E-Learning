@@ -8,5 +8,14 @@ import java.util.List;
 
 public interface SectionRepository extends JpaRepository<Section, Long> {
     List<Section> findByUnitIdAndStatusOrderByDisplayOrderAsc(Long unitId, ContentStatus status);
+
     boolean existsByUnitIdAndNameIgnoreCase(Long unitId, String name);
+
+    boolean existsByUnitIdAndNameIgnoreCaseAndIdNot(Long unitId, String name, Long id);
+
+    List<Section> findAllByUnitIdOrderByDisplayOrderAsc(Long unitId);
+
+    long countByUnitId(Long unitId);
+
+    List<Section> findAllByUnitIdAndStatusNotOrderByDisplayOrderAsc(Long unitId, ContentStatus status);
 }

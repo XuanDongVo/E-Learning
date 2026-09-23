@@ -19,3 +19,17 @@ export async function request<T>(path: string, init?: RequestInit): Promise<ApiR
 
   return body;
 }
+
+export async function requestMultipart<T>(path: string, body: FormData): Promise<ApiResponse<T>> {
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    method: "POST",
+    credentials: "include",
+    body,
+  });
+
+  const result = (await response.json()) as ApiResponse<T>;
+  if (!response.ok || !result.success) {
+    throw new Error(result.message || "Request failed");
+  }
+  return result;
+}

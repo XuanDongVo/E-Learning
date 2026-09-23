@@ -5,6 +5,12 @@ export const QUERY_KEYS = {
   assignmentDetail: (id: string) => ["assignmentDetail", id] as const,
   units: ["units"] as const,
   unitDetail: (id: string) => ["unitDetail", id] as const,
+  contentUnits: (gradeId: number) => ["content", "units", gradeId] as const,
+  contentUnit: (id: number) => ["content", "unit", id] as const,
+  contentSections: (unitId: number) => ["content", "sections", unitId] as const,
+  contentSection: (id: number) => ["content", "section", id] as const,
+  contentTopics: (sectionId: number) => ["content", "topics", sectionId] as const,
+  contentTopic: (id: number) => ["content", "topic", id] as const,
   leaderboard: ["leaderboard"] as const,
   recentResults: ["recentResults"] as const,
 };

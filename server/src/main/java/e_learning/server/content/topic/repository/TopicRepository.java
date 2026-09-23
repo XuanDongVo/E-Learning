@@ -8,5 +8,17 @@ import java.util.List;
 
 public interface TopicRepository extends JpaRepository<Topic, Long> {
     List<Topic> findBySectionIdAndStatusOrderByDisplayOrderAsc(Long sectionId, ContentStatus status);
+
     boolean existsBySectionIdAndNameIgnoreCase(Long sectionId, String name);
+
+    boolean existsBySectionIdAndNameIgnoreCaseAndIdNot(Long sectionId, String name, Long id);
+
+    List<Topic> findAllBySectionIdOrderByDisplayOrderAsc(Long sectionId);
+
+    long countBySectionUnitId(Long unitId);
+
+    long countBySectionId(Long sectionId);
+
+    List<Topic> findAllBySectionIdAndStatusNotOrderByDisplayOrderAsc(Long sectionId, ContentStatus status);
+
 }

@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Tags } from "lucide-react";
+import { ArrowRight, FileQuestion, Tags } from "lucide-react";
+import { contentQuestionBanks } from "@/mock/content";
 import { contentService } from "@/services/content.service";
 import { QUERY_KEYS } from "@/services/query-keys";
 import type {
@@ -15,6 +16,7 @@ import { ContentEditor } from "./components/content-editor";
 
 export function TopicDetail({
   topicId,
+  onNavigate,
 }: {
   topicId: number;
   onNavigate: (view: ContentView, id?: number) => void;
@@ -78,17 +80,45 @@ export function TopicDetail({
           error={update.isError ? "Could not save changes." : undefined}
         />
       )}
-      <section className="mt-5 rounded-xl border border-dashed border-slate-300 bg-white p-8 text-center shadow-[0_5px_18px_rgba(94,134,173,0.04)]">
-        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-primary">
-          Question banks
-        </p>
-        <h2 className="mt-2 text-lg font-bold text-slate-800">
-          Build question banks for this topic
-        </h2>
-        <p className="mt-2 text-sm text-slate-400">
-          Question bank management willTopics appear here when its server module is
-          connected.
-        </p>
+      <section className="mt-5 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-[0_5px_18px_rgba(94,134,173,0.04)]">
+        <div className="flex items-center justify-between border-b border-slate-100 px-4 py-4 sm:px-5">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-primary">
+              Question banks
+            </p>
+            <h2 className="mt-1 text-lg font-bold text-slate-800">
+              Banks for this topic
+            </h2>
+          </div>
+          <span className="text-sm text-slate-400">
+            {contentQuestionBanks.length} banks
+          </span>
+        </div>
+
+        <ul className="divide-y divide-slate-100">
+          {contentQuestionBanks.map((bank, index) => (
+            <li key={bank.name}>
+              <button
+                type="button"
+                onClick={() => onNavigate("bank", index + 1)}
+                className="flex w-full items-center gap-3 px-4 py-4 text-left transition hover:bg-slate-50 sm:px-5"
+              >
+                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-primary-light text-primary">
+                  <FileQuestion size={17} />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-sm font-semibold text-slate-800">
+                    {bank.name}
+                  </span>
+                  <span className="mt-1 block text-xs text-slate-400">
+                    {bank.questions} questions · {bank.difficulty} · {bank.type}
+                  </span>
+                </span>
+                <ArrowRight size={16} className="shrink-0 text-slate-300" />
+              </button>
+            </li>
+          ))}
+        </ul>
       </section>
     </>
   );

@@ -1,11 +1,3 @@
-import type {
-  ContentQuestion,
-  ContentQuestionBank,
-  ContentSection,
-  ContentTopic,
-  ContentUnit,
-} from "@/types/content";
-
 export const contentGrades = [
   "Grade 6",
   "Grade 7",
@@ -14,7 +6,7 @@ export const contentGrades = [
   "Grade 10",
 ];
 
-export const contentUnits: ContentUnit[] = [
+export const contentUnits = [
   {
     id: 1,
     name: "My School",
@@ -63,7 +55,7 @@ export const contentUnits: ContentUnit[] = [
   },
 ];
 
-export const contentSections: ContentSection[] = [
+export const contentSections = [
   { name: "Grammar", topics: 3, tone: "violet" },
   { name: "Vocabulary", topics: 3, tone: "mint" },
   { name: "Reading", topics: 2, tone: "blue" },
@@ -72,19 +64,19 @@ export const contentSections: ContentSection[] = [
   { name: "Writing", topics: 1, tone: "pink" },
 ];
 
-export const contentTopics: ContentTopic[] = [
+export const contentTopics = [
   { name: "Past Simple", banks: 3, questions: 200, tone: "pink" },
   { name: "Comparative", banks: 1, questions: 100, tone: "blue" },
   { name: "Superlative", banks: 1, questions: 100, tone: "mint" },
 ];
 
-export const contentQuestionBanks: ContentQuestionBank[] = [
+export const contentQuestionBanks = [
   { name: "Past Simple - Basic", type: "Mixed", questions: 100, difficulty: "Easy" },
   { name: "Past Simple - Review", type: "Mixed", questions: 100, difficulty: "Medium" },
   { name: "Past Simple - Advanced", type: "Mixed", questions: 100, difficulty: "Hard" },
 ];
 
-export const contentQuestions: ContentQuestion[] = [
+export const contentQuestions = [
   { text: "She ____ to school yesterday.", type: "Multiple Choice", difficulty: "Easy" },
   { text: "I ____ my homework last night.", type: "Multiple Choice", difficulty: "Easy" },
   { text: "They ____ to the beach.", type: "Fill in the Blank", difficulty: "Medium" },

@@ -67,3 +67,15 @@ Desktop.ini
 # Vercel
 .vercel
 
+
+# Spring Boot / Maven
+HELP.md
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+*.class
+*.jar
+*.war
+*.ear
+*.log

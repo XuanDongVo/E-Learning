@@ -8,6 +8,8 @@ import { TopicDetail } from "./topic-detail";
 import { QuestionBankDetail } from "./question-bank-detail";
 import { QuestionEditor } from "./question-editor";
 import type { ContentView } from "@/types/content";
+import { BulkCreateQuestions } from "./components/bulk-create-question";
+import { ImportQuestions } from "./components/import-question";
 
 interface ContentLocation {
   view: ContentView;
@@ -46,9 +48,18 @@ export function ContentPage() {
           <TopicDetail topicId={location.id} onNavigate={navigate} />
         ) : null;
       case "bank":
-        return <QuestionBankDetail onNavigate={(view) => navigate(view)} />;
+        return (
+          <QuestionBankDetail
+            bankId={location.id}
+            onNavigate={(view) => navigate(view)}
+          />
+        );
       case "question":
         return <QuestionEditor onNavigate={(view) => navigate(view)} />;
+      case "bulk-create":
+        return <BulkCreateQuestions onNavigate={(view) => navigate(view)} />;
+      case "import":
+        return <ImportQuestions onNavigate={(view) => navigate(view)} />;
     }
   })();
   return (

@@ -97,6 +97,11 @@ const selectClassName =
 const sectionClassName =
   "rounded-xl border border-[var(--border-color)] bg-[var(--card-bg)] p-4 shadow-[0_5px_18px_rgba(94,134,173,0.04)] sm:p-5";
 
+// NOTE: this component is now the single-question detail/edit surface,
+// opened from a row in QuestionBankDetail's table ("Question #N → Edit").
+// Creating new questions in bulk happens in BulkCreateQuestions instead —
+// see QuestionBankDetail's "Add questions" menu. Logic below is unchanged
+// from the original; only header copy reflects the new role.
 export function QuestionEditor({
   onNavigate,
 }: {
@@ -233,7 +238,8 @@ export function QuestionEditor({
     setIsSaving(true);
 
     // TODO:
-    // Build request payload and call backend API here.
+    // Build request payload and call PUT /api/v1/questions/{questionId}
+    // here — editing a single existing question, not bulk authoring.
 
     await new Promise((resolve) => setTimeout(resolve, 500));
 
@@ -247,7 +253,7 @@ export function QuestionEditor({
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
           <div className="mb-2 flex flex-wrap items-center gap-2 text-body-sm font-medium text-[var(--neutral-subtle)]">
-            <span>Question Editor</span>
+            <span>Past Simple - Basic</span>
 
             <Badge tone="blue">{selectedTypeLabel}</Badge>
           </div>
@@ -257,7 +263,7 @@ export function QuestionEditor({
           </h1>
 
           <p className="mt-1 text-sm text-[var(--neutral-muted)]">
-            Create and configure the question for your question bank.
+            Update this question's content, answer and settings.
           </p>
         </div>
 
@@ -851,7 +857,7 @@ export function QuestionEditor({
               ) : (
                 <>
                   <Check size={15} />
-                  Save question
+                  Save changes
                 </>
               )}
             </button>

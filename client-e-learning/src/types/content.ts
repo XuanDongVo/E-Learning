@@ -6,7 +6,9 @@ export type ContentView =
   | "section"
   | "topic"
   | "bank"
-  | "question";
+  | "question"
+  | "bulk-create"
+  | "import";
 export type ContentLayout = "grid" | "list";
 export type ContentTone =
   | "mint"

@@ -9,67 +9,23 @@ import {
   Plus,
   Trash2,
   X,
-  Zap,
 } from "lucide-react";
 
-import type { ContentView } from "@/types/content";
+import {
+  questionDifficultyOptions,
+  questionTypeOptions,
+  type ContentDifficulty,
+  type ContentView,
+  type QuestionOptionDraft,
+  type QuestionType,
+} from "@/types/content";
 
 import { Badge } from "./components/badge";
 
-type QuestionType =
-  | "MULTIPLE_CHOICE"
-  | "TRUE_FALSE"
-  | "FILL_IN_BLANK"
-  | "TYPE_ANSWER";
+const questionTypes = questionTypeOptions;
+const difficultyOptions = questionDifficultyOptions;
 
-type Difficulty = "EASY" | "MEDIUM" | "HARD";
-
-type Option = {
-  id: string;
-  text: string;
-};
-
-const questionTypes: {
-  value: QuestionType;
-  label: string;
-}[] = [
-  {
-    value: "MULTIPLE_CHOICE",
-    label: "Multiple Choice",
-  },
-  {
-    value: "TRUE_FALSE",
-    label: "True / False",
-  },
-  {
-    value: "FILL_IN_BLANK",
-    label: "Fill in the Blank",
-  },
-  {
-    value: "TYPE_ANSWER",
-    label: "Type Answer",
-  },
-];
-
-const difficultyOptions: {
-  value: Difficulty;
-  label: string;
-}[] = [
-  {
-    value: "EASY",
-    label: "Easy",
-  },
-  {
-    value: "MEDIUM",
-    label: "Medium",
-  },
-  {
-    value: "HARD",
-    label: "Hard",
-  },
-];
-
-const initialOptions: Option[] = [
+const initialOptions: QuestionOptionDraft[] = [
   {
     id: "A",
     text: "go",
@@ -107,15 +63,15 @@ export function QuestionEditor({
 }: {
   onNavigate: (view: ContentView) => void;
 }) {
-  const [type, setType] = useState<QuestionType>("MULTIPLE_CHOICE");
-  const [difficulty, setDifficulty] = useState<Difficulty>("EASY");
+  const [type, setType] = useState<QuestionType>("SINGLE_CHOICE");
+  const [difficulty, setDifficulty] = useState<ContentDifficulty>("EASY");
 
   const [questionText, setQuestionText] = useState(
     "She ____ to school yesterday.",
   );
 
-  const [options, setOptions] = useState<Option[]>(initialOptions);
-  const [correctOption, setCorrectOption] = useState("B");
+  const [options, setOptions] = useState<QuestionOptionDraft[]>(initialOptions);
+  const [correctOptionIds, setCorrectOptionIds] = useState<string[]>(["B"]);
 
   const [trueFalseAnswer, setTrueFalseAnswer] = useState<"TRUE" | "FALSE">(
     "TRUE",
@@ -175,21 +131,24 @@ export function QuestionEditor({
       id: String.fromCharCode(65 + index),
     }));
 
-    const removedCorrectOption = correctOption === id;
+    const remainingCorrectOptionIds = correctOptionIds.filter(
+      (optionId) => optionId !== id,
+    );
 
     setOptions(normalized);
 
-    if (removedCorrectOption) {
-      setCorrectOption(normalized[0]?.id ?? "");
-    } else {
-      const oldCorrectIndex = remaining.findIndex(
-        (option) => option.id === correctOption,
-      );
-
-      if (oldCorrectIndex !== -1) {
-        setCorrectOption(String.fromCharCode(65 + oldCorrectIndex));
-      }
-    }
+    setCorrectOptionIds(
+      remainingCorrectOptionIds
+        .map((optionId) => {
+          const oldCorrectIndex = remaining.findIndex(
+            (option) => option.id === optionId,
+          );
+          return oldCorrectIndex === -1
+            ? ""
+            : String.fromCharCode(65 + oldCorrectIndex);
+        })
+        .filter(Boolean),
+    );
   };
 
   const addAcceptedAnswer = () => {
@@ -217,8 +176,8 @@ export function QuestionEditor({
   const handleTypeChange = (nextType: QuestionType) => {
     setType(nextType);
 
-    if (nextType === "MULTIPLE_CHOICE") {
-      setCorrectOption(options[0]?.id ?? "A");
+    if (nextType === "SINGLE_CHOICE" || nextType === "MULTIPLE_CHOICE") {
+      setCorrectOptionIds(options[0]?.id ? [options[0].id] : []);
     }
 
     if (nextType === "TRUE_FALSE") {
@@ -263,7 +222,7 @@ export function QuestionEditor({
           </h1>
 
           <p className="mt-1 text-sm text-[var(--neutral-muted)]">
-            Update this question's content, answer and settings.
+            Update this question&apos;s content, answer and settings.
           </p>
         </div>
 
@@ -344,9 +303,9 @@ export function QuestionEditor({
                 id="difficulty"
                 className={selectClassName}
                 value={difficulty}
-                onChange={(event) =>
-                  setDifficulty(event.target.value as Difficulty)
-                }
+                  onChange={(event) =>
+                    setDifficulty(event.target.value as ContentDifficulty)
+                  }
               >
                 {difficultyOptions.map((item) => (
                   <option key={item.value} value={item.value}>
@@ -380,13 +339,15 @@ export function QuestionEditor({
             />
           </div>
 
-          {/* Multiple Choice */}
-          {type === "MULTIPLE_CHOICE" && (
+          {/* Choice questions */}
+          {(type === "SINGLE_CHOICE" || type === "MULTIPLE_CHOICE") && (
             <div className="mb-6">
               <div className="mb-4 flex items-start justify-between gap-3">
                 <div>
                   <h3 className="text-sm font-bold text-[var(--neutral-dark)]">
-                    Options
+                    {type === "SINGLE_CHOICE"
+                      ? "Options (choose one)"
+                      : "Options (choose one or more)"}
                   </h3>
 
                   <p className="mt-1 text-xs text-[var(--neutral-muted)]">
@@ -412,7 +373,7 @@ export function QuestionEditor({
 
               <div className="space-y-2.5">
                 {options.map((option) => {
-                  const isCorrect = correctOption === option.id;
+                  const isCorrect = correctOptionIds.includes(option.id);
 
                   return (
                     <div
@@ -432,7 +393,15 @@ export function QuestionEditor({
                         type="button"
                         aria-label={`Set option ${option.id} as correct`}
                         aria-pressed={isCorrect}
-                        onClick={() => setCorrectOption(option.id)}
+                        onClick={() => {
+                          setCorrectOptionIds((current) =>
+                            type === "SINGLE_CHOICE"
+                              ? [option.id]
+                              : current.includes(option.id)
+                                ? current.filter((id) => id !== option.id)
+                                : [...current, option.id],
+                          );
+                        }}
                         className={`
                           grid h-5 w-5 shrink-0 place-items-center rounded-full border-2
                           transition-all duration-150

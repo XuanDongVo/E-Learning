@@ -90,15 +90,6 @@ export function ImportQuestions({
   return (
     <>
       <div className="mb-5">
-        {/* <button
-          type="button"
-          onClick={() => onNavigate("bank")}
-          className="inline-flex w-fit items-center gap-1.5 text-body-sm font-medium text-slate-500 transition hover:text-primary"
-        >
-          <ArrowLeft size={15} />
-          Back to Past Simple - Basic
-        </button> */}
-
         <h1 className="mt-3 text-page-title font-bold text-slate-900">Import questions</h1>
         <p className="mt-1 text-body-sm text-slate-400">
           Upload a CSV or Excel file to add many questions at once.

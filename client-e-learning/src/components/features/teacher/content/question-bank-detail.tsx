@@ -1,14 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
 import {
-  ChevronDown,
   FileQuestion,
-  ListChecks,
   MoreHorizontal,
   Plus,
   Search,
-  Sparkles,
   Upload,
 } from "lucide-react";
 
@@ -18,6 +14,7 @@ import { contentQuestionBanks, contentQuestions } from "@/mock/content";
 import { EntityHeader } from "./components/entity-header";
 import { ContentTabs } from "./components/content-tabs";
 import { Badge } from "./components/badge";
+
 export function QuestionBankDetail({
   bankId = 1,
   onNavigate,
@@ -26,26 +23,6 @@ export function QuestionBankDetail({
   onNavigate: (view: ContentView) => void;
 }) {
   const bank = contentQuestionBanks[bankId - 1] ?? contentQuestionBanks[0];
-  const [addMenuOpen, setAddMenuOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!addMenuOpen) return;
-    const handleClick = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setAddMenuOpen(false);
-      }
-    };
-    const handleKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setAddMenuOpen(false);
-    };
-    window.addEventListener("mousedown", handleClick);
-    window.addEventListener("keydown", handleKey);
-    return () => {
-      window.removeEventListener("mousedown", handleClick);
-      window.removeEventListener("keydown", handleKey);
-    };
-  }, [addMenuOpen]);
 
   return (
     <>
@@ -81,10 +58,8 @@ export function QuestionBankDetail({
             <option>All status</option>
           </select>
 
-          {/* Import stands alone — a distinct, self-contained workflow
-              (upload → validate → preview → import), not another way of
-              authoring a single question, so it doesn't belong inside the
-              "Add questions" menu. */}
+          {/* Import stands alone — a distinct upload → validate → preview
+              → import flow, not another way of authoring one question. */}
           <button
             type="button"
             onClick={() => onNavigate("import")}
@@ -94,72 +69,18 @@ export function QuestionBankDetail({
             Import
           </button>
 
-          {/* Add questions — bulk create is the default/primary path;
-              single question is the escape hatch for a one-off item. */}
-          <div className="relative" ref={menuRef}>
-            <button
-              type="button"
-              onClick={() => setAddMenuOpen((open) => !open)}
-              aria-haspopup="menu"
-              aria-expanded={addMenuOpen}
-              className="flex items-center gap-1.5 rounded-md bg-primary px-3 py-2 text-body-sm font-bold text-white transition hover:bg-primary-hover"
-            >
-              <Plus size={14} />
-              Add questions
-              <ChevronDown size={14} className={`transition-transform ${addMenuOpen ? "rotate-180" : ""}`} />
-            </button>
-
-            {addMenuOpen && (
-              <div
-                role="menu"
-                className="absolute right-0 z-20 mt-2 w-64 rounded-lg border border-slate-200 bg-white p-1.5 shadow-[0_12px_30px_rgba(15,23,42,0.12)]"
-              >
-                <button
-                  type="button"
-                  role="menuitem"
-                  onClick={() => {
-                    setAddMenuOpen(false);
-                    onNavigate("bulk-create");
-                  }}
-                  className="flex w-full items-start gap-3 rounded-md p-2.5 text-left transition hover:bg-primary-light/50"
-                >
-                  <span className="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-primary-light text-primary">
-                    <Sparkles size={15} />
-                  </span>
-                  <span>
-                    <span className="block text-body-sm font-semibold text-slate-800">
-                      Bulk create
-                    </span>
-                    <span className="block text-xs text-slate-400">
-                      Create multiple questions at once
-                    </span>
-                  </span>
-                </button>
-
-                <button
-                  type="button"
-                  role="menuitem"
-                  onClick={() => {
-                    setAddMenuOpen(false);
-                    onNavigate("question");
-                  }}
-                  className="flex w-full items-start gap-3 rounded-md p-2.5 text-left transition hover:bg-slate-50"
-                >
-                  <span className="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-slate-100 text-slate-500">
-                    <ListChecks size={15} />
-                  </span>
-                  <span>
-                    <span className="block text-body-sm font-semibold text-slate-800">
-                      Single question
-                    </span>
-                    <span className="block text-xs text-slate-400">
-                      Create one detailed item
-                    </span>
-                  </span>
-                </button>
-              </div>
-            )}
-          </div>
+          {/* No dropdown here anymore — there's only one authoring flow
+              now (Create Questions: list + form), so this goes straight
+              there. Editing an existing question reuses the same form,
+              opened from a table row instead. */}
+          <button
+            type="button"
+            onClick={() => onNavigate("bulk-create")}
+            className="flex items-center gap-1.5 rounded-md bg-primary px-3 py-2 text-body-sm font-bold text-white transition hover:bg-primary-hover"
+          >
+            <Plus size={14} />
+            Add question
+          </button>
         </div>
 
         <table className="w-full min-w-[680px] border-collapse text-body-sm">

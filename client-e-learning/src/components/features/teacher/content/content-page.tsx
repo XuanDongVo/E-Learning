@@ -8,7 +8,7 @@ import { TopicDetail } from "./topic-detail";
 import { QuestionBankDetail } from "./question-bank-detail";
 import { QuestionEditor } from "./question-editor";
 import type { ContentView } from "@/types/content";
-import { BulkCreateQuestions } from "./components/bulk-create-question";
+import { BulkQuestionCreator } from "./components/bulk-create-question";
 import { ImportQuestions } from "./components/import-question";
 
 interface ContentLocation {
@@ -57,7 +57,7 @@ export function ContentPage() {
       case "question":
         return <QuestionEditor onNavigate={(view) => navigate(view)} />;
       case "bulk-create":
-        return <BulkCreateQuestions onNavigate={(view) => navigate(view)} />;
+        return <BulkQuestionCreator onNavigate={(view) => navigate(view)} />;
       case "import":
         return <ImportQuestions onNavigate={(view) => navigate(view)} />;
     }

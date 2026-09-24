@@ -454,14 +454,47 @@ Implement:
 
 MVP question types:
 
-- Multiple Choice
-- True / False
-- Fill in the Blank
-- Type Answer
+- `SINGLE_CHOICE`: exactly one correct option.
+- `MULTIPLE_CHOICE`: one or more correct options.
+- `TRUE_FALSE`: exactly one boolean answer, `TRUE` or `FALSE`.
+- `FILL_IN_BLANK`: one or more accepted answers for the blank.
+- `TYPE_ANSWER`: one or more accepted answers for free-text evaluation.
 
-Do not add extra question types unless explicitly requested.
+The canonical enum values are `SINGLE_CHOICE`, `MULTIPLE_CHOICE`,
+`TRUE_FALSE`, `FILL_IN_BLANK`, and `TYPE_ANSWER`. Keep these values aligned
+between the frontend types, backend enum, request validation, database
+constraint, import format, and answer-checking logic.
 
-Question-specific content should use the agreed question data model rather than introducing separate tables for every question type.
+Question-specific content should use the shared question data model rather
+than introducing separate question tables for every type:
+
+- `Question` stores the bank, type, difficulty, prompt, explanation, order,
+  and lifecycle status.
+- `QuestionOption` stores choice options and `is_correct`. It is required for
+  `SINGLE_CHOICE` and `MULTIPLE_CHOICE`, forbidden for text-answer types.
+- `QuestionAnswer` stores accepted text answers and their normalized form. It
+  is required for `FILL_IN_BLANK` and `TYPE_ANSWER`, and should not be used as
+  a second source of truth for choice correctness.
+- `TRUE_FALSE` stores its answer through the answer model using the canonical
+  values `TRUE` or `FALSE`, or an equivalent validated representation. Do not
+  accept arbitrary text for this type.
+
+Validation rules must be type-aware:
+
+- `SINGLE_CHOICE` requires at least two non-empty options and exactly one
+  correct option.
+- `MULTIPLE_CHOICE` requires at least two non-empty options and at least one
+  correct option.
+- `TRUE_FALSE` requires exactly one valid boolean answer and no choice options.
+- `FILL_IN_BLANK` requires a non-empty prompt with a blank marker and at least
+  one accepted answer.
+- `TYPE_ANSWER` requires a non-empty prompt and at least one accepted answer.
+
+The create, update, bulk-create, and import endpoints must apply the same
+validation rules. Reject incompatible fields instead of silently ignoring
+them. Answer evaluation must normalize according to the configured matching
+mode and must never trust a client-provided correctness flag during a student
+attempt.
 
 Content completion gate:
 

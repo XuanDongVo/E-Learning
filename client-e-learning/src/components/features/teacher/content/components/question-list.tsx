@@ -2,8 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import {
-  ArrowDown,
-  ArrowUp,
   Copy,
   MoreVertical,
   Plus,
@@ -21,8 +19,6 @@ export function QuestionList({
   onAddOne,
   onAddMany,
   onDuplicate,
-  onMoveUp,
-  onMoveDown,
   onDelete,
 }: {
   questions: DraftQuestion[];
@@ -31,8 +27,6 @@ export function QuestionList({
   onAddOne: () => void;
   onAddMany: (count: number) => void;
   onDuplicate: (draftId: string) => void;
-  onMoveUp: (draftId: string) => void;
-  onMoveDown: (draftId: string) => void;
   onDelete: (draftId: string) => void;
 }) {
   return (
@@ -100,13 +94,9 @@ export function QuestionList({
               index={index}
               question={question}
               isActive={question.draftId === activeDraftId}
-              isFirst={index === 0}
-              isLast={index === questions.length - 1}
               canDelete={questions.length > 1}
               onSelect={() => onSelect(question.draftId)}
               onDuplicate={() => onDuplicate(question.draftId)}
-              onMoveUp={() => onMoveUp(question.draftId)}
-              onMoveDown={() => onMoveDown(question.draftId)}
               onDelete={() => onDelete(question.draftId)}
             />
           ))}
@@ -120,25 +110,17 @@ function QuestionListItem({
   index,
   question,
   isActive,
-  isFirst,
-  isLast,
   canDelete,
   onSelect,
   onDuplicate,
-  onMoveUp,
-  onMoveDown,
   onDelete,
 }: {
   index: number;
   question: DraftQuestion;
   isActive: boolean;
-  isFirst: boolean;
-  isLast: boolean;
   canDelete: boolean;
   onSelect: () => void;
   onDuplicate: () => void;
-  onMoveUp: () => void;
-  onMoveDown: () => void;
   onDelete: () => void;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -305,26 +287,6 @@ function QuestionListItem({
               onClick={() => {
                 setMenuOpen(false);
                 onDuplicate();
-              }}
-            />
-
-            <MenuItem
-              icon={<ArrowUp size={14} />}
-              label="Move up"
-              disabled={isFirst}
-              onClick={() => {
-                setMenuOpen(false);
-                onMoveUp();
-              }}
-            />
-
-            <MenuItem
-              icon={<ArrowDown size={14} />}
-              label="Move down"
-              disabled={isLast}
-              onClick={() => {
-                setMenuOpen(false);
-                onMoveDown();
               }}
             />
 

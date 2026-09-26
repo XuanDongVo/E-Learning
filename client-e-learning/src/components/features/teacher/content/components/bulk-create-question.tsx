@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowLeft } from "lucide-react";
 
 import type { ContentView, DraftQuestion } from "@/types/content";
 import { QuestionList } from "./question-list";
@@ -78,19 +77,6 @@ export function BulkQuestionCreator({
     setActiveDraftId(copy.draftId);
   };
 
-  const move = (draftId: string, direction: -1 | 1) => {
-    setQuestions((current) => {
-      const index = current.findIndex(
-        (question) => question.draftId === draftId,
-      );
-      const target = index + direction;
-      if (target < 0 || target >= current.length) return current;
-      const next = [...current];
-      [next[index], next[target]] = [next[target], next[index]];
-      return next;
-    });
-  };
-
   const remove = (draftId: string) => {
     setQuestions((current) => {
       if (current.length <= 1) return current;
@@ -106,10 +92,10 @@ export function BulkQuestionCreator({
     });
   };
 
-  const handleSave = async (publish: boolean) => {
+  const handleSave = async () => {
     setIsSaving(true);
     // TODO: POST /api/v1/question-banks/{bankId}/questions/bulk
-    // Body: { questions: questions.map(toApiPayload), status: publish ? "PUBLISHED" : "DRAFT" }
+    // Body: { questions: questions.map(toApiPayload) }
     await new Promise((resolve) => setTimeout(resolve, 500));
     setIsSaving(false);
     onNavigate("bank");
@@ -119,7 +105,7 @@ export function BulkQuestionCreator({
     <>
       <div className="mb-4">
         <h1 className="mt-3 text-page-title font-bold text-slate-900">
-          Create questions
+          Create questions for {bankName}
         </h1>
         <p className="mt-1 text-body-sm text-slate-400">
           Add questions to the list and fill in the details for each one.
@@ -147,8 +133,6 @@ export function BulkQuestionCreator({
             onAddOne={addOne}
             onAddMany={addMany}
             onDuplicate={duplicate}
-            onMoveUp={(draftId) => move(draftId, -1)}
-            onMoveDown={(draftId) => move(draftId, 1)}
             onDelete={remove}
           />
         </div>
@@ -178,8 +162,8 @@ export function BulkQuestionCreator({
         total={questions.length}
         validCount={validCount}
         isSaving={isSaving}
-        onSaveDraft={() => handleSave(false)}
-        onSave={() => handleSave(true)}
+        onSaveDraft={handleSave}
+        onSave={handleSave}
       />
     </>
   );

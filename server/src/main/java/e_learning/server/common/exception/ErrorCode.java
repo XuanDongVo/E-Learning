@@ -31,7 +31,12 @@ public enum ErrorCode {
     SECTION_NOT_FOUND(HttpStatus.NOT_FOUND,"SECTION_NOT_FOUND","Section not found"),
     SECTION_ALREADY_EXISTS(HttpStatus.CONFLICT,"SECTION_ALREADY_EXISTS","A section with this name already exists in this unit"),
     TOPIC_NOT_FOUND(HttpStatus.NOT_FOUND, "TOPIC_NOT_FOUND", "Topic not found"),
-    TOPIC_ALREADY_EXISTS(HttpStatus.CONFLICT, "TOPIC_ALREADY_EXISTS", "A topic with this name already exists in this section");
+    TOPIC_ALREADY_EXISTS(HttpStatus.CONFLICT, "TOPIC_ALREADY_EXISTS", "A topic with this name already exists in this section"),
+
+    // CONTENT - QUESTION BANK & QUESTION
+    QUESTION_BANK_NOT_FOUND(HttpStatus.NOT_FOUND, "QUESTION_BANK_NOT_FOUND", "Question bank not found"),
+    QUESTION_BANK_ALREADY_EXISTS(HttpStatus.CONFLICT, "QUESTION_BANK_ALREADY_EXISTS", "A question bank with this name already exists in this topic"),
+    QUESTION_NOT_FOUND(HttpStatus.NOT_FOUND, "QUESTION_NOT_FOUND", "Question not found");
 
     private final HttpStatus status;
     private final String code;

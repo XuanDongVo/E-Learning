@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "content_question_options", uniqueConstraints = @UniqueConstraint(name = "uk_question_option_order", columnNames = {"question_id", "display_order"}))
+@Table(name = "content_question_options")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -21,8 +21,6 @@ public class QuestionOption {
     private String optionKey;
     @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
-    @Column(name = "display_order", nullable = false)
-    private Integer displayOrder;
     @Column(name = "is_correct", nullable = false)
     private boolean correct;
 }

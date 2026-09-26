@@ -1,6 +1,5 @@
 package e_learning.server.content.question.entity;
 
-import e_learning.server.content.common.enums.ContentStatus;
 import e_learning.server.content.common.enums.Difficulty;
 import e_learning.server.content.common.enums.QuestionType;
 import e_learning.server.content.questionBank.entity.QuestionBank;
@@ -33,11 +32,10 @@ public class Question {
     private String content;
     @Column(columnDefinition = "TEXT")
     private String explanation;
-    @Column(name = "display_order", nullable = false)
-    private Integer displayOrder;
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
-    private ContentStatus status;
+    @Column(name = "is_complete", nullable = false)
+    private boolean complete;
+    @Column(name = "matching_mode", nullable = false, length = 30)
+    private String matchingMode;
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
     @Column(name = "updated_at", nullable = false)
@@ -48,8 +46,7 @@ public class Question {
         LocalDateTime now = LocalDateTime.now();
         createdAt = now;
         updatedAt = now;
-        if (status == null) status = ContentStatus.DRAFT;
-        if (displayOrder == null) displayOrder = 0;
+        if (matchingMode == null) matchingMode = "CASE_INSENSITIVE_TRIM";
     }
 
     @PreUpdate

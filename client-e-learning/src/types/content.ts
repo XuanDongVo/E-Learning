@@ -108,15 +108,75 @@ export interface ContentTopic {
   updatedAt: string;
 }
 export interface ContentQuestionBank {
+  id: number;
+  topicId: number;
+  topicName?: string;
   name: string;
-  type: string;
-  questions: number;
-  difficulty: "Easy" | "Medium" | "Hard";
+  description?: string;
+  displayOrder: number;
+  status: ContentStatus;
+  totalQuestions: number;
+  readyQuestions: number;
+  createdAt?: string;
+  updatedAt?: string;
 }
-export interface ContentQuestion {
-  text: string;
-  type: string;
-  difficulty: "Easy" | "Medium" | "Hard";
+
+export interface QuestionOptionResponse {
+  id: number;
+  content: string;
+  isCorrect: boolean;
+}
+
+export interface QuestionAnswerResponse {
+  id: number;
+  rawValue: string;
+  normalizedValue: string;
+}
+
+export interface QuestionMediaResponse {
+  id: number;
+  mediaId: number;
+  mediaType: string;
+  url: string;
+}
+
+export interface QuestionResponse {
+  id: number;
+  questionBankId: number;
+  type: QuestionType;
+  difficulty: ContentDifficulty;
+  content: string;
+  explanation?: string;
+  complete: boolean;
+  is_complete?: boolean;
+  matchingMode?: string;
+  options: QuestionOptionResponse[];
+  answers: QuestionAnswerResponse[];
+  media: QuestionMediaResponse[];
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface PageResponse<T> {
+  items: T[];
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+  isFirst: boolean;
+  isLast: boolean;
+}
+
+export interface CreateQuestionBankRequest {
+  topicId: number;
+  name: string;
+  description?: string;
+  displayOrder?: number;
+}
+
+export interface UpdateQuestionBankRequest {
+  name: string;
+  description?: string;
 }
 
 export interface CreateUnitRequest {

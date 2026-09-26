@@ -447,10 +447,10 @@ Implement:
 - Create/edit Topic
 - QuestionBank list/detail
 - Create/edit QuestionBank
-- Question list
+- Question list with server-side pagination and search
 - Create/edit Question
-- Question preview
-- Question archive/status handling
+- Question preview for teachers
+- Question completeness handling
 
 MVP question types:
 
@@ -468,37 +468,115 @@ constraint, import format, and answer-checking logic.
 Question-specific content should use the shared question data model rather
 than introducing separate question tables for every type:
 
-- `Question` stores the bank, type, difficulty, prompt, explanation, order,
-  and lifecycle status.
+- `Question` stores the bank, type, difficulty, prompt, optional explanation,
+  `is_complete`, optional question-level `matching_mode`, and timestamps.
+  Question does not have `display_order` or its own lifecycle `status`.
+- Question visibility is all-or-nothing at bank level: a student may only see
+  a question when `QuestionBank.status = PUBLISHED` and `Question.is_complete
+  = true`.
+- `is_complete` is derived by the service layer on every create/update. It is
+  never accepted from the client and is not a second workflow status. Questions
+  may be saved incomplete so teacher work is not lost.
 - `QuestionOption` stores choice options and `is_correct`. It is required for
-  `SINGLE_CHOICE` and `MULTIPLE_CHOICE`, forbidden for text-answer types.
-- `QuestionAnswer` stores accepted text answers and their normalized form. It
-  is required for `FILL_IN_BLANK` and `TYPE_ANSWER`, and should not be used as
-  a second source of truth for choice correctness.
-- `TRUE_FALSE` stores its answer through the answer model using the canonical
-  values `TRUE` or `FALSE`, or an equivalent validated representation. Do not
-  accept arbitrary text for this type.
+  `SINGLE_CHOICE` and `MULTIPLE_CHOICE`, forbidden for `TRUE_FALSE`,
+  `FILL_IN_BLANK`, and `TYPE_ANSWER`. It does not have `status` or
+  `display_order`.
+- `QuestionAnswer` stores accepted answers. Choice questions never use this
+  table. `TRUE_FALSE` stores exactly one answer with raw value `TRUE` or
+  `FALSE`. `FILL_IN_BLANK` and `TYPE_ANSWER` store one or more accepted text
+  answers.
+- Store both the teacher-entered raw answer and its normalized value. Rename
+  these fields to `raw_value` and `normalized_value` if the existing schema
+  still uses `answer_text` and `normalized_answer`.
+- `matching_mode` belongs to `Question`, not to individual answers. MVP uses a
+  fixed mode: trim whitespace and compare case-insensitively. Do not expose it
+  in the teacher UI yet. Accent-insensitive matching is deferred until the
+  product explicitly confirms it for Vietnamese content.
 
 Validation rules must be type-aware:
 
 - `SINGLE_CHOICE` requires at least two non-empty options and exactly one
-  correct option.
+  correct option when complete. Draft options may be empty.
 - `MULTIPLE_CHOICE` requires at least two non-empty options and at least one
-  correct option.
+  correct option when complete. Exact-match grading is required in MVP: all
+  correct options must be selected and no incorrect option may be selected.
+  There is no partial credit in MVP.
 - `TRUE_FALSE` requires exactly one valid boolean answer and no choice options.
-- `FILL_IN_BLANK` requires a non-empty prompt with a blank marker and at least
-  one accepted answer.
+- `FILL_IN_BLANK` supports exactly one blank in MVP. The prompt must contain
+  the literal marker `____` and the question must have at least one accepted
+  answer.
 - `TYPE_ANSWER` requires a non-empty prompt and at least one accepted answer.
+- Question content is limited to 2000 characters. Difficulty is required and
+  defaults to `EASY` in the application layer. Explanation is optional.
+- A question may have multiple image/audio media records. Media must be
+  uploaded successfully and have real server `media_id` values before the
+  question is saved. Video is out of scope for MVP.
 
 The create, update, bulk-create, and import endpoints must apply the same
 validation rules. Reject incompatible fields instead of silently ignoring
-them. Answer evaluation must normalize according to the configured matching
-mode and must never trust a client-provided correctness flag during a student
-attempt.
+them. Updating a question type is allowed, but must run in one transaction,
+delete incompatible child options/answers, and return a warning to the UI.
+There is no optimistic locking in MVP.
+
+Bulk create saves valid rows and returns errors by input index; one invalid
+row must not roll back valid rows. Publishing is only a bank-level operation,
+never a per-question operation.
+
+Import supports CSV and XLSX only. A file may contain mixed question types,
+but MVP import supports only `SINGLE_CHOICE`, `MULTIPLE_CHOICE`, and
+`TRUE_FALSE`. Validate and preview before commit, then import valid rows and
+skip invalid rows with indexed errors. `FILL_IN_BLANK` and `TYPE_ANSWER` are
+not importable in MVP.
+
+Question lists require server-side pagination, type/difficulty/date filters,
+and content search. The UI completeness column must show `Ready` or
+`Incomplete`; do not show a question status column.
+
+Answer evaluation must normalize on the server and must never trust a client
+provided correctness or normalized value.
+
+### Required implementation alignment
+
+Before implementing question services, reconcile the current schema and
+entities with this contract:
+
+- Add `content_questions.is_complete` as a server-derived boolean. Never bind
+  it from create/update request DTOs.
+- Add nullable `content_questions.matching_mode` if the service needs to make
+  the normalization rule explicit; MVP may default it in application code.
+- Remove question `status` and `display_order` from Java entities, DTOs,
+  mappers, repositories, and UI contracts. Keep bank status unchanged.
+- Remove option `status` and `display_order` from entities and contracts.
+- Move answer matching mode off `content_question_answers`. The answer table
+  should store raw and normalized values only (`raw_value`,
+  `normalized_value`), with a compatibility migration if the current columns
+  are already deployed.
+- Update the Flyway migration accordingly. Do not silently edit an already
+  applied migration; add the next migration when V7 has been applied in any
+  environment.
+- Update the question list UI to remove Move up/Move down and replace the
+  hardcoded Active status with Ready/Incomplete completeness.
+- Keep `QuestionOption.is_correct` as the only correctness source for choice
+  questions. Keep `QuestionAnswer` as the source for true/false and text
+  answers.
 
 Content completion gate:
 
-Teacher must be able to create a Unit, Topic, QuestionBank, and Question, reload the page, and retrieve the saved data through the real API.
+Teacher must be able to create a Unit, Topic, QuestionBank, and incomplete or
+complete Question, reload the page, and retrieve the saved data through the
+real API. A published bank must expose only complete questions to students.
+
+### Question attempt snapshot contract
+
+When a student starts an activity, select and snapshot the exact question set
+and question content inside the same transaction. The snapshot must survive
+later bank archive, question edit, or question deletion. Select a random set
+per student at attempt start, not when the teacher creates the Activity.
+
+Randomize options per attempt using a deterministic seed based on
+`attemptId + questionId`, so reloads preserve the same order. MVP grading is
+exact-match with no partial credit. Do not recalculate an existing attempt
+from the current Question or QuestionBank records.
 
 ---
 

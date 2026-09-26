@@ -17,10 +17,8 @@ public class QuestionAnswer {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "question_id", nullable = false)
     private Question question;
-    @Column(name = "answer_text", nullable = false, columnDefinition = "TEXT")
-    private String answerText;
-    @Column(name = "normalized_answer", nullable = false, columnDefinition = "TEXT")
-    private String normalizedAnswer;
-    @Column(name = "matching_mode", nullable = false, length = 30)
-    private String matchingMode;
+    @Column(name = "raw_value", nullable = false, columnDefinition = "TEXT")
+    private String rawValue;
+    @Column(name = "normalized_value", nullable = false, columnDefinition = "TEXT")
+    private String normalizedValue;
 }

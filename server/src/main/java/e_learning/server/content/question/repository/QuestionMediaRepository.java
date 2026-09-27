@@ -23,4 +23,6 @@ public interface QuestionMediaRepository
             Long questionId,
             Long mediaId
     );
+
+    void deleteByQuestionId(Long questionId);
 }

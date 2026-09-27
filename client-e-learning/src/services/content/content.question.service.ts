@@ -1,15 +1,5 @@
 import { request } from "@/services/api.service";
-import type { PageResponse, QuestionResponse } from "@/types/content";
-
-export interface ListQuestionsParams {
-    bankId: number;
-    search?: string;
-    type?: string;
-    difficulty?: string;
-    isComplete?: boolean;
-    page?: number;
-    size?: number;
-}
+import type { CreateQuestionRequest, PageResponse, QuestionResponse, UpdateQuestionRequest, ListQuestionsParams } from "@/types/content";
 
 export const questionService = {
     list: (params: ListQuestionsParams) => {
@@ -23,5 +13,14 @@ export const questionService = {
         query.set("size", String(params.size ?? 10));
         return request<PageResponse<QuestionResponse>>(`/v1/content/questions?${query.toString()}`);
     },
+
     get: (id: number) => request<QuestionResponse>(`/v1/content/questions/${id}`),
+
+    create: (payload: CreateQuestionRequest[]) =>
+        request<QuestionResponse[]>("/v1/content/questions", { method: "POST", body: JSON.stringify(payload) }),
+
+    update: (id: number, payload: UpdateQuestionRequest) =>
+        request<QuestionResponse>(`/v1/content/questions/${id}`, { method: "PUT", body: JSON.stringify(payload) }),
+
+    delete: (id: number) => request<void>(`/v1/content/questions/${id}`, { method: "DELETE" }),
 };

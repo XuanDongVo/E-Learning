@@ -1,8 +1,8 @@
 import { useState } from "react";
-import type { UpdateSectionRequest, UpdateTopicRequest, UpdateUnitRequest } from "@/types/content";
+import type { UpdateQuestionBankRequest, UpdateSectionRequest, UpdateTopicRequest, UpdateUnitRequest } from "@/types/content";
 
-type EditorKind = "unit" | "section" | "topic";
-type EditorPayload = UpdateUnitRequest | UpdateSectionRequest | UpdateTopicRequest;
+type EditorKind = "unit" | "section" | "topic" | "question-bank";
+type EditorPayload = UpdateUnitRequest | UpdateSectionRequest | UpdateTopicRequest | UpdateQuestionBankRequest;
 
 interface ContentEditorProps {
   kind: EditorKind;

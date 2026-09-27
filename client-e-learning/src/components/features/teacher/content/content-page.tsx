@@ -14,6 +14,7 @@ import { ImportQuestions } from "./components/import-question";
 interface ContentLocation {
   view: ContentView;
   id?: number;
+  bankName?: string;
 }
 
 export function ContentPage() {
@@ -21,9 +22,9 @@ export function ContentPage() {
     view: "overview",
   });
   const [, setHistory] = useState<ContentLocation[]>([]);
-  const navigate = (view: ContentView, id?: number) => {
+  const navigate = (view: ContentView, id?: number, bankName?: string) => {
     setHistory((current) => [...current, location]);
-    setLocation({ view, id });
+    setLocation({ view, id, bankName });
   };
   const goBack = () =>
     setHistory((current) => {
@@ -48,18 +49,37 @@ export function ContentPage() {
           <TopicDetail topicId={location.id} onNavigate={navigate} />
         ) : null;
       case "bank":
-        return (
+        return location.id ? (
           <QuestionBankDetail
             bankId={location.id}
-            onNavigate={(view) => navigate(view)}
+            onNavigate={navigate}
+          />
+        ) : null;
+
+      case "question":
+        return (
+          <QuestionEditor
+            questionId={location.id}
+            bankName={location.bankName}
+            onNavigate={navigate}
           />
         );
-      case "question":
-        return <QuestionEditor onNavigate={(view) => navigate(view)} />;
+
       case "bulk-create":
-        return <BulkQuestionCreator onNavigate={(view) => navigate(view)} />;
+        return (
+          <BulkQuestionCreator
+            bankId={location.id}
+            bankName={location.bankName ?? ""}
+            onNavigate={navigate}
+          />
+        );
+
       case "import":
-        return <ImportQuestions onNavigate={(view) => navigate(view)} />;
+        return (
+          <ImportQuestions
+            onNavigate={navigate}
+          />
+        );
     }
   })();
   return (

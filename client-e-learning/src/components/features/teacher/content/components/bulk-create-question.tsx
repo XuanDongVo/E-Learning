@@ -12,10 +12,12 @@ import {
 } from "./question-form";
 
 export function BulkQuestionCreator({
-  bankName = "Past Simple - Basic",
+  bankId,
+  bankName,
   onNavigate,
 }: {
-  bankName?: string;
+  bankId?: number;
+  bankName: string;
   onNavigate: (view: ContentView) => void;
 }) {
   const [questions, setQuestions] = useState<DraftQuestion[]>(() => [
@@ -98,7 +100,7 @@ export function BulkQuestionCreator({
     // Body: { questions: questions.map(toApiPayload) }
     await new Promise((resolve) => setTimeout(resolve, 500));
     setIsSaving(false);
-    onNavigate("bank");
+    // onNavigate("bank");
   };
 
   return (

@@ -11,24 +11,26 @@ import {
   Search,
   Upload,
   X,
-  XCircle,
 } from "lucide-react";
 
-import type { ContentView, QuestionResponse } from "@/types/content";
+import type { ContentView, QuestionResponse, UpdateQuestionBankRequest } from "@/types/content";
 import { contentService } from "@/services/content.service";
 import { QUERY_KEYS } from "@/services/query-keys";
 import { EntityHeader } from "./components/entity-header";
-import { ContentTabs } from "./components/content-tabs";
 import { Badge } from "./components/badge";
+import { ContentEditor } from "./components/content-editor";
+import { questionTypeOptions, questionDifficultyOptions } from "@/types/content";
 
 export function QuestionBankDetail({
-  bankId = 1,
+  bankId,
   onNavigate,
 }: {
-  bankId?: number;
-  onNavigate: (view: ContentView, id?: number) => void;
+  bankId: number;
+  onNavigate: (view: ContentView, id?: number, bankName?: string) => void;
 }) {
   const client = useQueryClient();
+  const [editOpen, setEditOpen] = useState(false);
+  const [createOpen, setCreateOpen] = useState(false);
 
   // Filter & Pagination state
   const [search, setSearch] = useState("");
@@ -36,7 +38,7 @@ export function QuestionBankDetail({
   const [selectedType, setSelectedType] = useState<string>("");
   const [selectedDifficulty, setSelectedDifficulty] = useState<string>("");
   const [page, setPage] = useState(1);
-  const pageSize = 10;
+  const [pageSize, setPageSize] = useState(20);
 
   // Quick Preview state
   const [previewQuestion, setPreviewQuestion] = useState<QuestionResponse | null>(null);
@@ -97,11 +99,21 @@ export function QuestionBankDetail({
     },
   });
 
+  const update = useMutation({
+    mutationFn: (payload: UpdateQuestionBankRequest) =>
+      contentService.updateQuestionBank(bankId, payload),
+    onSuccess: () => {
+      bankQuery.refetch();
+      setEditOpen(false);
+    },
+  });
+
   const bank = bankQuery.data;
   const pageData = questionsQuery.data;
   const questionsList = pageData?.items ?? [];
   const totalElements = pageData?.totalElements ?? 0;
   const totalPages = pageData?.totalPages ?? 1;
+
 
   return (
     <>
@@ -112,15 +124,32 @@ export function QuestionBankDetail({
         icon={<FileQuestion size={21} />}
         description={bank?.description ?? "Manage questions inside this bank."}
         editLabel="Edit Question Bank"
+        onEdit={() => setEditOpen((open) => !open)}
         onStatusChange={(nextStatus) => statusMutation.mutate(nextStatus)}
         onArchive={() => archiveMutation.mutate()}
-        actionPending={statusMutation.isPending || archiveMutation.isPending}
+        actionPending={statusMutation.isPending || archiveMutation.isPending || update.isPending}
       />
 
-      <ContentTabs
+      {/* <ContentTabs
         active="Questions"
         items={["Questions", "Details", "Statistics"]}
-      />
+      /> */}
+
+      {editOpen && (
+        <div className="mt-5">
+          <ContentEditor
+            kind="question-bank"
+            initial={{
+              name: bank?.name ?? "",
+              description: bank?.description ?? ""
+            }}
+            onSubmit={(payload) => update.mutate(payload as UpdateQuestionBankRequest)}
+            onCancel={() => setEditOpen(false)}
+            pending={update.isPending}
+            error={update.isError ? "Could not save changes." : undefined}
+          />
+        </div>
+      )}
 
       <section className="mb-5 overflow-x-auto rounded-[9px] border border-slate-200 bg-white p-3 shadow-[0_5px_18px_rgba(94,134,173,0.04)] sm:p-[18px]">
         {/* Toolbar: Search, Filters, Actions */}
@@ -132,7 +161,7 @@ export function QuestionBankDetail({
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full border-0 text-body-sm text-slate-700 outline-none"
-              placeholder="Search prompt..."
+              placeholder="Search question..."
             />
             {search && (
               <button onClick={() => setSearch("")} className="text-slate-400 hover:text-slate-600">
@@ -150,11 +179,11 @@ export function QuestionBankDetail({
             className="h-8 rounded-md border border-slate-200 bg-white px-2 text-body-sm text-slate-700 outline-none"
           >
             <option value="">All Types</option>
-            <option value="SINGLE_CHOICE">Single Choice</option>
-            <option value="MULTIPLE_CHOICE">Multiple Choice</option>
-            <option value="TRUE_FALSE">True / False</option>
-            <option value="FILL_IN_BLANK">Fill in Blank</option>
-            <option value="TYPE_ANSWER">Type Answer</option>
+            {questionTypeOptions.map((item) => (
+              <option key={item.value} value={item.value}>
+                {item.label}
+              </option>
+            ))}
           </select>
 
           <select
@@ -166,9 +195,11 @@ export function QuestionBankDetail({
             className="h-8 rounded-md border border-slate-200 bg-white px-2 text-body-sm text-slate-700 outline-none"
           >
             <option value="">All Difficulty</option>
-            <option value="EASY">Easy</option>
-            <option value="MEDIUM">Medium</option>
-            <option value="HARD">Hard</option>
+            {questionDifficultyOptions.map((item) => (
+              <option key={item.value} value={item.value}>
+                {item.label}
+              </option>
+            ))}
           </select>
 
           <button
@@ -182,7 +213,7 @@ export function QuestionBankDetail({
 
           <button
             type="button"
-            onClick={() => onNavigate("bulk-create")}
+            onClick={() => onNavigate("bulk-create", bankId, bank?.name)}
             className="flex items-center gap-1.5 rounded-md bg-primary px-3 py-2 text-body-sm font-bold text-white transition hover:bg-primary-hover"
           >
             <Plus size={14} />
@@ -220,7 +251,6 @@ export function QuestionBankDetail({
               questionsList.map((question, index) => {
                 const rowIndex = (page - 1) * pageSize + index + 1;
                 const isReady = question.complete ?? question.is_complete;
-
                 return (
                   <tr
                     key={question.id}
@@ -247,8 +277,8 @@ export function QuestionBankDetail({
                           question.difficulty === "EASY"
                             ? "easy"
                             : question.difficulty === "MEDIUM"
-                            ? "medium"
-                            : "hard"
+                              ? "medium"
+                              : "hard"
                         }
                       >
                         {question.difficulty}
@@ -277,7 +307,7 @@ export function QuestionBankDetail({
                         <button
                           type="button"
                           title="Edit Question"
-                          onClick={() => onNavigate("question", question.id)}
+                          onClick={() => onNavigate("question", question.id, bank?.name)}
                           className="rounded p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
                         >
                           <MoreHorizontal size={16} />
@@ -293,7 +323,46 @@ export function QuestionBankDetail({
 
         {/* Server Pagination Controls */}
         <div className="flex min-w-[640px] items-center justify-between pt-4 text-sm text-slate-500">
-          <b>Total: {totalElements} questions</b>
+          <div className="flex min-w-[640px] items-center justify-between pt-4 text-sm text-slate-500">
+            <div className="flex items-center gap-3">
+              <b>Total: {totalElements} questions</b>
+
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-slate-400">Show</span>
+
+                <select
+                  value={pageSize}
+                  onChange={(e) => {
+                    setPageSize(Number(e.target.value));
+                    setPage(1);
+                  }}
+                  className="
+          h-7 rounded-md
+          border border-slate-200
+          bg-white px-2
+          text-xs font-medium text-slate-600
+          outline-none
+          transition
+          hover:border-slate-300
+          focus:border-primary
+          focus:ring-2 focus:ring-primary/10
+        "
+                >
+                  <option value={10}>10</option>
+                  <option value={20}>20</option>
+                  <option value={50}>50</option>
+                  <option value={100}>100</option>
+                </select>
+
+                <span className="text-xs text-slate-400">per page</span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-1">
+              {/* pagination */}
+            </div>
+          </div>
+
 
           <div className="flex items-center gap-1">
             <button
@@ -308,11 +377,10 @@ export function QuestionBankDetail({
               <button
                 key={pageNum}
                 onClick={() => setPage(pageNum)}
-                className={`h-7 w-7 rounded border text-xs ${
-                  pageNum === page
-                    ? "border-primary bg-primary text-white font-bold"
-                    : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
-                }`}
+                className={`h-7 w-7 rounded border text-xs ${pageNum === page
+                  ? "border-primary bg-primary text-white font-bold"
+                  : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
+                  }`}
               >
                 {pageNum}
               </button>
@@ -330,6 +398,7 @@ export function QuestionBankDetail({
       </section>
 
       {/* Quick Preview Modal */}
+
       {previewQuestion && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-sm">
           <div className="w-full max-w-lg rounded-xl bg-white p-5 shadow-xl">
@@ -341,8 +410,8 @@ export function QuestionBankDetail({
                     previewQuestion.difficulty === "EASY"
                       ? "easy"
                       : previewQuestion.difficulty === "MEDIUM"
-                      ? "medium"
-                      : "hard"
+                        ? "medium"
+                        : "hard"
                   }
                 >
                   {previewQuestion.difficulty}
@@ -372,11 +441,10 @@ export function QuestionBankDetail({
                     {previewQuestion.options.map((opt, i) => (
                       <div
                         key={opt.id || i}
-                        className={`flex items-center justify-between rounded-lg border p-2.5 text-sm ${
-                          opt.isCorrect
-                            ? "border-emerald-200 bg-emerald-50/50 text-emerald-900 font-semibold"
-                            : "border-slate-200 bg-slate-50 text-slate-700"
-                        }`}
+                        className={`flex items-center justify-between rounded-lg border p-2.5 text-sm ${opt.isCorrect
+                          ? "border-emerald-200 bg-emerald-50/50 text-emerald-900 font-semibold"
+                          : "border-slate-200 bg-slate-50 text-slate-700"
+                          }`}
                       >
                         <span>
                           <strong className="mr-2 text-slate-400">{String.fromCharCode(65 + i)}.</strong>
@@ -424,7 +492,7 @@ export function QuestionBankDetail({
                 onClick={() => {
                   const id = previewQuestion.id;
                   setPreviewQuestion(null);
-                  onNavigate("question", id);
+                  onNavigate("question", id, bank?.name);
                 }}
                 className="rounded-lg bg-primary px-4 py-2 text-xs font-bold text-white hover:bg-primary-hover"
               >

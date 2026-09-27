@@ -19,12 +19,6 @@ export type ContentTone =
   | "pink";
 export type ContentStatus = "DRAFT" | "PUBLISHED" | "ARCHIVED";
 export type ContentDifficulty = "EASY" | "MEDIUM" | "HARD";
-export type QuestionType =
-  | "SINGLE_CHOICE"
-  | "MULTIPLE_CHOICE"
-  | "TRUE_FALSE"
-  | "FILL_IN_BLANK"
-  | "TYPE_ANSWER";
 export type TrueFalseAnswer = "TRUE" | "FALSE";
 export type QuestionMediaKind = "image" | "audio";
 
@@ -53,22 +47,33 @@ export interface DraftQuestion {
   explanation: string;
 }
 
-export const questionTypeOptions: { value: QuestionType; label: string }[] = [
-  { value: "SINGLE_CHOICE", label: "Single Choice" },
-  { value: "MULTIPLE_CHOICE", label: "Multiple Choice" },
-  { value: "TRUE_FALSE", label: "True / False" },
-  { value: "FILL_IN_BLANK", label: "Fill in the Blank" },
-  { value: "TYPE_ANSWER", label: "Type Answer" },
-];
+export type QuestionType =
+  | "SINGLE_CHOICE"
+  | "MULTIPLE_CHOICE"
+  | "TRUE_FALSE"
+  | "FILL_IN_BLANK"
+  | "TYPE_ANSWER";
+
+export const questionTypeOptions: {
+  value: QuestionType;
+  label: string;
+}[] = [
+    { value: "SINGLE_CHOICE", label: "Single Choice" },
+    { value: "MULTIPLE_CHOICE", label: "Multiple Choice" },
+    { value: "TRUE_FALSE", label: "True / False" },
+    { value: "FILL_IN_BLANK", label: "Fill in the Blank" },
+    { value: "TYPE_ANSWER", label: "Type Answer" },
+  ];
+
 
 export const questionDifficultyOptions: {
   value: ContentDifficulty;
   label: string;
 }[] = [
-  { value: "EASY", label: "Easy" },
-  { value: "MEDIUM", label: "Medium" },
-  { value: "HARD", label: "Hard" },
-];
+    { value: "EASY", label: "Easy" },
+    { value: "MEDIUM", label: "Medium" },
+    { value: "HARD", label: "Hard" },
+  ];
 
 export interface ContentUnit {
   id: number;
@@ -179,6 +184,36 @@ export interface UpdateQuestionBankRequest {
   description?: string;
 }
 
+export interface QuestionOptionRequest {
+  content: string;
+  isCorrect: boolean;
+}
+
+export interface QuestionAnswerRequest {
+  rawValue: string;
+}
+
+export interface CreateQuestionRequest {
+  questionBankId: number;
+  type: QuestionType;
+  difficulty?: ContentDifficulty;
+  content: string;
+  explanation?: string;
+  options?: QuestionOptionRequest[];
+  answers?: QuestionAnswerRequest[];
+  mediaIds?: number[];
+}
+
+export interface UpdateQuestionRequest {
+  type: QuestionType;
+  difficulty?: ContentDifficulty;
+  content: string;
+  explanation?: string;
+  options?: QuestionOptionRequest[];
+  answers?: QuestionAnswerRequest[];
+  mediaIds?: number[];
+}
+
 export interface CreateUnitRequest {
   gradeId: number;
   code: string;
@@ -228,4 +263,13 @@ export interface ContentToolbarProps {
   action?: string;
   onAction?: () => void;
   children?: ReactNode;
+}
+export interface ListQuestionsParams {
+  bankId: number;
+  search?: string;
+  type?: string;
+  difficulty?: string;
+  isComplete?: boolean;
+  page?: number;
+  size?: number;
 }

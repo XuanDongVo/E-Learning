@@ -80,7 +80,6 @@ export function ContentOverview({
     enabled: Boolean(selectedGradeId),
   });
 
-  console.log("Units data:", units); // Log the units data for debugging
 
   // Keep local order in sync whenever fresh data arrives (initial load,
   // grade switch, or after a successful reorder/refetch).
@@ -324,11 +323,10 @@ export function ContentOverview({
         <div className="flex overflow-hidden rounded border border-slate-200">
           <button
             type="button"
-            className={`flex p-1.5 ${
-              layout === "grid"
+            className={`flex p-1.5 ${layout === "grid"
                 ? "bg-primary-light text-primary"
                 : "bg-white text-slate-400"
-            }`}
+              }`}
             onClick={() => setLayout("grid")}
             aria-label="Grid view"
           >
@@ -337,11 +335,10 @@ export function ContentOverview({
 
           <button
             type="button"
-            className={`flex p-1.5 ${
-              layout === "list"
+            className={`flex p-1.5 ${layout === "list"
                 ? "bg-primary-light text-primary"
                 : "bg-white text-slate-400"
-            }`}
+              }`}
             onClick={() => setLayout("list")}
             aria-label="List view"
           >
@@ -358,10 +355,9 @@ export function ContentOverview({
             className={`
               whitespace-nowrap rounded-md border px-5 py-2 text-body-sm
               transition-colors
-              ${
-                selectedGradeId === grade.id
-                  ? "border-primary bg-primary text-white shadow-[0_4px_10px_rgba(79,70,229,0.18)]"
-                  : "border-slate-200 bg-white text-slate-500 hover:border-slate-300"
+              ${selectedGradeId === grade.id
+                ? "border-primary bg-primary text-white shadow-[0_4px_10px_rgba(79,70,229,0.18)]"
+                : "border-slate-200 bg-white text-slate-500 hover:border-slate-300"
               }
             `}
             onClick={() => setGradeId(grade.id)}
@@ -414,11 +410,10 @@ export function ContentOverview({
           <div className="flex overflow-hidden rounded border border-slate-200">
             <button
               type="button"
-              className={`flex p-1.5 ${
-                layout === "grid"
+              className={`flex p-1.5 ${layout === "grid"
                   ? "bg-primary-light text-primary"
                   : "bg-white text-slate-400"
-              }`}
+                }`}
               onClick={() => setLayout("grid")}
               aria-label="Grid view"
             >
@@ -427,11 +422,10 @@ export function ContentOverview({
 
             <button
               type="button"
-              className={`flex p-1.5 ${
-                layout === "list"
+              className={`flex p-1.5 ${layout === "list"
                   ? "bg-primary-light text-primary"
                   : "bg-white text-slate-400"
-              }`}
+                }`}
               onClick={() => setLayout("list")}
               aria-label="List view"
             >
@@ -526,15 +520,14 @@ export function ContentOverview({
                     onDragEnter={dragEnabled ? handleDragOver(unit.id) : undefined}
                     onDragLeave={dragEnabled ? handleDragLeave(unit.id) : undefined}
                     onDrop={dragEnabled ? handleDrop(unit.id) : undefined}
-                    className={`flex w-full items-center gap-1 transition-colors duration-700 ${
-                      isDragging
+                    className={`flex w-full items-center gap-1 transition-colors duration-700 ${isDragging
                         ? "opacity-40"
                         : isDragOver
                           ? "bg-primary-light/60 ring-1 ring-inset ring-primary/30"
                           : isJustMoved
                             ? "bg-primary-light/40"
                             : ""
-                    }`}
+                      }`}
                   >
                     {dragEnabled && (
                       <>
@@ -700,15 +693,14 @@ function UnitCard({
       onDragEnter={draggable ? onDragOver : undefined}
       onDragLeave={draggable ? onDragLeave : undefined}
       onDrop={draggable ? onDrop : undefined}
-      className={`group relative min-h-[250px] rounded-lg border bg-white p-3 text-left transition ${
-        isDragging
+      className={`group relative min-h-[250px] rounded-lg border bg-white p-3 text-left transition ${isDragging
           ? "opacity-40"
           : isDragOver
             ? "border-primary bg-primary-light/40 ring-1 ring-inset ring-primary/30"
             : isJustMoved
               ? "border-primary/40 bg-primary-light/30"
               : "border-slate-200 hover:border-primary hover:shadow-[0_5px_15px_rgba(79,70,229,0.1)]"
-      }`}
+        }`}
     >
       {canReorder && (
         <>

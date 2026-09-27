@@ -82,9 +82,6 @@ public class MediaService {
 
             media.setStatus(MediaStatus.FAILED);
             mediaRepository.save(media);
-
-            // Best-effort cleanup if Cloudinary succeeded
-            // but DB update failed afterwards.
             if (uploaded != null) {
                 try {
                     cloudinaryMediaService.delete(
@@ -92,7 +89,6 @@ public class MediaService {
                             uploaded.resourceType()
                     );
                 } catch (Exception ignored) {
-                    // Log this properly.
                 }
             }
 

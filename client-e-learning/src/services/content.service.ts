@@ -48,6 +48,9 @@ export const contentService = {
   // Question
   listQuestions: questionService.list,
   getQuestion: questionService.get,
+  createQuestion: questionService.create,
+  updateQuestion: questionService.update,
+  deleteQuestion: questionService.delete,
 };
 
 export { unitService, sectionService, topicService, questionBankService, questionService, mediaService };

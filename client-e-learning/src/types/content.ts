@@ -32,6 +32,7 @@ export interface QuestionMediaDraft {
   name: string;
   kind: QuestionMediaKind;
   sizeLabel?: string;
+  url?: string;
 }
 
 export interface DraftQuestion {

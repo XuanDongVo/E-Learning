@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Activity, ArrowLeft, BarChart3, BookOpen, ClipboardList, Gamepad2, LayoutDashboard, Settings, ShieldCheck, UserRound, Users } from "lucide-react";
 import { AuthGuard } from "@/components/auth/auth-guard";
 import { SessionActions } from "@/components/auth/session-actions";
-import { RoleSwitcher } from "@/components/layout/role-switcher";
+// import { RoleSwitcher } from "@/components/layout/role-switcher";
 
 export default function TeacherLayout({
   children,
@@ -59,7 +59,7 @@ export default function TeacherLayout({
           </div>
         </div>
       </AuthGuard>
-      <RoleSwitcher />
+      {/* <RoleSwitcher /> */}
     </>
   );
 }

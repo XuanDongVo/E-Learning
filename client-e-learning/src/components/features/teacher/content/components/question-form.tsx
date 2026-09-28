@@ -7,6 +7,7 @@ import {
   questionTypeOptions,
   type ContentDifficulty,
   type DraftQuestion,
+  type QuestionMediaDraft,
   type QuestionOptionDraft,
   type QuestionType,
 } from "@/types/content";
@@ -169,13 +170,23 @@ export function QuestionForm({
       const res = await contentService.uploadMedia(file);
       if (!res.data) throw new Error("Upload failed");
       const mediaId = String(res.data.id);
-      const kind = file.type.startsWith("audio") ? "audio" : "image";
+      const kind: "image" | "audio" = file.type.startsWith("audio") ? "audio" : "image";
+
+      // Enforce constraint: max 1 image and max 1 audio per question
+      const filteredMedia = question.media.filter((item) => item.kind !== kind);
+
+      const newMedia: QuestionMediaDraft = {
+        id: mediaId,
+        name: file.name,
+        kind,
+        sizeLabel: `${Math.round(file.size / 1024)} KB`,
+        url: URL.createObjectURL(file),
+      };
+
       onChange({
-        media: [
-          ...question.media,
-          { id: mediaId, name: file.name, kind, sizeLabel: `${Math.round(file.size / 1024)} KB` },
-        ],
+        media: [...filteredMedia, newMedia],
       });
+      setIsUploadingMedia(false);
     } catch (err) {
       alert("Failed to upload media file.");
     } finally {

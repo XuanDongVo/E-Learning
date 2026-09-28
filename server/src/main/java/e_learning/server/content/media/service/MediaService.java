@@ -107,7 +107,7 @@ public class MediaService {
                 questionRepository.findById(questionId)
                         .orElseThrow(() ->
                                 new EntityNotFoundException(
-                                        "Question not found."
+                                        "Quest  ion not found."
                                 )
                         );
 

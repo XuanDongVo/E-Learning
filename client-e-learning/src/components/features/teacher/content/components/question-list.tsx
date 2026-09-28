@@ -1,12 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import {
-  Copy,
-  MoreVertical,
-  Plus,
-  Trash2,
-} from "lucide-react";
+import { Copy, MoreVertical, Plus, Trash2 } from "lucide-react";
 
 import { Badge } from "./badge";
 import type { DraftQuestion } from "@/types/content";
@@ -15,6 +10,7 @@ import { isQuestionComplete } from "./question-form";
 export function QuestionList({
   questions,
   activeDraftId,
+  showValidation,
   onSelect,
   onAddOne,
   onAddMany,
@@ -24,6 +20,7 @@ export function QuestionList({
   questions: DraftQuestion[];
   activeDraftId: string;
   onSelect: (draftId: string) => void;
+  showValidation: boolean;
   onAddOne: () => void;
   onAddMany: (count: number) => void;
   onDuplicate: (draftId: string) => void;
@@ -94,6 +91,7 @@ export function QuestionList({
               index={index}
               question={question}
               isActive={question.draftId === activeDraftId}
+              showValidation={showValidation}
               canDelete={questions.length > 1}
               onSelect={() => onSelect(question.draftId)}
               onDuplicate={() => onDuplicate(question.draftId)}
@@ -114,6 +112,7 @@ function QuestionListItem({
   onSelect,
   onDuplicate,
   onDelete,
+  showValidation,
 }: {
   index: number;
   question: DraftQuestion;
@@ -122,6 +121,7 @@ function QuestionListItem({
   onSelect: () => void;
   onDuplicate: () => void;
   onDelete: () => void;
+  showValidation: boolean;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -129,6 +129,7 @@ function QuestionListItem({
   const menuRef = useRef<HTMLDivElement>(null);
 
   const complete = isQuestionComplete(question);
+  const showError = showValidation && !complete;
 
   // Auto-scroll active question into view
   useEffect(() => {
@@ -145,10 +146,7 @@ function QuestionListItem({
     if (!menuOpen) return;
 
     const handleClick = (event: MouseEvent) => {
-      if (
-        menuRef.current &&
-        !menuRef.current.contains(event.target as Node)
-      ) {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         setMenuOpen(false);
       }
     };
@@ -164,26 +162,20 @@ function QuestionListItem({
     <li
       ref={itemRef}
       onClick={onSelect}
-      className={`
-        group relative
-        flex min-h-[64px] cursor-pointer
-        items-center gap-2.5
-        px-3 py-2.5
-        transition-colors
-        ${
-          isActive
-            ? "bg-primary-light/60"
-            : "bg-white hover:bg-slate-50"
-        }
-      `}
+      className={`group relative flex min-h-[64px] cursor-pointer items-center gap-2.5 border-l-2 px-3 py-2.5 transition-colors
+    ${
+      showError
+        ? "border-red-400 bg-red-50/60 hover:bg-red-50"
+        : isActive
+          ? "border-primary bg-primary-light/60"
+          : "border-transparent bg-white hover:bg-slate-50"
+    }
+  `}
     >
       {/* Active indicator */}
       {isActive && (
         <span
-          className="
-            absolute inset-y-0 left-0 w-[3px]
-            rounded-r-full bg-primary
-          "
+          className={`absolute inset-y-0 left-0 w-[3px] rounded-r-full${showError ? "bg-red-500" : "bg-primary"}`}
         />
       )}
 
@@ -192,11 +184,7 @@ function QuestionListItem({
         className={`
           flex w-6 shrink-0 justify-center
           text-[11px] font-semibold tabular-nums
-          ${
-            isActive
-              ? "text-primary"
-              : "text-slate-400"
-          }
+          ${isActive ? "text-primary" : "text-slate-400"}
         `}
       >
         {index + 1}
@@ -215,9 +203,7 @@ function QuestionListItem({
           `}
         >
           {question.text || (
-            <span className="italic text-slate-300">
-              Untitled question
-            </span>
+            <span className="italic text-slate-300">Untitled question</span>
           )}
         </div>
 
@@ -237,7 +223,7 @@ function QuestionListItem({
           {!complete && (
             <>
               <span className="text-slate-300">•</span>
-              <Badge tone="gray">Draft</Badge>
+              <Badge tone="gray">Incomplete</Badge>
             </>
           )}
         </div>

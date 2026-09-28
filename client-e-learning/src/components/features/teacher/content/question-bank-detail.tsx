@@ -6,7 +6,7 @@ import {
   CheckCircle2,
   Eye,
   FileQuestion,
-  MoreHorizontal,
+  SquarePen,
   Plus,
   Search,
   Upload,
@@ -287,7 +287,7 @@ export function QuestionBankDetail({
 
                     <td className="border-b border-slate-100 p-2.5 text-sm text-slate-500">
                       <Badge tone={isReady ? "green" : "gray"}>
-                        {isReady ? "Ready" : "Incomplete"}
+                        {isReady ? "Complete" : "Incomplete"}
                       </Badge>
                     </td>
 
@@ -310,7 +310,7 @@ export function QuestionBankDetail({
                           onClick={() => onNavigate("question", question.id, bank?.name)}
                           className="rounded p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
                         >
-                          <MoreHorizontal size={16} />
+                          <SquarePen size ={16} />
                         </button>
                       </div>
                     </td>

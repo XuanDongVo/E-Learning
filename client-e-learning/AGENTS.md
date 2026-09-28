@@ -139,19 +139,19 @@ GameTemplate
 QuestionBank / Question
 ```
 
-A GameTemplate is a gameplay/UI template such as:
+  A GameTemplate is a gameplay/UI template such as:
 
-- Chicken Shooter
-- Memory Match
-- Space Defender
-- Word Race
-- Bomb Defuse
-- Boss Battle
+  - Chicken Shooter
+  - Memory Match
+  - Space Defender
+  - Word Race
+  - Bomb Defuse
+  - Boss Battle
 
-A game does not create a separate question system.
+  A game does not create a separate question system.
 
-Games use the same Activity, QuestionBank, Question, Attempt, and Answer flow.
-The game changes presentation/gameplay, not the underlying question/result model.
+  Games use the same Activity, QuestionBank, Question, Attempt, and Answer flow.
+  The game changes presentation/gameplay, not the underlying question/result model.
 
 ### Assignment architecture
 
@@ -566,74 +566,74 @@ Teacher must be able to create a Unit, Topic, QuestionBank, and incomplete or
 complete Question, reload the page, and retrieve the saved data through the
 real API. A published bank must expose only complete questions to students.
 
-### Question attempt snapshot contract
+  ### Question attempt snapshot contract
 
-When a student starts an activity, select and snapshot the exact question set
-and question content inside the same transaction. The snapshot must survive
-later bank archive, question edit, or question deletion. Select a random set
-per student at attempt start, not when the teacher creates the Activity.
+  When a student starts an activity, select and snapshot the exact question set
+  and question content inside the same transaction. The snapshot must survive
+  later bank archive, question edit, or question deletion. Select a random set
+  per student at attempt start, not when the teacher creates the Activity.
 
-Randomize options per attempt using a deterministic seed based on
-`attemptId + questionId`, so reloads preserve the same order. MVP grading is
-exact-match with no partial credit. Do not recalculate an existing attempt
-from the current Question or QuestionBank records.
+  Randomize options per attempt using a deterministic seed based on
+  `attemptId + questionId`, so reloads preserve the same order. MVP grading is
+  exact-match with no partial credit. Do not recalculate an existing attempt
+  from the current Question or QuestionBank records.
 
----
+  ---
 
-### Phase 4 — Activities
+  ### Phase 4 — Activities
 
-Implement:
+  Implement:
 
-- Activity list
-- Create/edit Activity
-- Question source selection
-- ActivityBank management
-- Question distribution
-- Question selection strategy
-- Learning Mode configuration
-- Try Hard Mode configuration
-- Optional GameTemplate configuration
-- Activity preview
+  - Activity list
+  - Create/edit Activity
+  - Question source selection
+  - ActivityBank management
+  - Question distribution
+  - Question selection strategy
+  - Learning Mode configuration
+  - Try Hard Mode configuration
+  - Optional GameTemplate configuration
+  - Activity preview
 
-Activity distribution modes:
+  Activity distribution modes:
 
-- `EQUAL`
-- `PERCENTAGE`
-- `FIXED_COUNT`
+  - `EQUAL`
+  - `PERCENTAGE`
+  - `FIXED_COUNT`
 
-Question selection strategies:
+  Question selection strategies:
 
-- `RANDOM`
-- `WEAKNESS_PRIORITY`
+  - `RANDOM`
+  - `WEAKNESS_PRIORITY`
 
-Activity modes:
+  Activity modes:
 
-#### Learning Mode
+  #### Learning Mode
 
-- No time limit
-- Hints available
-- Explanations available
+  - No time limit
+  - Hints available
+  - Explanations available
 
-#### Try Hard Mode
+  #### Try Hard Mode
 
-- Time limit
-- 3 lives by default
-- No hints/guidance
-- Wrong answers consume lives
-- Game Over after the configured life limit is reached
+  - Time limit
+  - 3 lives by default
+  - No hints/guidance
+  - Wrong answers consume lives
+  - Game Over after the configured life limit is reached
 
-The exact configured values must come from the Activity configuration rather than hardcoded UI values.
+  The exact configured values must come from the Activity configuration rather than hardcoded UI values.
 
-Game rules:
+  Game rules:
 
-- A game uses the same Activity/question system.
-- Do not build a second question model for games.
+  - A game uses the same Activity/question system.
+  - Do not build a second question model for games.
 
-Activity completion gate:
+  Activity completion gate:
 
-Teacher must be able to create an Activity from real QuestionBanks, configure distribution/modes/game, preview it, save it, reload it, and retrieve the persisted configuration through the API.
+  Teacher must be able to create an Activity from real QuestionBanks, configure distribution/modes/game, preview it, save it, reload it, and retrieve the persisted configuration through the API.
 
----
+  --- 
 
 ### Phase 5 — Assignments
 

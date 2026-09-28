@@ -22,5 +22,6 @@ export const questionService = {
     update: (id: number, payload: UpdateQuestionRequest) =>
         request<QuestionResponse>(`/v1/content/questions/${id}`, { method: "PUT", body: JSON.stringify(payload) }),
 
-    delete: (id: number) => request<void>(`/v1/content/questions/${id}`, { method: "DELETE" }),
-};
+    bulkDeleteQuestions: (payload: { questionBankId: number; ids: number[]; }) =>
+        request<void>("/v1/content/questions/bulk-delete", { method: "DELETE", body: JSON.stringify(payload) }),
+};  

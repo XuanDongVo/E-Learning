@@ -4,6 +4,7 @@ import e_learning.server.common.dto.PageResponse;
 import e_learning.server.common.response.ApiResponse;
 import e_learning.server.content.common.enums.Difficulty;
 import e_learning.server.content.common.enums.QuestionType;
+import e_learning.server.content.question.dto.BulkDeleteQuestionsRequest;
 import e_learning.server.content.question.dto.CreateQuestionRequest;
 import e_learning.server.content.question.dto.QuestionResponse;
 import e_learning.server.content.question.dto.UpdateQuestionRequest;
@@ -57,9 +58,9 @@ public class QuestionController {
         return ResponseEntity.ok(ApiResponse.success("Question updated successfully", questionService.updateQuestion(id, request)));
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
-        questionService.deleteQuestion(id);
+    @DeleteMapping("/bulk-delete")
+    public ResponseEntity<ApiResponse<Void>> delete(@RequestBody BulkDeleteQuestionsRequest request) {
+        questionService.deleteQuestion(request);
         return ResponseEntity.ok(ApiResponse.success("Question deleted successfully", null));
     }
 }

@@ -28,6 +28,21 @@ public class MediaController {
 				.body(ApiResponse.success("Media uploaded", mediaService.upload(file, mediaType)));
 	}
 
+	/**
+	 * Upload media for the question-draft (bulk-create) flow.
+	 * The uploaded media is stored with status PENDING on the server.
+	 * It transitions to READY only when the question is saved with the returned mediaId.
+	 * Orphaned PENDING media are cleaned up by a scheduled job.
+	 */
+	@PostMapping(value = "/media/question-draft", consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE)
+	public ResponseEntity<ApiResponse<MediaResponse>> uploadForQuestionDraft(
+			@RequestPart("file") MultipartFile file,
+			@RequestParam MediaType mediaType
+	) {
+		return ResponseEntity.status(HttpStatus.CREATED)
+				.body(ApiResponse.success("Media uploaded (pending)", mediaService.uploadForQuestionDraft(file, mediaType)));
+	}
+
 	@GetMapping("/media/{mediaId}")
 	public ResponseEntity<ApiResponse<MediaResponse>> get(@PathVariable Long mediaId) {
 		return ResponseEntity.ok(ApiResponse.success(mediaService.getResponse(mediaId)));

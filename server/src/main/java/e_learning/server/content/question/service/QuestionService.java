@@ -31,7 +31,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -172,14 +174,52 @@ public class QuestionService {
     }
 
     @Transactional
-    public void deleteQuestion(Long id) {
-        Question question = questionRepository.findById(id)
-                .orElseThrow(() -> new AppException(ErrorCode.QUESTION_NOT_FOUND));
+    public void deleteQuestion(BulkDeleteQuestionsRequest request) {
+        Set<Long> ids = new HashSet<>(request.getIds());
+        List<Question> questions = questionRepository.findAllById(ids);
 
-        questionOptionRepository.deleteByQuestionId(id);
-        questionAnswerRepository.deleteByQuestionId(id);
-        questionMediaRepository.deleteByQuestionId(id);
-        questionRepository.delete(question);
+        if (questions.size() != ids.size()) {
+            Set<Long> foundIds = questions.stream()
+                    .map(Question::getId)
+                    .collect(Collectors.toSet());
+
+            ids.removeAll(foundIds);
+
+            throw new AppException(ErrorCode.QUESTION_NOT_FOUND);
+        }
+
+        Long expectedBankId = request.getQuestionBankId();
+
+        boolean allInBank = questions.stream()
+                .allMatch(question ->
+                        question.getQuestionBank()
+                                .getId()
+                                .equals(expectedBankId)
+                );
+
+        if (!allInBank) {
+            throw new IllegalArgumentException(
+                    "All questions must belong to the specified question bank."
+            );
+        }
+
+        Set<Long> mediaIds = questionMediaRepository.findMediaIdsByQuestionIdIn(ids);
+        questionRepository.deleteAllInBatch(questions);
+        releaseUnusedMedia(mediaIds);
+    }
+
+    private void releaseUnusedMedia(Set<Long> candidateMediaIds) {
+        for (Long mediaId : candidateMediaIds) {
+            if (questionMediaRepository.existsByMediaId(mediaId)) {
+                continue;
+            }
+            Media media = mediaRepository.findById(mediaId).orElse(null);
+            if (media == null || media.getStatus() == MediaStatus.DELETED) {
+                continue;
+            }
+            media.setStatus(MediaStatus.DELETED);
+            mediaRepository.save(media);
+        }
     }
 
     private void saveChildEntities(

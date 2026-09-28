@@ -8,6 +8,7 @@ import { mediaService } from "./content/content.media.service";
 export const contentService = {
   // Media
   uploadMedia: mediaService.upload,
+  uploadQuestionDraftMedia: mediaService.uploadForQuestionDraft,
   deleteMedia: mediaService.delete,
 
   // Unit
@@ -50,7 +51,7 @@ export const contentService = {
   getQuestion: questionService.get,
   createQuestion: questionService.create,
   updateQuestion: questionService.update,
-  deleteQuestion: questionService.delete,
+  bulkDeleteQuestions: questionService.bulkDeleteQuestions,
 };
 
 export { unitService, sectionService, topicService, questionBankService, questionService, mediaService };

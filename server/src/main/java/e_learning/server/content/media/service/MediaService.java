@@ -96,6 +96,76 @@ public class MediaService {
         }
     }
 
+    /**
+     * Upload for question-draft flow.
+     *
+     * Unlike {@link #upload}, this method keeps the media in {@code PENDING} status
+     * even after a successful Cloudinary upload. The status transitions to {@code READY}
+     * only when the question is saved and the mediaId is included in the save payload
+     * (handled in QuestionService). Any media that remains {@code PENDING} indefinitely
+     * is treated as an orphan and cleaned up by a scheduled job.
+     */
+    @Transactional
+    public MediaResponse uploadForQuestionDraft(
+            MultipartFile file,
+            MediaType mediaType
+    ) {
+        ValidatedMedia validated =
+                validationService.validate(file, mediaType);
+
+        Media media = Media.builder()
+                .mediaType(validated.mediaType())
+                .originalName(validated.originalName())
+                .mimeType(validated.mimeType())
+                .sizeBytes(validated.sizeBytes())
+                .format(validated.extension())
+                .status(MediaStatus.PENDING)
+                .publicId(buildTemporaryPublicId())
+                .resourceType(
+                        mediaType == MediaType.IMAGE
+                                ? "image"
+                                : "video"
+                )
+                .build();
+
+        mediaRepository.save(media);
+
+        CloudinaryUploadResult uploaded = null;
+
+        try {
+
+            uploaded = cloudinaryMediaService.upload(file, mediaType);
+
+            media.setPublicId(uploaded.publicId());
+            media.setResourceType(uploaded.resourceType());
+            media.setFormat(uploaded.format());
+            media.setSizeBytes(uploaded.bytes());
+            media.setWidth(uploaded.width());
+            media.setHeight(uploaded.height());
+            media.setDurationSeconds(uploaded.durationSeconds());
+
+            mediaRepository.save(media);
+
+            return toResponseWithUrl(media);
+
+        } catch (Exception ex) {
+
+            media.setStatus(MediaStatus.FAILED);
+            mediaRepository.save(media);
+            if (uploaded != null) {
+                try {
+                    cloudinaryMediaService.delete(
+                            uploaded.publicId(),
+                            uploaded.resourceType()
+                    );
+                } catch (Exception ignored) {
+                }
+            }
+
+            throw ex;
+        }
+    }
+
     @Transactional
     public void attachToQuestion(
             Long questionId,
@@ -244,6 +314,37 @@ public class MediaService {
                                 media.getFormat()
                         )
                         : null
+        );
+    }
+
+    /**
+     * Same as {@link #toResponse} but always generates a URL even when status is PENDING.
+     * Used for the question-draft upload flow where the media is on Cloudinary but
+     * intentionally kept PENDING until the question is saved.
+     */
+    private MediaResponse toResponseWithUrl(Media media) {
+
+        String url = null;
+        if (media.getPublicId() != null && !media.getPublicId().startsWith("pending/")) {
+            url = cloudinaryMediaService.generatedUrl(
+                    media.getPublicId(),
+                    media.getResourceType(),
+                    media.getFormat()
+            );
+        }
+
+        return new MediaResponse(
+                media.getId(),
+                media.getMediaType(),
+                media.getOriginalName(),
+                media.getFormat(),
+                media.getMimeType(),
+                media.getSizeBytes(),
+                media.getWidth(),
+                media.getHeight(),
+                media.getDurationSeconds(),
+                media.getStatus(),
+                url
         );
     }
 

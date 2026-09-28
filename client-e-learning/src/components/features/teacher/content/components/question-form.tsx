@@ -1,7 +1,17 @@
 "use client";
 
-import { useState } from "react";
-import { ChevronDown, CheckCircle2, Plus, Trash2, AlertTriangle, X } from "lucide-react";
+import { useRef, useState } from "react";
+import {
+  ChevronDown,
+  CheckCircle2,
+  Plus,
+  Trash2,
+  AlertTriangle,
+  X,
+  ImageIcon,
+  Volume2,
+  Loader2,
+} from "lucide-react";
 import {
   questionDifficultyOptions,
   questionTypeOptions,
@@ -78,9 +88,15 @@ export function QuestionForm({
   onChange: (patch: Partial<DraftQuestion>) => void;
 }) {
   const [pendingTypeChange, setPendingTypeChange] = useState<QuestionType | null>(null);
-  const [isUploadingMedia, setIsUploadingMedia] = useState(false);
+  // Per-kind upload state — only disables that specific attach button
+  const [uploadingKind, setUploadingKind] = useState<"image" | "audio" | null>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
+  const audioInputRef = useRef<HTMLInputElement>(null);
 
+  const currentImage = question.media.find((m) => m.kind === "image");
+  const currentAudio = question.media.find((m) => m.kind === "audio");
 
+  // ── Options
   const updateOption = (optionId: string, text: string) => {
     onChange({
       options: question.options.map((option) =>
@@ -116,6 +132,7 @@ export function QuestionForm({
     });
   };
 
+  // ── Accepted answers
   const updateAcceptedAnswer = (index: number, value: string) => {
     onChange({
       acceptedAnswers: question.acceptedAnswers.map((answer, answerIndex) =>
@@ -135,10 +152,12 @@ export function QuestionForm({
     });
   };
 
+  // ── Question type change 
   const handleTypeSelect = (nextType: QuestionType) => {
     if (nextType === question.type) return;
-    // Prompt warning if user has non-empty text/options
-    const hasData = question.options.some((o) => o.text.trim()) || question.acceptedAnswers.some((a) => a.trim());
+    const hasData =
+      question.options.some((o) => o.text.trim()) ||
+      question.acceptedAnswers.some((a) => a.trim());
     if (hasData) {
       setPendingTypeChange(nextType);
     } else {
@@ -161,36 +180,33 @@ export function QuestionForm({
     setPendingTypeChange(null);
   };
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+    kind: "image" | "audio",
+  ) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
+    setUploadingKind(kind);
     try {
-      setIsUploadingMedia(true);
-      const res = await contentService.uploadMedia(file);
-      if (!res.data) throw new Error("Upload failed");
-      const mediaId = String(res.data.id);
-      const kind: "image" | "audio" = file.type.startsWith("audio") ? "audio" : "image";
-
-      // Enforce constraint: max 1 image and max 1 audio per question
-      const filteredMedia = question.media.filter((item) => item.kind !== kind);
+      const res = await contentService.uploadQuestionDraftMedia(file);
+      if (!res.data) throw new Error("Upload failed — server returned no data.");
 
       const newMedia: QuestionMediaDraft = {
-        id: mediaId,
+        id: String(res.data.id),
         name: file.name,
         kind,
         sizeLabel: `${Math.round(file.size / 1024)} KB`,
-        url: URL.createObjectURL(file),
+        url: res.data.url ?? URL.createObjectURL(file),
       };
 
       onChange({
-        media: [...filteredMedia, newMedia],
+        media: [...question.media.filter((m) => m.kind !== kind), newMedia],
       });
-      setIsUploadingMedia(false);
-    } catch (err) {
-      alert("Failed to upload media file.");
+    } catch (err: any) {
+      alert(err.message || "Failed to upload media. Please try again.");
     } finally {
-      setIsUploadingMedia(false);
+      setUploadingKind(null);
       event.target.value = "";
     }
   };
@@ -210,7 +226,8 @@ export function QuestionForm({
               <h3 className="font-bold text-slate-800">Change Question Type?</h3>
             </div>
             <p className="mt-2 text-xs text-slate-600">
-              Changing question type to <b>{pendingTypeChange}</b> will reset your current choices and answers. Are you sure?
+              Changing question type to <b>{pendingTypeChange}</b> will reset your current choices
+              and answers. Are you sure?
             </p>
             <div className="mt-4 flex justify-end gap-2">
               <button
@@ -267,7 +284,7 @@ export function QuestionForm({
         </label>
       </div>
 
-      {/* Question text with Fill In Blank Helper */}
+      {/* Question text */}
       <label className="block">
         <div className="mb-1 flex items-center justify-between">
           <span className="text-xs font-medium text-slate-500">Question</span>
@@ -297,7 +314,8 @@ export function QuestionForm({
         />
         {question.type === "FILL_IN_BLANK" && !question.text.includes("____") && (
           <p className="mt-1 text-xs text-amber-600 font-medium">
-            ⚠️ Fill in the Blank questions require 4 underscores <code className="bg-amber-100 px-1 rounded">____</code> in the prompt text.
+            ⚠️ Fill in the Blank questions require 4 underscores{" "}
+            <code className="bg-amber-100 px-1 rounded">____</code> in the prompt text.
           </p>
         )}
       </label>
@@ -448,44 +466,146 @@ export function QuestionForm({
         />
       </label>
 
-      {/* Media Attachments */}
-      <div>
-        <div className="mb-2 flex items-center justify-between">
-          <span className="text-xs font-medium text-slate-500">Media Attachments</span>
-          <label className="cursor-pointer text-xs font-bold text-primary hover:underline">
-            {isUploadingMedia ? "Uploading..." : "+ Attach Media"}
-            <input
-              type="file"
-              accept="image/*,audio/*"
-              className="hidden"
-              onChange={handleFileUpload}
-              disabled={isUploadingMedia}
-            />
-          </label>
+      {/* ── Media Attachments ─────────────────────────────────────────────────── */}
+      {/*
+        Server-side PENDING lifecycle:
+          • Upload → server stores media as PENDING
+          • Save question with mediaIds → server marks them READY (linked to question)
+          • Any PENDING media not saved → cron job deletes orphans
+        Constraint: max 1 image + max 1 audio per question.
+      */}
+      <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-4">
+        <div className="mb-3 flex items-center justify-between">
+          <span className="text-xs font-semibold text-slate-600">
+            Media Attachments
+          </span>
+          <span className="text-[10px] text-slate-400">Max: 1 image + 1 audio</span>
         </div>
 
-        {question.media.length > 0 && (
-          <div className="space-y-2">
-            {question.media.map((item) => (
-              <div
-                key={item.id}
-                className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs"
-              >
-                <span className="font-semibold text-slate-700 truncate max-w-[200px]">
-                  {item.name} ({item.kind})
-                </span>
-                <button
-                  type="button"
-                  onClick={() => removeMedia(item.id)}
-                  className="text-slate-400 hover:text-rose-600"
-                >
-                  <X size={14} />
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
+        <div className="grid grid-cols-2 gap-3">
+          {/* Image slot */}
+          <MediaSlot
+            kind="image"
+            label="Image"
+            icon={<ImageIcon size={14} />}
+            accept="image/*"
+            current={currentImage}
+            isUploading={uploadingKind === "image"}
+            inputRef={imageInputRef}
+            onUpload={(e) => handleFileUpload(e, "image")}
+            onRemove={() => currentImage && removeMedia(currentImage.id)}
+          />
+
+          {/* Audio slot */}
+          <MediaSlot
+            kind="audio"
+            label="Audio"
+            icon={<Volume2 size={14} />}
+            accept="audio/*"
+            current={currentAudio}
+            isUploading={uploadingKind === "audio"}
+            inputRef={audioInputRef}
+            onUpload={(e) => handleFileUpload(e, "audio")}
+            onRemove={() => currentAudio && removeMedia(currentAudio.id)}
+          />
+        </div>
       </div>
     </div>
+  );
+}
+
+// ── MediaSlot sub-component ──────────────────────────────────────────────────
+
+function MediaSlot({
+  kind,
+  label,
+  icon,
+  accept,
+  current,
+  isUploading,
+  inputRef,
+  onUpload,
+  onRemove,
+}: {
+  kind: "image" | "audio";
+  label: string;
+  icon: React.ReactNode;
+  accept: string;
+  current: QuestionMediaDraft | undefined;
+  isUploading: boolean;
+  inputRef: React.RefObject<HTMLInputElement | null>;
+  onUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onRemove: () => void;
+}) {
+  if (current) {
+    // ── Attached state ────────────────────────────────────────────────────────
+    return (
+      <div className="flex flex-col gap-1.5 rounded-lg border border-slate-200 bg-white p-2.5">
+        {kind === "image" && current.url && (
+          <img
+            src={current.url}
+            alt={current.name}
+            className="h-20 w-full rounded-md object-cover border border-slate-100"
+            onError={(e) => {
+              (e.target as HTMLImageElement).src =
+                "https://placehold.co/200x80/e2e8f0/475569?text=Preview";
+            }}
+          />
+        )}
+        {kind === "audio" && current.url && (
+          <audio controls src={current.url} className="h-8 w-full" />
+        )}
+        <div className="flex items-center justify-between gap-1">
+          <span className="min-w-0 flex-1 truncate text-[11px] font-medium text-slate-600">
+            {current.name}
+          </span>
+          <button
+            type="button"
+            onClick={onRemove}
+            title="Remove media"
+            className="shrink-0 rounded p-0.5 text-slate-400 transition hover:bg-rose-50 hover:text-rose-500"
+          >
+            <X size={13} />
+          </button>
+        </div>
+        {current.sizeLabel && (
+          <span className="text-[10px] text-slate-400">{current.sizeLabel}</span>
+        )}
+      </div>
+    );
+  }
+
+  // ── Empty slot ─────────────────────────────────────────────────────────────
+  return (
+    <label
+      className={`flex flex-col items-center justify-center gap-1.5 rounded-lg border-2 border-dashed p-4 text-center transition cursor-pointer
+        ${isUploading
+          ? "border-primary/40 bg-primary/5 text-primary"
+          : "border-slate-200 bg-white text-slate-400 hover:border-primary/40 hover:bg-primary/5 hover:text-primary"
+        }`}
+    >
+      {isUploading ? (
+        <>
+          <Loader2 size={18} className="animate-spin text-primary" />
+          <span className="text-[11px] font-medium">Uploading...</span>
+        </>
+      ) : (
+        <>
+          <span className="text-slate-400">{icon}</span>
+          <span className="text-[11px] font-semibold">Attach {label}</span>
+          <span className="text-[10px] text-slate-400">
+            {kind === "image" ? "PNG, JPG, GIF…" : "MP3, WAV, AAC…"}
+          </span>
+        </>
+      )}
+      <input
+        ref={inputRef}
+        type="file"
+        accept={accept}
+        className="hidden"
+        disabled={isUploading}
+        onChange={onUpload}
+      />
+    </label>
   );
 }

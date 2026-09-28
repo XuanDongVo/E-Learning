@@ -28,7 +28,7 @@ export interface QuestionOptionDraft {
 }
 
 export interface QuestionMediaDraft {
-  id: string;
+  id: string; // real mediaId from server (PENDING status on server side)
   name: string;
   kind: QuestionMediaKind;
   sizeLabel?: string;

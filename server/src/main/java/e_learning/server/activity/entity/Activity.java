@@ -1,20 +1,23 @@
 package e_learning.server.activity.entity;
 
 import e_learning.server.activity.enums.*;
-import e_learning.server.content.topic.entity.Topic;
-import e_learning.server.user.entity.User;
+import e_learning.server.content.unit.entity.Unit;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Table(
-        name = "activities",
-        uniqueConstraints = {
-                @UniqueConstraint(
-                        name = "uk_activity_topic_name",
-                        columnNames = {"topic_id", "name"}
-                )
-        }
+    name = "activities",
+    uniqueConstraints = @UniqueConstraint(
+        name = "uk_activity_unit_name",
+        columnNames = {"unit_id", "name"}
+    )
 )
 @Getter
 @Setter
@@ -28,8 +31,8 @@ public class Activity {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "topic_id", nullable = false)
-    private Topic topic;
+    @JoinColumn(name = "unit_id", nullable = false)
+    private Unit unit;
 
     @Column(nullable = false, length = 150)
     private String name;
@@ -37,12 +40,17 @@ public class Activity {
     @Column(length = 1000)
     private String description;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
-    private ActivityStatus status;
+    @Column(name = "display_order", nullable = false)
+    @Builder.Default
+    private Integer displayOrder = 0;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "distribution_mode", nullable = false, length = 20)
+    @Column(nullable = false, length = 20)
+    @Builder.Default
+    private ActivityStatus status = ActivityStatus.DRAFT;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "distribution_mode", nullable = false, length = 30)
     private DistributionMode distributionMode;
 
     @Column(name = "total_questions", nullable = false)
@@ -50,7 +58,8 @@ public class Activity {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "selection_strategy", nullable = false, length = 30)
-    private SelectionStrategy selectionStrategy;
+    @Builder.Default
+    private SelectionStrategy selectionStrategy = SelectionStrategy.RANDOM;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
@@ -59,54 +68,26 @@ public class Activity {
     @Column(name = "time_limit_seconds")
     private Integer timeLimitSeconds;
 
-    @Column
+    @Column(name = "lives")
     private Integer lives;
 
+    @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
     @Column(name = "published_at")
     private LocalDateTime publishedAt;
 
-    @PrePersist
-    void onCreate() {
-        LocalDateTime now = LocalDateTime.now();
-
-        createdAt = now;
-        updatedAt = now;
-
-        if (status == null) {
-            status = ActivityStatus.DRAFT;
-        }
-
-        if (distributionMode == null) {
-            distributionMode = DistributionMode.EQUAL;
-        }
-
-        if (selectionStrategy == null) {
-            selectionStrategy = SelectionStrategy.RANDOM;
-        }
-
-        if (mode == null) {
-            mode = ActivityMode.LEARNING;
-        }
-
-        normalizeModeFields();
-    }
-
-    @PreUpdate
-    void onUpdate() {
-        updatedAt = LocalDateTime.now();
-        normalizeModeFields();
-    }
-
-    private void normalizeModeFields() {
-        if (mode == ActivityMode.LEARNING) {
-            timeLimitSeconds = null;
-            lives = null;
-        }
-    }
+    @OneToMany(
+        mappedBy = "activity",
+        cascade = CascadeType.ALL,
+        orphanRemoval = true
+    )
+    @OrderBy("displayOrder ASC")
+    @Builder.Default
+    private List<ActivityBank> banks = new ArrayList<>();
 }

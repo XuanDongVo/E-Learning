@@ -1,4 +1,5 @@
 package e_learning.server.activity.dto.response;
+
 import lombok.*;
 import java.util.List;
 
@@ -7,10 +8,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ActivityPreviewResponse {
-
     private ActivityReadinessResponse readiness;
-
     private List<Long> sampleQuestionIds;
-
     private Integer totalSampleQuestions;
 }

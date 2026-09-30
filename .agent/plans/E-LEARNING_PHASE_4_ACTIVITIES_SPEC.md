@@ -1868,6 +1868,7 @@ Layout:
 ```
 The preview must support all five question types and show realistic rendering:
 
+
 - single choice;
 - multiple choice;
 - true/false;

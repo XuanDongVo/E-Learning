@@ -7,6 +7,28 @@ import java.util.*;
 public final class ActivityDistributionCalculator {
     private ActivityDistributionCalculator() {}
 
+    /**
+     * Calculates how many questions should be selected from each Question Bank
+     * based on the Activity's distribution mode.
+     *
+     * This class only calculates the allocation.
+     * It does NOT check whether a Question Bank has enough questions.
+     *
+     * Example:
+     * Activity totalQuestions = 10
+     *
+     * EQUAL:
+     *   Bank A → 5
+     *   Bank B → 5
+     *
+     * PERCENTAGE:
+     *   Bank A = 70% → 7
+     *   Bank B = 30% → 3
+     *
+     * FIXED_COUNT:
+     *   Bank A = 4
+     *   Bank B = 6
+     */
     public static Map<Long, Integer> calculate(Activity activity, List<ActivityBank> banks) {
         Map<Long, Integer> result = new LinkedHashMap<>();
         if (banks.isEmpty()) return result;

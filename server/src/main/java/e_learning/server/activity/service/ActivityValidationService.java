@@ -16,15 +16,7 @@ import java.util.*;
 public class ActivityValidationService {
     private final QuestionBankRepository questionBankRepository;
 
-    public void validateCreate(Unit unit, DistributionMode distributionMode, Integer totalQuestions,
-                               ActivityMode mode, Integer timeLimitSeconds, Integer lives,
-                               List<ActivityBankRequest> banks) {
-        validateCommon(unit, distributionMode, totalQuestions, mode, timeLimitSeconds, lives, banks);
-        validateSources(unit, banks);
-        validateDistribution(totalQuestions, distributionMode, banks);
-    }
-
-    public void validateUpdate(Unit unit, DistributionMode distributionMode, Integer totalQuestions,
+    public void validateActivity(Unit unit, DistributionMode distributionMode, Integer totalQuestions,
                                ActivityMode mode, Integer timeLimitSeconds, Integer lives,
                                List<ActivityBankRequest> banks) {
         validateCommon(unit, distributionMode, totalQuestions, mode, timeLimitSeconds, lives, banks);

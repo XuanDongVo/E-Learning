@@ -23,7 +23,7 @@ public class ActivityResponse {
     private ActivityStatus status;
     private DistributionMode distributionMode;
     private Integer totalQuestions;
-    private SelectionStrategy selectionStrategy;
+    private List<SelectionStrategy> availableSelectionStrategies;
     private ActivityMode mode;
     private Integer timeLimitSeconds;
     private Integer lives;

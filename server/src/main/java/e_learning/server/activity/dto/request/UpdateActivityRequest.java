@@ -11,7 +11,7 @@ public record UpdateActivityRequest(
     @Size(max = 1000) String description,
     @NotNull DistributionMode distributionMode,
     @NotNull @Min(1) Integer totalQuestions,
-    @NotNull SelectionStrategy selectionStrategy,
+    @NotNull List<SelectionStrategy> availableSelectionStrategies,
     @NotNull ActivityMode mode,
     @Min(1) Integer timeLimitSeconds,
     @Min(1) Integer lives,

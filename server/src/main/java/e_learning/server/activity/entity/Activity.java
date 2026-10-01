@@ -56,10 +56,15 @@ public class Activity {
     @Column(name = "total_questions", nullable = false)
     private Integer totalQuestions;
 
+    @ElementCollection(targetClass = SelectionStrategy.class)
+    @CollectionTable(
+            name = "activity_selection_strategies",
+            joinColumns = @JoinColumn(name = "activity_id")
+    )
     @Enumerated(EnumType.STRING)
     @Column(name = "selection_strategy", nullable = false, length = 30)
     @Builder.Default
-    private SelectionStrategy selectionStrategy = SelectionStrategy.RANDOM;
+    private List<SelectionStrategy> availableSelectionStrategies = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)

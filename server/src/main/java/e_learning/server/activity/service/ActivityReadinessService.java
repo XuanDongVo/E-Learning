@@ -18,7 +18,18 @@ public class ActivityReadinessService {
     private final QuestionRepository questionRepository;
     private final ActivityBankRepository activityBankRepository;
 
-    public ActivityReadinessResponse evaluate(Activity activity) {
+    /**
+     * Checks whether an Activity has everything required to be published.
+     *
+     * Validation includes:
+     * - Question Banks must be PUBLISHED.
+     * - Each Question Bank must have enough complete questions.
+     * - Question allocation must be valid and match the Activity's total questions.
+     *
+     * Returns all validation errors instead of stopping at the first error,
+     * so the frontend can show all problems at once.
+     */
+    public ActivityReadinessResponse validateForPublish(Activity activity) {
         List<ActivityBank> banks =
             activityBankRepository.findByActivityIdOrderByDisplayOrderAsc(activity.getId());
 

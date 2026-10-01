@@ -46,16 +46,19 @@ User → Goal → Information Architecture → User Flow → UI
 
 Do **not** start from decoration. Prioritize, in this order:
 
-1. Clear hierarchy
+1. **Readability and clear hierarchy**
 2. Simple workflows (fewest steps to the goal)
 3. Consistency (same problem → same pattern → same component)
 4. Scalability (new features fit without redesign)
 5. Educational usability (a teacher or a 12-year-old understands it without help)
 
+**Readability is a product requirement, not decoration.** A user should be able to scan the screen and
+understand its purpose, primary action and important state in about three seconds.
+
 **Visual structure is information.** A border, divider, badge, number or label must tell the user
 something. If removing it loses no meaning, remove it.
 
----
+**Prefer hierarchy through typography, spacing and alignment before adding color, containers or shadows.**
 
 ## 2. Product structure and navigation
 
@@ -125,25 +128,27 @@ Tokens live in `globals.css`. **Raw palette utilities are forbidden in feature c
 | `primary` | `#4F46E5` | Action | Primary buttons, links, selected state, focus ring, progress |
 | `primary-hover` | `#4338CA` | Action (hover/pressed) | Hover/active of primary |
 | `primary-light` | `#EEF2FF` | Action (tint) | Selected row/option background, subtle emphasis |
-| `secondary` | `#06B6D4` | Teacher shell identity | Logo tile, active-nav fill, informational highlight (fills and icons) |
-| `secondary-light` | `#ECFEFF` | Secondary tint | Active-nav background, Learning-mode tint |
-| `accent` | `#F59E0B` | Reward / attention | XP, streak, Try Hard, "needs attention" |
-| `accent-light` | `#FEF3C7` | Accent tint | Warning banners, Try Hard tint, reward chips |
-| `neutral-dark` | `#0F172A` | Text | Headings, body text, text on `accent`/`secondary` fills |
+| `secondary` | `#06B6D4` | Learning identity | Student Learning mode and limited product identity |
+| `secondary-light` | `#ECFEFF` | Secondary tint | Student Learning-mode tint and rare informational emphasis |
+| `accent` | `#F59E0B` | Reward / attention | XP, streaks, timers, warnings, "needs attention" |
+| `accent-light` | `#FEF3B7` | Accent tint | Warning banners and reward surfaces |
+| `neutral-dark` | `#0F172A` | Text | Headings, body text |
 | `neutral-muted` | `#64748B` | Text | Secondary text, meta, table headers |
 | `neutral-subtle` | `#94A3B8` | Decoration | Placeholder, disabled, decorative icons. **Never meaningful text** |
-| `border-color` | `#E2E8F0` | Structure | Card borders, dividers (decorative, not a control boundary) |
+| `border-color` | `#E2E8F0` | Structure | Dividers and structural borders |
 | `background-app` | `#F8FAFC` | Surface (page) | App background |
-| `card-bg` | `#FFFFFF` | Surface (raised) | Cards, dialogs, tables, inputs |
+| `card-bg` | `#FFFFFF` | Surface | Controls, dialogs, genuinely self-contained cards |
 
-**Usage proportions** (per screen): neutrals ≥ 90%, one primary action color, `secondary`/`accent`
-as small signals. A screen where color is the main thing a user notices is wrong.
+**Color budget for Teacher UI**
 
-**Primary vs. secondary vs. accent**
+- `primary` is the only saturated action color.
+- `accent` appears only when attention or reward has semantic meaning.
+- `secondary` is not used for ordinary Teacher actions or navigation.
+- Most of the screen should remain neutral. Do not use multiple colored fills in the same region.
+- A status should not become a colorful pill merely because a color exists.
 
-- `primary` means *you can act on this*. It is the same in Teacher and Student UI.
-- `secondary` is the **Teacher shell identity** (logo, active navigation). It is not a second action color.
-- `accent` is for **reward and attention** (XP, streaks, timers, "needs attention"). It is not a decorative highlight.
+**Do not solve hierarchy with color.** First use position, typography, whitespace, divider and alignment;
+use color only for action, state or attention.
 
 ### 3.2 Contrast (measured, WCAG 2.1)
 
@@ -216,14 +221,18 @@ Add the following to `globals.css`, with every value verified above or below.
 
 | Meaning | Where it appears | Fill/tint | Text | Icon |
 |---|---|---|---|---|
-| Draft | Content, Activity, Assignment | neutral (`background-app` + `border-color`) | `neutral-muted` | `FileEdit` |
-| Published / Ready / Correct | lifecycle, readiness, answers | `success-light` | `success` | `CheckCircle2` |
+| Draft | Content, Activity, Assignment | neutral | `neutral-muted` | `FileEdit` |
+| Published / Ready / Correct | lifecycle, readiness, answers | `success-light` only when a filled status surface is useful | `success` | `CheckCircle2` |
 | Archived | lifecycle | neutral | `neutral-muted` | `Archive` |
-| Needs attention | **derived readiness**, not a lifecycle status | `accent-light` | `accent-text` | `AlertTriangle` |
-| Error / Blocked / Incorrect | validation, failures | `danger-light` | `danger-text` | `XCircle` |
+| Needs attention | **derived readiness**, not a lifecycle status | `accent-light` only for warning callouts | `accent-text` | `AlertTriangle` |
+| Error / Blocked / Incorrect | validation, failures | `danger-light` for alerts | `danger-text` | `XCircle` |
 | Selected / Info | selection, informational notes | `primary-light` | `primary` | `Info` |
 
-`Needs attention` must never appear in the same slot as `Draft/Published/Archived`: lifecycle and readiness are shown as two separate badges.
+For ordinary list/detail metadata, prefer **text + icon** over a filled badge. Use filled status chips only
+when the status must be scanned quickly across comparable items.
+
+`Needs attention` must never appear in the same slot as `Draft/Published/Archived`: lifecycle and readiness
+are shown as separate pieces of information.
 
 ### 3.5 Typography
 
@@ -273,39 +282,41 @@ Rule of thumb: **space between groups is always larger than space inside a group
 
 ### 3.7 Radius, borders, elevation, motion, icons
 
-**Radius.** The `--radius-*` variables are *not* registered in `@theme`, so the Tailwind utility
-`rounded-md` is **6px**, not `--radius-md` (12px). Use this mapping and nothing else:
+**Radius.** Rounded corners are an exception, not the visual default.
 
 | Token | px | Tailwind utility | Use |
 |---|---:|---|---|
-| `radius-sm` | 8 | `rounded-lg` or `rounded-[var(--radius-sm)]` | Small buttons, chips, table-cell controls |
-| `radius-md` | 12 | `rounded-xl` or `rounded-[var(--radius-md)]` | Inputs, default buttons, cards, list containers |
-| `radius-lg` | 16 | `rounded-2xl` or `rounded-[var(--radius-lg)]` | Dialogs, large panels, large buttons |
-| `radius-xl` | 20 | `rounded-[var(--radius-xl)]` | Student hero and game surfaces only |
-| full | – | `rounded-full` | Badges, avatars, progress bars, pills |
+| `radius-sm` | 8 | `rounded-lg` | Inputs, buttons, small interactive controls |
+| `radius-md` | 12 | `rounded-xl` | Dialogs and rare self-contained cards |
+| `radius-lg` | 16 | `rounded-2xl` | Large Student surfaces only |
+| `radius-xl` | 20 | `rounded-[var(--radius-xl)]` | Game/celebration surfaces only |
+| full | – | `rounded-full` | Badges, avatars, progress indicators |
 
-Forbidden: `rounded-md` (6px), `rounded`, `rounded-3xl`. A nested element uses an equal or smaller radius than its container.
+**Teacher default:** structural containers are square/flat. Do **not** round tables, page sections, toolbars,
+sticky headers, dividers, side rails or navigation groups.
 
-**Borders.** `1px border-border-color` for cards, tables and dividers. Controls use `border-border-input`. No double borders (a bordered card inside a bordered card).
+Forbidden: `rounded-md`, `rounded`, `rounded-3xl`. Do not use `rounded-xl` just to make a normal
+section look polished.
 
-**Elevation.** Flat by default; hierarchy comes from border and spacing, not shadow.
+**Borders.** Use 1px `border-border-color` only when it clarifies a boundary. Prefer a single divider
+between sections over a bordered box around every group. No double borders.
+
+**Elevation.** Flat by default; hierarchy comes from spacing, typography and alignment.
 
 | Level | Utility | Use |
 |---|---|---|
-| 0 | none | Cards, tables, panels (border only) |
-| 1 | `shadow-sm` | Hover on interactive cards, sticky headers |
+| 0 | none | Page sections, tables, panels, navigation |
+| 1 | `shadow-sm` | Sticky headers and genuinely interactive surfaces |
 | 2 | `shadow-md` | Dropdowns, popovers |
 | 3 | `shadow-xl` | Dialogs |
 
-Shadows are neutral. No colored glow shadows (`shadow-indigo-200`) in the Teacher UI.
+No colored glow shadows in Teacher UI.
 
-**Motion.** 150–200ms, ease-out, for state changes caused by the user (hover, press, expand, confirm).
-No entrance animations on page load or scroll in Teacher UI. Student UI may animate **feedback only**
-(correct/incorrect, XP gained, level-up, life lost). Honor `prefers-reduced-motion`.
+**Motion.** 150–200ms, ease-out, for user-triggered state changes. No entrance animations on Teacher pages.
+Honor `prefers-reduced-motion`.
 
-**Icons.** `lucide-react` only, default stroke. 16px (`h-4 w-4`) inline with text and in buttons;
-20px (`h-5 w-5`) in navigation and card headers; 24px+ only in Student UI and empty states.
-Icon-only controls require an `aria-label`. Do not put an icon on every heading or card.
+**Icons.** `lucide-react` only. 16px inline with text/buttons; 20px in navigation; 24px+ mainly in
+Student UI and empty states. Icon-only controls require `aria-label`. Do not decorate every heading.
 
 ### 3.8 Token governance
 
@@ -325,17 +336,18 @@ Breakpoints are Tailwind defaults: `sm 640`, `md 768`, `lg 1024`, `xl 1280`.
 
 | Surface | Primary device | Minimum supported | Density |
 |---|---|---|---|
-| Teacher | Desktop | Tablet (≥ 768) | Compact: tables, filters, forms |
+| Teacher | Desktop | Tablet (≥ 768) | **Readable compact:** efficient tables/forms without crowding |
 | Student | Phone / tablet | Phone (≥ 360) | Comfortable: larger targets, more space |
 
-- Control heights: `sm` 32px (dense teacher tables), `default` 40px, `lg` 48px (Student primary actions and all touch screens).
+- Control heights: `sm` 32px for dense secondary controls, `default` 40px, `lg` 48px for Student primary actions and touch screens.
 - Touch targets: ≥ 40px on Teacher tablets, ≥ 44px on Student. Spacing between adjacent targets ≥ 8px.
-- Below `lg`, navigation collapses into a drawer opened from the header. A shell with a hidden sidebar and no replacement is a bug.
-- Wide content (tables, code) scrolls inside its own `overflow-x-auto` container. The page never scrolls sideways.
-- Below `md`, tables degrade to stacked rows (name + status on the first line, meta below) or drop low-priority columns. Do not shrink text to fit.
+- **Compact never means tiny.** Do not reduce type, line-height or padding just to keep more items on screen.
+- A Teacher screen should normally have one dominant content area and at most one supporting rail.
+- Filters and toolbars may wrap into two rows when needed. Never compress unrelated controls into one cramped line.
+- Below `lg`, navigation collapses into a drawer opened from the header.
+- Wide content scrolls inside its own `overflow-x-auto` container. The page never scrolls sideways.
+- Below `md`, tables degrade to stacked rows or drop low-priority columns. Do not shrink text to fit.
 - Never hide an error or required-field message in a hover tooltip.
-
----
 
 ## 5. Layout architecture
 
@@ -343,19 +355,22 @@ Breakpoints are Tailwind defaults: `sm 640`, `md 768`, `lg 1024`, `xl 1280`.
 
 ```text
 ┌────────────┬───────────────────────────────────────────┐
-│            │ Header  64px  (title/context · user menu)  │
+│            │ Header  64px  (context · user menu)       │
 │ Sidebar    ├───────────────────────────────────────────┤
-│ 256px      │ Main    padding 24px (16px below md)       │
-│ (≥ lg)     │   content container, centered              │
+│ 256px      │ Main    padding 24px (16px below md)      │
+│ (≥ lg)     │   centered content                        │
 └────────────┴───────────────────────────────────────────┘
 ```
 
 - Sidebar: 256px, `card-bg`, 1px right border, 16px inner padding. Logo at top, grouped nav, account/switch at bottom.
 - Header: 64px, `card-bg`, 1px bottom border.
-- Main: `background-app`. **The layout owns the page padding** (24px, 16px below `md`); pages do not add their own outer padding.
-- Content container: `max-w-7xl` (1280px), centered, `space-y-6` between regions.
-- Nav item: 40px tall, `radius-md`, 20px icon, `body` 600. Active = `secondary-light` background + `secondary-text` label + `secondary` icon (Teacher) / `primary-light` + `primary` (Student). Inactive = `neutral-muted`, hover `background-app`.
-- Teacher and Student shells share this grid. They differ in nav identity color and content density only.
+- Main: `background-app`. The layout owns page padding; pages do not add a second outer padding.
+- Content container: `max-w-7xl`, centered, with clear vertical spacing between regions.
+- Navigation is flat: no pill-shaped nav groups. Active Teacher navigation uses `primary-light` + `primary`
+  and may use a 2px leading border; inactive items stay neutral.
+- Teacher uses `primary` as its only saturated action/active color. `secondary` is reserved for Student
+  Learning identity or other explicitly defined semantic uses.
+- Structural containers do not need rounded corners. Use spacing, dividers and alignment to establish hierarchy.
 
 ### 5.2 Page anatomy
 
@@ -365,15 +380,19 @@ Every page follows the same top-to-bottom order:
 Breadcrumb (when depth > 1)
 Page title (page-title)                        [Primary action]
 Optional one-line description (body, muted)
-────────────────────────────────────────────────────────────────
-Toolbar (search · filters · view)  [lists only]
+────────────────────────────────────────────────────────────
+Toolbar / filters (lists only; may wrap)
 Content
 Pagination / footer actions
 ```
 
-- **One primary action per page region**, top-right of the header. Secondary actions are `outline` or `ghost`.
+- One primary action per page region, top-right of the header.
+- Secondary actions are `outline` or `ghost`.
+- The toolbar is allowed to wrap to a second row. Group related filters together; do not force search,
+  selects and view controls into one cramped line.
 - A description explains the page in one sentence, or is omitted.
-- No hero banners, welcome blocks or marketing copy on operational screens.
+- Operational screens do not use hero banners, decorative KPI blocks or marketing copy.
+- Every page needs a visible hierarchy: context → title → primary action → main content → supporting details.
 
 ### 5.3 Page types
 
@@ -384,56 +403,58 @@ Every Teacher screen is exactly one of these. Pick the type, then use its templa
 ```text
 Header [+ Create]
 Toolbar: search · status · domain filters
-Table (default) or card grid (only for "places": classes, units)
+Table
 Pagination
 ```
 
-- Use a **table** when records share several comparable attributes (name, topic, status, updated). Use **cards** only for navigable "places" with 2–3 facts.
+- Use a **table** when records are comparable. Use cards only for navigable "places" such as classes or units.
+- Keep a **column budget of about 4–5 primary columns**. Move low-value details into the primary cell or detail page.
+- The first column carries the main identity and one short secondary line at most.
+- Status should be quickly scannable but not turn every row into a cluster of colorful pills.
 - Default sort: most recently updated. Archived items are hidden unless the status filter asks for them.
-- Row click and the name link open the detail/editor. Row actions end the row (`⋯` menu: View, Edit, Preview, Archive).
+- Row click and the name link open the detail/editor. Row actions end the row.
 
-**B. Detail page** (a class, a unit, an assignment)
-
-```text
-Breadcrumb · Title · Status badge(s) · Actions
-Tabs (Overview · Content · Students · Results …)   ← Google Classroom / Canvas pattern
-Tab content
-```
-
-**C. Editor page** (Activity editor, Question bank editor)
+**B. Detail page**
 
 ```text
-Sticky header: Back · Name · lifecycle badge · [Save draft] [Preview] [Publish]
-┌──────────────────────────────────────┬──────────────────┐
-│ Main column (≤ 800px)                │ Summary rail      │
-│  Section: Basics                     │ 320px, sticky     │
-│  Section: Sources                    │  config at a      │
-│  Section: Rules                      │  glance +         │
-│  …                                   │  readiness        │
-└──────────────────────────────────────┴──────────────────┘
+Breadcrumb · Title · Status · Actions
+Optional tabs for sibling views
+Overview / primary content
+Supporting sections
 ```
 
-- Sections are stacked with headings and dividers, **not** nested cards.
-- The summary rail shows the saved configuration and **derived** readiness; below `lg` it becomes an accordion above the action bar.
-- Below `lg`, actions move to a fixed bottom bar: `[Save draft] [Preview] [Publish]`.
-- Dirty-state guard: leaving with unsaved edits asks `You have unsaved changes. Leave without saving?`. Dirty is computed from form values, not from mutation state.
+- The first viewport should answer: what is this, where does it belong, what is its current state, what can I do?
+- Do not put every attribute into a card/grid row. Use readable sections and definition lists.
+- Tabs are for genuinely different sibling views, not for hiding a handful of fields.
+
+**C. Editor page**
+
+```text
+Sticky header: Back · Name · lifecycle · [Save]
+Main content column (readable width)
+  Section: Basics
+  Section: Sources
+  Section: Rules
+  Section: Mode
+Optional supporting summary
+```
+
+- The main editing column is the focus. A summary rail is **optional**, not mandatory.
+- Prefer section headings, dividers and whitespace over bordered cards.
+- Use a supporting rail only when it reduces repeated scanning; it should not compete with the form.
+- Below `lg`, supporting content moves below the main content or into a compact summary.
+- Dirty-state guard and server-authoritative validation remain mandatory.
 - Publish is disabled while the form is dirty or unsaved, with the reason visible.
-- The server is authoritative. Client checks are for usability; the UI reconciles with the API response.
-
-**D. Dialog / confirm** (Section 6.6).
-
-**E. Student flow** (Section 8): one task per screen, a single dominant action, progress always visible.
 
 ### 5.4 Cards: when and how
 
-A card is a **single entity** or a **self-contained form group**. It is not a default wrapper.
+A card is a **single self-contained object or interaction**. It is not the default wrapper for a section.
 
-- `card-bg`, 1px `border-border-color`, `radius-md`, padding 20px (`p-5`), no shadow.
-- One level only. Never a card inside a card.
-- No gradient fills, no colored left borders as decoration.
-- A page of KPI cards is not a Teacher home page. Prefer a short task list ("Needs attention", "Recent activity") over a wall of stats.
-
----
+- Structural page sections should usually be plain surfaces separated by spacing/dividers.
+- When a card is necessary: `card-bg`, 1px border, `radius-sm`, comfortable padding, no shadow by default.
+- Never use cards inside cards.
+- Never turn every form section, metric or row into a separate rounded container.
+- Avoid card walls. One strong content area is easier to scan than six small panels.
 
 ## 6. Component standards
 
@@ -474,17 +495,23 @@ An Activity that offers both modes shows **two chips** (`Learning` `Try Hard`), 
 
 ### 6.4 Table
 
-- Container: `card-bg`, 1px border, `radius-md`, `overflow-hidden`; scroll wrapper inside.
-- Header row: `background-app`, `label` text in `neutral-muted`, normal case. Rows: 48px minimum, `body`, bottom border `border-color`, hover `background-app`. No zebra striping.
+- Container: `card-bg`, 1px border, **square corners**, `overflow-hidden`; scroll wrapper inside.
+- Header row: `background-app`, `label` text in `neutral-muted`, normal case.
+- Rows: 48px minimum, `body`, bottom border `border-color`, hover `background-app`. No zebra striping.
 - Primary column is a link (`body`, 600, `neutral-dark`). Secondary lines use `body-sm` muted.
-- Numeric columns right-aligned with `tabular-nums`. Status columns use Badges. Actions column last, right-aligned.
-- Sorting and filtering are explicit controls in the toolbar or header, never implicit.
+- Keep columns to the information needed for scanning. If a value is rarely used, move it to the detail page.
+- Numeric columns are right-aligned with `tabular-nums`. Status columns use compact status text or a Badge when comparison requires it.
+- Actions column last, right-aligned.
+- Sorting and filtering are explicit controls; never implicit.
+- Do not add rounded status chips to every row just to create visual variety.
 
 ### 6.5 Tabs, filters, pagination
 
-- Tabs: underline style, `body` 600, active `primary` with a 2px underline; used for sibling views of the same object (Section 5.3 B).
-- Filters: a single toolbar row, search first, then selects (40px, `radius-md`). Applied filters are visible; provide `Clear filters`.
-- Pagination: `Previous` / `Next` + `Page x of y`, bottom-right of the list. Default page size 20.
+- Tabs: underline style, `body` 600, active `primary` with a 2px underline.
+- Filters: search first, then related selects. The toolbar may wrap. Controls use `default` height and `radius-sm`.
+- Keep filter controls visually quieter than the page title and primary action.
+- Applied filters are visible; provide `Clear filters` when useful.
+- Pagination: `Previous` / `Next` + `Page x of y`, separated from table content by spacing rather than a rounded container.
 
 ### 6.6 Dialog
 
@@ -523,40 +550,18 @@ Inline, above the affected content: icon + title (600) + one line + optional act
 
 ## 7. Teacher UI
 
-Teacher UI is an **LMS / management system**. Its job is speed and clarity for people who do this daily.
+Teacher UI is an **LMS / management system**. It should feel calm, editorial and dependable rather than decorative.
 
 ### 7.1 Principles
 
-- **Management and efficiency first.** Few clicks, dense but readable, keyboard-friendly.
-- **Lists, tables, tabs, forms, filters.** Cards only where 5.4 allows.
-- **Calm.** Neutral surfaces, one action color, status color only where it carries meaning.
+- **Clarity before density.** Efficient does not mean visually crowded.
+- **One primary visual accent per region.** Teacher actions use `primary`; `accent` is reserved for attention/warnings.
+- **Flat structure.** Use typography, spacing and dividers before cards, color blocks or shadows.
 - **Predictable.** The same task (create, edit, archive, publish) works the same way in every module.
-- It must never look like a game: no confetti, mascots, big gradients, animated backgrounds, XP-style visuals.
-
-### 7.2 Standard lifecycle UX
-
-Content, Activities and Assignments share one lifecycle vocabulary:
-
-```text
-Draft → Published → Archived
-```
-
-- Buttons: `Save draft`, `Publish`, `Archive`. Archive is reversible in meaning ("hidden, history kept"); hard delete is a separate, rarer action.
-- A publish dialog shows a **readiness checklist** computed by the server; failures are specific and actionable (`Irregular Verbs needs 3 more ready questions.`).
-- Derived health (`Needs attention`) is a second badge, never a replacement for the lifecycle badge.
-
-### 7.3 Teacher patterns by module
-
-| Module | Page type | Notes |
-|---|---|---|
-| Dashboard | Task-first | "Needs attention", recent activity, quick links. Not a KPI wall. |
-| Classes / Students | List → Detail with tabs | Detail tabs: Overview · Students · Assignments · Results |
-| Content | Hierarchy browser | Grade → Unit → Section → Topic → Question bank, breadcrumb-driven |
-| Activities | List + Editor (C) | Distribution, strategy, mode, game, preview, readiness |
-| Assignments | List + Detail with tabs | Target, schedule, one-attempt policy, official results |
-| Reports | Table + filters, then charts | Table first; a chart only when it answers a stated question |
-
----
+- **Readable tables and forms.** Keep row height, line length and labels comfortable enough to scan.
+- **No decorative color blocks.** A filled color surface should communicate a state, selection or action.
+- It must never look like a game: no confetti, mascots, big gradients, animated backgrounds or XP-style visuals.
+- A Teacher screen should pass the three-second scan test: purpose, main action and important state are obvious.
 
 ## 8. Student UI
 
@@ -608,35 +613,63 @@ Game art may use its own assets, but everything around it (start, pause, result,
 ### 9.1 Editor sections, in order
 
 ```text
-Basics (name, description, topic)  →  Question sources  →  Distribution
-→ Selection strategy  →  Mode  →  Game (optional)  →  Preview / Publish
+Basics (name, description, topic)
+↓
+Question sources
+↓
+Distribution
+↓
+Selection strategy
+↓
+Mode
+↓
+Game (optional)
+↓
+Preview / Publish
 ```
 
-- Topic shows a path: `Grade 10 / Unit 3 / Section 2 / Past Simple`.
-- Sources: a Grade → Unit → Section → Topic browser plus bank rows showing `status`, `ready / total`. Draft or archived banks are visibly disabled with the reason. Selected sources stay visible when the browser is filtered.
-- Distribution: three selectable options (`Equal`, `Percentage`, `Fixed count`). Show **derived question counts**, not only percentages. In `Fixed count` the total is read-only and derived.
-- Strategy: `Random` / `Weakness priority`, with the note that weakness priority needs answer history and falls back to random until then.
-- Game: `None` + template options; inactive templates are disabled.
+**Visual direction for Activity Editor**
+
+- Use one readable main column. Do not make every section a bordered card.
+- Sections are separated by generous vertical spacing and a single divider.
+- Each section has one clear heading, one short description and one coherent group of controls.
+- Controls may be arranged side-by-side only when they are genuinely related; otherwise stack them vertically.
+- Use `primary-light` only for a selected option. Do not give every option its own color.
+- Question source browsing uses hierarchy through text indentation and dividers, not nested boxes.
+- Source rows show the Question Bank name first, then `ready / total` and lifecycle as quiet metadata.
+- Distribution, strategy and mode use selectable rows/cards with **one selected state**, not multiple semantic colors.
+- Validation messages use a left border + text/icon rather than large colored rectangles when possible.
+- The summary may be a compact inline "At a glance" area or a quiet supporting rail. It must not compete with editing.
+- The whole Activity run uses one time limit; it is not per question.
+
+Topic shows a readable path such as `Grade 10 / Unit 3 / Section 2 / Past Simple`.
+Sources remain limited to the current Unit. Draft/archived banks are disabled with a reason.
+Distribution must show derived question counts. Strategy, mode, readiness and preview follow the existing domain rules.
 
 ### 9.2 Mode selector (default: both)
 
-Three selectable option rows:
+Three selectable options remain:
 
 | Option | Meaning | Extra fields |
 |---|---|---|
-| **Learning and Try Hard** *(default)* | Students choose a mode when they start | Time limit, lives |
+| **Learning and Try Hard** *(default)* | Students choose a mode at start | Time limit, lives |
 | Learning only | No timer, hints and explanations | none |
 | Try Hard only | Timed challenge, no hints | Time limit, lives |
 
-- Time limit (`seconds`) and lives appear only when Try Hard is offered; lives default to 3.
-- Choosing `Learning only` clears and hides the timer and lives. Choosing a Try Hard option again restores defaults. The server repeats this normalization.
-- The summary rail and the list show mode as chips (6.2).
+- Show the mode choice as a clear selection group, not three colorful cards.
+- Selected state = `primary-light` + `primary` border/text.
+- Unselected state is neutral.
+- Time limit and lives appear only when Try Hard is offered; lives default to 3.
+- The time limit applies to the **whole Activity run**, not each question.
+- The summary/list may show mode as quiet metadata; do not create a third "Both" color.
 
 ### 9.3 Readiness and "Needs attention"
 
 - Readiness is **derived** from the server; the UI never persists or edits it.
-- Errors are source-specific and actionable, listed in the summary rail and repeated in the publish dialog.
-- A published Activity with a short source stays published and shows a warning banner; the configuration is never silently changed.
+- Use `accent` only when something needs attention. A ready state can remain neutral in ordinary detail views.
+- Errors are source-specific and actionable.
+- Prefer inline warning text with an icon and left border over a large filled warning panel.
+- A published Activity with a short source stays published and shows a warning; the configuration is never silently changed.
 
 ### 9.4 Preview
 
@@ -647,21 +680,23 @@ When the Activity offers both modes, a two-option toggle lets the teacher previe
 
 ## 10. Reference architecture map
 
-Use references to decide **structure and flow**, not to copy appearance.
+Use references to decide **information architecture, hierarchy and flow**, not to copy appearance.
 
 | Reference | Borrow (pattern) | Apply to | Do not copy |
 |---|---|---|---|
-| **Google Classroom** | Class-centric tabs (Stream · Classwork · People · Grades); simple work lists grouped by topic | Class detail, assignment lists | Its brand visuals, colored class-card headers |
-| **Canvas** | Persistent left course navigation; Assignments and Gradebook structure; per-submission review | Assignments (Phase 5), Gradebook, Reports | Dense legacy chrome |
-| **Khan Academy** | Unit → lesson hierarchy; progress/mastery framing; calm teacher dashboard | Student Learning/Units, Progress | Its illustration style |
-| **Schoology** | Folder-style organization of materials | Content (Unit/Section/Topic) management | Social-feed UI |
-| **Quizizz** | Quiz library, game-settings panel, assign-with-schedule, per-question reports | Activity editor settings, Activity reports | Playful chrome on teacher screens |
-| **Kahoot** | Creator layout: question list · editor · settings; live preview | Question bank editor, Activity preview | Loud color blocks |
-| **Nearpod** | Lesson flow mixing content and interactive moments | Future lesson flow | Slide-deck metaphors |
+| **Google Classroom** | Class-centric navigation, simple grouped work lists | Classes, assignments, course structure | Brand colors and card headers |
+| **Canvas** | Persistent navigation, clear course/assessment hierarchy | Assignments, Gradebook, Reports | Dense legacy chrome |
+| **Khan Academy** | Unit → lesson hierarchy, progress framing, calm learning structure | Student Learning, Units, Progress | Illustration style |
+| **Schoology** | Folder-style organization | Content hierarchy | Social-feed UI |
+| **Quizizz** | Creator settings and activity configuration flow | Activity editor | Playful teacher chrome |
+| **Kahoot** | Creator layout and live preview | Question bank/editor preview | Loud color blocks |
+| **Nearpod** | Lesson flow and interactive moments | Future lesson flow | Slide-deck metaphors |
+| **Linear** | Strong type hierarchy, whitespace, restrained controls, clear status | Teacher lists, detail pages, editors | Dark SaaS aesthetic |
+| **Notion** | Information grouping, readable sectioning, low visual noise | Editors, content organization | Document/editor chrome when it does not fit |
+| **Vercel Dashboard** | Quiet tables, compact status handling, strong alignment | Lists, filters, operational detail | Dense metric walls |
 
-Decision rule: pick the reference that solves **this screen's job**, adopt its *information architecture*, then render it with our tokens and components.
-
----
+Decision rule: pick the reference that solves **this screen's job**, adopt its information architecture and
+hierarchy, then render it with our tokens and components. Do not copy a product's visual identity.
 
 ## 11. Content and microcopy
 
@@ -729,28 +764,39 @@ grep -rnE "(text|bg|border|ring)-(slate|gray|zinc|neutral|stone|red|rose|orange|
 - Write the Screen Brief (0.2) and pick one page type (5.3).
 - Inspect the nearest existing screens and reuse their primitives.
 - Use only tokens (Section 3) and the component rules (Section 6).
-- Implement all five states (6.10) and keyboard/focus behavior.
-- Keep Teacher and Student visually one product (same shell, tokens, components).
-- Prefer simple, functional layouts that extend to future features.
+- Build the information hierarchy before styling it.
+- Implement all five states (6.10), keyboard/focus behavior and responsive behavior.
+- Keep Teacher and Student visually one product (same tokens/components), while respecting their different densities.
+- Make the first viewport easy to scan: context, title, primary action, main content and important state.
+- Prefer one dominant content area over multiple competing cards.
 
 ### MUST NOT
 
-- Invent a palette, font pairing, radius scale or spacing scale, or apply a "design direction" that departs from this file.
+- Invent a palette, font pairing, radius scale or spacing scale.
 - Use raw palette utilities, hex values, arbitrary text sizes, or `rounded-md`.
-- Add cards inside cards, decorative gradients, blobs, glow shadows, entrance animations, or an icon on every item.
-- Turn a page into a dashboard of KPI cards without a stated question it answers.
+- Use saturated colors for decoration or give different options unrelated colors.
+- Build a Teacher screen from a grid of rounded cards.
+- Put a bordered/rounded container around every section just to create separation.
+- Use multiple filled badges in the same row when simple metadata would be clearer.
+- Compress text, controls or table rows solely to fit more information above the fold.
+- Turn a page into a KPI wall without a stated question it answers.
 - Mix Activity and Assignment concepts in one screen or form.
 - Link navigation to `#` placeholders.
 - Make Teacher UI look like a game, or Student UI look like an admin panel.
 - Copy a reference product's visuals.
 
----
+**AI visual sanity check before finishing:** remove one border, one color and one container from the screen.
+If the hierarchy becomes clearer rather than worse, keep the simplification.
 
 ## 15. Definition of done for any UI change
 
 - [ ] Screen Brief written; page type chosen from 5.3
 - [ ] Follows the shell grid and page anatomy (5.1, 5.2)
-- [ ] Only tokens used: no raw colors, sizes or `rounded-md` (grep in 13.1 is clean)
+- [ ] The first viewport passes the three-second scan test
+- [ ] One dominant content area; no unnecessary card wall or nested containers
+- [ ] Only tokens used: no raw colors, sizes or `rounded-md`
+- [ ] Teacher uses `primary` as the main accent; `accent`/semantic colors appear only when meaningful
+- [ ] Structural containers are flat/square unless a rounded surface is justified
 - [ ] Shared primitives reused; no forked buttons, badges, inputs or dialogs
 - [ ] Loading, empty, error, disabled and success states implemented
 - [ ] Status shown with the 3.4 vocabulary; lifecycle and readiness are separate
@@ -760,11 +806,10 @@ grep -rnE "(text|bg|border|ring)-(slate|gray|zinc|neutral|stone|red|rose|orange|
 - [ ] Copy follows Section 11 (sentence case, one term per concept)
 - [ ] `npm run lint` and `npm run build` pass
 
----
-
 ## 16. Golden rule
 
-> **Use references to decide how the product is structured, and the tokens to decide how it looks.
-> If a choice is not in this document or in `globals.css`, propose it, document it, then use it everywhere.**
+> **Use references to decide how the product is structured, use tokens to decide how it looks, and use
+> hierarchy before decoration. When in doubt, remove color, containers and radius before adding more.**
 
 The result must feel like **one coherent E-Learning platform** across Teacher and Student.
+

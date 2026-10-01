@@ -69,7 +69,7 @@ Grade
       │    ├── Topic
       │    └── Question Bank
       │
-      └── Activities            (placed under a Topic)
+      └── Activities            (placed under a Unit)
            ├── Learning Mode
            ├── Try Hard Mode
            └── Game Experience  (optional layer)

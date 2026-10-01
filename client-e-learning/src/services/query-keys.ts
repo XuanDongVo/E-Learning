@@ -12,7 +12,7 @@ export const QUERY_KEYS = {
   contentQuestionBank:(id:number)=>["content","questionBank",id] as const,
   contentQuestions:(params:Record<string,unknown>)=>["content","questions",params] as const,
   contentQuestion:(id:number)=>["content","question",id] as const,
-  activities:(unitId:number)=>["activities",unitId] as const,
+  activities:(unitId:number,includeArchived=false)=>["activities",unitId,{includeArchived}] as const,
   activity:(id:number)=>["activity",id] as const,
   activitySources:(unitId:number)=>["activitySources",unitId] as const,
   leaderboard:["leaderboard"] as const, recentResults:["recentResults"] as const,

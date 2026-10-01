@@ -123,11 +123,23 @@ export function ActivityEditor({ activityId }: { activityId?: number }) {
     onError: e => toast.error(e instanceof Error ? e.message : "Could not save activity"),
   });
 
-  const toggleBank = (source: ActivitySourceOption) => setBanks(cur =>
-    cur.some(b => b.questionBankId === source.questionBankId)
+  const toggleBank = (source: ActivitySourceOption) => setBanks(cur => {
+    const exists = cur.some(b => b.questionBankId === source.questionBankId);
+    const next = exists
       ? cur.filter(b => b.questionBankId !== source.questionBankId)
-      : [...cur, { ...source, displayOrder: cur.length, ...(distribution === "PERCENTAGE" ? { percentage: 0 } : {}), ...(distribution === "FIXED_COUNT" ? { fixedCount: 1 } : {}) }]
-  );
+      : [...cur, {
+          ...source,
+          displayOrder: cur.length,
+          ...(distribution === "PERCENTAGE" ? { percentage: 0 } : {}),
+          ...(distribution === "FIXED_COUNT" ? { fixedCount: 1 } : {}),
+        }];
+
+    if (distribution === "FIXED_COUNT") {
+      setTotal(next.reduce((sum, bank) => sum + (bank.fixedCount || 0), 0));
+    }
+
+    return next;
+  });
 
   const changeDistribution = (next: DistributionMode) => {
     setDistribution(next);
@@ -190,7 +202,14 @@ export function ActivityEditor({ activityId }: { activityId?: number }) {
             </Field>
             <div><p className="text-body font-semibold">Distribution</p><div className="mt-2 grid gap-2 md:grid-cols-3">{(["EQUAL","PERCENTAGE","FIXED_COUNT"] as DistributionMode[]).map(v=><button key={v} type="button" onClick={()=>changeDistribution(v)} aria-pressed={distribution===v} className={`rounded-xl border px-4 py-3 text-left text-body font-semibold ${distribution===v?"border-primary bg-primary-light text-primary":"border-border-color hover:bg-background-app"}`}>{v==="FIXED_COUNT"?"Fixed count":v==="PERCENTAGE"?"Percentage":"Equal"}</button>)}</div></div>
           </div>
-          {banks.length>0&&distribution!=="EQUAL"&&<div className="mt-5 border border-border-color"><div className="grid grid-cols-[1fr_7rem] border-b border-border-color bg-background-app px-4 py-2 text-label font-semibold text-neutral-muted"><span>Question Bank</span><span className="text-right">{distribution==="PERCENTAGE"?"Percentage":"Questions"}</span></div>{banks.map(b=><div key={b.questionBankId} className="grid grid-cols-[1fr_7rem] items-center gap-3 border-b border-border-color px-4 py-3 last:border-b-0"><span className="truncate text-body font-semibold">{b.questionBankName}</span><input type="number" min={1} max={distribution==="PERCENTAGE"?100:undefined} value={distribution==="PERCENTAGE"?b.percentage??"":b.fixedCount??""} onChange={e=>setBanks(cur=>cur.map(x=>x.questionBankId===b.questionBankId?{...x,...(distribution==="PERCENTAGE"?{percentage:Number(e.target.value)}:{fixedCount:Number(e.target.value)})}:x))} className={inputClass()+" text-right"}/></div>)}</div>}
+          {banks.length>0&&distribution!=="EQUAL"&&<div className="mt-5 border border-border-color"><div className="grid grid-cols-[1fr_7rem] border-b border-border-color bg-background-app px-4 py-2 text-label font-semibold text-neutral-muted"><span>Question Bank</span><span className="text-right">{distribution==="PERCENTAGE"?"Percentage":"Questions"}</span></div>{banks.map(b=><div key={b.questionBankId} className="grid grid-cols-[1fr_7rem] items-center gap-3 border-b border-border-color px-4 py-3 last:border-b-0"><span className="truncate text-body font-semibold">{b.questionBankName}</span><input type="number" min={1} max={distribution==="PERCENTAGE"?100:undefined} value={distribution==="PERCENTAGE"?b.percentage??"":b.fixedCount??""} onChange={e=>{
+  const value=Math.max(1,Number(e.target.value));
+  setBanks(cur=>cur.map(x=>x.questionBankId===b.questionBankId
+    ? {...x,...(distribution==="PERCENTAGE"?{percentage:value}:{fixedCount:value})}:x));
+  if(distribution==="FIXED_COUNT"){
+    setTotal(banks.reduce((sum,bank)=>sum+(bank.questionBankId===b.questionBankId?value:bank.fixedCount||0),0));
+  }
+}} className={inputClass()+" text-right"}/></div>)}</div>}
           <div className={`mt-4 flex items-start gap-2 border p-3 text-body-sm ${distributionError?"border-accent-light bg-accent-light text-accent-text":"border-success-light bg-success-light text-success"}`}>{distributionError?<AlertTriangle className="mt-0.5 h-4 w-4"/>:<Check className="mt-0.5 h-4 w-4"/>}<p>{distributionError||`Allocated ${allocationTotal} / ${total} questions.`}</p></div>
         </EditorSection>
 

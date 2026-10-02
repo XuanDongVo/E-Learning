@@ -263,6 +263,7 @@ export interface ContentToolbarProps {
   description?: string;
   action?: string;
   onAction?: () => void;
+  actionHref?: string;
   children?: ReactNode;
 }
 export interface ListQuestionsParams {

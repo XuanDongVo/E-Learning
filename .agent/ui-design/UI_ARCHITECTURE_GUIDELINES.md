@@ -813,3 +813,15 @@ If the hierarchy becomes clearer rather than worse, keep the simplification.
 
 The result must feel like **one coherent E-Learning platform** across Teacher and Student.
 
+## 17. Teacher refresh (October 2026)
+
+The Teacher shell follows the current ClassRoom reference direction:
+
+- Use a compact 240px sidebar, a 65px top bar and a warm neutral page surface.
+- Keep body copy at 14px, supporting text at 12px and page titles between 22px and 26px.
+- Use Plus Jakarta Sans throughout the app. Headings are bold, but never oversized.
+- The primary action color is orange. Use pale orange, blue, yellow and green surfaces only for
+  meaningful metric states.
+- Dashboard cards should answer one question each: classes, units, assignments and completion.
+- Vietnamese labels are preferred in the Teacher workspace and use sentence case.
+- Mobile navigation is a drawer; desktop navigation must expose the active route clearly.

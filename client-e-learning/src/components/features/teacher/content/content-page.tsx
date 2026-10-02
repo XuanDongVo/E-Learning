@@ -68,7 +68,7 @@ export function ContentPage() {
       case "bulk-create":
         return (
           <BulkQuestionCreator
-            bankId={location.id}
+            bankId={location.id ?? 0}
             bankName={location.bankName ?? ""}
             onNavigate={navigate}
           />

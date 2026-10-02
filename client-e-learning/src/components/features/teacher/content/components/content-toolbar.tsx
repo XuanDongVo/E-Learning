@@ -12,7 +12,6 @@ export function ContentToolbar({
     <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
       <div>
         <h1 className="mb-1.5 text-page-title font-bold tracking-[-0.4px] text-slate-900">{title}</h1>
-
         {description && <p className="text-body-sm text-slate-400">{description}</p>}
       </div>
 

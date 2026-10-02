@@ -4,7 +4,7 @@
 :root {
   --font-jakarta: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   
-  /* Vibrant Scholastic Palette */
+  /* Restrained educational palette: primary action + neutral surfaces; secondary/accent are semantic only. */
   --primary: #4F46E5;
   --primary-hover: #4338CA;
   --primary-light: #EEF2FF;
@@ -13,11 +13,11 @@
   --secondary: #06B6D4;
   --secondary-hover: #0891B2;
   --secondary-light: #ECFEFF;
-  --secondary-foreground: #FFFFFF;
+  --secondary-foreground: #0F172A;
   
   --accent: #F59E0B;
   --accent-light: #FEF3C7;
-  --accent-foreground: #FFFFFF;
+  --accent-foreground: #0F172A;
   
   --neutral-dark: #0F172A;
   --neutral-muted: #64748B;

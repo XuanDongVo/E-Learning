@@ -5,14 +5,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 
-public interface ActivityBankRepository
-        extends JpaRepository<ActivityBank, Long> {
+public interface ActivityBankRepository extends JpaRepository<ActivityBank, Long> {
 
-    List<ActivityBank> findByActivityIdOrderByDisplayOrderAsc(
-            Long activityId
-    );
+    List<ActivityBank> findByActivityIdOrderByDisplayOrderAsc(Long activityId);
 
     void deleteByActivityId(Long activityId);
-
-    boolean existsByQuestionBankId(Long questionBankId);
 }

@@ -1,65 +1,30 @@
+"use client";
+
 import Link from "next/link";
-import { Activity, ArrowLeft, BarChart3, BookOpen, ClipboardList, Gamepad2, LayoutDashboard, Settings, ShieldCheck, UserRound, Users } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { Activity, BarChart3, BookOpen, ClipboardList, LayoutDashboard, Menu, Settings, ShieldCheck, UserRound, Users, X } from "lucide-react";
+import { useState } from "react";
 import { AuthGuard } from "@/components/auth/auth-guard";
 import { SessionActions } from "@/components/auth/session-actions";
-// import { RoleSwitcher } from "@/components/layout/role-switcher";
 
-export default function TeacherLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  return (
-    <>
-      <AuthGuard requiredRole="TEACHER">
-        <div className="flex min-h-screen bg-background-app">
-          <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col justify-between border-r border-border-color bg-card-bg px-4 py-6 lg:flex">
-            <div className="space-y-8">
-              <Link href="/teacher" className="flex items-center gap-3 px-2">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-secondary text-secondary-foreground shadow-md shadow-secondary/20">
-                  <ShieldCheck className="h-6 w-6" />
-                </div>
-                <span className="flex items-center gap-1 text-ui-xl font-extrabold tracking-tight text-neutral-dark">
-                  Learn<span className="text-secondary">Teacher</span>
-                </span>
-              </Link>
-              <nav className="space-y-1">
-                <Link href="/teacher" className="flex items-center gap-3.5 rounded-xl bg-secondary-light px-4 py-3 text-body font-semibold text-secondary-hover"><LayoutDashboard className="h-5 w-5" /><span>Dashboard</span></Link>
-                <Link href="/teacher/classes" className="flex items-center gap-3.5 rounded-xl px-4 py-3 text-body font-semibold text-neutral-muted transition hover:bg-secondary-light hover:text-secondary-hover"><Users className="h-5 w-5" /><span>Classes</span></Link>
-                <Link href="/teacher/grades" className="flex items-center gap-3.5 rounded-xl px-4 py-3 text-body font-semibold text-neutral-muted transition hover:bg-secondary-light hover:text-secondary-hover"><BookOpen className="h-5 w-5" /><span>Grades</span></Link>
-                <div className="my-3 border-t border-border-color" />
-                <span className="px-4 text-caption font-extrabold uppercase tracking-[0.16em] text-neutral-subtle">Workspace</span>
-                <Link href="/teacher/content" className="flex items-center gap-3.5 rounded-xl px-4 py-2.5 text-body font-semibold text-neutral-muted"><BookOpen className="h-4 w-4" /><span>Content</span></Link>
-                <Link href="#activities" className="flex items-center gap-3.5 rounded-xl px-4 py-2.5 text-body font-semibold text-neutral-muted"><Activity className="h-4 w-4" /><span>Activities</span></Link>
-                <Link href="#assignments" className="flex items-center gap-3.5 rounded-xl px-4 py-2.5 text-body font-semibold text-neutral-muted"><ClipboardList className="h-4 w-4" /><span>Assignments</span></Link>
-                <Link href="#students" className="flex items-center gap-3.5 rounded-xl px-4 py-2.5 text-body font-semibold text-neutral-muted"><UserRound className="h-4 w-4" /><span>Students</span></Link>
-                <Link href="#games" className="flex items-center gap-3.5 rounded-xl px-4 py-2.5 text-body font-semibold text-neutral-muted"><Gamepad2 className="h-4 w-4" /><span>Games</span></Link>
-                <Link href="#reports" className="flex items-center gap-3.5 rounded-xl px-4 py-2.5 text-body font-semibold text-neutral-muted"><BarChart3 className="h-4 w-4" /><span>Reports</span></Link>
-                <Link href="#settings" className="flex items-center gap-3.5 rounded-xl px-4 py-2.5 text-body font-semibold text-neutral-muted"><Settings className="h-4 w-4" /><span>Settings</span></Link>
-              </nav>
-            </div>
-            <Link
-              href="/student"
-              className="flex items-center gap-2 border-t border-border-color p-2 pt-4 text-body-sm font-bold text-primary hover:text-primary-hover"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              <span>Switch to Student View</span>
-            </Link>
-          </aside>
-          <div className="flex min-w-0 flex-1 flex-col">
-            <header className="flex h-16 items-center justify-between border-b border-border-color bg-card-bg px-6">
-              <div className="flex items-center gap-2">
-                <span className="font-extrabold text-neutral-dark">
-                  Teacher Portal
-                </span>
-              </div>
-              <SessionActions />
-            </header>
-            <main className="flex-1 p-6">{children}</main>
-          </div>
-        </div>
-      </AuthGuard>
-      {/* <RoleSwitcher /> */}
-    </>
-  );
+const groups = [
+  { label:"Overview", items:[["Dashboard","/teacher",LayoutDashboard]] },
+  { label:"Teaching", items:[["Classes","/teacher/classes",Users],["Students",null,UserRound]] },
+  { label:"Content", items:[["Content","/teacher/content",BookOpen],["Activities","/teacher/activities",Activity],["Assignments",null,ClipboardList]] },
+  { label:"Insights", items:[["Reports",null,BarChart3],["Settings",null,Settings]] },
+] as const;
+
+function Sidebar({mobile=false,onClose}:{mobile?:boolean;onClose?:()=>void}) {
+  const pathname=usePathname();
+  return <aside className={mobile?"fixed inset-y-0 left-0 z-50 flex w-72 flex-col border-r border-border-color bg-card-bg px-4 py-6 lg:hidden":"sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-border-color bg-card-bg px-4 py-6 lg:flex"}>
+    <div><div className="mb-8 flex items-center justify-between"><Link href="/teacher" onClick={onClose} className="flex items-center gap-3 px-2"><span className="grid h-10 w-10 place-items-center rounded-lg bg-primary text-primary-foreground"><ShieldCheck className="h-6 w-6"/></span><span className="text-ui-xl font-extrabold">Learn<span className="text-primary">Teacher</span></span></Link>{mobile&&<button onClick={onClose} aria-label="Close navigation" className="grid h-10 w-10 place-items-center rounded-lg hover:bg-background-app"><X className="h-5 w-5"/></button>}</div>
+      <nav className="space-y-5" aria-label="Teacher navigation">{groups.map(group=><div key={group.label}><p className="mb-2 px-4 text-label font-semibold text-neutral-muted">{group.label}</p><div className="space-y-1">{group.items.map(([label,href,Icon])=>{const active=!!href&&(pathname===href||(href!=="/teacher"&&pathname.startsWith(href+"/")));if(!href)return <div key={label} className="flex h-10 items-center gap-3 rounded-lg px-4 text-body font-semibold text-neutral-subtle" aria-disabled="true"><Icon className="h-5 w-5"/><span className="flex-1">{label}</span><span className="rounded-full bg-background-app px-2 py-0.5 text-caption text-neutral-muted">Soon</span></div>;return <Link key={label} href={href} onClick={onClose} aria-current={active?"page":undefined} className={active?"flex h-10 items-center gap-3 rounded-lg bg-primary-light px-4 text-body font-semibold text-primary":"flex h-10 items-center gap-3 rounded-lg px-4 text-body font-semibold text-neutral-muted hover:bg-background-app"}><Icon className={active?"h-5 w-5 text-primary":"h-5 w-5"}/><span>{label}</span></Link>})}</div></div>)}</nav>
+    </div>
+    <Link href="/student" onClick={onClose} className="border-t border-border-color p-2 pt-4 text-body-sm font-semibold text-primary">Switch to Student View</Link>
+  </aside>;
+}
+
+export default function TeacherLayout({children}:{children:React.ReactNode}) {
+  const [open,setOpen]=useState(false);
+  return <AuthGuard requiredRole="TEACHER"><div className="min-h-screen bg-background-app lg:flex"><Sidebar/>{open&&<><button aria-label="Close navigation" onClick={()=>setOpen(false)} className="fixed inset-0 z-40 bg-neutral-dark/30 lg:hidden"/><Sidebar mobile onClose={()=>setOpen(false)}/></>}<div className="flex min-w-0 flex-1 flex-col"><header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border-color bg-card-bg px-4 sm:px-6"><div className="flex items-center gap-3"><button onClick={()=>setOpen(true)} aria-label="Open navigation" className="grid h-10 w-10 place-items-center rounded-lg lg:hidden"><Menu className="h-5 w-5"/></button><span className="text-body font-semibold">Teacher Portal</span></div><SessionActions/></header><main className="flex-1 p-4 md:p-6">{children}</main></div></div></AuthGuard>;
 }

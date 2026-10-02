@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -11,6 +13,7 @@ import {
   Plus,
 } from "lucide-react";
 import { contentService } from "@/services/content.service";
+import { activityService } from "@/services/activity.service";
 import { QUERY_KEYS } from "@/services/query-keys";
 import type {
   ContentView,
@@ -41,6 +44,11 @@ export function UnitDetail({
     queryKey: QUERY_KEYS.contentUnit(unitId),
     queryFn: async () => (await contentService.getUnit(unitId)).data,
   });
+  const activities = useQuery({
+    queryKey: QUERY_KEYS.activities(unitId),
+    queryFn: async () => (await activityService.list(unitId)).data ?? [],
+  });
+
   const sections = useQuery({
     queryKey: QUERY_KEYS.contentSections(unitId),
     queryFn: async () => (await contentService.listSections(unitId)).data,
@@ -170,6 +178,59 @@ export function UnitDetail({
         actionPending={status.isPending || archive.isPending}
       />
 
+      <section className="mt-5 overflow-hidden rounded-xl border border-slate-200 bg-white">
+        <div className="flex items-center justify-between border-b border-slate-100 px-4 py-4 sm:px-5">
+          <div>
+            <p className="text-xs font-extrabold uppercase tracking-wider text-primary">
+              Learning activities
+            </p>
+            <h2 className="mt-1 font-bold text-slate-800">
+              Activities in this unit
+            </h2>
+          </div>
+          <Link
+            href={"/teacher/activities?unitId=" + unitId}
+            className="rounded-lg bg-primary-light px-3 py-2 text-xs font-bold text-primary"
+          >
+            Open activities
+          </Link>
+        </div>
+        <div className="divide-y divide-slate-100">
+          {(activities.data ?? []).slice(0, 4).map((activity) => (
+            <Link
+              key={activity.id}
+              href={"/teacher/activities/" + activity.id}
+              className="flex items-center gap-3 px-4 py-3.5 hover:bg-slate-50 sm:px-5"
+            >
+              <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary-light text-primary">
+                A
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-sm font-semibold text-slate-800">
+                  {activity.name}
+                </span>
+                <span className="text-xs text-slate-400">
+                  {activity.totalQuestions} questions ·{" "}
+                  {activity.mode === "BOTH"
+                    ? "Both modes"
+                    : activity.mode === "TRY_HARD"
+                      ? "Try Hard"
+                      : "Learning"}
+                </span>
+              </span>
+              <span className="text-xs font-bold text-slate-400">
+                {activity.status}
+              </span>
+            </Link>
+          ))}
+          {(activities.data ?? []).length === 0 && (
+            <div className="p-8 text-center text-sm text-slate-400">
+              No activities yet.
+            </div>
+          )}
+        </div>
+      </section>
+
       {editOpen && (
         <div className="mt-5">
           <ContentEditor
@@ -276,7 +337,8 @@ export function UnitDetail({
                 const isDraft = section.status !== "PUBLISHED";
                 const highlighted = justMovedId === section.id;
                 const isDragging = dragId === section.id;
-                const isDragOver = dragOverId === section.id && dragId !== section.id;
+                const isDragOver =
+                  dragOverId === section.id && dragId !== section.id;
                 return (
                   <li
                     key={section.id}
@@ -352,7 +414,9 @@ export function UnitDetail({
                       </button>
                       <button
                         type="button"
-                        disabled={index === list.length - 1 || reorder.isPending}
+                        disabled={
+                          index === list.length - 1 || reorder.isPending
+                        }
                         onClick={() => move(index, 1)}
                         aria-label="Move section down"
                         className="rounded-md p-1.5 text-slate-400 transition hover:bg-primary/10 hover:text-primary disabled:cursor-not-allowed disabled:opacity-25"

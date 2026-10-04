@@ -77,26 +77,6 @@ export default function AssignmentDetailPage() {
     }
   };
 
-  const moveQuestion = async (fromIndex: number, toIndex: number) => {
-    if (locked || fromIndex === toIndex) return;
-
-    const next = [...questionItems];
-    const [moved] = next.splice(fromIndex, 1);
-    if (!moved) return;
-    next.splice(toIndex, 0, moved);
-
-    try {
-      await assignmentQuestionService.reorder(assignmentId, {
-        questionIds: next.map((item) => item.questionId),
-      });
-      await refresh();
-    } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "Could not reorder questions.",
-      );
-    }
-  };
-
   if (assignment.isLoading || questions.isLoading) {
     return (
       <p className="mx-auto max-w-[1180px] p-8 text-body-sm text-muted-foreground">

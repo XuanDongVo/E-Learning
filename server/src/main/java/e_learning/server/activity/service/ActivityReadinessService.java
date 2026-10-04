@@ -40,8 +40,8 @@ public class ActivityReadinessService {
         List<ActivityReadinessResponse.ReadinessIssue> errors = new ArrayList<>();
 
         for (ActivityBank bank : banks) {
-            long total = questionRepository.countByQuestionBankId(bank.getQuestionBank().getId());
-            long ready = questionRepository.countByQuestionBankIdAndCompleteTrue(bank.getQuestionBank().getId());
+            long total = contentQuestionRepository.countByQuestionBankId(bank.getQuestionBank().getId());
+            long ready = contentQuestionRepository.countByQuestionBankIdAndQuestionCompleteTrue(bank.getQuestionBank().getId());
             Integer required = allocations.get(bank.getQuestionBank().getId());
             ContentStatus status = bank.getQuestionBank().getStatus();
 

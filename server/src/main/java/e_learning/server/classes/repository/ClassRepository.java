@@ -12,4 +12,6 @@ public interface ClassRepository extends JpaRepository<ClassEntity, Long> {
     List<ClassEntity> findAllByTeacherId(Long teacherId);
 
     boolean existsByNameIgnoreCaseAndAcademicYearAndTeacherId(String name, String academicYear, Long teacherId);
+
+    boolean existsByIdAndTeacherId(Long id, Long teacherId);
 }

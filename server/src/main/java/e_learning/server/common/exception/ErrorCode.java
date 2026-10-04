@@ -11,6 +11,7 @@ public enum ErrorCode {
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "USER_NOT_FOUND", "User was not found"),
     EMAIL_ALREADY_EXISTS(HttpStatus.CONFLICT, "EMAIL_ALREADY_EXISTS", "The email is already registered"),
     CLASS_ALREADY_EXISTS(HttpStatus.CONFLICT, "CLASS_ALREADY_EXISTS", "A class with this name already exists for the academic year"),
+    CLASS_NOT_FOUND(HttpStatus.NOT_FOUND, "CLASS_NOT_FOUND", "Class not found"),
     GRADE_NOT_FOUND(HttpStatus.NOT_FOUND, "GRADE_NOT_FOUND", "Grade not found"),
     GRADE_ALREADY_EXISTS(HttpStatus.CONFLICT, "GRADE_ALREADY_EXISTS", "Grade already exists"),
     UNIT_NOT_FOUND(HttpStatus.NOT_FOUND, "UNIT_NOT_FOUND", "Unit not found"),
@@ -27,7 +28,13 @@ public enum ErrorCode {
     ACTIVITY_ALREADY_EXISTS(HttpStatus.CONFLICT, "ACTIVITY_ALREADY_EXISTS", "An activity with this name already exists in this unit"),
     ACTIVITY_INVALID_CONFIGURATION(HttpStatus.BAD_REQUEST, "ACTIVITY_INVALID_CONFIGURATION", "The activity configuration is invalid"),
     ACTIVITY_NOT_READY(HttpStatus.CONFLICT, "ACTIVITY_NOT_READY", "The activity is not ready to be published"),
-    ACTIVITY_QUESTION_BANK_OUTSIDE_UNIT(HttpStatus.BAD_REQUEST, "ACTIVITY_QUESTION_BANK_OUTSIDE_UNIT", "The question bank must belong to the same unit as the activity");
+    ACTIVITY_QUESTION_BANK_OUTSIDE_UNIT(HttpStatus.BAD_REQUEST, "ACTIVITY_QUESTION_BANK_OUTSIDE_UNIT", "The question bank must belong to the same unit as the activity"),
+    ASSIGNMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "ASSIGNMENT_NOT_FOUND", "Assignment not found"),
+    ASSIGNMENT_INVALID_CONFIGURATION(HttpStatus.BAD_REQUEST, "ASSIGNMENT_INVALID_CONFIGURATION", "The assignment configuration is invalid"),
+    ASSIGNMENT_TARGET_REQUIRED(HttpStatus.BAD_REQUEST, "ASSIGNMENT_TARGET_REQUIRED", "At least one assignment target is required"),
+    ASSIGNMENT_TARGET_INVALID(HttpStatus.BAD_REQUEST, "ASSIGNMENT_TARGET_INVALID", "The assignment target is invalid"),
+    ASSIGNMENT_SCHEDULE_INVALID(HttpStatus.BAD_REQUEST, "ASSIGNMENT_SCHEDULE_INVALID", "The assignment schedule is invalid"),
+    ASSIGNMENT_TIME_LIMIT_INVALID(HttpStatus.BAD_REQUEST, "ASSIGNMENT_TIME_LIMIT_INVALID", "The assignment time limit is invalid");
 
     private final HttpStatus status;
     private final String code;

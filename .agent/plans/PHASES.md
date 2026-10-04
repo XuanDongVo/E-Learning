@@ -123,13 +123,14 @@ game, preview it, save it, reload it and retrieve the persisted configuration th
 ### Phase 5 — Assignments
 
 An Assignment is **independent of Activity** ([ADR 0001](../decisions/0001-activity-and-assignment-are-independent.md)).
-The detailed Phase 5 spec has not been written yet; write it in `plans/` before implementing.
+The source of truth is [`E-LEARNING_PHASE_5_ASSIGNMENTS_SPEC_EN.md`](./E-LEARNING_PHASE_5_ASSIGNMENTS_SPEC_EN.md)
+and the confirmed decisions are recorded in [ADR 0003](../decisions/0003-phase-5-assignment-contract.md).
 
 Implement:
 
 - Assignment list
 - Create Assignment
-- Select the question sources/assessment configuration (an Assignment may reuse QuestionBanks; it does not select an Activity)
+- Own AssignmentQuestion records; do not use Activity or QuestionBank as the official assessment source
 - Select an `AssignmentTarget`
 - Start and due dates, optional time limit
 - Assignment detail
@@ -140,7 +141,7 @@ Assignment target types: `CLASS`, `STUDENT`, `GRADE`, `ALL`.
 Assignment flow:
 
 ```text
-Question sources → Select target → Configure schedule/settings → Review → Assign
+Questions → Select target → Configure schedule/settings → Review → Assign
 ```
 
 Open questions for the Phase 5 spec (these rules were written for the old multi-attempt model): late-submission

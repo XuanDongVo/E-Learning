@@ -5,6 +5,7 @@ export interface Class {
     id: number;
     code: string;
     name: string;
+    displayOrder: number;
   };
   academicYear: string;
   studentCount: number;

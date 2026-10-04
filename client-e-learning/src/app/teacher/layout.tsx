@@ -28,7 +28,7 @@ const navigation: { key: "overview" | "classes" | "content" | "activities" | "as
   { key: "classes", href: "/teacher/classes", icon: Users },
   { key: "content", href: "/teacher/content", icon: BookOpen },
   { key: "activities", href: "/teacher/activities", icon: ClipboardList },
-  { key: "assignments", href: "/teacher/grades", icon: ClipboardList, badge: "8" },
+  { key: "assignments", href: "/teacher/assignments", icon: ClipboardList, badge: "8" },
   { key: "analytics", href: "/teacher/reports", icon: BarChart3 },
 ];
 
@@ -98,11 +98,11 @@ function TeacherSidebar({
               >
                 <Icon className="size-[1rem]" />
                 <span className="flex-1">{t(key)}</span>
-                {badge && (
+                {/* {badge && (
                   <span className="grid size-[1.1rem] place-items-center rounded-full bg-primary text-[0.625rem] font-bold text-primary-foreground">
                     {badge}
                   </span>
-                )}
+                )} */}
               </Link>
             );
           })}

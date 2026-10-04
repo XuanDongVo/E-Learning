@@ -12,18 +12,6 @@ import {
   Volume2,
   Loader2,
 } from "lucide-react";
-import { useRef, useState } from "react";
-import {
-  ChevronDown,
-  CheckCircle2,
-  Plus,
-  Trash2,
-  AlertTriangle,
-  X,
-  ImageIcon,
-  Volume2,
-  Loader2,
-} from "lucide-react";
 import {
   questionDifficultyOptions,
   questionTypeOptions,
@@ -34,7 +22,6 @@ import {
   type QuestionDifficulty,
 } from "@/types/question";
 import { makeOptions } from "./question-draft";
-import { isQuestionComplete } from "./question-validator";
 
 export type {
   DraftQuestion,
@@ -177,7 +164,7 @@ export function QuestionForm({
         name: file.name,
         kind,
         sizeLabel: `${Math.round(file.size / 1024)} KB`,
-        url: res.data.url ?? URL.createObjectURL(file),
+        url: res.url ?? URL.createObjectURL(file),
       };
 
       onChange({

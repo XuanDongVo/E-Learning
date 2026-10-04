@@ -30,3 +30,7 @@ export async function downloadAssignmentQuestionTemplate(): Promise<void> {
   anchor.click();
   URL.revokeObjectURL(url);
 }
+
+export {
+  assignmentQuestionService,
+} from "./assignment/assignment.question.service";

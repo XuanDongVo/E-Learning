@@ -1,10 +1,8 @@
-import { request, requestMultipart } from "@/services/api.service";
+import { request } from "@/services/api.service";
 import type {
   AssignmentQuestion,
-  AssignmentQuestionImportPreview,
   BulkDeleteAssignmentQuestionsRequest,
   CreateAssignmentQuestionRequest,
-  ReorderAssignmentQuestionRequest,
   UpdateAssignmentQuestionRequest,
 } from "@/types/assignment";
 
@@ -50,26 +48,4 @@ export const assignmentQuestionService = {
         body: JSON.stringify(payload),
       },
     ),
-
-  reorder: (
-    assignmentId: number,
-    payload: ReorderAssignmentQuestionRequest,
-  ) =>
-    request<AssignmentQuestion[]>(
-      `/v1/assignments/${assignmentId}/questions/order`,
-      {
-        method: "PUT",
-        body: JSON.stringify(payload),
-      },
-    ),
-
-  previewImport: (assignmentId: number, file: File) => {
-    const formData = new FormData();
-    formData.append("file", file);
-
-    return requestMultipart<AssignmentQuestionImportPreview>(
-      `/v1/assignments/${assignmentId}/questions/import/preview`,
-      formData,
-    );
-  },
 };

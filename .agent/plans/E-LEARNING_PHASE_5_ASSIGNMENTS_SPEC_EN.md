@@ -435,9 +435,10 @@ The migration creates:
 - `assignments`
 - `assignment_targets`
 - `assignment_questions`
-- `assignment_question_options`
-- `assignment_question_answers`
-- `assignment_question_media`
+- `questions`
+- `question_options`
+- `question_answers`
+- `question_media`
 
 Key constraints:
 

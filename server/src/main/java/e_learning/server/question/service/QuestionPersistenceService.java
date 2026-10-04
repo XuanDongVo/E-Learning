@@ -88,10 +88,13 @@ public class QuestionPersistenceService {
                 request.getAnswers()
         ));
 
+        Set<Long> previousMediaIds = questionMediaRepository.findMediaIdsByQuestionIdIn(Set.of(questionId));
+
         questionOptionRepository.deleteByQuestionId(questionId);
         questionAnswerRepository.deleteByQuestionId(questionId);
         questionMediaRepository.deleteByQuestionId(questionId);
         saveChildEntities(question, request);
+        releaseUnusedMedia(previousMediaIds);
 
         return question;
     }

@@ -40,6 +40,7 @@ public class AssignmentQuestionService {
             List<CreateAssignmentQuestionRequest> requests
     ) {
         Assignment assignment = findAssignment(assignmentId);
+        ensureEditable(assignment);
 
         if (requests == null || requests.isEmpty()) {
             throw new AppException(ErrorCode.EMPTY_QUESTION);
@@ -72,6 +73,7 @@ public class AssignmentQuestionService {
             UpdateAssignmentQuestionRequest request
     ) {
         AssignmentQuestion ownership = findOwnership(assignmentId, questionId);
+        ensureEditable(ownership.getAssignment());
         Question question = questionPersistenceService.updateQuestion(questionId, request);
         ownership.setQuestion(question);
         return toResponse(ownership);
@@ -79,7 +81,8 @@ public class AssignmentQuestionService {
 
     @Transactional
     public void bulkDelete(Long assignmentId, BulkDeleteAssignmentQuestionsRequest request) {
-        findAssignment(assignmentId);
+        Assignment assignment = findAssignment(assignmentId);
+        ensureEditable(assignment);
 
         Set<Long> ids = new HashSet<>(request.ids());
         List<AssignmentQuestion> ownerships =
@@ -91,6 +94,12 @@ public class AssignmentQuestionService {
 
         assignmentQuestionRepository.deleteAllInBatch(ownerships);
         questionPersistenceService.deleteQuestions(ids);
+    }
+
+    private void ensureEditable(Assignment assignment) {
+        if (assignment.getStatus() == e_learning.server.assignment.enums.AssignmentStatus.ARCHIVED) {
+            throw new AppException(ErrorCode.ASSIGNMENT_INVALID_CONFIGURATION);
+        }
     }
 
     private Assignment findAssignment(Long assignmentId) {

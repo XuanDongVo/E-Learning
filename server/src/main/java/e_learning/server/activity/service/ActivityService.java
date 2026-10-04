@@ -7,7 +7,7 @@ import e_learning.server.activity.entity.*;
 import e_learning.server.activity.enums.ActivityStatus;
 import e_learning.server.activity.repository.*;
 import e_learning.server.common.exception.*;
-import e_learning.server.content.question.repository.QuestionRepository;
+import e_learning.server.content.question.repository.ContentQuestionRepository;
 import e_learning.server.content.questionBank.entity.QuestionBank;
 import e_learning.server.content.questionBank.repository.QuestionBankRepository;
 import e_learning.server.content.unit.entity.Unit;
@@ -28,7 +28,7 @@ public class ActivityService {
     private final ActivityReadinessService readinessService;
     private final UnitRepository unitRepository;
     private final QuestionBankRepository questionBankRepository;
-    private final QuestionRepository questionRepository;
+    private final ContentQuestionRepository contentQuestionRepository;
 
     @Transactional(readOnly = true)
     public List<ActivityResponse> listByUnit(Long unitId, boolean includeArchived) {

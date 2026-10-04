@@ -1,7 +1,7 @@
 package e_learning.server.assignment.importer;
 
-import e_learning.server.content.common.enums.Difficulty;
-import e_learning.server.content.common.enums.QuestionType;
+import e_learning.server.question.enums.Difficulty;
+import e_learning.server.question.enums.QuestionType;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddressList;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;

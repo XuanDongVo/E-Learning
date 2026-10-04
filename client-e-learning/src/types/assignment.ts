@@ -79,8 +79,6 @@ export interface AssignmentQuestionContent {
 export interface AssignmentQuestion {
   questionId: number;
   assignmentId: number;
-  topicId?: number;
-  position: number;
   question: AssignmentQuestionContent;
 }
 
@@ -98,7 +96,6 @@ export interface CreateAssignmentQuestionRequest {
   difficulty?: QuestionDifficulty;
   content: string;
   explanation?: string;
-  topicId?: number;
   options?: CreateAssignmentQuestionOptionRequest[];
   answers?: CreateAssignmentQuestionAnswerRequest[];
   mediaIds?: number[];
@@ -106,26 +103,8 @@ export interface CreateAssignmentQuestionRequest {
 
 export type UpdateAssignmentQuestionRequest = CreateAssignmentQuestionRequest;
 
-export interface ReorderAssignmentQuestionRequest {
-  questionIds: number[];
-}
-
 export interface BulkDeleteAssignmentQuestionsRequest {
   ids: number[];
-}
-
-export interface AssignmentQuestionImportPreviewRow {
-  rowNumber: number;
-  valid: boolean;
-  errors: string[];
-  question: CreateAssignmentQuestionRequest;
-}
-
-export interface AssignmentQuestionImportPreview {
-  totalRows: number;
-  validRows: number;
-  invalidRows: number;
-  rows: AssignmentQuestionImportPreviewRow[];
 }
 
 export type AssignmentStatus = "todo" | "completed" | "late";

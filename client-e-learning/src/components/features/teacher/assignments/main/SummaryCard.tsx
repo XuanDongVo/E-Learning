@@ -1,11 +1,13 @@
 import type { ReactNode } from "react";
+import type { ColorTone } from "@/types/theme";
+import { colorToneClasses } from "@/utils/theme";
 
 type Props = {
   icon: ReactNode;
   label: string;
   value: string | number;
   hint: string;
-  tone: "orange" | "amber" | "green" | "blue";
+  tone: ColorTone;
 };
 
 export function SummaryCard({
@@ -15,14 +17,6 @@ export function SummaryCard({
   hint,
   tone,
 }: Props) {
-
-  const tones = {
-    orange: "bg-orange-100 text-orange-600",
-    amber: "bg-amber-100 text-amber-600",
-    green: "bg-green-100 text-green-600",
-    blue: "bg-sky-100 text-sky-600",
-  };
-
   return (
     <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
       <div className="flex items-center justify-between">
@@ -31,7 +25,7 @@ export function SummaryCard({
         </p>
 
         <span
-          className={`grid size-8 place-items-center rounded-lg ${tones[tone]}`}
+          className={`grid size-8 place-items-center rounded-lg ${colorToneClasses[tone]}`}
         >
           {icon}
         </span>

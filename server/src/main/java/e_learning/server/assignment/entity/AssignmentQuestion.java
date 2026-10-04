@@ -1,18 +1,11 @@
 package e_learning.server.assignment.entity;
 
-import e_learning.server.content.topic.entity.Topic;
 import e_learning.server.question.entity.Question;
 import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(
-        name = "assignment_questions",
-        uniqueConstraints = @UniqueConstraint(
-                name = "uq_assignment_question_position",
-                columnNames = {"assignment_id", "position"}
-        )
-)
+@Table(name = "assignment_questions")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -40,14 +33,4 @@ public class AssignmentQuestion {
             foreignKey = @ForeignKey(name = "fk_assignment_question_assignment")
     )
     private Assignment assignment;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(
-            name = "topic_id",
-            foreignKey = @ForeignKey(name = "fk_assignment_question_topic")
-    )
-    private Topic topic;
-
-    @Column(nullable = false)
-    private Integer position;
 }

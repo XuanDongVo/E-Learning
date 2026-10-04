@@ -84,8 +84,7 @@ public class QuestionService {
         Page<ContentQuestion> pageResult = contentQuestionRepository.findAll(spec, pageable);
 
         List<QuestionResponse> responses = pageResult.getContent().stream()
-                .map(ContentQuestion::getQuestion)
-                .map(this::toResponse)
+                .map(cq -> toResponse(cq.getQuestion(), cq.getQuestionBank().getId()))
                 .toList();
 
         return PageResponse.from(pageResult, responses);
@@ -95,7 +94,7 @@ public class QuestionService {
         ContentQuestion contentQuestion = contentQuestionRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.QUESTION_NOT_FOUND));
 
-        return toResponse(contentQuestion.getQuestion());
+        return toResponse(contentQuestion.getQuestion(), contentQuestion.getQuestionBank().getId());
     }
 
     @Transactional
@@ -113,7 +112,7 @@ public class QuestionService {
 
         List<QuestionResponse> responses = new ArrayList<>(questions.size());
         for (int i = 0; i < questions.size(); i++) {
-            responses.add(toResponse(questions.get(i)));
+            responses.add(toResponse(questions.get(i), requests.get(i).getQuestionBankId()));
         }
         return responses;
     }
@@ -125,7 +124,7 @@ public class QuestionService {
 
         Question question = questionPersistenceService.updateQuestion(id, request);
         contentQuestion.setQuestion(question);
-        return toResponse(question);
+        return toResponse(question, contentQuestion.getQuestionBank().getId());
     }
 
     @Transactional
@@ -149,12 +148,12 @@ public class QuestionService {
         questionPersistenceService.deleteQuestions(ids);
     }
 
-    private QuestionResponse toResponse(Question question) {
+    private QuestionResponse toResponse(Question question, Long questionBankId) {
         QuestionContentResponse content = questionResponseMapper.toContentResponse(question);
 
         return QuestionResponse.builder()
                 .id(content.getId())
-                .questionBankId(null)
+                .questionBankId(questionBankId)
                 .type(content.getType())
                 .difficulty(content.getDifficulty())
                 .content(content.getContent())

@@ -6,6 +6,12 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface AssignmentQuestionRepository extends JpaRepository<AssignmentQuestion, Long> {
+
     List<AssignmentQuestion> findAllByAssignmentIdOrderByPositionAsc(Long assignmentId);
+
     long countByAssignmentId(Long assignmentId);
+
+    boolean existsByAssignmentIdAndQuestionId(Long assignmentId, Long questionId);
+
+    List<AssignmentQuestion> findAllByAssignmentIdAndQuestionIdIn(Long assignmentId, List<Long> questionIds);
 }

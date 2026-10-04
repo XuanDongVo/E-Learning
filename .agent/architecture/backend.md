@@ -11,7 +11,7 @@ server/src/main/java/e_learning/server/
 ├── auth/  user/  classes/  grades/
 ├── question/   shared question core · enums · DTOs · repositories · validation
 ├── content/    unit · section · topic · questionBank · question ownership · media · common
-├── assignment/ assignment · target · assignment question ownership · importer
+├── assignment/ assignment · target · assignment question ownership
 └── common/     config (SecurityConfig) · exception · response (ApiResponse) · dto (PageResponse)
 ```
 
@@ -37,7 +37,7 @@ feature's repository from a controller.
 
 ## Database and migrations
 
-- Flyway, `V{n}__snake_case_description.sql` in `src/main/resources/db/migration`. The latest migration is **V22** after the shared Question Core refactor.
+- Flyway, `V{n}__snake_case_description.sql` in `src/main/resources/db/migration`. The latest migration is **V23** after the shared Question Core refactor.
 - `spring.jpa.hibernate.ddl-auto=validate`: every entity change needs a migration.
 - **Never edit an applied migration.** Add the next version.
 - Table prefixes: `content_*` for the content tree; `activities`, `activity_banks`, `activity_game_templates` for Activities.
@@ -54,7 +54,7 @@ questions
 └── question_media
 
 content_questions      -> QuestionBank ownership
-assignment_questions   -> Assignment ownership + position/topic
+assignment_questions   -> Assignment ownership
 ```
 
 Content and Assignment never share the same question row. They share the core schema, child tables, enums and validation logic. Domain services own context-specific relationships and lifecycle rules.

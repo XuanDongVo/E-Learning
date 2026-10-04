@@ -2,13 +2,13 @@ package e_learning.server.content.media.service;
 
 import e_learning.server.content.media.dto.MediaResponse;
 import e_learning.server.content.media.entity.Media;
-import e_learning.server.content.question.entity.QuestionMedia;
+import e_learning.server.question.entity.QuestionMedia;
 import e_learning.server.content.media.enums.MediaStatus;
 import e_learning.server.content.media.enums.MediaType;
 import e_learning.server.content.media.repository.MediaRepository;
 import e_learning.server.content.question.repository.QuestionMediaRepository;
-import e_learning.server.content.question.entity.Question;
-import e_learning.server.content.question.repository.QuestionRepository;
+import e_learning.server.question.entity.Question;
+import e_learning.server.question.repository.QuestionRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

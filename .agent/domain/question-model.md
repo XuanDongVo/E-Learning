@@ -17,33 +17,28 @@ The canonical enum values are `SINGLE_CHOICE`, `MULTIPLE_CHOICE`,
 between the frontend types, backend enum, request validation, database
 constraint, import format, and answer-checking logic.
 
-Question-specific content should use the shared question data model rather
-than introducing separate question tables for every type:
+Question data is split into a shared core and domain ownership contexts:
 
-- `Question` stores the bank, type, difficulty, prompt, optional explanation,
-  `is_complete`, optional question-level `matching_mode`, and timestamps.
-  Question does not have `display_order` or its own lifecycle `status`.
-- Question visibility is all-or-nothing at bank level: a student may only see
-  a question when `QuestionBank.status = PUBLISHED` and `Question.is_complete
-  = true`.
-- `is_complete` is derived by the service layer on every create/update. It is
-  never accepted from the client and is not a second workflow status. Questions
-  may be saved incomplete so teacher work is not lost.
-- `QuestionOption` stores choice options and `is_correct`. It is required for
-  `SINGLE_CHOICE` and `MULTIPLE_CHOICE`, forbidden for `TRUE_FALSE`,
-  `FILL_IN_BLANK`, and `TYPE_ANSWER`. It does not have `status` or
-  `display_order`.
-- `QuestionAnswer` stores accepted answers. Choice questions never use this
-  table. `TRUE_FALSE` stores exactly one answer with raw value `TRUE` or
-  `FALSE`. `FILL_IN_BLANK` and `TYPE_ANSWER` store one or more accepted text
-  answers.
-- Store both the teacher-entered raw answer and its normalized value. Rename
-  these fields to `raw_value` and `normalized_value` if the existing schema
-  still uses `answer_text` and `normalized_answer`.
-- `matching_mode` belongs to `Question`, not to individual answers. MVP uses a
-  fixed mode: trim whitespace and compare case-insensitively. Do not expose it
-  in the teacher UI yet. Accent-insensitive matching is deferred until the
-  product explicitly confirms it for Vietnamese content.
+```text
+questions
+  ├── question_options
+  ├── question_answers
+  └── question_media
+
+content_questions
+  └── question_id + question_bank_id
+
+assignment_questions
+  └── question_id + assignment_id + topic_id + position
+```
+
+- `Question` stores only shared core data: type, difficulty, prompt, optional explanation, server-derived `is_complete`, question-level `matching_mode`, and timestamps.
+- `ContentQuestion` owns the relationship between a shared Question and a Content QuestionBank.
+- `AssignmentQuestion` owns the relationship between a shared Question and an Assignment. Assignment questions do not point to `content_questions` or `QuestionBank`.
+- `QuestionOption`, `QuestionAnswer`, and `QuestionMedia` are shared child records and reference `questions.id`.
+- New question types are implemented once in the shared question core instead of creating separate Content/Assignment option, answer, and media tables.
+- Content and Assignment create distinct Question rows. The sharing is schema/behavior, not reuse of the same assessment question instance.
+- `matching_mode` belongs to `Question`, not to individual answers.
 
 Validation rules must be type-aware:
 
@@ -95,9 +90,9 @@ provided correctness or normalized value.
 Before implementing question services, reconcile the current schema and
 entities with this contract:
 
-- Add `content_questions.is_complete` as a server-derived boolean. Never bind
+- Add `questions.is_complete` as a server-derived boolean. Never bind
   it from create/update request DTOs.
-- Add nullable `content_questions.matching_mode` if the service needs to make
+- Add nullable `questions.matching_mode` if the service needs to make
   the normalization rule explicit; MVP may default it in application code.
 - Remove question `status` and `display_order` from Java entities, DTOs,
   mappers, repositories, and UI contracts. Keep bank status unchanged.

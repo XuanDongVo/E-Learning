@@ -1,6 +1,6 @@
-package e_learning.server.content.question.repository;
+package e_learning.server.question.repository;
 
-import e_learning.server.content.question.entity.QuestionAnswer;
+import e_learning.server.question.entity.QuestionAnswer;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

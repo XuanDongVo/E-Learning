@@ -1,4 +1,4 @@
-package e_learning.server.content.common.enums;
+package e_learning.server.question.enums;
 
 public enum Difficulty {
     EASY,

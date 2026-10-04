@@ -1,4 +1,4 @@
-package e_learning.server.content.question.entity;
+package e_learning.server.question.entity;
 
 import e_learning.server.content.media.entity.Media;
 import jakarta.persistence.*;
@@ -7,12 +7,10 @@ import lombok.*;
 @Entity
 @Table(
         name = "question_media",
-        uniqueConstraints = {
-                @UniqueConstraint(
-                        name = "uk_question_media",
-                        columnNames = {"question_id", "media_id"}
-                )
-        }
+        uniqueConstraints = @UniqueConstraint(
+                name = "uk_question_media",
+                columnNames = {"question_id", "media_id"}
+        )
 )
 @Getter
 @Setter

@@ -1,4 +1,4 @@
-package e_learning.server.content.question.dto;
+package e_learning.server.question.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

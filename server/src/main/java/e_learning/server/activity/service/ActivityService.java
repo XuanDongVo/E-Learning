@@ -7,7 +7,7 @@ import e_learning.server.activity.entity.*;
 import e_learning.server.activity.enums.ActivityStatus;
 import e_learning.server.activity.repository.*;
 import e_learning.server.common.exception.*;
-import e_learning.server.content.question.repository.QuestionRepository;
+import e_learning.server.content.question.repository.ContentQuestionRepository;
 import e_learning.server.content.questionBank.entity.QuestionBank;
 import e_learning.server.content.questionBank.repository.QuestionBankRepository;
 import e_learning.server.content.unit.entity.Unit;
@@ -28,7 +28,7 @@ public class ActivityService {
     private final ActivityReadinessService readinessService;
     private final UnitRepository unitRepository;
     private final QuestionBankRepository questionBankRepository;
-    private final QuestionRepository questionRepository;
+    private final ContentQuestionRepository contentQuestionRepository;
 
     @Transactional(readOnly = true)
     public List<ActivityResponse> listByUnit(Long unitId, boolean includeArchived) {
@@ -126,8 +126,8 @@ public class ActivityService {
                         .questionBankId(bank.getId()).questionBankName(bank.getName())
                         .topicId(bank.getTopic().getId()).topicName(bank.getTopic().getName())
                         .sectionName(bank.getTopic().getSection().getName()).status(bank.getStatus())
-                        .totalQuestions(questionRepository.countByQuestionBankId(bank.getId()))
-                        .readyQuestions(questionRepository.countByQuestionBankIdAndCompleteTrue(bank.getId()))
+                        .totalQuestions(contentQuestionRepository.countByQuestionBankId(bank.getId()))
+                        .readyQuestions(contentQuestionRepository.countByQuestionBankIdAndQuestionCompleteTrue(bank.getId()))
                         .build())
                 .toList();
     }
@@ -168,8 +168,8 @@ public class ActivityService {
                         .sectionName(bank.getQuestionBank().getTopic().getSection().getName())
                         .displayOrder(bank.getDisplayOrder()).percentage(bank.getPercentage())
                         .fixedCount(bank.getFixedCount())
-                        .totalQuestions(questionRepository.countByQuestionBankId(bank.getQuestionBank().getId()))
-                        .readyQuestions(questionRepository.countByQuestionBankIdAndCompleteTrue(bank.getQuestionBank().getId()))
+                        .totalQuestions(contentQuestionRepository.countByQuestionBankId(bank.getQuestionBank().getId()))
+                        .readyQuestions(contentQuestionRepository.countByQuestionBankIdAndQuestionCompleteTrue(bank.getQuestionBank().getId()))
                         .allocatedQuestions(allocations.get(bank.getQuestionBank().getId()))
                         .build()
         ).toList();

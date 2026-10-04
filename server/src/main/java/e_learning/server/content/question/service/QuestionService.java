@@ -3,44 +3,41 @@ package e_learning.server.content.question.service;
 import e_learning.server.common.dto.PageResponse;
 import e_learning.server.common.exception.AppException;
 import e_learning.server.common.exception.ErrorCode;
-import e_learning.server.content.common.enums.Difficulty;
-import e_learning.server.content.common.enums.QuestionType;
+import e_learning.server.content.question.dto.*;
+import e_learning.server.content.question.entity.ContentQuestion;
+import e_learning.server.content.question.repository.ContentQuestionRepository;
+import e_learning.server.content.questionBank.entity.QuestionBank;
+import e_learning.server.content.questionBank.repository.QuestionBankRepository;
 import e_learning.server.content.media.entity.Media;
 import e_learning.server.content.media.enums.MediaStatus;
 import e_learning.server.content.media.repository.MediaRepository;
-import e_learning.server.content.question.dto.*;
-import e_learning.server.content.question.entity.Question;
-import e_learning.server.content.question.entity.QuestionAnswer;
-import e_learning.server.content.question.entity.QuestionMedia;
-import e_learning.server.content.question.entity.QuestionOption;
-import e_learning.server.content.question.repository.QuestionAnswerRepository;
-import e_learning.server.content.question.repository.QuestionMediaRepository;
-import e_learning.server.content.question.repository.QuestionOptionRepository;
-import e_learning.server.content.question.repository.QuestionRepository;
-import e_learning.server.content.questionBank.entity.QuestionBank;
-import e_learning.server.content.questionBank.repository.QuestionBankRepository;
+import e_learning.server.question.entity.Question;
+import e_learning.server.question.entity.QuestionAnswer;
+import e_learning.server.question.entity.QuestionMedia;
+import e_learning.server.question.entity.QuestionOption;
+import e_learning.server.question.repository.QuestionAnswerRepository;
+import e_learning.server.question.repository.QuestionMediaRepository;
+import e_learning.server.question.repository.QuestionOptionRepository;
+import e_learning.server.question.repository.QuestionRepository;
+import e_learning.server.question.enums.Difficulty;
+import e_learning.server.question.enums.QuestionType;
+import e_learning.server.question.service.QuestionContentValidator;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class QuestionService {
     private final QuestionRepository questionRepository;
+    private final ContentQuestionRepository contentQuestionRepository;
     private final QuestionBankRepository questionBankRepository;
     private final QuestionOptionRepository questionOptionRepository;
     private final QuestionAnswerRepository questionAnswerRepository;
@@ -48,290 +45,180 @@ public class QuestionService {
     private final MediaRepository mediaRepository;
     private final QuestionContentValidator questionContentValidator;
 
-    public PageResponse<QuestionResponse> getQuestions(
-            Long questionBankId,
-            String search,
-            QuestionType type,
-            Difficulty difficulty,
-            Boolean isComplete,
-            int page,
-            int size
-    ) {
+    public PageResponse<QuestionResponse> getQuestions(Long questionBankId, String search, QuestionType type,
+                                                       Difficulty difficulty, Boolean isComplete, int page, int size) {
         questionBankRepository.findById(questionBankId)
                 .orElseThrow(() -> new AppException(ErrorCode.QUESTION_BANK_NOT_FOUND));
 
-        int pageNum = Math.max(0, page - 1);
-        int pageSize = size <= 0 ? 10 : size;
+        Pageable pageable = PageRequest.of(Math.max(0, page - 1), size <= 0 ? 10 : size,
+                Sort.by(Sort.Direction.DESC, "questionId"));
 
-        Pageable pageable = PageRequest.of(pageNum, pageSize, Sort.by(Sort.Direction.DESC, "id"));
-
-        Specification<Question> spec = (root, query, cb) -> {
+        Specification<ContentQuestion> spec = (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
             predicates.add(cb.equal(root.get("questionBank").get("id"), questionBankId));
-
             if (StringUtils.hasText(search)) {
-                predicates.add(cb.like(cb.lower(root.get("content")), "%" + search.trim().toLowerCase() + "%"));
+                predicates.add(cb.like(cb.lower(root.get("question").get("content")),
+                        "%" + search.trim().toLowerCase() + "%"));
             }
-
-            if (type != null) {
-                predicates.add(cb.equal(root.get("type"), type));
-            }
-
-            if (difficulty != null) {
-                predicates.add(cb.equal(root.get("difficulty"), difficulty));
-            }
-
-            if (isComplete != null) {
-                predicates.add(cb.equal(root.get("complete"), isComplete));
-            }
-
+            if (type != null) predicates.add(cb.equal(root.get("question").get("type"), type));
+            if (difficulty != null) predicates.add(cb.equal(root.get("question").get("difficulty"), difficulty));
+            if (isComplete != null) predicates.add(cb.equal(root.get("question").get("complete"), isComplete));
             return cb.and(predicates.toArray(new Predicate[0]));
         };
 
-        Page<Question> questionPage = questionRepository.findAll(spec, pageable);
-
-        List<QuestionResponse> responses = questionPage.getContent().stream()
-                .map(this::mapToResponse)
-                .collect(Collectors.toList());
-
-        return PageResponse.from(questionPage, responses);
+        Page<ContentQuestion> pageResult = contentQuestionRepository.findAll(spec, pageable);
+        List<QuestionResponse> responses = pageResult.getContent().stream()
+                .map(cq -> mapToResponse(cq.getQuestion(), cq.getQuestionBank().getId()))
+                .toList();
+        return PageResponse.from(pageResult, responses);
     }
 
     public QuestionResponse getQuestion(Long id) {
-        Question question = questionRepository.findById(id)
+        ContentQuestion contentQuestion = contentQuestionRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.QUESTION_NOT_FOUND));
-        return mapToResponse(question);
+        return mapToResponse(contentQuestion.getQuestion(), contentQuestion.getQuestionBank().getId());
     }
 
     @Transactional
     public List<QuestionResponse> createQuestion(List<CreateQuestionRequest> requests) {
-        if (requests == null || requests.isEmpty()) {
-            throw new AppException(ErrorCode.EMPTY_QUESTION);
-        }
+        if (requests == null || requests.isEmpty()) throw new AppException(ErrorCode.EMPTY_QUESTION);
 
-        return requests.stream()
-                .map(request -> {
-                    QuestionBank bank = questionBankRepository
-                            .findById(request.getQuestionBankId())
-                            .orElseThrow(() ->
-                                    new AppException(ErrorCode.QUESTION_BANK_NOT_FOUND));
+        return requests.stream().map(request -> {
+            QuestionBank bank = questionBankRepository.findById(request.getQuestionBankId())
+                    .orElseThrow(() -> new AppException(ErrorCode.QUESTION_BANK_NOT_FOUND));
 
-                    boolean isComplete = questionContentValidator.isComplete(
-                            request.getType(), request.getContent(), request.getOptions(), request.getAnswers());
+            boolean complete = questionContentValidator.isComplete(
+                    request.getType(), request.getContent(), request.getOptions(), request.getAnswers());
 
-                    Difficulty difficulty = request.getDifficulty() != null
-                            ? request.getDifficulty()
-                            : Difficulty.EASY;
+            Question question = Question.builder()
+                    .type(request.getType())
+                    .difficulty(request.getDifficulty() != null ? request.getDifficulty() : Difficulty.EASY)
+                    .content(request.getContent().trim())
+                    .explanation(StringUtils.hasText(request.getExplanation()) ? request.getExplanation().trim() : null)
+                    .complete(complete)
+                    .matchingMode("CASE_INSENSITIVE_TRIM")
+                    .build();
 
-                    Question question = Question.builder()
-                            .questionBank(bank)
-                            .type(request.getType())
-                            .difficulty(difficulty)
-                            .content(request.getContent().trim())
-                            .explanation(
-                                    StringUtils.hasText(request.getExplanation())
-                                            ? request.getExplanation().trim()
-                                            : null
-                            )
-                            .complete(isComplete)
-                            .matchingMode("CASE_INSENSITIVE_TRIM")
-                            .build();
+            Question saved = questionRepository.save(question);
 
-                    Question saved = questionRepository.save(question);
+            ContentQuestion ownership = ContentQuestion.builder()
+                    .question(saved)
+                    .questionBank(bank)
+                    .build();
+            contentQuestionRepository.save(ownership);
 
-                    saveChildEntities(saved, request.getType(), request.getOptions(), request.getAnswers(), request.getMediaIds());
-
-                    return mapToResponse(saved);
-                })
-                .toList();
+            saveChildEntities(saved, request.getType(), request.getOptions(), request.getAnswers(), request.getMediaIds());
+            return mapToResponse(saved, bank.getId());
+        }).toList();
     }
 
     @Transactional
     public QuestionResponse updateQuestion(Long id, UpdateQuestionRequest request) {
-        Question question = questionRepository.findById(id)
+        ContentQuestion contentQuestion = contentQuestionRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.QUESTION_NOT_FOUND));
-
-        boolean isComplete = questionContentValidator.isComplete(
-                request.getType(), request.getContent(), request.getOptions(), request.getAnswers()
-        );
-
-        Difficulty difficulty = request.getDifficulty() != null ? request.getDifficulty() : question.getDifficulty();
+        Question question = contentQuestion.getQuestion();
 
         question.setType(request.getType());
-        question.setDifficulty(difficulty);
+        question.setDifficulty(request.getDifficulty() != null ? request.getDifficulty() : question.getDifficulty());
         question.setContent(request.getContent().trim());
         question.setExplanation(StringUtils.hasText(request.getExplanation()) ? request.getExplanation().trim() : null);
-        question.setComplete(isComplete);
+        question.setComplete(questionContentValidator.isComplete(
+                request.getType(), request.getContent(), request.getOptions(), request.getAnswers()));
 
-        Question saved = questionRepository.save(question);
+        questionOptionRepository.deleteByQuestionId(id);
+        questionAnswerRepository.deleteByQuestionId(id);
+        questionMediaRepository.deleteByQuestionId(id);
+        saveChildEntities(question, request.getType(), request.getOptions(), request.getAnswers(), request.getMediaIds());
 
-        // Delete previous options, answers, media links to handle type changes cleanly
-        questionOptionRepository.deleteByQuestionId(saved.getId());
-        questionAnswerRepository.deleteByQuestionId(saved.getId());
-        questionMediaRepository.deleteByQuestionId(saved.getId());
-
-        saveChildEntities(saved, request.getType(), request.getOptions(), request.getAnswers(), request.getMediaIds());
-
-        return mapToResponse(saved);
+        return mapToResponse(question, contentQuestion.getQuestionBank().getId());
     }
 
     @Transactional
     public void deleteQuestion(BulkDeleteQuestionsRequest request) {
         Set<Long> ids = new HashSet<>(request.getIds());
-        List<Question> questions = questionRepository.findAllById(ids);
+        List<ContentQuestion> ownerships = contentQuestionRepository.findAllById(ids);
 
-        if (questions.size() != ids.size()) {
-            Set<Long> foundIds = questions.stream()
-                    .map(Question::getId)
-                    .collect(Collectors.toSet());
+        if (ownerships.size() != ids.size()) throw new AppException(ErrorCode.QUESTION_NOT_FOUND);
 
-            ids.removeAll(foundIds);
-
-            throw new AppException(ErrorCode.QUESTION_NOT_FOUND);
-        }
-
-        Long expectedBankId = request.getQuestionBankId();
-
-        boolean allInBank = questions.stream()
-                .allMatch(question ->
-                        question.getQuestionBank()
-                                .getId()
-                                .equals(expectedBankId)
-                );
-
-        if (!allInBank) {
-            throw new IllegalArgumentException(
-                    "All questions must belong to the specified question bank."
-            );
-        }
+        boolean allInBank = ownerships.stream().allMatch(cq ->
+                cq.getQuestionBank().getId().equals(request.getQuestionBankId()));
+        if (!allInBank) throw new IllegalArgumentException("All questions must belong to the specified question bank.");
 
         Set<Long> mediaIds = questionMediaRepository.findMediaIdsByQuestionIdIn(ids);
-        questionRepository.deleteAllInBatch(questions);
+        questionRepository.deleteAllByIdInBatch(ids);
         releaseUnusedMedia(mediaIds);
     }
 
-    private void releaseUnusedMedia(Set<Long> candidateMediaIds) {
-        for (Long mediaId : candidateMediaIds) {
-            if (questionMediaRepository.existsByMediaId(mediaId)) {
-                continue;
-            }
-            Media media = mediaRepository.findById(mediaId).orElse(null);
-            if (media == null || media.getStatus() == MediaStatus.DELETED) {
-                continue;
-            }
-            media.setStatus(MediaStatus.DELETED);
-            mediaRepository.save(media);
-        }
-    }
-
-    private void saveChildEntities(
-            Question question,
-            QuestionType type,
-            List<QuestionOptionRequest> options,
-            List<QuestionAnswerRequest> answers,
-            List<Long> mediaIds
-    ) {
-        // Options for SINGLE_CHOICE and MULTIPLE_CHOICE
+    private void saveChildEntities(Question question, QuestionType type,
+                                   List<e_learning.server.question.dto.QuestionOptionRequest> options,
+                                   List<e_learning.server.question.dto.QuestionAnswerRequest> answers,
+                                   List<Long> mediaIds) {
         if ((type == QuestionType.SINGLE_CHOICE || type == QuestionType.MULTIPLE_CHOICE) && options != null) {
-            List<QuestionOption> optionEntities = new ArrayList<>();
+            List<QuestionOption> entities = new ArrayList<>();
             for (int i = 0; i < options.size(); i++) {
-                QuestionOptionRequest opt = options.get(i);
-                String key = String.valueOf((char) ('A' + i));
-                optionEntities.add(QuestionOption.builder()
-                        .question(question)
-                        .optionKey(key)
-                        .content(opt.getContent() != null ? opt.getContent().trim() : "")
-                        .correct(opt.isCorrect())
-                        .build());
+                var option = options.get(i);
+                entities.add(QuestionOption.builder()
+                        .question(question).optionKey(String.valueOf((char) ('A' + i)))
+                        .content(option.getContent() != null ? option.getContent().trim() : "")
+                        .correct(option.isCorrect()).build());
             }
-            questionOptionRepository.saveAll(optionEntities);
+            questionOptionRepository.saveAll(entities);
         }
 
-        // Answers for TRUE_FALSE, FILL_IN_BLANK, TYPE_ANSWER
-        if ((type == QuestionType.TRUE_FALSE || type == QuestionType.FILL_IN_BLANK || type == QuestionType.TYPE_ANSWER) && answers != null) {
-            List<QuestionAnswer> answerEntities = answers.stream()
-                    .filter(ans -> StringUtils.hasText(ans.getRawValue()))
-                    .map(ans -> {
-                        String raw = ans.getRawValue().trim();
-                        String norm = raw.toLowerCase();
-                        if (type == QuestionType.TRUE_FALSE) {
-                            raw = "TRUE".equalsIgnoreCase(raw) ? "TRUE" : "FALSE";
-                            norm = raw.toLowerCase();
-                        }
-                        return QuestionAnswer.builder()
-                                .question(question)
-                                .rawValue(raw)
-                                .normalizedValue(norm)
-                                .build();
-                    })
-                    .collect(Collectors.toList());
-            questionAnswerRepository.saveAll(answerEntities);
+        if ((type == QuestionType.TRUE_FALSE || type == QuestionType.FILL_IN_BLANK || type == QuestionType.TYPE_ANSWER)
+                && answers != null) {
+            List<QuestionAnswer> entities = answers.stream()
+                    .filter(a -> StringUtils.hasText(a.getRawValue()))
+                    .map(a -> {
+                        String raw = a.getRawValue().trim();
+                        if (type == QuestionType.TRUE_FALSE) raw = "TRUE".equalsIgnoreCase(raw) ? "TRUE" : "FALSE";
+                        return QuestionAnswer.builder().question(question).rawValue(raw)
+                                .normalizedValue(raw.toLowerCase()).build();
+                    }).toList();
+            questionAnswerRepository.saveAll(entities);
         }
 
-        // Media links
-        if (mediaIds != null && !mediaIds.isEmpty()) {
-            int displayOrder = 1;
+        if (mediaIds != null) {
+            int order = 1;
             for (Long mediaId : mediaIds) {
                 Media media = mediaRepository.findById(mediaId).orElse(null);
-                if (media != null) {
-                    media.setStatus(MediaStatus.READY);
-                    mediaRepository.save(media);
-
-                    QuestionMedia qm = QuestionMedia.builder()
-                            .question(question)
-                            .media(media)
-                            .displayOrder(displayOrder++)
-                            .build();
-                    questionMediaRepository.save(qm);
-                }
+                if (media == null) continue;
+                media.setStatus(MediaStatus.READY);
+                mediaRepository.save(media);
+                questionMediaRepository.save(QuestionMedia.builder()
+                        .question(question).media(media).displayOrder(order++).build());
             }
         }
     }
 
-    private QuestionResponse mapToResponse(Question question) {
-        List<QuestionOption> options = questionOptionRepository.findByQuestionId(question.getId());
-        List<QuestionAnswer> answers = questionAnswerRepository.findByQuestionId(question.getId());
-        List<QuestionMedia> mediaList = questionMediaRepository.findByQuestionIdOrderByDisplayOrderAsc(question.getId());
+    private void releaseUnusedMedia(Set<Long> mediaIds) {
+        for (Long mediaId : mediaIds) {
+            if (questionMediaRepository.existsByMediaId(mediaId)) continue;
+            Media media = mediaRepository.findById(mediaId).orElse(null);
+            if (media != null && media.getStatus() != MediaStatus.DELETED) {
+                media.setStatus(MediaStatus.DELETED);
+                mediaRepository.save(media);
+            }
+        }
+    }
 
-        List<QuestionOptionResponse> optionResponses = options.stream()
-                .map(opt -> QuestionOptionResponse.builder()
-                        .id(opt.getId())
-                        .content(opt.getContent())
-                        .correct(opt.isCorrect())
-                        .build())
-                .collect(Collectors.toList());
-
-        List<QuestionAnswerResponse> answerResponses = answers.stream()
-                .map(ans -> QuestionAnswerResponse.builder()
-                        .id(ans.getId())
-                        .rawValue(ans.getRawValue())
-                        .normalizedValue(ans.getNormalizedValue())
-                        .build())
-                .collect(Collectors.toList());
-
-        List<QuestionMediaResponse> mediaResponses = mediaList.stream()
-                .map(m -> QuestionMediaResponse.builder()
-                        .id(m.getId())
+    private QuestionResponse mapToResponse(Question question, Long bankId) {
+        List<QuestionOptionResponse> options = questionOptionRepository.findByQuestionId(question.getId()).stream()
+                .map(o -> QuestionOptionResponse.builder().id(o.getId()).content(o.getContent()).correct(o.isCorrect()).build()).toList();
+        List<QuestionAnswerResponse> answers = questionAnswerRepository.findByQuestionId(question.getId()).stream()
+                .map(a -> QuestionAnswerResponse.builder().id(a.getId()).rawValue(a.getRawValue()).normalizedValue(a.getNormalizedValue()).build()).toList();
+        List<QuestionMediaResponse> media = questionMediaRepository.findByQuestionIdOrderByDisplayOrderAsc(question.getId()).stream()
+                .map(m -> QuestionMediaResponse.builder().id(m.getId())
                         .mediaId(m.getMedia() != null ? m.getMedia().getId() : null)
                         .mediaType(m.getMedia() != null && m.getMedia().getMediaType() != null ? m.getMedia().getMediaType().name() : null)
-                        .url(m.getMedia() != null ? m.getMedia().getPublicId() : null)
-                        .build())
-                .collect(Collectors.toList());
+                        .url(m.getMedia() != null ? m.getMedia().getPublicId() : null).build()).toList();
 
         return QuestionResponse.builder()
-                .id(question.getId())
-                .questionBankId(question.getQuestionBank().getId())
-                .type(question.getType())
-                .difficulty(question.getDifficulty())
-                .content(question.getContent())
-                .explanation(question.getExplanation())
-                .complete(question.isComplete())
-                .matchingMode(question.getMatchingMode())
-                .options(optionResponses)
-                .answers(answerResponses)
-                .media(mediaResponses)
-                .createdAt(question.getCreatedAt())
-                .updatedAt(question.getUpdatedAt())
-                .build();
+                .id(question.getId()).questionBankId(bankId)
+                .type(question.getType()).difficulty(question.getDifficulty())
+                .content(question.getContent()).explanation(question.getExplanation())
+                .complete(question.isComplete()).matchingMode(question.getMatchingMode())
+                .options(options).answers(answers).media(media)
+                .createdAt(question.getCreatedAt()).updatedAt(question.getUpdatedAt()).build();
     }
 }

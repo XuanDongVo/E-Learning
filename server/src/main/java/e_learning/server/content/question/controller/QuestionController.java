@@ -2,19 +2,14 @@ package e_learning.server.content.question.controller;
 
 import e_learning.server.common.dto.PageResponse;
 import e_learning.server.common.response.ApiResponse;
-import e_learning.server.content.common.enums.Difficulty;
-import e_learning.server.content.common.enums.QuestionType;
-import e_learning.server.content.question.dto.BulkDeleteQuestionsRequest;
-import e_learning.server.content.question.dto.CreateQuestionRequest;
-import e_learning.server.content.question.dto.QuestionResponse;
-import e_learning.server.content.question.dto.UpdateQuestionRequest;
+import e_learning.server.question.enums.Difficulty;
+import e_learning.server.question.enums.QuestionType;
+import e_learning.server.content.question.dto.*;
 import e_learning.server.content.question.service.QuestionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 @RestController
@@ -31,12 +26,9 @@ public class QuestionController {
             @RequestParam(required = false) Difficulty difficulty,
             @RequestParam(required = false) Boolean isComplete,
             @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "25") int size
-    ) {
-        PageResponse<QuestionResponse> response = questionService.getQuestions(
-                bankId, search, type, difficulty, isComplete, page, size
-        );
-        return ResponseEntity.ok(ApiResponse.success(response));
+            @RequestParam(defaultValue = "25") int size) {
+        return ResponseEntity.ok(ApiResponse.success(questionService.getQuestions(
+                bankId, search, type, difficulty, isComplete, page, size)));
     }
 
     @GetMapping("/{id}")
@@ -45,7 +37,8 @@ public class QuestionController {
     }
 
     @PostMapping
-    public ResponseEntity<ApiResponse<List<QuestionResponse>>> create(@Valid @RequestBody List<CreateQuestionRequest> request) {
+    public ResponseEntity<ApiResponse<List<QuestionResponse>>> create(
+            @Valid @RequestBody List<CreateQuestionRequest> request) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success("Question created successfully", questionService.createQuestion(request)));
     }
@@ -53,13 +46,14 @@ public class QuestionController {
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<QuestionResponse>> update(
             @PathVariable Long id,
-            @Valid @RequestBody UpdateQuestionRequest request
-    ) {
-        return ResponseEntity.ok(ApiResponse.success("Question updated successfully", questionService.updateQuestion(id, request)));
+            @Valid @RequestBody UpdateQuestionRequest request) {
+        return ResponseEntity.ok(ApiResponse.success(
+                "Question updated successfully", questionService.updateQuestion(id, request)));
     }
 
     @DeleteMapping("/bulk-delete")
-    public ResponseEntity<ApiResponse<Void>> delete(@RequestBody BulkDeleteQuestionsRequest request) {
+    public ResponseEntity<ApiResponse<Void>> delete(
+            @Valid @RequestBody BulkDeleteQuestionsRequest request) {
         questionService.deleteQuestion(request);
         return ResponseEntity.ok(ApiResponse.success("Question deleted successfully", null));
     }

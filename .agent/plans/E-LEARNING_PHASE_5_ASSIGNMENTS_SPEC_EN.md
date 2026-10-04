@@ -160,11 +160,18 @@ M6  Export / Reports
 ## 5.1 Relationships
 
 ```text
-Assignment ──┬─→ AssignmentQuestion ──┬─→ AssignmentQuestionOption
-             │                        ├─→ AssignmentQuestionAnswer
-             │                        └─→ AssignmentQuestionMedia
+Assignment ──┬─→ AssignmentQuestion ──→ Question Core
              ├─→ AssignmentTarget
              └─→ [Phase 6] Attempt → AttemptQuestion → Answer
+
+Question Core
+  ├── questions
+  ├── question_options
+  ├── question_answers
+  └── question_media
+
+Content ownership
+  └── content_questions → QuestionBank
 ```
 
 There is no `Assignment.activity_id`, no `ActivityAssignment`, and no Assignment dependency on Phase 3 `QuestionBank`/`Question`.
@@ -201,9 +208,9 @@ recipient count or progress. These are derived or system constants.
 
 Child records:
 
-- `AssignmentQuestionOption`: `option_key` A–F, content, `is_correct`.
-- `AssignmentQuestionAnswer`: raw + normalized accepted answers.
-- `AssignmentQuestionMedia`: question/media links and display order.
+- `AssignmentQuestion` owns only Assignment context: `assignment_id`, `question_id`, nullable `topic_id`, and fixed `position`.
+- Options, accepted answers and media use the shared Question Core child tables: `question_options`, `question_answers`, `question_media`.
+- Assignment does not reference `content_questions` or `QuestionBank`.
 
 ## 5.4 AssignmentTarget
 
@@ -371,9 +378,8 @@ server/src/main/java/e_learning/server/
 │   │   ├── Assignment
 │   │   ├── AssignmentTarget
 │   │   ├── AssignmentQuestion
-│   │   ├── AssignmentQuestionOption
-│   │   ├── AssignmentQuestionAnswer
-│   │   └── AssignmentQuestionMedia
+│   │   └── Question Core children
+│   │       (question_options / question_answers / question_media)
 │   ├── repository/
 │   ├── recipient/AssignmentRecipientResolver
 │   ├── importer/
@@ -428,9 +434,10 @@ The migration creates:
 - `assignments`
 - `assignment_targets`
 - `assignment_questions`
-- `assignment_question_options`
-- `assignment_question_answers`
-- `assignment_question_media`
+- `questions`
+- `question_options`
+- `question_answers`
+- `question_media`
 
 Key constraints:
 

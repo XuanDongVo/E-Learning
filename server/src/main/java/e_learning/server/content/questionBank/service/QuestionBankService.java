@@ -5,7 +5,7 @@ import e_learning.server.common.exception.ErrorCode;
 import e_learning.server.content.common.dto.ReorderRequest;
 import e_learning.server.content.common.dto.UpdateStatusRequest;
 import e_learning.server.content.common.enums.ContentStatus;
-import e_learning.server.content.question.repository.QuestionRepository;
+import e_learning.server.content.question.repository.ContentQuestionRepository;
 import e_learning.server.content.questionBank.dto.CreateQuestionBankRequest;
 import e_learning.server.content.questionBank.dto.QuestionBankResponse;
 import e_learning.server.content.questionBank.dto.UpdateQuestionBankRequest;
@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 public class QuestionBankService {
     private final QuestionBankRepository questionBankRepository;
     private final TopicRepository topicRepository;
-    private final QuestionRepository questionRepository;
+    private final ContentQuestionRepository contentQuestionRepository;
 
     @Transactional
     public QuestionBankResponse create(CreateQuestionBankRequest request) {
@@ -132,8 +132,8 @@ public class QuestionBankService {
     }
 
     private QuestionBankResponse mapToResponse(QuestionBank bank) {
-        long totalQuestions = questionRepository.countByQuestionBankId(bank.getId());
-        long readyQuestions = questionRepository.countByQuestionBankIdAndCompleteTrue(bank.getId());
+        long totalQuestions = contentQuestionRepository.countByQuestionBankId(bank.getId());
+        long readyQuestions = contentQuestionRepository.countByQuestionBankIdAndQuestionCompleteTrue(bank.getId());
 
         return QuestionBankResponse.builder()
                 .id(bank.getId())

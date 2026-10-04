@@ -1,8 +1,8 @@
-package e_learning.server.content.question.service;
+package e_learning.server.question.service;
 
-import e_learning.server.content.common.enums.QuestionType;
-import e_learning.server.content.question.dto.QuestionAnswerRequest;
-import e_learning.server.content.question.dto.QuestionOptionRequest;
+import e_learning.server.question.dto.QuestionAnswerRequest;
+import e_learning.server.question.dto.QuestionOptionRequest;
+import e_learning.server.question.enums.QuestionType;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
@@ -19,12 +19,14 @@ public class QuestionContentValidator {
             List<QuestionAnswerRequest> answers
     ) {
         List<String> errors = new ArrayList<>();
+
         if (!StringUtils.hasText(prompt)) {
             errors.add("content.required");
             return new ValidationResult(false, errors);
         }
 
         String trimmedPrompt = prompt.trim();
+
         if (type == QuestionType.SINGLE_CHOICE || type == QuestionType.MULTIPLE_CHOICE) {
             if (options == null || options.size() < 2) {
                 errors.add("options.minimum");
@@ -32,7 +34,11 @@ public class QuestionContentValidator {
                 if (options.stream().anyMatch(option -> !StringUtils.hasText(option.getContent()))) {
                     errors.add("options.content.required");
                 }
-                long correctCount = options.stream().filter(QuestionOptionRequest::isCorrect).count();
+
+                long correctCount = options.stream()
+                        .filter(QuestionOptionRequest::isCorrect)
+                        .count();
+
                 if (type == QuestionType.SINGLE_CHOICE && correctCount != 1) {
                     errors.add("options.single_correct.required");
                 } else if (type == QuestionType.MULTIPLE_CHOICE && correctCount < 1) {
@@ -45,10 +51,17 @@ public class QuestionContentValidator {
                     .filter(answer -> "TRUE".equalsIgnoreCase(answer.getRawValue().trim())
                             || "FALSE".equalsIgnoreCase(answer.getRawValue().trim()))
                     .count();
-            if (validCount != 1) errors.add("answers.true_false.required");
+
+            if (validCount != 1) {
+                errors.add("answers.true_false.required");
+            }
         } else if (type == QuestionType.FILL_IN_BLANK) {
-            if (!trimmedPrompt.contains("____")) errors.add("content.blank_marker.required");
-            if (!hasNonEmptyAnswer(answers)) errors.add("answers.required");
+            if (!trimmedPrompt.contains("____")) {
+                errors.add("content.blank_marker.required");
+            }
+            if (!hasNonEmptyAnswer(answers)) {
+                errors.add("answers.required");
+            }
         } else if (type == QuestionType.TYPE_ANSWER && !hasNonEmptyAnswer(answers)) {
             errors.add("answers.required");
         }
@@ -66,7 +79,8 @@ public class QuestionContentValidator {
     }
 
     private boolean hasNonEmptyAnswer(List<QuestionAnswerRequest> answers) {
-        return answers != null && answers.stream().anyMatch(answer -> StringUtils.hasText(answer.getRawValue()));
+        return answers != null
+                && answers.stream().anyMatch(answer -> StringUtils.hasText(answer.getRawValue()));
     }
 
     public record ValidationResult(boolean complete, List<String> errors) {

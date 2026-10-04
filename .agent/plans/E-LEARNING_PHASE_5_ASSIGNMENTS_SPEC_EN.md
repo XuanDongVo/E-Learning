@@ -378,9 +378,8 @@ server/src/main/java/e_learning/server/
 │   │   ├── Assignment
 │   │   ├── AssignmentTarget
 │   │   ├── AssignmentQuestion
-│   │   ├── AssignmentQuestionOption
-│   │   ├── AssignmentQuestionAnswer
-│   │   └── AssignmentQuestionMedia
+│   │   └── Question Core children
+│   │       (question_options / question_answers / question_media)
 │   ├── repository/
 │   ├── recipient/AssignmentRecipientResolver
 │   ├── importer/

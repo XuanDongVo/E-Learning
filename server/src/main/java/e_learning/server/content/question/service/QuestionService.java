@@ -6,13 +6,11 @@ import e_learning.server.common.exception.ErrorCode;
 import e_learning.server.content.question.dto.*;
 import e_learning.server.content.question.entity.ContentQuestion;
 import e_learning.server.content.question.repository.ContentQuestionRepository;
-import e_learning.server.content.questionBank.entity.QuestionBank;
 import e_learning.server.content.questionBank.repository.QuestionBankRepository;
 import e_learning.server.question.dto.QuestionContentResponse;
 import e_learning.server.question.entity.Question;
 import e_learning.server.question.enums.Difficulty;
 import e_learning.server.question.enums.QuestionType;
-import e_learning.server.question.service.QuestionContentValidator;
 import e_learning.server.question.service.QuestionPersistenceService;
 import e_learning.server.question.service.QuestionResponseMapper;
 import jakarta.persistence.criteria.Predicate;
@@ -35,7 +33,6 @@ public class QuestionService {
     private final QuestionBankRepository questionBankRepository;
     private final QuestionPersistenceService questionPersistenceService;
     private final QuestionResponseMapper questionResponseMapper;
-    private final QuestionContentValidator questionContentValidator;
 
     public PageResponse<QuestionResponse> getQuestions(
             Long questionBankId,

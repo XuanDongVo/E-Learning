@@ -11,7 +11,6 @@ import { getAssignment } from "@/services/assignment.service";
 import { assignmentQuestionService } from "@/services/assignment/assignment.question.service";
 import type { AssignmentQuestion } from "@/types/assignment";
 import { AssignmentQuestionEditor } from "@/components/features/teacher/assignments/questions/AssignmentQuestionEditor";
-import { AssignmentQuestionImport } from "@/components/features/teacher/assignments/questions/AssignmentQuestionImport";
 import { AssignmentQuestionList } from "@/components/features/teacher/assignments/questions/AssignmentQuestionList";
 import { AssignmentQuestionToolbar } from "@/components/features/teacher/assignments/questions/AssignmentQuestionToolbar";
 
@@ -22,7 +21,6 @@ export default function AssignmentDetailPage() {
 
   const [activeQuestionId, setActiveQuestionId] = useState<number | null>(null);
   const [editorOpen, setEditorOpen] = useState(false);
-  const [importOpen, setImportOpen] = useState(false);
 
   const assignment = useQuery({
     queryKey: ["assignment", assignmentId],
@@ -165,7 +163,6 @@ export default function AssignmentDetailPage() {
           readyCount={readyCount}
           locked={locked}
           onAdd={() => openEditor()}
-          onImport={() => setImportOpen(true)}
         />
 
         {locked && (
@@ -179,7 +176,6 @@ export default function AssignmentDetailPage() {
           activeQuestionId={activeQuestionId}
           locked={locked}
           onSelect={(questionId) => openEditor(questionId)}
-          onMove={moveQuestion}
           onDelete={deleteQuestion}
         />
       </section>
@@ -202,18 +198,6 @@ export default function AssignmentDetailPage() {
         />
       )}
 
-      {importOpen && (
-        <AssignmentQuestionImport
-          assignmentId={assignmentId}
-          existingCount={questionItems.length}
-          locked={locked}
-          onClose={() => setImportOpen(false)}
-          onImported={async () => {
-            await refresh();
-            setImportOpen(false);
-          }}
-        />
-      )}
     </div>
   );
 }

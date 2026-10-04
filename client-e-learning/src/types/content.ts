@@ -1,5 +1,18 @@
 import type { ReactNode } from "react";
 import type { ColorTone } from "./theme";
+import type { QuestionDifficulty, QuestionType } from "./question";
+export type {
+  DraftQuestion,
+  QuestionMediaDraft,
+  QuestionOptionDraft,
+  QuestionType,
+  TrueFalseAnswer,
+  QuestionMediaKind,
+  QuestionDifficulty,
+} from "./question";
+export { questionTypeOptions, questionDifficultyOptions } from "./question";
+export type ContentDifficulty = QuestionDifficulty;
+
 export type ContentView =
   | "overview"
   | "unit"
@@ -12,64 +25,6 @@ export type ContentView =
 export type ContentLayout = "grid" | "list";
 export type ContentTone = ColorTone;
 export type ContentStatus = "DRAFT" | "PUBLISHED" | "ARCHIVED";
-export type ContentDifficulty = "EASY" | "MEDIUM" | "HARD";
-export type TrueFalseAnswer = "TRUE" | "FALSE";
-export type QuestionMediaKind = "image" | "audio";
-
-export interface QuestionOptionDraft {
-  id: string;
-  text: string;
-}
-
-export interface QuestionMediaDraft {
-  id: string; // real mediaId from server (PENDING status on server side)
-  name: string;
-  kind: QuestionMediaKind;
-  sizeLabel?: string;
-  url?: string;
-}
-
-export interface DraftQuestion {
-  draftId: string;
-  type: QuestionType;
-  difficulty: ContentDifficulty;
-  text: string;
-  options: QuestionOptionDraft[];
-  correctOptionIds: string[];
-  trueFalseAnswer: TrueFalseAnswer;
-  acceptedAnswers: string[];
-  media: QuestionMediaDraft[];
-  explanation: string;
-}
-
-export type QuestionType =
-  | "SINGLE_CHOICE"
-  | "MULTIPLE_CHOICE"
-  | "TRUE_FALSE"
-  | "FILL_IN_BLANK"
-  | "TYPE_ANSWER";
-
-export const questionTypeOptions: {
-  value: QuestionType;
-  label: string;
-}[] = [
-    { value: "SINGLE_CHOICE", label: "Single Choice" },
-    { value: "MULTIPLE_CHOICE", label: "Multiple Choice" },
-    { value: "TRUE_FALSE", label: "True / False" },
-    { value: "FILL_IN_BLANK", label: "Fill in the Blank" },
-    { value: "TYPE_ANSWER", label: "Type Answer" },
-  ];
-
-
-export const questionDifficultyOptions: {
-  value: ContentDifficulty;
-  label: string;
-}[] = [
-    { value: "EASY", label: "Easy" },
-    { value: "MEDIUM", label: "Medium" },
-    { value: "HARD", label: "Hard" },
-  ];
-
 export interface ContentUnit {
   id: number;
   gradeId: number;

@@ -2,14 +2,19 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { AlertTriangle, ChevronDown, Check, Info, Search } from "lucide-react";
+import {
+  AlertTriangle,
+  ArrowLeft,
+  Check,
+  Info,
+  Search,
+} from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { activityService } from "@/services/activity.service";
 import { unitService } from "@/services/content/content.unit.service";
 import { QUERY_KEYS } from "@/services/query-keys";
-import { ContentToolbar } from "@/components/features/teacher/content/components/content-toolbar";
 import type {
   ActivityMode,
   ActivitySourceOption,
@@ -59,6 +64,31 @@ const modes: { value: ActivityMode; label: string; description: string }[] = [
   },
 ];
 
+const distributions: {
+  value: DistributionMode;
+  label: string;
+  description: string;
+}[] = [
+  {
+    value: "EQUAL",
+    label: "Equal",
+    description: "Every bank gets the same number of questions.",
+  },
+  {
+    value: "PERCENTAGE",
+    label: "Percentage",
+    description: "Set a share per bank. Must total 100%.",
+  },
+  {
+    value: "FIXED_COUNT",
+    label: "Fixed count",
+    description: "Set an exact number per bank.",
+  },
+];
+
+const btnPrimary =
+  "inline-flex h-10 shrink-0 items-center justify-center rounded-lg bg-primary px-4 text-body font-semibold text-primary-foreground transition-colors hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-50";
+
 export function ActivityEditor({ activityId }: { activityId?: number }) {
   const router = useRouter();
   const params = useSearchParams();
@@ -95,6 +125,7 @@ export function ActivityEditor({ activityId }: { activityId?: number }) {
   );
   const [lives, setLives] = useState<number | undefined>(3);
   const [banks, setBanks] = useState<SelectedBank[]>([]);
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
     if (!existing.data || initialized) return;
@@ -125,9 +156,17 @@ export function ActivityEditor({ activityId }: { activityId?: number }) {
     [banks],
   );
   const grouped = useMemo(() => {
+    const q = search.trim().toLowerCase();
     const sections = new Map<string, Map<string, ActivitySourceOption[]>>();
     for (const source of sources.data || []) {
       if (source.status === "ARCHIVED") continue;
+      if (
+        q &&
+        !`${source.questionBankName} ${source.topicName} ${source.sectionName}`
+          .toLowerCase()
+          .includes(q)
+      )
+        continue;
       if (!sections.has(source.sectionName))
         sections.set(source.sectionName, new Map());
       const topics = sections.get(source.sectionName)!;
@@ -135,7 +174,7 @@ export function ActivityEditor({ activityId }: { activityId?: number }) {
       topics.get(source.topicName)!.push(source);
     }
     return [...sections.entries()];
-  }, [sources.data]);
+  }, [sources.data, search]);
 
   const allocation = useMemo(() => {
     if (!banks.length) return [];
@@ -169,6 +208,10 @@ export function ActivityEditor({ activityId }: { activityId?: number }) {
     }));
   }, [banks, distribution, total]);
 
+  const allocationById = useMemo(
+    () => new Map(allocation.map((x) => [x.id, x.count])),
+    [allocation],
+  );
   const allocationTotal = allocation.reduce((s, x) => s + x.count, 0);
   const percentageTotal = banks.reduce((s, b) => s + (b.percentage || 0), 0);
   const fixedTotal = banks.reduce((s, b) => s + (b.fixedCount || 0), 0);
@@ -302,47 +345,60 @@ export function ActivityEditor({ activityId }: { activityId?: number }) {
     }
   };
 
+  const saveLabel = save.isPending
+    ? "Saving…"
+    : activityId
+      ? "Save changes"
+      : "Save draft";
+  const allocationPct =
+    total > 0 ? Math.min(100, Math.round((allocationTotal / total) * 100)) : 0;
+
   return (
-    <div className="mx-auto max-w-6xl pb-16">
-      {/* <header className="sticky top-16 z-20 -mx-4 mb-6 border-b border-border-color bg-card-bg px-4 py-3 md:-mx-6 md:px-6">
-        <div className="flex items-center justify-between gap-3">
+    <div className="mx-auto max-w-6xl space-y-6 pb-16">
+      {/* ───────── Header ───────── */}
+      <header className="rounded-xl border border-border-color bg-card-bg p-5 shadow-sm">
+        <Link
+          href={
+            activityId
+              ? `/teacher/activities/${activityId}`
+              : `/teacher/activities?unitId=${unitId || ""}`
+          }
+          className="inline-flex items-center gap-1 text-body-sm font-semibold text-neutral-muted hover:text-primary"
+        >
+          <ArrowLeft className="h-4 w-4" aria-hidden />
+          {activityId ? "Back to activity" : "Activities"}
+        </Link>
+        <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
           <div className="min-w-0">
-            <Link
-              href={`/teacher/activities?unitId=${unitId || ""}`}
-              className="mb-1 inline-flex items-center gap-1 text-body-sm font-semibold text-neutral-muted"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Activities
-            </Link>
-            <h1 className="truncate text-section-title font-bold text-neutral-dark">
-              {name || (activityId ? "Edit activity" : "New activity")}
+            <h1 className="truncate text-page-title font-extrabold">
+              {activityId ? "Edit activity" : "New activity"}
             </h1>
+            <p className="mt-1 text-body text-neutral-muted">
+              {unit.data?.code ? `${unit.data.code} · ` : ""}
+              Saving keeps it as a draft until you publish.
+            </p>
           </div>
           <button
             type="button"
             onClick={() => save.mutate()}
             disabled={save.isPending || !!formError}
-            className="h-10 shrink-0 rounded-lg bg-primary px-4 text-body font-semibold text-primary-foreground hover:bg-primary-hover disabled:opacity-50"
+            title={formError || undefined}
+            className={btnPrimary}
           >
-            {save.isPending
-              ? "Saving…"
-              : activityId
-                ? "Save changes"
-                : "Save draft"}
+            {saveLabel}
           </button>
         </div>
-      </header> */}
-
-       
+      </header>
 
       {existing.isError && (
-        <div className="mb-6 border border-danger-light bg-danger-light p-4 text-body text-danger-text">
+        <div className="rounded-xl border border-danger-light bg-danger-light p-4 text-body text-danger-text">
           Could not load this Activity.
         </div>
       )}
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_19rem]">
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_20rem]">
         <main className="space-y-6">
+          {/* Details */}
           <EditorSection title="Activity details">
             <Field label="Activity name">
               <input
@@ -367,64 +423,89 @@ export function ActivityEditor({ activityId }: { activityId?: number }) {
             </Field>
           </EditorSection>
 
+          {/* Question Banks */}
           <EditorSection
             title="Question Banks"
             description="Only Question Banks from this Unit can be selected."
+            aside={
+              <span className="rounded-full bg-background-app px-2.5 py-1 text-body-sm font-semibold tabular-nums">
+                {banks.length} selected
+              </span>
+            }
           >
+            <div className="relative">
+              <Search
+                className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-muted"
+                aria-hidden
+              />
+              <input
+                type="search"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search by bank, topic or section"
+                aria-label="Search Question Banks"
+                className="h-10 w-full rounded-lg border border-border-input bg-card-bg pl-9 pr-3 text-body outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+              />
+            </div>
+
             {sources.isLoading ? (
               <p className="text-body text-neutral-muted">
                 Loading Question Banks…
               </p>
             ) : sources.isError ? (
-              <div className="border-l-2 border-danger bg-background-app p-4 text-body text-danger-text">
+              <div className="rounded-lg border-l-4 border-danger bg-background-app p-4 text-body text-danger-text">
                 Could not load Question Banks.
               </div>
             ) : grouped.length === 0 ? (
-              <div className="border border-border-color p-6 text-body text-neutral-muted">
-                No Question Banks are available in this Unit.
+              <div className="rounded-lg border border-dashed border-border-color p-6 text-center text-body text-neutral-muted">
+                {search
+                  ? "No Question Banks match your search."
+                  : "No Question Banks are available in this Unit."}
               </div>
             ) : (
-              <div className="border border-border-color">
+              <div className="overflow-hidden rounded-lg border border-border-color">
                 {grouped.map(([section, topics]) => (
-                  <div key={section}>
-                    <div className="border-b border-border-color bg-background-app px-4 py-3 text-body font-semibold">
+                  <div key={section} className="border-b border-border-color last:border-b-0">
+                    <div className="bg-background-app px-4 py-2.5 text-body font-semibold">
                       {section}
                     </div>
                     {[...topics.entries()].map(([topic, list]) => (
                       <div key={topic}>
-                        <div className="border-b border-border-color px-4 py-2 text-body-sm font-semibold text-neutral-muted">
+                        <div className="px-4 pb-1 pt-3 text-body-sm font-semibold text-neutral-muted">
                           {topic}
                         </div>
-                        {list.map((source) => (
-                          <button
-                            key={source.questionBankId}
-                            type="button"
-                            disabled={source.status === "ARCHIVED"}
-                            onClick={() => toggleBank(source)}
-                            aria-pressed={selected.has(source.questionBankId)}
-                            className={`flex min-h-12 w-full items-center gap-3 border-b border-border-color px-4 py-3 text-left ${selected.has(source.questionBankId) ? "bg-primary-light" : "hover:bg-background-app"}`}
-                          >
-                            <span
-                              className={`grid h-5 w-5 shrink-0 place-items-center rounded-lg border ${selected.has(source.questionBankId) ? "border-primary bg-primary text-primary-foreground" : "border-border-input bg-card-bg"}`}
+                        {list.map((source) => {
+                          const on = selected.has(source.questionBankId);
+                          const noneReady = source.readyQuestions === 0;
+                          return (
+                            <button
+                              key={source.questionBankId}
+                              type="button"
+                              disabled={source.status === "ARCHIVED"}
+                              onClick={() => toggleBank(source)}
+                              aria-pressed={on}
+                              className={`flex min-h-14 w-full items-center gap-3 border-t border-border-color px-4 py-3 text-left transition-colors first:border-t-0 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary ${on ? "bg-primary-light" : "hover:bg-background-app"}`}
                             >
-                              {selected.has(source.questionBankId) && (
-                                <Check className="h-3.5 w-3.5" />
-                              )}
-                            </span>
-                            <span className="min-w-0 flex-1">
-                              <span className="block truncate text-body font-semibold">
-                                {source.questionBankName}
+                              <Checkbox on={on} />
+                              <span className="min-w-0 flex-1">
+                                <span className="block truncate text-body font-semibold">
+                                  {source.questionBankName}
+                                </span>
+                                <span className="mt-0.5 block text-body-sm text-neutral-muted">
+                                  {source.status === "PUBLISHED"
+                                    ? "Published"
+                                    : "Draft"}
+                                </span>
                               </span>
-                              <span className="mt-1 block text-body-sm text-neutral-muted">
+                              <span
+                                className={`shrink-0 rounded-full border border-border-color px-2.5 py-1 text-body-sm font-semibold tabular-nums ${noneReady ? "text-accent-text" : "text-neutral-muted"}`}
+                              >
                                 {source.readyQuestions}/{source.totalQuestions}{" "}
-                                ready ·{" "}
-                                {source.status === "PUBLISHED"
-                                  ? "Published"
-                                  : "Draft"}
+                                ready
                               </span>
-                            </span>
-                          </button>
-                        ))}
+                            </button>
+                          );
+                        })}
                       </div>
                     ))}
                   </div>
@@ -433,17 +514,18 @@ export function ActivityEditor({ activityId }: { activityId?: number }) {
             )}
           </EditorSection>
 
+          {/* Question set */}
           <EditorSection
             title="Question set"
             description="Distribution controls how many questions come from each selected Question Bank."
           >
-            <div className="grid gap-4 md:grid-cols-[12rem_1fr]">
+            <div className="grid gap-5 md:grid-cols-[11rem_1fr]">
               <Field
                 label="Total questions"
                 hint={
                   distribution === "FIXED_COUNT"
                     ? "Calculated from fixed counts."
-                    : "Total questions in one Activity run."
+                    : "Per Activity run."
                 }
               >
                 <input
@@ -455,105 +537,148 @@ export function ActivityEditor({ activityId }: { activityId?: number }) {
                     distribution !== "FIXED_COUNT" &&
                     setTotal(Math.max(1, Number(e.target.value)))
                   }
-                  className={inputClass()}
+                  className={
+                    inputClass() +
+                    (distribution === "FIXED_COUNT"
+                      ? " bg-background-app text-neutral-muted"
+                      : "")
+                  }
                 />
               </Field>
               <div>
                 <p className="text-body font-semibold">Distribution</p>
                 <div className="mt-2 grid gap-2 md:grid-cols-3">
-                  {(
-                    ["EQUAL", "PERCENTAGE", "FIXED_COUNT"] as DistributionMode[]
-                  ).map((v) => (
-                    <button
-                      key={v}
-                      type="button"
-                      onClick={() => changeDistribution(v)}
-                      aria-pressed={distribution === v}
-                      className={`rounded-lg border px-4 py-3 text-left text-body font-semibold ${distribution === v ? "border-primary bg-primary-light text-primary" : "border-border-color hover:bg-background-app"}`}
-                    >
-                      {v === "FIXED_COUNT"
-                        ? "Fixed count"
-                        : v === "PERCENTAGE"
-                          ? "Percentage"
-                          : "Equal"}
-                    </button>
+                  {distributions.map((d) => (
+                    <OptionCard
+                      key={d.value}
+                      on={distribution === d.value}
+                      onClick={() => changeDistribution(d.value)}
+                      title={d.label}
+                      description={d.description}
+                    />
                   ))}
                 </div>
               </div>
             </div>
-            {banks.length > 0 && distribution !== "EQUAL" && (
-              <div className="mt-5 border border-border-color">
-                <div className="grid grid-cols-[1fr_7rem] border-b border-border-color bg-background-app px-4 py-2 text-label font-semibold text-neutral-muted">
+
+            {banks.length > 0 && (
+              <div className="overflow-hidden rounded-lg border border-border-color">
+                <div className="grid grid-cols-[1fr_6rem_7rem] gap-3 bg-background-app px-4 py-2 text-label font-semibold text-neutral-muted">
                   <span>Question Bank</span>
+                  <span className="text-right">Gets</span>
                   <span className="text-right">
-                    {distribution === "PERCENTAGE" ? "Percentage" : "Questions"}
+                    {distribution === "PERCENTAGE"
+                      ? "Percentage"
+                      : distribution === "FIXED_COUNT"
+                        ? "Questions"
+                        : ""}
                   </span>
                 </div>
-                {banks.map((b) => (
-                  <div
-                    key={b.questionBankId}
-                    className="grid grid-cols-[1fr_7rem] items-center gap-3 border-b border-border-color px-4 py-3 last:border-b-0"
-                  >
-                    <span className="truncate text-body font-semibold">
-                      {b.questionBankName}
-                    </span>
-                    <input
-                      type="number"
-                      min={1}
-                      max={distribution === "PERCENTAGE" ? 100 : undefined}
-                      value={
-                        distribution === "PERCENTAGE"
-                          ? (b.percentage ?? "")
-                          : (b.fixedCount ?? "")
-                      }
-                      onChange={(e) => {
-                        const value = Math.max(1, Number(e.target.value));
-                        setBanks((cur) =>
-                          cur.map((x) =>
-                            x.questionBankId === b.questionBankId
-                              ? {
-                                  ...x,
-                                  ...(distribution === "PERCENTAGE"
-                                    ? { percentage: value }
-                                    : { fixedCount: value }),
-                                }
-                              : x,
-                          ),
-                        );
-                        if (distribution === "FIXED_COUNT") {
-                          setTotal(
-                            banks.reduce(
-                              (sum, bank) =>
-                                sum +
-                                (bank.questionBankId === b.questionBankId
-                                  ? value
-                                  : bank.fixedCount || 0),
-                              0,
-                            ),
-                          );
-                        }
-                      }}
-                      className={inputClass() + " text-right"}
-                    />
-                  </div>
-                ))}
+                {banks.map((b) => {
+                  const count = allocationById.get(b.questionBankId) ?? 0;
+                  const over = count > b.readyQuestions;
+                  return (
+                    <div
+                      key={b.questionBankId}
+                      className="grid grid-cols-[1fr_6rem_7rem] items-center gap-3 border-t border-border-color px-4 py-3"
+                    >
+                      <div className="min-w-0">
+                        <p className="truncate text-body font-semibold">
+                          {b.questionBankName}
+                        </p>
+                        {over && (
+                          <p className="text-body-sm text-accent-text">
+                            Only {b.readyQuestions} ready right now
+                          </p>
+                        )}
+                      </div>
+                      <span className="text-right text-body font-semibold tabular-nums">
+                        {count}
+                      </span>
+                      {distribution === "EQUAL" ? (
+                        <span />
+                      ) : (
+                        <input
+                          type="number"
+                          min={1}
+                          max={distribution === "PERCENTAGE" ? 100 : undefined}
+                          aria-label={`${distribution === "PERCENTAGE" ? "Percentage" : "Question count"} for ${b.questionBankName}`}
+                          value={
+                            distribution === "PERCENTAGE"
+                              ? (b.percentage ?? "")
+                              : (b.fixedCount ?? "")
+                          }
+                          onChange={(e) => {
+                            const value = Math.max(1, Number(e.target.value));
+                            setBanks((cur) =>
+                              cur.map((x) =>
+                                x.questionBankId === b.questionBankId
+                                  ? {
+                                      ...x,
+                                      ...(distribution === "PERCENTAGE"
+                                        ? { percentage: value }
+                                        : { fixedCount: value }),
+                                    }
+                                  : x,
+                              ),
+                            );
+                            if (distribution === "FIXED_COUNT") {
+                              setTotal(
+                                banks.reduce(
+                                  (sum, bank) =>
+                                    sum +
+                                    (bank.questionBankId === b.questionBankId
+                                      ? value
+                                      : bank.fixedCount || 0),
+                                  0,
+                                ),
+                              );
+                            }
+                          }}
+                          className={
+                            inputClass().replace("mt-2 ", "") + " text-right"
+                          }
+                        />
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             )}
+
             <div
-              className={`mt-4 flex items-start gap-2 border-l-2 p-3 text-body-sm ${distributionError ? "border-accent bg-background-app text-accent-text" : "border-success bg-background-app text-success"}`}
+              className={`rounded-lg border-l-4 bg-background-app p-3 ${distributionError ? "border-accent text-accent-text" : "border-success text-success"}`}
             >
-              {distributionError ? (
-                <AlertTriangle className="mt-0.5 h-4 w-4" />
-              ) : (
-                <Check className="mt-0.5 h-4 w-4" />
+              <div className="flex items-start gap-2 text-body-sm">
+                {distributionError ? (
+                  <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
+                ) : (
+                  <Check className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
+                )}
+                <p className="font-semibold">
+                  {distributionError ||
+                    `Allocated ${allocationTotal} / ${total} questions.`}
+                </p>
+              </div>
+              {banks.length > 0 && (
+                <div
+                  className="mt-2 h-1.5 overflow-hidden rounded-full bg-card-bg"
+                  role="progressbar"
+                  aria-valuenow={allocationTotal}
+                  aria-valuemin={0}
+                  aria-valuemax={total}
+                  aria-label="Questions allocated"
+                >
+                  <div
+                    className={`h-full rounded-full ${distributionError ? "bg-accent" : "bg-success"}`}
+                    style={{ width: `${allocationPct}%` }}
+                  />
+                </div>
               )}
-              <p>
-                {distributionError ||
-                  `Allocated ${allocationTotal} / ${total} questions.`}
-              </p>
             </div>
           </EditorSection>
 
+          {/* Practice options */}
           <EditorSection
             title="Practice options"
             description="Students can choose one of the enabled selection strategies when more than one is allowed."
@@ -562,10 +687,10 @@ export function ActivityEditor({ activityId }: { activityId?: number }) {
               {strategies.map((o) => {
                 const on = availableSelectionStrategies.includes(o.value);
                 return (
-                  <button
+                  <OptionCard
                     key={o.value}
-                    type="button"
-                    aria-pressed={on}
+                    on={on}
+                    checkbox
                     onClick={() =>
                       setAvailableSelectionStrategies((cur) =>
                         on
@@ -573,53 +698,32 @@ export function ActivityEditor({ activityId }: { activityId?: number }) {
                           : [...cur, o.value],
                       )
                     }
-                    className={`rounded-lg border p-4 text-left ${on ? "border-primary bg-primary-light" : "border-border-color hover:bg-background-app"}`}
-                  >
-                    <div className="flex gap-3">
-                      <span
-                        className={`grid h-5 w-5 shrink-0 place-items-center rounded-lg border ${on ? "border-primary bg-primary text-primary-foreground" : "border-border-input"}`}
-                      >
-                        {on && <Check className="h-3.5 w-3.5" />}
-                      </span>
-                      <span>
-                        <span className="block text-body font-semibold">
-                          {o.label}
-                        </span>
-                        <span className="mt-1 block text-body-sm text-neutral-muted">
-                          {o.description}
-                        </span>
-                      </span>
-                    </div>
-                  </button>
+                    title={o.label}
+                    description={o.description}
+                  />
                 );
               })}
             </div>
           </EditorSection>
 
+          {/* Student mode */}
           <EditorSection
             title="Student mode"
             description="The time limit applies to the whole Activity run, not to each question."
           >
             <div className="grid gap-2 md:grid-cols-3">
               {modes.map((o) => (
-                <button
+                <OptionCard
                   key={o.value}
-                  type="button"
-                  aria-pressed={mode === o.value}
+                  on={mode === o.value}
                   onClick={() => changeMode(o.value)}
-                  className={`rounded-lg border p-4 text-left ${mode === o.value ? "border-primary bg-primary-light" : "border-border-color hover:bg-background-app"}`}
-                >
-                  <span className="block text-body font-semibold">
-                    {o.label}
-                  </span>
-                  <span className="mt-1 block text-body-sm text-neutral-muted">
-                    {o.description}
-                  </span>
-                </button>
+                  title={o.label}
+                  description={o.description}
+                />
               ))}
             </div>
             {mode !== "LEARNING" && (
-              <div className="mt-5 grid gap-4 border border-border-color bg-background-app p-4 md:grid-cols-2">
+              <div className="grid gap-4 rounded-lg bg-background-app p-4 md:grid-cols-2">
                 <Field
                   label="Time limit (seconds)"
                   hint="One timer for the entire Activity run."
@@ -650,23 +754,21 @@ export function ActivityEditor({ activityId }: { activityId?: number }) {
           </EditorSection>
         </main>
 
+        {/* ───────── Summary ───────── */}
         <aside className="xl:sticky xl:top-24 xl:self-start">
-          <section className="border border-border-color bg-card-bg p-5">
+          <section className="rounded-xl border border-border-color bg-card-bg p-5">
             <h2 className="text-card-title font-semibold">
               Configuration summary
             </h2>
-            <dl className="mt-4 space-y-3 text-body-sm">
+            <dl className="mt-4 divide-y divide-border-color text-body-sm">
               <Row label="Unit" value={unit.data?.code || "—"} />
               <Row label="Question Banks" value={String(banks.length)} />
               <Row label="Questions" value={String(total)} />
               <Row
                 label="Distribution"
                 value={
-                  distribution === "FIXED_COUNT"
-                    ? "Fixed count"
-                    : distribution === "PERCENTAGE"
-                      ? "Percentage"
-                      : "Equal"
+                  distributions.find((x) => x.value === distribution)?.label ||
+                  distribution
                 }
               />
               <Row
@@ -678,20 +780,38 @@ export function ActivityEditor({ activityId }: { activityId?: number }) {
                 value={modes.find((x) => x.value === mode)?.label || mode}
               />
             </dl>
-            <div className="mt-5 border border-border-color bg-background-app p-3 text-body-sm text-neutral-muted">
-              <div className="flex gap-2">
-                <Info className="h-4 w-4 shrink-0 text-primary" />
-                <p>
-                  Saving creates a draft configuration. Publishing is separate
-                  and checks live Question Bank readiness.
-                </p>
+
+            {formError ? (
+              <div
+                role="alert"
+                className="mt-4 flex gap-2 rounded-lg border-l-4 border-accent bg-background-app p-3 text-body-sm text-accent-text"
+              >
+                <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
+                <p>{formError}</p>
               </div>
-            </div>
-            {formError && (
-              <div className="mt-4 border-l-2 border-accent bg-background-app p-3 text-body-sm text-accent-text">
-                {formError}
+            ) : (
+              <div className="mt-4 flex gap-2 rounded-lg border-l-4 border-success bg-background-app p-3 text-body-sm text-success">
+                <Check className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
+                <p className="font-semibold">Ready to save</p>
               </div>
             )}
+
+            <button
+              type="button"
+              onClick={() => save.mutate()}
+              disabled={save.isPending || !!formError}
+              className={`${btnPrimary} mt-4 w-full`}
+            >
+              {saveLabel}
+            </button>
+
+            <div className="mt-4 flex gap-2 text-body-sm text-neutral-muted">
+              <Info className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden />
+              <p>
+                Saving creates a draft configuration. Publishing is separate and
+                checks live Question Bank readiness.
+              </p>
+            </div>
           </section>
         </aside>
       </div>
@@ -699,29 +819,90 @@ export function ActivityEditor({ activityId }: { activityId?: number }) {
   );
 }
 
+/* ───────── Small components ───────── */
+
 function EditorSection({
   title,
   description,
+  aside,
   children,
 }: {
   title: string;
   description?: string;
+  aside?: React.ReactNode;
   children: React.ReactNode;
 }) {
   return (
-    <section className="border-t border-border-color py-6">
-      <header className="border-b border-border-color pb-4">
-        <h2 className="text-section-title font-bold">{title}</h2>
-        {description && (
-          <p className="mt-1 max-w-prose text-body text-neutral-muted">
-            {description}
-          </p>
-        )}
+    <section className="rounded-xl border border-border-color bg-card-bg">
+      <header className="flex items-start justify-between gap-3 border-b border-border-color px-5 py-4">
+        <div>
+          <h2 className="text-section-title font-bold">{title}</h2>
+          {description && (
+            <p className="mt-1 max-w-prose text-body-sm text-neutral-muted">
+              {description}
+            </p>
+          )}
+        </div>
+        {aside}
       </header>
-      <div className="pt-5 space-y-4">{children}</div>
+      <div className="space-y-4 p-5">{children}</div>
     </section>
   );
 }
+
+function Checkbox({ on }: { on: boolean }) {
+  return (
+    <span
+      aria-hidden
+      className={`grid h-5 w-5 shrink-0 place-items-center rounded-md border ${on ? "border-primary bg-primary text-primary-foreground" : "border-border-input bg-card-bg"}`}
+    >
+      {on && <Check className="h-3.5 w-3.5" />}
+    </span>
+  );
+}
+
+function OptionCard({
+  on,
+  onClick,
+  title,
+  description,
+  checkbox,
+}: {
+  on: boolean;
+  onClick: () => void;
+  title: string;
+  description: string;
+  checkbox?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      aria-pressed={on}
+      onClick={onClick}
+      className={`rounded-lg border p-4 text-left transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${on ? "border-primary bg-primary-light" : "border-border-color hover:bg-background-app"}`}
+    >
+      <span className="flex items-start gap-3">
+        {checkbox ? (
+          <Checkbox on={on} />
+        ) : (
+          <span
+            aria-hidden
+            className={`mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full border-2 ${on ? "border-primary" : "border-border-input"}`}
+          >
+            {on && <span className="h-2.5 w-2.5 rounded-full bg-primary" />}
+          </span>
+        )}
+        <span>
+          <span className="block text-body font-semibold">{title}</span>
+          <span className="mt-1 block text-body-sm text-neutral-muted">
+            {description}
+          </span>
+        </span>
+      </span>
+    </button>
+  );
+}
+
 function Field({
   label,
   hint,
@@ -743,14 +924,16 @@ function Field({
     </label>
   );
 }
+
 function inputClass() {
   return "mt-2 h-10 w-full rounded-lg border border-border-input bg-card-bg px-3 text-body outline-none focus:border-primary focus:ring-2 focus:ring-primary/20";
 }
+
 function Row({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex justify-between gap-4">
+    <div className="flex justify-between gap-4 py-2.5 first:pt-0 last:pb-0">
       <dt className="text-neutral-muted">{label}</dt>
-      <dd className="font-semibold text-right">{value}</dd>
+      <dd className="text-right font-semibold">{value}</dd>
     </div>
   );
 }

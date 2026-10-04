@@ -84,35 +84,15 @@ export function ActivityWorkspace() {
 
   return (
     <div className="space-y-6">
-      {/* <header className="flex flex-col gap-5 border-b border-border-color pb-6 sm:flex-row sm:items-end sm:justify-between">
-        <div className="min-w-0">
-          <nav
-            className="mb-3 text-body-sm text-neutral-muted"
-            aria-label="Breadcrumb"
-          >
-            Teacher / Activities
-          </nav>
-          <h1 className="text-page-title font-extrabold">Activities</h1>
-          <p className="mt-2 text-body text-neutral-muted">
-            Manage repeatable learning activities for a Unit.
-          </p>
-        </div>
-        {selectedUnit && (
-          <Link
-            href={`/teacher/activities/new?unitId=${selectedUnit.id}`}
-            className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-lg bg-primary px-4 text-body font-semibold text-primary-foreground hover:bg-primary-hover"
-          >
-            <Plus className="h-4 w-4" />
-            Create activity
-          </Link>
-        )}
-      </header> */}
-
       <ContentToolbar
-        title="Content"
-        description="Manage your learning content organized by grades and units."
-        action="Create Unit"
-        // onAction={openCreate}
+        title="Activities"
+        description="Create and manage learning activities for your units."
+        action="Create Activity"
+        actionHref={
+          selectedUnit
+            ? `/teacher/activities/new?unitId=${selectedUnit.id}`
+            : undefined
+        }
       >
         {/* Search */}
         <div className="flex h-9 w-full items-center gap-1.5 rounded-md border border-slate-200 bg-white px-2 text-slate-400 sm:w-[220px]">
@@ -120,9 +100,9 @@ export function ActivityWorkspace() {
 
           <input
             className="w-full border-0 text-body-sm text-slate-700 outline-none"
-            // value={query}
-            // onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search units..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search activities..."
           />
         </div>
 
@@ -141,16 +121,18 @@ export function ActivityWorkspace() {
               focus:ring-2 focus:ring-primary/10
               sm:w-[140px]
             "
-            // value={selectedGradeId ?? ""}
-            // onChange={(event) => {
-            //   setGradeId(Number(event.target.value));
-            // }}
+            value={activeGrade || ""}
+            onChange={(e) => {
+              setGradeId(Number(e.target.value));
+              setUnitId(0);
+            }}
           >
-            {/* {grades.data?.map((grade) => (
-              <option key={grade.id} value={grade.id}>
-                {grade.name}
+            <option value="">Select grade</option>
+            {(grades.data || []).map((g) => (
+              <option key={g.id} value={g.id}>
+                {g.name}
               </option>
-            ))} */}
+            ))}
           </select>
 
           <ChevronDown
@@ -162,21 +144,8 @@ export function ActivityWorkspace() {
       </ContentToolbar>
 
       <section className="border-b border-border-color pb-6">
-        <div className="mb-4 flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between">
-          <div>
-            <h2 className="text-card-title font-bold">Find an activity</h2>
-            <p className="mt-1 text-body-sm text-neutral-muted">
-              Filter activities by unit, status or name.
-            </p>
-          </div>
-          {selectedUnit && (
-            <span className="text-body-sm text-neutral-muted">
-              Current unit: <strong className="font-semibold text-neutral-dark">{selectedUnit.code}</strong>
-            </span>
-          )}
-        </div>
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <label>
+          <label className="hidden lg:block">
             <span className="mb-2 block text-label font-semibold text-neutral-muted">
               Grade
             </span>
@@ -196,7 +165,7 @@ export function ActivityWorkspace() {
               ))}
             </select>
           </label>
-          <label>
+          <label className="hidden lg:block">
             <span className="mb-2 block text-label font-semibold text-neutral-muted">
               Unit
             </span>
@@ -230,7 +199,7 @@ export function ActivityWorkspace() {
               <option value="ARCHIVED">Archived</option>
             </select>
           </label>
-          <label>
+          <label className="hidden lg:block">
             <span className="mb-2 block text-label font-semibold text-neutral-muted">
               Search
             </span>
@@ -281,80 +250,82 @@ export function ActivityWorkspace() {
             <div>
               <h2 className="text-card-title font-bold">Activity list</h2>
               <p className="mt-1 text-body-sm text-neutral-muted">
-                {selectedUnit?.code} activities, sorted by most recently updated.
+                {selectedUnit?.code} activities, sorted by most recently
+                updated.
               </p>
             </div>
             <span className="text-body-sm text-neutral-muted">
-              {filtered.length} {filtered.length === 1 ? "activity" : "activities"}
+              {filtered.length}{" "}
+              {filtered.length === 1 ? "activity" : "activities"}
             </span>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full min-w-[760px] border-collapse">
-            <thead>
-              <tr className="border-b border-border-color bg-background-app">
-                {["Activity", "Questions", "Sources", "Mode", "Status"].map(
-                  (h) => (
-                    <th
-                      key={h}
-                      className="px-4 py-3 text-left text-label font-semibold text-neutral-muted"
-                    >
-                      {h}
-                    </th>
-                  ),
-                )}
-              </tr>
-            </thead>
-            <tbody>
-              {visible.map((a) => (
-                <tr
-                  key={a.id}
-                  className="border-b border-border-color last:border-0 hover:bg-background-app"
-                >
-                  <td className="px-4 py-3.5">
-                    <Link
-                      href={`/teacher/activities/${a.id}`}
-                      className="block"
-                    >
-                      <span className="block truncate text-card-title font-semibold">
-                        {a.name}
-                      </span>
-                      <span className="mt-1 block max-w-prose truncate text-body-sm text-neutral-muted">
-                        {a.description || "No description"}
-                      </span>
-                    </Link>
-                  </td>
-                  <td className="px-4 py-3.5 text-body tabular-nums">
-                    {a.totalQuestions}
-                  </td>
-                  <td className="px-4 py-3.5 text-body tabular-nums text-neutral-muted">
-                    {a.banks.length}
-                  </td>
-                  <td className="px-4 py-3.5 text-body text-neutral-muted">
-                    {modes[a.mode]}
-                  </td>
-                  <td className="px-4 py-3.5">
-                    <div className="flex flex-wrap gap-2">
-                      <span
-                        className={`rounded-full px-2.5 py-1 text-body-sm font-semibold ${a.status === "PUBLISHED" ? "text-success" : "bg-background-app text-neutral-muted"}`}
+              <thead>
+                <tr className="border-b border-border-color bg-background-app">
+                  {["Activity", "Questions", "Sources", "Mode", "Status"].map(
+                    (h) => (
+                      <th
+                        key={h}
+                        className="px-4 py-3 text-left text-label font-semibold text-neutral-muted"
                       >
-                        {a.status === "PUBLISHED"
-                          ? "Published"
-                          : a.status === "ARCHIVED"
-                            ? "Archived"
-                            : "Draft"}
-                      </span>
-                      {a.status !== "ARCHIVED" && (
-                        <span
-                          className={`rounded-full px-2.5 py-1 text-body-sm font-semibold ${a.readiness.ready ? "bg-success-light text-success" : "text-accent-text"}`}
-                        >
-                          {a.readiness.ready ? "Ready" : "Needs attention"}
-                        </span>
-                      )}
-                    </div>
-                  </td>
+                        {h}
+                      </th>
+                    ),
+                  )}
                 </tr>
-              ))}
-            </tbody>
+              </thead>
+              <tbody>
+                {visible.map((a) => (
+                  <tr
+                    key={a.id}
+                    className="border-b border-border-color last:border-0 hover:bg-background-app"
+                  >
+                    <td className="px-4 py-3.5">
+                      <Link
+                        href={`/teacher/activities/${a.id}`}
+                        className="block"
+                      >
+                        <span className="block truncate text-card-title font-semibold">
+                          {a.name}
+                        </span>
+                        <span className="mt-1 block max-w-prose truncate text-body-sm text-neutral-muted">
+                          {a.description || "No description"}
+                        </span>
+                      </Link>
+                    </td>
+                    <td className="px-4 py-3.5 text-body tabular-nums">
+                      {a.totalQuestions}
+                    </td>
+                    <td className="px-4 py-3.5 text-body tabular-nums text-neutral-muted">
+                      {a.banks.length}
+                    </td>
+                    <td className="px-4 py-3.5 text-body text-neutral-muted">
+                      {modes[a.mode]}
+                    </td>
+                    <td className="px-4 py-3.5">
+                      <div className="flex flex-wrap gap-2">
+                        <span
+                          className={`rounded-full px-2.5 py-1 text-body-sm font-semibold ${a.status === "PUBLISHED" ? "text-success" : "bg-background-app text-neutral-muted"}`}
+                        >
+                          {a.status === "PUBLISHED"
+                            ? "Published"
+                            : a.status === "ARCHIVED"
+                              ? "Archived"
+                              : "Draft"}
+                        </span>
+                        {a.status !== "ARCHIVED" && (
+                          <span
+                            className={`rounded-full px-2.5 py-1 text-body-sm font-semibold ${a.readiness.ready ? "bg-success-light text-success" : "text-accent-text"}`}
+                          >
+                            {a.readiness.ready ? "Ready" : "Needs attention"}
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
             </table>
           </div>
         </section>

@@ -1,5 +1,42 @@
 import { SkillType } from "./unit";
 
+export type AssignmentManagementStatus = "DRAFT" | "PUBLISHED" | "ARCHIVED";
+
+export type AssignmentTargetRequest =
+  | { type: "GRADE" }
+  | { type: "CLASS"; classId: number };
+
+export interface AssignmentTarget {
+  type: "GRADE" | "CLASS";
+  classId?: number;
+  className?: string;
+}
+
+export interface Assignment {
+  id: number;
+  gradeLevel: number;
+  academicYear: string;
+  name: string;
+  description?: string;
+  status: AssignmentManagementStatus;
+  startAt?: string;
+  dueAt: string;
+  timeLimitSeconds?: number;
+  questionCount: number;
+  targets: AssignmentTarget[];
+}
+
+export interface CreateAssignmentRequest {
+  gradeLevel: number;
+  academicYear: string;
+  name: string;
+  description?: string;
+  startAt?: string;
+  dueAt: string;
+  timeLimitSeconds?: number;
+  targets: AssignmentTargetRequest[];
+}
+
 export type AssignmentStatus = "todo" | "completed" | "late";
 
 export interface AssignmentOverview {

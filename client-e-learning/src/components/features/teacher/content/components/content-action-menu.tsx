@@ -25,17 +25,17 @@ export function ContentActionMenu({
         <MoreHorizontal size={17} />
       </summary>
       <div className="absolute right-0 z-20 mt-2 w-48 rounded-lg border border-[var(--border-color)] bg-[var(--card-bg)] p-1.5 shadow-[0_12px_30px_rgba(15,23,42,0.12)]">
-        <button
+        {/* <button
           type="button"
           onClick={onEdit}
-          className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm text-[var(--neutral-dark)]/80 hover:bg-[var(--primary-light)] hover:text-[var(--primary)]"
-        >
-          <Edit3 size={15} /> Edit details
-        </button>
-        <div className="my-1 border-t border-[var(--border-color)]" />
-        <p className="px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-[var(--neutral-subtle)]">
-          Status
+            className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm text-[var(--neutral-dark)]/80 hover:bg-[var(--primary-light)] hover:text-[var(--primary)]"
+          >
+            <Edit3 size={15} />  details
+          </button> */}
+        <p className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm text-[var(--neutral-dark)]/80 hover:bg-[var(--primary-light)] hover:text-[var(--primary)]">
+          Edit Status
         </p>
+        <div className="my-1 border-t border-[var(--border-color)]" />
         {(["DRAFT", "PUBLISHED"] as ContentStatus[]).map((nextStatus) => (
           <button
             key={nextStatus}

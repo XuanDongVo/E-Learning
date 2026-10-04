@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-
+import type { ColorTone } from "./theme";
 export type ContentView =
   | "overview"
   | "unit"
@@ -10,13 +10,7 @@ export type ContentView =
   | "bulk-create"
   | "import";
 export type ContentLayout = "grid" | "list";
-export type ContentTone =
-  | "mint"
-  | "violet"
-  | "blue"
-  | "orange"
-  | "teal"
-  | "pink";
+export type ContentTone = ColorTone;
 export type ContentStatus = "DRAFT" | "PUBLISHED" | "ARCHIVED";
 export type ContentDifficulty = "EASY" | "MEDIUM" | "HARD";
 export type TrueFalseAnswer = "TRUE" | "FALSE";
@@ -263,6 +257,7 @@ export interface ContentToolbarProps {
   description?: string;
   action?: string;
   onAction?: () => void;
+  actionHref?: string;
   children?: ReactNode;
 }
 export interface ListQuestionsParams {

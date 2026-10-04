@@ -46,6 +46,7 @@ public class QuestionService {
     private final QuestionAnswerRepository questionAnswerRepository;
     private final QuestionMediaRepository questionMediaRepository;
     private final MediaRepository mediaRepository;
+    private final QuestionContentValidator questionContentValidator;
 
     public PageResponse<QuestionResponse> getQuestions(
             Long questionBankId,
@@ -115,7 +116,8 @@ public class QuestionService {
                             .orElseThrow(() ->
                                     new AppException(ErrorCode.QUESTION_BANK_NOT_FOUND));
 
-                    boolean isComplete = computeIsComplete(request.getType(), request.getContent(), request.getOptions(), request.getAnswers());
+                    boolean isComplete = questionContentValidator.isComplete(
+                            request.getType(), request.getContent(), request.getOptions(), request.getAnswers());
 
                     Difficulty difficulty = request.getDifficulty() != null
                             ? request.getDifficulty()
@@ -149,7 +151,7 @@ public class QuestionService {
         Question question = questionRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.QUESTION_NOT_FOUND));
 
-        boolean isComplete = computeIsComplete(
+        boolean isComplete = questionContentValidator.isComplete(
                 request.getType(), request.getContent(), request.getOptions(), request.getAnswers()
         );
 
@@ -284,44 +286,6 @@ public class QuestionService {
                 }
             }
         }
-    }
-
-    public boolean computeIsComplete(
-            QuestionType type,
-            String prompt,
-            List<QuestionOptionRequest> options,
-            List<QuestionAnswerRequest> answers
-    ) {
-        if (!StringUtils.hasText(prompt)) return false;
-        String trimmedPrompt = prompt.trim();
-
-        if (type == QuestionType.SINGLE_CHOICE || type == QuestionType.MULTIPLE_CHOICE) {
-            if (options == null || options.size() < 2) return false;
-            boolean allNonEmpty = options.stream()
-                    .allMatch(opt -> opt.getContent() != null && StringUtils.hasText(opt.getContent().trim()));
-            long correctCount = options.stream().filter(QuestionOptionRequest::isCorrect).count();
-            if (!allNonEmpty) return false;
-
-            if (type == QuestionType.SINGLE_CHOICE) {
-                return correctCount == 1;
-            } else {
-                return correctCount >= 1;
-            }
-        } else if (type == QuestionType.TRUE_FALSE) {
-            if (answers == null || answers.isEmpty()) return false;
-            long validTfCount = answers.stream()
-                    .filter(a -> a.getRawValue() != null && ("TRUE".equalsIgnoreCase(a.getRawValue().trim()) || "FALSE".equalsIgnoreCase(a.getRawValue().trim())))
-                    .count();
-            return validTfCount == 1;
-        } else if (type == QuestionType.FILL_IN_BLANK) {
-            if (!trimmedPrompt.contains("____")) return false;
-            if (answers == null || answers.isEmpty()) return false;
-            return answers.stream().anyMatch(a -> a.getRawValue() != null && StringUtils.hasText(a.getRawValue().trim()));
-        } else if (type == QuestionType.TYPE_ANSWER) {
-            if (answers == null || answers.isEmpty()) return false;
-            return answers.stream().anyMatch(a -> a.getRawValue() != null && StringUtils.hasText(a.getRawValue().trim()));
-        }
-        return false;
     }
 
     private QuestionResponse mapToResponse(Question question) {

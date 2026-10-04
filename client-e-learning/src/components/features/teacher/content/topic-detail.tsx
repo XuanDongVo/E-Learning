@@ -1,9 +1,11 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowRight, FileQuestion, Plus, Tags, X } from "lucide-react";
+import { ArrowRight, FileQuestion, Plus, Tags, X, Activity as ActivityIcon } from "lucide-react";
 import { contentService } from "@/services/content.service";
+import { activityService } from "@/services/activity.service";
 import { QUERY_KEYS } from "@/services/query-keys";
 import type {
   ContentQuestionBank,
@@ -12,6 +14,7 @@ import type {
   UpdateStatusRequest,
   UpdateTopicRequest,
 } from "@/types/content";
+import type { Activity } from "@/types/activity";
 import { EntityHeader } from "./components/entity-header";
 import { ContentEditor } from "./components/content-editor";
 import { Badge } from "./components/badge";
@@ -38,6 +41,16 @@ export function TopicDetail({
     queryKey: QUERY_KEYS.contentQuestionBanks(topicId),
     queryFn: async () => (await contentService.listQuestionBanks(topicId)).data,
     enabled: !!topic.data,
+  });
+  const section = useQuery({
+    queryKey: QUERY_KEYS.contentSection(topic.data?.sectionId ?? 0),
+    queryFn: async () => (await contentService.getSection(topic.data!.sectionId)).data,
+    enabled: Boolean(topic.data?.sectionId),
+  });
+  const activities = useQuery({
+    queryKey: QUERY_KEYS.activities(section.data?.unitId ?? 0),
+    queryFn: async () => (await activityService.list(section.data!.unitId)).data ?? [],
+    enabled: Boolean(section.data?.unitId),
   });
 
   const createBank = useMutation({
@@ -83,6 +96,9 @@ export function TopicDetail({
     );
 
   const bankList: ContentQuestionBank[] = questionBanks.data ?? [];
+  const topicActivities = (activities.data ?? []).filter((activity: Activity) =>
+    activity.banks.some((bank) => bank.topicId === topicId),
+  );
 
   return (
     <>
@@ -111,6 +127,47 @@ export function TopicDetail({
           error={update.isError ? "Could not save changes." : undefined}
         />
       )}
+
+      <section className="mt-5 overflow-hidden rounded-xl border border-border-color bg-card-bg shadow-sm">
+        <div className="flex items-center justify-between border-b border-border-color px-4 py-4 sm:px-5">
+          <div>
+            <p className="text-body-sm font-semibold uppercase tracking-[0.12em] text-primary">
+              Activities
+            </p>
+            <h2 className="mt-1 text-card-title font-bold">Activities for this topic</h2>
+          </div>
+          <Link
+            href={section.data ? `/teacher/activities?unitId=${section.data.unitId}` : "#"}
+            className="inline-flex items-center gap-1 text-body-sm font-bold text-primary"
+          >
+            View activities <ArrowRight className="size-3.5" />
+          </Link>
+        </div>
+        {activities.isLoading ? (
+          <p className="p-6 text-center text-body-sm text-muted-foreground">Loading activities...</p>
+        ) : topicActivities.length === 0 ? (
+          <p className="p-6 text-center text-body-sm text-muted-foreground">No activities use this topic yet.</p>
+        ) : (
+          <div className="divide-y divide-border-color">
+            {topicActivities.map((activity) => (
+              <Link
+                key={activity.id}
+                href={`/teacher/activities/${activity.id}`}
+                className="flex w-full items-center gap-3 px-4 py-3 text-left hover:bg-muted sm:px-5"
+              >
+                <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-primary-light text-primary">
+                  <ActivityIcon className="size-4" />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-body font-semibold">{activity.name}</span>
+                  <span className="text-body-sm text-muted-foreground">{activity.totalQuestions} questions · {activity.mode}</span>
+                </span>
+                <ContentStatusBadge status={activity.status} />
+              </Link>
+            ))}
+          </div>
+        )}
+      </section>
 
       {/* Modal create QuestionBank */}
       {createBankOpen && (
@@ -249,4 +306,9 @@ export function TopicDetail({
       </section>
     </>
   );
+}
+
+function ContentStatusBadge({ status }: { status: Activity["status"] }) {
+  const styles = { DRAFT: "bg-warm-soft text-primary", PUBLISHED: "bg-success-soft text-success", ARCHIVED: "bg-muted text-muted-foreground" };
+  return <span className={`rounded-full px-2 py-0.5 text-[0.625rem] font-bold ${styles[status]}`}>{status}</span>;
 }

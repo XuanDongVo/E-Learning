@@ -13,9 +13,9 @@ public record ClassResponse(
         return new ClassResponse(classEntity.getId(), classEntity.getName(), GradeSummary.from(classEntity.getGrade()), classEntity.getAcademicYear(), studentCount);
     }
 
-    public record GradeSummary(Long id, String code, String name) {
+    public record GradeSummary(Long id, String code, String name, Integer displayOrder) {
         public static GradeSummary from(e_learning.server.grades.entity.Grade grade) {
-            return new GradeSummary(grade.getId(), grade.getCode(), grade.getName());
+            return new GradeSummary(grade.getId(), grade.getCode(), grade.getName(), grade.getDisplayOrder());
         }
     }
 }

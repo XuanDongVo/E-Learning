@@ -33,3 +33,26 @@ export async function requestMultipart<T>(path: string, body: FormData): Promise
   }
   return result;
 }
+
+export async function requestBlob(path: string, init?: RequestInit): Promise<Blob> {
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    ...init,
+    credentials: "include",
+    headers: {
+      ...init?.headers,
+    },
+  });
+
+  if (!response.ok) {
+    let message = "Request failed";
+    try {
+      const body = (await response.json()) as ApiResponse<unknown>;
+      message = body.message || message;
+    } catch {
+      // Keep the HTTP error when the server does not return JSON.
+    }
+    throw new Error(message);
+  }
+
+  return response.blob();
+}

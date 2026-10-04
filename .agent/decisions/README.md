@@ -21,3 +21,4 @@ Date: YYYY-MM-DD
 |---|---|---|
 | [0001](./0001-activity-and-assignment-are-independent.md) | Activity and Assignment are independent | Accepted |
 | [0002](./0002-adopt-ui-guidelines-and-tokens.md) | Adopt the UI guidelines and design tokens | Accepted |
+| [0003](./0003-phase-5-assignment-contract.md) | Phase 5 assignment contract | Accepted |

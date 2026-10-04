@@ -6,6 +6,7 @@ import { Copy, MoreVertical, Plus, Trash2 } from "lucide-react";
 import { Badge } from "./badge";
 import type { DraftQuestion } from "@/types/content";
 import { isQuestionComplete } from "./question-form";
+import type { SemanticTone } from "@/types/theme";
 
 export function QuestionList({
   questions,
@@ -306,7 +307,7 @@ function MenuItem({
   label: string;
   onClick: () => void;
   disabled?: boolean;
-  tone?: "default" | "danger";
+  tone?: Extract<SemanticTone, "default" | "danger">;
 }) {
   return (
     <button

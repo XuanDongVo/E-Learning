@@ -98,7 +98,7 @@ public class AssignmentQuestionService {
 
     private void ensureEditable(Assignment assignment) {
         if (assignment.getStatus() == e_learning.server.assignment.enums.AssignmentStatus.ARCHIVED) {
-            throw new AppException(ErrorCode.ASSIGNMENT_INVALID_CONFIGURATION);
+            throw new AppException(ErrorCode.ASSIGNMENT_QUESTIONS_LOCKED);
         }
     }
 

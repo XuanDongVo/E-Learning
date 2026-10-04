@@ -5,7 +5,7 @@ import e_learning.server.activity.dto.response.*;
 import e_learning.server.activity.entity.*;
 import e_learning.server.activity.repository.ActivityBankRepository;
 import e_learning.server.content.common.enums.ContentStatus;
-import e_learning.server.content.question.repository.QuestionRepository;
+import e_learning.server.content.question.repository.ContentQuestionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,7 +15,7 @@ import java.util.*;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class ActivityReadinessService {
-    private final QuestionRepository questionRepository;
+    private final ContentQuestionRepository contentQuestionRepository;
     private final ActivityBankRepository activityBankRepository;
 
     /**

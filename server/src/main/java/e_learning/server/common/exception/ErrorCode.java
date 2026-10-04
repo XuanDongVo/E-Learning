@@ -35,7 +35,8 @@ public enum ErrorCode {
     ASSIGNMENT_TARGET_INVALID(HttpStatus.BAD_REQUEST, "ASSIGNMENT_TARGET_INVALID", "The assignment target is invalid"),
     ASSIGNMENT_SCHEDULE_INVALID(HttpStatus.BAD_REQUEST, "ASSIGNMENT_SCHEDULE_INVALID", "The assignment schedule is invalid"),
     ASSIGNMENT_TIME_LIMIT_INVALID(HttpStatus.BAD_REQUEST, "ASSIGNMENT_TIME_LIMIT_INVALID", "The assignment time limit is invalid"),
-    ASSIGNMENT_QUESTION_LIMIT_EXCEEDED(HttpStatus.BAD_REQUEST, "ASSIGNMENT_QUESTION_LIMIT_EXCEEDED", "An assignment cannot contain more than 100 questions");
+    ASSIGNMENT_QUESTION_LIMIT_EXCEEDED(HttpStatus.BAD_REQUEST, "ASSIGNMENT_QUESTION_LIMIT_EXCEEDED", "An assignment cannot contain more than 100 questions"),
+    ASSIGNMENT_QUESTIONS_LOCKED(HttpStatus.CONFLICT, "ASSIGNMENT_QUESTIONS_LOCKED", "Assignment questions cannot be changed in the current assignment state");
 
     private final HttpStatus status;
     private final String code;

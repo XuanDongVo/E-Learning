@@ -126,8 +126,8 @@ public class ActivityService {
                         .questionBankId(bank.getId()).questionBankName(bank.getName())
                         .topicId(bank.getTopic().getId()).topicName(bank.getTopic().getName())
                         .sectionName(bank.getTopic().getSection().getName()).status(bank.getStatus())
-                        .totalQuestions(questionRepository.countByQuestionBankId(bank.getId()))
-                        .readyQuestions(questionRepository.countByQuestionBankIdAndCompleteTrue(bank.getId()))
+                        .totalQuestions(contentQuestionRepository.countByQuestionBankId(bank.getId()))
+                        .readyQuestions(contentQuestionRepository.countByQuestionBankIdAndQuestionCompleteTrue(bank.getId()))
                         .build())
                 .toList();
     }
@@ -168,8 +168,8 @@ public class ActivityService {
                         .sectionName(bank.getQuestionBank().getTopic().getSection().getName())
                         .displayOrder(bank.getDisplayOrder()).percentage(bank.getPercentage())
                         .fixedCount(bank.getFixedCount())
-                        .totalQuestions(questionRepository.countByQuestionBankId(bank.getQuestionBank().getId()))
-                        .readyQuestions(questionRepository.countByQuestionBankIdAndCompleteTrue(bank.getQuestionBank().getId()))
+                        .totalQuestions(contentQuestionRepository.countByQuestionBankId(bank.getQuestionBank().getId()))
+                        .readyQuestions(contentQuestionRepository.countByQuestionBankIdAndQuestionCompleteTrue(bank.getQuestionBank().getId()))
                         .allocatedQuestions(allocations.get(bank.getQuestionBank().getId()))
                         .build()
         ).toList();

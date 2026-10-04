@@ -1,6 +1,6 @@
 "use client";
 
-import type { ChangeEvent } from "react";
+import type { ComponentProps } from "react";
 import { contentService } from "@/services/content.service";
 import {
   QuestionForm as SharedQuestionForm,
@@ -8,8 +8,10 @@ import {
 } from "@/components/features/teacher/question-authoring/QuestionForm";
 
 export * from "@/components/features/teacher/question-authoring/QuestionForm";
+export { makeDraftQuestion } from "@/components/features/teacher/question-authoring/question-draft";
+export { isQuestionComplete } from "@/components/features/teacher/question-authoring/question-validator";
 
-export function QuestionForm(props: Omit<React.ComponentProps<typeof SharedQuestionForm>, "onUploadMedia">) {
+export function QuestionForm(props: Omit<ComponentProps<typeof SharedQuestionForm>, "onUploadMedia">) {
   const uploadMedia: QuestionMediaUploadHandler = async (file) => {
     const response = await contentService.uploadQuestionDraftMedia(file);
     if (!response.data) {

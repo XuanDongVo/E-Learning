@@ -9,10 +9,10 @@ import { QuestionList } from "./QuestionList";
 import { BulkSaveBar } from "./BulkSaveBar";
 import {
   QuestionForm,
-  isQuestionComplete,
-  makeDraftQuestion,
   type QuestionMediaUploadHandler,
 } from "./QuestionForm";
+import { makeDraftQuestion } from "./question-draft";
+import { isQuestionComplete } from "./question-validator";
 import { QuestionPreviewModal } from "./QuestionPreviewModal";
 
 const AUTOSAVE_DEBOUNCE_MS = 1000;

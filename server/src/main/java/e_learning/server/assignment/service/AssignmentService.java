@@ -6,6 +6,7 @@ import e_learning.server.assignment.entity.AssignmentTarget;
 import e_learning.server.assignment.enums.AssignmentStatus;
 import e_learning.server.assignment.enums.AssignmentTargetType;
 import e_learning.server.assignment.repository.AssignmentRepository;
+import e_learning.server.assignment.repository.AssignmentQuestionRepository;
 import e_learning.server.classes.entity.ClassEntity;
 import e_learning.server.classes.repository.ClassRepository;
 import e_learning.server.common.exception.AppException;
@@ -23,17 +24,19 @@ import java.util.List;
 @Transactional
 public class AssignmentService {
     private final AssignmentRepository assignmentRepository;
+    private final AssignmentQuestionRepository assignmentQuestionRepository;
     private final ClassRepository classRepository;
 
     @Transactional(readOnly = true)
     public List<AssignmentResponse> list() {
         return assignmentRepository.findAllByStatusNotOrderByDueAtAscIdAsc(AssignmentStatus.ARCHIVED)
-                .stream().map(assignment -> AssignmentResponse.from(assignment, 0)).toList();
+                .stream().map(assignment -> AssignmentResponse.from(assignment, (int) assignmentQuestionRepository.countByAssignmentId(assignment.getId()))).toList();
     }
 
     @Transactional(readOnly = true)
     public AssignmentResponse get(Long id) {
-        return AssignmentResponse.from(find(id), 0);
+        Assignment assignment = find(id);
+        return AssignmentResponse.from(assignment, (int) assignmentQuestionRepository.countByAssignmentId(assignment.getId()));
     }
 
     public AssignmentResponse create(CreateAssignmentRequest request, Long teacherId) {

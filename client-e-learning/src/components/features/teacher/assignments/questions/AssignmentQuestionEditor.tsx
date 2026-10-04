@@ -181,7 +181,7 @@ export function AssignmentQuestionEditor({
           <div className="flex items-center justify-between border-t border-border p-5">
             <p className="text-body-sm text-muted-foreground">
               {locked
-                ? "Questions are locked after the first attempt."
+                ? "This Assignment is archived."
                 : "Saved directly to this Assignment."}
             </p>
 

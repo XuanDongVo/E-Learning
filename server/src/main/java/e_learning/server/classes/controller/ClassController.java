@@ -1,7 +1,6 @@
 package e_learning.server.classes.controller;
 
 import e_learning.server.classes.dto.ClassResponse;
-import e_learning.server.classes.dto.ClassMemberResponse;
 import e_learning.server.classes.dto.CreateClassRequest;
 import e_learning.server.classes.service.ClassService;
 import e_learning.server.common.response.ApiResponse;
@@ -31,13 +30,5 @@ public class ClassController {
     public ResponseEntity<ApiResponse<ClassResponse>> create(@Valid @RequestBody CreateClassRequest request, @AuthenticationPrincipal Jwt jwt) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success("Class created", classService.create(request, Long.valueOf(jwt.getSubject()))));
-    }
-
-    @GetMapping("/{classId}/members")
-    public ResponseEntity<ApiResponse<List<ClassMemberResponse>>> members(
-            @PathVariable Long classId,
-            @AuthenticationPrincipal Jwt jwt) {
-        return ResponseEntity.ok(ApiResponse.success(
-                classService.findMembers(classId, Long.valueOf(jwt.getSubject()))));
     }
 }

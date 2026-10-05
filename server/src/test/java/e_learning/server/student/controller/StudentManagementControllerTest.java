@@ -5,6 +5,7 @@ import e_learning.server.student.dto.StudentSummaryResponse;
 import e_learning.server.student.entity.Gender;
 import e_learning.server.student.service.StudentManagementService;
 import e_learning.server.student.service.StudentProfileService;
+import e_learning.server.user.service.UserDetailServiceCustomize;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -21,6 +22,7 @@ class StudentManagementControllerTest {
  @Autowired MockMvc mvc;
  @MockBean StudentManagementService managementService;
  @MockBean StudentProfileService profileService;
+ @MockBean UserDetailServiceCustomize userDetailsService;
 
  @Test void teacherCanListStudents() throws Exception {
   when(profileService.listForTeacher(1L)).thenReturn(List.of(new StudentSummaryResponse(2L,"Student","s@test.com","090","6A1","ACTIVE")));

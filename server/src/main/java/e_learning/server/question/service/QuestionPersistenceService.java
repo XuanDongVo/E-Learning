@@ -63,7 +63,7 @@ public class QuestionPersistenceService {
                     .build();
 
             Question saved = questionRepository.save(question);
-            saveChildEntities(saved, request);
+            createChildEntities(saved, request);
             questions.add(saved);
         }
 
@@ -88,13 +88,10 @@ public class QuestionPersistenceService {
                 request.getAnswers()
         ));
 
-        Set<Long> previousMediaIds = questionMediaRepository.findMediaIdsByQuestionIdIn(Set.of(questionId));
-
-        questionOptionRepository.deleteByQuestionId(questionId);
-        questionAnswerRepository.deleteByQuestionId(questionId);
-        questionMediaRepository.deleteByQuestionId(questionId);
-        saveChildEntities(question, request);
-        releaseUnusedMedia(previousMediaIds);
+        // Update child records in-place. Do not delete/recreate them.
+        // This keeps child IDs stable and avoids unique-key conflicts such as
+        // (question_id, option_key) during the same transaction.
+        updateChildEntities(question, request);
 
         return question;
     }
@@ -112,7 +109,7 @@ public class QuestionPersistenceService {
         releaseUnusedMedia(mediaIds);
     }
 
-    private void saveChildEntities(Question question, QuestionWriteRequest request) {
+    private void createChildEntities(Question question, QuestionWriteRequest request) {
         QuestionType type = request.getType();
         List<QuestionOptionRequest> options = request.getOptions();
         List<QuestionAnswerRequest> answers = request.getAnswers();
@@ -125,7 +122,7 @@ public class QuestionPersistenceService {
                 QuestionOptionRequest option = options.get(i);
                 entities.add(QuestionOption.builder()
                         .question(question)
-                        .optionKey(String.valueOf((char) ('A' + i)))
+                        .optionKey(toOptionKey(i))
                         .content(option.getContent() != null ? option.getContent().trim() : "")
                         .correct(option.isCorrect())
                         .build());
@@ -140,46 +137,211 @@ public class QuestionPersistenceService {
                 && answers != null) {
             List<QuestionAnswer> entities = answers.stream()
                     .filter(answer -> StringUtils.hasText(answer.getRawValue()))
-                    .map(answer -> {
-                        String raw = answer.getRawValue().trim();
-
-                        if (type == QuestionType.TRUE_FALSE) {
-                            raw = "TRUE".equalsIgnoreCase(raw) ? "TRUE" : "FALSE";
-                        }
-
-                        return QuestionAnswer.builder()
-                                .question(question)
-                                .rawValue(raw)
-                                .normalizedValue(raw.toLowerCase())
-                                .build();
-                    })
+                    .map(answer -> buildAnswer(question, answer, type))
                     .toList();
 
             questionAnswerRepository.saveAll(entities);
         }
 
-        if (request.getMediaIds() != null) {
-            int displayOrder = 1;
+        createMedia(question, request.getMediaIds());
+    }
 
-            for (Long mediaId : request.getMediaIds()) {
-                Media media = mediaRepository.findById(mediaId).orElse(null);
-                if (media == null) continue;
+    private void updateChildEntities(Question question, QuestionWriteRequest request) {
+        QuestionType type = request.getType();
 
-                media.setStatus(MediaStatus.READY);
-                mediaRepository.save(media);
+        if (type == QuestionType.SINGLE_CHOICE || type == QuestionType.MULTIPLE_CHOICE) {
+            updateOptions(question, request.getOptions());
+        }
 
-                questionMediaRepository.save(QuestionMedia.builder()
+        if (type == QuestionType.TRUE_FALSE
+                || type == QuestionType.FILL_IN_BLANK
+                || type == QuestionType.TYPE_ANSWER) {
+            updateAnswers(question, request.getAnswers(), type);
+        }
+
+        updateMedia(question, request.getMediaIds());
+    }
+
+    private void updateOptions(Question question, List<QuestionOptionRequest> requests) {
+        if (requests == null || requests.isEmpty()) {
+            return;
+        }
+
+        List<QuestionOption> existing = questionOptionRepository.findByQuestionId(question.getId());
+        Map<String, QuestionOption> byKey = new HashMap<>();
+
+        for (QuestionOption option : existing) {
+            byKey.put(option.getOptionKey(), option);
+        }
+
+        List<QuestionOption> changed = new ArrayList<>();
+
+        for (int i = 0; i < requests.size(); i++) {
+            QuestionOptionRequest request = requests.get(i);
+            String optionKey = toOptionKey(i);
+
+            QuestionOption option = byKey.get(optionKey);
+
+            if (option == null) {
+                option = QuestionOption.builder()
                         .question(question)
-                        .media(media)
-                        .displayOrder(displayOrder++)
-                        .build());
+                        .optionKey(optionKey)
+                        .build();
+            }
+
+            option.setContent(request.getContent() != null ? request.getContent().trim() : "");
+            option.setCorrect(request.isCorrect());
+            changed.add(option);
+        }
+
+        questionOptionRepository.saveAll(changed);
+    }
+
+    private void updateAnswers(
+            Question question,
+            List<QuestionAnswerRequest> requests,
+            QuestionType type
+    ) {
+        if (requests == null || requests.isEmpty()) {
+            return;
+        }
+
+        List<QuestionAnswer> existing = questionAnswerRepository.findByQuestionId(question.getId());
+        List<QuestionAnswer> changed = new ArrayList<>();
+
+        int existingIndex = 0;
+
+        for (QuestionAnswerRequest request : requests) {
+            if (!StringUtils.hasText(request.getRawValue())) {
+                continue;
+            }
+
+            QuestionAnswer answer;
+
+            if (existingIndex < existing.size()) {
+                answer = existing.get(existingIndex++);
+            } else {
+                answer = QuestionAnswer.builder()
+                        .question(question)
+                        .build();
+            }
+
+            String raw = normalizeAnswer(request.getRawValue(), type);
+            answer.setRawValue(raw);
+            answer.setNormalizedValue(raw.toLowerCase());
+            changed.add(answer);
+        }
+
+        if (!changed.isEmpty()) {
+            questionAnswerRepository.saveAll(changed);
+        }
+    }
+
+    private void createMedia(Question question, List<Long> mediaIds) {
+        if (mediaIds == null || mediaIds.isEmpty()) {
+            return;
+        }
+
+        int displayOrder = 1;
+
+        for (Long mediaId : mediaIds) {
+            Media media = mediaRepository.findById(mediaId).orElse(null);
+            if (media == null) {
+                continue;
+            }
+
+            media.setStatus(MediaStatus.READY);
+            mediaRepository.save(media);
+
+            questionMediaRepository.save(QuestionMedia.builder()
+                    .question(question)
+                    .media(media)
+                    .displayOrder(displayOrder++)
+                    .build());
+        }
+    }
+
+    private void updateMedia(Question question, List<Long> mediaIds) {
+        if (mediaIds == null || mediaIds.isEmpty()) {
+            return;
+        }
+
+        List<QuestionMedia> existing = questionMediaRepository
+                .findByQuestionIdOrderByDisplayOrderAsc(question.getId());
+
+        Map<Long, QuestionMedia> byMediaId = new HashMap<>();
+        for (QuestionMedia questionMedia : existing) {
+            if (questionMedia.getMedia() != null) {
+                byMediaId.put(questionMedia.getMedia().getId(), questionMedia);
             }
         }
+
+        int displayOrder = 1;
+        List<QuestionMedia> changed = new ArrayList<>();
+
+        for (Long mediaId : mediaIds) {
+            Media media = mediaRepository.findById(mediaId).orElse(null);
+            if (media == null) {
+                continue;
+            }
+
+            media.setStatus(MediaStatus.READY);
+            mediaRepository.save(media);
+
+            QuestionMedia questionMedia = byMediaId.get(mediaId);
+
+            if (questionMedia == null) {
+                questionMedia = QuestionMedia.builder()
+                        .question(question)
+                        .media(media)
+                        .displayOrder(displayOrder)
+                        .build();
+            } else {
+                questionMedia.setDisplayOrder(displayOrder);
+            }
+
+            changed.add(questionMedia);
+            displayOrder++;
+        }
+
+        if (!changed.isEmpty()) {
+            questionMediaRepository.saveAll(changed);
+        }
+    }
+
+    private QuestionAnswer buildAnswer(
+            Question question,
+            QuestionAnswerRequest request,
+            QuestionType type
+    ) {
+        String raw = normalizeAnswer(request.getRawValue(), type);
+
+        return QuestionAnswer.builder()
+                .question(question)
+                .rawValue(raw)
+                .normalizedValue(raw.toLowerCase())
+                .build();
+    }
+
+    private String normalizeAnswer(String rawValue, QuestionType type) {
+        String raw = rawValue.trim();
+
+        if (type == QuestionType.TRUE_FALSE) {
+            raw = "TRUE".equalsIgnoreCase(raw) ? "TRUE" : "FALSE";
+        }
+
+        return raw;
+    }
+
+    private String toOptionKey(int index) {
+        return String.valueOf((char) ('A' + index));
     }
 
     private void releaseUnusedMedia(Set<Long> mediaIds) {
         for (Long mediaId : mediaIds) {
-            if (questionMediaRepository.existsByMediaId(mediaId)) continue;
+            if (questionMediaRepository.existsByMediaId(mediaId)) {
+                continue;
+            }
 
             Media media = mediaRepository.findById(mediaId).orElse(null);
             if (media != null && media.getStatus() != MediaStatus.DELETED) {

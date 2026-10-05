@@ -6,6 +6,7 @@ import e_learning.server.common.exception.AppException;
 import e_learning.server.common.exception.ErrorCode;
 import e_learning.server.student.dto.*;
 import e_learning.server.student.entity.StudentProfile;
+import e_learning.server.student.entity.StudentGuardian;
 import e_learning.server.student.repository.StudentGuardianRepository;
 import e_learning.server.student.repository.StudentProfileRepository;
 import e_learning.server.user.entity.Role;
@@ -37,6 +38,7 @@ public class StudentProfileService {
         StudentProfile profile=profile(userId);
         if(request.fullName()!=null&&!request.fullName().isBlank()) user.setFullName(request.fullName().trim());
         profile.update(request.dateOfBirth(),request.gender(),request.phone());
+        if (request.guardians() != null) { guardianRepository.deleteAll(guardianRepository.findAllByStudentProfileIdOrderByPrimaryDescIdAsc(profile.getId())); saveGuardians(profile, request.guardians()); }
         return toProfileResponse(user,profile);
     }
 
@@ -58,6 +60,7 @@ public class StudentProfileService {
         return user;
     }
     private StudentProfile profile(Long id){return profileRepository.findByUserId(id).orElseThrow(()->new AppException(ErrorCode.STUDENT_PROFILE_NOT_FOUND));}
+    private void saveGuardians(StudentProfile profile, List<StudentGuardianRequest> requests){ boolean primary=false; for(StudentGuardianRequest r:requests){ if(r.primary() && primary) throw new AppException(ErrorCode.INVALID_REQUEST); primary |= r.primary(); guardianRepository.save(new StudentGuardian(profile,r.relationship(),r.fullName().trim(),r.phone().trim(),r.email(),r.primary())); } }
     private List<StudentGuardianResponse> guardians(StudentProfile p){
         return guardianRepository.findAllByStudentProfileIdOrderByPrimaryDescIdAsc(p.getId()).stream().map(g->new StudentGuardianResponse(g.getId(),g.getRelationship(),g.getFullName(),g.getPhone(),g.getEmail(),g.isPrimary())).toList();
     }

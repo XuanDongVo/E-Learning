@@ -26,3 +26,17 @@ Student screens are split into route pages, feature components, services, and sr
 
 ## Test coverage
 Backend tests cover student creation, duplicate email, duplicate membership, membership removal, non-student profile access, profile retrieval, and teacher student API reads. Frontend tests cover search/status filtering.
+
+## Test matrix
+- Student profile: authenticated student can GET profile.
+- Student profile: authenticated student can PUT personal fields.
+- Student profile: guardian can be created/updated; only one primary guardian is accepted by service validation.
+- Student profile: teacher/non-student cannot use the student profile endpoint.
+- Student management: teacher can list students belonging to teacher-owned classes.
+- Student management: teacher can retrieve a student only through teacher-owned membership.
+- Student management: duplicate email is rejected.
+- Student management: create persists User + StudentProfile + guardians + ClassMember in one transaction.
+- Class membership: add active student succeeds; duplicate active membership is rejected; inactive membership can be reactivated.
+- Class membership: remove marks membership INACTIVE and preserves the student account.
+- Authorization: teacher endpoints require TEACHER; student profile endpoints require STUDENT.
+- Frontend: student search filters by name/email; status filter works; service contracts use the expected HTTP methods and paths.

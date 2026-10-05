@@ -1,8 +1,9 @@
 "use client";
+import type { StudentDetailViewProps } from "@/types/student";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { studentService } from "@/services/student.service";
-export function StudentDetailView({studentId}:{studentId:number}){
+export function StudentDetailView({studentId}:StudentDetailViewProps){
  const q=useQuery({queryKey:["student",studentId],queryFn:()=>studentService.get(studentId)});
  if(q.isLoading)return <div className="p-8 text-neutral-muted">Loading student...</div>;
  if(q.isError||!q.data?.data)return <div role="alert" className="rounded-md border border-red-200 bg-red-50 p-4 text-red-700">Unable to load student.</div>;

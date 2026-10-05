@@ -14,41 +14,18 @@ import { makeDraftQuestion } from "@/components/features/teacher/question-author
 
 function toDraft(item?: AssignmentQuestion): DraftQuestion {
   if (!item) return makeDraftQuestion();
-
   const q = item.question;
-  const options = q.options.map((option) => ({
-    id: String(option.id),
-    text: option.content,
-  }));
-
   return makeDraftQuestion({
     draftId: `assignment-question-${q.id}`,
     type: q.type,
     difficulty: q.difficulty,
     text: q.content,
     explanation: q.explanation ?? "",
-    options:
-      options.length >= 2
-        ? options
-        : makeDraftQuestion().options,
-    correctOptionIds: q.options
-      .filter((option) => option.isCorrect)
-      .map((option) => String(option.id)),
-    trueFalseAnswer:
-      q.answers.find((answer) => answer.rawValue === "FALSE")
-        ? "FALSE"
-        : "TRUE",
-    acceptedAnswers:
-      q.answers.length > 0
-        ? q.answers.map((answer) => answer.rawValue)
-        : [""],
-    media: q.media.map((media) => ({
-      id: String(media.mediaId),
-      name: media.mediaType,
-      kind:
-        media.mediaType.toLowerCase().includes("audio") ? "audio" : "image",
-      url: media.url,
-    })),
+    options: q.options.length >= 2 ? q.options.map((option) => ({ id: String(option.id), text: option.content })) : makeDraftQuestion().options,
+    correctOptionIds: q.options.filter((option) => option.isCorrect).map((option) => String(option.id)),
+    trueFalseAnswer: q.answers.find((answer) => answer.rawValue === "FALSE") ? "FALSE" : "TRUE",
+    acceptedAnswers: q.answers.length > 0 ? q.answers.map((answer) => answer.rawValue) : [""],
+    media: q.media.map((media) => ({ id: String(media.mediaId), name: media.mediaType, kind: media.mediaType.toLowerCase().includes("audio") ? "audio" : "image", url: media.url })),
   });
 }
 

@@ -29,11 +29,11 @@ class StudentManagementServiceTest {
 
  @Test void createStudentCreatesAccountProfileAndMembership(){
   User teacher=new User("teacher@test.com","x","Teacher",Role.TEACHER);
-  ClassEntity clazz=mock(ClassEntity.class); when(clazz.getTeacher()).thenReturn(teacher); when(clazz.getId()).thenReturn(7L); when(clazz.getName()).thenReturn("6A1");
+  ClassEntity clazz=mock(ClassEntity.class); when(clazz.getTeacher()).thenReturn(teacher); when(teacher.getId()).thenReturn(1L); when(clazz.getId()).thenReturn(7L); when(clazz.getName()).thenReturn("6A1");
   when(classes.findById(7L)).thenReturn(Optional.of(clazz)); when(users.findByEmailIgnoreCase("student@test.com")).thenReturn(Optional.empty()); when(encoder.encode("password123")).thenReturn("hash");
   when(users.save(any())).thenAnswer(i->i.getArgument(0)); when(profiles.save(any())).thenAnswer(i->i.getArgument(0)); when(members.save(any())).thenAnswer(i->i.getArgument(0)); when(guardians.findAllByStudentProfileIdOrderByPrimaryDescIdAsc(anyLong())).thenReturn(java.util.List.of());
   CreateStudentRequest request=new CreateStudentRequest("student@test.com","password123","Student",null,null,null,7L,null);
-  var result=service.create(request,teacher.getId());
+  var result=service.create(request,1L);
   assertEquals("student@test.com",result.email()); verify(users).save(any(User.class)); verify(profiles).save(any()); verify(members).save(any(ClassMember.class));
  }
  @Test void createStudentRejectsDuplicateEmail(){

@@ -56,7 +56,6 @@ public class AssignmentQuestionService {
 
         for (Question question : questions) {
             ownerships.add(AssignmentQuestion.builder()
-                    .questionId(question.getId())
                     .question(question)
                     .assignment(assignment)
                     .build());

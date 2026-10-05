@@ -1,10 +1,12 @@
 package e_learning.server.classes.repository;
 
+import e_learning.server.classes.dto.ClassMemberResponse;
 import e_learning.server.classes.entity.ClassMember;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import e_learning.server.classes.dto.ClassMemberResponse;
+
 import java.util.List;
+import java.util.Optional;
 
 public interface ClassMemberRepository extends JpaRepository<ClassMember, Long> {
 
@@ -19,4 +21,18 @@ public interface ClassMemberRepository extends JpaRepository<ClassMember, Long> 
         order by member.user.fullName
         """)
     List<ClassMemberResponse> findMembers(Long classId);
+
+    Optional<ClassMember> findByClassEntityIdAndUserId(Long classId, Long userId);
+
+    boolean existsByClassEntityIdAndUserId(Long classId, Long userId);
+
+    @Query("""
+        select member
+        from ClassMember member
+        join fetch member.classEntity classEntity
+        where member.user.id = :userId
+        and member.status = 'ACTIVE'
+        order by classEntity.academicYear desc, classEntity.id desc
+        """)
+    List<ClassMember> findActiveMembershipsByUserId(Long userId);
 }

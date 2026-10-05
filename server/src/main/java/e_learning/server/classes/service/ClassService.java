@@ -2,7 +2,6 @@ package e_learning.server.classes.service;
 
 import e_learning.server.classes.dto.ClassResponse;
 import e_learning.server.classes.dto.CreateClassRequest;
-import e_learning.server.classes.dto.ClassMemberResponse;
 import e_learning.server.classes.entity.ClassEntity;
 import e_learning.server.classes.repository.ClassMemberRepository;
 import e_learning.server.classes.repository.ClassRepository;
@@ -45,13 +44,5 @@ public class ClassService {
             .orElseThrow(() -> new AppException(ErrorCode.GRADE_NOT_FOUND));
         ClassEntity classEntity = classRepository.save(new ClassEntity(request.name().trim(), grade, request.academicYear().trim(), teacher));
         return ClassResponse.from(classEntity, 0);
-    }
-
-    @Transactional(readOnly = true)
-    public List<ClassMemberResponse> findMembers(Long classId, Long teacherId) {
-        if (!classRepository.existsByIdAndTeacherId(classId, teacherId)) {
-            throw new AppException(ErrorCode.CLASS_NOT_FOUND);
-        }
-        return classMemberRepository.findMembers(classId);
     }
 }

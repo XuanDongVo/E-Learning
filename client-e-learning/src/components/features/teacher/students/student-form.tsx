@@ -1,4 +1,5 @@
 "use client";
+import type { StudentFormProps } from "@/types/student";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { classService } from "@/services/class.service";
@@ -6,7 +7,7 @@ import { studentService } from "@/services/student.service";
 import type { CreateStudentRequest, Gender, StudentGuardianRequest } from "@/types/student";
 
 const emptyGuardian: StudentGuardianRequest={relationship:"GUARDIAN",fullName:"",phone:"",email:"",primary:true};
-export function StudentForm({onSuccess,onCancel}:{onSuccess:()=>void;onCancel:()=>void}){
+export function StudentForm({onSuccess,onCancel}:StudentFormProps){
  const {data:classesData}=useQuery({queryKey:["classes"],queryFn:classService.list});
  const classes=classesData?.data??[];
  const [form,setForm]=useState<CreateStudentRequest>({email:"",password:"",fullName:"",classId:0,guardians:[emptyGuardian]});

@@ -14,6 +14,7 @@ import {
 import { makeDraftQuestion } from "./question-draft";
 import { isQuestionComplete } from "./question-validator";
 import { QuestionPreviewModal } from "./QuestionPreviewModal";
+import { draftQuestionToPreview } from "./question-preview.mapper";
 
 const AUTOSAVE_DEBOUNCE_MS = 1000;
 
@@ -318,7 +319,7 @@ export function QuestionComposer({
       {previewOpen && (
         <QuestionPreviewModal
           title={title}
-          questions={questions}
+          questions={questions.map(draftQuestionToPreview)}
           initialIndex={Math.max(
             0,
             questions.findIndex(

@@ -1,10 +1,11 @@
 "use client";
+import type { ClassStudentsViewProps } from "@/types/student";
 import { useMemo,useState } from "react";
 import { useMutation,useQuery,useQueryClient } from "@tanstack/react-query";
 import { classService } from "@/services/class.service";
 import { studentService } from "@/services/student.service";
 
-export function ClassStudentsView({classId}:{classId:number}){
+export function ClassStudentsView({classId}:ClassStudentsViewProps){
  const qc=useQueryClient(); const [search,setSearch]=useState("");
  const members=useQuery({queryKey:["class-members",classId],queryFn:()=>studentService.listClassMembers(classId)});
  const students=useQuery({queryKey:["students"],queryFn:studentService.list});

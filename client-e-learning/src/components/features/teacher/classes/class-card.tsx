@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { MoreHorizontal, Users } from "lucide-react";
 
 import type { ClassCardProps } from "@/types/class";
@@ -30,7 +31,7 @@ export function ClassCard({ classItem }: ClassCardProps) {
 
       <div className="mt-5 flex items-center justify-between border-t border-border-color pt-4 text-body-sm font-bold text-neutral-muted">
         <span>{classItem.academicYear}</span>
-        <span className="text-primary">View class</span>
+        <Link href={`/teacher/classes/${classItem.id}/students`} className="text-primary">View students</Link>
       </div>
     </article>
   );

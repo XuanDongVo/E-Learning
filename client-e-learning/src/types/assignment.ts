@@ -1,4 +1,8 @@
 import { SkillType } from "./unit";
+import type {
+  QuestionDifficulty,
+  QuestionType,
+} from "./question";
 
 export type AssignmentManagementStatus = "DRAFT" | "PUBLISHED" | "ARCHIVED";
 
@@ -37,6 +41,72 @@ export interface CreateAssignmentRequest {
   targets: AssignmentTargetRequest[];
 }
 
+export interface AssignmentQuestionOption {
+  id: number;
+  content: string;
+  isCorrect: boolean;
+}
+
+export interface AssignmentQuestionAnswer {
+  id: number;
+  rawValue: string;
+  normalizedValue?: string;
+}
+
+export interface AssignmentQuestionMedia {
+  id: number;
+  mediaId: number;
+  mediaType: string;
+  url: string;
+}
+
+export interface AssignmentQuestionContent {
+  id: number;
+  type: QuestionType;
+  difficulty: QuestionDifficulty;
+  content: string;
+  explanation?: string;
+  complete: boolean;
+  is_complete?: boolean;
+  matchingMode?: string;
+  options: AssignmentQuestionOption[];
+  answers: AssignmentQuestionAnswer[];
+  media: AssignmentQuestionMedia[];
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface AssignmentQuestion {
+  questionId: number;
+  assignmentId: number;
+  question: AssignmentQuestionContent;
+}
+
+export interface CreateAssignmentQuestionOptionRequest {
+  content: string;
+  isCorrect: boolean;
+}
+
+export interface CreateAssignmentQuestionAnswerRequest {
+  rawValue: string;
+}
+
+export interface CreateAssignmentQuestionRequest {
+  type: QuestionType;
+  difficulty?: QuestionDifficulty;
+  content: string;
+  explanation?: string;
+  options?: CreateAssignmentQuestionOptionRequest[];
+  answers?: CreateAssignmentQuestionAnswerRequest[];
+  mediaIds?: number[];
+}
+
+export type UpdateAssignmentQuestionRequest = CreateAssignmentQuestionRequest;
+
+export interface BulkDeleteAssignmentQuestionsRequest {
+  ids: number[];
+}
+
 export type AssignmentStatus = "todo" | "completed" | "late";
 
 export interface AssignmentOverview {
@@ -44,12 +114,12 @@ export interface AssignmentOverview {
   title: string;
   unitTitle: string;
   skill: SkillType;
-  dueDate: string; // e.g., "Sep 20"
-  dueRemainingText: string; // e.g., "2 days left"
+  dueDate: string;
+  dueRemainingText: string;
   status: AssignmentStatus;
   totalQuestions: number;
-  timeLimitMinutes?: number; // e.g., 30 mins
-  allowedAttempts: number; // 1 attempt
+  timeLimitMinutes?: number;
+  allowedAttempts: number;
   teacherName: string;
   teacherAvatarUrl: string;
   allowLateSubmission: boolean;
@@ -83,8 +153,8 @@ export interface QuizSubmissionPayload {
 export interface RecentResult {
   id: string;
   title: string;
-  score: string; // e.g. "8/10", "16/20"
-  xpEarnedText: string; // e.g. "+10 XP"
-  timestampText: string; // e.g. "Today", "Yesterday", "Sep 13"
+  score: string;
+  xpEarnedText: string;
+  timestampText: string;
   skill: SkillType;
 }

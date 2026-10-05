@@ -32,7 +32,7 @@ Consequences:
 
 | Area | v1 | v2 |
 |---|---|---|
-| Question source | `AssignmentBank` → `QuestionBank` with distribution/random selection | Own `AssignmentQuestion` records; manual form + Excel import |
+| Question source | `AssignmentBank` → `QuestionBank` with distribution/random selection | Own `AssignmentQuestion` records; manual form first, Excel import deferred |
 | Exam paper | Randomized per student | One fixed question set and order for all students |
 | `teacher_id` | Owner-scoped | Removed; the system has one teacher |
 | Target | `CLASS` / `STUDENT` / `GRADE` / `ALL` | `CLASS` or `GRADE`, never mixed |

@@ -29,7 +29,7 @@ content_questions
   └── question_id + question_bank_id
 
 assignment_questions
-  └── question_id + assignment_id + topic_id + position
+  └── question_id + assignment_id
 ```
 
 - `Question` stores only shared core data: type, difficulty, prompt, optional explanation, server-derived `is_complete`, question-level `matching_mode`, and timestamps.
@@ -59,7 +59,7 @@ Validation rules must be type-aware:
   uploaded successfully and have real server `media_id` values before the
   question is saved. Video is out of scope for MVP.
 
-The create, update, bulk-create, and import endpoints must apply the same
+The create, update, and bulk-create endpoints must apply the same
 validation rules. Reject incompatible fields instead of silently ignoring
 them. Updating a question type is allowed, but must run in one transaction,
 delete incompatible child options/answers, and return a warning to the UI.

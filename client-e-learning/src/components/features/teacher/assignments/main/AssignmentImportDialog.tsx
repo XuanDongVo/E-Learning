@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Download, Upload, X } from "lucide-react";
 import { toast } from "sonner";
 
-import { downloadAssignmentQuestionTemplate } from "@/services/assignment.service";
+// import { downloadAssignmentQuestionTemplate } from "@/services/assignment.service";
 
 type Props = {
   open: boolean;
@@ -26,7 +26,7 @@ export function AssignmentImportDialog({
     setIsDownloading(true);
 
     try {
-      await downloadAssignmentQuestionTemplate();
+      // await downloadAssignmentQuestionTemplate();
       toast.success("Template downloaded.");
     } catch (error) {
       toast.error(

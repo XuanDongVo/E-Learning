@@ -37,4 +37,17 @@ public class ClassMember {
 
     protected ClassMember() {
     }
+
+    public ClassMember(ClassEntity classEntity, User user) {
+        this.classEntity = classEntity;
+        this.user = user;
+        this.status = "ACTIVE";
+        this.joinedAt = LocalDateTime.now();
+    }
+
+    public Long getId() { return id; }
+    public ClassEntity getClassEntity() { return classEntity; }
+    public User getUser() { return user; }
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
 }

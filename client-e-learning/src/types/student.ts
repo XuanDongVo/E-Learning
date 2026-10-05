@@ -35,3 +35,11 @@ export interface UpdateStudentProfileRequest {
 }
 export interface AddClassMemberRequest { studentId: number; }
 export type StudentApiResponse<T> = ApiResponse<T>;
+
+export interface StudentsHeaderProps { onCreate: () => void; }
+export interface StudentsToolbarProps { value: string; onChange: (value: string) => void; status: string; onStatusChange: (value: string) => void; }
+export interface StudentTableProps { students: StudentSummary[]; isLoading: boolean; }
+export interface StudentFormProps { onSuccess: () => void; onCancel: () => void; }
+export interface StudentDetailViewProps { studentId: number; }
+export interface StudentProfileFormProps {}
+export interface ClassStudentsViewProps { classId: number; }

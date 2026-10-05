@@ -1,7 +1,8 @@
+import type { StudentTableProps } from "@/types/student";
 import Link from "next/link";
 import { Users } from "lucide-react";
 import type { StudentSummary } from "@/types/student";
-export function StudentTable({students,isLoading}:{students:StudentSummary[];isLoading:boolean}){
+export function StudentTable({students,isLoading}:StudentTableProps){
  if(isLoading)return <div className="rounded-[var(--radius-md)] border border-border-color bg-card-bg p-10 text-center text-neutral-muted">Loading students...</div>;
  if(!students.length)return <div className="rounded-[var(--radius-md)] border border-dashed border-border-color bg-card-bg p-10 text-center"><Users className="mx-auto size-8 text-primary"/><p className="mt-3 font-bold">No students found</p><p className="mt-1 text-neutral-muted">Add a student or adjust your filters.</p></div>;
  return <div className="overflow-hidden rounded-[var(--radius-md)] border border-border-color bg-card-bg"><div className="overflow-x-auto"><table className="w-full text-left text-body"><thead className="border-b border-border-color bg-background-app text-body-sm text-neutral-muted"><tr><th className="px-4 py-3 font-bold">Student</th><th className="px-4 py-3 font-bold">Email</th><th className="px-4 py-3 font-bold">Class</th><th className="px-4 py-3 font-bold">Status</th></tr></thead><tbody className="divide-y divide-border-color">{students.map(s=><tr key={s.id} className="hover:bg-background-app"><td className="px-4 py-3"><Link className="font-bold hover:text-primary" href={`/teacher/students/${s.id}`}>{s.fullName}</Link><div className="text-body-sm text-neutral-muted">{s.phone||"No phone"}</div></td><td className="px-4 py-3">{s.email}</td><td className="px-4 py-3">{s.className||"—"}</td><td className="px-4 py-3"><span className="font-bold">{s.classStatus||"—"}</span></td></tr>)}</tbody></table></div></div>;

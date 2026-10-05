@@ -67,7 +67,7 @@ public class StudentManagementService {
         ownedClass(classId, teacherId);
         return classMemberRepository.findMembers(classId).stream()
                 .filter(m -> true)
-                .map(m -> new StudentSummaryResponse(m.userId(), m.fullName(), m.email(), null, null, m.status()))
+                .map(m -> new StudentSummaryResponse(m.userId(), m.fullName(), m.email(), m.phone(), null, m.status()))
                 .toList();
     }
 

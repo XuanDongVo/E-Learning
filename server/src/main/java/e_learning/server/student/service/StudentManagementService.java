@@ -65,10 +65,7 @@ public class StudentManagementService {
     @Transactional(readOnly=true)
     public List<StudentSummaryResponse> listClass(Long classId, Long teacherId) {
         ownedClass(classId, teacherId);
-        return classMemberRepository.findMembers(classId).stream()
-                .filter(m -> true)
-                .map(m -> new StudentSummaryResponse(m.userId(), m.fullName(), m.email(), m.phone(), null, m.status()))
-                .toList();
+        return classMemberRepository.findStudentsByClassId(classId);
     }
 
     private ClassEntity ownedClass(Long classId, Long teacherId) {

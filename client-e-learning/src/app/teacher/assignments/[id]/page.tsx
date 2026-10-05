@@ -142,7 +142,7 @@ export default function AssignmentDetailPage() {
           count={questionItems.length}
           readyCount={readyCount}
           locked={locked}
-          onAdd={() => openEditor()}
+          createHref={`/teacher/assignments/${assignmentId}/questions/create`}
         />
 
         {locked && (

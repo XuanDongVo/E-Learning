@@ -1,10 +1,11 @@
 "use client";
+import type { StudentProfileFormProps } from "@/types/student";
 import { useEffect,useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { studentService } from "@/services/student.service";
 import type { Gender, StudentGuardianRequest } from "@/types/student";
 
-export function StudentProfileForm(){
+export function StudentProfileForm(_: StudentProfileFormProps){
  const q=useQuery({queryKey:["student-profile"],queryFn:studentService.profile});const profile=q.data?.data;
  const [fullName,setFullName]=useState("");const [phone,setPhone]=useState("");const [dateOfBirth,setDateOfBirth]=useState("");const [gender,setGender]=useState<Gender|"" >("");const [guardian,setGuardian]=useState<StudentGuardianRequest|null>(null);const [saving,setSaving]=useState(false);const [message,setMessage]=useState("");
  useEffect(()=>{if(profile){setFullName(profile.fullName);setPhone(profile.phone||"");setDateOfBirth(profile.dateOfBirth||"");setGender(profile.gender||"");const g=profile.guardians[0];setGuardian(g?{id:g.id,relationship:g.relationship,fullName:g.fullName,phone:g.phone,email:g.email||"",primary:g.primary}:{relationship:"GUARDIAN",fullName:"",phone:"",email:"",primary:true});}},[profile]);

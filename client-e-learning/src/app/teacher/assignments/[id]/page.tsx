@@ -18,6 +18,8 @@ import { AssignmentWizard } from "@/components/features/teacher/assignments/main
 import { classService } from "@/services/class.service";
 import { updateAssignment, updateAssignmentStatus } from "@/services/assignment.service";
 import type { CreateAssignmentRequest } from "@/types/assignment";
+import { QuestionPreviewModal } from "@/components/features/teacher/question-authoring/QuestionPreviewModal";
+import { assignmentQuestionToPreview } from "@/components/features/teacher/question-authoring/question-preview.mapper";
 
 export default function AssignmentDetailPage() {
   const params = useParams<{ id: string }>();
@@ -27,6 +29,7 @@ export default function AssignmentDetailPage() {
   const [activeQuestionId, setActiveQuestionId] = useState<number | null>(null);
   const [editorOpen, setEditorOpen] = useState(false);
   const [editAssignmentOpen, setEditAssignmentOpen] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState(false);
 
   const assignment = useQuery({
     queryKey: ["assignment", assignmentId],
@@ -129,6 +132,8 @@ export default function AssignmentDetailPage() {
     );
   }
 
+  const previewQuestions = questionItems.map(assignmentQuestionToPreview);
+
   const readyCount = questionItems.filter(
     (item) => item.question.complete || item.question.is_complete === true,
   ).length;
@@ -198,6 +203,8 @@ export default function AssignmentDetailPage() {
           readyCount={readyCount}
           locked={locked}
           createHref={`/teacher/assignments/${assignmentId}/questions/create`}
+          onPreview={() => setPreviewOpen(true)}
+          previewDisabled={questionItems.length === 0}
         />
 
         {locked && (
@@ -214,6 +221,15 @@ export default function AssignmentDetailPage() {
           onDelete={deleteQuestion}
         />
       </section>
+
+      {previewOpen && previewQuestions.length > 0 && (
+        <QuestionPreviewModal
+          title={`${data.name} — Question Preview`}
+          questions={previewQuestions}
+          initialIndex={0}
+          onClose={() => setPreviewOpen(false)}
+        />
+      )}
 
       {editorOpen && (
         <AssignmentQuestionEditor

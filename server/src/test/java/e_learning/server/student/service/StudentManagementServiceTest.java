@@ -46,6 +46,12 @@ class StudentManagementServiceTest {
   ClassMember member=mock(ClassMember.class); when(member.getStatus()).thenReturn("ACTIVE"); when(members.findByClassEntityIdAndUserId(7L,2L)).thenReturn(Optional.of(member));
   assertThrows(AppException.class,()->service.addToClass(7L,2L,1L));
  }
+ @Test void addToClassReactivatesInactiveMembership(){
+  ClassEntity clazz=mock(ClassEntity.class); User teacher=mock(User.class); when(clazz.getTeacher()).thenReturn(teacher); when(teacher.getId()).thenReturn(1L); when(classes.findById(7L)).thenReturn(Optional.of(clazz));
+  User student=mock(User.class); when(student.getRole()).thenReturn(Role.STUDENT); when(users.findById(2L)).thenReturn(Optional.of(student));
+  ClassMember member=mock(ClassMember.class); when(member.getStatus()).thenReturn("INACTIVE"); when(members.findByClassEntityIdAndUserId(7L,2L)).thenReturn(Optional.of(member));
+  service.addToClass(7L,2L,1L); verify(member).setStatus("ACTIVE");
+ }
  @Test void removeFromClassMarksMembershipInactive(){
   ClassEntity clazz=mock(ClassEntity.class); User teacher=mock(User.class); when(clazz.getTeacher()).thenReturn(teacher); when(teacher.getId()).thenReturn(1L); when(classes.findById(7L)).thenReturn(Optional.of(clazz));
   ClassMember member=mock(ClassMember.class); when(members.findByClassEntityIdAndUserId(7L,2L)).thenReturn(Optional.of(member));

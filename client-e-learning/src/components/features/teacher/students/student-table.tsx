@@ -1,7 +1,6 @@
 import type { StudentTableProps } from "@/types/student";
 import Link from "next/link";
 import { Users } from "lucide-react";
-import type { StudentSummary } from "@/types/student";
 export function StudentTable({students,isLoading}:StudentTableProps){
  if(isLoading)return <div className="rounded-[var(--radius-md)] border border-border-color bg-card-bg p-10 text-center text-neutral-muted">Loading students...</div>;
  if(!students.length)return <div className="rounded-[var(--radius-md)] border border-dashed border-border-color bg-card-bg p-10 text-center"><Users className="mx-auto size-8 text-primary"/><p className="mt-3 font-bold">No students found</p><p className="mt-1 text-neutral-muted">Add a student or adjust your filters.</p></div>;

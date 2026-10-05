@@ -192,3 +192,22 @@ Paged endpoints accept `page` (**1-indexed**, default 1) and `size`, and return 
 | `INVALID_GAME_TEMPLATE` | 400 | The selected game template does not exist or is inactive |
 | `INVALID_STATUS_TRANSITION` | 409 | This status change is not allowed |
 | `PREVIEW_NOT_READY` | 409 | Activity cannot be previewed until it is ready |
+
+
+## Phase 6 — Student Management
+
+### Student self profile
+- GET /v1/student/profile — STUDENT — current profile, guardian data, and current active class.
+- PUT /v1/student/profile — STUDENT — update full name, date of birth, gender, phone, and guardians.
+
+### Teacher student management
+- GET /v1/users/students — TEACHER — students in teacher-owned classes.
+- GET /v1/users/students/{studentId} — TEACHER — student detail scoped to teacher-owned class membership.
+- POST /v1/users/students — TEACHER — creates User(STUDENT), StudentProfile, StudentGuardian records, and ClassMember in one transaction.
+
+### Class membership
+- GET /v1/classes/{classId}/members — TEACHER — class students.
+- POST /v1/classes/{classId}/members — TEACHER — add/reactivate a student membership.
+- DELETE /v1/classes/{classId}/members/{studentId} — TEACHER — marks membership INACTIVE rather than deleting the account.
+
+Student account status and class membership status are intentionally separate.

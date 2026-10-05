@@ -26,6 +26,6 @@ class StudentProfileServiceTest {
  @Test void getOwnProfileReturnsProfileData(){
   User student=mock(User.class); when(student.getRole()).thenReturn(Role.STUDENT); when(student.getId()).thenReturn(1L); when(student.getEmail()).thenReturn("s@test.com"); when(student.getFullName()).thenReturn("Student"); when(student.getStatus()).thenReturn(e_learning.server.user.entity.UserStatus.ACTIVE);
   StudentProfile profile=mock(StudentProfile.class); when(profile.getId()).thenReturn(9L); when(profiles.findByUserId(1L)).thenReturn(java.util.Optional.of(profile)); when(guardians.findAllByStudentProfileIdOrderByPrimaryDescIdAsc(9L)).thenReturn(java.util.List.of()); when(members.findActiveMembershipsByUserId(1L)).thenReturn(java.util.List.of());
-  assertEquals("Student",service.getOwnProfile(1L).data().fullName());
+  assertEquals("Student",service.getOwnProfile(1L).fullName());
  }
 }

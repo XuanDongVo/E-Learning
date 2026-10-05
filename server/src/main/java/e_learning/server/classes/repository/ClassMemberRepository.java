@@ -1,5 +1,4 @@
 package e_learning.server.classes.repository;
-import e_learning.server.classes.dto.ClassMemberResponse;
 import e_learning.server.classes.entity.ClassMember;
 import e_learning.server.student.dto.StudentSummaryResponse;
 import org.springframework.data.jpa.repository.*;

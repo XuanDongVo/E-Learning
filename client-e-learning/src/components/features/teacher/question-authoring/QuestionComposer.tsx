@@ -65,6 +65,7 @@ export function QuestionComposer({
   const [isSaving, setIsSaving] = useState(false);
   const [showValidation, setShowValidation] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [clearDraftOpen, setClearDraftOpen] = useState(false);
   const [autoSaveStatus, setAutoSaveStatus] =
     useState<AutoSaveStatus>("idle");
   const autoSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -177,18 +178,24 @@ export function QuestionComposer({
   };
 
   const clearDraft = () => {
-    if (!confirm("Reset all questions and clear the locally saved draft?")) {
-      return;
-    }
+    setClearDraftOpen(true);
+  };
 
+  const confirmClearDraft = () => {
     if (typeof window !== "undefined") {
       localStorage.removeItem(storageKey);
     }
 
     const initial = [makeDraftQuestion()];
+
     setQuestions(initial);
     setActiveDraftId(initial[0].draftId);
     setShowValidation(false);
+    setClearDraftOpen(false);
+
+    toast.success("Draft cleared", {
+      description: "All locally saved questions have been removed.",
+    });
   };
 
   const handleSave = async () => {
@@ -252,9 +259,10 @@ export function QuestionComposer({
           <button
             type="button"
             onClick={clearDraft}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-rose-600 transition hover:bg-rose-50"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-2 text-xs font-semibold text-destructive transition hover:bg-muted"
           >
-            <RotateCcw size={14} /> Clear Draft
+            <RotateCcw size={14} />
+            Clear Draft
           </button>
         </div>
       </div>
@@ -316,6 +324,7 @@ export function QuestionComposer({
         onSave={handleSave}
       />
 
+
       {previewOpen && (
         <QuestionPreviewModal
           title={title}
@@ -328,6 +337,55 @@ export function QuestionComposer({
           )}
           onClose={() => setPreviewOpen(false)}
         />
+      )}
+
+      {clearDraftOpen && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-foreground/40 p-4 backdrop-blur-sm">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="clear-draft-title"
+            className="w-full max-w-md rounded-xl border border-border bg-card p-5 shadow-xl"
+          >
+            <div className="flex items-start gap-3">
+              <div className="grid size-9 shrink-0 place-items-center rounded-lg bg-destructive/10 text-destructive">
+                <RotateCcw size={18} />
+              </div>
+
+              <div className="min-w-0">
+                <h2
+                  id="clear-draft-title"
+                  className="text-base font-bold text-foreground"
+                >
+                  Clear saved draft?
+                </h2>
+
+                <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
+                  All locally saved questions will be removed and the editor will
+                  be reset to one empty question. This action cannot be undone.
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-5 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setClearDraftOpen(false)}
+                className="rounded-lg border border-border bg-card px-4 py-2 text-sm font-semibold text-foreground transition hover:bg-muted"
+              >
+                Cancel
+              </button>
+
+              <button
+                type="button"
+                onClick={confirmClearDraft}
+                className="rounded-lg bg-destructive px-4 py-2 text-sm font-semibold text-destructive-foreground transition hover:opacity-90"
+              >
+                Clear draft
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </>
   );

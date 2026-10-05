@@ -59,6 +59,50 @@ public class AssignmentService {
         return AssignmentResponse.from(assignmentRepository.save(assignment), 0);
     }
 
+    public AssignmentResponse update(Long id, CreateAssignmentRequest request, Long teacherId) {
+        Assignment assignment = find(id);
+
+        String name = request.name().trim();
+        String academicYear = request.academicYear().trim();
+
+        boolean changedIdentity =
+                !assignment.getName().equalsIgnoreCase(name)
+                        || !assignment.getAcademicYear().equalsIgnoreCase(academicYear)
+                        || !assignment.getGradeLevel().equals(request.gradeLevel());
+
+        if (changedIdentity
+                && assignmentRepository.existsByGradeLevelAndAcademicYearAndNameIgnoreCase(
+                request.gradeLevel(),
+                academicYear,
+                name
+        )) {
+            throw new AppException(ErrorCode.ASSIGNMENT_INVALID_CONFIGURATION);
+        }
+
+        validateSchedule(request.startAt(), request.dueAt(), request.timeLimitSeconds());
+
+        assignment.setGradeLevel(request.gradeLevel());
+        assignment.setAcademicYear(academicYear);
+        assignment.setName(name);
+        assignment.setDescription(trimToNull(request.description()));
+        assignment.setStartAt(request.startAt());
+        assignment.setDueAt(request.dueAt());
+        assignment.setTimeLimitSeconds(request.timeLimitSeconds());
+
+        // Update targets
+        assignment.replaceTargets(resolveTargets(request.targets(), request.gradeLevel(), request.academicYear(), teacherId));
+        Assignment saved = assignmentRepository.save(assignment);
+        return AssignmentResponse.from(saved, (int) assignmentQuestionRepository.countByAssignmentId(saved.getId()));
+    }
+
+    public AssignmentResponse updateStatus(Long id, AssignmentStatus status) {
+        Assignment assignment = find(id);
+        assignment.setStatus(status);
+        Assignment saved = assignmentRepository.save(assignment);
+        return AssignmentResponse.from(saved, (int) assignmentQuestionRepository.countByAssignmentId(saved.getId()));
+    }
+
+
     private List<AssignmentTarget> resolveTargets(
             List<AssignmentTargetRequest> requests,
             Integer gradeLevel,

@@ -24,7 +24,8 @@ type Props = {
   open: boolean;
   form: CreateAssignmentRequest;
   classes: ClassItem[];
-  isCreating: boolean;
+  mode?: "create" | "edit";
+  isPending: boolean;
   onClose: () => void;
   onSubmit: (form: CreateAssignmentRequest) => void;
 };
@@ -51,7 +52,8 @@ export function AssignmentWizard({
   open,
   form,
   classes,
-  isCreating,
+  mode = "create",
+  isPending,
   onClose,
   onSubmit,
 }: Props) {
@@ -117,11 +119,11 @@ export function AssignmentWizard({
         <div className="flex items-start justify-between border-b border-border p-5">
           <div>
             <p className="text-body-sm font-bold text-primary">
-              New assignment
+              {mode === "create" ? "New assignment" : "Edit assignment"}
             </p>
 
             <h2 className="mt-1 text-section-title font-bold">
-              Build it in three steps
+              {mode === "create" ? "Build it in three steps" : "Update assignment details"}
             </h2>
           </div>
 
@@ -193,12 +195,12 @@ export function AssignmentWizard({
             <button
               type="button"
               onClick={submit}
-              disabled={isCreating}
+              disabled={isPending}
               className="rounded-lg bg-primary px-4 py-2 text-body-sm font-bold text-primary-foreground disabled:opacity-60"
             >
-              {isCreating
-                ? "Creating..."
-                : "Create draft"}
+              {isPending
+                ? mode === "create" ? "Creating..." : "Updating..."
+                : mode === "create" ? "Create draft" : "Save changes"}
             </button>
           ) : (
             <button

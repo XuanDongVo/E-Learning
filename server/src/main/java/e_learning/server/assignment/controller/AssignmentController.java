@@ -1,8 +1,11 @@
 package e_learning.server.assignment.controller;
 
 import e_learning.server.assignment.dto.*;
+import e_learning.server.assignment.enums.AssignmentStatus;
 import e_learning.server.assignment.service.AssignmentService;
 import e_learning.server.common.response.ApiResponse;
+import e_learning.server.content.common.dto.UpdateStatusRequest;
+import e_learning.server.content.topic.dto.TopicResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -35,5 +38,26 @@ public class AssignmentController {
             @AuthenticationPrincipal Jwt jwt) {
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(
                 "Assignment created", assignmentService.create(request, Long.valueOf(jwt.getSubject()))));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ApiResponse<AssignmentResponse>> update(
+            @PathVariable Long id,
+            @Valid @RequestBody CreateAssignmentRequest request,
+            @AuthenticationPrincipal Jwt jwt) {
+        return ResponseEntity.ok(ApiResponse.success(
+                "Assignment updated", assignmentService.update(id, request, Long.valueOf(jwt.getSubject()))));
+    }
+
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<ApiResponse<AssignmentResponse>> updateStatus(
+            @PathVariable Long id,
+            @Valid @RequestBody UpdateAssignmentStatusRequest request
+    ) {
+        return ResponseEntity.ok(ApiResponse
+                .success("Topic status updated successfully",
+                        assignmentService.updateStatus(id, request.status())
+                )
+        );
     }
 }

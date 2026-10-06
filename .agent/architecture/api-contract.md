@@ -146,11 +146,6 @@ Paged endpoints accept `page` (**1-indexed**, default 1) and `size`, and return 
 | PATCH | `/v1/grades/{gradeId}/activate` |
 | PATCH | `/v1/grades/{gradeId}/inactive` |
 
-### UserController
-
-| Method | Path |
-|---|---|
-| POST | `/v1/users/students` |
 
 ## Error codes
 

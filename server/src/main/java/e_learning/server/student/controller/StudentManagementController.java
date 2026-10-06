@@ -10,6 +10,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 @RestController
@@ -20,12 +21,18 @@ public class StudentManagementController {
     private final StudentProfileService profileService;
 
     @GetMapping
-    public ApiResponse<List<StudentSummaryResponse>> list(@AuthenticationPrincipal Jwt jwt){return ApiResponse.success(profileService.listForTeacher(Long.valueOf(jwt.getSubject())));}
+    public ApiResponse<List<StudentSummaryResponse>> list(@AuthenticationPrincipal Jwt jwt) {
+        return ApiResponse.success(profileService.listForTeacher(Long.valueOf(jwt.getSubject())));
+    }
 
     @GetMapping("/{studentId}")
-    public ApiResponse<StudentDetailResponse> detail(@PathVariable Long studentId,@AuthenticationPrincipal Jwt jwt){return ApiResponse.success(profileService.getForTeacher(studentId,Long.valueOf(jwt.getSubject())));}
+    public ApiResponse<StudentDetailResponse> detail(@PathVariable Long studentId, @AuthenticationPrincipal Jwt jwt) {
+        return ApiResponse.success(profileService.getForTeacher(studentId, Long.valueOf(jwt.getSubject())));
+    }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ApiResponse<StudentDetailResponse> create(@Valid @RequestBody CreateStudentRequest request,@AuthenticationPrincipal Jwt jwt){return ApiResponse.success(managementService.create(request,Long.valueOf(jwt.getSubject())));}
+    public ApiResponse<StudentDetailResponse> create(@Valid @RequestBody CreateStudentRequest request, @AuthenticationPrincipal Jwt jwt) {
+        return ApiResponse.success(managementService.create(request, Long.valueOf(jwt.getSubject())));
+    }
 }

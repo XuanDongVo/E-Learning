@@ -6,7 +6,7 @@ import java.time.LocalDate;
 import java.util.List;
 public record CreateStudentRequest(
         @NotBlank @Email String email,
-        @NotBlank @Size(min=8,max=100) String password,
+        @NotBlank @Size(min=6,max=100) String password,
         @NotBlank @Size(max=150) String fullName,
         @Past LocalDate dateOfBirth,
         Gender gender,

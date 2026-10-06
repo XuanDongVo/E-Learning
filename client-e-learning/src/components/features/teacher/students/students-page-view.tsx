@@ -65,7 +65,7 @@ export function StudentsPageView() {
     <div className="mx-auto max-w-7xl space-y-5">
       <StudentsHeader onCreate={() => setCreating(true)} />
       <StudentsToolbar search={search} classFilter={classFilter} gradeFilter={gradeFilter} statusFilter={statusFilter} noClass={noClass}
-        classes={classes.data?.data ?? []} grades={grades.data?.data ?? []}
+        classes={(classes.data?.data ?? []).filter((item) => item.status === "ACTIVE")} grades={grades.data?.data ?? []}
         onSearchChange={setSearch} onClassChange={setClassFilter} onGradeChange={setGradeFilter} onStatusChange={setStatusFilter}
         onNoClassChange={setNoClass} onClear={clearFilters} />
       <div className="text-body-sm text-neutral-muted">Showing {filtered.length} of {list.length} students</div>

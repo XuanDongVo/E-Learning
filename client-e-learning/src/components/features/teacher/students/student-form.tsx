@@ -22,7 +22,7 @@ export function StudentForm({ onSuccess, onCancel }: StudentFormProps) {
     queryKey: ["classes"],
     queryFn: classService.list,
   });
-  const classes = classesData?.data ?? [];
+  const classes = (classesData?.data ?? []).filter((item) => item.status === "ACTIVE");
   const [form, setForm] = useState<CreateStudentRequest>({
     email: "",
     password: "123456",

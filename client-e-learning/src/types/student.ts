@@ -2,6 +2,7 @@ import type { ApiResponse } from "@/types/auth";
 
 export type Gender = "MALE" | "FEMALE" | "OTHER";
 export type GuardianRelationship = "FATHER" | "MOTHER" | "GUARDIAN" | "OTHER";
+export type StudentAccountStatus = "ACTIVE" | "INACTIVE";
 
 export interface StudentGuardian {
   id: number;
@@ -19,13 +20,22 @@ export interface StudentClass {
   academicYear: string;
   status: "ACTIVE" | "INACTIVE";
 }
+export interface StudentSummaryClass {
+  id: number;
+  name: string;
+  gradeId: number;
+  gradeName: string;
+  academicYear: string;
+  status: "ACTIVE" | "INACTIVE";
+}
 export interface StudentSummary {
   id: number;
   fullName: string;
   email: string;
   phone?: string | null;
-  className?: string | null;
-  classStatus?: string | null;
+  classes: StudentSummaryClass[];
+  primaryGuardian?: StudentGuardian | null;
+  accountStatus: StudentAccountStatus;
 }
 export interface StudentDetail {
   id: number;
@@ -38,12 +48,9 @@ export interface StudentDetail {
   classId?: number | null;
   className?: string | null;
   classStatus?: string | null;
-  accountStatus: string;
+  accountStatus: StudentAccountStatus;
 }
-export interface StudentProfile extends Omit<
-  StudentDetail,
-  "id" | "classId" | "className" | "classStatus"
-> {
+export interface StudentProfile extends Omit<StudentDetail, "id" | "classId" | "className" | "classStatus"> {
   userId: number;
   currentClass?: StudentClass | null;
 }
@@ -72,32 +79,35 @@ export interface UpdateStudentProfileRequest {
   fullName?: string;
   guardians?: StudentGuardianRequest[];
 }
-export interface AddClassMemberRequest {
-  studentId: number;
-}
+export interface UpdateStudentStatusRequest { status: StudentAccountStatus; }
+export interface AddClassMemberRequest { studentId: number; }
 export type StudentApiResponse<T> = ApiResponse<T>;
 
-export interface StudentsHeaderProps {
-  onCreate: () => void;
-}
+export interface StudentsHeaderProps { onCreate: () => void; }
 export interface StudentsToolbarProps {
-  value: string;
-  onChange: (value: string) => void;
-  status: string;
+  search: string;
+  classFilter: string;
+  gradeFilter: string;
+  statusFilter: string;
+  noClass: boolean;
+  classes: { id: number; name: string; grade: { id: number; name: string } }[];
+  grades: { id: number; name: string }[];
+  onSearchChange: (value: string) => void;
+  onClassChange: (value: string) => void;
+  onGradeChange: (value: string) => void;
   onStatusChange: (value: string) => void;
+  onNoClassChange: (value: boolean) => void;
+  onClear: () => void;
 }
 export interface StudentTableProps {
   students: StudentSummary[];
   isLoading: boolean;
+  selectedIds: number[];
+  onToggle: (studentId: number) => void;
+  onToggleAll: () => void;
+  onStatusChange: (student: StudentSummary) => void;
 }
-export interface StudentFormProps {
-  onSuccess: () => void;
-  onCancel: () => void;
-}
-export interface StudentDetailViewProps {
-  studentId: number;
-}
+export interface StudentFormProps { onSuccess: () => void; onCancel: () => void; }
+export interface StudentDetailViewProps { studentId: number; }
 export interface StudentProfileFormProps {}
-export interface ClassStudentsViewProps {
-  classId: number;
-}
+export interface ClassStudentsViewProps { classId: number; }

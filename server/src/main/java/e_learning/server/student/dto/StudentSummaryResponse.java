@@ -1,2 +1,14 @@
 package e_learning.server.student.dto;
-public record StudentSummaryResponse(Long id, String fullName, String email, String phone, String className, String classStatus) {}
+
+import java.util.List;
+
+public record StudentSummaryResponse(
+        Long id,
+        String fullName,
+        String email,
+        String phone,
+        List<StudentClassSummary> classes,
+        StudentGuardianResponse primaryGuardian,
+        String accountStatus
+) {
+}

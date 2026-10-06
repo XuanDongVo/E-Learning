@@ -37,6 +37,15 @@ export interface StudentSummary {
   primaryGuardian?: StudentGuardian | null;
   accountStatus: StudentAccountStatus;
 }
+export interface StudentPageResponse {
+  items: StudentSummary[];
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+  isFirst: boolean;
+  isLast: boolean;
+}
 export interface StudentDetail {
   id: number;
   fullName: string;
@@ -102,12 +111,19 @@ export interface StudentsToolbarProps {
 export interface StudentTableProps {
   students: StudentSummary[];
   isLoading: boolean;
+  page: number;
+  totalElements: number;
+  totalPages: number;
+  pageSize: number;
   selectedIds: number[];
   onToggle: (studentId: number) => void;
   onToggleAll: () => void;
   onStatusChange: (student: StudentSummary) => void;
+  onView: (student: StudentSummary) => void;
+  onPageChange: (page: number) => void;
+  onPageSizeChange: (pageSize: number) => void;
 }
 export interface StudentFormProps { onSuccess: () => void; onCancel: () => void; }
 export interface StudentDetailViewProps { studentId: number; }
-export interface StudentProfileFormProps {}
+export type StudentProfileFormProps = Record<string, never>;
 export interface ClassStudentsViewProps { classId: number; }

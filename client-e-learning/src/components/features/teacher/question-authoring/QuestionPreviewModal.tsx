@@ -9,8 +9,7 @@ import {
   Volume2,
   X,
 } from "lucide-react";
-import type { DraftQuestion } from "@/types/question";
-import { isQuestionComplete } from "./question-validator";
+import type { QuestionPreviewData } from "@/types/question-preview";
 
 export function QuestionPreviewModal({
   title,
@@ -19,7 +18,7 @@ export function QuestionPreviewModal({
   onClose,
 }: {
   title: string;
-  questions: DraftQuestion[];
+  questions: QuestionPreviewData[];
   initialIndex?: number;
   onClose: () => void;
 }) {
@@ -233,7 +232,7 @@ export function QuestionPreviewModal({
             <div className="grid min-h-0 flex-1 grid-cols-4 gap-2 overflow-y-auto content-start">
               {questions.map((q, idx) => {
                 const isActive = idx === currentIndex;
-                const isReady = isQuestionComplete(q);
+                const isReady = q.complete;
 
                 return (
                   <button

@@ -1,18 +1,22 @@
 "use client";
 
 import Link from "next/link";
-import { Plus } from "lucide-react";
+import { Eye, Plus } from "lucide-react";
 
 export function AssignmentQuestionToolbar({
   count,
   readyCount,
   locked,
   createHref,
+  onPreview,
+  previewDisabled,
 }: {
   count: number;
   readyCount: number;
   locked: boolean;
   createHref: string;
+  onPreview: () => void;
+  previewDisabled?: boolean;
 }) {
   return (
     <div className="flex flex-col gap-3 border-b border-border p-5 sm:flex-row sm:items-center sm:justify-between">
@@ -28,7 +32,18 @@ export function AssignmentQuestionToolbar({
         </p>
       </div>
 
-      <Link
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={onPreview}
+          disabled={previewDisabled}
+          className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-body-sm font-bold text-foreground hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          <Eye className="size-4" />
+          Preview
+        </button>
+
+        <Link
         href={createHref}
         aria-disabled={locked || count >= 100}
         tabIndex={locked || count >= 100 ? -1 : 0}
@@ -40,7 +55,8 @@ export function AssignmentQuestionToolbar({
       >
         <Plus className="size-4" />
         Create questions
-      </Link>
+        </Link>
+      </div>
     </div>
   );
 }

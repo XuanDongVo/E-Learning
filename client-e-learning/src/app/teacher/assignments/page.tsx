@@ -121,9 +121,8 @@ export default function TeacherAssignmentsPage() {
           <div className="mt-4 flex flex-wrap gap-2">
             {(["ALL", "PUBLISHED", "DRAFT", "ARCHIVED"] as const).map((status) => (
               <button key={status} type="button" onClick={() => setStatusFilter(status)}
-                className={`rounded-lg border px-3 py-1.5 text-body-sm font-semibold ${
-                  statusFilter === status ? "border-primary bg-primary text-primary-foreground" : "border-border hover:bg-muted"
-                }`}>
+                className={`rounded-lg border px-3 py-1.5 text-body-sm font-semibold ${statusFilter === status ? "border-primary bg-primary text-primary-foreground" : "border-border hover:bg-muted"
+                  }`}>
                 {status === "ALL" ? "All" : status === "PUBLISHED" ? "Active" : status === "DRAFT" ? "Draft" : "Archived"}
               </button>
             ))}
@@ -137,7 +136,8 @@ export default function TeacherAssignmentsPage() {
         open={wizardOpen}
         form={form}
         classes={classes.data?.data ?? []}
-        isCreating={create.isPending}
+        mode="create"
+        isPending={create.isPending}
         onClose={() => setWizardOpen(false)}
         onSubmit={(payload) => create.mutate(payload)}
       />

@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, BookOpen } from "lucide-react";
 import { toast } from "sonner";
 
 import { getAssignment } from "@/services/assignment.service";
@@ -13,6 +13,13 @@ import type { AssignmentQuestion } from "@/types/assignment";
 import { AssignmentQuestionEditor } from "@/components/features/teacher/assignments/questions/AssignmentQuestionEditor";
 import { AssignmentQuestionList } from "@/components/features/teacher/assignments/questions/AssignmentQuestionList";
 import { AssignmentQuestionToolbar } from "@/components/features/teacher/assignments/questions/AssignmentQuestionToolbar";
+import { EntityHeader } from "@/components/features/teacher/content/components/entity-header";
+import { AssignmentWizard } from "@/components/features/teacher/assignments/main/AssignmentWizard";
+import { classService } from "@/services/class.service";
+import { updateAssignment, updateAssignmentStatus } from "@/services/assignment.service";
+import type { CreateAssignmentRequest } from "@/types/assignment";
+import { QuestionPreviewModal } from "@/components/features/teacher/question-authoring/QuestionPreviewModal";
+import { assignmentQuestionToPreview } from "@/components/features/teacher/question-authoring/question-preview.mapper";
 
 export default function AssignmentDetailPage() {
   const params = useParams<{ id: string }>();
@@ -21,6 +28,8 @@ export default function AssignmentDetailPage() {
 
   const [activeQuestionId, setActiveQuestionId] = useState<number | null>(null);
   const [editorOpen, setEditorOpen] = useState(false);
+  const [editAssignmentOpen, setEditAssignmentOpen] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState(false);
 
   const assignment = useQuery({
     queryKey: ["assignment", assignmentId],
@@ -32,6 +41,36 @@ export default function AssignmentDetailPage() {
     queryKey: ["assignment", assignmentId, "questions"],
     queryFn: () => assignmentQuestionService.list(assignmentId),
     enabled: Number.isFinite(assignmentId),
+  });
+
+  const classes = useQuery({
+    queryKey: ["classes"],
+    queryFn: classService.list,
+  });
+
+  const update = useMutation({
+    mutationFn: (payload: CreateAssignmentRequest) =>
+      updateAssignment(assignmentId, payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["assignment", assignmentId] });
+      setEditAssignmentOpen(false);
+      toast.success("Assignment updated.");
+    },
+    onError: (err) => {
+      toast.error(err instanceof Error ? err.message : "Could not save assignment.");
+    }
+  });
+
+  const status = useMutation({
+    mutationFn: (nextStatus: string) =>
+      updateAssignmentStatus(assignmentId, nextStatus),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["assignment", assignmentId] });
+      toast.success("Status updated.");
+    },
+    onError: (err) => {
+      toast.error("Could not update status.");
+    }
   });
 
   const data = assignment.data?.data;
@@ -93,6 +132,8 @@ export default function AssignmentDetailPage() {
     );
   }
 
+  const previewQuestions = questionItems.map(assignmentQuestionToPreview);
+
   const readyCount = questionItems.filter(
     (item) => item.question.complete || item.question.is_complete === true,
   ).length;
@@ -107,25 +148,44 @@ export default function AssignmentDetailPage() {
         Back to assignments
       </Link>
 
-      <header className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
-        <div>
-          <p className="text-body-sm font-bold text-primary">
-            Assignment details
-          </p>
-          <h1 className="mt-1 text-page-title font-extrabold">{data.name}</h1>
-          <p className="mt-1 text-body text-neutral-muted">
-            Grade {data.gradeLevel} · Due {new Date(data.dueAt).toLocaleString("en-US")}
-          </p>
-        </div>
+      <EntityHeader
+        title={data.name}
+        label="Assignment"
+        status={data.status}
+        description={`Grade ${data.gradeLevel} · Due ${new Date(data.dueAt).toLocaleString("en-US")}`}
+        icon={<BookOpen size={21} />}
+        editLabel="Edit Assignment"
+        onEdit={() => setEditAssignmentOpen(true)}
+        onStatusChange={(nextStatus) => status.mutate(nextStatus)}
+        onArchive={() => status.mutate("ARCHIVED")}
+        actionPending={status.isPending}
+        tone="blue"
+      />
 
-        <span className="rounded-full bg-sky-100 px-3 py-1.5 text-body-sm font-bold text-sky-700">
-          {data.status === "DRAFT"
-            ? "Draft"
-            : data.status === "PUBLISHED"
-              ? "Active"
-              : "Archived"}
-        </span>
-      </header>
+      <AssignmentWizard
+        key={editAssignmentOpen ? "open" : "closed"}
+        open={editAssignmentOpen}
+        mode="edit"
+        form={{
+          gradeLevel: data.gradeLevel,
+          academicYear: data.academicYear,
+          name: data.name,
+          description: data.description ?? "",
+          dueAt: data.dueAt.slice(0, 16),
+          startAt: data.startAt ? data.startAt.slice(0, 16) : undefined,
+          timeLimitSeconds: data.timeLimitSeconds ?? undefined,
+          targets: data.targets.map((t): any => t.type === "CLASS" ? {
+            type: "CLASS",
+            classId: t.classId!
+          } : {
+            type: "GRADE"
+          }) as CreateAssignmentRequest["targets"]
+        }}
+        classes={classes.data?.data ?? []}
+        isPending={update.isPending}
+        onClose={() => setEditAssignmentOpen(false)}
+        onSubmit={(payload) => update.mutate(payload)}
+      />
 
       <div className="grid gap-4 md:grid-cols-3">
         <InfoCard
@@ -143,6 +203,8 @@ export default function AssignmentDetailPage() {
           readyCount={readyCount}
           locked={locked}
           createHref={`/teacher/assignments/${assignmentId}/questions/create`}
+          onPreview={() => setPreviewOpen(true)}
+          previewDisabled={questionItems.length === 0}
         />
 
         {locked && (
@@ -159,6 +221,15 @@ export default function AssignmentDetailPage() {
           onDelete={deleteQuestion}
         />
       </section>
+
+      {previewOpen && previewQuestions.length > 0 && (
+        <QuestionPreviewModal
+          title={`${data.name} — Question Preview`}
+          questions={previewQuestions}
+          initialIndex={0}
+          onClose={() => setPreviewOpen(false)}
+        />
+      )}
 
       {editorOpen && (
         <AssignmentQuestionEditor

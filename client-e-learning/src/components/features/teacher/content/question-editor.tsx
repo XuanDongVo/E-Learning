@@ -22,8 +22,6 @@ import { QUERY_KEYS } from "@/services/query-keys";
 import { Badge } from "./components/badge";
 import { QuestionForm, isQuestionComplete, makeDraftQuestion } from "./components/question-form";
 
-// How long the success toast is visible before we navigate away. Long
-// enough to register as feedback, short enough not to feel like a stall.
 const NAVIGATE_AFTER_SAVE_MS = 900;
 
 export function QuestionEditor({
@@ -169,7 +167,7 @@ export function QuestionEditor({
       {/* Header */}
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <div className="mb-2 flex items-center gap-2">
+          {/* <div className="mb-2 flex items-center gap-2">
             <button
               onClick={() => onNavigate("bank")}
               className="flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
@@ -181,7 +179,7 @@ export function QuestionEditor({
             <Badge tone={isReady ? "green" : "gray"}>
               {isReady ? "Ready" : "Incomplete"}
             </Badge>
-          </div>
+          </div> */}
 
           <h1 className="text-page-title font-bold text-slate-900">
             Edit Question #{questionId}

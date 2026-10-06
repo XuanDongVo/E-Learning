@@ -2,17 +2,7 @@ package e_learning.server.classes.entity;
 
 import e_learning.server.user.entity.User;
 import e_learning.server.grades.entity.Grade;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -41,6 +31,10 @@ public class ClassEntity {
     @JoinColumn(name = "teacher_id", nullable = false)
     private User teacher;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private ClassStatus status = ClassStatus.ACTIVE;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -57,6 +51,16 @@ public class ClassEntity {
         this.teacher = teacher;
     }
 
+    public void update(String name, Grade grade, String academicYear) {
+        this.name = name;
+        this.grade = grade;
+        this.academicYear = academicYear;
+    }
+
+    public void archive() {
+        this.status = ClassStatus.ARCHIVED;
+    }
+
     @PrePersist
     void onCreate() {
         LocalDateTime now = LocalDateTime.now();
@@ -68,5 +72,4 @@ public class ClassEntity {
     void onUpdate() {
         updatedAt = LocalDateTime.now();
     }
-
 }

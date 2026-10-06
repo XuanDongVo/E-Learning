@@ -30,7 +30,8 @@ public class SecurityConfig {
             .authorizeHttpRequests(authorize -> authorize
                 .requestMatchers("/v1/auth/login", "/v1/auth/refresh").permitAll()
                 .requestMatchers("/v1/teacher/**").hasRole("TEACHER")
-                .requestMatchers("/v1/users/students").hasRole("TEACHER")
+                .requestMatchers("/v1/users/students/**").hasRole("TEACHER")
+                .requestMatchers("/v1/student/**").hasRole("STUDENT")
                 .requestMatchers("/v1/classes/**").hasRole("TEACHER")
                 .requestMatchers("/v1/content/**").hasRole("TEACHER")
                 .requestMatchers("/v1/activities/**").hasRole("TEACHER")

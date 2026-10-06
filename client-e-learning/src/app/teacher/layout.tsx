@@ -23,9 +23,10 @@ import { toast } from "sonner";
 import { AuthGuard } from "@/components/auth/auth-guard";
 import { LocaleProvider, useLocale } from "@/components/i18n/locale-provider";
 
-const navigation: { key: "overview" | "classes" | "content" | "activities" | "assignments" | "analytics"; href: string; icon: LucideIcon; badge?: string }[] = [
+const navigation: { key: "overview" | "classes" | "students" | "content" | "activities" | "assignments" | "analytics"; href: string; icon: LucideIcon; badge?: string }[] = [
   { key: "overview", href: "/teacher", icon: LayoutDashboard },
   { key: "classes", href: "/teacher/classes", icon: Users },
+  { key: "students", href: "/teacher/students", icon: Users },
   { key: "content", href: "/teacher/content", icon: BookOpen },
   { key: "activities", href: "/teacher/activities", icon: ClipboardList },
   { key: "assignments", href: "/teacher/assignments", icon: ClipboardList, badge: "8" },

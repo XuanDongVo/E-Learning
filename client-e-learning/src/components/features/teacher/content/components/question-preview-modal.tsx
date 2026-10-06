@@ -1,6 +1,6 @@
 "use client";
 
-import type { DraftQuestion } from "@/types/question";
+import type { QuestionPreviewData } from "@/types/question-preview";
 import { QuestionPreviewModal as SharedQuestionPreviewModal } from "@/components/features/teacher/question-authoring/QuestionPreviewModal";
 
 export function QuestionPreviewModal({
@@ -10,7 +10,7 @@ export function QuestionPreviewModal({
   onClose,
 }: {
   bankName: string;
-  questions: DraftQuestion[];
+  questions: QuestionPreviewData[];
   initialIndex?: number;
   onClose: () => void;
 }) {

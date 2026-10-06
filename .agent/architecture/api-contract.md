@@ -146,11 +146,6 @@ Paged endpoints accept `page` (**1-indexed**, default 1) and `size`, and return 
 | PATCH | `/v1/grades/{gradeId}/activate` |
 | PATCH | `/v1/grades/{gradeId}/inactive` |
 
-### UserController
-
-| Method | Path |
-|---|---|
-| POST | `/v1/users/students` |
 
 ## Error codes
 
@@ -192,3 +187,27 @@ Paged endpoints accept `page` (**1-indexed**, default 1) and `size`, and return 
 | `INVALID_GAME_TEMPLATE` | 400 | The selected game template does not exist or is inactive |
 | `INVALID_STATUS_TRANSITION` | 409 | This status change is not allowed |
 | `PREVIEW_NOT_READY` | 409 | Activity cannot be previewed until it is ready |
+
+
+## Phase 6 — Student Management
+
+### Student self profile
+- GET /v1/student/profile — STUDENT — current profile, guardian data, and current active class.
+- PUT /v1/student/profile — STUDENT — update full name, date of birth, gender, phone, and guardians.
+
+### Teacher student management
+- GET /v1/users/students — TEACHER — students in teacher-owned classes, including students with no active class.
+- GET /v1/users/students/{studentId} — TEACHER — student detail scoped to teacher-owned class membership.
+- POST /v1/users/students — TEACHER — creates User(STUDENT), StudentProfile, StudentGuardian records, and ClassMember in one transaction.
+- PATCH /v1/users/students/{studentId}/status — TEACHER — lock/unlock student account by changing User.status.
+
+### Class lifecycle
+- PUT /v1/classes/{classId} — TEACHER — edit an owned class.
+- PATCH /v1/classes/{classId}/archive — TEACHER — archive an owned class. Archived classes remain visible but cannot accept new/reactivated memberships.
+
+### Class membership
+- GET /v1/classes/{classId}/members — TEACHER — class students.
+- POST /v1/classes/{classId}/members — TEACHER — add/reactivate a student membership.
+- DELETE /v1/classes/{classId}/members/{studentId} — TEACHER — marks membership INACTIVE rather than deleting the account.
+
+Student account status and class membership status are intentionally separate.

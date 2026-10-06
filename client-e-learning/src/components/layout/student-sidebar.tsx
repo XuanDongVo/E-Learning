@@ -87,7 +87,7 @@ export function StudentSidebar() {
       {/* User Footer Profile */}
       <div className="pt-4 border-t border-border-color flex items-center">
         <Link
-          href="/profile"
+          href="/student/profile"
           className="flex min-w-0 flex-1 items-center gap-3 rounded-xl p-2 transition-colors hover:bg-background-app"
         >
           <Avatar className="h-10 w-10 shrink-0 border-2 border-white shadow-xs">

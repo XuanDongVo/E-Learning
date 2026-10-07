@@ -100,7 +100,7 @@ Insights     Reports
 ### 2.3 Navigation rules
 
 - The sidebar lists **real routes only**. A planned feature is hidden or shown disabled with a "Soon" tag. Never link to `#anchor` placeholders.
-- **No top-level "Games" item.** A game is chosen inside an Activity (GameTemplate setting). Student-facing games appear under Activities.
+- **No top-level "Games" item.** Future game presentation may be chosen inside an Activity; future game presentation is deferred and is not a current domain dependency. Student-facing games appear under Activities.
 - The active item is derived from the current route, not hard-coded.
 - Labels are nouns, sentence case, one or two words: `Content`, `Activities`, `Assignments`.
 - Depth is shown with breadcrumbs, never by adding more sidebar levels.

@@ -1,5 +1,7 @@
 # AGENTS.md
 
+<!-- Single entry point for AI agents and humans. Lives at the repo root so every ./.agent link resolves. -->
+
 English-learning platform for teachers and students (Grades 6–8): content (question banks), activities and games,
 teacher assignments, attempts, analytics, XP and ranking.
 
@@ -13,7 +15,10 @@ match your task before changing anything.
 
 | If your task is… | Read |
 |---|---|
-| Anything | [`.agent/PROGRESS.md`](./.agent/PROGRESS.md) (current phase, known issues), [`architecture/overview.md`](./.agent/architecture/overview.md) and [`.agent/architecture/engineering-rules.md`](./.agent/architecture/engineering-rules.md) |
+| Anything | [`.agent/PROGRESS.md`](./.agent/PROGRESS.md) (done / in progress / next, known issues), [`architecture/overview.md`](./.agent/architecture/overview.md) and [`.agent/architecture/engineering-rules.md`](./.agent/architecture/engineering-rules.md) |
+| Why the product exists, what is in/out of scope | [`intent/0001-core-platform.md`](./.agent/intent/0001-core-platform.md), [`intent/open-questions.md`](./.agent/intent/open-questions.md) |
+| What the spec says vs. what the code does | [`design/spec-status.md`](./.agent/design/spec-status.md) (drift register, rule traceability) |
+| Attempts, answers, student runtime (Phase 7, draft) | [`plans/E-LEARNING_PHASE_7_ATTEMPTS_SPEC.md`](./.agent/plans/E-LEARNING_PHASE_7_ATTEMPTS_SPEC.md) |
 | Domain model, entities, naming | [`domain/domain-model.md`](./.agent/domain/domain-model.md), [`domain/glossary.md`](./.agent/domain/glossary.md) |
 | Business rules (attempts, scoring, XP, analytics) | [`domain/business-rules.md`](./.agent/domain/business-rules.md) |
 | Questions or content | [`domain/question-model.md`](./.agent/domain/question-model.md) |
@@ -31,7 +36,7 @@ before writing frontend code (see `client-e-learning/AGENTS.md`).
 
 ## Source of truth and conflicts
 
-Order: accepted ADRs → the active phase spec → `domain/` → `ui/` and `architecture/`. The code is authoritative for what
+Order: accepted ADRs → `intent/` → the active phase spec → `domain/` → `ui/` and `architecture/`. The code is authoritative for what
 exists today. **If two documents disagree, stop and ask**, then record the answer as an ADR in `.agent/decisions/`.
 
 ## Rules that always apply

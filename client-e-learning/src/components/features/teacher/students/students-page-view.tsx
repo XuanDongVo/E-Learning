@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { classService } from "@/services/class.service";
 import { gradeService } from "@/services/grade.service";
@@ -9,28 +9,63 @@ import { StudentsHeader } from "./students-header";
 import { StudentsToolbar } from "./students-toolbar";
 import { StudentTable } from "./student-table";
 import { StudentForm } from "./student-form";
-import { filterStudents } from "./student-filters";
+import { StudentDetailModal } from "./student-detail-modal";
 import type { StudentSummary } from "@/types/student";
 
 export function StudentsPageView() {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [classFilter, setClassFilter] = useState("all");
   const [gradeFilter, setGradeFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [noClass, setNoClass] = useState(false);
   const [creating, setCreating] = useState(false);
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  const [viewingStudentId, setViewingStudentId] = useState<number | null>(null);
+  const [pageSize, setPageSize] = useState(10);
+  const [page, setPage] = useState(1);
 
-  const students = useQuery({ queryKey: ["students"], queryFn: studentService.list });
-  const classes = useQuery({ queryKey: ["classes"], queryFn: classService.list });
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(search.trim());
+      setPage(1);
+    }, 300);
+    return () => clearTimeout(handler);
+  }, [search]);
+
+  const students = useQuery({
+    queryKey: [
+      "students",
+      debouncedSearch,
+      statusFilter,
+      classFilter,
+      gradeFilter,
+      noClass,
+      page,
+      pageSize,
+    ],
+    queryFn: () =>
+      studentService.list({
+        search: debouncedSearch || undefined,
+        accountStatus: statusFilter === "all" ? undefined : statusFilter,
+        classId: classFilter,
+        gradeId: gradeFilter,
+        noClass,
+        page,
+        size: pageSize,
+      }),
+  });
+  const classes = useQuery({
+    queryKey: ["classes"],
+    queryFn: classService.list,
+  });
   const grades = useQuery({ queryKey: ["grades"], queryFn: gradeService.list });
 
-  const list = students.data?.data ?? [];
-  const filtered = useMemo(
-    () => filterStudents(list, search, statusFilter, classFilter, gradeFilter, noClass),
-    [list, search, statusFilter, classFilter, gradeFilter, noClass],
-  );
+  const pageData = students.data?.data;
+  const studentRows = pageData?.items ?? [];
+  const totalElements = pageData?.totalElements ?? 0;
+  const totalPages = pageData?.totalPages ?? 1;
 
   const clearFilters = () => {
     setSearch("");
@@ -38,38 +73,104 @@ export function StudentsPageView() {
     setGradeFilter("all");
     setStatusFilter("all");
     setNoClass(false);
+    setPage(1);
   };
 
-  const toggle = (studentId: number) => setSelectedIds((current) =>
-    current.includes(studentId) ? current.filter((id) => id !== studentId) : [...current, studentId]
-  );
+  const toggle = (studentId: number) =>
+    setSelectedIds((current) =>
+      current.includes(studentId)
+        ? current.filter((id) => id !== studentId)
+        : [...current, studentId],
+    );
 
   const toggleAll = () => {
-    const ids = filtered.map((student) => student.id);
-    setSelectedIds((current) => ids.every((id) => current.includes(id))
-      ? current.filter((id) => !ids.includes(id))
-      : [...new Set([...current, ...ids])]);
+    const ids = studentRows.map((student) => student.id);
+    setSelectedIds((current) =>
+      ids.every((id) => current.includes(id))
+        ? current.filter((id) => !ids.includes(id))
+        : [...new Set([...current, ...ids])],
+    );
   };
 
   const changeStatus = async (student: StudentSummary) => {
-    const nextStatus = student.accountStatus === "ACTIVE" ? "INACTIVE" : "ACTIVE";
+    const nextStatus =
+      student.accountStatus === "ACTIVE" ? "INACTIVE" : "ACTIVE";
     await studentService.updateStatus(student.id, { status: nextStatus });
     await queryClient.invalidateQueries({ queryKey: ["students"] });
   };
 
   if (creating) {
-    return <StudentForm onCancel={() => setCreating(false)} onSuccess={() => { setCreating(false); void queryClient.invalidateQueries({ queryKey: ["students"] }); }} />;
+    return (
+      <StudentForm
+        onCancel={() => setCreating(false)}
+        onSuccess={() => {
+          setCreating(false);
+          void queryClient.invalidateQueries({ queryKey: ["students"] });
+        }}
+      />
+    );
   }
 
   return (
     <div className="mx-auto max-w-7xl space-y-5">
       <StudentsHeader onCreate={() => setCreating(true)} />
-      <StudentsToolbar search={search} classFilter={classFilter} gradeFilter={gradeFilter} statusFilter={statusFilter} noClass={noClass}
-        classes={(classes.data?.data ?? []).filter((item) => item.status === "ACTIVE")} grades={grades.data?.data ?? []}
-        onSearchChange={setSearch} onClassChange={setClassFilter} onGradeChange={setGradeFilter} onStatusChange={setStatusFilter}
-        onNoClassChange={setNoClass} onClear={clearFilters} />
-      <div className="text-body-sm text-neutral-muted">Showing {filtered.length} of {list.length} students</div>
-      <StudentTable students={filtered} isLoading={students.isLoading} selectedIds={selectedIds} onToggle={toggle} onToggleAll={toggleAll} onStatusChange={changeStatus} />
+      <StudentsToolbar
+        search={search}
+        classFilter={classFilter}
+        gradeFilter={gradeFilter}
+        statusFilter={statusFilter}
+        noClass={noClass}
+        classes={(classes.data?.data ?? []).filter(
+          (item) => item.status === "ACTIVE",
+        )}
+        grades={grades.data?.data ?? []}
+        onSearchChange={(value) => {
+          setSearch(value);
+          setPage(1);
+        }}
+        onClassChange={(value) => {
+          setClassFilter(value);
+          setPage(1);
+        }}
+        onGradeChange={(value) => {
+          setGradeFilter(value);
+          setPage(1);
+        }}
+        onStatusChange={(value) => {
+          setStatusFilter(value);
+          setPage(1);
+        }}
+        onNoClassChange={(value) => {
+          setNoClass(value);
+          setPage(1);
+        }}
+        onClear={clearFilters}
+      />
+     
+      <StudentTable
+        students={studentRows}
+        isLoading={students.isLoading}
+        page={page}
+        totalElements={totalElements}
+        totalPages={totalPages}
+        pageSize={pageSize}
+        selectedIds={selectedIds}
+        onToggle={toggle}
+        onToggleAll={toggleAll}
+        onStatusChange={changeStatus}
+        onView={(student) => setViewingStudentId(student.id)}
+        onPageChange={setPage}
+        onPageSizeChange={(nextPageSize) => {
+          setPageSize(nextPageSize);
+          setPage(1);
+        }}
+      />
+      {viewingStudentId !== null && (
+        <StudentDetailModal
+          studentId={viewingStudentId}
+          onClose={() => setViewingStudentId(null)}
+        />
+      )}
     </div>
   );
 }

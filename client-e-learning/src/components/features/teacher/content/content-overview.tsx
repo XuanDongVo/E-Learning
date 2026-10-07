@@ -118,7 +118,8 @@ export function ContentOverview({
     const index = (sections.data ?? []).findIndex(
       (item) => item.id === section.id,
     );
-    return (topics[index]?.data as ContentTopic[] | undefined) ?? [];
+    const topicData = topics[index]?.data;
+    return Array.isArray(topicData) ? topicData : [];
   };
 
   return (
@@ -208,9 +209,17 @@ export function ContentOverview({
           {activeUnit ? (
             <>
               <div className="border-b border-border p-4">
-                <h2 className="text-section-title font-bold">
-                  {activeUnit.code} · {activeUnit.name}
-                </h2>
+                <div className="border-b border-border pb-2">
+                  <h2 className="text-section-title font-bold">
+                    <button
+                      type="button"
+                      onClick={() => onNavigate("unit", activeUnit.id)}
+                      className="cursor-pointer text-left transition-colors hover:text-primary hover:underline focus-visible:text-primary focus-visible:underline focus-visible:outline-none"
+                    >
+                      {activeUnit.code} · {activeUnit.name}
+                    </button>
+                  </h2>
+                </div>
 
                 <p className="mt-1 text-body-sm text-muted-foreground">
                   {t("sectionsAndTopics")}
@@ -332,13 +341,26 @@ function UnitRow({
   onOpen: () => void;
 }) {
   return (
-    <div className={`flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-body ${active ? "bg-primary/10 text-primary" : "text-foreground hover:bg-muted"}`}>
-      <button type="button" onClick={onClick} className="flex min-w-0 flex-1 items-center gap-2 text-left">
+    <div
+      className={`flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-body ${active ? "bg-primary/10 text-primary" : "text-foreground hover:bg-muted"}`}
+    >
+      <button
+        type="button"
+        onClick={onClick}
+        className="flex min-w-0 flex-1 items-center gap-2 text-left"
+      >
         <Folder className="size-4 shrink-0" />
-        <span className="min-w-0 flex-1 truncate font-semibold">{unit.code} · {unit.name}</span>
+        <span className="min-w-0 flex-1 truncate font-semibold">
+          {unit.code} · {unit.name}
+        </span>
       </button>
       <StatusBadge status={unit.status} />
-      <button type="button" onClick={onOpen} aria-label={`Open ${unit.name}`} className="rounded p-1 text-muted-foreground hover:bg-primary/10 hover:text-primary">
+      <button
+        type="button"
+        onClick={onOpen}
+        aria-label={`Open ${unit.name}`}
+        className="rounded p-1 text-muted-foreground hover:bg-primary/10 hover:text-primary"
+      >
         <ExternalLink className="size-3.5" />
       </button>
     </div>
@@ -346,7 +368,21 @@ function UnitRow({
 }
 
 function StatusBadge({ status }: { status: ContentUnit["status"] }) {
-  const labels = { DRAFT: "Draft", PUBLISHED: "Published", ARCHIVED: "Archived" };
-  const styles = { DRAFT: "bg-warm-soft text-primary", PUBLISHED: "bg-success-soft text-success", ARCHIVED: "bg-muted text-muted-foreground" };
-  return <span className={`shrink-0 rounded-full px-2 py-0.5 text-[0.625rem] font-bold ${styles[status]}`}>{labels[status]}</span>;
+  const labels = {
+    DRAFT: "Draft",
+    PUBLISHED: "Published",
+    ARCHIVED: "Archived",
+  };
+  const styles = {
+    DRAFT: "bg-warm-soft text-primary",
+    PUBLISHED: "bg-success-soft text-success",
+    ARCHIVED: "bg-muted text-muted-foreground",
+  };
+  return (
+    <span
+      className={`shrink-0 rounded-full px-2 py-0.5 text-[0.625rem] font-bold ${styles[status]}`}
+    >
+      {labels[status]}
+    </span>
+  );
 }

@@ -10,15 +10,28 @@ export function filterStudents(
 ) {
   const query = search.trim().toLowerCase();
   return students.filter((student) => {
-    const matchesSearch = !query ||
+    const matchesSearch =
+      !query ||
       student.fullName.toLowerCase().includes(query) ||
       student.email.toLowerCase().includes(query) ||
       (student.phone ?? "").toLowerCase().includes(query);
     const matchesStatus = status === "all" || student.accountStatus === status;
-    const activeClasses = student.classes.filter((item) => item.status === "ACTIVE");
-    const matchesClass = classFilter === "all" || activeClasses.some((item) => String(item.id) === classFilter);
-    const matchesGrade = gradeFilter === "all" || activeClasses.some((item) => String(item.gradeId) === gradeFilter);
+    const activeClasses = student.classes.filter(
+      (item) => item.status === "ACTIVE",
+    );
+    const matchesClass =
+      classFilter === "all" ||
+      activeClasses.some((item) => String(item.id) === classFilter);
+    const matchesGrade =
+      gradeFilter === "all" ||
+      activeClasses.some((item) => String(item.gradeId) === gradeFilter);
     const matchesNoClass = !noClass || activeClasses.length === 0;
-    return matchesSearch && matchesStatus && matchesClass && matchesGrade && matchesNoClass;
+    return (
+      matchesSearch &&
+      matchesStatus &&
+      matchesClass &&
+      matchesGrade &&
+      matchesNoClass
+    );
   });
 }

@@ -191,7 +191,6 @@ There is no `Assignment.activity_id`, no `ActivityAssignment`, and no Assignment
 | `start_at` | TIMESTAMP NULL | NULL = open immediately when published |
 | `due_at` | TIMESTAMP | Required when published |
 | `time_limit_seconds` | INT NULL | Optional; per Attempt |
-| `answers_released_at` | TIMESTAMP NULL | Release answers state |
 | `published_at`, `created_at`, `updated_at` | TIMESTAMP | |
 
 Do not store `teacher_id`, `attempt_limit`, `total_questions`, `allow_late_submission`, `late_until`, readiness, schedule state,
@@ -297,7 +296,6 @@ The UI timer is only a display; the server is authoritative.
 | Grade/year | ✅ | ✅ | ❌ | ❌ |
 | Add class / `CLASS → GRADE` | ✅ | ✅ | ✅ only expansion | ❌ |
 | Remove class / `GRADE → CLASS` | ✅ | ✅ | ❌ | ❌ |
-| Release answers | — | ✅ | ✅ | ✅ |
 
 The UI should explain: once the first Attempt exists, archive the Assignment and create a new one to change the question set.
 
@@ -353,7 +351,7 @@ Recipient resolution is dynamic in MVP: a student who joins before submitting ma
 
 Immediately after submission: score + `correct/total`.
 
-Correct answers + explanations are hidden until `Release answers`.
+After submission, the student may see score, correct answers and explanations according to ADR 0011.
 
 Teachers can always see correct answers.
 
@@ -580,7 +578,6 @@ QUESTIONS_WITHOUT_EXPLANATION
 | F6 Past due | `PAST_DUE` → still accepts work → late submissions labeled Late |
 | F7 Review attempt | Results → View attempt → questions in fixed position order → previous/next |
 | F8 Finalize unfinished | Results → Finalize unfinished → server grades stored answers |
-| F9 Release answers | Detail → Release answers → submitted students can see answer + explanation |
 | F10 Statistics/export | Statistics → tables/charts as applicable → export `.xlsx` |
 | F11 Archive | Hide from default list, block new starts, preserve data |
 
@@ -678,7 +675,7 @@ The workbook must be easy for a teacher to follow without reading backend docume
 - Use the fixed application timezone `Asia/Ho_Chi_Minh` on backend/Jackson.
 - Display teacher-facing time consistently as GMT+7.
 - Use one score-formatting helper across Results/Review/Statistics/export.
-- Use glossary vocabulary: `Assignment`, `Attempt`, `Recipient`, `Schedule state`, `Late`, `Overdue`, `Timed out`, `Release answers`.
+- Use glossary vocabulary: `Assignment`, `Attempt`, `Recipient`, `Schedule state`, `Late`, `Overdue`, `Timed out`.
 
 ---
 
@@ -912,7 +909,7 @@ Update all documentation that still describes the old "Assignment reads Question
 - `domain/question-model.md`: distinguish Activity question-bank behavior from Assignment-owned questions.
 - Phase 4 Activities spec: remove old Assignment → QuestionBank assumptions.
 - ADR 0001: document that the old shared-QuestionBank assumption was superseded by ADR 0003.
-- `domain/glossary.md`: add Recipient, Schedule state, Late, Overdue, Timed out, Release answers.
+- `domain/glossary.md`: add Recipient, Schedule state, Late, Overdue, Timed out.
 - `architecture/api-contract.md`: add Assignment endpoints and binary template/export exceptions.
 - `architecture/backend.md`: update migration/package/timezone/ownership assumptions.
 - `architecture/frontend.md` and `engineering-rules.md`: remove stale Assignment rules.
@@ -952,7 +949,6 @@ The following remain open until explicitly confirmed:
 | O1 | `academic_year` included in target scope | Yes |
 | O2 | Start after `due_at` remains allowed | Yes; Late |
 | O3 | Time limit still auto-finalizes | Yes |
-| O4 | Correct answers require Release answers | Yes |
 | O5 | Questions lock after first Attempt | Yes |
 | O6 | `Finalize unfinished` in M4 | Yes |
 | O7 | No shuffling in Phase 5 | Yes |

@@ -1,44 +1,40 @@
 # Spec status: what the docs say vs. what the code does
 
-Verified against commit `0905da0` (2026-10-06) on 2026-10-07. Re-verify whenever a phase closes.
-Rule: **the code is authoritative for what exists; accepted ADRs for what is decided.** Every disagreement gets a row here until it is fixed.
+Verification baseline: `f27a99d4ba5cfbbaf88abe4e406dec14bb639610` (2026-10-07), immediately before the accompanying knowledge-base progress update. Re-verify whenever a phase closes or a normative artifact changes.
+
+Rule: **accepted ADRs are authoritative for decisions; active specs are authoritative for intended phase behavior; code is authoritative for what exists.** Every disagreement gets a row here until it is fixed or explicitly superseded.
 
 ## 1. Drift register
 
 | ID | Documents say | Code / ADR says | Resolution | State |
 |---|---|---|---|---|
-| D-01 | Activity lives under a Topic (`activities.topic_id`): Phase 4 spec §3.1, `domain-model.md` | `activities.unit_id` (migration V15, `Activity.unit`); no ADR records the move | ADR 0008; spec §3.1 and domain model corrected | Fixed |
-| D-02 | Assignment targets `CLASS`/`STUDENT`/`GRADE`/`ALL`: `PHASES.md`, `domain-model.md` | `AssignmentTargetType = GRADE, CLASS` (Phase 5 spec v2 agrees) | ADR 0010; `PHASES.md` and `domain-model.md` corrected | Fixed |
-| D-03 | "The system has one teacher; `teacher_id` removed": Phase 5 spec v2 | `classes.teacher_id` exists; Phase 6 scopes students by teacher-owned classes | ADR 0005 | Fixed |
-| D-04 | `domain-model.md` lists `AssignmentQuestion` under "NOT core entities"; `PHASES.md` says "do not invent a new entity for assignment questions" | ADR 0003 (Accepted), Phase 5 spec and code have `AssignmentQuestion` (`assignment_questions`) | ADR 0003 wins; docs fixed in this change | Fixed |
-| D-05 | Phase 5 spec §3.2 includes Excel import, question reorder, readiness, recipients preview, locking | ADR 0003 defers Excel and reorder; readiness, recipients preview, locking are not in code; release-answers is dropped by ADR 0011 | ADR wins; remaining items tracked in `PROGRESS.md` | Tracked |
-| D-06 | `PHASES.md` Phase 6 = Attempts | Merged "Phase 6" = Student Management (PR #7) | ADR 0004 (Accepted); `PHASES.md` renumbered, notes added to old specs | Fixed |
-| D-07 | `AGENTS.md` links to `.agent/...`, `ui/`, `PROGRESS.md`, `README.md`, `ui/screens.md` | Entry point lived in `client-e-learning/`; folder was `ui-design/`; three files missing | Moved to repo root, renamed folder, files created | Fixed |
-| D-08 | Definition of Done: lint, typecheck, tests, build must pass | Client: ESLint 21 errors / 26 warnings; `tsc` 1 error; `npm ci` fails; no CI | Quality-gate task in `PROGRESS.md` | **Open** |
-| D-09 | "Real APIs only, no fake metrics" | Student dashboard reads `src/mock`; teacher dashboard shows hardcoded numbers (for example "4 classes, 128 students") | Replace when the data exists (Analytics / Dashboard phases) | **Open** |
-| D-10 | Phase 4 completion gate includes "preview" | `ActivityPreviewRequest/Response` DTOs exist, but no controller endpoint or service method | Implement per Phase 4 spec §11, or delete the DTOs | **Open** |
-| D-11 | Phase 6 plan: "runtime PASS not claimed" | Server tests have never been recorded as run | Run `./mvnw test` locally and record the result | **Open** |
+| D-01 | Activity lives under a Topic | `activities.unit_id` / Activity.unit | ADR 0008; active docs corrected | Fixed |
+| D-02 | Assignment targets include obsolete types | AssignmentTargetType = GRADE, CLASS | ADR 0010; active docs corrected | Fixed |
+| D-03 | Teacher ownership removed everywhere | `classes.teacher_id` exists; one-teacher scope is explicit | ADR 0005 | Fixed |
+| D-04 | AssignmentQuestion described inconsistently | ADR 0003 and code define AssignmentQuestion ownership | ADR 0003 wins; docs restored/corrected | Fixed |
+| D-05 | Phase 5 contains deferred Excel/reorder work | ADR 0003 defers Excel import/reorder until contract finalization | Track as OQ-7; do not implement spec-only deferred work | Tracked |
+| D-06 | Phase numbering used old Phase 6 for Attempts | Phase 6 = Student Management; Phase 7 = Attempts | ADR 0004 | Fixed |
+| D-07 | Agent entry paths referenced missing architecture/checklists/ADR/question-model artifacts | Branch now restores the canonical artifacts | Knowledge-base repair in this change | Fixed |
+| D-08 | Definition of Done requires lint/typecheck/tests/build | Recorded client lint/typecheck failures; server test run not recorded; no CI | Quality gate in PROGRESS | Open |
+| D-09 | Real APIs only / no fake metrics | Student/teacher dashboard mock data still exists | Replace when real data phases land | Open |
+| D-10 | Activity completion gate includes preview | Preview DTOs exist without the endpoint | Implement or remove DTOs | Open |
+| D-11 | Phase 6 runtime PASS was not claimed | Server tests still lack a recorded successful run | Run `./mvnw test` and record evidence | Open |
+| D-12 | Old Phase 5 contract still described Release Answers | ADR 0011 makes score + answers available after submit | Removed old executable guidance from active Phase 5 spec | Fixed |
 
-## 2. Rule traceability (spec rule → code → test)
+## 2. Rule traceability
 
-Only rules that exist today are listed. A rule without a test is not "done" in the Definition-of-Done sense.
+A rule without a test is not complete under the Definition of Done. Add stable trace IDs as the corresponding phase is implemented.
 
-| Rule | Source | In code | Test found |
+| Rule | Source | Code | Test |
 |---|---|---|---|
-| `LEARNING` mode rejects time limit and lives; `TRY_HARD` needs time limit > 0 and lives ≥ 1 | Phase 4 §6 | `ActivityValidationService` | none |
-| Distribution `EQUAL` / `PERCENTAGE` / `FIXED_COUNT` | Phase 4 §8 | `ActivityDistributionCalculator` | none |
-| Publish an Activity only when READY; readiness is derived, never stored | Phase 4 §12 | `ActivityReadinessService`, `ACTIVITY_NOT_READY` | none |
-| Question bank used by an Activity must belong to the same Unit | Phase 4 §7 | `ACTIVITY_QUESTION_BANK_OUTSIDE_UNIT` | none |
-| Question completeness (`is_complete`) | `question-model.md` | `QuestionContentValidator` | none |
-| Assignment max 100 questions; questions locked when archived | Phase 5 §7, ADR 0003 | `ASSIGNMENT_QUESTION_LIMIT_EXCEEDED`, `AssignmentQuestionService` | none |
-| Assignment publish only when READY | Phase 5 §6.1, §10.7 | **missing** (no readiness, no `ASSIGNMENT_NOT_READY`) | none |
-| Assignment: one attempt, Late label, time limit per attempt, snapshot of questions | ADR 0001, ADR 0003, Phase 5 §6.3–6.4 | **missing** (no Attempt tables) | none |
-| Student: create transactionally, lock/unlock, membership rules, class archive | Phase 6 plan | `StudentManagementService`, `ClassService` | `StudentManagementServiceTest`, `StudentManagementControllerTest`, client `student.service.test.ts`, `class.service.test.ts`, `student-filters.test.ts` |
+| Activity mode/time-limit/lives validation | Phase 4 spec | `ActivityValidationService` | Missing |
+| Activity distribution | Phase 4 spec | `ActivityDistributionCalculator` | Missing |
+| Activity publish requires READY | Phase 4 spec | `ActivityReadinessService` | Missing |
+| Question-bank must belong to Activity Unit | Phase 4 spec | Validation/error code | Missing |
+| Question completeness | `domain/question-model.md` | `QuestionContentValidator` | Missing |
+| Assignment question limit/locking rules | ADR 0003 + Phase 5 | `AssignmentQuestionService` | Missing |
+| Student Management membership/class lifecycle | Phase 6 plan | `StudentManagementService`, `ClassService` | Existing tests |
 
-Test inventory (2026-10-07): server 3 test classes (2 cover Student Management, 1 context load); client 3 files, 12 tests, all passing.
+## 3. Usage
 
-## 3. How this file is used
-
-- When a phase closes, re-run the comparison and update both tables.
-- A new row in §1 means: stop, ask the owner, then record the answer (ADR if it changes a decision).
-- A rule in §2 with "none" under Test becomes a task in `PROGRESS.md`.
+When a phase closes, compare docs against code again and update this register. A new unresolved disagreement is a stop condition for the agent: do not guess; update the register and obtain the required owner decision.

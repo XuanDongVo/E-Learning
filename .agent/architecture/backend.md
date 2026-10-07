@@ -1,74 +1,25 @@
 # Backend Architecture and Conventions
 
-Spring Boot 4.1 (Java 21), Spring Data JPA, Flyway, PostgreSQL, Spring Security with a JWT resource server, Lombok.
-Facts below were verified in `server/`; update them when the code changes.
+Spring Boot, Java 21, Spring Data JPA, Flyway, PostgreSQL, Spring Security/JWT.
 
-## Package layout
+## Feature layout
+activity, assignment, attempt, content, question, classes, grades, user, auth, common.
 
-```text
-server/src/main/java/e_learning/server/
-├── activity/   controller · dto · entity · enums · repository · selection · service      (Phase 4)
-├── auth/  user/  classes/  grades/
-├── question/   shared question core · enums · DTOs · repositories · validation
-├── content/    unit · section · topic · questionBank · question ownership · media · common
-├── assignment/ assignment · target · assignment question ownership
-└── common/     config (SecurityConfig) · exception · response (ApiResponse) · dto (PageResponse)
-```
+## Rules
+- Controllers use services, not another feature's repositories.
+- Requests never carry owner ids, derived readiness or runtime state.
+- Business validation lives in services.
+- Errors use stable ErrorCode values.
+- Every entity change requires a new Flyway migration; never edit applied migrations.
+- Deterministic product order must be explicit in repository/service queries.
+- AssignmentQuestion order is question_id ascending.
+- Attempt runtime state is separate from Activity/Assignment configuration.
 
-A feature package owns its controller, DTOs, entities, repositories and services. Do not reach into another
-feature's repository from a controller.
+## Activity
+Unit-scoped; available strategies live on Activity; concrete strategy and mode live on Attempt; Try Hard deadline is per question; preview is non-mutating; GameTemplate is not a current dependency.
 
-## Conventions
+## Assignment
+Owns AssignmentQuestion. No position. show_answers_after_submit controls review. time_limit_seconds is whole Attempt. No Release Answers timestamp/endpoint.
 
-- **Entities:** Lombok `@Getter @Setter @Builder`, `IDENTITY` ids, `LocalDateTime` timestamps set in
-  `@PrePersist` / `@PreUpdate`, enums stored as strings.
-- **Services:** `@Transactional(readOnly = true)` on the class, `@Transactional` on writes. One transaction per
-  aggregate operation (create, update, publish, archive); never partially save an aggregate.
-- **DTOs:** requests are Lombok `@Data` classes with Bean Validation; responses are records or Lombok classes.
-  Requests never carry owner ids, derived values (readiness, ready counts, quotas, `is_complete`) or runtime state.
-- **Errors:** throw `AppException(ErrorCode)` or `AppException(ErrorCode, details)`; `GlobalExceptionHandler` turns it
-  into `ApiResponse` with `data = details`. Add new codes to `ErrorCode` and to
-  [`api-contract.md`](./api-contract.md). Bean-validation failures return `INVALID_REQUEST`.
-- **Ownership:** the teacher id is `Long.valueOf(jwt.getSubject())`. Use owner-scoped repository methods
-  (for example `findByIdAndTeacherId`); a missing resource and another teacher's resource both return 404.
-- **Security:** role rules are path matchers in `SecurityConfig`. A new teacher-only API prefix must be added there.
-- **Pagination:** `page` is 1-indexed; return `PageResponse`.
-- **Filtering:** JPA `Specification` (`JpaSpecificationExecutor`), as in `QuestionService` and `ActivityService`.
-
-## Database and migrations
-
-- Flyway, `V{n}__snake_case_description.sql` in `src/main/resources/db/migration`. The latest migration is **V23** after the shared Question Core refactor.
-- `spring.jpa.hibernate.ddl-auto=validate`: every entity change needs a migration.
-- **Never edit an applied migration.** Add the next version.
-- Table prefixes: `content_*` for the content tree; `activities`, `activity_banks`, `activity_game_templates` for Activities.
-- Enums are enforced with `CHECK` constraints; rules that span several columns are validated in the service layer.
-
-## Question architecture
-
-The question model has one shared core:
-
-```text
-questions
-├── question_options
-├── question_answers
-└── question_media
-
-content_questions      -> QuestionBank ownership
-assignment_questions   -> Assignment ownership
-```
-
-Content and Assignment never share the same question row. They share the core schema, child tables, enums and validation logic. Domain services own context-specific relationships and lifecycle rules.
-
-## Tests
-
-- JUnit 5 under `src/test/java`. Keep domain logic (for example distribution/quota calculation) free of Spring so it is
-  unit-testable without a context.
-- Run: `cd server && ./mvnw test`.
-- Required by the Phase 4 spec but **not written yet**: readiness, validation, integration (all Activity endpoints) and
-  security tests.
-
-## Configuration
-
-`application.properties` reads `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`, `JWT_BASE64_SECRET`, `CLOUD_NAME`, `API_KEY`,
-`API_SECRET` and others from the environment. See [`PROGRESS.md`](../PROGRESS.md) "Known issues" about default values
-committed in that file.
+## Question
+Question.hint is optional, max 500 characters. Formula/reference sheet is deferred.

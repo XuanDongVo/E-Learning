@@ -1,32 +1,40 @@
 # Project Progress
 
-## Knowledge-base verification
-
-- Audit date: 2026-10-07
-- Verification baseline: `f27a99d4ba5cfbbaf88abe4e406dec14bb639610` (the branch revision immediately before this progress update).
-- AI-Native knowledge-base repair completed: restored missing `.agent/architecture/`, `.agent/checklists/`, `.agent/domain/question-model.md`, historical ADR 0001–0003, and the Phase 6 Student Management spec; reconciled active Phase 5 guidance with later ADR decisions; clarified ADR supersession and canonical folder structure.
-- Remaining governance work is tracked below and must not be silently inferred by an agent.
+Audit date: 2026-10-07
+Branch: phase-6-student-management
 
 ## Current stage
 
-**Phase 6 Student Management is done. Phase 7 Attempts/Answers is in specification and awaiting owner sign-off.**
+Phase 6 Student Management is done.
+Phase 7 Attempts/Answers remains DRAFT and is waiting for owner sign-off.
+This update is documentation-only: no application code or database migration is changed.
 
-## Quality gate
+## Knowledge-base sync completed in this update
 
-- Client tests: 3 files, 12 tests, passing at the last recorded verification.
-- Client ESLint: previously failing with 21 errors and 26 warnings; re-run after implementation changes before claiming a clean gate.
-- Client TypeScript: previously failing with 1 error in `QuestionPreviewModal.tsx`; re-run after implementation changes.
-- `npm ci`: previously failed because the lockfile was out of sync; regenerate/commit the lockfile before CI is enabled.
-- Server `./mvnw test`: not yet recorded as successfully run in the verification environment.
-- GitHub Actions: not yet present.
+- Activity is consistently Unit-scoped.
+- GameTemplate is removed from the current Activity domain contract and deferred as presentation work.
+- Activity strategy selection is explicit: student chooses when more than one strategy is available; Attempt stores the concrete strategy.
+- Try Hard timer is per question.
+- AssignmentQuestion has no position and no reorder contract; list order is deterministic by question_id ascending.
+- Assignment answer visibility is controlled by show_answers_after_submit; answers_released_at / Release Answers is historical only.
+- Activity lifecycle transitions are explicit.
+- Draft Activities may be incomplete; publish requires readiness.
+- Activity preview is a real Phase 4 workflow contract.
+- Learning Mode keeps the optional per-question hint; the Topic formula/reference sheet is deferred and not a current schema/UI requirement.
 
-## Next gates
+## Quality gate state
 
-1. Re-run and record the client/server quality gate.
-2. Add CI for client lint/typecheck/test/build and server tests.
-3. Keep Phase 7 blocked until the Attempts specification receives owner sign-off.
-4. After sign-off, implement Attempts vertically: startAttempt → stable question selection → AttemptQuestion snapshot → get/resume → submitAnswer → finishAttempt → late label → student read APIs.
+- Client tests: previously recorded as passing for 3 files / 12 tests.
+- Client ESLint: previously failing; re-run after implementation changes before claiming clean.
+- Client TypeScript: previously failing in QuestionPreviewModal.tsx; re-run before claiming clean.
+- npm ci: previously failed because the lockfile was out of sync.
+- Server ./mvnw test: no successful run recorded yet.
+- GitHub Actions: not present.
 
-## AI-Native operating rule
+This documentation-only sync does not change those verification facts.
 
-Do not treat `PROGRESS.md` as normative product truth. It records observed implementation state. Decisions belong to accepted ADRs; product intent belongs to `intent/`; active behavior belongs to the current phase/domain/architecture contracts; code is authoritative only for what is currently implemented.
+## Next implementation gates
+
+1. Re-run client lint/typecheck/test/build and server tests.
+2. Keep Phase 7 blocked until the Attempts spec receives owner sign-off.
+3. When Phase 7 starts, implement Activity strategy selection persistence, per-question Try Hard deadlines, Assignment deterministic snapshot order, and Assignment answer-visibility behavior.

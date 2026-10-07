@@ -1,11 +1,9 @@
 # AI-Native Project Knowledge Base
 
-
-Everything an AI agent (or a new developer) needs to work on this repo. Entry point: [`../AGENTS.md`](../AGENTS.md).
+Entry point: AGENTS.md.
 
 ## Canonical structure
 
-```text
 .agent/
 ├── README.md
 ├── PROGRESS.md
@@ -17,41 +15,37 @@ Everything an AI agent (or a new developer) needs to work on this repo. Entry po
 ├── design/
 ├── ui/
 └── checklists/
-```
 
-Every path referenced by `AGENTS.md` or another normative document must exist on this branch. A broken reference is a knowledge-base defect and must be fixed before an agent relies on the affected document.
+Every path referenced by AGENTS.md or another normative document must exist on this branch.
 
-## Layers (read top → bottom; a higher layer wins on conflict)
+## Authority
 
-| Layer | Folder | Answers | Changes when |
-|---|---|---|---|
-| Decisions | [`decisions/`](./decisions/README.md) | Why did we choose A over B? (ADR, never deleted) | A significant decision is made or reversed |
-| Intent | [`intent/`](./intent/0001-core-platform.md) | What is the product for, what is in/out of scope, what is still undecided? | Scope or goals change |
-| Design | [`domain/`](./domain/domain-model.md), [`plans/`](./plans/PHASES.md), [`ui/`](./ui/UI_ARCHITECTURE_GUIDELINES.md), [`architecture/`](./architecture/overview.md), [`design/`](./design/spec-status.md) | What exactly will the system do and how is it built? | A rule, entity, endpoint or screen changes |
-| Build | [`PROGRESS.md`](./PROGRESS.md), [`checklists/`](./checklists/definition-of-done.md) | What is done, in progress, next? What blocks it? | Every task |
-
-## Authority and conflict resolution
-
-Use this precedence when two artifacts disagree:
-
-1. Accepted ADRs for decisions.
-2. Accepted product intent and explicit owner-approved open-question resolutions.
-3. The active phase specification.
+1. Accepted ADRs.
+2. Accepted product intent and explicit owner decisions.
+3. Active phase specification.
 4. Domain and architecture contracts.
 5. UI guidance.
-6. PROGRESS for observed implementation state only.
+6. PROGRESS.md for implementation state only.
 7. Code for what is currently implemented.
 
-If an artifact is marked superseded, do not use it as an executable requirement. Record the replacement decision or update the stale artifact.
+When an ADR changes a previous rule, create a later ADR and remove the old executable requirement from active specs. Historical ADRs remain for traceability.
 
-## How to change something (top-down, never code first)
+## Current canonical decisions
 
-1. **Small rule change** → edit the rule in `domain/business-rules.md` (or the phase spec) → add/adjust its test → change code → update `PROGRESS.md`.
-2. **New feature** → new `intent/NNNN-*.md` (or extend open questions) → update spec → plan → build.
-3. **Reversing an old decision** → new ADR; mark the old one `Superseded by NNNN`. Never delete.
-4. **Spec and code disagree** → stop, add a row to [`design/spec-status.md`](./design/spec-status.md) (drift register), ask the owner, then fix whichever side is wrong.
+- Activity belongs to Unit, not Topic.
+- Activity and Assignment are independent.
+- Activity can offer Learning, Try Hard or both; when both are available, the student chooses the concrete mode at start.
+- Activity can expose multiple question-selection strategies. When multiple are configured, the student chooses one at start; the selected strategy is stored on Attempt.
+- Try Hard time_limit_seconds is per question, not per Activity run.
+- Assignment owns AssignmentQuestion records. AssignmentQuestion has no position field and there is no reorder API or UI. The server returns questions deterministically by question_id ascending.
+- Assignment has one attempt. Assignment time_limit_seconds applies to the whole attempt.
+- Assignment answer visibility after submit is controlled by show_answers_after_submit, default true. There is no Release Answers workflow.
+- Activity lifecycle: DRAFT -> PUBLISHED only when READY; DRAFT -> ARCHIVED; PUBLISHED -> ARCHIVED; ARCHIVED -> DRAFT. ARCHIVED cannot go directly to PUBLISHED.
+- GameTemplate is deferred. It is a presentation concern and is not a current Activity dependency, entity or API.
+- Learning Mode currently includes one optional teacher-authored Question hint. The shared Topic formula/reference sheet is intentionally deferred; do not add it to the current implementation contract.
 
-## Session routine for AI agents
+## How agents work
 
-- Start: read `PROGRESS.md`, then the files listed for your task in `AGENTS.md`.
-- End: update `PROGRESS.md` (what changed, what is next, what you could not verify).
+Start by reading PROGRESS.md and the task-relevant ADR/spec/domain files.
+Before coding, resolve contradictions top-down through ADRs and active specs.
+At the end of a task, update PROGRESS.md with what was changed and what was not verified.

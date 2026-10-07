@@ -83,8 +83,8 @@ A student has **completed** the Assignment when it is submitted; there is no sco
 | An Activity belongs to a Unit and may mix Topics of that Unit ([ADR 0008](../decisions/0008-activity-belongs-to-unit.md)) | `activities.unit_id` |
 | After submitting an Assignment the student sees the score and the correct answers with explanations immediately; there is no "Release answers" step ([ADR 0011](../decisions/0011-student-sees-answers-after-submit.md)) | To build with Attempts |
 | An unfinished Activity run is not saved or resumed; opening it again starts a new random run ([ADR 0012](../decisions/0012-activity-run-not-resumable.md)) | To build with Attempts |
-| Learning mode (Activity runs): on a wrong answer the student may answer up to 3 times in total (2 retries); an optional per-question hint costs part of the XP; a per-Topic formula sheet is free; after the retries the answer and explanation are shown ([ADR 0014](../decisions/0014-learning-mode-hint-and-retry.md)) | To build with Attempts and N3b |
-| Games change presentation only; they use the same question system (Bamboozle-style templates) | `domain-model.md` Game architecture; `GameTemplate` not built yet |
+| Learning mode (Activity runs): on a wrong answer the student may answer up to 3 times in total (2 retries); an optional per-question hint costs part of the XP; a Topic formula/reference sheet is deferred; after the retries the answer and explanation are shown ([ADR 0014](../decisions/0014-learning-mode-hint-and-retry.md)) | To build with Attempts and N3b |
+| Future game presentation changes presentation only; GameTemplate is deferred and is not a current dependency | `domain-model.md` Game architecture; `GameTemplate` not built yet |
 
 ## 5. Decisions already taken (do not reopen without a new ADR)
 
@@ -101,11 +101,11 @@ traceability. To adopt any of them, write a new ADR that supersedes ADR 0001.
 |---|---|---|---|
 | CR-01 | Assignments can be retried without limit; the highest score counts; teacher sees full history | **Closed, rejected** (2026-10-07) | Owner confirmed two kinds of work. One attempt for Assignments; unlimited retry for Activity runs |
 | CR-02 | No split between Practice and Assignment | **Closed, rejected** (2026-10-07) | Practice is an Activity run; Assignment stays separate |
-| CR-03 | A game is an Assignment | **Closed, rejected** (2026-10-07) | Games belong to Activities (`GameTemplate`) |
+| CR-03 | A game is an Assignment | **Closed, rejected** (2026-10-07) | Future game presentation belongs inside Activities; GameTemplate is deferred |
 | CR-04 | Completion = at least one attempt at 80% or more | **Closed, rejected** (2026-10-07) | Completion = submitted, score shown separately ([ADR 0006](../decisions/0006-assignment-completion-is-submission.md)) |
 | CR-05 | Student requests access to another class's content, teacher approves (like Google Drive) | **Closed, rejected for v1** (2026-10-07) | Students see only their own grade ([ADR 0007](../decisions/0007-student-visibility-own-grade.md)); reopen with a new ADR |
 | CR-06 | Teacher alone chooses the mode | Already supported | Teacher may restrict an Activity to `LEARNING` or `TRY_HARD` |
-| CR-07 | In Learning mode: hint first, button to expand a formula sheet, answer shown only after the student chooses | **Adopted** | [ADR 0014](../decisions/0014-learning-mode-hint-and-retry.md) |
+| CR-07 | In Learning mode: optional Question hint now; formula/reference sheet deferred | **Adopted** | [ADR 0014](../decisions/0014-learning-mode-hint-and-retry.md) |
 
 ## 6a. Non-functional expectations
 

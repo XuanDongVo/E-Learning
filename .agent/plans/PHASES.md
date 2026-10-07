@@ -146,10 +146,9 @@ Assignment flow:
 Questions → Select target → Configure schedule/settings → Review → Assign
 ```
 
-Open questions for the Phase 5 spec (these rules were written for the old multi-attempt model): late-submission
-policy, completion threshold, and target-field rules. See [`domain/business-rules.md`](../domain/business-rules.md).
+Phase 5 normative decisions are defined by ADR 0003 and later accepted ADRs. Any remaining product questions belong in [`intent/open-questions.md`](../intent/open-questions.md); do not infer rules from superseded text in older specs.
 
-The only Assignment entities are `Assignment`, `AssignmentTarget` and `AssignmentQuestion` (ADR 0003); never add `Assignment.activity_id`.
+The Assignment model currently consists of `Assignment`, `AssignmentTarget`, and `AssignmentQuestion`; do not add `Assignment.activity_id`, `Activity.assignment_id`, or `ActivityAssignment` (ADR 0001/0003).
 
 ### Phase 6 — Student Management
 

@@ -24,6 +24,9 @@ public class QuestionWriteRequest {
     @Size(max = 2000, message = "Explanation must not exceed 2000 characters")
     private String explanation;
 
+    @Size(max = 1000, message = "Hint must not exceed 1000 characters")
+    private String hint;
+
     private List<QuestionOptionRequest> options;
     private List<QuestionAnswerRequest> answers;
     private List<Long> mediaIds;

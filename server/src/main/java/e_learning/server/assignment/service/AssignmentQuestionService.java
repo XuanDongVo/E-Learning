@@ -29,7 +29,7 @@ public class AssignmentQuestionService {
     public List<AssignmentQuestionResponse> list(Long assignmentId) {
         findAssignment(assignmentId);
 
-        return assignmentQuestionRepository.findAllByAssignmentId(assignmentId).stream()
+        return assignmentQuestionRepository.findAllByAssignmentIdOrderByQuestionIdAsc(assignmentId).stream()
                 .map(this::toResponse)
                 .toList();
     }

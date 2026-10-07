@@ -47,8 +47,8 @@ public class Assignment {
     @Column(name = "time_limit_seconds")
     private Integer timeLimitSeconds;
 
-    @Column(name = "answers_released_at")
-    private LocalDateTime answersReleasedAt;
+    @Column(name = "show_answers_after_submit", nullable = false)
+    private boolean showAnswersAfterSubmit = true;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)

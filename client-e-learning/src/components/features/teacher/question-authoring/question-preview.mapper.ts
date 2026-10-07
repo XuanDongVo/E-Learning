@@ -25,6 +25,7 @@ export function draftQuestionToPreview(
       url: media.url,
     })),
     explanation: question.explanation,
+    hint: question.hint,
     complete: isQuestionComplete(question),
   };
 }
@@ -60,6 +61,7 @@ export function assignmentQuestionToPreview(
       url: media.url,
     })),
     explanation: question.explanation ?? "",
+    hint: question.hint ?? "",
     complete: question.complete || question.is_complete === true,
   };
 }

@@ -27,6 +27,7 @@ export function makeDraftQuestion(
     acceptedAnswers: [""],
     media: [],
     explanation: "",
+    hint: "",
     ...overrides,
   };
 }

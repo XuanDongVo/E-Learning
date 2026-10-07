@@ -22,6 +22,7 @@ const initialForm: CreateAssignmentRequest = {
   name: "",
   description: "",
   dueAt: "",
+  showAnswersAfterSubmit: true,
   targets: [],
 };
 

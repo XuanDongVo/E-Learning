@@ -26,6 +26,7 @@ export interface Assignment {
   startAt?: string;
   dueAt: string;
   timeLimitSeconds?: number;
+  showAnswersAfterSubmit: boolean;
   questionCount: number;
   targets: AssignmentTarget[];
 }
@@ -38,6 +39,7 @@ export interface CreateAssignmentRequest {
   startAt?: string;
   dueAt: string;
   timeLimitSeconds?: number;
+  showAnswersAfterSubmit?: boolean;
   targets: AssignmentTargetRequest[];
 }
 
@@ -66,6 +68,7 @@ export interface AssignmentQuestionContent {
   difficulty: QuestionDifficulty;
   content: string;
   explanation?: string;
+  hint?: string;
   complete: boolean;
   is_complete?: boolean;
   matchingMode?: string;
@@ -96,6 +99,7 @@ export interface CreateAssignmentQuestionRequest {
   difficulty?: QuestionDifficulty;
   content: string;
   explanation?: string;
+  hint?: string;
   options?: CreateAssignmentQuestionOptionRequest[];
   answers?: CreateAssignmentQuestionAnswerRequest[];
   mediaIds?: number[];

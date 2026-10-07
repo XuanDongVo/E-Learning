@@ -118,6 +118,7 @@ function toPayload(question: DraftQuestion) {
     difficulty: question.difficulty,
     content: question.text.trim(),
     explanation: question.explanation.trim() || undefined,
+    hint: question.hint?.trim() || undefined,
     options:
       question.type === "SINGLE_CHOICE" || question.type === "MULTIPLE_CHOICE"
         ? question.options.map((option) => ({

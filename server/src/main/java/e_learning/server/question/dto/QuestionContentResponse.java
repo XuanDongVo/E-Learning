@@ -17,6 +17,7 @@ public class QuestionContentResponse {
     private Difficulty difficulty;
     private String content;
     private String explanation;
+    private String hint;
     private boolean complete;
     private String matchingMode;
     private List<QuestionOptionResponse> options;

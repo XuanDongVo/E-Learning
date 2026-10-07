@@ -27,6 +27,23 @@ export function AssignmentScheduleStep({
         />
       </label>
 
+      <label className="flex items-start gap-3 rounded-lg border border-border p-3 text-body-sm">
+        <input
+          type="checkbox"
+          checked={form.showAnswersAfterSubmit}
+          onChange={(event) =>
+            onChange({ showAnswersAfterSubmit: event.target.checked })
+          }
+          className="mt-0.5 size-4 accent-primary"
+        />
+        <span>
+          <span className="block font-bold">Show answers after submit</span>
+          <span className="font-normal text-muted-foreground">
+            Students can see correct answers and explanations after submitting.
+          </span>
+        </span>
+      </label>
+
       <label className="block text-body-sm font-bold">
         Due date
 

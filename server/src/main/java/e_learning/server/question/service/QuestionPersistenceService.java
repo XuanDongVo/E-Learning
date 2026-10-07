@@ -60,6 +60,8 @@ public class QuestionPersistenceService {
                     .content(request.getContent().trim())
                     .explanation(StringUtils.hasText(request.getExplanation())
                             ? request.getExplanation().trim() : null)
+                    .hint(StringUtils.hasText(request.getHint())
+                            ? request.getHint().trim() : null)
                     .complete(complete)
                     .matchingMode("CASE_INSENSITIVE_TRIM")
                     .build();
@@ -83,6 +85,8 @@ public class QuestionPersistenceService {
         question.setContent(request.getContent().trim());
         question.setExplanation(StringUtils.hasText(request.getExplanation())
                 ? request.getExplanation().trim() : null);
+        question.setHint(StringUtils.hasText(request.getHint())
+                ? request.getHint().trim() : null);
         question.setComplete(questionContentValidator.isComplete(
                 request.getType(),
                 request.getContent(),

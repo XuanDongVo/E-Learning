@@ -174,6 +174,7 @@ export default function AssignmentDetailPage() {
           dueAt: data.dueAt.slice(0, 16),
           startAt: data.startAt ? data.startAt.slice(0, 16) : undefined,
           timeLimitSeconds: data.timeLimitSeconds ?? undefined,
+          showAnswersAfterSubmit: data.showAnswersAfterSubmit,
           targets: data.targets.map((t): any => t.type === "CLASS" ? {
             type: "CLASS",
             classId: t.classId!

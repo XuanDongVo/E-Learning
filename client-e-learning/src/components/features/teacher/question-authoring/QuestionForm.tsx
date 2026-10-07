@@ -433,6 +433,18 @@ export function QuestionForm({
         />
       </label>
 
+      {/* Optional Learning Mode hint */}
+      <label className="block">
+        <span className="mb-1 block text-xs font-medium text-slate-500">Hint (Optional)</span>
+        <textarea
+          value={question.hint}
+          onChange={(event) => onChange({ hint: event.target.value })}
+          placeholder="Give a small clue without revealing the answer..."
+          rows={2}
+          className={`${inputClassName} resize-y`}
+        />
+      </label>
+
       {/* ── Media Attachments ─────────────────────────────────────────────────── */}
       {/*
         Server-side PENDING lifecycle:

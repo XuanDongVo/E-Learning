@@ -57,4 +57,9 @@ public class ActivityController {
     public ResponseEntity<ApiResponse<ActivityReadinessResponse>> readiness(@PathVariable Long id) {
         return ResponseEntity.ok(ApiResponse.success(activityService.readiness(id)));
     }
+
+    @PostMapping("/{id}/preview")
+    public ResponseEntity<ApiResponse<ActivityPreviewResponse>> preview(@PathVariable Long id) {
+        return ResponseEntity.ok(ApiResponse.success(activityService.preview(id)));
+    }
 }

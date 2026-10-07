@@ -62,7 +62,6 @@ public class ActivityValidationService {
                 || totalQuestions < 1
                 || mode == null
                 || banks == null
-                || banks.isEmpty()
                 || totalQuestions < banks.size()) {
             throw new AppException(ErrorCode.ACTIVITY_INVALID_CONFIGURATION);
         }
@@ -105,6 +104,10 @@ public class ActivityValidationService {
             DistributionMode mode,
             List<ActivityBankRequest> banks
     ) {
+        if (banks.isEmpty()) {
+            return;
+        }
+
         switch (mode) {
             case EQUAL -> {
                 if (totalQuestions % banks.size() != 0

@@ -2,6 +2,8 @@
 
 <!-- Moved from the former client-e-learning/AGENTS.md. Edit here; do not re-copy into AGENTS.md. -->
 
+> **Numbering:** Phase 6 is Student Management (merged, PR #7); Attempts is Phase 7 ([ADR 0004](../decisions/0004-phase-numbering.md)). Older specs use the pre-ADR numbers.
+
 Scope and dependency order of the project. Current status lives in [`../PROGRESS.md`](../PROGRESS.md).
 Implement **one phase at a time**; stop at the phase boundary unless explicitly told to continue.
 
@@ -136,7 +138,7 @@ Implement:
 - Assignment detail
 - Assignment progress shell
 
-Assignment target types: `CLASS`, `STUDENT`, `GRADE`, `ALL`.
+Assignment target types: `CLASS` (one or more classes) or `GRADE`, never mixed ([ADR 0010](../decisions/0010-assignment-targets-class-or-grade.md)).
 
 Assignment flow:
 
@@ -147,9 +149,18 @@ Questions → Select target → Configure schedule/settings → Review → Assig
 Open questions for the Phase 5 spec (these rules were written for the old multi-attempt model): late-submission
 policy, completion threshold, and target-field rules. See [`domain/business-rules.md`](../domain/business-rules.md).
 
-Do not invent a new entity for assignment questions, and never add `Assignment.activity_id`.
+The only Assignment entities are `Assignment`, `AssignmentTarget` and `AssignmentQuestion` (ADR 0003); never add `Assignment.activity_id`.
 
-### Phase 6 — Attempts and Answers
+### Phase 6 — Student Management
+
+Status: **done** (PR #7). Source of truth: [`E-LEARNING_PHASE_6_STUDENT_MANAGEMENT.md`](./E-LEARNING_PHASE_6_STUDENT_MANAGEMENT.md).
+
+Implemented: StudentProfile and StudentGuardian, student profile API, teacher student-management API, ClassMember API,
+teacher student screens, class edit/archive lifecycle, and tests for these rules.
+
+---
+
+### Phase 7 — Attempts and Answers
 
 This phase powers real student work.
 
@@ -196,11 +207,11 @@ Do not randomize the question set again on refresh, resume, or review.
 
 > **Updated by [ADR 0001](../decisions/0001-activity-and-assignment-are-independent.md):** an Assignment has a **single**
 > attempt. "Retry" and "Best score handling" above therefore apply to repeatable **Activity runs** only, and their exact
-> rules belong in the Phase 6 spec. Assignment and practice rules live in
+> rules belong in the Phase 7 spec. Assignment and practice rules live in
 > [`domain/business-rules.md`](../domain/business-rules.md). The question snapshot contract is in
 > [`domain/question-model.md`](../domain/question-model.md).
 
-### Phase 7 — Analytics
+### Phase 8 — Analytics
 
 Analytics depend on completed Attempt/Answer data.
 
@@ -259,7 +270,7 @@ The exact thresholds should be centralized rather than duplicated in individual 
 
 ---
 
-### Phase 8 — XP and Ranking
+### Phase 9 — XP and Ranking
 
 Implement XP after Attempt/Answer behavior is stable.
 
@@ -289,7 +300,7 @@ Do not add class-level ranking unless explicitly requested.
 
 ---
 
-### Phase 9 — Teacher Dashboard
+### Phase 10 — Teacher Dashboard
 
 Build the Teacher Dashboard only after the underlying modules provide real data.
 
@@ -313,7 +324,7 @@ Every dashboard metric must map to a real source or clearly display that data is
 
 Teacher navigation and the core workflow moved to [`ui/screens.md`](../ui/screens.md).
 
-### Phase 10 — Reports and Final Polish
+### Phase 11 — Reports and Final Polish
 
 Implement after the core flow works:
 

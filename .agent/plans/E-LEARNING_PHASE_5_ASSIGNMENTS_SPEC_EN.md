@@ -1,5 +1,9 @@
 # E-Learning — Phase 5: Assignments (Spec v2 — English)
 
+> **Numbering note (ADR 0004, 2026-10-07):** phase numbers 6 and above in this document use the **old** numbering. Old 6 (Attempts) = Phase 7, old 7 (Analytics) = Phase 8, old 8 (XP) = Phase 9, old 9 (Dashboard) = Phase 10, old 10 (Reports) = Phase 11. Phase 6 is now Student Management.
+>
+> **Superseded by [ADR 0011](../decisions/0011-student-sees-answers-after-submit.md) (2026-10-07):** decision O4, the `Release answers` action, `ANSWERS_NOT_RELEASED` and every rule that hides correct answers until release no longer apply; students see score and answers right after submitting.
+
 **Status:** DRAFT v2 — open items in §4 require project-owner confirmation before ADR 0003.
 **Target file:** `.agent/plans/E-LEARNING_PHASE_5_ASSIGNMENTS_SPEC.md`
 **Purpose:** English implementation version of the Phase 5 Assignment specification.

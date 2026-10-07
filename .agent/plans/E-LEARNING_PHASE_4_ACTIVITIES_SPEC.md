@@ -1,5 +1,7 @@
 # E-Learning — Phase 4: Activities
 
+> **Numbering note (ADR 0004, 2026-10-07):** phase numbers 6 and above in this document use the **old** numbering. Old 6 (Attempts) = Phase 7, old 7 (Analytics) = Phase 8, old 8 (XP) = Phase 9, old 9 (Dashboard) = Phase 10, old 10 (Reports) = Phase 11. Phase 6 is now Student Management.
+
 **Document type:** Canonical product + engineering specification  
 **Status:** Revised source of truth for Phase 4 implementation  
 **Last revised:** 2026-09-30  
@@ -167,6 +169,8 @@ With the separation:
 # 3. Product positioning inside the course
 
 ## 3.1 Activity placement
+
+> **Superseded by [ADR 0008](../decisions/0008-activity-belongs-to-unit.md) (2026-10-07):** an Activity belongs to a **Unit** (`activities.unit_id`), not a Topic. The text below is the original design and is kept for history; the tree and the `topic_id` field are no longer valid.
 
 Because the current content tree ends at `Topic`, the first Phase 4 version should place an Activity under a `Topic`.
 
@@ -409,7 +413,7 @@ Try Hard is a challenge variant of Activity.
 
 Canonical behavior:
 
-- `time_limit_seconds` is required and must be `> 0`;
+- `time_limit_seconds` is required and must be `> 0` (**seconds per question**, [ADR 0015](../decisions/0015-try-hard-time-limit-per-question.md));
 - `lives` is required and must be `>= 1`;
 - default lives in the editor is 3;
 - hints/guidance are unavailable by default;

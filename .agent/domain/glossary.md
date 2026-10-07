@@ -15,8 +15,8 @@ translation for the team; confirm and adjust it once, then keep it consistent.
 | Activity source | Nguồn câu hỏi | A QuestionBank used by an Activity (`ActivityBank`) |
 | Distribution | Phân bổ | How many questions come from each source: equal, percentage, fixed count |
 | Selection strategy | Cách chọn câu hỏi | Which questions fill a quota: random or weakness priority |
-| Learning mode | Chế độ Học | No time limit, hints and explanations available |
-| Try Hard mode | Chế độ Thử thách | Time limit, lives, no hints |
+| Learning mode | Chế độ Học | No time limit; 3 answers per question, optional hint and per-Topic formula sheet (ADR 0014) |
+| Try Hard mode | Chế độ Thử thách | Time limit per question, lives, no hints |
 | Both (mode) | Cả hai chế độ | Default. The student chooses Learning or Try Hard when starting |
 | GameTemplate | Mẫu trò chơi | Presentation layer of an Activity; not a separate question system |
 | Assignment | Bài được giao | Teacher-assigned task or assessment with a target, schedule, one attempt, official score |

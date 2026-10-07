@@ -26,7 +26,7 @@ The current agreed domain model contains these entities:
 
 > **Repository reality (verified in code and migrations V1–V11):** `Grade` and `Section` already exist and are
 > part of the content hierarchy below, although they are missing from the numbered list. `ClassUnit` is in the
-> agreed model but is **not implemented yet**. Assignment-related entities are defined by Phase 5; see
+> agreed model but is **not implemented yet**. `AssignmentQuestion` also exists (ADR 0003, table `assignment_questions`). Assignment-related entities are defined by Phase 5; see
 > [ADR 0001](../decisions/0001-activity-and-assignment-are-independent.md).
 
 Do not introduce additional core entities for concepts that are already represented by the existing model unless explicitly requested.
@@ -95,7 +95,7 @@ Do not rename or replace this concept with unrelated concepts such as `ActivityQ
 
 #### Activity placement and mode
 
-- An Activity is placed under exactly one **Topic** (`activities.topic_id`) and is owned by a teacher.
+- An Activity is placed under exactly one **Unit** (`activities.unit_id`, [ADR 0008](../decisions/0008-activity-belongs-to-unit.md)) and is owned by a teacher.
 - An Activity stores **configuration only**: sources, distribution, selection strategy, mode, optional GameTemplate.
   It never stores selected question IDs or any per-student state (those belong to `AttemptQuestion`).
 - `mode` is `LEARNING`, `TRY_HARD` or `BOTH`. **`BOTH` is the default**: the student chooses Learning or Try Hard
@@ -110,12 +110,11 @@ Activity modes:
 ##### Learning Mode
 
 - No time limit
-- Hints available
-- Explanations available
+- Instant feedback; on a wrong answer up to 3 answers in total (2 retries), an optional per-question hint (costs part of the XP) and a per-Topic formula sheet; then answer + explanation ([ADR 0014](../decisions/0014-learning-mode-hint-and-retry.md))
 
 ##### Try Hard Mode
 
-- Time limit
+- Time limit per question ([ADR 0015](../decisions/0015-try-hard-time-limit-per-question.md))
 - 3 lives by default
 - No hints/guidance
 - Wrong answers consume lives
@@ -170,7 +169,7 @@ QuestionBank(s) ──→ Assignment   → assessment flow → Assignment Attemp
 - An Assignment does **not** contain, wrap, or reference an Activity. There is no `Assignment.activity_id` and no
   `Activity.assignment_id`.
 - An Assignment has its own question-source/assessment configuration (defined by the Phase 5 spec).
-- Assignment targets may be: Class, Student, Grade, All students (`AssignmentTarget`).
+- Assignment targets (`AssignmentTarget`) are one or more Classes, or a whole Grade, never mixed ([ADR 0010](../decisions/0010-assignment-targets-class-or-grade.md)).
 
 ### Attempt architecture
 
@@ -232,7 +231,6 @@ Do not create these as separate entities unless explicitly requested:
 - BestScore
 - Completion
 - GameQuestion
-- AssignmentQuestion
 - LearningMode
 - TryHardMode
 - School

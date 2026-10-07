@@ -34,3 +34,17 @@ Date: YYYY-MM-DD
 | [0013](./0013-learning-mode-v1-feedback.md) | Learning mode v1: feedback and explanation after a wrong answer | Superseded by 0014 |
 | [0014](./0014-learning-mode-hint-and-retry.md) | Learning mode: hint, retry, per-Topic formula sheet | Accepted |
 | [0015](./0015-try-hard-time-limit-per-question.md) | Try Hard time limit is per question | Accepted |
+
+
+## Supersession rule
+
+An accepted ADR remains historical record even when superseded. The latest accepted ADR wins for the affected decision. Active specs must remove or explicitly quarantine superseded requirements; an inline note saying that a later ADR wins is not sufficient if the old requirement remains in an executable section.
+
+## Current decision chain
+
+- ADR 0001 establishes Activity and Assignment independence.
+- ADR 0003 defines the Assignment contract and defers Excel import/reorder until their contracts are finalized.
+- ADR 0004 establishes current phase numbering: Phase 6 = Student Management; Phase 7 = Attempts and Answers.
+- ADR 0010 limits Assignment targets to CLASS or GRADE.
+- ADR 0011 supersedes the former Release Answers gate: students see score and answers after submission.
+- ADR 0013 is superseded by ADR 0014 for Learning Mode feedback/hint/retry behavior.

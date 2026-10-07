@@ -2,9 +2,7 @@
 
 > **Numbering note (ADR 0004, 2026-10-07):** phase numbers 6 and above in this document use the **old** numbering. Old 6 (Attempts) = Phase 7, old 7 (Analytics) = Phase 8, old 8 (XP) = Phase 9, old 9 (Dashboard) = Phase 10, old 10 (Reports) = Phase 11. Phase 6 is now Student Management.
 >
-> **Superseded by [ADR 0011](../decisions/0011-student-sees-answers-after-submit.md) (2026-10-07):** decision O4, the `Release answers` action, `ANSWERS_NOT_RELEASED` and every rule that hides correct answers until release no longer apply; students see score and answers right after submitting.
-
-**Status:** DRAFT v2 — open items in §4 require project-owner confirmation before ADR 0003.
+**Status:** ACTIVE CONTRACT v2 — decisions that were superseded by later accepted ADRs are removed from the executable contract. Open items are tracked separately in `.agent/intent/open-questions.md`.
 **Target file:** `.agent/plans/E-LEARNING_PHASE_5_ASSIGNMENTS_SPEC.md`
 **Purpose:** English implementation version of the Phase 5 Assignment specification.
 
@@ -98,7 +96,7 @@ M2  Phase 5 frontend: authoring + import flow + review/assign + detail
  ↓
 M3  Phase 6: Attempt / Answer
  ↓
-M4  Results + student attempt review + optional Release answers / Finalize unfinished
+M4  Results + student attempt review + optional post-submit answer visibility / Finalize unfinished
  ↓
 M5  Statistics
  ↓
@@ -146,7 +144,6 @@ M6  Export / Reports
 | O1 | Should target include `academic_year`? | Yes. Store `grade_level` + `academic_year`. |
 | O2 | Can a student start after `due_at`? | Yes. The submission is Late. Archive to stop new starts. |
 | O3 | Does `time_limit_seconds` remain effective? | Yes. It is per Attempt and independent of due date. |
-| O4 | When are answers visible? | Score immediately; correct answers + explanations only after `Release answers`. |
 | O5 | Can questions be edited after an Attempt exists? | No. Lock completely in MVP. |
 | O6 | How are unfinished attempts finalized? | M4 action: `Finalize unfinished`. |
 | O7 | Shuffle question/answer order? | No in Phase 5. |
@@ -412,7 +409,7 @@ Do not share the `content_questions` entity/table with AssignmentQuestions.
 
 ## 8.3 Service responsibilities
 
-- `AssignmentService`: CRUD configuration, publish/archive, release answers.
+- `AssignmentService`: CRUD configuration, publish/archive, post-submit answer visibility.
 - `AssignmentQuestionService`: question CRUD/order/import commit and lock checks.
 - `AssignmentValidationService`: target, schedule and time-limit rules.
 - `AssignmentReadinessService`: `READY`/`NEEDS_ATTENTION` + issues.
@@ -471,8 +468,7 @@ Base path `/v1`. Envelope rules remain unchanged except binary template/export e
 | PUT | `/v1/assignments/{id}` | Update configuration/target/schedule |
 | PATCH | `/v1/assignments/{id}/status` | Publish/status transition |
 | PATCH | `/v1/assignments/{id}/archive` | Archive |
-| PATCH | `/v1/assignments/{id}/release-answers` | Release answers |
-| GET | `/v1/assignments/{id}/readiness` | Readiness + issues |
+| | GET | `/v1/assignments/{id}/readiness` | Readiness + issues |
 | GET | `/v1/assignments/{id}/recipients` | Resolved recipients |
 | GET | `/v1/assignments/{id}/progress` | Progress shell in Phase 5 |
 | POST | `/v1/assignments/target-preview` | Recipient preview |
@@ -531,7 +527,7 @@ RESULT_NOT_AVAILABLE
 EXPORT_TOO_LARGE
 ```
 
-Phase 6 may add `ASSIGNMENT_NOT_OPEN`, `ASSIGNMENT_ALREADY_ATTEMPTED`, `ASSIGNMENT_NOT_ASSIGNED_TO_STUDENT`, and `ANSWERS_NOT_RELEASED`.
+Phase 6 may add `ASSIGNMENT_NOT_OPEN`, `ASSIGNMENT_ALREADY_ATTEMPTED`, and `ASSIGNMENT_NOT_ASSIGNED_TO_STUDENT`.
 
 ## 10.7 Readiness issues
 
@@ -565,7 +561,7 @@ QUESTIONS_WITHOUT_EXPLANATION
 - Unauthenticated requests → 401.
 - `STUDENT` calling Assignment APIs → 403.
 - No owner-scope check because the system has one teacher.
-- Student APIs must not reveal correct answers before `Release answers`.
+- After submission, students may read their score and the answers/explanations allowed by ADR 0011. The server remains authoritative for correctness and score.
 - Excel import: enforce 5 MB limit, row limit, `.xlsx` only, macro rejection, Apache POI zip-bomb protection, no formula evaluation and no question content in logs.
 - Export and review contain student information and are teacher-only.
 - Never trust client-provided score, `isCorrect` or derived counts.

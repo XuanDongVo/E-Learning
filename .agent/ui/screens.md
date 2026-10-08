@@ -13,6 +13,7 @@ Activity editor:
 - Draft can save incomplete.
 - Try Hard time label = seconds per question.
 - Practice = no timer, immediate feedback, one retry, optional hint.
+- Practice = no timer, immediate feedback, one retry, optional hint.
 - Selection strategies are configured options; concrete selection is stored on ActivitySession.
 - No GameTemplate control.
 - Preview is a real action once endpoint implementation is complete.

@@ -56,7 +56,7 @@ export function ActivityHub({ unitId }: { unitId?: number }) {
           )}
 
           {activities.isError && (
-            <div role="alert" className="mt-5 border border-danger/20 bg-danger-light p-5 text-body-sm text-danger-text">
+            <div role="alert" className="mt-5 border border-destructive/20 bg-danger-light p-5 text-body-sm text-danger-text">
               {activities.error.message}
             </div>
           )}

@@ -10,14 +10,11 @@ Grade -> Unit -> Section -> Topic -> QuestionBank -> Question.
 
 ## Activity
 Activity -> ActivityBank -> QuestionBank -> Question.
-Activity is Unit-scoped and stores source/distribution/available strategies/mode/lives/per-question timer/lifecycle.
-Activity does not store student runtime state.
+Activity is configuration only; it does not store student runtime state.
 
 ## ActivitySession
 Activity -> ActivitySession -> ActivitySessionQuestion.
-ActivitySession is one repeatable runtime practice session. It stores the concrete mode and selection strategy plus aggregate result/lifecycle state.
-ActivitySessionQuestion freezes the selected question set/order.
-Activity does not persist detailed answer history.
+ActivitySession is one repeatable runtime session. It stores concrete mode/strategy and aggregate result. ActivitySessionQuestion freezes selected question/order. Detailed Activity answer history is not persisted.
 
 ## Assignment
 Assignment -> AssignmentQuestion -> Question.

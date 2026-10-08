@@ -14,7 +14,7 @@
 - OQ-3 Assignment target CLASS or GRADE — decided.
 - OQ-4 Assignment completion = submitted — decided.
 - OQ-5 own-grade visibility — decided.
-- OQ-6 Learning: 3 answers total + optional Question hint; formula sheet deferred — decided.
+- OQ-6 Learning: 2 answers total (first + 1 retry) + optional Question hint; formula sheet deferred — superseded by ADR 0022.
 - OQ-10 phase numbering — decided.
 - OQ-11 Assignment tracking requirements — decided.
 - OQ-12 phone and computer equally — decided.
@@ -23,5 +23,5 @@
 - OQ-15 unfinished Activity run is not resumed — decided.
 - OQ-16 abandoned Activity results ignored — decided.
 - OQ-19 AssignmentQuestion has no position; question_id ASC — decided.
-- OQ-20 multiple Activity strategies require student choice; store on Attempt — decided.
+- OQ-20 multiple Activity strategies require student choice; store on ActivitySession — superseded by ADR 0021.
 - OQ-21 Activity lifecycle transitions — decided.

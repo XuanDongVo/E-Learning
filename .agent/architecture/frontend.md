@@ -8,7 +8,8 @@ Use TypeScript, central types, services and query keys. Do not invent API fields
 - Publish requires READY.
 - Multiple strategies are configured on Activity; student runtime choice is separate.
 - Try Hard says seconds per question.
-- No whole-run timer.
+- Practice has no timer.
+- No whole-Activity timer.
 - No GameTemplate control in current scope.
 
 ## Assignment UI
@@ -23,7 +24,8 @@ Use TypeScript, central types, services and query keys. Do not invent API fields
 - Topic formula/reference sheet is deferred; no current field/UI.
 
 ## Runtime
-Attempt stores concrete Activity mode and selection_strategy.
-AttemptQuestion.position is runtime sequence metadata only.
+ActivitySession stores concrete Activity mode and selection_strategy.
+ActivitySessionQuestion.position is runtime sequence metadata only.
+AssessmentAttempt is a separate Assignment runtime contract.
 
 Follow UI_ARCHITECTURE_GUIDELINES.md for tokens, accessibility and responsive behavior.

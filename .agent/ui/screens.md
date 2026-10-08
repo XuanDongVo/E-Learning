@@ -12,7 +12,8 @@ Activity editor:
 - Unit scope.
 - Draft can save incomplete.
 - Try Hard time label = seconds per question.
-- Selection strategies are configured options.
+- Practice = no timer, immediate feedback, one retry, optional hint.
+- Selection strategies are configured options; concrete selection is stored on ActivitySession.
 - No GameTemplate control.
 - Preview is a real action once endpoint implementation is complete.
 
@@ -27,6 +28,6 @@ Topic Editor: no formula/reference sheet field currently.
 
 ## Student
 /student dashboard is mock; /student/units, /student/assignments, /student/progress are placeholders.
-Phase 7 adds Attempt runner/result/review.
+Phase 7 adds an ActivitySession runner/result/review first; the AssessmentAttempt runner is a separate later scope.
 
 All runtime controls must be touch-friendly and keyboard accessible.

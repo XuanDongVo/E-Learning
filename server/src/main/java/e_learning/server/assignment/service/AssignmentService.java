@@ -55,6 +55,7 @@ public class AssignmentService {
         assignment.setStartAt(request.startAt());
         assignment.setDueAt(request.dueAt());
         assignment.setTimeLimitSeconds(request.timeLimitSeconds());
+        assignment.setShowAnswersAfterSubmit(request.showAnswersAfterSubmit() == null || request.showAnswersAfterSubmit());
         assignment.replaceTargets(resolveTargets(request.targets(), request.gradeLevel(), request.academicYear(), teacherId));
         return AssignmentResponse.from(assignmentRepository.save(assignment), 0);
     }
@@ -88,6 +89,7 @@ public class AssignmentService {
         assignment.setStartAt(request.startAt());
         assignment.setDueAt(request.dueAt());
         assignment.setTimeLimitSeconds(request.timeLimitSeconds());
+        assignment.setShowAnswersAfterSubmit(request.showAnswersAfterSubmit() == null || request.showAnswersAfterSubmit());
 
         // Update targets
         assignment.replaceTargets(resolveTargets(request.targets(), request.gradeLevel(), request.academicYear(), teacherId));

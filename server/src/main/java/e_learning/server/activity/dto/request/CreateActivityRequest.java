@@ -16,6 +16,6 @@ public record CreateActivityRequest(
         @NotNull ActivityMode mode,
         @Min(1) Integer timeLimitSeconds,
         @Min(1) Integer lives,
-        @NotEmpty List<@Valid ActivityBankRequest> banks
+        List<@Valid ActivityBankRequest> banks
 ) {
 }

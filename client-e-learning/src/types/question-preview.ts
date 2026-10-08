@@ -28,5 +28,6 @@ export interface QuestionPreviewData {
   acceptedAnswers: string[];
   media: QuestionPreviewMedia[];
   explanation: string;
+  hint?: string;
   complete: boolean;
 }

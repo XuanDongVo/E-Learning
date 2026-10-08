@@ -9,7 +9,7 @@ import java.util.Optional;
 
 public interface AssignmentQuestionRepository extends JpaRepository<AssignmentQuestion, Long> {
 
-    List<AssignmentQuestion> findAllByAssignmentId(Long assignmentId);
+    List<AssignmentQuestion> findAllByAssignmentIdOrderByQuestionIdAsc(Long assignmentId);
 
     long countByAssignmentId(Long assignmentId);
 

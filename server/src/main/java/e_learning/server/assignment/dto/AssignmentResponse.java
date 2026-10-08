@@ -16,6 +16,7 @@ public record AssignmentResponse(
         LocalDateTime startAt,
         LocalDateTime dueAt,
         Integer timeLimitSeconds,
+        boolean showAnswersAfterSubmit,
         int questionCount,
         List<AssignmentTargetResponse> targets
 ) {
@@ -24,6 +25,7 @@ public record AssignmentResponse(
                 assignment.getId(), assignment.getGradeLevel(), assignment.getAcademicYear(),
                 assignment.getName(), assignment.getDescription(), assignment.getStatus(),
                 assignment.getStartAt(), assignment.getDueAt(), assignment.getTimeLimitSeconds(),
+                assignment.isShowAnswersAfterSubmit(),
                 questionCount, assignment.getTargets().stream().map(AssignmentTargetResponse::from).toList());
     }
 }

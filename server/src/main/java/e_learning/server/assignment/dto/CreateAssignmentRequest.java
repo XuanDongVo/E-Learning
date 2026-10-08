@@ -14,6 +14,7 @@ public record CreateAssignmentRequest(
         LocalDateTime startAt,
         @NotNull LocalDateTime dueAt,
         @Positive Integer timeLimitSeconds,
+        Boolean showAnswersAfterSubmit,
         @NotEmpty List<@Valid AssignmentTargetRequest> targets
 ) {
 }

@@ -24,17 +24,23 @@ This update is documentation-only: no application code or database migration is 
 
 ## Quality gate state
 
-- Client tests: previously recorded as passing for 3 files / 12 tests.
-- Client ESLint: previously failing; re-run after implementation changes before claiming clean.
-- Client TypeScript: previously failing in QuestionPreviewModal.tsx; re-run before claiming clean.
+- Client tests: not re-run; Vitest dependencies are unavailable in the current install.
+- Client ESLint: still failing on pre-existing errors in assignment/grades screens.
+- Client TypeScript/build: still failing on pre-existing student-management, QuestionPreviewModal and missing Vitest type errors; changed hint files have no reported problems.
 - npm ci: previously failed because the lockfile was out of sync.
-- Server ./mvnw test: no successful run recorded yet.
+- Server ./mvnw test: blocked because JAVA_HOME/Java is not configured in this environment.
 - GitHub Actions: not present.
 
-This documentation-only sync does not change those verification facts.
+Batch 1 and Batch 2 implementation work has started after this baseline. Activity Draft authoring, deterministic Activity Preview,
+Activity lifecycle transitions, and AssignmentQuestion question_id ordering are now implemented. Targeted server execution remains
+blocked because this environment has no configured Java/JAVA_HOME.
+Assignment answer visibility authoring/schema migration is also prepared in V26; student review enforcement remains intentionally
+blocked behind the Phase 7 sign-off.
+Question hint authoring is now persisted through V27 and exposed in teacher question contracts/UI. Hint request/retry runtime remains
+blocked behind Phase 7. Teacher dashboard fabricated metrics were replaced with explicit unavailable states.
 
 ## Next implementation gates
 
-1. Re-run client lint/typecheck/test/build and server tests.
+1. Re-run client lint/typecheck/test/build and server tests when the environment has the required dependencies/runtime.
 2. Keep Phase 7 blocked until the Attempts spec receives owner sign-off.
 3. When Phase 7 starts, implement Activity strategy selection persistence, per-question Try Hard deadlines, Assignment deterministic snapshot order, and Assignment answer-visibility behavior.

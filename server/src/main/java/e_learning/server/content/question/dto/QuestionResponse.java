@@ -21,6 +21,7 @@ public class QuestionResponse {
     private Difficulty difficulty;
     private String content;
     private String explanation;
+    private String hint;
     @JsonProperty("complete")
     private boolean complete;
     @JsonProperty("is_complete")

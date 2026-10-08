@@ -102,19 +102,56 @@ public class ActivityService {
 
     public ActivityResponse updateStatus(Long id, UpdateActivityStatusRequest request) {
         Activity activity = findActivity(id);
-        if (request.status() == ActivityStatus.PUBLISHED) {
+        ActivityStatus current = activity.getStatus();
+        ActivityStatus next = request.status();
+
+        boolean allowed = (current == ActivityStatus.DRAFT && (next == ActivityStatus.PUBLISHED || next == ActivityStatus.ARCHIVED))
+                || (current == ActivityStatus.PUBLISHED && next == ActivityStatus.ARCHIVED)
+                || (current == ActivityStatus.ARCHIVED && next == ActivityStatus.DRAFT);
+        if (!allowed) {
+            throw new AppException(ErrorCode.ACTIVITY_INVALID_CONFIGURATION);
+        }
+
+        if (next == ActivityStatus.PUBLISHED) {
             if (!readinessService.validateForPublish(activity).isReady()) {
                 throw new AppException(ErrorCode.ACTIVITY_NOT_READY);
             }
             activity.setPublishedAt(LocalDateTime.now());
         }
-        activity.setStatus(request.status());
+        activity.setStatus(next);
         return mapResponse(activityRepository.save(activity));
     }
 
     @Transactional(readOnly = true)
     public ActivityReadinessResponse readiness(Long id) {
         return readinessService.validateForPublish(findActivity(id));
+    }
+
+    @Transactional(readOnly = true)
+    public ActivityPreviewResponse preview(Long id) {
+        Activity activity = findActivity(id);
+        List<ActivityBank> banks = activityBankRepository.findByActivityIdOrderByDisplayOrderAsc(activity.getId());
+        Map<Long, Integer> allocations = ActivityDistributionCalculator.calculate(activity, banks);
+        List<Long> sampleQuestionIds = new ArrayList<>();
+
+        for (ActivityBank bank : banks) {
+            Integer required = allocations.get(bank.getQuestionBank().getId());
+            if (required == null || required < 1) {
+                continue;
+            }
+            contentQuestionRepository
+                    .findTop100ByQuestionBankIdAndQuestionCompleteTrueOrderByQuestionIdAsc(bank.getQuestionBank().getId())
+                    .stream()
+                    .limit(required)
+                    .map(contentQuestion -> contentQuestion.getQuestionId())
+                    .forEach(sampleQuestionIds::add);
+        }
+
+        return ActivityPreviewResponse.builder()
+                .readiness(readinessService.validateForPublish(activity))
+                .sampleQuestionIds(sampleQuestionIds)
+                .totalSampleQuestions(sampleQuestionIds.size())
+                .build();
     }
 
     @Transactional(readOnly = true)

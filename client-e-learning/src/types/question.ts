@@ -26,6 +26,7 @@ export interface DraftQuestion {
   acceptedAnswers: string[];
   media: QuestionMediaDraft[];
   explanation: string;
+  hint?: string;
 }
 
 export type QuestionType =

@@ -19,10 +19,10 @@ export function TeacherDashboardView() {
         </button>
       </section>
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <TeacherStatCard icon={Users} value="4" label="Lớp đang phụ trách" tone="primary" detail="128 học sinh" />
-        <TeacherStatCard icon={BookOpen} value="6" label="Unit đang giảng dạy" tone="secondary" detail="3 khối lớp" />
-        <TeacherStatCard icon={ClipboardList} value="8" label="Bài tập đang mở" tone="accent" detail="2 sắp đến hạn" />
-        <TeacherStatCard icon={Activity} value="82%" label="Tỉ lệ hoàn thành" tone="success" detail="+6% tuần này" />
+        <TeacherStatCard icon={Users} value="—" label="Lớp đang phụ trách" tone="primary" detail="Data unavailable" />
+        <TeacherStatCard icon={BookOpen} value="—" label="Unit đang giảng dạy" tone="secondary" detail="Data unavailable" />
+        <TeacherStatCard icon={ClipboardList} value="—" label="Bài tập đang mở" tone="accent" detail="Data unavailable" />
+        <TeacherStatCard icon={Activity} value="—" label="Tỉ lệ hoàn thành" tone="success" detail="Attempt analytics unavailable" />
       </section>
       <section className="grid gap-4 xl:grid-cols-[1.35fr_0.9fr]">
         <ClassPerformanceCard />
@@ -44,26 +44,24 @@ export function TeacherDashboardView() {
         </div>
         <div className="mt-5 grid gap-3 md:grid-cols-3">
           <div className="rounded-[var(--radius-md)] bg-primary-light p-4">
-            <p className="text-body-sm font-bold text-primary">Unit 2 Review</p>
-            <p className="mt-2 text-ui-xl font-extrabold">29 / 30</p>
+            <p className="text-body-sm font-bold text-primary">            Assignment results unavailable</p>
+            <p className="mt-2 text-ui-xl font-extrabold">—</p>
             <p className="mt-1 text-body-sm text-neutral-muted">
               students completed
             </p>
           </div>
           <div className="rounded-[var(--radius-md)] bg-secondary-light p-4">
             <p className="text-body-sm font-bold text-secondary-hover">
-              Grammar Practice
+              Assignment results unavailable
             </p>
-            <p className="mt-2 text-ui-xl font-extrabold">18 / 26</p>
-            <p className="mt-1 text-body-sm text-neutral-muted">
-              students completed
-            </p>
+            <p className="mt-2 text-ui-xl font-extrabold">—</p>
+            <p className="mt-1 text-body-sm text-neutral-muted">Attempt analytics unavailable</p>
           </div>
           <div className="rounded-[var(--radius-md)] bg-accent-light p-4">
             <p className="text-body-sm font-bold text-accent">Reading Review</p>
-            <p className="mt-2 text-ui-xl font-extrabold">12 / 24</p>
+            <p className="mt-2 text-ui-xl font-extrabold">—</p>
             <p className="mt-1 text-body-sm text-neutral-muted">
-              students completed
+              Attempt analytics unavailable
             </p>
           </div>
         </div>

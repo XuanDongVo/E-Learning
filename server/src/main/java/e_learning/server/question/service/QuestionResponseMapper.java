@@ -26,6 +26,7 @@ public class QuestionResponseMapper {
                 .difficulty(question.getDifficulty())
                 .content(question.getContent())
                 .explanation(question.getExplanation())
+                .hint(question.getHint())
                 .complete(question.isComplete())
                 .matchingMode(question.getMatchingMode())
                 .options(questionOptionRepository.findByQuestionId(question.getId()).stream()

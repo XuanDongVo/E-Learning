@@ -21,6 +21,7 @@ function toDraft(item?: AssignmentQuestion): DraftQuestion {
     difficulty: q.difficulty,
     text: q.content,
     explanation: q.explanation ?? "",
+    hint: q.hint ?? "",
     options: q.options.length >= 2 ? q.options.map((option) => ({ id: String(option.id), text: option.content })) : makeDraftQuestion().options,
     correctOptionIds: q.options.filter((option) => option.isCorrect).map((option) => String(option.id)),
     trueFalseAnswer: q.answers.find((answer) => answer.rawValue === "FALSE") ? "FALSE" : "TRUE",
@@ -35,6 +36,7 @@ function toPayload(question: DraftQuestion): CreateAssignmentQuestionRequest {
     difficulty: question.difficulty,
     content: question.text.trim(),
     explanation: question.explanation.trim() || undefined,
+    hint: question.hint?.trim() || undefined,
     mediaIds: question.media
       .map((media) => Number(media.id))
       .filter((id) => Number.isFinite(id)),

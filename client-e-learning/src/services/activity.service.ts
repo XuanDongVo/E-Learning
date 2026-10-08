@@ -20,4 +20,9 @@ export const activityService = {
     }),
   readiness: (id: number) =>
     request<ActivityReadiness>(`/v1/activities/${id}/readiness`),
+  preview: (id: number) =>
+    request<{ readiness: ActivityReadiness; sampleQuestionIds: number[]; totalSampleQuestions: number }>(
+      `/v1/activities/${id}/preview`,
+      { method: "POST" },
+    ),
 };

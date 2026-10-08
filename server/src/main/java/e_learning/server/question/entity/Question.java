@@ -34,6 +34,9 @@ public class Question {
     @Column(columnDefinition = "TEXT")
     private String explanation;
 
+    @Column(columnDefinition = "TEXT")
+    private String hint;
+
     @Column(name = "is_complete", nullable = false)
     private boolean complete;
 

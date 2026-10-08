@@ -1,4 +1,4 @@
-# Question Model and Attempt Snapshot Contract
+# Question Model and Runtime Snapshot Contract
 
 ## Question types
 SINGLE_CHOICE, MULTIPLE_CHOICE, TRUE_FALSE, FILL_IN_BLANK, TYPE_ANSWER.
@@ -22,5 +22,5 @@ No position, topic_id or reorder.
 Reads and snapshots use question_id ASC.
 
 ## Snapshot
-Activity/Assignment start creates an immutable question/content snapshot in one transaction.
-AttemptQuestion.position is runtime sequence metadata only.
+ActivitySession start creates an immutable selected-question snapshot/order in one transaction.
+AssessmentAttempt will create the formal Assignment question/content snapshot separately.

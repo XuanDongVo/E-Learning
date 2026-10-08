@@ -640,7 +640,7 @@ Preview / Publish
 - Distribution, strategy and mode use selectable rows/cards with **one selected state**, not multiple semantic colors.
 - Validation messages use a left border + text/icon rather than large colored rectangles when possible.
 - The summary may be a compact inline "At a glance" area or a quiet supporting rail. It must not compete with editing.
-- The whole Activity run uses one time limit; it is not per question.
+- Activity Try Hard uses a per-question time limit; Practice has no timer.
 
 Topic shows a readable path such as `Grade 10 / Unit 3 / Section 2 / Past Simple`.
 Sources remain limited to the current Unit. Draft/archived banks are disabled with a reason.

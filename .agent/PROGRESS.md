@@ -6,14 +6,14 @@ Branch: phase-6-student-management
 ## Current stage
 
 Phase 6 Student Management is done.
-Phase 7 Attempts/Answers remains DRAFT and is waiting for owner sign-off.
+Phase 7 is split: Scope A ActivitySession first; Scope B AssessmentAttempt later. Scope A is the current implementation gate.
 This update is documentation-only: no application code or database migration is changed.
 
 ## Knowledge-base sync completed in this update
 
 - Activity is consistently Unit-scoped.
 - GameTemplate is removed from the current Activity domain contract and deferred as presentation work.
-- Activity strategy selection is explicit: student chooses when more than one strategy is available; Attempt stores the concrete strategy.
+- Activity strategy selection is explicit: student chooses when more than one strategy is available; ActivitySession stores the concrete strategy.
 - Try Hard timer is per question.
 - AssignmentQuestion has no position and no reorder contract; list order is deterministic by question_id ascending.
 - Assignment answer visibility is controlled by show_answers_after_submit; answers_released_at / Release Answers is historical only.

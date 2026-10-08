@@ -54,13 +54,16 @@ export function ContentOverview({
     queryKey: ["grades"],
     queryFn: async () => (await gradeService.list()).data ?? [],
   });
+
   const selectedGradeId = gradeId ?? grades.data?.[0]?.id;
+
   const units = useQuery({
     queryKey: QUERY_KEYS.contentUnits(selectedGradeId ?? 0),
     queryFn: async () =>
       (await contentService.listUnits(selectedGradeId!)).data ?? [],
     enabled: Boolean(selectedGradeId),
   });
+
   const visibleUnits = useMemo(() => {
     const search = query.trim().toLowerCase();
     return (units.data ?? []).filter(
@@ -68,6 +71,7 @@ export function ContentOverview({
         !search || `${unit.code} ${unit.name}`.toLowerCase().includes(search),
     );
   }, [query, units.data]);
+
   const activeUnit =
     (units.data ?? []).find((unit) => unit.id === selectedUnitId) ??
     visibleUnits[0];
@@ -77,6 +81,7 @@ export function ContentOverview({
       (await contentService.listSections(activeUnit!.id)).data ?? [],
     enabled: Boolean(activeUnit),
   });
+
   const topics = useQueries({
     queries: (sections.data ?? []).map((section) => ({
       queryKey: QUERY_KEYS.contentTopics(section.id),
@@ -85,6 +90,7 @@ export function ContentOverview({
       enabled: expandedSections.includes(section.id),
     })),
   });
+  
   const createUnit = useMutation({
     mutationFn: contentService.createUnit,
     onSuccess: (response) => {

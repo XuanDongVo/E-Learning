@@ -12,7 +12,7 @@ public interface QuestionBankRepository extends JpaRepository<QuestionBank, Long
     List<QuestionBank> findByTopicIdAndStatusOrderByDisplayOrderAsc(Long topicId, ContentStatus status);
     boolean existsByTopicIdAndNameIgnoreCase(Long topicId, String name);
     boolean existsByTopicIdAndNameIgnoreCaseAndIdNot(Long topicId, String name, Long id);
-
+    long countByTopicId(Long topicId);
     @Query("""
         select qb from QuestionBank qb
         join fetch qb.topic t

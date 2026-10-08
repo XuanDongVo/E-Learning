@@ -17,7 +17,7 @@ public interface TopicRepository extends JpaRepository<Topic, Long> {
 
     long countBySectionUnitId(Long unitId);
 
-    long countBySectionId(Long sectionId);
+    int countBySectionId(Long sectionId);
 
     List<Topic> findAllBySectionIdAndStatusNotOrderByDisplayOrderAsc(Long sectionId, ContentStatus status);
 

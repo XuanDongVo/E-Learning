@@ -273,6 +273,6 @@ public class ActivitySessionService {
                 .map(o -> new ActivitySessionQuestionResponse.Option(o.getOptionKey(), o.getContent())).toList();
         return new ActivitySessionQuestionResponse(item.getId(), item.getPosition(), item.getQuestion().getType(),
                 item.getQuestion().getContent(), options, item.getDeadlineAt(), item.isResolved(),
-                item.getAnswerAttempts(), item.getFirstCorrect(), item.getFinalCorrect(), item.isHintUsed());
+                item.getAnswerAttempts(), item.getFirstCorrect(), item.getFinalCorrect(), item.isHintUsed(),\n                item.getQuestion().getHint() != null && !item.getQuestion().getHint().isBlank());
     }
 }

@@ -6,15 +6,15 @@
 - Activity may be DRAFT, PUBLISHED or ARCHIVED.
 - Draft may be incomplete; PUBLISHED requires READY.
 - Mode is LEARNING, TRY_HARD or BOTH. If BOTH, the student chooses the concrete mode at start.
-- If multiple selection strategies are configured, the student chooses one at start; Attempt stores the concrete selection_strategy.
-- Try Hard time_limit_seconds is per question. Learning has no timer.
+- If multiple selection strategies are configured, the student chooses one at start; ActivitySession stores the concrete selection_strategy.
+- Try Hard time_limit_seconds is per question. Practice (backend LEARNING) has no timer.
 - Try Hard wrong answers cost lives; question timeout costs no life.
 - No whole-Activity countdown.
-- Unfinished Activity runs are not resumed; abandoned runs are ignored for finalized analytics/XP.
+- Unfinished ActivitySession runs are not resumed; abandoned sessions are ignored for finalized analytics/XP.
 
 ## Learning Mode
 - One optional teacher-authored hint per Question.
-- Maximum 3 answers per question.
+- Maximum 2 answers per question: first answer + 1 retry.
 - Hint usage is recorded and may affect future XP.
 - No hint in Try Hard.
 - Topic formula/reference sheet is deferred.
@@ -32,6 +32,6 @@
 - Official score is separate from XP.
 
 ## Snapshot
-- Attempt snapshots the exact question set/content.
+- ActivitySession freezes the selected Activity question set/order. AssessmentAttempt will snapshot formal Assignment questions and answers separately.
 - AttemptQuestion.position is runtime snapshot order, not AssignmentQuestion authoring order.
 - Server is authoritative for correctness and scoring.

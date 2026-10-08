@@ -23,10 +23,9 @@ No AssignmentQuestion position/reorder. Excel import remains deferred.
 ## Phase 6 — Student Management
 DONE. See E-LEARNING_PHASE_6_STUDENT_MANAGEMENT.md.
 
-## Phase 7 — Attempts and Answers
+## Phase 7 — Activity Sessions & Assessment Attempts
 Canonical spec: E-LEARNING_PHASE_7_ATTEMPTS_SPEC.md.
-DRAFT awaiting owner sign-off.
-Include concrete Activity mode/selection_strategy, immutable snapshots, Learning hint/retry, Try Hard per-question deadlines, Assignment one-attempt/whole-attempt timeout and post-submit answer visibility.
+**Scope A first:** ActivitySession for Practice/Try Hard. **Scope B later:** AssessmentAttempt for formal Assignment/Assessment. No shared polymorphic Attempt runtime.
 
 ## Phase 8
 Analytics.

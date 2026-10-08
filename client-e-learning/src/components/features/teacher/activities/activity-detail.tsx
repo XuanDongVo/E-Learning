@@ -11,7 +11,7 @@ import type {
 } from "@/types/activity";
 
 const modeLabels: Record<ActivityMode, string> = {
-  LEARNING: "Learning",
+  LEARNING: "Practice",
   TRY_HARD: "Try Hard",
   BOTH: "Both",
 };
@@ -310,7 +310,7 @@ export function ActivityDetail({ activityId }: { activityId: number }) {
                   a.mode === "LEARNING"
                     ? "Unlimited"
                     : a.timeLimitSeconds
-                      ? `${formatSeconds(a.timeLimitSeconds)} for the whole run`
+                      ? `${formatSeconds(a.timeLimitSeconds)} per question`
                       : "Not set"
                 }
               />

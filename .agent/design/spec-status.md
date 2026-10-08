@@ -9,13 +9,13 @@ This update changes documentation only; code/test status is not claimed as fixed
 | D-02 | No current GameTemplate dependency | Activity code has no GameTemplate | Fixed |
 | D-03 | Draft may be incomplete | Draft create/update accepts zero sources; readiness remains the publish gate | Fixed |
 | D-04 | Activity preview | `POST /v1/activities/{id}/preview` returns readiness and deterministic ready-question samples without creating an Attempt | Fixed |
-| D-05 | Try Hard per-question timer | Phase 7A runtime contract | Phase 7A
-| D-06 | Multi-strategy student choice + ActivitySession storage | Phase 7A | Phase 7A
+| D-05 | Try Hard per-question timer | ActivitySession stores and enforces per-question deadlines with network grace | Implemented in Scope A
+| D-06 | Multi-strategy student choice + ActivitySession storage | ActivitySession start validates and stores concrete mode/strategy | Implemented in Scope A
 | D-07 | AssignmentQuestion no position; deterministic order | Entity has no position; reads use `ORDER BY question_id ASC` | Fixed |
 | D-08 | show_answers_after_submit | V26 migrates schema/entity and assignment authoring contract; student review enforcement remains Phase 7 work | Open (partial) |
 | D-09 | Activity lifecycle | Service enforces the accepted transition matrix | Fixed |
 | D-10 | Formula/reference sheet deferred | No current requirement | Fixed |
-| D-11 | Optional Question hint | Persisted; ActivitySession hint runtime is Phase 7A | Phase 7A
+| D-11 | Optional Question hint | Persisted and ActivitySession Practice hint endpoint records usage | Implemented in Scope A
 | D-12 | Fake metrics | Dashboard no longer presents fabricated counts; real analytics remains future work | Fixed |
 
 ## Required tests

@@ -24,7 +24,7 @@ public class QuestionWriteRequest {
     @Size(max = 2000, message = "Explanation must not exceed 2000 characters")
     private String explanation;
 
-    @Size(max = 1000, message = "Hint must not exceed 1000 characters")
+    @Size(max = 500, message = "Hint must not exceed 500 characters")
     private String hint;
 
     private List<QuestionOptionRequest> options;

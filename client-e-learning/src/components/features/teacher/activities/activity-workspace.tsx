@@ -13,7 +13,7 @@ import type { ActivityMode, ActivityStatus } from "@/types/activity";
 import { ContentToolbar } from "@/components/features/teacher/content/components/content-toolbar";
 
 const modes: Record<ActivityMode, string> = {
-  LEARNING: "Learning",
+  LEARNING: "Practice",
   TRY_HARD: "Try Hard",
   BOTH: "Both",
 };

@@ -46,10 +46,16 @@ Assignment/Attempt codes must be verified against ErrorCode.java before implemen
 
 ## Activity Session Runtime
 POST /v1/activities/{activityId}/sessions
+GET /v1/activities/{activityId}/session-options
 GET /v1/activity-sessions/{sessionId}
 POST /v1/activity-sessions/{sessionId}/questions/{sessionQuestionId}/answer
 POST /v1/activity-sessions/{sessionId}/questions/{sessionQuestionId}/hint
 POST /v1/activity-sessions/{sessionId}/finish
 GET /v1/activity-sessions/{sessionId}/result
+
+ActivitySession start accepts optional `mode` and `selectionStrategy`; both are required only when the
+Activity exposes more than one choice. The start response includes the complete selected question set without
+correct answers, accepted answers or explanations. Activity answers are evaluated server-side and are not persisted
+as answer history.
 
 The Activity start response returns the complete selected question set. Correct answers are never included before the runtime flow permits them.

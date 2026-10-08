@@ -20,6 +20,8 @@ public interface ClassMemberRepository extends JpaRepository<ClassMember, Long> 
     @Query("select member from ClassMember member join fetch member.classEntity classEntity join fetch classEntity.grade where member.user.id = :userId and member.status = 'ACTIVE' order by classEntity.academicYear desc, classEntity.id desc")
     List<ClassMember> findActiveMembershipsByUserId(Long userId);
 
+    boolean existsByUserIdAndClassEntityGradeIdAndStatus(Long userId, Long gradeId, String status);
+
     @Query("select member from ClassMember member join fetch member.classEntity classEntity join fetch classEntity.grade where member.user.id = :studentId and classEntity.teacher.id = :teacherId order by member.status desc, classEntity.academicYear desc, classEntity.id desc")
     List<ClassMember> findAllByStudentAndTeacher(Long studentId, Long teacherId);
 

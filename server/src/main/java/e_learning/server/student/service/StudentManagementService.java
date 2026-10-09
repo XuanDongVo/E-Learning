@@ -116,6 +116,7 @@ public class StudentManagementService {
     @Transactional
     public void removeFromClass(Long classId, Long studentId, Long teacherId) {
         ownedClass(classId, teacherId);
+        lockedStudent(studentId);
         ClassMember member = classMemberRepository
                 .findByClassEntityIdAndUserId(classId, studentId)
                 .orElseThrow(() -> new AppException(ErrorCode.CLASS_MEMBER_NOT_FOUND));

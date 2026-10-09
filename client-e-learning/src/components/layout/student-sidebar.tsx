@@ -16,10 +16,10 @@ import { mockCurrentUser } from "@/mock/db";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/components/auth/auth-provider";
 
-const NAV_ITEMS = [
+export const NAV_ITEMS = [
   { label: "Home", href: "/student", icon: Home },
   { label: "Units", href: "/student/units", icon: BookOpen },
-  { label: "Activities", href: "/student/activities", icon: Activity },
+  // { label: "Activities", href: "/student/activities", icon: Activity },
   { label: "Assignments", href: "/student/assignments", icon: ClipboardList },
   { label: "Progress", href: "/student/progress", icon: BarChart2 },
 ];
@@ -57,7 +57,7 @@ export function StudentSidebar() {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "flex min-h-11 items-center gap-3 rounded-lg px-4 py-3 text-body font-semibold transition-colors",
+                  "flex min-h-11 items-center gap-3 rounded-lg px-4 py-3 text-sm font-semibold transition-colors",
                   active
                     ? "bg-primary-light text-primary"
                     : "text-neutral-muted hover:bg-background-app hover:text-neutral-dark",
@@ -84,10 +84,10 @@ export function StudentSidebar() {
             <AvatarFallback>{mockCurrentUser.name.slice(0, 2)}</AvatarFallback>
           </Avatar>
           <div className="min-w-0 flex-1">
-            <span className="block truncate text-body font-bold text-neutral-dark">
+            <span className="block truncate text-sm font-bold text-neutral-dark">
               {mockCurrentUser.name}
             </span>
-            <span className="block truncate text-body-sm text-neutral-muted">
+            <span className="block truncate text-sm-sm text-neutral-muted">
               {mockCurrentUser.className}
             </span>
           </div>

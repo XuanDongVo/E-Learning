@@ -10,14 +10,15 @@ import {
   Home,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import {NAV_ITEMS} from "@/components/layout/student-sidebar";
 
-const NAV_ITEMS = [
-  { label: "Home", href: "/student", icon: Home },
-  { label: "Units", href: "/student/units", icon: BookOpen },
-  { label: "Activities", href: "/student/activities", icon: Activity },
-  { label: "Assignments", href: "/student/assignments", icon: ClipboardList },
-  { label: "Progress", href: "/student/progress", icon: BarChart2 },
-];
+// const NAV_ITEMS = [
+//   { label: "Home", href: "/student", icon: Home },
+//   { label: "Units", href: "/student/units", icon: BookOpen },
+//   { label: "Activities", href: "/student/activities", icon: Activity },
+//   { label: "Assignments", href: "/student/assignments", icon: ClipboardList },
+//   { label: "Progress", href: "/student/progress", icon: BarChart2 },
+// ];
 
 export function StudentBottomNav() {
   const pathname = usePathname();

@@ -215,7 +215,7 @@ export function UnitDetail({
                     ? "Both modes"
                     : activity.mode === "TRY_HARD"
                       ? "Try Hard"
-                      : "Learning"}
+                      : "Practice"}
                 </span>
               </span>
               <span className="text-xs font-bold text-slate-400">

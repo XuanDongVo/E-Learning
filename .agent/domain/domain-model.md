@@ -1,7 +1,7 @@
 # Domain Model
 
 ## Core
-User, Class, ClassMember, Grade, Unit, ClassUnit, Section, Topic, QuestionBank, Question, Activity, ActivityBank, Assignment, AssignmentTarget, AssignmentQuestion, Attempt, AttemptQuestion, Answer, XPTransaction.
+User, Class, ClassMember, Grade, Unit, ClassUnit, Section, Topic, QuestionBank, Question, Activity, ActivityBank, ActivitySession, ActivitySessionQuestion, Assignment, AssignmentTarget, AssignmentQuestion, AssessmentAttempt, AssessmentAttemptQuestion, Answer, XPTransaction.
 
 GameTemplate is deferred and is not a current core entity.
 
@@ -10,9 +10,11 @@ Grade -> Unit -> Section -> Topic -> QuestionBank -> Question.
 
 ## Activity
 Activity -> ActivityBank -> QuestionBank -> Question.
-Activity is Unit-scoped and stores source/distribution/available strategies/mode/lives/per-question timer/lifecycle.
-It does not store student question selections, answers, runtime timer state or Assignment links.
-Attempt stores concrete mode and selection_strategy.
+Activity is configuration only; it does not store student runtime state.
+
+## ActivitySession
+Activity -> ActivitySession -> ActivitySessionQuestion.
+ActivitySession is one repeatable runtime session. It stores concrete mode/strategy and aggregate result. ActivitySessionQuestion freezes selected question/order. Detailed Activity answer history is not persisted.
 
 ## Assignment
 Assignment -> AssignmentQuestion -> Question.
@@ -21,7 +23,6 @@ AssignmentQuestion has only assignment_id and question_id.
 Order is question_id ascending.
 Assignment stores show_answers_after_submit and optional whole-attempt time_limit_seconds.
 
-## Attempt
-Attempt -> AttemptQuestion -> Answer.
-Attempt belongs to exactly one Activity run or Assignment attempt.
-AttemptQuestion.position is runtime snapshot order.
+## AssessmentAttempt
+Assignment -> AssessmentAttempt -> AssessmentAttemptQuestion -> Answer.
+AssessmentAttempt is the formal Assignment runtime and is implemented separately from ActivitySession.

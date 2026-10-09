@@ -49,18 +49,18 @@ const strategies: {
 const modes: { value: ActivityMode; label: string; description: string }[] = [
   {
     value: "LEARNING",
-    label: "Learning",
-    description: "Untimed practice with no lives.",
+    label: "Practice",
+    description: "No timer, immediate feedback, 1 retry and optional hint.",
   },
   {
     value: "TRY_HARD",
     label: "Try Hard",
-    description: "Timed challenge with limited lives.",
+    description: "Seconds per question, lives, no retry and no hint.",
   },
   {
     value: "BOTH",
     label: "Both",
-    description: "Student chooses Learning or Try Hard at start.",
+    description: "Student chooses Practice or Try Hard at start.",
   },
 ];
 
@@ -709,7 +709,7 @@ export function ActivityEditor({ activityId }: { activityId?: number }) {
           {/* Student mode */}
           <EditorSection
             title="Student mode"
-            description="The time limit applies to the whole Activity run, not to each question."
+            description="Practice has no timer. Try Hard uses a separate timer for each question."
           >
             <div className="grid gap-2 md:grid-cols-3">
               {modes.map((o) => (
@@ -725,8 +725,8 @@ export function ActivityEditor({ activityId }: { activityId?: number }) {
             {mode !== "LEARNING" && (
               <div className="grid gap-4 rounded-lg bg-background-app p-4 md:grid-cols-2">
                 <Field
-                  label="Time limit (seconds)"
-                  hint="One timer for the entire Activity run."
+                  label="Time limit (seconds per question)"
+                  hint="Used for each Try Hard question, not the whole Activity."
                 >
                   <input
                     type="number"

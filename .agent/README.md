@@ -35,14 +35,14 @@ When an ADR changes a previous rule, create a later ADR and remove the old execu
 - Activity belongs to Unit, not Topic.
 - Activity and Assignment are independent.
 - Activity can offer Learning, Try Hard or both; when both are available, the student chooses the concrete mode at start.
-- Activity can expose multiple question-selection strategies. When multiple are configured, the student chooses one at start; the selected strategy is stored on Attempt.
-- Try Hard time_limit_seconds is per question, not per Activity run.
+- Activity can expose multiple question-selection strategies. When multiple are configured, the student chooses one at start; the selected strategy is stored on ActivitySession.
+- Try Hard time_limit_seconds is per question, not per Activity run. Practice has no timer.
 - Assignment owns AssignmentQuestion records. AssignmentQuestion has no position field and there is no reorder API or UI. The server returns questions deterministically by question_id ascending.
 - Assignment has one attempt. Assignment time_limit_seconds applies to the whole attempt.
 - Assignment answer visibility after submit is controlled by show_answers_after_submit, default true. There is no Release Answers workflow.
 - Activity lifecycle: DRAFT -> PUBLISHED only when READY; DRAFT -> ARCHIVED; PUBLISHED -> ARCHIVED; ARCHIVED -> DRAFT. ARCHIVED cannot go directly to PUBLISHED.
 - GameTemplate is deferred. It is a presentation concern and is not a current Activity dependency, entity or API.
-- Learning Mode currently includes one optional teacher-authored Question hint. The shared Topic formula/reference sheet is intentionally deferred; do not add it to the current implementation contract.
+- Learning Mode is shown as Practice in student UI: no timer, one retry and optional teacher-authored Question hint. The shared Topic formula/reference sheet is intentionally deferred; do not add it to the current implementation contract.
 
 ## How agents work
 

@@ -3,56 +3,50 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  Home,
-  BookOpen,
-  PlayCircle,
-  ClipboardList,
+  Activity,
   BarChart2,
+  BookOpen,
+  ClipboardList,
+  Home,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
-  { label: "Home", href: "/", icon: Home },
-  { label: "Units", href: "/units", icon: BookOpen },
-  { label: "Assign", href: "/assignments", icon: ClipboardList },
-  { label: "Progress", href: "/progress", icon: BarChart2 },
+  { label: "Home", href: "/student", icon: Home },
+  { label: "Units", href: "/student/units", icon: BookOpen },
+  { label: "Activities", href: "/student/activities", icon: Activity },
+  { label: "Assignments", href: "/student/assignments", icon: ClipboardList },
+  { label: "Progress", href: "/student/progress", icon: BarChart2 },
 ];
 
 export function StudentBottomNav() {
   const pathname = usePathname();
 
-  const isItemActive = (href: string) => {
-    if (href === "/") {
-      return pathname === "/" || pathname === "/dashboard";
-    }
-    return pathname.startsWith(href);
-  };
+  const isItemActive = (href: string) =>
+    href === "/student"
+      ? pathname === "/student"
+      : pathname.startsWith(href);
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 flex h-16 items-center justify-around border-t border-[#E2E8F0] bg-white/95 px-2 backdrop-blur-md lg:hidden">
+    <nav
+      className="fixed inset-x-0 bottom-0 z-40 flex h-16 items-center justify-around border-t border-border-color bg-card-bg px-2 lg:hidden"
+      aria-label="Student navigation"
+    >
       {NAV_ITEMS.map((item) => {
         const active = isItemActive(item.href);
         const Icon = item.icon;
+
         return (
           <Link
             key={item.href}
             href={item.href}
             className={cn(
-              "flex flex-col items-center justify-center gap-1 px-3 py-1 text-body-sm font-semibold transition-all",
-              active
-                ? "text-[#4F46E5]"
-                : "text-[#94A3B8] hover:text-[#64748B]"
+              "flex min-w-0 flex-1 flex-col items-center justify-center gap-1 px-2 py-1 text-label font-semibold transition-colors",
+              active ? "text-primary" : "text-neutral-muted",
             )}
           >
-            <div
-              className={cn(
-                "flex h-8 w-12 items-center justify-center rounded-full transition-all",
-                active ? "bg-[#EEF2FF] text-[#4F46E5]" : ""
-              )}
-            >
-              <Icon className="h-5 w-5" />
-            </div>
-            <span>{item.label}</span>
+            <Icon className="h-5 w-5" />
+            <span className="truncate">{item.label}</span>
           </Link>
         );
       })}

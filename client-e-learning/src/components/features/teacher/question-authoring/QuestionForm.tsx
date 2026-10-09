@@ -441,6 +441,7 @@ export function QuestionForm({
           onChange={(event) => onChange({ hint: event.target.value })}
           placeholder="Give a small clue without revealing the answer..."
           rows={2}
+          maxLength={500}
           className={`${inputClassName} resize-y`}
         />
       </label>

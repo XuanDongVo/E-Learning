@@ -13,4 +13,6 @@ public interface ContentQuestionRepository
     long countByQuestionBankIdAndQuestionCompleteTrue(Long questionBankId);
 
     List<ContentQuestion> findTop100ByQuestionBankIdAndQuestionCompleteTrueOrderByQuestionIdAsc(Long questionBankId);
+
+    List<ContentQuestion> findAllByQuestionBankIdAndQuestionCompleteTrueOrderByQuestionIdAsc(Long questionBankId);
 }

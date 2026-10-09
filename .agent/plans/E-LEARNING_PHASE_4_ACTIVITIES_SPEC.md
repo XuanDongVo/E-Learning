@@ -31,18 +31,18 @@ Publish validation errors must be stable.
 ## Strategy
 One configured strategy may be auto-selected.
 Multiple configured strategies require student choice at run start.
-Attempt stores concrete selection_strategy.
+ActivitySession stores concrete selection_strategy.
 WEAKNESS_PRIORITY may fall back to RANDOM before Phase 8, but the stored choice remains explicit.
 
 ## Modes
-Learning: no timer, max 3 answers/question, optional Question hint.
+Practice (backend `LEARNING`): no timer, immediate feedback, max 2 answers/question (first + 1 retry), optional Question hint.
 Try Hard: per-question timer, deadline_at per served question, wrong answer costs a life, timeout costs no life, no hint.
 BOTH: student chooses Learning or Try Hard at start.
 No whole-run Activity timer.
 
 ## Preview
 POST /v1/activities/{id}/preview.
-Preview evaluates current configuration/readiness and returns a deterministic sample without creating an Attempt.
+Preview evaluates current configuration/readiness and returns a deterministic sample without creating an ActivitySession.
 
 ## Lifecycle
 DRAFT -> PUBLISHED only when READY.

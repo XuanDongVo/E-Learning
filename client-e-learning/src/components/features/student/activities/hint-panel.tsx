@@ -44,3 +44,45 @@ export function HintPanel({ open, text, onClose }: Props) {
     </div>
   );
 }
+
+/* Trạng thái lấy gợi ý: đang tải / phản hồi chậm / lỗi (có nút thử lại).
+   Nằm ngay dưới tiêu đề câu hỏi và không đụng tới đáp án học sinh đang nhập. */
+export function HintStatus({
+  pending,
+  slow,
+  error,
+  onRetry,
+}: {
+  pending: boolean;
+  slow: boolean;
+  error?: string;
+  onRetry: () => void;
+}) {
+  if (!pending && !error) return null;
+  return (
+    <div
+      role={error && !pending ? "alert" : "status"}
+      aria-live="polite"
+      className="mb-4 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-2xl border-2 border-practice-border bg-practice-light px-3.5 py-2.5 text-sm font-semibold text-practice-ink"
+    >
+      {pending ? (
+        <span>
+          {slow
+            ? "Máy chủ phản hồi chậm, bạn vui lòng chờ thêm chút… Đáp án của bạn vẫn được giữ nguyên."
+            : "Đang lấy gợi ý…"}
+        </span>
+      ) : (
+        <>
+          <span className="text-practice-bad">{error}</span>
+          <button
+            type="button"
+            onClick={onRetry}
+            className="font-extrabold text-practice-blue underline underline-offset-2 hover:text-practice-blue-dark"
+          >
+            Thử lại
+          </button>
+        </>
+      )}
+    </div>
+  );
+}

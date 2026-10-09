@@ -1,6 +1,6 @@
-import { ActivitySessionRunner } from "@/components/features/student/activities/activity-session-runner";
+import { PracticeRunner } from "@/components/features/student/activities/practice-runner";
 
 export default async function StudentActivityPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  return <ActivitySessionRunner activityId={Number(id)} />;
+  return <PracticeRunner activityId={Number(id)} />;
 }

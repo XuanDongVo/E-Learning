@@ -23,6 +23,12 @@ public class ClassMemberController {
     @PostMapping
     public ApiResponse<Void> add(@PathVariable Long classId,@Valid @RequestBody AddClassMemberRequest request,@AuthenticationPrincipal Jwt jwt){service.addToClass(classId,request.studentId(),Long.valueOf(jwt.getSubject()));return ApiResponse.success(null);}
 
+    @PostMapping("/{studentId}/transfer")
+    public ApiResponse<Void> transfer(@PathVariable Long classId, @PathVariable Long studentId, @AuthenticationPrincipal Jwt jwt) {
+        service.transferToClass(classId, studentId, Long.valueOf(jwt.getSubject()));
+        return ApiResponse.success(null);
+    }
+
     @DeleteMapping("/{studentId}")
     public ApiResponse<Void> remove(@PathVariable Long classId,@PathVariable Long studentId,@AuthenticationPrincipal Jwt jwt){service.removeFromClass(classId,studentId,Long.valueOf(jwt.getSubject()));return ApiResponse.success(null);}
 }

@@ -1,6 +1,6 @@
 # Intent 0001 — Core platform
 
-Version: 1.1 — **ACCEPTED by the owner on 2026-10-07** (non-blocking questions remain in [`open-questions.md`](./open-questions.md))
+Version: 1.2 — **Updated on 2026-10-09** (non-blocking questions remain in [`open-questions.md`](./open-questions.md))
 Date: 2026-10-07
 Owner: project owner (product owner)
 Sources: the repo docs (ADR 0001–0003, phase specs), and the owner's 20 product answers of 2026-10 (see §6).
@@ -26,7 +26,7 @@ Students get a clear, motivating place to practise at any time and to do the wor
 | Role | Description | Main jobs |
 |---|---|---|
 | Teacher | Owns classes, content, activities, assignments. Role `TEACHER`. | Author content, configure activities, assign work, read results, manage students and classes |
-| Student | Grades 6–8, belongs to one or more classes. Role `STUDENT`. | Practise Activities (Learning / Try Hard / game), do Assignments, see own progress, XP, ranking |
+| Student | Grades 6–8, belongs to at most one ACTIVE class. INACTIVE memberships preserve transfer history. Role `STUDENT`. | Practise Activities (Learning / Try Hard / game), do Assignments, see own progress, XP, ranking |
 
 **One teacher, many classes** (owner, 2026-10-07; [ADR 0005](../decisions/0005-one-teacher-many-classes.md)). Classes keep `teacher_id` as the owner; there are no multi-teacher features.
 
@@ -91,6 +91,7 @@ A student has **completed** the Assignment when it is submitted; there is no sco
 - **Activity and Assignment are independent** ([ADR 0001](../decisions/0001-activity-and-assignment-are-independent.md)). Activity = repeatable, no deadline, no official grade. Assignment = targeted, scheduled, **one attempt**, official score.
 - Assignment owns its questions and never reads QuestionBank; Excel import is deferred ([ADR 0003](../decisions/0003-phase-5-assignment-contract.md)).
 - Student account (`User`) and class membership are separate; no separate Student or Teacher entity (Phase 6 plan).
+- A Student has at most one ACTIVE class membership. Moving classes deactivates the old membership and activates the target; old INACTIVE rows remain history.
 
 ## 6. Owner requests that conflict with accepted decisions (parked, not adopted)
 

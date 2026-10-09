@@ -418,9 +418,7 @@ public class StudentProfileService {
 
     private StudentProfileResponse toProfileResponse(User user, StudentProfile profile) {
         StudentClassResponse current = classMemberRepository
-                .findActiveMembershipsByUserId(user.getId())
-                .stream()
-                .findFirst()
+                .findActiveMembershipByUserId(user.getId())
                 .map(m -> new StudentClassResponse(
                         m.getClassEntity().getId(),
                         m.getClassEntity().getName(),

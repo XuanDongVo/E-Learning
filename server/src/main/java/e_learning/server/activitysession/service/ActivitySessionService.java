@@ -48,7 +48,7 @@ public class ActivitySessionService {
         Activity activity = activityRepository.findById(activityId).orElseThrow(() -> new AppException(ErrorCode.ACTIVITY_NOT_FOUND));
         if (activity.getStatus() != ActivityStatus.PUBLISHED
                 || !readinessService.validateForPublish(activity).isReady()
-                || !classMemberRepository.existsByUserIdAndClassEntityGradeIdAndStatus(student.getId(), activity.getUnit().getGrade().getId(), "ACTIVE")) {
+                || !hasCurrentGradeAccess(student.getId(), activity.getUnit().getGrade().getId())) {
             throw new AppException(ErrorCode.ACTIVITY_SESSION_NOT_ACCESSIBLE);
         }
         return new ActivitySessionOptionsResponse(activity.getId(), activity.getMode(),
@@ -61,7 +61,7 @@ public class ActivitySessionService {
         Activity activity = activityRepository.findById(activityId).orElseThrow(() -> new AppException(ErrorCode.ACTIVITY_NOT_FOUND));
         if (activity.getStatus() != ActivityStatus.PUBLISHED
                 || !readinessService.validateForPublish(activity).isReady()
-                || !classMemberRepository.existsByUserIdAndClassEntityGradeIdAndStatus(studentId, activity.getUnit().getGrade().getId(), "ACTIVE")) {
+                || !hasCurrentGradeAccess(studentId, activity.getUnit().getGrade().getId())) {
             throw new AppException(ErrorCode.ACTIVITY_SESSION_NOT_ACCESSIBLE);
         }
 
@@ -83,7 +83,10 @@ public class ActivitySessionService {
     @Transactional
     public ActivitySessionResponse get(Long sessionId, Long studentId) {
         ActivitySession session = ownSession(sessionId, studentId);
-        if (session.getStatus() == ActivitySessionStatus.IN_PROGRESS) serveCurrent(session);
+        if (session.getStatus() == ActivitySessionStatus.IN_PROGRESS) {
+            requireCurrentGradeAccess(session, studentId);
+            serveCurrent(session);
+        }
         return toResponse(session);
     }
 
@@ -92,6 +95,7 @@ public class ActivitySessionService {
                                                 ActivitySessionAnswerRequest request) {
         ActivitySession session = ownSession(sessionId, studentId);
         requireActive(session);
+        requireCurrentGradeAccess(session, studentId);
         ActivitySessionQuestion item = question(sessionId, questionId);
         if (item.isResolved()) throw new AppException(ErrorCode.ACTIVITY_SESSION_RETRY_EXHAUSTED);
         serve(item, session.getActivity());
@@ -140,6 +144,7 @@ public class ActivitySessionService {
     public ActivitySessionHintResponse hint(Long sessionId, Long questionId, Long studentId) {
         ActivitySession session = ownSession(sessionId, studentId);
         requireActive(session);
+        requireCurrentGradeAccess(session, studentId);
         if (session.getMode() != ActivityMode.LEARNING)
             throw new AppException(ErrorCode.ACTIVITY_SESSION_HINT_UNAVAILABLE);
         ActivitySessionQuestion item = question(sessionId, questionId);
@@ -158,6 +163,7 @@ public class ActivitySessionService {
     public ActivitySessionResponse finish(Long sessionId, Long studentId) {
         ActivitySession session = ownSession(sessionId, studentId);
         requireActive(session);
+        requireCurrentGradeAccess(session, studentId);
         if (session.getQuestions().stream().allMatch(ActivitySessionQuestion::isResolved)) complete(session);
         else abandon(session);
         sessionRepository.save(session);
@@ -280,6 +286,18 @@ public class ActivitySessionService {
     private ActivitySessionQuestion question(Long sessionId, Long questionId) {
         return sessionQuestionRepository.findByIdAndSessionId(questionId, sessionId)
                 .orElseThrow(() -> new AppException(ErrorCode.ACTIVITY_SESSION_QUESTION_NOT_FOUND));
+    }
+
+    private boolean hasCurrentGradeAccess(Long studentId, Long gradeId) {
+        return classMemberRepository.findActiveMembershipByUserId(studentId)
+                .map(member -> member.getClassEntity().getGrade().getId().equals(gradeId))
+                .orElse(false);
+    }
+
+    private void requireCurrentGradeAccess(ActivitySession session, Long studentId) {
+        if (!hasCurrentGradeAccess(studentId, session.getActivity().getUnit().getGrade().getId())) {
+            throw new AppException(ErrorCode.ACTIVITY_SESSION_NOT_ACCESSIBLE);
+        }
     }
 
     private void requireActive(ActivitySession session) {

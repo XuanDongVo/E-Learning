@@ -55,6 +55,10 @@ export const studentService = {
       method: "POST",
       body: JSON.stringify(payload),
     }),
+  transferToClass: (classId: number, studentId: number) =>
+    request<void>("/v1/classes/" + classId + "/members/" + studentId + "/transfer", {
+      method: "POST",
+    }),
   removeFromClass: (classId: number, studentId: number) =>
     request<void>("/v1/classes/" + classId + "/members/" + studentId, {
       method: "DELETE",

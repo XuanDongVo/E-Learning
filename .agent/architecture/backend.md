@@ -9,6 +9,7 @@ activity, assignment, assessment-attempt, content, question, classes, grades, us
 - Controllers use services, not another feature's repositories.
 - Requests never carry owner ids, derived readiness or runtime state.
 - Business validation lives in services.
+- Student membership changes lock the Student row; PostgreSQL enforces at most one ACTIVE membership.
 - Errors use stable ErrorCode values.
 - Every entity change requires a new Flyway migration; never edit applied migrations.
 - Deterministic product order must be explicit in repository/service queries.

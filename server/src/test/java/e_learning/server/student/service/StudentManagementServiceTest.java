@@ -33,6 +33,13 @@ class StudentManagementServiceTest {
     @Mock ClassMemberRepository classMemberRepository;
     @Mock PasswordEncoder passwordEncoder;
 
+    private StudentManagementService service() {
+        return new StudentManagementService(
+                userRepository, profileRepository, guardianRepository,
+                classRepository, classMemberRepository, passwordEncoder
+        );
+    }
+
     @Test
     void updateStatusLocksStudentWhenTeacherOwnsMembership() {
         User student = new User("student@test.com", "hash", "Student", Role.STUDENT);
@@ -42,12 +49,7 @@ class StudentManagementServiceTest {
         when(classMemberRepository.findAllByStudentAndTeacher(2L, 1L))
                 .thenReturn(List.of(mock(ClassMember.class)));
 
-        StudentManagementService service = new StudentManagementService(
-                userRepository, profileRepository, guardianRepository,
-                classRepository, classMemberRepository, passwordEncoder
-        );
-
-        service.updateStatus(2L, UserStatus.INACTIVE, 1L);
+        service().updateStatus(2L, UserStatus.INACTIVE, 1L);
 
         assertEquals(UserStatus.INACTIVE, student.getStatus());
     }
@@ -60,11 +62,6 @@ class StudentManagementServiceTest {
         when(classMemberRepository.findAllByStudentAndTeacher(2L, 1L))
                 .thenReturn(List.of());
 
-        StudentManagementService service = new StudentManagementService(
-                userRepository, profileRepository, guardianRepository,
-                classRepository, classMemberRepository, passwordEncoder
-        );
-
-        assertThrows(AppException.class, () -> service.updateStatus(2L, UserStatus.INACTIVE, 1L));
+        assertThrows(AppException.class, () -> service().updateStatus(2L, UserStatus.INACTIVE, 1L));
     }
 }

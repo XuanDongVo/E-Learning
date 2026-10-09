@@ -1,6 +1,8 @@
 package e_learning.server.student.service;
 
+import e_learning.server.classes.entity.ClassEntity;
 import e_learning.server.classes.entity.ClassMember;
+import e_learning.server.classes.entity.ClassStatus;
 import e_learning.server.classes.repository.ClassMemberRepository;
 import e_learning.server.classes.repository.ClassRepository;
 import e_learning.server.common.exception.AppException;
@@ -41,6 +43,103 @@ class StudentManagementServiceTest {
     }
 
     @Test
+    void addToClassRejectsStudentWithAnotherActiveClass() {
+        ClassEntity target = mock(ClassEntity.class);
+        User teacher = mock(User.class);
+        User student = mock(User.class);
+
+        when(teacher.getId()).thenReturn(1L);
+        when(target.getId()).thenReturn(20L);
+        when(target.getTeacher()).thenReturn(teacher);
+        when(target.getStatus()).thenReturn(ClassStatus.ACTIVE);
+        when(classRepository.findById(20L)).thenReturn(Optional.of(target));
+        when(student.getRole()).thenReturn(Role.STUDENT);
+        when(userRepository.findByIdForMembershipUpdate(2L)).thenReturn(Optional.of(student));
+        when(classMemberRepository.findActiveMembershipByUserId(2L))
+                .thenReturn(Optional.of(mock(ClassMember.class)));
+
+        assertThrows(AppException.class, () -> service().addToClass(20L, 2L, 1L));
+        verify(classMemberRepository, never()).save(any(ClassMember.class));
+    }
+
+    @Test
+    void transferToClassMovesCurrentMembershipAndCreatesTargetMembership() {
+        ClassEntity source = mock(ClassEntity.class);
+        ClassEntity target = mock(ClassEntity.class);
+        User sourceTeacher = mock(User.class);
+        User student = mock(User.class);
+        ClassMember current = mock(ClassMember.class);
+
+        when(source.getId()).thenReturn(10L);
+        when(source.getTeacher()).thenReturn(sourceTeacher);
+        when(sourceTeacher.getId()).thenReturn(1L);
+        when(target.getId()).thenReturn(20L);
+        when(target.getStatus()).thenReturn(ClassStatus.ACTIVE);
+        when(classRepository.findById(20L)).thenReturn(Optional.of(target));
+        when(userRepository.findByIdForMembershipUpdate(2L)).thenReturn(Optional.of(student));
+        when(student.getRole()).thenReturn(Role.STUDENT);
+        when(classMemberRepository.findActiveMembershipByUserId(2L))
+                .thenReturn(Optional.of(current));
+        when(current.getClassEntity()).thenReturn(source);
+        when(classMemberRepository.findByClassEntityIdAndUserId(20L, 2L))
+                .thenReturn(Optional.empty());
+
+        service().transferToClass(20L, 2L, 1L);
+
+        verify(current).setStatus("INACTIVE");
+        verify(classMemberRepository).flush();
+        verify(classMemberRepository).save(any(ClassMember.class));
+    }
+
+    @Test
+    void transferToClassRejectsStudentWithNoCurrentClass() {
+        ClassEntity target = mock(ClassEntity.class);
+        User teacher = mock(User.class);
+        User student = mock(User.class);
+
+        when(teacher.getId()).thenReturn(1L);
+        when(target.getId()).thenReturn(20L);
+        when(target.getTeacher()).thenReturn(teacher);
+        when(target.getStatus()).thenReturn(ClassStatus.ACTIVE);
+        when(classRepository.findById(20L)).thenReturn(Optional.of(target));
+        when(userRepository.findByIdForMembershipUpdate(2L)).thenReturn(Optional.of(student));
+        when(student.getRole()).thenReturn(Role.STUDENT);
+        when(classMemberRepository.findActiveMembershipByUserId(2L))
+                .thenReturn(Optional.empty());
+
+        assertThrows(AppException.class, () -> service().transferToClass(20L, 2L, 1L));
+        verify(classMemberRepository, never()).flush();
+    }
+
+    @Test
+    void transferToClassRejectsWhenCurrentClassBelongsToAnotherTeacher() {
+        ClassEntity source = mock(ClassEntity.class);
+        ClassEntity target = mock(ClassEntity.class);
+        User sourceTeacher = mock(User.class);
+        User targetTeacher = mock(User.class);
+        User student = mock(User.class);
+        ClassMember current = mock(ClassMember.class);
+
+        when(source.getId()).thenReturn(10L);
+        when(source.getTeacher()).thenReturn(sourceTeacher);
+        when(sourceTeacher.getId()).thenReturn(99L);
+        when(target.getId()).thenReturn(20L);
+        when(target.getTeacher()).thenReturn(targetTeacher);
+        when(targetTeacher.getId()).thenReturn(1L);
+        when(target.getStatus()).thenReturn(ClassStatus.ACTIVE);
+        when(classRepository.findById(20L)).thenReturn(Optional.of(target));
+        when(userRepository.findByIdForMembershipUpdate(2L)).thenReturn(Optional.of(student));
+        when(student.getRole()).thenReturn(Role.STUDENT);
+        when(classMemberRepository.findActiveMembershipByUserId(2L))
+                .thenReturn(Optional.of(current));
+        when(current.getClassEntity()).thenReturn(source);
+
+        assertThrows(AppException.class, () -> service().transferToClass(20L, 2L, 1L));
+        verify(current, never()).setStatus("INACTIVE");
+        verify(classMemberRepository, never()).flush();
+    }
+
+    @Test
     void updateStatusLocksStudentWhenTeacherOwnsMembership() {
         User student = new User("student@test.com", "hash", "Student", Role.STUDENT);
         student.setStatus(UserStatus.ACTIVE);
@@ -49,7 +148,12 @@ class StudentManagementServiceTest {
         when(classMemberRepository.findAllByStudentAndTeacher(2L, 1L))
                 .thenReturn(List.of(mock(ClassMember.class)));
 
-        service().updateStatus(2L, UserStatus.INACTIVE, 1L);
+        StudentManagementService service = new StudentManagementService(
+                userRepository, profileRepository, guardianRepository,
+                classRepository, classMemberRepository, passwordEncoder
+        );
+
+        service.updateStatus(2L, UserStatus.INACTIVE, 1L);
 
         assertEquals(UserStatus.INACTIVE, student.getStatus());
     }
@@ -62,6 +166,11 @@ class StudentManagementServiceTest {
         when(classMemberRepository.findAllByStudentAndTeacher(2L, 1L))
                 .thenReturn(List.of());
 
-        assertThrows(AppException.class, () -> service().updateStatus(2L, UserStatus.INACTIVE, 1L));
+        StudentManagementService service = new StudentManagementService(
+                userRepository, profileRepository, guardianRepository,
+                classRepository, classMemberRepository, passwordEncoder
+        );
+
+        assertThrows(AppException.class, () -> service.updateStatus(2L, UserStatus.INACTIVE, 1L));
     }
 }

@@ -64,15 +64,15 @@ public class StudentManagementService {
         ClassEntity classEntity = ownedClass(classId, teacherId);
         ensureClassActive(classEntity);
 
-        User student = student(studentId);
+        User student = lockedStudent(studentId);
+        if (classMemberRepository.findActiveMembershipByUserId(studentId).isPresent()) {
+            throw new AppException(ErrorCode.STUDENT_ALREADY_IN_CLASS);
+        }
+
         ClassMember member = classMemberRepository
                 .findByClassEntityIdAndUserId(classId, studentId)
                 .orElse(null);
-
         if (member != null) {
-            if ("ACTIVE".equals(member.getStatus())) {
-                throw new AppException(ErrorCode.STUDENT_ALREADY_IN_CLASS);
-            }
             member.setStatus("ACTIVE");
             return;
         }
@@ -81,9 +81,41 @@ public class StudentManagementService {
     }
 
     @Transactional
+    public void transferToClass(Long targetClassId, Long studentId, Long teacherId) {
+        ClassEntity targetClass = ownedClass(targetClassId, teacherId);
+        ensureClassActive(targetClass);
+
+        User student = lockedStudent(studentId);
+        ClassMember current = classMemberRepository.findActiveMembershipByUserId(studentId)
+                .orElseThrow(() -> new AppException(ErrorCode.STUDENT_NOT_IN_ACTIVE_CLASS));
+
+        ClassEntity sourceClass = current.getClassEntity();
+
+        if (sourceClass.getId().equals(targetClassId)) {
+            throw new AppException(ErrorCode.STUDENT_ALREADY_IN_CLASS);
+        }
+
+        if (!sourceClass.getTeacher().getId().equals(teacherId)) {
+            throw new AppException(ErrorCode.CLASS_NOT_FOUND);
+        }
+
+        current.setStatus("INACTIVE");
+        classMemberRepository.flush();
+
+        ClassMember targetMembership = classMemberRepository
+                .findByClassEntityIdAndUserId(targetClassId, studentId)
+                .orElse(null);
+
+        if (targetMembership == null) {
+            classMemberRepository.save(new ClassMember(targetClass, student));
+        } else {
+            targetMembership.setStatus("ACTIVE");
+        }
+    }
+
+    @Transactional
     public void removeFromClass(Long classId, Long studentId, Long teacherId) {
         ownedClass(classId, teacherId);
-        lockedStudent(studentId);
         ClassMember member = classMemberRepository
                 .findByClassEntityIdAndUserId(classId, studentId)
                 .orElseThrow(() -> new AppException(ErrorCode.CLASS_MEMBER_NOT_FOUND));
@@ -143,6 +175,15 @@ public class StudentManagementService {
         if (classEntity.getStatus() == ClassStatus.ARCHIVED) {
             throw new AppException(ErrorCode.CLASS_NOT_FOUND);
         }
+    }
+
+    private User lockedStudent(Long id) {
+        User user = userRepository.findByIdForMembershipUpdate(id)
+                .orElseThrow(() -> new AppException(ErrorCode.STUDENT_NOT_FOUND));
+        if (user.getRole() != Role.STUDENT) {
+            throw new AppException(ErrorCode.STUDENT_NOT_FOUND);
+        }
+        return user;
     }
 
     private User student(Long id) {

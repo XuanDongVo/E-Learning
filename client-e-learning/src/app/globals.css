@@ -68,6 +68,24 @@
   --color-neutral-subtle: var(--muted-foreground);
   --color-primary-hover: var(--primary-hover);
   --color-secondary-hover: var(--secondary-hover);
+
+
+  --color-practice-paper: oklch(0.985 0.02 86);
+  --color-practice-ink: oklch(0.35 0.06 253);
+  --color-practice-subtle: oklch(0.58 0.04 253);
+  --color-practice-border: oklch(0.83 0.04 82);
+  --color-practice-blue: oklch(0.56 0.19 258);
+  --color-practice-blue-dark: oklch(0.43 0.15 258);
+  --color-practice-light: oklch(0.99 0.005 85);
+  --color-practice-hint: oklch(0.965 0.025 250);
+  --color-practice-yellow: oklch(0.87 0.16 88);
+  --color-practice-shadow: oklch(0.43 0.13 280);
+  --color-practice-green: oklch(0.81 0.2 137);
+  --color-practice-good: oklch(0.47 0.13 155);
+  --color-practice-good-soft: oklch(0.94 0.05 155);
+  --color-practice-bad: oklch(0.5 0.17 26);
+  --color-practice-bad-soft: oklch(0.96 0.025 26);
+  --color-practice-overlay: oklch(0.2 0.07 260 / 65%);
 }
 
 :root {

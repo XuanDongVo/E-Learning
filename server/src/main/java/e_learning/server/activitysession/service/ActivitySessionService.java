@@ -102,13 +102,17 @@ public class ActivitySessionService {
         boolean retry = session.getMode() == ActivityMode.LEARNING && !correct && attempt == 1;
         boolean reveal = false;
         if (attempt == 1 && correct) {
-            item.setFirstCorrect(true); item.setFinalCorrect(true); item.setResolved(true);
+            item.setFirstCorrect(true);
+            item.setFinalCorrect(true);
+            item.setResolved(true);
             session.setFirstCorrectCount(session.getFirstCorrectCount() + 1);
             session.setFinalCorrectCount(session.getFinalCorrectCount() + 1);
         } else if (retry) {
             item.setFirstCorrect(false);
         } else {
-            item.setFinalCorrect(correct); item.setResolved(true); reveal = !correct;
+            item.setFinalCorrect(correct);
+            item.setResolved(true);
+            reveal = !correct;
             if (Boolean.FALSE.equals(item.getFirstCorrect())) {
                 // A correct retry is final-correct but is not first-correct.
                 if (correct) session.setFinalCorrectCount(session.getFinalCorrectCount() + 1);
@@ -136,7 +140,8 @@ public class ActivitySessionService {
     public ActivitySessionHintResponse hint(Long sessionId, Long questionId, Long studentId) {
         ActivitySession session = ownSession(sessionId, studentId);
         requireActive(session);
-        if (session.getMode() != ActivityMode.LEARNING) throw new AppException(ErrorCode.ACTIVITY_SESSION_HINT_UNAVAILABLE);
+        if (session.getMode() != ActivityMode.LEARNING)
+            throw new AppException(ErrorCode.ACTIVITY_SESSION_HINT_UNAVAILABLE);
         ActivitySessionQuestion item = question(sessionId, questionId);
         if (item.isResolved() || item.getQuestion().getHint() == null || item.getQuestion().getHint().isBlank()) {
             throw new AppException(ErrorCode.ACTIVITY_SESSION_HINT_UNAVAILABLE);
@@ -162,7 +167,8 @@ public class ActivitySessionService {
     @Transactional(readOnly = true)
     public ActivitySessionResultResponse result(Long sessionId, Long studentId) {
         ActivitySession session = ownSession(sessionId, studentId);
-        if (session.getStatus() == ActivitySessionStatus.IN_PROGRESS) throw new AppException(ErrorCode.ACTIVITY_SESSION_NOT_ACTIVE);
+        if (session.getStatus() == ActivitySessionStatus.IN_PROGRESS)
+            throw new AppException(ErrorCode.ACTIVITY_SESSION_NOT_ACTIVE);
         return new ActivitySessionResultResponse(session.getId(), session.getStatus(), session.getMode(),
                 session.getSelectionStrategy(), session.getTotalQuestions(), session.getFirstCorrectCount(),
                 session.getFinalCorrectCount(), session.getHintUsedCount(), session.getScore(), session.getLives());
@@ -187,16 +193,19 @@ public class ActivitySessionService {
 
     private ActivityMode resolveMode(Activity activity, ActivityMode requested) {
         if (activity.getMode() == ActivityMode.BOTH) {
-            if (requested == null || requested == ActivityMode.BOTH) throw new AppException(ErrorCode.ACTIVITY_SESSION_INVALID_MODE);
+            if (requested == null || requested == ActivityMode.BOTH)
+                throw new AppException(ErrorCode.ACTIVITY_SESSION_INVALID_MODE);
             return requested;
         }
-        if (requested != null && requested != activity.getMode()) throw new AppException(ErrorCode.ACTIVITY_SESSION_INVALID_MODE);
+        if (requested != null && requested != activity.getMode())
+            throw new AppException(ErrorCode.ACTIVITY_SESSION_INVALID_MODE);
         return activity.getMode();
     }
 
     private SelectionStrategy resolveStrategy(Activity activity, SelectionStrategy requested) {
         List<SelectionStrategy> available = activity.getAvailableSelectionStrategies();
-        if (available.size() > 1 && requested == null) throw new AppException(ErrorCode.ACTIVITY_SESSION_INVALID_STRATEGY);
+        if (available.size() > 1 && requested == null)
+            throw new AppException(ErrorCode.ACTIVITY_SESSION_INVALID_STRATEGY);
         SelectionStrategy selected = requested == null ? available.get(0) : requested;
         if (!available.contains(selected)) throw new AppException(ErrorCode.ACTIVITY_SESSION_INVALID_STRATEGY);
         return selected;
@@ -206,6 +215,7 @@ public class ActivitySessionService {
         session.getQuestions().stream().filter(q -> !q.isResolved()).findFirst()
                 .ifPresent(q -> serve(q, session.getActivity()));
     }
+
     private void serve(ActivitySessionQuestion item, Activity activity) {
         if (item.getServedAt() != null) return;
         LocalDateTime now = LocalDateTime.now();
@@ -213,9 +223,11 @@ public class ActivitySessionService {
         if (activity.getMode() != ActivityMode.LEARNING && item.getSession().getMode() == ActivityMode.TRY_HARD)
             item.setDeadlineAt(now.plusSeconds(activity.getTimeLimitSeconds()));
     }
+
     private boolean isTimedOut(ActivitySessionQuestion item) {
         return item.getDeadlineAt() != null && LocalDateTime.now().isAfter(item.getDeadlineAt().plusSeconds(NETWORK_GRACE_SECONDS));
     }
+
     private boolean isCorrect(Question question, JsonNode node) {
         if (node == null) return false;
         if (question.getType() == e_learning.server.question.enums.QuestionType.MULTIPLE_CHOICE) {
@@ -233,6 +245,7 @@ public class ActivitySessionService {
         return answerRepository.findByQuestionId(question.getId()).stream()
                 .anyMatch(a -> a.getNormalizedValue().equals(value.toLowerCase(Locale.ROOT)));
     }
+
     private String correctAnswer(Question question) {
         if (question.getType() == e_learning.server.question.enums.QuestionType.SINGLE_CHOICE
                 || question.getType() == e_learning.server.question.enums.QuestionType.MULTIPLE_CHOICE)
@@ -241,26 +254,38 @@ public class ActivitySessionService {
         return answerRepository.findByQuestionId(question.getId()).stream().map(QuestionAnswer::getRawValue)
                 .collect(java.util.stream.Collectors.joining(", "));
     }
+
     private void complete(ActivitySession session) {
         session.setStatus(ActivitySessionStatus.COMPLETED);
         session.setCompletedAt(LocalDateTime.now());
         session.setScore(score(session));
     }
+
     private BigDecimal score(ActivitySession session) {
         return BigDecimal.valueOf(session.getFinalCorrectCount() * 100.0 / session.getTotalQuestions())
                 .setScale(2, RoundingMode.HALF_UP);
     }
-    private void abandon(ActivitySession session) { session.setStatus(ActivitySessionStatus.ABANDONED); session.setCompletedAt(LocalDateTime.now()); }
+
+    private void abandon(ActivitySession session) {
+        session.setStatus(ActivitySessionStatus.ABANDONED);
+        session.setCompletedAt(LocalDateTime.now());
+    }
+
     private ActivitySession ownSession(Long id, Long studentId) {
         ActivitySession session = sessionRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.ACTIVITY_SESSION_NOT_FOUND));
         if (!session.getStudent().getId().equals(studentId)) throw new AppException(ErrorCode.FORBIDDEN);
         return session;
     }
+
     private ActivitySessionQuestion question(Long sessionId, Long questionId) {
         return sessionQuestionRepository.findByIdAndSessionId(questionId, sessionId)
                 .orElseThrow(() -> new AppException(ErrorCode.ACTIVITY_SESSION_QUESTION_NOT_FOUND));
     }
-    private void requireActive(ActivitySession session) { if (session.getStatus() != ActivitySessionStatus.IN_PROGRESS) throw new AppException(ErrorCode.ACTIVITY_SESSION_NOT_ACTIVE); }
+
+    private void requireActive(ActivitySession session) {
+        if (session.getStatus() != ActivitySessionStatus.IN_PROGRESS)
+            throw new AppException(ErrorCode.ACTIVITY_SESSION_NOT_ACTIVE);
+    }
 
     private ActivitySessionResponse toResponse(ActivitySession session) {
         return new ActivitySessionResponse(session.getId(), session.getStatus(), session.getMode(), session.getSelectionStrategy(),
@@ -268,11 +293,12 @@ public class ActivitySessionService {
                 session.getFinalCorrectCount(), session.getHintUsedCount(), session.getScore(), session.getLives(),
                 session.getQuestions().stream().map(this::toQuestionResponse).toList());
     }
+
     private ActivitySessionQuestionResponse toQuestionResponse(ActivitySessionQuestion item) {
         List<ActivitySessionQuestionResponse.Option> options = optionRepository.findByQuestionId(item.getQuestion().getId()).stream()
                 .map(o -> new ActivitySessionQuestionResponse.Option(o.getOptionKey(), o.getContent())).toList();
         return new ActivitySessionQuestionResponse(item.getId(), item.getPosition(), item.getQuestion().getType(),
                 item.getQuestion().getContent(), options, item.getDeadlineAt(), item.isResolved(),
-                item.getAnswerAttempts(), item.getFirstCorrect(), item.getFinalCorrect(), item.isHintUsed(),\n                item.getQuestion().getHint() != null && !item.getQuestion().getHint().isBlank());
+                item.getAnswerAttempts(), item.getFirstCorrect(), item.getFinalCorrect(), item.isHintUsed(), item.getQuestion().getHint() != null && !item.getQuestion().getHint().isBlank());
     }
 }

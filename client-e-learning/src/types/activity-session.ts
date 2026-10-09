@@ -25,7 +25,8 @@ export type ActivitySessionQuestion = {
   answerAttempts: number;
   firstCorrect?: boolean;
   finalCorrect?: boolean;
-  hintUsed: boolean;\n  hasHint: boolean;
+  hintUsed: boolean;
+  hasHint: boolean;
 };
 
 export type ActivitySession = {

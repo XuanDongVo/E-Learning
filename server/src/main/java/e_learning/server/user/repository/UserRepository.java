@@ -14,4 +14,5 @@ public interface UserRepository
     Optional<User> findByEmailIgnoreCase(String email);
 
     List<User> findAllByRoleOrderByFullNameAsc(Role role);
+
 }

@@ -3,8 +3,8 @@ import { UnitDetailView } from "@/components/features/student/units/unit-detail-
 export default async function StudentUnitDetailPage({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: Promise<{ unitId: string }>;
 }) {
-  const { id } = await params;
+  const { unitId:id } = await params;
   return <UnitDetailView unitId={Number(id)} />;
 }

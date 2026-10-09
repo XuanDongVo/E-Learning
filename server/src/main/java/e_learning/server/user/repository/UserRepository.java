@@ -22,4 +22,5 @@ public interface UserRepository
     Optional<User> findByIdForMembershipUpdate(@Param("userId") Long userId);
 
     List<User> findAllByRoleOrderByFullNameAsc(Role role);
+
 }

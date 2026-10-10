@@ -2,6 +2,7 @@ export type ActivityStatus = "DRAFT" | "PUBLISHED" | "ARCHIVED";
 export type ActivityMode = "LEARNING" | "TRY_HARD" | "BOTH";
 export type DistributionMode = "EQUAL" | "PERCENTAGE" | "FIXED_COUNT";
 export type SelectionStrategy = "RANDOM" | "WEAKNESS_PRIORITY";
+export type ActivityDifficulty = "EASY" | "MEDIUM" | "HARD" | "MIXED";
 
 export interface ActivityBank {
   id: number; questionBankId: number; questionBankName: string; topicId: number;
@@ -31,7 +32,7 @@ export interface Activity {
   id: number; gradeId: number; gradeName: string; unitId: number;
   unitCode: string; unitName: string; name: string; description: string | null;
   displayOrder: number; status: ActivityStatus; distributionMode: DistributionMode;
-  totalQuestions: number; availableSelectionStrategies: SelectionStrategy[];
+  totalQuestions: number; questionDifficulty: ActivityDifficulty; availableSelectionStrategies: SelectionStrategy[];
   mode: ActivityMode; timeLimitSeconds: number | null; lives: number | null;
   banks: ActivityBank[]; readiness: ActivityReadiness; createdAt: string;
   updatedAt: string; publishedAt: string | null;
@@ -42,12 +43,14 @@ export interface ActivityBankRequest {
 export interface CreateActivityRequest {
   unitId: number; name: string; description?: string;
   distributionMode: DistributionMode; totalQuestions: number;
+  questionDifficulty: ActivityDifficulty;
   availableSelectionStrategies: SelectionStrategy[]; mode: ActivityMode;
   timeLimitSeconds?: number; lives?: number; banks: ActivityBankRequest[];
 }
 export interface UpdateActivityRequest {
   name: string; description?: string; distributionMode: DistributionMode;
-  totalQuestions: number; availableSelectionStrategies: SelectionStrategy[];
+  totalQuestions: number; questionDifficulty: ActivityDifficulty;
+  availableSelectionStrategies: SelectionStrategy[];
   mode: ActivityMode; timeLimitSeconds?: number; lives?: number;
   banks: ActivityBankRequest[];
 }

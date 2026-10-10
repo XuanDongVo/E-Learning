@@ -99,7 +99,7 @@ function ActivityCard({ unitId, activity }: { unitId: number; activity: Activity
           {activity.description}
         </p>
       )}
-      <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 text-body-sm text-neutral-muted">
+      <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 text-body-sm text-neutral-muted">\n        <span className="font-semibold text-neutral-dark">{difficultyLabels[activity.questionDifficulty]} difficulty</span>
         <span>{activity.unitName}</span>
         {supportsPractice && <span>Practice</span>}
         {supportsTryHard && <span>Try Hard</span>}

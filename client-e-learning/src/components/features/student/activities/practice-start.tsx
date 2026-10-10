@@ -134,6 +134,11 @@ export function PracticeStart(p: Props) {
 
           {p.options && (
             <>
+              <div className="mt-4 rounded-xl border-2 border-practice-border bg-practice-light px-4 py-3">
+                <p className="text-xs font-bold uppercase tracking-wide text-practice-subtle">Độ khó câu hỏi</p>
+                <p className="mt-1 text-base font-extrabold">{difficultyLabels[p.options.questionDifficulty]}</p>
+                <p className="mt-1 text-sm text-practice-subtle">Độ khó do giáo viên thiết lập cho hoạt động này.</p>
+              </div>
               <div className="mt-4 grid gap-3">
                 {modes.map((m) => (
                   <Choice

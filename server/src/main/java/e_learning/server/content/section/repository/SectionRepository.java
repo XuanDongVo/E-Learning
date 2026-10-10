@@ -18,4 +18,6 @@ public interface SectionRepository extends JpaRepository<Section, Long> {
     long countByUnitId(Long unitId);
 
     List<Section> findAllByUnitIdAndStatusNotOrderByDisplayOrderAsc(Long unitId, ContentStatus status);
+
+    long countByUnitIdAndStatus(Long unitId,ContentStatus status);
 }

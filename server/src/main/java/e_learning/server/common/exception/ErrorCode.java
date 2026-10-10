@@ -13,6 +13,7 @@ public enum ErrorCode {
     STUDENT_NOT_FOUND(HttpStatus.NOT_FOUND, "STUDENT_NOT_FOUND", "Student was not found"),
     STUDENT_PROFILE_NOT_FOUND(HttpStatus.NOT_FOUND, "STUDENT_PROFILE_NOT_FOUND", "Student profile was not found"),
     STUDENT_ALREADY_IN_CLASS(HttpStatus.CONFLICT, "STUDENT_ALREADY_IN_CLASS", "Student is already in this class"),
+    STUDENT_NOT_IN_ACTIVE_CLASS(HttpStatus.FORBIDDEN, "STUDENT_NOT_IN_ACTIVE_CLASS", "Student does not belong to an active class"),
     CLASS_MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "CLASS_MEMBER_NOT_FOUND", "Class membership was not found"),
     EMAIL_ALREADY_EXISTS(HttpStatus.CONFLICT, "EMAIL_ALREADY_EXISTS", "The email is already registered"),
 

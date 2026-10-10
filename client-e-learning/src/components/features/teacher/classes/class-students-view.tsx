@@ -46,7 +46,9 @@ export function ClassStudentsView({ classId }: ClassStudentsViewProps) {
     onSuccess: refresh,
   });
 
-  const className = classes.data?.data?.find((item) => item.id === classId)?.name;
+  const className = classes.data?.data?.find(
+    (item) => item.id === classId,
+  )?.name;
   const list = useMemo(() => {
     const query = search.toLowerCase();
     return (members.data?.data ?? []).filter(
@@ -56,8 +58,10 @@ export function ClassStudentsView({ classId }: ClassStudentsViewProps) {
     );
   }, [members.data, search]);
 
-  const memberIds = new Set((members.data?.data ?? []).map((student) => student.id));
-  const available = (students.data?.data ?? []).filter(
+  const memberIds = new Set(
+    (members.data?.data ?? []).map((student) => student.id),
+  );
+  const available = (students.data?.data?.items ?? []).filter(
     (student) => !memberIds.has(student.id),
   );
 
@@ -88,7 +92,10 @@ export function ClassStudentsView({ classId }: ClassStudentsViewProps) {
   return (
     <div className="space-y-6">
       <div>
-        <a href="/teacher/classes" className="text-body-sm font-bold text-primary">
+        <a
+          href="/teacher/classes"
+          className="text-body-sm font-bold text-primary"
+        >
           ← Classes
         </a>
         <h1 className="mt-2 text-ui-3xl font-extrabold">
@@ -147,7 +154,10 @@ export function ClassStudentsView({ classId }: ClassStudentsViewProps) {
             </p>
           ) : (
             list.map((student) => (
-              <div key={student.id} className="flex items-center justify-between gap-4 p-4">
+              <div
+                key={student.id}
+                className="flex items-center justify-between gap-4 p-4"
+              >
                 <div>
                   <p className="font-bold">{student.fullName}</p>
                   <p className="text-body-sm text-neutral-muted">

@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { fetchStudentUnits } from "@/services/student-unit.service";
+import { studentUnitService } from "@/services/student-unit.service";
 import { QUERY_KEYS } from "@/services/query-keys";
 import { Button } from "@/components/ui/button";
 import { UnitCard } from "./unit-card";
@@ -9,7 +9,7 @@ import { UnitCard } from "./unit-card";
 export function UnitsView() {
   const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: QUERY_KEYS.units,
-    queryFn: fetchStudentUnits,
+    queryFn: studentUnitService.list,
   });
 
   return (

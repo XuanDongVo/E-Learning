@@ -89,6 +89,7 @@ export function PracticeStart(p: Props) {
     (m) => p.options?.activityMode === "BOTH" || p.options?.activityMode === m,
   );
   const strategies = p.options?.selectionStrategies ?? [];
+  const difficultyLabels = { EASY: "Dễ", MEDIUM: "Trung bình", HARD: "Khó", MIXED: "Hỗn hợp" } as const;
   const ready = !!p.mode && !!p.strategy && !!p.options;
 
   return (

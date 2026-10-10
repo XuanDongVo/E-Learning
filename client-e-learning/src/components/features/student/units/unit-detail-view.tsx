@@ -194,6 +194,7 @@ export function UnitDetailView({ unitId }: { unitId: number }) {
             {visible.map((activity) => (
               <ActivityCard
                 key={activity.id}
+                unitId={unit.id}
                 activity={activity}
                 topicNames={activity.topicIds.map((id) => topicName.get(id)).filter((n): n is string => !!n)}
               />

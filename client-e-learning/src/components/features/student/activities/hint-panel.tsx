@@ -45,8 +45,6 @@ export function HintPanel({ open, text, onClose }: Props) {
   );
 }
 
-/* Trạng thái lấy gợi ý: đang tải / phản hồi chậm / lỗi (có nút thử lại).
-   Nằm ngay dưới tiêu đề câu hỏi và không đụng tới đáp án học sinh đang nhập. */
 export function HintStatus({
   pending,
   slow,

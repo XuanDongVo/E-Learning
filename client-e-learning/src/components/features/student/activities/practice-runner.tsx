@@ -11,27 +11,39 @@ import {
   Lightbulb,
   Send,
   SlidersHorizontal,
+  RefreshCw, X 
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { activitySessionService } from "@/services/activity-session.service";
+import { activitySessionService } from "@/services/student/student-activity-session.service";
 import type {
   ActivitySession,
   ActivitySessionMode,
   ActivitySessionQuestion,
   SelectionStrategy,
-} from "@/types/activity-session";
+} from "@/types/student/activity-session";
 import { PracticeSettings } from "./practice-setting";
 import { PracticeResult } from "./practice-result";
+import { SubmitConfirmDialog } from "./submit-confirm-dialog";
 import { PracticeStart } from "./practice-start";
-import { QuestionNavigator, QuestionNavigatorSheet, type NavStatus } from "./question-navigator";
+import {
+  QuestionNavigator,
+  QuestionNavigatorSheet,
+  type NavStatus,
+} from "./question-navigator";
 import { HintPanel, HintStatus } from "./hint-panel";
-import { TYPE_LABEL, formatAnswer, isChoice, splitKeys, useSlow } from "@/utils/practice-utils";
+import {
+  TYPE_LABEL,
+  formatAnswer,
+  isChoice,
+  splitKeys,
+  useSlow,
+} from "@/utils/practice-utils";
 import garden from "../../../../../public/assets/practice-garden.jpg";
 import mascot from "../../../../../public/assets/practice-mascot.png";
 
-/* ---------- Tailwind class tokens ---------- */
 const glassBtn =
   "text-practice-light bg-practice-blue/28 border-practice-light/30 hover:bg-practice-blue/65 hover:text-practice-light";
 const paperBtn =
@@ -39,7 +51,6 @@ const paperBtn =
 const nextBtn =
   "text-practice-ink bg-practice-yellow shadow-[0_3px_0_var(--color-practice-border)] hover:text-practice-ink hover:bg-[color-mix(in_oklch,var(--color-practice-yellow)_85%,var(--color-practice-light))]";
 const card = "bg-practice-paper shadow-[0_6px_0_var(--color-practice-shadow)]";
-
 const answerBase =
   "h-auto text-practice-ink bg-practice-light border-2 border-practice-border shadow-[0_3px_0_var(--color-practice-border)] enabled:hover:bg-practice-hint enabled:hover:border-practice-blue enabled:hover:shadow-[0_3px_0_var(--color-practice-blue-dark)] disabled:opacity-100";
 const answerSelected =
@@ -56,56 +67,66 @@ type Feedback = {
   correctAnswer?: string;
   explanation?: string;
 };
-
-/** Server chấm bằng key (A/B/…) cho câu chọn, bằng chuỗi cho TRUE/FALSE và câu nhập. */
-const answerFor = (q: ActivitySessionQuestion, draft: string[]): string | string[] =>
+const answerFor = (
+  q: ActivitySessionQuestion,
+  draft: string[],
+): string | string[] =>
   q.type === "MULTIPLE_CHOICE" ? draft : (draft[0] ?? "");
 
-export function PracticeRunner({ activityId }: { activityId: number }) {
+export function PracticeRunner({
+  unitId,
+  activityId,
+}: {
+  unitId: number;
+  activityId: number;
+}) {
   const router = useRouter();
-
-  // Lựa chọn trước khi bắt đầu
+  const unitHref = `/student/units/${unitId}`;
   const [mode, setMode] = useState<ActivitySessionMode>();
   const [strategy, setStrategy] = useState<SelectionStrategy>("RANDOM");
-
-  // Dữ liệu session (nguồn sự thật là server)
   const [session, setSession] = useState<ActivitySession>();
   const [currentId, setCurrentId] = useState<number>();
   const [showResult, setShowResult] = useState(false);
-
-  // Trạng thái cục bộ theo từng câu (key = questionId). Tách riêng khỏi `session`
-  // để các response của server (hint, deadline…) không bao giờ ghi đè đáp án đang nhập.
   const [drafts, setDrafts] = useState<Record<number, string[]>>({});
   const [picks, setPicks] = useState<Record<number, string[]>>({});
   const [feedbacks, setFeedbacks] = useState<Record<number, Feedback>>({});
   const [hints, setHints] = useState<Record<number, string>>({});
   const [hintOpenFor, setHintOpenFor] = useState<number | null>(null);
-
-  // UI
   const [settings, setSettings] = useState(false);
   const [navOpen, setNavOpen] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const [background, setBackground] = useState("garden");
   const [now, setNow] = useState(() => Date.now());
 
-  /* ---------- API ---------- */
   const options = useQuery({
     queryKey: ["activity-session-options", activityId],
     queryFn: () => activitySessionService.options(activityId),
   });
   const sessionOptions = options.data?.data ?? undefined;
   const effectiveMode =
-    mode ?? (sessionOptions?.activityMode !== "BOTH" ? sessionOptions?.activityMode : undefined);
-  const effectiveStrategy = sessionOptions?.selectionStrategies.includes(strategy)
+    mode ??
+    (sessionOptions?.activityMode !== "BOTH"
+      ? sessionOptions?.activityMode
+      : undefined);
+  const effectiveStrategy = sessionOptions?.selectionStrategies.includes(
+    strategy,
+  )
     ? strategy
     : sessionOptions?.selectionStrategies[0];
-
   const start = useMutation({
-    mutationFn: () => activitySessionService.start(activityId, effectiveMode, effectiveStrategy),
+    mutationFn: () =>
+      activitySessionService.start(
+        activityId,
+        effectiveMode,
+        effectiveStrategy,
+      ),
     onSuccess: (result) => {
       const data = result.data;
       if (!data) return;
       setSession(data);
-      setCurrentId((data.questions.find((q) => !q.resolved) ?? data.questions[0])?.id);
+      setCurrentId(
+        (data.questions.find((q) => !q.resolved) ?? data.questions[0])?.id,
+      );
       setDrafts({});
       setPicks({});
       setFeedbacks({});
@@ -114,10 +135,12 @@ export function PracticeRunner({ activityId }: { activityId: number }) {
       setShowResult(false);
     },
   });
-
   const answerMutation = useMutation({
-    mutationFn: (v: { questionId: number; answer: string | string[]; draft: string[] }) =>
-      activitySessionService.answer(session!.id, v.questionId, v.answer),
+    mutationFn: (v: {
+      questionId: number;
+      answer: string | string[];
+      draft: string[];
+    }) => activitySessionService.answer(session!.id, v.questionId, v.answer),
     onSuccess: (result, v) => {
       const data = result.data;
       if (!data) return;
@@ -133,32 +156,31 @@ export function PracticeRunner({ activityId }: { activityId: number }) {
         },
       }));
       setPicks((p) => ({ ...p, [v.questionId]: v.draft }));
-      // Chỉ xoá nháp SAU khi server đã nhận; nếu lỗi thì đáp án vẫn còn để thử lại.
       setDrafts((d) => ({ ...d, [v.questionId]: [] }));
     },
   });
   const { mutate: sendAnswer, isPending: answering } = answerMutation;
-
   const hintMutation = useMutation({
-    mutationFn: (v: { questionId: number }) => activitySessionService.hint(session!.id, v.questionId),
+    mutationFn: (v: { questionId: number }) =>
+      activitySessionService.hint(session!.id, v.questionId),
     onSuccess: (result, v) => {
       const data = result.data;
       if (!data) return;
       setHints((h) => ({ ...h, [v.questionId]: data.hint }));
       setHintOpenFor(v.questionId);
-      // Chỉ hợp nhất cờ "đã dùng gợi ý" + bộ đếm; KHÔNG thay cả session để tránh ghi đè
-      // trạng thái mới hơn (ví dụ học sinh vừa nộp đáp án trong lúc chờ).
-      setSession((s) =>
-        s && {
-          ...s,
-          hintUsedCount: data.session.hintUsedCount,
-          questions: s.questions.map((q) => (q.id === v.questionId ? { ...q, hintUsed: true } : q)),
-        },
+      setSession(
+        (s) =>
+          s && {
+            ...s,
+            hintUsedCount: data.session.hintUsedCount,
+            questions: s.questions.map((q) =>
+              q.id === v.questionId ? { ...q, hintUsed: true } : q,
+            ),
+          },
       );
     },
   });
   const { mutate: sendHint, isPending: hinting } = hintMutation;
-
   const finish = useMutation({
     mutationFn: () => activitySessionService.finish(session!.id),
     onSuccess: (result) => {
@@ -166,20 +188,22 @@ export function PracticeRunner({ activityId }: { activityId: number }) {
       setShowResult(true);
     },
   });
-
-  const startSlow = useSlow(start.isPending);
-  const answerSlow = useSlow(answering);
-  const hintSlow = useSlow(hinting);
-
-  /* ---------- Suy ra từ session ---------- */
+  const startSlow = useSlow(start.isPending),
+    answerSlow = useSlow(answering),
+    hintSlow = useSlow(hinting);
   const questions = useMemo(() => session?.questions ?? [], [session]);
-  const index = Math.max(0, questions.findIndex((q) => q.id === currentId));
+  const index = Math.max(
+    0,
+    questions.findIndex((q) => q.id === currentId),
+  );
   const question = questions[index];
   const tryHard = session?.mode === "TRY_HARD";
   const over = !!session && session.status !== "IN_PROGRESS";
   const complete = showResult;
-
-  const draft = useMemo(() => (question && drafts[question.id]) || [], [question, drafts]);
+  const draft = useMemo(
+    () => (question && drafts[question.id]) || [],
+    [question, drafts],
+  );
   const feedback = question ? feedbacks[question.id] : undefined;
   const locked = !!question?.resolved;
   const hasDraft = question
@@ -188,30 +212,39 @@ export function PracticeRunner({ activityId }: { activityId: number }) {
       : (draft[0] ?? "").trim().length > 0
     : false;
   const canSubmit = !!question && !locked && !over && hasDraft && !answering;
-
   const hintAvailable =
-    !!question && session?.mode === "LEARNING" && question.hasHint && !locked && !over && !complete;
+    !!question &&
+    session?.mode === "LEARNING" &&
+    question.hasHint &&
+    !locked &&
+    !over &&
+    !complete;
   const hintText = question ? hints[question.id] : undefined;
-  const hintOpen = !!question && !!hintText && hintOpenFor === question.id && !locked;
+  const hintOpen =
+    !!question && !!hintText && hintOpenFor === question.id && !locked;
   const hintError =
     hintMutation.isError && hintMutation.variables?.questionId === question?.id
       ? hintMutation.error.message
       : undefined;
-
   const nextOpen =
     questions.find((q, i) => i > index && !q.resolved) ??
     questions.find((q) => !q.resolved && q.id !== question?.id);
-
   const secondsLeft =
     question?.deadlineAt && !locked
-      ? Math.max(0, Math.ceil((new Date(question.deadlineAt).getTime() - now) / 1000))
+      ? Math.max(
+          0,
+          Math.ceil((new Date(question.deadlineAt).getTime() - now) / 1000),
+        )
       : undefined;
-
   const statuses: NavStatus[] = questions.map((q) =>
-    q.resolved ? (q.finalCorrect ? "correct" : "wrong") : (drafts[q.id]?.length ?? 0) > 0 ? "picked" : "todo",
+    q.resolved
+      ? q.finalCorrect
+        ? "correct"
+        : "wrong"
+      : (drafts[q.id]?.length ?? 0) > 0
+        ? "picked"
+        : "todo",
   );
-
-  /* ---------- Hành vi ---------- */
   const goTo = useCallback((id: number) => setCurrentId(id), []);
   const goNext = useCallback(() => {
     if (nextOpen) goTo(nextOpen.id);
@@ -220,7 +253,6 @@ export function PracticeRunner({ activityId }: { activityId: number }) {
     const prev = questions[index - 1];
     if (!tryHard && prev) goTo(prev.id);
   }, [questions, index, tryHard, goTo]);
-
   const setDraft = useCallback(
     (qid: number, update: (current: string[]) => string[]) =>
       setDrafts((d) => ({ ...d, [qid]: update(d[qid] ?? []) })),
@@ -239,18 +271,18 @@ export function PracticeRunner({ activityId }: { activityId: number }) {
     },
     [question, locked, answering, setDraft],
   );
-
   const submit = useCallback(() => {
     if (!question || !canSubmit) return;
-    sendAnswer({ questionId: question.id, answer: answerFor(question, draft), draft });
+    sendAnswer({
+      questionId: question.id,
+      answer: answerFor(question, draft),
+      draft,
+    });
   }, [question, canSubmit, sendAnswer, draft]);
-
   const reset = useCallback(() => {
     if (!question || locked || answering) return;
     setDraft(question.id, () => []);
   }, [question, locked, answering, setDraft]);
-
-  /** Gợi ý: đã có nội dung → chỉ bật/tắt khung (server đã ghi nhận lượt dùng); chưa có → gọi API. */
   const requestHint = useCallback(() => {
     if (!question || !hintAvailable || hinting) return;
     if (hints[question.id]) {
@@ -259,32 +291,27 @@ export function PracticeRunner({ activityId }: { activityId: number }) {
     }
     sendHint({ questionId: question.id });
   }, [question, hintAvailable, hinting, hints, sendHint]);
-
   const leave = () => {
     if (!session || over || complete) {
-      router.push("/student/activities");
+      router.push(unitHref);
       return;
     }
-    if (window.confirm("Rời khỏi hoạt động? Lượt luyện tập hiện tại sẽ không được lưu hoặc tiếp tục.")) {
-      finish.mutate();
-    }
-  };
-
-  /** Nộp sớm: báo số câu đã làm / còn lại rồi mới gọi finish. */
-  const submitEarly = () => {
-    if (!session || over || complete || answering || finish.isPending) return;
-    const total = questions.length;
-    const done = questions.filter((q) => q.resolved).length;
-    const unchecked = !locked && hasDraft ? "\nCâu đang chọn chưa được kiểm tra sẽ không được tính." : "";
     if (
       window.confirm(
-        `Bạn đã hoàn thành ${done}/${total} câu, còn ${total - done} câu chưa làm.${unchecked}\n\nBạn có chắc muốn nộp bài ngay bây giờ không?`,
+        "Rời khỏi hoạt động? Lượt luyện tập hiện tại sẽ không được lưu hoặc tiếp tục.",
       )
-    ) {
+    )
       finish.mutate();
-    }
   };
-
+  const answeredCount = questions.filter((q) => q.resolved).length;
+  const submitEarly = () => {
+    if (!session || over || complete || answering || finish.isPending) return;
+    setConfirmOpen(true);
+  };
+  const confirmSubmit = () => {
+    setConfirmOpen(false);
+    finish.mutate();
+  };
   const retry = () => {
     setSession(undefined);
     setCurrentId(undefined);
@@ -299,20 +326,20 @@ export function PracticeRunner({ activityId }: { activityId: number }) {
     hintMutation.reset();
     finish.reset();
   };
-
-  /* ---------- Effects ---------- */
-  // Đồng hồ cho Try Hard
   useEffect(() => {
     if (!tryHard || over || complete) return;
     const timer = window.setInterval(() => setNow(Date.now()), 1000);
     return () => window.clearInterval(timer);
   }, [tryHard, over, complete]);
-
-  // Try Hard: server chỉ gán deadline cho câu hiện tại khi GET session → lấy deadline của câu mới.
   const requestedDeadline = useRef<Set<number>>(new Set());
-  const sessionId = session?.id;
-  const questionId = question?.id;
-  const needsDeadline = tryHard && !over && !!question && !question.resolved && !question.deadlineAt;
+  const sessionId = session?.id,
+    questionId = question?.id;
+  const needsDeadline =
+    tryHard &&
+    !over &&
+    !!question &&
+    !question.resolved &&
+    !question.deadlineAt;
   useEffect(() => {
     if (!needsDeadline || !sessionId || questionId === undefined) return;
     if (requestedDeadline.current.has(questionId)) return;
@@ -322,21 +349,26 @@ export function PracticeRunner({ activityId }: { activityId: number }) {
       .then((result) => {
         const fresh = result.data?.questions.find((q) => q.id === questionId);
         if (!fresh?.deadlineAt) return;
-        setSession((s) =>
-          s && {
-            ...s,
-            questions: s.questions.map((q) => (q.id === questionId ? { ...q, deadlineAt: fresh.deadlineAt } : q)),
-          },
+        setSession(
+          (s) =>
+            s && {
+              ...s,
+              questions: s.questions.map((q) =>
+                q.id === questionId
+                  ? { ...q, deadlineAt: fresh.deadlineAt }
+                  : q,
+              ),
+            },
         );
       })
       .catch(() => requestedDeadline.current.delete(questionId));
   }, [needsDeadline, sessionId, questionId]);
-
-  // Phím tắt
   useEffect(() => {
     function onKey(event: KeyboardEvent) {
-      if (!session || settings || complete || navOpen) return;
-      const typing = event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement;
+      if (!session || settings || complete || navOpen || confirmOpen) return;
+      const typing =
+        event.target instanceof HTMLInputElement ||
+        event.target instanceof HTMLTextAreaElement;
       if (event.key === "Enter") {
         event.preventDefault();
         submit();
@@ -352,22 +384,39 @@ export function PracticeRunner({ activityId }: { activityId: number }) {
       } else if (event.key === "ArrowRight") {
         event.preventDefault();
         if (!tryHard || locked) goNext();
-      } else if (event.key === "Escape") {
-        reset();
-      } else if (/^[1-9]$/.test(event.key) && question) {
-        const list = question.type === "TRUE_FALSE" ? ["TRUE", "FALSE"] : question.options.map((o) => o.key);
+      } else if (event.key === "Escape") reset();
+      else if (/^[1-9]$/.test(event.key) && question) {
+        const list =
+          question.type === "TRUE_FALSE"
+            ? ["TRUE", "FALSE"]
+            : question.options.map((o) => o.key);
         const key = list[Number(event.key) - 1];
-        if (key && (isChoice(question) || question.type === "TRUE_FALSE")) pick(key);
+        if (key && (isChoice(question) || question.type === "TRUE_FALSE"))
+          pick(key);
       }
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [session, settings, complete, navOpen, submit, requestHint, goPrev, goNext, reset, pick, tryHard, locked, question]);
-
-  /* ---------- Màn hình bắt đầu ---------- */
-  if (!session || !question) {
+  }, [
+    session,
+    settings,
+    complete,
+    navOpen,
+    confirmOpen,
+    submit,
+    requestHint,
+    goPrev,
+    goNext,
+    reset,
+    pick,
+    tryHard,
+    locked,
+    question,
+  ]);
+  if (!session || !question)
     return (
       <PracticeStart
+        unitId={unitId}
         options={sessionOptions}
         loading={options.isLoading}
         loadError={options.isError ? options.error.message : undefined}
@@ -382,9 +431,6 @@ export function PracticeRunner({ activityId }: { activityId: number }) {
         onStart={() => start.mutate()}
       />
     );
-  }
-
-  /* ---------- Hiển thị câu hỏi ---------- */
   const choiceOptions =
     question.type === "TRUE_FALSE"
       ? [
@@ -395,9 +441,10 @@ export function PracticeRunner({ activityId }: { activityId: number }) {
   const upper = (keys: string[]) => keys.map((k) => k.toUpperCase());
   const submitted = picks[question.id] ?? [];
   const correctKeys = locked
-    ? upper(question.finalCorrect ? submitted : splitKeys(feedback?.correctAnswer))
+    ? upper(
+        question.finalCorrect ? submitted : splitKeys(feedback?.correctAnswer),
+      )
     : [];
-
   const answerClass = (key: string) => {
     if (locked) {
       if (correctKeys.includes(key.toUpperCase())) return answerCorrect;
@@ -406,15 +453,15 @@ export function PracticeRunner({ activityId }: { activityId: number }) {
     }
     return draft.includes(key) ? answerSelected : "";
   };
-
   const revealedText =
     feedback?.answerRevealed && feedback.correctAnswer
       ? formatAnswer(
           question,
-          isChoice(question) || question.type === "TRUE_FALSE" ? splitKeys(feedback.correctAnswer) : [feedback.correctAnswer],
+          isChoice(question) || question.type === "TRUE_FALSE"
+            ? splitKeys(feedback.correctAnswer)
+            : [feedback.correctAnswer],
         )
       : "";
-
   const gameOver = session.status === "GAME_OVER";
   const finished = over && locked;
   const mascotText = finished
@@ -422,15 +469,14 @@ export function PracticeRunner({ activityId }: { activityId: number }) {
       ? "Bạn hết mạng rồi, nhưng đừng buồn! Cùng xem kết quả nhé!"
       : "Tuyệt vời! Bạn đã hoàn thành tất cả câu hỏi!"
     : feedback
-    ? feedback.correct
-      ? "Giỏi quá! Việt Cường tự hào về bạn!"
-      : feedback.retryAvailable
-        ? "Chưa đúng, bạn còn một lần thử nữa nhé!"
-        : "Không sao đâu, mình cùng xem đáp án nhé!"
-    : hintOpen
-      ? "Việt Cường vừa gợi ý rồi, xem trong khung câu hỏi nhé!"
-      : "Thấy bạn suy nghĩ lâu Việt Cường cũng hồi hộp lây nè!";
-
+      ? feedback.correct
+        ? "Giỏi quá! Việt Cường tự hào về bạn!"
+        : feedback.retryAvailable
+          ? "Chưa đúng, bạn còn một lần thử nữa nhé!"
+          : "Không sao đâu, mình cùng xem đáp án nhé!"
+      : hintOpen
+        ? "Việt Cường vừa gợi ý rồi, xem trong khung câu hỏi nhé!"
+        : "Thấy bạn suy nghĩ lâu Việt Cường cũng hồi hộp lây nè!";
   const navProps = {
     statuses,
     index,
@@ -441,10 +487,8 @@ export function PracticeRunner({ activityId }: { activityId: number }) {
       if (target) goTo(target.id);
     },
   };
-
   const showCheck = !locked && !over && hasDraft;
   const retryLabel = feedback?.retryAvailable ? "Thử lại" : "Kiểm tra";
-
   return (
     <section
       className="fixed inset-0 z-[45] overflow-y-auto bg-practice-blue text-practice-ink"
@@ -481,7 +525,6 @@ export function PracticeRunner({ activityId }: { activityId: number }) {
               style={{ width: `${((index + 1) / questions.length) * 100}%` }}
             />
           </div>
-
           {hintAvailable && (
             <Button
               variant="outline"
@@ -492,23 +535,29 @@ export function PracticeRunner({ activityId }: { activityId: number }) {
               onClick={requestHint}
             >
               <Lightbulb size={16} />
-              <span className={hinting ? "" : "hidden sm:inline"}>{hinting ? "Showing hint…" : "Gợi ý"}</span>
+              <span className={hinting ? "" : "hidden sm:inline"}>
+                {hinting ? "Showing hint…" : "Gợi ý"}
+              </span>
             </Button>
           )}
-
           {tryHard && !complete && (
             <div className="flex shrink-0 items-center gap-3 rounded-full bg-practice-blue-dark px-3 py-1.5 text-sm font-extrabold text-practice-light">
               {secondsLeft !== undefined && (
-                <span className={`flex items-center gap-1 ${secondsLeft <= 5 ? "text-practice-yellow" : ""}`}>
+                <span
+                  className={`flex items-center gap-1 ${secondsLeft <= 5 ? "text-practice-yellow" : ""}`}
+                >
                   <Clock3 size={14} /> {secondsLeft}s
                 </span>
               )}
-              <span className="flex items-center gap-1" aria-label={`Còn ${session.lives ?? 0} mạng`}>
-                <Heart size={14} className="fill-current" /> {session.lives ?? 0}
+              <span
+                className="flex items-center gap-1"
+                aria-label={`Còn ${session.lives ?? 0} mạng`}
+              >
+                <Heart size={14} className="fill-current" />{" "}
+                {session.lives ?? 0}
               </span>
             </div>
           )}
-
           <span
             className="grid size-11 shrink-0 place-items-center rounded-full border-2 border-practice-yellow bg-practice-blue-dark text-lg font-extrabold text-practice-light ring-3 ring-practice-ink/40"
             title="Số câu trả lời đúng"
@@ -534,8 +583,6 @@ export function PracticeRunner({ activityId }: { activityId: number }) {
             <SlidersHorizontal size={19} />
           </Button>
         </header>
-
-        {/* Hàng chính: [mascot + câu hỏi] bên trái, [danh sách câu hỏi] bên phải */}
         <div
           className={
             complete
@@ -552,10 +599,7 @@ export function PracticeRunner({ activityId }: { activityId: number }) {
           >
             {!complete && (
               <aside className="flex items-center gap-3 max-sm:order-2 max-sm:justify-center sm:mt-11 sm:flex-col sm:gap-2">
-                <div
-                  className="relative rounded-[18px] bg-practice-paper px-3 py-3 text-center text-xs leading-5 shadow-[0_4px_0_var(--color-practice-border)] max-sm:max-w-[200px] after:absolute after:top-full after:left-[calc(50%-10px)] after:border-[10px] after:border-transparent after:border-t-practice-paper after:content-[''] max-sm:after:top-[calc(50%-10px)] max-sm:after:left-full max-sm:after:border-t-transparent max-sm:after:border-l-practice-paper"
-                  aria-live="polite"
-                >
+                <div className="relative rounded-[18px] bg-practice-paper px-3 py-3 text-center text-xs leading-5 shadow-[0_4px_0_var(--color-practice-border)]">
                   {mascotText}
                 </div>
                 <img
@@ -570,12 +614,18 @@ export function PracticeRunner({ activityId }: { activityId: number }) {
             <div className={`${card} rounded-[24px] p-[18px] sm:p-5`}>
               {complete ? (
                 <PracticeResult
+                  unitId={unitId}
                   session={session}
                   picks={picks}
                   revealed={Object.fromEntries(
                     Object.entries(feedbacks).map(([id, f]) => [
                       id,
-                      f.answerRevealed ? { correctAnswer: f.correctAnswer, explanation: f.explanation } : {},
+                      f.answerRevealed
+                        ? {
+                            correctAnswer: f.correctAnswer,
+                            explanation: f.explanation,
+                          }
+                        : {},
                     ]),
                   )}
                   onRetry={retry}
@@ -590,10 +640,14 @@ export function PracticeRunner({ activityId }: { activityId: number }) {
                       {TYPE_LABEL[question.type]}
                     </span>
                   </div>
-                  <h1 className="mb-4 text-xl font-extrabold leading-7">{question.content}</h1>
-
+                  <h1 className="mb-4 text-xl font-extrabold leading-7">
+                    {question.content}
+                  </h1>
                   <HintStatus
-                    pending={hinting && hintMutation.variables?.questionId === question.id}
+                    pending={
+                      hinting &&
+                      hintMutation.variables?.questionId === question.id
+                    }
                     slow={hintSlow}
                     error={hintError}
                     onRetry={() => sendHint({ questionId: question.id })}
@@ -603,7 +657,6 @@ export function PracticeRunner({ activityId }: { activityId: number }) {
                     text={hintText ?? ""}
                     onClose={() => setHintOpenFor(null)}
                   />
-
                   {isChoice(question) || question.type === "TRUE_FALSE" ? (
                     <div className="grid gap-3 sm:grid-cols-2">
                       {choiceOptions.map((option, i) => (
@@ -616,7 +669,8 @@ export function PracticeRunner({ activityId }: { activityId: number }) {
                           onClick={() => pick(option.key)}
                         >
                           <span className="grid size-7 shrink-0 place-items-center rounded-lg border border-practice-border bg-practice-light text-sm text-practice-subtle">
-                            {locked && correctKeys.includes(option.key.toUpperCase()) ? (
+                            {locked &&
+                            correctKeys.includes(option.key.toUpperCase()) ? (
                               <Check size={16} />
                             ) : (
                               String.fromCharCode(65 + i)
@@ -630,43 +684,116 @@ export function PracticeRunner({ activityId }: { activityId: number }) {
                     <input
                       value={draft[0] ?? ""}
                       disabled={locked || answering}
-                      onChange={(event) => setDraft(question.id, () => [event.target.value])}
+                      onChange={(event) =>
+                        setDraft(question.id, () => [event.target.value])
+                      }
                       aria-label="Đáp án của bạn"
                       placeholder="Nhập đáp án"
                       className="h-14 w-full rounded-2xl border-2 border-practice-border bg-practice-light px-4 text-base font-semibold shadow-[0_3px_0_var(--color-practice-border)] outline-none transition-colors focus:border-practice-blue disabled:opacity-70"
                     />
                   )}
-
                   <div aria-live="polite">
                     {answering && answerSlow && (
                       <p role="status" className="mt-4 text-sm font-semibold">
-                        Máy chủ phản hồi chậm, đáp án của bạn đang được kiểm tra…
+                        Máy chủ phản hồi chậm, đáp án của bạn đang được kiểm
+                        tra…
                       </p>
                     )}
                     {answerMutation.isError && !answering && (
-                      <p role="alert" className="mt-4 text-sm font-bold text-practice-bad">
-                        {answerMutation.error.message} Đáp án của bạn vẫn được giữ, hãy bấm Kiểm tra để thử lại.
+                      <p
+                        role="alert"
+                        className="mt-4 text-sm font-bold text-practice-bad"
+                      >
+                        {answerMutation.error.message} Đáp án của bạn vẫn được
+                        giữ, hãy bấm Kiểm tra để thử lại.
                       </p>
                     )}
                     {finish.isError && (
-                      <p role="alert" className="mt-4 text-sm font-bold text-practice-bad">
+                      <p
+                        role="alert"
+                        className="mt-4 text-sm font-bold text-practice-bad"
+                      >
                         {finish.error.message}
                       </p>
                     )}
                     {feedback && (
-                      <div className="mt-4 text-sm font-bold">
-                        {feedback.correct ? (
-                          <p className="text-practice-good">Chính xác! Bạn làm tốt lắm.</p>
-                        ) : feedback.retryAvailable ? (
-                          <p className="text-practice-bad">Chưa đúng. Bạn còn một lần thử lại.</p>
-                        ) : (
-                          <p className="text-practice-bad">
-                            Chưa đúng.{revealedText && ` Đáp án đúng: ${revealedText}`}
+                      <div
+                        role="status"
+                        aria-live="polite"
+                        className={cn(
+                          "mt-4 flex items-start gap-3 rounded-2xl border-2 p-3.5",
+                          feedback.correct &&
+                            "border-practice-good bg-practice-good/10",
+                          !feedback.correct &&
+                            feedback.retryAvailable &&
+                            "border-amber-400 bg-amber-50",
+                          !feedback.correct &&
+                            !feedback.retryAvailable &&
+                            "border-practice-bad bg-practice-bad/10",
+                        )}
+                      >
+                        <span
+                          className={cn(
+                            "grid size-9 shrink-0 place-items-center rounded-full text-white",
+                            feedback.correct && "bg-practice-good",
+                            !feedback.correct &&
+                              feedback.retryAvailable &&
+                              "bg-amber-500",
+                            !feedback.correct &&
+                              !feedback.retryAvailable &&
+                              "bg-practice-bad",
+                          )}
+                        >
+                          {feedback.correct ? (
+                            <Check size={18} />
+                          ) : feedback.retryAvailable ? (
+                            <RefreshCw size={18} />
+                          ) : (
+                            <X size={18} />
+                          )}
+                        </span>
+
+                        <div className="min-w-0 flex-1">
+                          <p
+                            className={cn(
+                              "text-sm font-extrabold",
+                              feedback.correct && "text-practice-good",
+                              !feedback.correct &&
+                                feedback.retryAvailable &&
+                                "text-amber-800",
+                              !feedback.correct &&
+                                !feedback.retryAvailable &&
+                                "text-practice-bad",
+                            )}
+                          >
+                            {feedback.correct
+                              ? "Chính xác!"
+                              : feedback.retryAvailable
+                                ? "Thử lại nhé!"
+                                : "Chưa chính xác"}
                           </p>
-                        )}
-                        {feedback.answerRevealed && feedback.explanation && (
-                          <p className="mt-1 font-normal text-practice-subtle">{feedback.explanation}</p>
-                        )}
+
+                          <p className="mt-0.5 text-sm font-semibold leading-6 text-practice-ink">
+                            {feedback.correct
+                              ? "Bạn làm tốt lắm. Tiếp tục phát huy nhé!"
+                              : feedback.retryAvailable
+                                ? "Bạn còn một lần thử lại."
+                                : revealedText
+                                  ? `Đáp án đúng: ${revealedText}`
+                                  : "Hãy xem lại đáp án và ghi nhớ nhé."}
+                          </p>
+
+                          {feedback.answerRevealed && feedback.explanation && (
+                            <div className="mt-2 border-t border-current/15 pt-2">
+                              <p className="text-xs font-extrabold text-practice-subtle">
+                                GIẢI THÍCH
+                              </p>
+                              <p className="mt-1 text-sm leading-6 text-practice-subtle">
+                                {feedback.explanation}
+                              </p>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     )}
                     {finished && (
@@ -684,14 +811,12 @@ export function PracticeRunner({ activityId }: { activityId: number }) {
               )}
             </div>
           </div>
-
           {!complete && <QuestionNavigator {...navProps} />}
         </div>
-
-        <footer className="mt-auto flex items-center justify-between gap-3 ">
-          <div className="flex items-center gap-2">
-            {!complete && <QuestionNavigatorSheet {...navProps} onOpenChange={setNavOpen} />}
-          </div>
+        <footer className="mt-auto flex items-center justify-between gap-3">
+          {!complete && (
+            <QuestionNavigatorSheet {...navProps} onOpenChange={setNavOpen} />
+          )}{" "}
           {!complete && (
             <div className="flex flex-wrap justify-end gap-2">
               <Button
@@ -723,7 +848,11 @@ export function PracticeRunner({ activityId }: { activityId: number }) {
                 </Button>
               )}
               {showCheck ? (
-                <Button className={nextBtn} disabled={!canSubmit} onClick={submit}>
+                <Button
+                  className={nextBtn}
+                  disabled={!canSubmit}
+                  onClick={submit}
+                >
                   {answering ? "Đang kiểm tra…" : retryLabel}
                   <Check size={16} />
                 </Button>
@@ -733,7 +862,11 @@ export function PracticeRunner({ activityId }: { activityId: number }) {
                   <ArrowRight size={16} />
                 </Button>
               ) : (
-                <Button className={nextBtn} disabled={(tryHard && !locked) || !nextOpen} onClick={goNext}>
+                <Button
+                  className={nextBtn}
+                  disabled={(tryHard && !locked) || !nextOpen}
+                  onClick={goNext}
+                >
                   Câu tiếp
                   <ArrowRight size={16} />
                 </Button>
@@ -742,7 +875,21 @@ export function PracticeRunner({ activityId }: { activityId: number }) {
           )}
         </footer>
       </div>
-      <PracticeSettings open={settings} onOpenChange={setSettings} background={background} onBackgroundChange={setBackground} />
+      <SubmitConfirmDialog
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        answered={answeredCount}
+        total={questions.length}
+        hasUncheckedDraft={!locked && hasDraft}
+        pending={finish.isPending}
+        onConfirm={confirmSubmit}
+      />
+      <PracticeSettings
+        open={settings}
+        onOpenChange={setSettings}
+        background={background}
+        onBackgroundChange={setBackground}
+      />
     </section>
   );
 }

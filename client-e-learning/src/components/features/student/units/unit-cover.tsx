@@ -40,4 +40,4 @@ export function UnitCover({ label, name, coverUrl, className, labelClassName }: 
   );
 }
 
-export const unitLabel = (displayOrder: number) => String(displayOrder).padStart(2, "0");
+export const unitLabel = (code: string | number) => String(code).padStart(2, "0");

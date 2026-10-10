@@ -589,7 +589,7 @@ export function ActivityEditor({ activityId }: { activityId?: number }) {
                 return (
                   <div key={option.value} className="rounded-lg border border-border-color p-3">
                     <p className="text-body-sm text-neutral-muted">{option.label}</p>
-                    <p className="mt-1 text-xl font-bold tabular-nums">{count}</p>
+                    <p className="mt-1 text-xl font-bold tabular-nums">{sources.isLoading ? "—" : count}</p>
                     <p className="text-body-sm text-neutral-muted">ready in selected banks</p>
                   </div>
                 );
@@ -597,7 +597,7 @@ export function ActivityEditor({ activityId }: { activityId?: number }) {
             </div>
             {banks.length === 0 ? (
               <p className="text-body-sm text-neutral-muted">Select one or more Question Banks to see availability by difficulty.</p>
-            ) : insufficientBanks.length > 0 ? (
+            ) : sources.isLoading ? (\n              <p className="text-body-sm text-neutral-muted">Loading question availability…</p>\n            ) : insufficientBanks.length > 0 ? (
               <div role="alert" className="rounded-lg border-l-4 border-danger bg-background-app p-3 text-body-sm text-danger-text">
                 <p className="font-semibold">Not enough {difficultyLabel[questionDifficulty].toLowerCase()} questions</p>
                 <ul className="mt-2 list-disc space-y-1 pl-5">

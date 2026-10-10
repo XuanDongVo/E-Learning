@@ -164,13 +164,23 @@ public class ActivityService {
         findUnit(unitId);
         return questionBankRepository.findByUnitIdOrderBySectionAndTopicAndDisplayOrder(unitId)
                 .stream()
-                .map(bank -> ActivitySourceOptionResponse.builder()
-                        .questionBankId(bank.getId()).questionBankName(bank.getName())
-                        .topicId(bank.getTopic().getId()).topicName(bank.getTopic().getName())
-                        .sectionName(bank.getTopic().getSection().getName()).status(bank.getStatus())
-                        .totalQuestions(contentQuestionRepository.countByQuestionBankId(bank.getId()))
-                        .readyQuestions(contentQuestionRepository.countByQuestionBankIdAndQuestionCompleteTrue(bank.getId()))
-                        .build())
+                .map(bank -> {
+                    var readyQuestions = contentQuestionRepository
+                            .findAllByQuestionBankIdAndQuestionCompleteTrueOrderByQuestionIdAsc(bank.getId());
+                    return ActivitySourceOptionResponse.builder()
+                            .questionBankId(bank.getId()).questionBankName(bank.getName())
+                            .topicId(bank.getTopic().getId()).topicName(bank.getTopic().getName())
+                            .sectionName(bank.getTopic().getSection().getName()).status(bank.getStatus())
+                            .totalQuestions(contentQuestionRepository.countByQuestionBankId(bank.getId()))
+                            .readyQuestions(readyQuestions.size())
+                            .easyReadyQuestions(readyQuestions.stream()
+                                    .filter(cq -> cq.getQuestion().getDifficulty().name().equals("EASY")).count())
+                            .mediumReadyQuestions(readyQuestions.stream()
+                                    .filter(cq -> cq.getQuestion().getDifficulty().name().equals("MEDIUM")).count())
+                            .hardReadyQuestions(readyQuestions.stream()
+                                    .filter(cq -> cq.getQuestion().getDifficulty().name().equals("HARD")).count())
+                            .build();
+                })
                 .toList();
     }
 

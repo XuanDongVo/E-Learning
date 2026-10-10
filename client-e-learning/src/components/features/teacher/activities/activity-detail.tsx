@@ -20,6 +20,7 @@ const modeHints: Record<ActivityMode, string> = {
   TRY_HARD: "Students race the clock and can lose lives.",
   BOTH: "Students choose Learning or Try Hard.",
 };
+const difficultyLabels = { EASY: "Easy", MEDIUM: "Medium", HARD: "Hard", MIXED: "Mixed" } as const;
 const strategyLabels: Record<SelectionStrategy, string> = {
   RANDOM: "Random",
   WEAKNESS_PRIORITY: "Weakness priority",
@@ -164,6 +165,7 @@ export function ActivityDetail({ activityId }: { activityId: number }) {
               hint={allocatedTotal ? `${coverage}% of what's needed` : undefined}
             />
             <Stat label="Mode" value={modeLabels[a.mode]} />
+            <Stat label="Difficulty" value={difficultyLabels[a.questionDifficulty]} />
             <Stat
               label="Practice"
               value={a.availableSelectionStrategies

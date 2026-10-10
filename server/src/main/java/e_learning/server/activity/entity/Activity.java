@@ -56,6 +56,11 @@ public class Activity {
     @Column(name = "total_questions", nullable = false)
     private Integer totalQuestions;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "question_difficulty", nullable = false, length = 20)
+    @Builder.Default
+    private ActivityDifficulty questionDifficulty = ActivityDifficulty.MIXED;
+
     @ElementCollection(targetClass = SelectionStrategy.class)
     @CollectionTable(
             name = "activity_selection_strategies",

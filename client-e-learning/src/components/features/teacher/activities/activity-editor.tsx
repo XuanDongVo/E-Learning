@@ -2,28 +2,34 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import {
-  AlertTriangle,
-  ArrowLeft,
-  Check,
-  Info,
-  Search,
-} from "lucide-react";
+import { AlertTriangle, ArrowLeft, Check, Info, Search } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { activityService } from "@/services/activity.service";
 import { unitService } from "@/services/content/content.unit.service";
 import { QUERY_KEYS } from "@/services/query-keys";
+import { ACTIVITY_DIFFICULTY_LABELS } from "@/types/activity";
 import type {
   ActivityMode,
+  ActivityDifficulty,
   ActivitySourceOption,
   DistributionMode,
   SelectionStrategy,
   ActivityBankRequest,
 } from "@/types/activity";
 
-type SelectedBank = ActivitySourceOption & {
+type SelectedBank = Pick<
+  ActivitySourceOption,
+  | "questionBankId"
+  | "questionBankName"
+  | "topicId"
+  | "topicName"
+  | "sectionName"
+  | "status"
+  | "totalQuestions"
+  | "readyQuestions"
+> & {
   displayOrder: number;
   percentage?: number;
   fixedCount?: number;
@@ -117,6 +123,8 @@ export function ActivityEditor({ activityId }: { activityId?: number }) {
   const [description, setDescription] = useState("");
   const [distribution, setDistribution] = useState<DistributionMode>("EQUAL");
   const [total, setTotal] = useState(10);
+  const [questionDifficulty, setQuestionDifficulty] =
+    useState<ActivityDifficulty>("MIXED");
   const [availableSelectionStrategies, setAvailableSelectionStrategies] =
     useState<SelectionStrategy[]>(["RANDOM"]);
   const [mode, setMode] = useState<ActivityMode>("BOTH");
@@ -135,6 +143,7 @@ export function ActivityEditor({ activityId }: { activityId?: number }) {
     setDescription(a.description || "");
     setDistribution(a.distributionMode);
     setTotal(a.totalQuestions);
+    setQuestionDifficulty(a.questionDifficulty ?? "MIXED");
     setAvailableSelectionStrategies(a.availableSelectionStrategies);
     setMode(a.mode);
     setTimeLimitSeconds(
@@ -155,6 +164,7 @@ export function ActivityEditor({ activityId }: { activityId?: number }) {
     () => new Set(banks.map((b) => b.questionBankId)),
     [banks],
   );
+
   const grouped = useMemo(() => {
     const q = search.trim().toLowerCase();
     const sections = new Map<string, Map<string, ActivitySourceOption[]>>();
@@ -195,7 +205,7 @@ export function ActivityEditor({ activityId }: { activityId?: number }) {
         fraction: exact - Math.floor(exact),
       };
     });
-    let remaining = total - base.reduce((s, x) => s + x.floor, 0);
+    const remaining = total - base.reduce((s, x) => s + x.floor, 0);
     const extras = new Set(
       base
         .sort((a, b) => b.fraction - a.fraction || a.id - b.id)
@@ -207,6 +217,33 @@ export function ActivityEditor({ activityId }: { activityId?: number }) {
       count: x.floor + (extras.has(x.id) ? 1 : 0),
     }));
   }, [banks, distribution, total]);
+
+  const difficultyCounts = (source: ActivitySourceOption) => ({
+    EASY: source.easyReadyQuestions,
+    MEDIUM: source.mediumReadyQuestions,
+    HARD: source.hardReadyQuestions,
+    MIXED:
+      source.easyReadyQuestions +
+      source.mediumReadyQuestions +
+      source.hardReadyQuestions,
+  });
+  const sourceForBank = (questionBankId: number) =>
+    (sources.data || []).find(
+      (source) => source.questionBankId === questionBankId,
+    );
+  const selectedDifficultyTotal = (bank: { questionBankId: number }) => {
+    const source = sourceForBank(bank.questionBankId);
+    return source ? difficultyCounts(source)[questionDifficulty] : 0;
+  };
+  const selectedBanksAvailability = banks.map((bank) => {
+    const required =
+      allocation.find((item) => item.id === bank.questionBankId)?.count ?? 0;
+    const available = selectedDifficultyTotal(bank);
+    return { ...bank, required, available, enough: available >= required };
+  });
+  const insufficientBanks = selectedBanksAvailability.filter(
+    (bank) => bank.required > 0 && !bank.enough,
+  );
 
   const allocationById = useMemo(
     () => new Map(allocation.map((x) => [x.id, x.count])),
@@ -244,6 +281,7 @@ export function ActivityEditor({ activityId }: { activityId?: number }) {
         description: description.trim() || undefined,
         distributionMode: distribution,
         totalQuestions: total,
+        questionDifficulty,
         availableSelectionStrategies,
         mode,
         timeLimitSeconds: mode === "LEARNING" ? undefined : timeLimitSeconds,
@@ -423,6 +461,47 @@ export function ActivityEditor({ activityId }: { activityId?: number }) {
             </Field>
           </EditorSection>
 
+          {/* Question difficulty */}
+          <EditorSection
+            title="Question difficulty"
+            description="Students will see this level before starting. Only questions matching this setting are selected; Mixed allows all three levels."
+          >
+            <div className="grid gap-2 sm:grid-cols-2">
+              {(
+                [
+                  {
+                    value: "EASY",
+                    label: "Easy",
+                    description: "Beginner-friendly questions.",
+                  },
+                  {
+                    value: "MEDIUM",
+                    label: "Medium",
+                    description: "Questions with moderate challenge.",
+                  },
+                  {
+                    value: "HARD",
+                    label: "Hard",
+                    description: "More challenging questions.",
+                  },
+                  {
+                    value: "MIXED",
+                    label: "Mixed",
+                    description: "Use Easy, Medium and Hard questions.",
+                  },
+                ] as const
+              ).map((option) => (
+                <OptionCard
+                  key={option.value}
+                  on={questionDifficulty === option.value}
+                  onClick={() => setQuestionDifficulty(option.value)}
+                  title={option.label}
+                  description={option.description}
+                />
+              ))}
+            </div>
+          </EditorSection>
+
           {/* Question Banks */}
           <EditorSection
             title="Question Banks"
@@ -465,7 +544,10 @@ export function ActivityEditor({ activityId }: { activityId?: number }) {
             ) : (
               <div className="overflow-hidden rounded-lg border border-border-color">
                 {grouped.map(([section, topics]) => (
-                  <div key={section} className="border-b border-border-color last:border-b-0">
+                  <div
+                    key={section}
+                    className="border-b border-border-color last:border-b-0"
+                  >
                     <div className="bg-background-app px-4 py-2.5 text-body font-semibold">
                       {section}
                     </div>
@@ -476,7 +558,8 @@ export function ActivityEditor({ activityId }: { activityId?: number }) {
                         </div>
                         {list.map((source) => {
                           const on = selected.has(source.questionBankId);
-                          const noneReady = source.readyQuestions === 0;
+                          const available = selectedDifficultyTotal(source);
+                          const noneReady = available === 0;
                           return (
                             <button
                               key={source.questionBankId}
@@ -500,8 +583,14 @@ export function ActivityEditor({ activityId }: { activityId?: number }) {
                               <span
                                 className={`shrink-0 rounded-full border border-border-color px-2.5 py-1 text-body-sm font-semibold tabular-nums ${noneReady ? "text-accent-text" : "text-neutral-muted"}`}
                               >
-                                {source.readyQuestions}/{source.totalQuestions}{" "}
+                                {available}{" "}
+                                {ACTIVITY_DIFFICULTY_LABELS[
+                                  questionDifficulty
+                                ].toLowerCase()}{" "}
                                 ready
+                                <span className="ml-1 text-neutral-muted">
+                                  ({source.readyQuestions} complete total)
+                                </span>
                               </span>
                             </button>
                           );
@@ -511,6 +600,80 @@ export function ActivityEditor({ activityId }: { activityId?: number }) {
                   </div>
                 ))}
               </div>
+            )}
+          </EditorSection>
+
+          <EditorSection
+            title="Question availability"
+            description="Counts update immediately when you change difficulty or question allocation. Only complete questions are counted."
+          >
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+              {(
+                [
+                  { value: "EASY", label: "Easy" },
+                  { value: "MEDIUM", label: "Medium" },
+                  { value: "HARD", label: "Hard" },
+                  { value: "MIXED", label: "Mixed" },
+                ] as const
+              ).map((option) => {
+                const count = banks.reduce((sum, bank) => {
+                  const source = sourceForBank(bank.questionBankId);
+                  return (
+                    sum + (source ? difficultyCounts(source)[option.value] : 0)
+                  );
+                }, 0);
+                return (
+                  <div
+                    key={option.value}
+                    className="rounded-lg border border-border-color p-3"
+                  >
+                    <p className="text-body-sm text-neutral-muted">
+                      {option.label}
+                    </p>
+                    <p className="mt-1 text-xl font-bold tabular-nums">
+                      {sources.isLoading ? "—" : count}
+                    </p>
+                    <p className="text-body-sm text-neutral-muted">
+                      ready in selected banks
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+            {banks.length === 0 ? (
+              <p className="text-body-sm text-neutral-muted">
+                Select one or more Question Banks to see availability by
+                difficulty.
+              </p>
+            ) : sources.isLoading ? (
+              <p className="text-body-sm text-neutral-muted">
+                Loading question availability…
+              </p>
+            ) : insufficientBanks.length > 0 ? (
+              <div
+                role="alert"
+                className="rounded-lg border-l-4 border-danger bg-background-app p-3 text-body-sm text-danger-text"
+              >
+                <p className="font-semibold">
+                  Not enough {ACTIVITY_DIFFICULTY_LABELS[questionDifficulty].toLowerCase()}{" "}
+                  questions
+                </p>
+                <ul className="mt-2 list-disc space-y-1 pl-5">
+                  {insufficientBanks.map((bank) => (
+                    <li key={bank.questionBankId}>
+                      {bank.questionBankName}: {bank.available} available,{" "}
+                      {bank.required} required
+                      {bank.status !== "PUBLISHED"
+                        ? " · Question Bank is not published"
+                        : ""}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : (
+              <p className="text-body-sm font-semibold text-success">
+                Enough questions are available for the current selection.
+              </p>
             )}
           </EditorSection>
 
@@ -651,7 +814,10 @@ export function ActivityEditor({ activityId }: { activityId?: number }) {
             >
               <div className="flex items-start gap-2 text-body-sm">
                 {distributionError ? (
-                  <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
+                  <AlertTriangle
+                    className="mt-0.5 h-4 w-4 shrink-0"
+                    aria-hidden
+                  />
                 ) : (
                   <Check className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
                 )}
@@ -765,6 +931,12 @@ export function ActivityEditor({ activityId }: { activityId?: number }) {
               <Row label="Question Banks" value={String(banks.length)} />
               <Row label="Questions" value={String(total)} />
               <Row
+                label="Difficulty"
+                value={
+                  ACTIVITY_DIFFICULTY_LABELS[questionDifficulty]
+                }
+              />
+              <Row
                 label="Distribution"
                 value={
                   distributions.find((x) => x.value === distribution)?.label ||
@@ -786,7 +958,10 @@ export function ActivityEditor({ activityId }: { activityId?: number }) {
                 role="alert"
                 className="mt-4 flex gap-2 rounded-lg border-l-4 border-accent bg-background-app p-3 text-body-sm text-accent-text"
               >
-                <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
+                <AlertTriangle
+                  className="mt-0.5 h-4 w-4 shrink-0"
+                  aria-hidden
+                />
                 <p>{formError}</p>
               </div>
             ) : (
@@ -806,7 +981,10 @@ export function ActivityEditor({ activityId }: { activityId?: number }) {
             </button>
 
             <div className="mt-4 flex gap-2 text-body-sm text-neutral-muted">
-              <Info className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden />
+              <Info
+                className="mt-0.5 h-4 w-4 shrink-0 text-primary"
+                aria-hidden
+              />
               <p>
                 Saving creates a draft configuration. Publishing is separate and
                 checks live Question Bank readiness.

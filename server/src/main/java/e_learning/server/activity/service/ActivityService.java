@@ -63,6 +63,7 @@ public class ActivityService {
                 .displayOrder(activityRepository.findMaxDisplayOrderByUnitId(unit.getId()) + 1)
                 .distributionMode(request.distributionMode())
                 .totalQuestions(request.totalQuestions())
+                .questionDifficulty(request.questionDifficulty())
                 .availableSelectionStrategies(request.availableSelectionStrategies())
                 .mode(request.mode())
                 .timeLimitSeconds(request.timeLimitSeconds())
@@ -91,6 +92,7 @@ public class ActivityService {
         activity.setDescription(trimToNull(request.description()));
         activity.setDistributionMode(request.distributionMode());
         activity.setTotalQuestions(request.totalQuestions());
+        activity.setQuestionDifficulty(request.questionDifficulty());
         activity.setAvailableSelectionStrategies(request.availableSelectionStrategies());
         activity.setMode(request.mode());
         activity.setTimeLimitSeconds(request.timeLimitSeconds());
@@ -142,6 +144,8 @@ public class ActivityService {
             contentQuestionRepository
                     .findTop100ByQuestionBankIdAndQuestionCompleteTrueOrderByQuestionIdAsc(bank.getQuestionBank().getId())
                     .stream()
+                    .filter(cq -> activity.getQuestionDifficulty() == ActivityDifficulty.MIXED
+                            || cq.getQuestion().getDifficulty().name().equals(activity.getQuestionDifficulty().name()))
                     .limit(required)
                     .map(contentQuestion -> contentQuestion.getQuestionId())
                     .forEach(sampleQuestionIds::add);
@@ -218,6 +222,7 @@ public class ActivityService {
                 .name(activity.getName()).description(activity.getDescription()).displayOrder(activity.getDisplayOrder())
                 .status(activity.getStatus()).distributionMode(activity.getDistributionMode())
                 .totalQuestions(activity.getTotalQuestions())
+                .questionDifficulty(activity.getQuestionDifficulty())
                 .availableSelectionStrategies(activity.getAvailableSelectionStrategies())
                 .mode(activity.getMode()).timeLimitSeconds(activity.getTimeLimitSeconds()).lives(activity.getLives())
                 .banks(bankResponses).readiness(readiness)

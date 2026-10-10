@@ -4,6 +4,13 @@ export type DistributionMode = "EQUAL" | "PERCENTAGE" | "FIXED_COUNT";
 export type SelectionStrategy = "RANDOM" | "WEAKNESS_PRIORITY";
 export type ActivityDifficulty = "EASY" | "MEDIUM" | "HARD" | "MIXED";
 
+export const ACTIVITY_DIFFICULTY_LABELS: Record<ActivityDifficulty, string> = {
+  EASY: "Easy",
+  MEDIUM: "Medium",
+  HARD: "Hard",
+  MIXED: "Mixed",
+};
+
 export interface ActivityBank {
   id: number; questionBankId: number; questionBankName: string; topicId: number;
   topicName: string; sectionName: string; displayOrder: number;

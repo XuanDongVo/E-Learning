@@ -2,19 +2,14 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import {
-  AlertTriangle,
-  ArrowLeft,
-  Check,
-  Info,
-  Search,
-} from "lucide-react";
+import { AlertTriangle, ArrowLeft, Check, Info, Search } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { activityService } from "@/services/activity.service";
 import { unitService } from "@/services/content/content.unit.service";
 import { QUERY_KEYS } from "@/services/query-keys";
+import { ACTIVITY_DIFFICULTY_LABELS } from "@/types/activity";
 import type {
   ActivityMode,
   ActivityDifficulty,
@@ -24,7 +19,17 @@ import type {
   ActivityBankRequest,
 } from "@/types/activity";
 
-type SelectedBank = ActivitySourceOption & {
+type SelectedBank = Pick<
+  ActivitySourceOption,
+  | "questionBankId"
+  | "questionBankName"
+  | "topicId"
+  | "topicName"
+  | "sectionName"
+  | "status"
+  | "totalQuestions"
+  | "readyQuestions"
+> & {
   displayOrder: number;
   percentage?: number;
   fixedCount?: number;
@@ -118,7 +123,8 @@ export function ActivityEditor({ activityId }: { activityId?: number }) {
   const [description, setDescription] = useState("");
   const [distribution, setDistribution] = useState<DistributionMode>("EQUAL");
   const [total, setTotal] = useState(10);
-  const [questionDifficulty, setQuestionDifficulty] = useState<ActivityDifficulty>("MIXED");
+  const [questionDifficulty, setQuestionDifficulty] =
+    useState<ActivityDifficulty>("MIXED");
   const [availableSelectionStrategies, setAvailableSelectionStrategies] =
     useState<SelectionStrategy[]>(["RANDOM"]);
   const [mode, setMode] = useState<ActivityMode>("BOTH");
@@ -199,7 +205,7 @@ export function ActivityEditor({ activityId }: { activityId?: number }) {
         fraction: exact - Math.floor(exact),
       };
     });
-    let remaining = total - base.reduce((s, x) => s + x.floor, 0);
+    const remaining = total - base.reduce((s, x) => s + x.floor, 0);
     const extras = new Set(
       base
         .sort((a, b) => b.fraction - a.fraction || a.id - b.id)
@@ -212,26 +218,26 @@ export function ActivityEditor({ activityId }: { activityId?: number }) {
     }));
   }, [banks, distribution, total]);
 
-  const difficultyLabel: Record<ActivityDifficulty, string> = {
-    EASY: "Easy",
-    MEDIUM: "Medium",
-    HARD: "Hard",
-    MIXED: "Mixed",
-  };
   const difficultyCounts = (source: ActivitySourceOption) => ({
     EASY: source.easyReadyQuestions,
     MEDIUM: source.mediumReadyQuestions,
     HARD: source.hardReadyQuestions,
-    MIXED: source.easyReadyQuestions + source.mediumReadyQuestions + source.hardReadyQuestions,
+    MIXED:
+      source.easyReadyQuestions +
+      source.mediumReadyQuestions +
+      source.hardReadyQuestions,
   });
   const sourceForBank = (questionBankId: number) =>
-    (sources.data || []).find((source) => source.questionBankId === questionBankId);
+    (sources.data || []).find(
+      (source) => source.questionBankId === questionBankId,
+    );
   const selectedDifficultyTotal = (bank: { questionBankId: number }) => {
     const source = sourceForBank(bank.questionBankId);
     return source ? difficultyCounts(source)[questionDifficulty] : 0;
   };
   const selectedBanksAvailability = banks.map((bank) => {
-    const required = allocation.find((item) => item.id === bank.questionBankId)?.count ?? 0;
+    const required =
+      allocation.find((item) => item.id === bank.questionBankId)?.count ?? 0;
     const available = selectedDifficultyTotal(bank);
     return { ...bank, required, available, enough: available >= required };
   });
@@ -461,12 +467,30 @@ export function ActivityEditor({ activityId }: { activityId?: number }) {
             description="Students will see this level before starting. Only questions matching this setting are selected; Mixed allows all three levels."
           >
             <div className="grid gap-2 sm:grid-cols-2">
-              {([
-                { value: "EASY", label: "Easy", description: "Beginner-friendly questions." },
-                { value: "MEDIUM", label: "Medium", description: "Questions with moderate challenge." },
-                { value: "HARD", label: "Hard", description: "More challenging questions." },
-                { value: "MIXED", label: "Mixed", description: "Use Easy, Medium and Hard questions." },
-              ] as const).map((option) => (
+              {(
+                [
+                  {
+                    value: "EASY",
+                    label: "Easy",
+                    description: "Beginner-friendly questions.",
+                  },
+                  {
+                    value: "MEDIUM",
+                    label: "Medium",
+                    description: "Questions with moderate challenge.",
+                  },
+                  {
+                    value: "HARD",
+                    label: "Hard",
+                    description: "More challenging questions.",
+                  },
+                  {
+                    value: "MIXED",
+                    label: "Mixed",
+                    description: "Use Easy, Medium and Hard questions.",
+                  },
+                ] as const
+              ).map((option) => (
                 <OptionCard
                   key={option.value}
                   on={questionDifficulty === option.value}
@@ -520,7 +544,10 @@ export function ActivityEditor({ activityId }: { activityId?: number }) {
             ) : (
               <div className="overflow-hidden rounded-lg border border-border-color">
                 {grouped.map(([section, topics]) => (
-                  <div key={section} className="border-b border-border-color last:border-b-0">
+                  <div
+                    key={section}
+                    className="border-b border-border-color last:border-b-0"
+                  >
                     <div className="bg-background-app px-4 py-2.5 text-body font-semibold">
                       {section}
                     </div>
@@ -557,8 +584,13 @@ export function ActivityEditor({ activityId }: { activityId?: number }) {
                                 className={`shrink-0 rounded-full border border-border-color px-2.5 py-1 text-body-sm font-semibold tabular-nums ${noneReady ? "text-accent-text" : "text-neutral-muted"}`}
                               >
                                 {available}{" "}
-                                {difficultyLabel[questionDifficulty].toLowerCase()} ready
-                                <span className="ml-1 text-neutral-muted">({source.readyQuestions} complete total)</span>
+                                {ACTIVITY_DIFFICULTY_LABELS[
+                                  questionDifficulty
+                                ].toLowerCase()}{" "}
+                                ready
+                                <span className="ml-1 text-neutral-muted">
+                                  ({source.readyQuestions} complete total)
+                                </span>
                               </span>
                             </button>
                           );
@@ -576,41 +608,72 @@ export function ActivityEditor({ activityId }: { activityId?: number }) {
             description="Counts update immediately when you change difficulty or question allocation. Only complete questions are counted."
           >
             <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-              {([
-                { value: "EASY", label: "Easy" },
-                { value: "MEDIUM", label: "Medium" },
-                { value: "HARD", label: "Hard" },
-                { value: "MIXED", label: "Mixed" },
-              ] as const).map((option) => {
+              {(
+                [
+                  { value: "EASY", label: "Easy" },
+                  { value: "MEDIUM", label: "Medium" },
+                  { value: "HARD", label: "Hard" },
+                  { value: "MIXED", label: "Mixed" },
+                ] as const
+              ).map((option) => {
                 const count = banks.reduce((sum, bank) => {
                   const source = sourceForBank(bank.questionBankId);
-                  return sum + (source ? difficultyCounts(source)[option.value] : 0);
+                  return (
+                    sum + (source ? difficultyCounts(source)[option.value] : 0)
+                  );
                 }, 0);
                 return (
-                  <div key={option.value} className="rounded-lg border border-border-color p-3">
-                    <p className="text-body-sm text-neutral-muted">{option.label}</p>
-                    <p className="mt-1 text-xl font-bold tabular-nums">{sources.isLoading ? "—" : count}</p>
-                    <p className="text-body-sm text-neutral-muted">ready in selected banks</p>
+                  <div
+                    key={option.value}
+                    className="rounded-lg border border-border-color p-3"
+                  >
+                    <p className="text-body-sm text-neutral-muted">
+                      {option.label}
+                    </p>
+                    <p className="mt-1 text-xl font-bold tabular-nums">
+                      {sources.isLoading ? "—" : count}
+                    </p>
+                    <p className="text-body-sm text-neutral-muted">
+                      ready in selected banks
+                    </p>
                   </div>
                 );
               })}
             </div>
             {banks.length === 0 ? (
-              <p className="text-body-sm text-neutral-muted">Select one or more Question Banks to see availability by difficulty.</p>
-            ) : sources.isLoading ? (\n              <p className="text-body-sm text-neutral-muted">Loading question availability…</p>\n            ) : insufficientBanks.length > 0 ? (
-              <div role="alert" className="rounded-lg border-l-4 border-danger bg-background-app p-3 text-body-sm text-danger-text">
-                <p className="font-semibold">Not enough {difficultyLabel[questionDifficulty].toLowerCase()} questions</p>
+              <p className="text-body-sm text-neutral-muted">
+                Select one or more Question Banks to see availability by
+                difficulty.
+              </p>
+            ) : sources.isLoading ? (
+              <p className="text-body-sm text-neutral-muted">
+                Loading question availability…
+              </p>
+            ) : insufficientBanks.length > 0 ? (
+              <div
+                role="alert"
+                className="rounded-lg border-l-4 border-danger bg-background-app p-3 text-body-sm text-danger-text"
+              >
+                <p className="font-semibold">
+                  Not enough {ACTIVITY_DIFFICULTY_LABELS[questionDifficulty].toLowerCase()}{" "}
+                  questions
+                </p>
                 <ul className="mt-2 list-disc space-y-1 pl-5">
                   {insufficientBanks.map((bank) => (
                     <li key={bank.questionBankId}>
-                      {bank.questionBankName}: {bank.available} available, {bank.required} required
-                      {bank.status !== "PUBLISHED" ? " · Question Bank is not published" : ""}
+                      {bank.questionBankName}: {bank.available} available,{" "}
+                      {bank.required} required
+                      {bank.status !== "PUBLISHED"
+                        ? " · Question Bank is not published"
+                        : ""}
                     </li>
                   ))}
                 </ul>
               </div>
             ) : (
-              <p className="text-body-sm font-semibold text-success">Enough questions are available for the current selection.</p>
+              <p className="text-body-sm font-semibold text-success">
+                Enough questions are available for the current selection.
+              </p>
             )}
           </EditorSection>
 
@@ -751,7 +814,10 @@ export function ActivityEditor({ activityId }: { activityId?: number }) {
             >
               <div className="flex items-start gap-2 text-body-sm">
                 {distributionError ? (
-                  <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
+                  <AlertTriangle
+                    className="mt-0.5 h-4 w-4 shrink-0"
+                    aria-hidden
+                  />
                 ) : (
                   <Check className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
                 )}
@@ -864,7 +930,12 @@ export function ActivityEditor({ activityId }: { activityId?: number }) {
               <Row label="Unit" value={unit.data?.code || "—"} />
               <Row label="Question Banks" value={String(banks.length)} />
               <Row label="Questions" value={String(total)} />
-              <Row label="Difficulty" value={{ EASY: "Easy", MEDIUM: "Medium", HARD: "Hard", MIXED: "Mixed" }[questionDifficulty]} />
+              <Row
+                label="Difficulty"
+                value={
+                  ACTIVITY_DIFFICULTY_LABELS[questionDifficulty]
+                }
+              />
               <Row
                 label="Distribution"
                 value={
@@ -887,7 +958,10 @@ export function ActivityEditor({ activityId }: { activityId?: number }) {
                 role="alert"
                 className="mt-4 flex gap-2 rounded-lg border-l-4 border-accent bg-background-app p-3 text-body-sm text-accent-text"
               >
-                <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
+                <AlertTriangle
+                  className="mt-0.5 h-4 w-4 shrink-0"
+                  aria-hidden
+                />
                 <p>{formError}</p>
               </div>
             ) : (
@@ -907,7 +981,10 @@ export function ActivityEditor({ activityId }: { activityId?: number }) {
             </button>
 
             <div className="mt-4 flex gap-2 text-body-sm text-neutral-muted">
-              <Info className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden />
+              <Info
+                className="mt-0.5 h-4 w-4 shrink-0 text-primary"
+                aria-hidden
+              />
               <p>
                 Saving creates a draft configuration. Publishing is separate and
                 checks live Question Bank readiness.

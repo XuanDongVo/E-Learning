@@ -5,6 +5,7 @@ import { ArrowRight, Clock3, Gamepad2, Sparkles } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { studentActivityService } from "@/services/student/student-activity.service";
 import type { Activity } from "@/types/student/activity";
+import { ACTIVITY_DIFFICULTY_LABELS } from "@/types/activity";
 
 export function ActivityHub({ unitId }: { unitId?: number }) {
   const activities = useQuery({
@@ -99,7 +100,10 @@ function ActivityCard({ unitId, activity }: { unitId: number; activity: Activity
           {activity.description}
         </p>
       )}
-      <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 text-body-sm text-neutral-muted">\n        <span className="font-semibold text-neutral-dark">{difficultyLabels[activity.questionDifficulty]} difficulty</span>
+      <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 text-body-sm text-neutral-muted">
+        <span className="font-semibold text-neutral-dark">
+          {ACTIVITY_DIFFICULTY_LABELS[activity.questionDifficulty]} difficulty
+        </span>
         <span>{activity.unitName}</span>
         {supportsPractice && <span>Practice</span>}
         {supportsTryHard && <span>Try Hard</span>}

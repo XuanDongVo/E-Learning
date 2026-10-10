@@ -51,7 +51,7 @@ public class ActivitySessionService {
                 || !hasCurrentGradeAccess(student.getId(), activity.getUnit().getGrade().getId())) {
             throw new AppException(ErrorCode.ACTIVITY_SESSION_NOT_ACCESSIBLE);
         }
-        return new ActivitySessionOptionsResponse(activity.getId(), activity.getMode(),
+        return new ActivitySessionOptionsResponse(activity.getId(), activity.getMode(), activity.getQuestionDifficulty(),
                 activity.getAvailableSelectionStrategies(), activity.getTimeLimitSeconds(), activity.getLives());
     }
 
@@ -187,7 +187,10 @@ public class ActivitySessionService {
         for (ActivityBank bank : banks) {
             List<Question> pool = contentQuestionRepository
                     .findAllByQuestionBankIdAndQuestionCompleteTrueOrderByQuestionIdAsc(bank.getQuestionBank().getId())
-                    .stream().map(ContentQuestion::getQuestion).collect(java.util.stream.Collectors.toCollection(ArrayList::new));
+                    .stream().map(ContentQuestion::getQuestion)
+                    .filter(question -> activity.getQuestionDifficulty() == ActivityDifficulty.MIXED
+                            || question.getDifficulty().name().equals(activity.getQuestionDifficulty().name()))
+                    .collect(java.util.stream.Collectors.toCollection(ArrayList::new));
             Collections.shuffle(pool);
             int count = allocations.getOrDefault(bank.getQuestionBank().getId(), 0);
             if (pool.size() < count) throw new AppException(ErrorCode.ACTIVITY_SESSION_NOT_READY);

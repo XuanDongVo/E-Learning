@@ -8,6 +8,13 @@ const metaItem = "inline-flex items-center gap-1.5";
 export function ActivityCard({unitId, activity, topicNames }: { unitId: number; activity: StudentActivity; topicNames: string[] }) {
   const hasPractice = activity.mode !== "TRY_HARD";
   const hasTryHard = activity.mode !== "LEARNING";
+  const difficultyLabels = { EASY: "Easy", MEDIUM: "Medium", HARD: "Hard", MIXED: "Mixed" } as const;
+  const difficultyStyles = {
+    EASY: "bg-success/10 text-success",
+    MEDIUM: "bg-accent-light text-amber-700",
+    HARD: "bg-danger-light text-danger-text",
+    MIXED: "bg-background-app text-neutral-dark",
+  } as const;
 
   return (
     <article className="flex flex-col gap-3 rounded-2xl border border-border-color bg-card-bg p-4 shadow-2xs transition-all hover:border-primary hover:shadow-md">

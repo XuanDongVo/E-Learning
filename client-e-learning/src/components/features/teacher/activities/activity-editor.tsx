@@ -159,29 +159,6 @@ export function ActivityEditor({ activityId }: { activityId?: number }) {
     [banks],
   );
 
-  const difficultyLabel: Record<ActivityDifficulty, string> = {
-    EASY: "Easy",
-    MEDIUM: "Medium",
-    HARD: "Hard",
-    MIXED: "Mixed",
-  };
-  const difficultyCounts = (source: ActivitySourceOption) => ({
-    EASY: source.easyReadyQuestions,
-    MEDIUM: source.mediumReadyQuestions,
-    HARD: source.hardReadyQuestions,
-    MIXED: source.easyReadyQuestions + source.mediumReadyQuestions + source.hardReadyQuestions,
-  });
-  const selectedDifficultyTotal = (source: ActivitySourceOption) =>
-    difficultyCounts(source)[questionDifficulty];
-  const selectedBanksAvailability = banks.map((bank) => {
-    const required = allocation.find((item) => item.id === bank.questionBankId)?.count ?? 0;
-    const available = selectedDifficultyTotal(bank);
-    return { ...bank, required, available, enough: available >= required };
-  });
-  const insufficientBanks = selectedBanksAvailability.filter(
-    (bank) => bank.required > 0 && !bank.enough,
-  );
-
   const grouped = useMemo(() => {
     const q = search.trim().toLowerCase();
     const sections = new Map<string, Map<string, ActivitySourceOption[]>>();
@@ -234,6 +211,33 @@ export function ActivityEditor({ activityId }: { activityId?: number }) {
       count: x.floor + (extras.has(x.id) ? 1 : 0),
     }));
   }, [banks, distribution, total]);
+
+  const difficultyLabel: Record<ActivityDifficulty, string> = {
+    EASY: "Easy",
+    MEDIUM: "Medium",
+    HARD: "Hard",
+    MIXED: "Mixed",
+  };
+  const difficultyCounts = (source: ActivitySourceOption) => ({
+    EASY: source.easyReadyQuestions,
+    MEDIUM: source.mediumReadyQuestions,
+    HARD: source.hardReadyQuestions,
+    MIXED: source.easyReadyQuestions + source.mediumReadyQuestions + source.hardReadyQuestions,
+  });
+  const sourceForBank = (questionBankId: number) =>
+    (sources.data || []).find((source) => source.questionBankId === questionBankId);
+  const selectedDifficultyTotal = (bank: { questionBankId: number }) => {
+    const source = sourceForBank(bank.questionBankId);
+    return source ? difficultyCounts(source)[questionDifficulty] : 0;
+  };
+  const selectedBanksAvailability = banks.map((bank) => {
+    const required = allocation.find((item) => item.id === bank.questionBankId)?.count ?? 0;
+    const available = selectedDifficultyTotal(bank);
+    return { ...bank, required, available, enough: available >= required };
+  });
+  const insufficientBanks = selectedBanksAvailability.filter(
+    (bank) => bank.required > 0 && !bank.enough,
+  );
 
   const allocationById = useMemo(
     () => new Map(allocation.map((x) => [x.id, x.count])),

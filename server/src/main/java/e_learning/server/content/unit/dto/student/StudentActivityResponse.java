@@ -2,6 +2,7 @@ package e_learning.server.content.unit.dto.student;
 
 import e_learning.server.activity.entity.Activity;
 import e_learning.server.activity.enums.ActivityMode;
+import e_learning.server.activity.enums.ActivityDifficulty;
 
 import java.util.List;
 
@@ -10,6 +11,7 @@ public record StudentActivityResponse(
         String name,
         String description,
         ActivityMode mode,
+        ActivityDifficulty questionDifficulty,
         Integer totalQuestions,
         Integer timeLimitSeconds,
         Integer lives,
@@ -28,6 +30,7 @@ public record StudentActivityResponse(
                 activity.getName(),
                 activity.getDescription(),
                 activity.getMode(),
+                activity.getQuestionDifficulty(),
                 activity.getTotalQuestions(),
                 activity.getTimeLimitSeconds(),
                 activity.getLives(),

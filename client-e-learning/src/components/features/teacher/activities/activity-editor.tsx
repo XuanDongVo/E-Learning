@@ -17,6 +17,7 @@ import { unitService } from "@/services/content/content.unit.service";
 import { QUERY_KEYS } from "@/services/query-keys";
 import type {
   ActivityMode,
+  ActivityDifficulty,
   ActivitySourceOption,
   DistributionMode,
   SelectionStrategy,
@@ -117,6 +118,7 @@ export function ActivityEditor({ activityId }: { activityId?: number }) {
   const [description, setDescription] = useState("");
   const [distribution, setDistribution] = useState<DistributionMode>("EQUAL");
   const [total, setTotal] = useState(10);
+  const [questionDifficulty, setQuestionDifficulty] = useState<ActivityDifficulty>("MIXED");
   const [availableSelectionStrategies, setAvailableSelectionStrategies] =
     useState<SelectionStrategy[]>(["RANDOM"]);
   const [mode, setMode] = useState<ActivityMode>("BOTH");
@@ -135,6 +137,7 @@ export function ActivityEditor({ activityId }: { activityId?: number }) {
     setDescription(a.description || "");
     setDistribution(a.distributionMode);
     setTotal(a.totalQuestions);
+    setQuestionDifficulty(a.questionDifficulty ?? "MIXED");
     setAvailableSelectionStrategies(a.availableSelectionStrategies);
     setMode(a.mode);
     setTimeLimitSeconds(
@@ -244,6 +247,7 @@ export function ActivityEditor({ activityId }: { activityId?: number }) {
         description: description.trim() || undefined,
         distributionMode: distribution,
         totalQuestions: total,
+        questionDifficulty,
         availableSelectionStrategies,
         mode,
         timeLimitSeconds: mode === "LEARNING" ? undefined : timeLimitSeconds,
@@ -421,6 +425,29 @@ export function ActivityEditor({ activityId }: { activityId?: number }) {
                 placeholder="What should students practice?"
               />
             </Field>
+          </EditorSection>
+
+          {/* Question difficulty */}
+          <EditorSection
+            title="Question difficulty"
+            description="Students will see this level before starting. Only questions matching this setting are selected; Mixed allows all three levels."
+          >
+            <div className="grid gap-2 sm:grid-cols-2">
+              {([
+                { value: "EASY", label: "Easy", description: "Beginner-friendly questions." },
+                { value: "MEDIUM", label: "Medium", description: "Questions with moderate challenge." },
+                { value: "HARD", label: "Hard", description: "More challenging questions." },
+                { value: "MIXED", label: "Mixed", description: "Use Easy, Medium and Hard questions." },
+              ] as const).map((option) => (
+                <OptionCard
+                  key={option.value}
+                  on={questionDifficulty === option.value}
+                  onClick={() => setQuestionDifficulty(option.value)}
+                  title={option.label}
+                  description={option.description}
+                />
+              ))}
+            </div>
           </EditorSection>
 
           {/* Question Banks */}
@@ -764,6 +791,7 @@ export function ActivityEditor({ activityId }: { activityId?: number }) {
               <Row label="Unit" value={unit.data?.code || "—"} />
               <Row label="Question Banks" value={String(banks.length)} />
               <Row label="Questions" value={String(total)} />
+              <Row label="Difficulty" value={{ EASY: "Easy", MEDIUM: "Medium", HARD: "Hard", MIXED: "Mixed" }[questionDifficulty]} />
               <Row
                 label="Distribution"
                 value={

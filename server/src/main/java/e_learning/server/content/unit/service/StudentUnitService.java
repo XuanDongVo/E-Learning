@@ -236,6 +236,7 @@ public class StudentUnitService {
                             activity.getName(),
                             activity.getDescription(),
                             activity.getMode(),
+                            activity.getQuestionDifficulty(),
                             activity.getTotalQuestions(),
                             activity.getTimeLimitSeconds(),
                             activity.getLives(),

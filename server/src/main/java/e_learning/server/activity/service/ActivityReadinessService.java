@@ -66,7 +66,7 @@ public class ActivityReadinessService {
                     "Question bank must be published.", bank, required, ready));
             } else if (required == null || ready < required) {
                 errors.add(issue("INSUFFICIENT_READY_QUESTIONS",
-                    "Question bank does not contain enough ready questions.",
+                    "Question bank does not contain enough ready questions at the configured activity difficulty.",
                     bank, required, ready));
             }
         }

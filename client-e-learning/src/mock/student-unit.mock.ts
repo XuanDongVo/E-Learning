@@ -14,10 +14,10 @@ export const MOCK_UNIT_CONTENT: { sections: StudentSection[]; activities: Studen
     { id: 3, name: "Reading", topics: [{ id: 31, name: "Short stories" }] },
   ],
   activities: [
-    { id: 101, name: "Present simple practice", description: "Use present simple for habits, facts and routines.", mode: "BOTH", totalQuestions: 15, timeLimitSeconds: 15, lives: 3, topicIds: [11] },
-    { id: 102, name: "Past simple challenge", description: "Race through regular and irregular past forms.", mode: "TRY_HARD", totalQuestions: 10, timeLimitSeconds: 15, lives: 3, topicIds: [12] },
-    { id: 103, name: "Greetings and introductions", description: "Say hello, introduce yourself and your family.", mode: "BOTH", totalQuestions: 20, timeLimitSeconds: 20, lives: 3, topicIds: [21, 22] },
-    { id: 104, name: "Grammar mix", description: "Switch between present and past in short sentences.", mode: "LEARNING", totalQuestions: 12, topicIds: [11, 12] },
-    { id: 105, name: "Mixed review", description: "A bit of everything from the whole unit.", mode: "BOTH", totalQuestions: 25, timeLimitSeconds: 15, lives: 3, topicIds: [12, 21, 31] },
+    { id: 101, name: "Present simple practice", description: "Use present simple for habits, facts and routines.", mode: "BOTH", questionDifficulty: "EASY", totalQuestions: 15, timeLimitSeconds: 15, lives: 3, topicIds: [11] },
+    { id: 102, name: "Past simple challenge", description: "Race through regular and irregular past forms.", mode: "TRY_HARD", questionDifficulty: "HARD", totalQuestions: 10, timeLimitSeconds: 15, lives: 3, topicIds: [12] },
+    { id: 103, name: "Greetings and introductions", description: "Say hello, introduce yourself and your family.", mode: "BOTH", questionDifficulty: "MEDIUM", totalQuestions: 20, timeLimitSeconds: 20, lives: 3, topicIds: [21, 22] },
+    { id: 104, name: "Grammar mix", description: "Switch between present and past in short sentences.", mode: "LEARNING", questionDifficulty: "MIXED", totalQuestions: 12, topicIds: [11, 12] },
+    { id: 105, name: "Mixed review", description: "A bit of everything from the whole unit.", mode: "BOTH", questionDifficulty: "MIXED", totalQuestions: 25, timeLimitSeconds: 15, lives: 3, topicIds: [12, 21, 31] },
   ],
 };

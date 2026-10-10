@@ -7,10 +7,11 @@ import { Button } from "@/components/ui/button";
 import { UnitCard } from "./unit-card";
 
 export function UnitsView() {
-  const { data, isLoading, isError, error, refetch } = useQuery({
+  const { data: response, isLoading, isError, error, refetch } = useQuery({
     queryKey: QUERY_KEYS.units,
     queryFn: studentUnitService.list,
   });
+  const data = response?.data;
 
   return (
     <div className="mx-auto max-w-[1100px] space-y-5 p-4 pb-24 sm:p-5 lg:p-6 lg:pb-6">

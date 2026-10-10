@@ -21,10 +21,11 @@ export function UnitDetailView({ unitId }: { unitId: number }) {
   const [sectionId, setSectionId] = useState<Filter>("all");
   const [topicId, setTopicId] = useState<Filter>("all");
 
-  const { data: unit, isLoading, isError, error, refetch } = useQuery({
+  const { data: response, isLoading, isError, error, refetch } = useQuery({
     queryKey: QUERY_KEYS.unitDetail(String(unitId)),
     queryFn: () => studentUnitService.getUnitDetail(unitId),
   });
+  const unit = response?.data;
 
   // Activity chỉ biết topicIds → suy ra Section/Topic từ cây Section → Topic.
   const topicName = useMemo(() => {

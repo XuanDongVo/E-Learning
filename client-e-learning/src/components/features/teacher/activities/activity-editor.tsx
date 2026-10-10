@@ -158,6 +158,30 @@ export function ActivityEditor({ activityId }: { activityId?: number }) {
     () => new Set(banks.map((b) => b.questionBankId)),
     [banks],
   );
+
+  const difficultyLabel: Record<ActivityDifficulty, string> = {
+    EASY: "Easy",
+    MEDIUM: "Medium",
+    HARD: "Hard",
+    MIXED: "Mixed",
+  };
+  const difficultyCounts = (source: ActivitySourceOption) => ({
+    EASY: source.easyReadyQuestions,
+    MEDIUM: source.mediumReadyQuestions,
+    HARD: source.hardReadyQuestions,
+    MIXED: source.easyReadyQuestions + source.mediumReadyQuestions + source.hardReadyQuestions,
+  });
+  const selectedDifficultyTotal = (source: ActivitySourceOption) =>
+    difficultyCounts(source)[questionDifficulty];
+  const selectedBanksAvailability = banks.map((bank) => {
+    const required = allocation.find((item) => item.id === bank.questionBankId)?.count ?? 0;
+    const available = selectedDifficultyTotal(bank);
+    return { ...bank, required, available, enough: available >= required };
+  });
+  const insufficientBanks = selectedBanksAvailability.filter(
+    (bank) => bank.required > 0 && !bank.enough,
+  );
+
   const grouped = useMemo(() => {
     const q = search.trim().toLowerCase();
     const sections = new Map<string, Map<string, ActivitySourceOption[]>>();
@@ -503,7 +527,8 @@ export function ActivityEditor({ activityId }: { activityId?: number }) {
                         </div>
                         {list.map((source) => {
                           const on = selected.has(source.questionBankId);
-                          const noneReady = source.readyQuestions === 0;
+                          const available = selectedDifficultyTotal(source);
+                          const noneReady = available === 0;
                           return (
                             <button
                               key={source.questionBankId}
@@ -527,8 +552,9 @@ export function ActivityEditor({ activityId }: { activityId?: number }) {
                               <span
                                 className={`shrink-0 rounded-full border border-border-color px-2.5 py-1 text-body-sm font-semibold tabular-nums ${noneReady ? "text-accent-text" : "text-neutral-muted"}`}
                               >
-                                {source.readyQuestions}/{source.totalQuestions}{" "}
-                                ready
+                                {available}{" "}
+                                {difficultyLabel[questionDifficulty].toLowerCase()} ready
+                                <span className="ml-1 text-neutral-muted">({source.readyQuestions} complete total)</span>
                               </span>
                             </button>
                           );
@@ -538,6 +564,49 @@ export function ActivityEditor({ activityId }: { activityId?: number }) {
                   </div>
                 ))}
               </div>
+            )}
+          </EditorSection>
+
+          <EditorSection
+            title="Question availability"
+            description="Counts update immediately when you change difficulty or question allocation. Only complete questions are counted."
+          >
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+              {([
+                { value: "EASY", label: "Easy" },
+                { value: "MEDIUM", label: "Medium" },
+                { value: "HARD", label: "Hard" },
+                { value: "MIXED", label: "Mixed" },
+              ] as const).map((option) => {
+                const count = banks.reduce(
+                  (sum, bank) => sum + difficultyCounts(bank)[option.value],
+                  0,
+                );
+                return (
+                  <div key={option.value} className="rounded-lg border border-border-color p-3">
+                    <p className="text-body-sm text-neutral-muted">{option.label}</p>
+                    <p className="mt-1 text-xl font-bold tabular-nums">{count}</p>
+                    <p className="text-body-sm text-neutral-muted">ready in selected banks</p>
+                  </div>
+                );
+              })}
+            </div>
+            {banks.length === 0 ? (
+              <p className="text-body-sm text-neutral-muted">Select one or more Question Banks to see availability by difficulty.</p>
+            ) : insufficientBanks.length > 0 ? (
+              <div role="alert" className="rounded-lg border-l-4 border-danger bg-background-app p-3 text-body-sm text-danger-text">
+                <p className="font-semibold">Not enough {difficultyLabel[questionDifficulty].toLowerCase()} questions</p>
+                <ul className="mt-2 list-disc space-y-1 pl-5">
+                  {insufficientBanks.map((bank) => (
+                    <li key={bank.questionBankId}>
+                      {bank.questionBankName}: {bank.available} available, {bank.required} required
+                      {bank.status !== "PUBLISHED" ? " · Question Bank is not published" : ""}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : (
+              <p className="text-body-sm font-semibold text-success">Enough questions are available for the current selection.</p>
             )}
           </EditorSection>
 

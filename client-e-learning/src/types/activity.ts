@@ -27,6 +27,7 @@ export interface ActivitySourceOption {
   questionBankId: number; questionBankName: string; topicId: number;
   topicName: string; sectionName: string; status: ActivityStatus;
   totalQuestions: number; readyQuestions: number;
+  easyReadyQuestions: number; mediumReadyQuestions: number; hardReadyQuestions: number;
 }
 export interface Activity {
   id: number; gradeId: number; gradeName: string; unitId: number;

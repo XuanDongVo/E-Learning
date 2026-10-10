@@ -6,7 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, Lightbulb, ListTree, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { fetchStudentUnit } from "@/services/student-unit.service";
+import { studentUnitService } from "@/services/student-unit.service";
 import { QUERY_KEYS } from "@/services/query-keys";
 import { ActivityCard } from "./activity-card";
 import { UnitCover, unitLabel } from "./unit-cover";
@@ -21,10 +21,11 @@ export function UnitDetailView({ unitId }: { unitId: number }) {
   const [sectionId, setSectionId] = useState<Filter>("all");
   const [topicId, setTopicId] = useState<Filter>("all");
 
-  const { data: unit, isLoading, isError, error, refetch } = useQuery({
+  const { data: response, isLoading, isError, error, refetch } = useQuery({
     queryKey: QUERY_KEYS.unitDetail(String(unitId)),
-    queryFn: () => fetchStudentUnit(unitId),
+    queryFn: () => studentUnitService.getUnitDetail(unitId),
   });
+  const unit = response?.data;
 
   // Activity chỉ biết topicIds → suy ra Section/Topic từ cây Section → Topic.
   const topicName = useMemo(() => {

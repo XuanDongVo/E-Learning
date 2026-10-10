@@ -299,7 +299,7 @@ Option order: **Activity** options are shuffled once per attempt with a determin
 
 ## 5.1 Start an Activity run
 
-1. The Activity is `PUBLISHED` and its Unit is `PUBLISHED`, and the Unit's grade equals the grade of one of the student's ACTIVE class memberships (ADR 0007). Otherwise `ACTIVITY_NOT_AVAILABLE`.
+1. The Activity is `PUBLISHED` and its Unit is `PUBLISHED`, and the Unit's grade equals the grade of the student's sole ACTIVE class membership (ADR 0007). Otherwise `ACTIVITY_NOT_AVAILABLE`.
 2. **Readiness is checked again:** `ActivityReadinessService.validateForPublish` must report ready (banks published, enough complete questions per bank, valid allocation). Otherwise `409 ACTIVITY_NOT_READY` and nothing is started. Content can change after publishing, so the publish-time check is not enough.
 3. Mode: if `activity.mode = BOTH` the request must carry `LEARNING` or `TRY_HARD`; otherwise the request must omit it or match. Else `ATTEMPT_MODE_REQUIRED` / `ATTEMPT_MODE_NOT_ALLOWED`.
 4. Any `IN_PROGRESS` run of this student for this Activity is set to `ABANDONED`.
@@ -402,7 +402,7 @@ Responses use the same envelope and error format as the existing controllers (`E
 
 | Method | Path | Purpose |
 |---|---|---|
-| GET | `/v1/student/units` | Published Units of the student's grade(s) (from ACTIVE class memberships) |
+| GET | `/v1/student/units` | Published Units of the student's current Grade (from the sole ACTIVE class membership) |
 | GET | `/v1/student/units/{unitId}` | Unit with Sections, Topics (flag `hasReferenceSheet`) and published Activities, each with `startable` (the readiness check of §5.1) so the UI can show "not available yet" |
 | GET | `/v1/student/topics/{topicId}/reference-sheet` | Formula sheet text |
 | GET | `/v1/student/assignments` | Assignments that target the student, with the derived status (§4.2) and `dueAt`, `timeLimitSeconds` |
@@ -453,7 +453,7 @@ New codes (HTTP status in brackets). Names marked ★ were already announced in 
 # 12. Security and access
 
 - Role `STUDENT` only; locked students cannot log in (Phase 6).
-- Student content visibility = published content of the grade(s) of the student's ACTIVE class memberships. A student in no ACTIVE class sees nothing.
+- Student content visibility = published content of the current Grade from the sole ACTIVE class membership. A student in no ACTIVE class sees nothing. After transfer, access follows the new current Grade; an IN_PROGRESS ActivitySession for the previous Grade is no longer usable, while finished results remain readable.
 - The attempt payload never contains `isCorrect`, accepted answers, `explanation` or `hint` until §7 allows it. The hint comes only from the hint endpoint so the server records `hint_used`.
 - Correct answers are returned only (a) in a Learning feedback with `revealed = true`, or (b) in `/result` of a finished attempt.
 - All checks use the snapshot; a student cannot influence the score through client-sent values.

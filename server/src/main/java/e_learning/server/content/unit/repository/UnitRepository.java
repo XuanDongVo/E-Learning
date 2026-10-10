@@ -15,4 +15,6 @@ public interface UnitRepository extends JpaRepository<Unit, Long> {
     List<Unit> findAllByGradeIdOrderByDisplayOrderAsc(Long gradeId);
 
     List<Unit> findAllByGradeIdAndStatusNotOrderByDisplayOrderAsc(Long gradeId, ContentStatus status);
+
+    List<Unit> findAllByGradeIdAndStatusOrderByDisplayOrderAsc(Long gradeId,ContentStatus status);
 }

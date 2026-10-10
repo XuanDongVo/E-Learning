@@ -29,6 +29,13 @@ POST /v1/assignments/{id}/questions/bulk-delete
 
 Assignment exposes show_answers_after_submit. No Release Answers endpoint.
 
+## Student class membership
+- A Student has at most one ACTIVE class membership.
+- `POST /v1/classes/{classId}/members` adds only a Student with no current ACTIVE membership.
+- `POST /v1/classes/{classId}/members/{studentId}/transfer` moves the current membership to the target class and preserves the old row as INACTIVE history.
+- `DELETE /v1/classes/{classId}/members/{studentId}` marks the membership INACTIVE.
+- Class roster responses contain ACTIVE members only.
+
 ## Contract rules
 - AssignmentQuestion order is question_id ascending.
 - AssignmentQuestion has no position.

@@ -17,6 +17,7 @@
 - StudentProfile stores student-specific personal data.
 - StudentGuardian stores one or more guardian contacts.
 - ClassMember remains the source of class membership and membership status.
+- A Student has at most one ACTIVE ClassMember at a time. INACTIVE memberships remain as transfer/removal history.
 - TeacherProfile and a separate Student entity are intentionally not introduced.
 - Student account status and class membership status remain separate.
 - Removing a student from a class sets membership INACTIVE; it does not delete the User.
@@ -53,8 +54,8 @@
 
 ### Student management
 - List students connected to teacher-owned classes.
-- Student with multiple classes appears once with multiple class entries.
-- Student with only inactive memberships appears with no active class plus history.
+- Student has at most one current class; prior INACTIVE memberships may appear as history.
+- Student with no ACTIVE membership appears with no active class plus retained history.
 - Student outside teacher-owned memberships cannot be retrieved or locked.
 - Duplicate email rejected.
 - Create persists User + StudentProfile + guardians + ClassMember transactionally.
@@ -63,9 +64,11 @@
 ### Class membership
 - Add active student.
 - Reject duplicate active membership.
-- Reactivate inactive membership.
+- Reactivate an inactive membership only when the Student has no other ACTIVE membership.
+- Transfer deactivates the current membership and activates or creates the target membership atomically.
 - Remove marks membership INACTIVE without deleting account.
 - Archived class rejects new/reactivated membership.
+- Concurrent membership changes cannot create more than one ACTIVE membership.
 
 ### Class lifecycle
 - Teacher can edit own class.

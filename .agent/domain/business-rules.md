@@ -1,5 +1,14 @@
 # Business Rules
 
+## Student Class Membership
+- A Student can have zero or one ACTIVE class membership at a time.
+- A Student with no ACTIVE class has no current Grade-based content access.
+- Adding a Student with an ACTIVE membership is rejected; moving the Student uses the explicit transfer operation.
+- Transfer is atomic: deactivate the source membership, then reactivate an existing target history row or create a target row.
+- A teacher can transfer a Student only when they own both source and target classes.
+- INACTIVE memberships remain history and do not grant access to the old class or Grade.
+- PostgreSQL enforces one ACTIVE membership per user; services lock the Student row during membership changes.
+
 ## Activity
 - Activity belongs to one Unit.
 - Activity and Assignment are independent.
@@ -11,6 +20,7 @@
 - Try Hard wrong answers cost lives; question timeout costs no life.
 - No whole-Activity countdown.
 - Unfinished ActivitySession runs are not resumed; abandoned sessions are ignored for finalized analytics/XP.
+- Activity options/start and operations on an IN_PROGRESS session require the Student's current Grade to match the Activity Grade.
 
 ## Learning Mode
 - One optional teacher-authored hint per Question.

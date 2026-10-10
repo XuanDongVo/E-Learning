@@ -13,18 +13,22 @@ public interface ActivityRepository extends JpaRepository<Activity, Long> {
     List<Activity> findAllByUnitIdOrderByDisplayOrderAscIdAsc(Long unitId);
 
     List<Activity> findAllByUnitIdAndStatusNotOrderByDisplayOrderAscIdAsc(
-        Long unitId,
-        ActivityStatus status
+            Long unitId,
+            ActivityStatus status
     );
 
     boolean existsByUnitIdAndNameIgnoreCase(Long unitId, String name);
 
     boolean existsByUnitIdAndNameIgnoreCaseAndIdNot(
-        Long unitId,
-        String name,
-        Long id
+            Long unitId,
+            String name,
+            Long id
     );
 
     @Query("select coalesce(max(a.displayOrder), 0) from Activity a where a.unit.id = :unitId")
     int findMaxDisplayOrderByUnitId(@Param("unitId") Long unitId);
+
+    long countByUnitIdAndStatus(Long unitId, ActivityStatus status);
+
+    List<Activity> findAllByUnitIdAndStatusOrderByDisplayOrderAscIdAsc(Long unitId, ActivityStatus status);
 }

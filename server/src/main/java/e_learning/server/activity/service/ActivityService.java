@@ -5,6 +5,7 @@ import e_learning.server.activity.dto.request.*;
 import e_learning.server.activity.dto.response.*;
 import e_learning.server.activity.entity.*;
 import e_learning.server.activity.enums.ActivityStatus;
+import e_learning.server.activity.enums.ActivityDifficulty;
 import e_learning.server.activity.repository.*;
 import e_learning.server.common.exception.*;
 import e_learning.server.content.question.repository.ContentQuestionRepository;

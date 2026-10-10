@@ -5,7 +5,7 @@ import type { StudentUnitSummary } from "@/types/student-unit";
 import { UnitCover, unitLabel } from "./unit-cover";
 
 export function UnitCard({ unit }: { unit: StudentUnitSummary }) {
-  const label = unitLabel(unit.displayOrder);
+  const label = unitLabel(unit.code);
 
   return (
     <article className="flex flex-col overflow-hidden rounded-2xl border border-border-color bg-card-bg shadow-2xs transition-all hover:border-primary hover:shadow-md">

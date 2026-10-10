@@ -5,7 +5,7 @@ import type { StudentActivity } from "@/types/student-unit";
 
 const metaItem = "inline-flex items-center gap-1.5";
 
-export function ActivityCard({ activity, topicNames }: { activity: StudentActivity; topicNames: string[] }) {
+export function ActivityCard({unitId, activity, topicNames }: { unitId: number; activity: StudentActivity; topicNames: string[] }) {
   const hasPractice = activity.mode !== "TRY_HARD";
   const hasTryHard = activity.mode !== "LEARNING";
 
@@ -76,7 +76,7 @@ export function ActivityCard({ activity, topicNames }: { activity: StudentActivi
 
       <div className="mt-auto border-t border-border-color pt-3">
         <Button asChild className="h-10 w-full rounded-xl bg-primary text-body font-bold text-white shadow-none hover:bg-primary-hover">
-          <Link href={`/student/activities/${activity.id}`}>
+          <Link href={`/student/units/${unitId}/activities/${activity.id}`}>
             Start
             <Play className="h-4 w-4" aria-hidden="true" />
           </Link>

@@ -2,7 +2,7 @@
 import type { StudentProfileFormProps, Gender, StudentGuardianRequest } from "@/types/student";
 import { useEffect,useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { studentProfileService } from "@/services/student/profile.service";
+import { studentProfileService } from "@/services/student/student-profile.service";
 
 export function StudentProfileForm(_: StudentProfileFormProps){
  const q=useQuery({queryKey:["student-profile"],queryFn:studentProfileService.get});const profile=q.data?.data;

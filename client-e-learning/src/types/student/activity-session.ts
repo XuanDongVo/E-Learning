@@ -1,1 +1,9 @@
-export type { ActivitySession, ActivitySessionAnswerFeedback, ActivitySessionMode, ActivitySessionResult, ActivitySessionOptions, SelectionStrategy } from "@/types/activity-session";
+export type {
+  ActivitySession,
+  ActivitySessionAnswerFeedback,
+  ActivitySessionMode,
+  ActivitySessionResult,
+  ActivitySessionOptions,
+  SelectionStrategy,
+  ActivitySessionQuestion
+} from "@/types/activity-session";

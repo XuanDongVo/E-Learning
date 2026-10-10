@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { studentUnitService } from "@/services/student/unit.service";
+import { studentUnitService } from "@/services/student/student-unit.service";
 import { QUERY_KEYS } from "@/services/query-keys";
 import { Button } from "@/components/ui/button";
 import { UnitCard } from "./unit-card";

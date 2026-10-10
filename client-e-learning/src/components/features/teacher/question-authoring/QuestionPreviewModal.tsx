@@ -236,7 +236,7 @@ export function QuestionPreviewModal({
 
                 return (
                   <button
-                    key={q.draftId || idx}
+                    key={q.id || idx}
                     onClick={() => setCurrentIndex(idx)}
                     className={`relative flex h-10 w-full items-center justify-center rounded-xl text-xs font-bold transition ${
                       isActive

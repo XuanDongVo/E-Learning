@@ -14,19 +14,18 @@ const paperBtn =
 export type RevealedAnswer = { correctAnswer?: string; explanation?: string };
 
 export function PracticeResult({
+  unitId,
   session,
   picks,
   revealed,
   onRetry,
 }: {
+  unitId: number;
   session: ActivitySession;
-  /** Đáp án học sinh đã gửi gần nhất cho từng câu (questionId → answer). */
   picks: Record<number, string[]>;
-  /** Đáp án đúng chỉ có khi server đã tiết lộ (questionId → …). */
   revealed: Record<number, RevealedAnswer>;
   onRetry: () => void;
 }) {
-  // Lượt bỏ dở (ABANDONED) không có điểm từ server → chỉ hiển thị điểm tạm tính để học sinh tham khảo.
   const provisional = session.score == null;
   const score = Math.round(
     provisional ? (session.finalCorrectCount / Math.max(1, session.totalQuestions)) * 100 : Number(session.score),
@@ -148,7 +147,7 @@ export function PracticeResult({
           Luyện tập lại
         </Button>
         <Button asChild variant="outline" className={paperBtn}>
-          <Link href="/student/activities">Về Hoạt động</Link>
+          <Link href={`/student/units/${unitId}`}>Về Unit</Link>
         </Button>
       </div>
     </div>

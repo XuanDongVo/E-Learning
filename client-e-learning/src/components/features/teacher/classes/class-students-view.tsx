@@ -16,7 +16,7 @@ export function ClassStudentsView({ classId }: ClassStudentsViewProps) {
   });
   const students = useQuery({
     queryKey: ["students"],
-    queryFn: studentService.list,
+    queryFn: () => studentService.list(),
   });
   const classes = useQuery({
     queryKey: ["classes"],

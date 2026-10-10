@@ -157,7 +157,7 @@ export function ActivityDetail({ activityId }: { activityId: number }) {
           </div>
 
           {/* Key numbers */}
-          <dl className="mt-6 grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-border-color bg-border-color md:grid-cols-4">
+          <dl className="mt-6 grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-border-color bg-border-color md:grid-cols-5">
             <Stat label="Question banks" value={String(a.banks.length)} />
             <Stat
               label="Ready questions"

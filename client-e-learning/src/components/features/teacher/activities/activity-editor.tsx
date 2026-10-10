@@ -582,10 +582,10 @@ export function ActivityEditor({ activityId }: { activityId?: number }) {
                 { value: "HARD", label: "Hard" },
                 { value: "MIXED", label: "Mixed" },
               ] as const).map((option) => {
-                const count = banks.reduce(
-                  (sum, bank) => sum + difficultyCounts(bank)[option.value],
-                  0,
-                );
+                const count = banks.reduce((sum, bank) => {
+                  const source = sourceForBank(bank.questionBankId);
+                  return sum + (source ? difficultyCounts(source)[option.value] : 0);
+                }, 0);
                 return (
                   <div key={option.value} className="rounded-lg border border-border-color p-3">
                     <p className="text-body-sm text-neutral-muted">{option.label}</p>

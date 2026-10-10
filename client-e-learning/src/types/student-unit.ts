@@ -1,4 +1,4 @@
-import { ActivityMode } from "./activity";
+import { ActivityDifficulty, ActivityMode } from "./activity";
 
 export interface StudentUnitSummary {
   id: number;
@@ -28,6 +28,7 @@ export interface StudentActivity {
   name: string;
   description?: string | null;
   mode: ActivityMode;
+  questionDifficulty: ActivityDifficulty;
   totalQuestions: number;
   timeLimitSeconds?: number | null;
   lives?: number | null;

@@ -1,7 +1,7 @@
 "use client";
 
 import { Card } from "@/components/ui/card";
-import { Headphones, Laptop, Sparkles } from "lucide-react";
+import { Laptop, Sparkles } from "lucide-react";
 
 export function MascotBanner() {
   return (

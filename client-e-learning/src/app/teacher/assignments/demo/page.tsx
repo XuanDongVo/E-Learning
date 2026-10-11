@@ -7,9 +7,24 @@ import { AssignmentBuilder } from "@/components/features/teacher/assignments/dem
 function AssignmentDemoContent() {
   const searchParams = useSearchParams();
   const assignmentId = searchParams.get("id");
-  return <AssignmentBuilder key={assignmentId ?? "new"} id={assignmentId ?? undefined} />;
+  return (
+    <AssignmentBuilder
+      key={assignmentId ?? "new"}
+      id={assignmentId ?? undefined}
+    />
+  );
 }
 
 export default function AssignmentDemoPage() {
-  return <Suspense fallback={<div className="p-8 text-sm text-muted-foreground">Loading assignment builder…</div>}><AssignmentDemoContent /></Suspense>;
+  return (
+    <Suspense
+      fallback={
+        <div className="p-8 text-sm text-muted-foreground">
+          Loading assignment builder…
+        </div>
+      }
+    >
+      <AssignmentDemoContent />
+    </Suspense>
+  );
 }

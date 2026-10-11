@@ -170,8 +170,12 @@ export function QuestionForm({
       onChange({
         media: [...question.media.filter((m) => m.kind !== kind), newMedia],
       });
-    } catch (err: any) {
-      alert(err.message || "Failed to upload media. Please try again.");
+    } catch (err: unknown) {
+      alert(
+        err instanceof Error
+          ? err.message
+          : "Failed to upload media. Please try again.",
+      );
     } finally {
       setUploadingKind(null);
       event.target.value = "";
@@ -522,6 +526,7 @@ function MediaSlot({
     return (
       <div className="flex flex-col gap-1.5 rounded-lg border border-slate-200 bg-white p-2.5">
         {kind === "image" && current.url && (
+          /* eslint-disable-next-line @next/next/no-img-element */
           <img
             src={current.url}
             alt={current.name}

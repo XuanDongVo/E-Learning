@@ -111,7 +111,10 @@ export function AssignmentBuilder({ id }: { id?: string }) {
 
   // On narrow screens, open the property drawer when something gets selected
   useEffect(() => {
-    if (!wide && selection) setRightOpen(true);
+    if (!wide && selection) {
+      const timer = setTimeout(() => setRightOpen(true), 0);
+      return () => clearTimeout(timer);
+    }
   }, [selection, wide]);
 
   const onDragStart = (e: DragStartEvent) => {

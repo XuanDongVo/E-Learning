@@ -1,4 +1,3 @@
-// @ts-nocheck -- prototype: strict index-access checks relaxed
 import { useDroppable } from "@dnd-kit/core";
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -225,6 +224,7 @@ function BlockBody({ b }: { b: BlockItem }) {
     return (
       <figure className="space-y-1">
         {block.url ? (
+          /* eslint-disable-next-line @next/next/no-img-element */
           <img src={block.url} alt={block.alt} className="max-h-56 rounded border object-contain" />
         ) : (
           <div className="grid h-28 w-44 place-items-center rounded border border-dashed bg-muted/50 text-muted-foreground">

@@ -1,10 +1,8 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Users, GraduationCap, ShieldCheck } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { GraduationCap, ShieldCheck } from "lucide-react";
 
 export function RoleSwitcher() {
   const pathname = usePathname();

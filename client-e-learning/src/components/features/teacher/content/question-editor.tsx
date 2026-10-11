@@ -1,9 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  ArrowLeft,
   CheckCircle2,
   Circle,
   Image as ImageIcon,
@@ -15,14 +14,69 @@ import {
   type ContentView,
   type QuestionOptionDraft,
   type QuestionMediaDraft,
+  type QuestionResponse,
 } from "@/types/content";
 
 import { contentService } from "@/services/content.service";
 import { QUERY_KEYS } from "@/services/query-keys";
-import { Badge } from "./components/badge";
-import { QuestionForm, isQuestionComplete, makeDraftQuestion } from "./components/question-form";
+import { QuestionForm, makeDraftQuestion } from "./components/question-form";
 
 const NAVIGATE_AFTER_SAVE_MS = 900;
+
+function toDraft(q: QuestionResponse) {
+  const loadedOptions: QuestionOptionDraft[] =
+    q.options && q.options.length > 0
+      ? q.options.map((opt, i) => ({
+          id: String.fromCharCode(65 + i),
+          text: opt.content,
+        }))
+      : [
+          { id: "A", text: "" },
+          { id: "B", text: "" },
+          { id: "C", text: "" },
+          { id: "D", text: "" },
+        ];
+
+  const loadedCorrectIds: string[] =
+    q.options && q.options.length > 0
+      ? (q.options
+          .map((opt, i) => (opt.isCorrect ? String.fromCharCode(65 + i) : null))
+          .filter(Boolean) as string[])
+      : ["A"];
+
+  const loadedTf: "TRUE" | "FALSE" =
+    q.answers && q.answers.length > 0 && q.answers[0].rawValue === "FALSE"
+      ? "FALSE"
+      : "TRUE";
+
+  const loadedAccepted: string[] =
+    q.answers && q.answers.length > 0 ? q.answers.map((a) => a.rawValue) : [""];
+
+  const loadedMedia: QuestionMediaDraft[] =
+    q.media && q.media.length > 0
+      ? q.media.map((m) => ({
+          id: String(m.mediaId || m.id),
+          name: `Media #${m.mediaId || m.id}`,
+          kind:
+            m.mediaType && m.mediaType.toLowerCase().includes("audio")
+              ? "audio"
+              : "image",
+        }))
+      : [];
+
+  return {
+    draftId: String(q.id),
+    type: q.type,
+    difficulty: q.difficulty,
+    text: q.content,
+    options: loadedOptions,
+    correctOptionIds: loadedCorrectIds,
+    trueFalseAnswer: loadedTf,
+    acceptedAnswers: loadedAccepted,
+    media: loadedMedia,
+    explanation: q.explanation ?? "",
+  };
+}
 
 export function QuestionEditor({
   questionId,
@@ -33,73 +87,47 @@ export function QuestionEditor({
   bankName?: string;
   onNavigate: (view: ContentView, id?: number, bankName?: string) => void;
 }) {
-  const client = useQueryClient();
-  const [isSaving, setIsSaving] = useState(false);
-
-  // Question Form State
-  const [draft, setDraft] = useState(() => makeDraftQuestion());
-  // Fetch question if questionId is provided
   const questionQuery = useQuery({
     queryKey: QUERY_KEYS.contentQuestion(questionId!),
-    queryFn: async () => {
-      const data = (await contentService.getQuestion(questionId!)).data;
-      return data;
-    },
+    queryFn: async () => (await contentService.getQuestion(questionId!)).data,
     enabled: !!questionId,
   });
 
-  // Populate state when questionQuery loads
-  useEffect(() => {
-    if (questionQuery.data) {
-      const q = questionQuery.data;
+  if (questionQuery.isLoading) {
+    return (
+      <div className="p-8 text-center text-sm text-slate-400">
+        Loading question data...
+      </div>
+    );
+  }
 
-      const loadedOptions: QuestionOptionDraft[] = (q.options && q.options.length > 0)
-        ? q.options.map((opt, i) => ({
-          id: String.fromCharCode(65 + i),
-          text: opt.content,
-        }))
-        : [
-          { id: "A", text: "" },
-          { id: "B", text: "" },
-          { id: "C", text: "" },
-          { id: "D", text: "" },
-        ];
+  return (
+    <QuestionEditorForm
+      key={questionId ?? "new"}
+      questionId={questionId}
+      initialQuestion={questionQuery.data}
+      bankName={bankName}
+      onNavigate={onNavigate}
+    />
+  );
+}
 
-      const loadedCorrectIds: string[] = (q.options && q.options.length > 0)
-        ? q.options
-          .map((opt, i) => (opt.isCorrect ? String.fromCharCode(65 + i) : null))
-          .filter(Boolean) as string[]
-        : ["A"];
-
-      const loadedTf: "TRUE" | "FALSE" =
-        q.answers && q.answers.length > 0 && q.answers[0].rawValue === "FALSE" ? "FALSE" : "TRUE";
-
-      const loadedAccepted: string[] =
-        q.answers && q.answers.length > 0 ? q.answers.map((a) => a.rawValue) : [""];
-
-      const loadedMedia: QuestionMediaDraft[] =
-        q.media && q.media.length > 0
-          ? q.media.map((m) => ({
-            id: String(m.mediaId || m.id),
-            name: `Media #${m.mediaId || m.id}`,
-            kind: (m.mediaType && m.mediaType.toLowerCase().includes("audio")) ? "audio" : "image",
-          }))
-          : [];
-
-      setDraft({
-        draftId: String(q.id),
-        type: q.type,
-        difficulty: q.difficulty,
-        text: q.content,
-        options: loadedOptions,
-        correctOptionIds: loadedCorrectIds,
-        trueFalseAnswer: loadedTf,
-        acceptedAnswers: loadedAccepted,
-        media: loadedMedia,
-        explanation: q.explanation ?? "",
-      });
-    }
-  }, [questionQuery.data]);
+function QuestionEditorForm({
+  questionId,
+  initialQuestion,
+  bankName,
+  onNavigate,
+}: {
+  questionId?: number;
+  initialQuestion?: QuestionResponse;
+  bankName?: string;
+  onNavigate: (view: ContentView, id?: number, bankName?: string) => void;
+}) {
+  const client = useQueryClient();
+  const [isSaving, setIsSaving] = useState(false);
+  const [draft, setDraft] = useState(() =>
+    initialQuestion ? toDraft(initialQuestion) : makeDraftQuestion(),
+  );
 
   const handleSave = async () => {
     if (!questionId) {
@@ -146,21 +174,15 @@ export function QuestionEditor({
         description: bankName ? `Updated in ${bankName}.` : undefined,
       });
       setTimeout(() => {
-        onNavigate("bank", questionQuery.data?.questionBankId);
+        onNavigate("bank", initialQuestion?.questionBankId);
       }, NAVIGATE_AFTER_SAVE_MS);
-    } catch (err: any) {
+    } catch (err: unknown) {
       toast.error("Could not save changes", {
-        description: err?.message || "Please try again.",
+        description: err instanceof Error ? err.message : "Please try again.",
       });
       setIsSaving(false);
     }
   };
-
-  const isReady = isQuestionComplete(draft);
-
-  if (questionQuery.isLoading) {
-    return <div className="p-8 text-center text-sm text-slate-400">Loading question data...</div>;
-  }
 
   return (
     <>
@@ -219,7 +241,7 @@ export function QuestionEditor({
         <aside className="flex flex-col gap-4 lg:sticky lg:top-5 lg:self-start">
           <QuestionPreviewCard draft={draft} />
           <CompletionChecklistCard draft={draft} />
-          {questionQuery.data && <MetadataCard question={questionQuery.data} bankName={bankName} />}
+          {initialQuestion && <MetadataCard question={initialQuestion} bankName={bankName} />}
         </aside>
       </div>
     </>
@@ -389,7 +411,7 @@ function getCompletionItems(draft: ReturnType<typeof makeDraftQuestion>) {
 }
 
 // Sidebar: metadata — read-only reference info, not editable here.
-function MetadataCard({ question, bankName }: { question: any; bankName?: string }) {
+function MetadataCard({ question, bankName }: { question: QuestionResponse; bankName?: string }) {
   const formatDate = (value?: string) => {
     if (!value) return "—";
     try {

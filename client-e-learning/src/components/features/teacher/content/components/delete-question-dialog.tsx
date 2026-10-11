@@ -32,9 +32,13 @@ export function DeleteQuestionsDialog({
         !pending && (!requiresTyping || typed.trim() === CONFIRM_WORD);
 
     // Reset the typed text whenever the dialog is opened fresh.
-    useEffect(() => {
-        if (open) setTyped("");
-    }, [open]);
+    const [prevOpen, setPrevOpen] = useState(open);
+    if (open !== prevOpen) {
+        setPrevOpen(open);
+        if (open) {
+            setTyped("");
+        }
+    }
 
     // Move focus into the dialog: the input when typing is required,
     // otherwise the Cancel button (the safe default for a destructive prompt).
@@ -120,7 +124,7 @@ export function DeleteQuestionsDialog({
 
                     <p className="text-body-sm text-slate-600">
                         Their options, answers and attached media will be removed too.
-                        Students' past results are not affected.
+                        Students&apos; past results are not affected.
                     </p>
 
                     {requiresTyping && (

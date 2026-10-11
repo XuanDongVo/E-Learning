@@ -41,7 +41,6 @@ export function QuestionBankDetail({
   const client = useQueryClient();
 
   const [editOpen, setEditOpen] = useState(false);
-  const [createOpen, setCreateOpen] = useState(false);
 
   // Filter & Pagination state
   const [search, setSearch] = useState("");
@@ -71,17 +70,32 @@ export function QuestionBankDetail({
     return () => clearTimeout(handler);
   }, [search]);
 
-  // Selection only belongs to the currently visible page/filter.
-  useEffect(() => {
-    setSelectedIds(new Set());
-  }, [
+  const [filterKey, setFilterKey] = useState({
     bankId,
     page,
     pageSize,
     debouncedSearch,
     selectedType,
     selectedDifficulty,
-  ]);
+  });
+  if (
+    filterKey.bankId !== bankId ||
+    filterKey.page !== page ||
+    filterKey.pageSize !== pageSize ||
+    filterKey.debouncedSearch !== debouncedSearch ||
+    filterKey.selectedType !== selectedType ||
+    filterKey.selectedDifficulty !== selectedDifficulty
+  ) {
+    setFilterKey({
+      bankId,
+      page,
+      pageSize,
+      debouncedSearch,
+      selectedType,
+      selectedDifficulty,
+    });
+    setSelectedIds(new Set());
+  }
 
   // Query QuestionBank detail
   const bankQuery = useQuery({

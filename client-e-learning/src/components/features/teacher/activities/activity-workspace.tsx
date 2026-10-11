@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Plus, Search, ChevronDown } from "lucide-react";
+import { Search, ChevronDown } from "lucide-react";
 import { gradeService } from "@/services/grade.service";
 import { unitService } from "@/services/content/content.unit.service";
 import { activityService } from "@/services/activity.service";
@@ -40,18 +40,12 @@ export function ActivityWorkspace() {
     enabled: !!activeGrade,
   });
 
-  useEffect(() => {
-    if (!units.data?.length) return;
-    const requested =
-      requestedUnitId > 0 && units.data.some((u) => u.id === requestedUnitId);
-    if (requested) {
-      setUnitId(requestedUnitId);
-      return;
-    }
-    if (!units.data.some((u) => u.id === unitId)) setUnitId(units.data[0].id);
-  }, [requestedUnitId, unitId, units.data]);
-
-  const selectedUnit = units.data?.find((u) => u.id === unitId);
+  const selectedUnit =
+    units.data?.find((u) => u.id === unitId) ??
+    (requestedUnitId > 0
+      ? units.data?.find((u) => u.id === requestedUnitId)
+      : undefined) ??
+    units.data?.[0];
   const includeArchived = status === "ARCHIVED";
   const activities = useQuery({
     queryKey: QUERY_KEYS.activities(selectedUnit?.id || 0, includeArchived),
@@ -71,12 +65,12 @@ export function ActivityWorkspace() {
       )
       .sort((a, b) => Date.parse(b.updatedAt) - Date.parse(a.updatedAt));
   }, [activities.data, search, status]);
-  useEffect(() => setPage(1), [search, status, unitId, pageSize]);
   const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
   const visible = filtered.slice((page - 1) * pageSize, page * pageSize);
 
   const selectUnit = (id: number) => {
     setUnitId(id);
+    setPage(1);
     const q = new URLSearchParams(params.toString());
     q.set("unitId", String(id));
     router.replace(`/teacher/activities?${q.toString()}`);
@@ -101,7 +95,10 @@ export function ActivityWorkspace() {
           <input
             className="w-full border-0 text-body-sm text-slate-700 outline-none"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
             placeholder="Search activities..."
           />
         </div>
@@ -125,6 +122,7 @@ export function ActivityWorkspace() {
             onChange={(e) => {
               setGradeId(Number(e.target.value));
               setUnitId(0);
+              setPage(1);
             }}
           >
             <option value="">Select grade</option>
@@ -154,6 +152,7 @@ export function ActivityWorkspace() {
               onChange={(e) => {
                 setGradeId(Number(e.target.value));
                 setUnitId(0);
+                setPage(1);
               }}
               className="h-10 w-full rounded-lg border border-border-input bg-card-bg px-3 text-body outline-none focus:border-primary focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
             >
@@ -188,9 +187,10 @@ export function ActivityWorkspace() {
             </span>
             <select
               value={status}
-              onChange={(e) =>
-                setStatus(e.target.value as "ALL" | ActivityStatus)
-              }
+              onChange={(e) => {
+                setStatus(e.target.value as "ALL" | ActivityStatus);
+                setPage(1);
+              }}
               className="h-10 w-full rounded-lg border border-border-input bg-card-bg px-3 text-body outline-none focus:border-primary focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
             >
               <option value="ALL">All statuses</option>
@@ -207,7 +207,10 @@ export function ActivityWorkspace() {
               <Search className="absolute left-3 top-2.5 h-4 w-4 text-neutral-muted" />
               <input
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setPage(1);
+                }}
                 placeholder="Search activities"
                 className="h-10 w-full rounded-lg border border-border-input bg-card-bg pl-9 pr-3 text-body outline-none focus:border-primary focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
               />
@@ -342,7 +345,10 @@ export function ActivityWorkspace() {
               Rows
               <select
                 value={pageSize}
-                onChange={(e) => setPageSize(Number(e.target.value))}
+                onChange={(e) => {
+                  setPageSize(Number(e.target.value));
+                  setPage(1);
+                }}
                 className="h-8 rounded-lg border border-border-input bg-card-bg px-2"
               >
                 <option value={10}>10</option>

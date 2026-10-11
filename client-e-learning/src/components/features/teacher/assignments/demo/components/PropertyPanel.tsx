@@ -1,4 +1,3 @@
-// @ts-nocheck -- prototype: strict index-access checks relaxed
 import { AlertCircle, AlertTriangle, Copy, Plus, Trash2, Wand2, X } from "lucide-react";
 import type { ReactNode } from "react";
 import { toast } from "sonner";
@@ -273,7 +272,7 @@ function QuestionEditor({ q }: { q: QuestionItem }) {
             </Select>
           </Field>
         )}
-        {group && <Button variant="link" size="sm" className="h-auto p-0 text-xs" onClick={() => select({ kind: "item", id: group.id })}>Edit the shared block →</Button>}
+        {group && <Button variant="ghost" size="sm" className="h-auto p-0 text-xs text-primary underline hover:text-primary" onClick={() => select({ kind: "item", id: group.id })}>Edit the shared block →</Button>}
       </Group>
 
       <Group title="Feedback (hidden from students)">

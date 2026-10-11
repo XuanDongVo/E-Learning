@@ -1,4 +1,3 @@
-// @ts-nocheck -- prototype: strict index-access checks relaxed
 import { Fragment, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 

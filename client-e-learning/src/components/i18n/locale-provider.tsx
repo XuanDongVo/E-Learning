@@ -74,7 +74,9 @@ export function LocaleProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const saved = window.localStorage.getItem("teacher-locale");
-    if (saved === "vi" || saved === "en") setLocaleState(saved);
+    if (saved === "vi" || saved === "en") {
+      requestAnimationFrame(() => setLocaleState(saved));
+    }
   }, []);
 
   const setLocale = (nextLocale: Locale) => {

@@ -68,7 +68,7 @@ export default function AssignmentDetailPage() {
       queryClient.invalidateQueries({ queryKey: ["assignment", assignmentId] });
       toast.success("Status updated.");
     },
-    onError: (err) => {
+    onError: () => {
       toast.error("Could not update status.");
     }
   });
@@ -175,7 +175,7 @@ export default function AssignmentDetailPage() {
           startAt: data.startAt ? data.startAt.slice(0, 16) : undefined,
           timeLimitSeconds: data.timeLimitSeconds ?? undefined,
           showAnswersAfterSubmit: data.showAnswersAfterSubmit,
-          targets: data.targets.map((t): any => t.type === "CLASS" ? {
+          targets: data.targets.map((t) => t.type === "CLASS" ? {
             type: "CLASS",
             classId: t.classId!
           } : {
@@ -234,6 +234,7 @@ export default function AssignmentDetailPage() {
 
       {editorOpen && (
         <AssignmentQuestionEditor
+          key={activeQuestion?.questionId ?? "new"}
           assignmentId={assignmentId}
           question={activeQuestion}
           locked={locked}

@@ -108,6 +108,7 @@ function BlockView({ b }: { b: SBlock }) {
   if (b.type === "INSTRUCTIONS") return <p className="italic text-muted-foreground">{b.text}</p>;
   if (b.type === "MEDIA")
     return b.url ? (
+      /* eslint-disable-next-line @next/next/no-img-element */
       <img src={b.url} alt={b.alt} className="max-h-56 rounded border" />
     ) : (
       <div role="img" aria-label={b.alt || "Picture"} className="grid h-28 w-44 place-items-center rounded border border-dashed bg-muted/50 text-muted-foreground">

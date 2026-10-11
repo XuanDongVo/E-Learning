@@ -1,4 +1,3 @@
-// @ts-nocheck -- prototype: strict index-access checks relaxed
 import { blankNumbers, blankTokens, docOrder, letter } from "./ops";
 import type { Assignment, BlockItem, ID } from "./types";
 

@@ -76,6 +76,7 @@ export function QuestionPreviewModal({
                 <div className="mb-4 space-y-3 rounded-xl border border-border bg-muted/50 p-3.5">
                   {imageMedia && (
                     <div className="flex justify-center">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={imageMedia.url || "/student.png"}
                         alt={imageMedia.name}

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AlertTriangle, ArrowLeft, Check, Info, Search } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { activityService } from "@/services/activity.service";
@@ -95,18 +95,55 @@ const distributions: {
 const btnPrimary =
   "inline-flex h-10 shrink-0 items-center justify-center rounded-lg bg-primary px-4 text-body font-semibold text-primary-foreground transition-colors hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-50";
 
-export function ActivityEditor({ activityId }: { activityId?: number }) {
-  const router = useRouter();
-  const params = useSearchParams();
-  const qc = useQueryClient();
-  const requestedUnitId = Number(params.get("unitId") || 0);
+type ActivityDetail = NonNullable<
+  Awaited<ReturnType<typeof activityService.get>>["data"]
+>;
 
+export function ActivityEditor({ activityId }: { activityId?: number }) {
   const existing = useQuery({
     queryKey: QUERY_KEYS.activity(activityId || 0),
     queryFn: async () => (await activityService.get(activityId!)).data,
     enabled: !!activityId,
   });
-  const unitId = existing.data?.unitId || requestedUnitId;
+
+  if (activityId && existing.isLoading) {
+    return (
+      <div className="mx-auto max-w-6xl p-8 text-neutral-muted">
+        Loading activity...
+      </div>
+    );
+  }
+
+  if (activityId && existing.isError) {
+    return (
+      <div className="mx-auto max-w-6xl rounded-xl border border-danger-light bg-danger-light p-4 text-body text-danger-text">
+        Could not load this Activity.
+      </div>
+    );
+  }
+
+  return (
+    <ActivityEditorForm
+      key={activityId ? String(activityId) : "new"}
+      activityId={activityId}
+      initialActivity={existing.data ?? undefined}
+    />
+  );
+}
+
+function ActivityEditorForm({
+  activityId,
+  initialActivity,
+}: {
+  activityId?: number;
+  initialActivity?: ActivityDetail;
+}) {
+  const router = useRouter();
+  const params = useSearchParams();
+  const qc = useQueryClient();
+  const requestedUnitId = Number(params.get("unitId") || 0);
+
+  const unitId = initialActivity?.unitId || requestedUnitId;
   const unit = useQuery({
     queryKey: QUERY_KEYS.contentUnit(unitId),
     queryFn: async () => (await unitService.get(unitId)).data,
@@ -118,47 +155,50 @@ export function ActivityEditor({ activityId }: { activityId?: number }) {
     enabled: !!unitId,
   });
 
-  const [initialized, setInitialized] = useState(false);
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-  const [distribution, setDistribution] = useState<DistributionMode>("EQUAL");
-  const [total, setTotal] = useState(10);
-  const [questionDifficulty, setQuestionDifficulty] =
-    useState<ActivityDifficulty>("MIXED");
-  const [availableSelectionStrategies, setAvailableSelectionStrategies] =
-    useState<SelectionStrategy[]>(["RANDOM"]);
-  const [mode, setMode] = useState<ActivityMode>("BOTH");
-  const [timeLimitSeconds, setTimeLimitSeconds] = useState<number | undefined>(
-    60,
+  const [name, setName] = useState(initialActivity?.name ?? "");
+  const [description, setDescription] = useState(
+    initialActivity?.description ?? "",
   );
-  const [lives, setLives] = useState<number | undefined>(3);
-  const [banks, setBanks] = useState<SelectedBank[]>([]);
+  const [distribution, setDistribution] = useState<DistributionMode>(
+    initialActivity?.distributionMode ?? "EQUAL",
+  );
+  const [total, setTotal] = useState(initialActivity?.totalQuestions ?? 10);
+  const [questionDifficulty, setQuestionDifficulty] =
+    useState<ActivityDifficulty>(
+      initialActivity?.questionDifficulty ?? "MIXED",
+    );
+  const [availableSelectionStrategies, setAvailableSelectionStrategies] =
+    useState<SelectionStrategy[]>(
+      initialActivity?.availableSelectionStrategies ?? ["RANDOM"],
+    );
+  const [mode, setMode] = useState<ActivityMode>(
+    initialActivity?.mode ?? "BOTH",
+  );
+  const [timeLimitSeconds, setTimeLimitSeconds] = useState<number | undefined>(
+    initialActivity
+      ? initialActivity.mode === "LEARNING"
+        ? undefined
+        : initialActivity.timeLimitSeconds || 60
+      : 60,
+  );
+  const [lives, setLives] = useState<number | undefined>(
+    initialActivity
+      ? initialActivity.mode === "LEARNING"
+        ? undefined
+        : initialActivity.lives || 3
+      : 3,
+  );
+  const [banks, setBanks] = useState<SelectedBank[]>(() =>
+    initialActivity
+      ? initialActivity.banks.map((b) => ({
+          ...b,
+          status: "PUBLISHED",
+          percentage: b.percentage ?? undefined,
+          fixedCount: b.fixedCount ?? undefined,
+        }))
+      : [],
+  );
   const [search, setSearch] = useState("");
-
-  useEffect(() => {
-    if (!existing.data || initialized) return;
-    const a = existing.data;
-    setInitialized(true);
-    setName(a.name);
-    setDescription(a.description || "");
-    setDistribution(a.distributionMode);
-    setTotal(a.totalQuestions);
-    setQuestionDifficulty(a.questionDifficulty ?? "MIXED");
-    setAvailableSelectionStrategies(a.availableSelectionStrategies);
-    setMode(a.mode);
-    setTimeLimitSeconds(
-      a.mode === "LEARNING" ? undefined : a.timeLimitSeconds || 60,
-    );
-    setLives(a.mode === "LEARNING" ? undefined : a.lives || 3);
-    setBanks(
-      a.banks.map((b) => ({
-        ...b,
-        status: "PUBLISHED",
-        percentage: b.percentage ?? undefined,
-        fixedCount: b.fixedCount ?? undefined,
-      })),
-    );
-  }, [existing.data, initialized]);
 
   const selected = useMemo(
     () => new Set(banks.map((b) => b.questionBankId)),
@@ -428,11 +468,6 @@ export function ActivityEditor({ activityId }: { activityId?: number }) {
         </div>
       </header>
 
-      {existing.isError && (
-        <div className="rounded-xl border border-danger-light bg-danger-light p-4 text-body text-danger-text">
-          Could not load this Activity.
-        </div>
-      )}
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_20rem]">
         <main className="space-y-6">

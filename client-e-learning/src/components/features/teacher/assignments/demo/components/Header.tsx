@@ -1,4 +1,3 @@
-// @ts-nocheck -- prototype: strict index-access checks relaxed
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Copy, Eye, Loader2, MoreHorizontal, PencilLine, Save, Settings, Trash2 } from "lucide-react";
 import { toast } from "sonner";
@@ -109,7 +108,7 @@ export function Header() {
           </button>
         </div>
         <Button variant="ghost" size="icon" aria-label="Settings" onClick={() => set({ settingsOpen: true })}><Settings className="h-4 w-4" /></Button>
-        <Button size="sm" onClick={() => save()} disabled={status === "saving"} title="Save draft (Ctrl+S)">
+        <Button size="sm" onClick={() => save()} disabled={status === "saving"} title="Save draft (Ctrl+S)" className = {cn("bg-primary text-primary-foreground")}>
           <Save className="h-4 w-4" /> Save Draft
         </Button>
         <DropdownMenu>

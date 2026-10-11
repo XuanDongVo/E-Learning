@@ -5,6 +5,7 @@ import e_learning.server.activity.dto.request.*;
 import e_learning.server.activity.dto.response.*;
 import e_learning.server.activity.entity.*;
 import e_learning.server.activity.enums.ActivityStatus;
+import e_learning.server.activity.enums.ActivityDifficulty;
 import e_learning.server.activity.repository.*;
 import e_learning.server.common.exception.*;
 import e_learning.server.content.question.repository.ContentQuestionRepository;
@@ -63,6 +64,7 @@ public class ActivityService {
                 .displayOrder(activityRepository.findMaxDisplayOrderByUnitId(unit.getId()) + 1)
                 .distributionMode(request.distributionMode())
                 .totalQuestions(request.totalQuestions())
+                .questionDifficulty(request.questionDifficulty())
                 .availableSelectionStrategies(request.availableSelectionStrategies())
                 .mode(request.mode())
                 .timeLimitSeconds(request.timeLimitSeconds())
@@ -91,6 +93,7 @@ public class ActivityService {
         activity.setDescription(trimToNull(request.description()));
         activity.setDistributionMode(request.distributionMode());
         activity.setTotalQuestions(request.totalQuestions());
+        activity.setQuestionDifficulty(request.questionDifficulty());
         activity.setAvailableSelectionStrategies(request.availableSelectionStrategies());
         activity.setMode(request.mode());
         activity.setTimeLimitSeconds(request.timeLimitSeconds());
@@ -142,6 +145,8 @@ public class ActivityService {
             contentQuestionRepository
                     .findTop100ByQuestionBankIdAndQuestionCompleteTrueOrderByQuestionIdAsc(bank.getQuestionBank().getId())
                     .stream()
+                    .filter(cq -> activity.getQuestionDifficulty() == ActivityDifficulty.MIXED
+                            || cq.getQuestion().getDifficulty().name().equals(activity.getQuestionDifficulty().name()))
                     .limit(required)
                     .map(contentQuestion -> contentQuestion.getQuestionId())
                     .forEach(sampleQuestionIds::add);
@@ -159,13 +164,23 @@ public class ActivityService {
         findUnit(unitId);
         return questionBankRepository.findByUnitIdOrderBySectionAndTopicAndDisplayOrder(unitId)
                 .stream()
-                .map(bank -> ActivitySourceOptionResponse.builder()
-                        .questionBankId(bank.getId()).questionBankName(bank.getName())
-                        .topicId(bank.getTopic().getId()).topicName(bank.getTopic().getName())
-                        .sectionName(bank.getTopic().getSection().getName()).status(bank.getStatus())
-                        .totalQuestions(contentQuestionRepository.countByQuestionBankId(bank.getId()))
-                        .readyQuestions(contentQuestionRepository.countByQuestionBankIdAndQuestionCompleteTrue(bank.getId()))
-                        .build())
+                .map(bank -> {
+                    var readyQuestions = contentQuestionRepository
+                            .findAllByQuestionBankIdAndQuestionCompleteTrueOrderByQuestionIdAsc(bank.getId());
+                    return ActivitySourceOptionResponse.builder()
+                            .questionBankId(bank.getId()).questionBankName(bank.getName())
+                            .topicId(bank.getTopic().getId()).topicName(bank.getTopic().getName())
+                            .sectionName(bank.getTopic().getSection().getName()).status(bank.getStatus())
+                            .totalQuestions(contentQuestionRepository.countByQuestionBankId(bank.getId()))
+                            .readyQuestions(readyQuestions.size())
+                            .easyReadyQuestions(readyQuestions.stream()
+                                    .filter(cq -> cq.getQuestion().getDifficulty().name().equals("EASY")).count())
+                            .mediumReadyQuestions(readyQuestions.stream()
+                                    .filter(cq -> cq.getQuestion().getDifficulty().name().equals("MEDIUM")).count())
+                            .hardReadyQuestions(readyQuestions.stream()
+                                    .filter(cq -> cq.getQuestion().getDifficulty().name().equals("HARD")).count())
+                            .build();
+                })
                 .toList();
     }
 
@@ -218,6 +233,7 @@ public class ActivityService {
                 .name(activity.getName()).description(activity.getDescription()).displayOrder(activity.getDisplayOrder())
                 .status(activity.getStatus()).distributionMode(activity.getDistributionMode())
                 .totalQuestions(activity.getTotalQuestions())
+                .questionDifficulty(activity.getQuestionDifficulty())
                 .availableSelectionStrategies(activity.getAvailableSelectionStrategies())
                 .mode(activity.getMode()).timeLimitSeconds(activity.getTimeLimitSeconds()).lives(activity.getLives())
                 .banks(bankResponses).readiness(readiness)

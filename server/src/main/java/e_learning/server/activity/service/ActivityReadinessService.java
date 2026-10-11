@@ -6,6 +6,7 @@ import e_learning.server.activity.entity.*;
 import e_learning.server.activity.repository.ActivityBankRepository;
 import e_learning.server.content.common.enums.ContentStatus;
 import e_learning.server.content.question.repository.ContentQuestionRepository;
+import e_learning.server.activity.enums.ActivityDifficulty;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,7 +42,11 @@ public class ActivityReadinessService {
 
         for (ActivityBank bank : banks) {
             long total = contentQuestionRepository.countByQuestionBankId(bank.getQuestionBank().getId());
-            long ready = contentQuestionRepository.countByQuestionBankIdAndQuestionCompleteTrue(bank.getQuestionBank().getId());
+            long ready = contentQuestionRepository.findAllByQuestionBankIdAndQuestionCompleteTrueOrderByQuestionIdAsc(bank.getQuestionBank().getId())
+                .stream()
+                .filter(cq -> activity.getQuestionDifficulty() == ActivityDifficulty.MIXED
+                    || cq.getQuestion().getDifficulty().name().equals(activity.getQuestionDifficulty().name()))
+                .count();
             Integer required = allocations.get(bank.getQuestionBank().getId());
             ContentStatus status = bank.getQuestionBank().getStatus();
 
@@ -61,7 +66,7 @@ public class ActivityReadinessService {
                     "Question bank must be published.", bank, required, ready));
             } else if (required == null || ready < required) {
                 errors.add(issue("INSUFFICIENT_READY_QUESTIONS",
-                    "Question bank does not contain enough ready questions.",
+                    "Question bank does not contain enough ready questions at the configured activity difficulty.",
                     bank, required, ready));
             }
         }

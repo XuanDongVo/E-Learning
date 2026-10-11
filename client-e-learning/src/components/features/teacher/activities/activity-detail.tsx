@@ -9,6 +9,7 @@ import type {
   ActivityStatus,
   SelectionStrategy,
 } from "@/types/activity";
+import { ACTIVITY_DIFFICULTY_LABELS } from "@/types/activity";
 
 const modeLabels: Record<ActivityMode, string> = {
   LEARNING: "Practice",
@@ -156,7 +157,7 @@ export function ActivityDetail({ activityId }: { activityId: number }) {
           </div>
 
           {/* Key numbers */}
-          <dl className="mt-6 grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-border-color bg-border-color md:grid-cols-4">
+          <dl className="mt-6 grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-border-color bg-border-color md:grid-cols-5">
             <Stat label="Question banks" value={String(a.banks.length)} />
             <Stat
               label="Ready questions"
@@ -164,6 +165,7 @@ export function ActivityDetail({ activityId }: { activityId: number }) {
               hint={allocatedTotal ? `${coverage}% of what's needed` : undefined}
             />
             <Stat label="Mode" value={modeLabels[a.mode]} />
+            <Stat label="Difficulty" value={ACTIVITY_DIFFICULTY_LABELS[a.questionDifficulty]} />
             <Stat
               label="Practice"
               value={a.availableSelectionStrategies

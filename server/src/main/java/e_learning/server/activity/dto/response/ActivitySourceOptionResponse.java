@@ -16,4 +16,7 @@ public class ActivitySourceOptionResponse {
     private ContentStatus status;
     private long totalQuestions;
     private long readyQuestions;
+    private long easyReadyQuestions;
+    private long mediumReadyQuestions;
+    private long hardReadyQuestions;
 }

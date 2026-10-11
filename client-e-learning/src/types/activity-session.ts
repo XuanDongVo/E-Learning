@@ -1,3 +1,5 @@
+import type { ActivityDifficulty } from "@/types/activity";
+
 export type ActivitySessionMode = "LEARNING" | "TRY_HARD";
 export type ActivitySessionStatus =
   | "IN_PROGRESS"
@@ -9,6 +11,7 @@ export type SelectionStrategy = "RANDOM" | "WEAKNESS_PRIORITY";
 export type ActivitySessionOptions = {
   activityId: number;
   activityMode: "LEARNING" | "TRY_HARD" | "BOTH";
+  questionDifficulty: ActivityDifficulty;
   selectionStrategies: SelectionStrategy[];
   timeLimitSeconds?: number;
   lives?: number;

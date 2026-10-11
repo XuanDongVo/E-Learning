@@ -7,7 +7,7 @@ import { AssignmentBuilder } from "@/components/features/teacher/assignments/dem
 function AssignmentDemoContent() {
   const searchParams = useSearchParams();
   const assignmentId = searchParams.get("id");
-  return <AssignmentBuilder key={assignmentId ?? "new"} />;
+  return <AssignmentBuilder key={assignmentId ?? "new"} id={assignmentId ?? undefined} />;
 }
 
 export default function AssignmentDemoPage() {

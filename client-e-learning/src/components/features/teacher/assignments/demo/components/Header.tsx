@@ -1,5 +1,5 @@
 // @ts-nocheck -- prototype: strict index-access checks relaxed
-import { useNavigate } from "@tanstack/react-router";
+import { useRouter } from "next/navigation";
 import { ArrowLeft, Copy, Eye, Loader2, MoreHorizontal, PencilLine, Save, Settings, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -38,7 +38,7 @@ export function StatusBadge() {
 }
 
 export function Header() {
-  const navigate = useNavigate();
+  const router = useRouter();
   const a = useBuilder((s) => s.assignment);
   const mode = useBuilder((s) => s.mode);
   const autosave = useBuilder((s) => s.autosave);
@@ -48,7 +48,7 @@ export function Header() {
   const dirty = useIsDirty();
   const errors = useIssues().filter((i) => i.level === "error").length;
 
-  const leave = () => navigate({ to: "/assignments" });
+  const leave = () => router.push("/teacher/assignments");
   const onBack = () => {
     if (!dirty) return leave();
     ask({
@@ -65,7 +65,7 @@ export function Header() {
     const copy = { ...structuredClone(a), id: uid("asg"), title: `${a.title} (copy)` };
     await localRepository.save(copy);
     toast.success("Assignment duplicated — opening the copy");
-    navigate({ to: "/", search: { id: copy.id } });
+    router.push(`/teacher/assignments/demo?id=${encodeURIComponent(copy.id)}`);
   };
   const deleteAssignment = () =>
     ask({

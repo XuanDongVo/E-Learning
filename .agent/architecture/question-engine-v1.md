@@ -302,9 +302,9 @@ The repository currently has only ServerApplicationTests on the backend and no d
 - **D6 — Runtime media:** accepted. Images and alt text in v1; audio deferred.
 
 ### D7 — AssessmentAttempt part results
-Persist per-part status, earned/possible points and optional normalized submitted value for Assignment analytics. Normalized values remain internal and never appear in in-progress student payloads.
+Persist Question Engine-calculated per-part status, earned/possible points and optional normalized submitted value for Assignment analytics. Submit/timeout grades from the immutable snapshot; there is no manual-review state in v1. Normalized values remain internal and never appear in in-progress student payloads.
 
 ### D8 — Assignment scoring
-Use Composition item/part points. Score = earned points / possible points × 100; examples excluded. MANUAL keeps official score pending until finalized; readiness rejects zero possible points.
+Each scored question defaults to 1 possible point and teachers may customize points per Assignment item. CLOZE/MATCHING part points default to equal split and may be edited while the sum equals aggregate question points. The server calculates earned points from Question Engine score fractions; percentage = earned / possible scored points × 100. Examples are excluded; readiness rejects zero possible points. show_score_after_submit (default true) independently controls score display, while show_answers_after_submit controls answer/explanation reveal.
 
 Assignment Composition is defined in ADR 0024 and `.agent/architecture/assignment-composition-v1.md`. Re-audit migrations before implementation; never modify V1–V30.

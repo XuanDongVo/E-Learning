@@ -5,7 +5,7 @@
 **Decided by:** project owner
 
 ## Decision
-Adopt .agent/architecture/question-engine-v1.md with D1–D8 accepted. Assignment order/item/block composition is separately defined by ADR 0024 and .agent/architecture/assignment-composition-v1.md. ADR 0025 amends D7/D8 at the Assignment application layer: formal Assignment submissions are teacher-reviewed, not automatically graded, in v1.
+Adopt .agent/architecture/question-engine-v1.md with D1–D8 accepted. Assignment order/item/block composition is defined by ADR 0024. ADR 0026 supersedes ADR 0025's former teacher-review policy: Assignment submissions are automatically graded in v1.
 
 - **D1 scoring:** preserve existing five types; Multiple Choice remains exact-set/all-or-nothing. Partial credit only for new types with explicit partial-credit rules.
 - **D2 semantics:** preserve FILL_IN_BLANK single-answer-position/accepted-alternative behavior; CLOZE is a separate multi-blank compound type. MATCHING is compound.

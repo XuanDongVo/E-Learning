@@ -94,7 +94,7 @@ The Assignment Builder has no manual grading or AUTO/MANUAL selector. Teacher co
 2. Provide per-question/part reviewed outcomes and most-missed counts; clearly define denominator and report unanswered and pending-review separately.
 3. Capture normalizedSubmittedValue with a type-aware normalizer at answer intake (not by the grader). Store optional normalization version.
 4. Report common normalized submissions/distractors from automatically graded outcomes.
-5. Examples and pending-review parts are excluded from finalized accuracy rates. Enforce teacher ownership/target scope/privacy in query and export.
+5. Exclude examples from accuracy rates and report unanswered separately. Enforce teacher ownership/target scope/privacy in query and export.
 6. Implement CSV/Excel export and tests against known fixtures.
 
 ## 4. Migration planning boundaries (not version assignments)

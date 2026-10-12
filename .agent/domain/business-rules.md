@@ -31,14 +31,14 @@
 
 ## Assignment
 - Assignment owns AssignmentQuestion records.
-- AssignmentQuestion has assignment_id and question_id only. No position, topic_id or reorder.
-- AssignmentQuestion order is deterministic by question_id ascending.
+- AssignmentQuestion has assignment_id and question_id only. No position or topic_id. Product ordering is Composition section/item/member position (ADR 0024).
+- Composition order is authoritative and comes from persisted section/item/member position. question_id ASC is only deterministic legacy backfill/compatibility order.
 - One Attempt per student.
 - Assignment time_limit_seconds is for the whole Attempt.
 - Expiry auto-submits saved answers and marks Timed out.
 - Submission after due_at is Late without score penalty.
 - Completion means submitted.
-- show_answers_after_submit controls correct-answer visibility after teacher review is finalized; default TRUE. Until review is complete, show Submitted / Pending review without a final score or answer review.
+- show_score_after_submit (default TRUE) independently controls immediate score display. show_answers_after_submit (default TRUE) independently controls correct-answer/explanation reveal. The server always calculates the score on submit/timeout; hiding it affects student display only.
 - Official score is separate from XP.
 
 ## Snapshot
@@ -56,5 +56,5 @@
 - All Assignment submissions are pending review until teacher grading is finalized. Readiness blocks zero possible scored points.
 - AssessmentAttempt snapshots ordered composition, QuestionSpecs, scoring flags, media refs and normalization/review provenance.
 - Persist per-part outcomes and normalized submitted values for Assignment analytics; report unanswered separately from incorrect.
-- While review is pending, students see Submitted / Pending review only. After review is finalized, show_answers_after_submit controls answer/explanation visibility; no in-progress or pre-review answer leakage.
+- In-progress student payloads never leak correctness/answer keys/normalized values. After submission, show_score_after_submit controls score display; show_answers_after_submit independently controls answers/explanations.
 - Publishing readiness is server-enforced; once any AssessmentAttempt starts, reject Assignment edits and require cloning to change it. Activity edits remain allowed: existing sessions keep their snapshots and future sessions use the latest saved version.

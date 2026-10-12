@@ -11,7 +11,8 @@ Entry point: AGENTS.md.
 ├── decisions/
 ├── domain/
 ├── architecture/
-│   └── question-engine-v1.md (proposed target architecture; see ADR 0023)
+│   ├── question-engine-v1.md (accepted target architecture; see ADR 0023)
+│   └── assignment-composition-v1.md (accepted product model; see ADR 0024)
 ├── plans/
 ├── design/
 ├── ui/
@@ -33,14 +34,14 @@ When an ADR changes a previous rule, create a later ADR and remove the old execu
 
 ## Current canonical decisions
 
-Question Engine v1 is under proposal in ADR 0023 and `.agent/architecture/question-engine-v1.md`. It is not an accepted implementation contract until the Owner resolves D1–D6. No code or migration work should start from the proposal alone.
+Question Engine v1 is accepted by ADR 0023 (D1–D8); implementation is not yet delivered. Assignment Composition is accepted by ADR 0024 and `.agent/architecture/assignment-composition-v1.md`.
 
 - Activity belongs to Unit, not Topic.
 - Activity and Assignment are independent.
 - Activity can offer Learning, Try Hard or both; when both are available, the student chooses the concrete mode at start.
 - Activity can expose multiple question-selection strategies. When multiple are configured, the student chooses one at start; the selected strategy is stored on ActivitySession.
 - Try Hard time_limit_seconds is per question, not per Activity run. Practice has no timer.
-- Assignment owns AssignmentQuestion records. AssignmentQuestion has no position field and there is no reorder API or UI. The server returns questions deterministically by question_id ascending.
+- Assignment owns AssignmentQuestion records. AssignmentQuestion has no position field; canonical order belongs to Composition sections/items/members per ADR 0024. Legacy records are backfilled in question_id ascending order.
 - Assignment has one attempt. Assignment time_limit_seconds applies to the whole attempt.
 - Assignment answer visibility after submit is controlled by show_answers_after_submit, default true. There is no Release Answers workflow.
 - Activity lifecycle: DRAFT -> PUBLISHED only when READY; DRAFT -> ARCHIVED; PUBLISHED -> ARCHIVED; ARCHIVED -> DRAFT. ARCHIVED cannot go directly to PUBLISHED.

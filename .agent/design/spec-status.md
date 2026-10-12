@@ -36,3 +36,21 @@ Activity distribution/readiness/lifecycle; Assignment deterministic order; answe
 | Q-08 | Question Engine tests | No dedicated handler/contract tests found | Required before refactor |
 
 This commit only synchronizes documentation. No application code or Flyway migration has changed, and no tests/builds were run.
+
+
+## Assignment Composition / Phase 7B audit (2026-10-12)
+
+| ID | Contract | Current state | Status |
+|---|---|---|---|
+| A-01 | Demo is product prototype | Builder has sections/items/blocks/groups/points/preview; persistence is localStorage/seed | Product contract accepted; production integration pending |
+| A-02 | Ordered Assignment Composition | Current AssignmentQuestion has no position and follows legacy question_id order | Gap; Composition accepted by ADR 0024 |
+| A-03 | Weighted scoring | Demo has per-item points; backend scoring contract not implemented | Gap; ADR 0023 D8 accepted |
+| A-04 | Manual grading | Demo models MANUAL; complete review workflow not confirmed | Implement in Scope B or hide/disable MANUAL in production |
+| A-05 | Assignment part analytics | Intent requires most-missed questions; normalized distribution not implemented | Gap; ADR 0023 D7 accepted |
+| A-06 | Readiness invariant | Assignment status transition does not enforce readiness as required | Scope B gate |
+| A-07 | Edit locking | AssessmentAttempt absent; current edit guard only checks ARCHIVED | Scope B gate |
+| A-08 | AssessmentAttempt | Not implemented | Scope B pending |
+| A-09 | Question Engine | Distributed type branches; no canonical handlers/registry | Accepted target; implementation pending |
+| A-10 | Immutable Activity snapshot | Session rows reference mutable Question | Gap; accepted D4 |
+
+No application code or Flyway migration changed in this documentation update. No tests/builds were run.

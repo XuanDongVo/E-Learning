@@ -1,35 +1,38 @@
 # E-Learning — Phase 5: Assignments
-Status: ACTIVE CANONICAL SPEC
-Last revised: 2026-10-07
+Status: ACTIVE CANONICAL SPEC — Composition amended by ADR 0024
+Last revised: 2026-10-12
 
-Assignment is formal teacher-assigned work with a target, schedule, one attempt and an official score.
-Assignment is independent from Activity and never references QuestionBank.
+Assignment is formal teacher-assigned work with target, schedule, one attempt and official score. It is independent from Activity and never references QuestionBank at runtime.
 
 ## Assignment
-Fields include grade_level, academic_year, name, description, status, start_at, due_at, time_limit_seconds and show_answers_after_submit.
-time_limit_seconds applies to the whole Attempt.
-show_answers_after_submit defaults TRUE.
+Fields include grade_level, academic_year, name, description, status, start_at, due_at, time_limit_seconds and show_answers_after_submit. Timer applies to whole AssessmentAttempt. show_answers_after_submit defaults TRUE. Targets are CLASS or GRADE, never mixed. Late submissions accepted and labeled Late without penalty. Completion = submitted.
 
-## AssignmentQuestion
-Only assignment_id + question_id.
-No position, topic_id, reorder endpoint or reorder UI.
-All reads/snapshots use ORDER BY question_id ASC.
-Do not rely on database insertion order.
-AttemptQuestion.position, if used, is runtime snapshot order only.
+## Composition
+The Assignment Builder demo is the product prototype. Canonical model: .agent/architecture/assignment-composition-v1.md.
+- Assignment -> ordered Sections -> ordered Items/ContentBlocks.
+- Section/item/member order is persisted in Composition.
+- Question items reference Assignment-owned Question copies and carry points, required, gradingMode AUTO/MANUAL and isExample.
+- V1 blocks: INSTRUCTIONS, PASSAGE, image MEDIA and POOL. Audio/nested blocks deferred.
+- Passage/CLOZE and pool/MATCHING retain stable grouping and ordered child parts.
+- AssignmentQuestion remains position-free; do not restore a position column.
 
-## Targets
-CLASS or GRADE, never mixed.
-Late submissions are accepted and labeled Late without score penalty.
-Completion = submitted.
+## Scoring/readiness
+- Scored item/part has possible points; examples have zero and are excluded.
+- earnedPoints = possiblePoints × scoreFraction.
+- percentageScore = totalEarnedPoints / totalPossiblePoints × 100; round only for display.
+- MANUAL items leave official score pending until reviewed.
+- Publish requires valid metadata, complete Questions, target/schedule, valid optional timer, valid Composition and total possible scored points > 0.
 
-## Readiness
-Draft may be incomplete.
-Publish requires valid metadata, complete owned Questions, valid target/schedule and valid time limit when present.
+## Review and analytics
+TRUE show_answers_after_submit: after submit, student sees permitted score, correct answers and explanations.
+FALSE: suppress correct/accepted answers and explanations. Normalized values are internal analytics data, never returned in-progress.
+Teacher reports per-student status/score, class average, most-missed question/part and normalized wrong-answer distributions; unanswered is separate. Export Excel/CSV remains required. Exclude examples and pending manual parts from finalized auto-grade rates.
 
-## Review
-TRUE -> student sees score, correct answers and explanations.
-FALSE -> student sees score/result state without correct answers/explanations.
-No Release Answers timestamp, endpoint, button or workflow.
+## Locking
+After the first AssessmentAttempt starts, freeze its composition, order, QuestionSpec, points and grading settings. Live edits must not mutate historical attempts. Phase 7B must choose one policy for future edits (new revision/draft or reject edits) before implementation.
+
+## Legacy order
+Backfill existing Assignments to one default section, items in question_id ascending order, defaults 1 point/required/AUTO/not-example unless explicit values exist.
 
 ## Deferred
 Excel import is deferred until its contract is finalized.

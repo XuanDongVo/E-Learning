@@ -13,14 +13,14 @@ activity, assignment, assessment-attempt, content, question, classes, grades, us
 - Errors use stable ErrorCode values.
 - Every entity change requires a new Flyway migration; never edit applied migrations.
 - Deterministic product order must be explicit in repository/service queries.
-- Assignment Composition sections/items/members use persisted position. AssignmentQuestion remains position-free; question_id ASC is legacy backfill only. Assignment is locked against authoring changes after the first attempt starts; changes require cloning. Assignment submissions are teacher-reviewed, not auto-graded, in v1. Activity edits are allowed, but active sessions use their immutable start snapshot and future sessions use the latest saved revision.
+- Assignment Composition sections/items/members use persisted position. AssignmentQuestion remains position-free; question_id ASC is legacy backfill only. Assignment is locked against authoring changes after the first attempt starts; changes require cloning. Assignment submissions are automatically graded by the Question Engine; no manual grading workflow or AUTO/MANUAL selector exists in v1. Activity edits are allowed, but active sessions use their immutable start snapshot and future sessions use the latest saved revision.
 - ActivitySession runtime state is separate from Activity configuration. AssessmentAttempt runtime state is separate from Assignment configuration.
 
 ## Activity
 Unit-scoped; available strategies live on Activity; concrete strategy and mode live on ActivitySession; Try Hard deadline is per question; preview is non-mutating; GameTemplate is not a current dependency.
 
 ## Assignment
-Owns AssignmentQuestion. No position. show_answers_after_submit controls review. time_limit_seconds is whole Attempt. No Release Answers timestamp/endpoint.
+Owns AssignmentQuestion. No position; Composition positions define official order and question_id ASC is legacy backfill only. `show_score_after_submit` controls score display, while `show_answers_after_submit` independently controls answer/explanation reveal. `time_limit_seconds` is whole Attempt. No Release Answers timestamp/endpoint.
 
 ## Question
 Question.hint is optional, max 500 characters. Formula/reference sheet is deferred.
@@ -47,3 +47,11 @@ Canonical contract: .agent/architecture/assignment-composition-v1.md; active pla
 - Persist raw answers for review and per-part grade results including optional normalized submitted value. Keep these out of in-progress student DTOs.
 - Weighted score uses earned/possible points × 100; examples excluded; manual items keep official score pending until reviewed.
 - Never merge AssessmentAttempt with ActivitySession.
+
+
+## Assignment score calculation and projection
+- The server calculates and persists automatic results when an AssessmentAttempt is submitted or timed out, using the immutable QuestionSpec/Composition snapshot.
+- Each scored Composition question defaults to 1 possible point; the teacher can customize per Assignment item. CLOZE/MATCHING parts default to an equal split and may be adjusted while summing to the aggregate item points.
+- `show_score_after_submit` defaults true and only controls score display; `show_answers_after_submit` independently controls answer/explanation display.
+- In-progress student DTOs must never expose answer keys, correctness flags, normalized submitted values or hidden explanations.
+- There is no manual-review queue, teacher grading UI or AUTO/MANUAL option in v1.

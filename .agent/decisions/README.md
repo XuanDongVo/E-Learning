@@ -1,12 +1,12 @@
 # Decisions (ADR)
 
-An accepted ADR overrides lower-level documents. Never delete an ADR; supersede or amend it with a later decision. Proposed ADRs are design proposals only and do not authorize implementation or migrations.
+An accepted ADR overrides lower-level documents. Never delete an ADR; supersede or amend it with a later decision. Proposed ADRs are planning only and do not authorize implementation.
 
 | ADR | Title | Status |
 |---|---|---|
 | 0001 | Activity and Assignment are independent | Accepted |
 | 0002 | Adopt the UI guidelines and design tokens | Accepted |
-| 0003 | Phase 5 assignment contract | Accepted |
+| 0003 | Phase 5 assignment contract | Accepted; amended by 0024/0025 where noted |
 | 0004 | Phase numbering | Accepted |
 | 0005 | One teacher, many classes | Accepted |
 | 0006 | Assignment completion means submission | Accepted |
@@ -17,7 +17,7 @@ An accepted ADR overrides lower-level documents. Never delete an ADR; supersede 
 | 0011 | Student sees score and answers after submit | Superseded by 0019 |
 | 0012 | Unfinished Activity run is not resumable | Accepted |
 | 0013 | Learning mode v1 feedback | Superseded by 0014 |
-| 0014 | Learning mode hint and retry | Accepted; formula-sheet implementation amended by 0016 and interaction count superseded by 0022 |
+| 0014 | Learning mode hint and retry | Accepted; formula-sheet implementation amended by 0016 and retry count superseded by 0022 |
 | 0015 | Try Hard time limit is per question | Accepted |
 | 0016 | Topic formula/reference sheet is deferred | Accepted |
 | 0017 | Activity selection strategy is chosen at run start | Accepted |
@@ -26,28 +26,30 @@ An accepted ADR overrides lower-level documents. Never delete an ADR; supersede 
 | 0020 | Activity lifecycle transitions | Accepted |
 | 0021 | Separate ActivitySession from AssessmentAttempt | Accepted |
 | 0022 | Activity Practice interaction and one retry | Accepted |
-| 0023 | Question Engine architecture | Accepted |
-
+| 0023 | Question Engine architecture | Accepted; D7/D8 refined by 0025 for Assignment grading |
 | 0024 | Assignment Composition is an ordered product document | Accepted |
+| 0025 | Assignment teacher grading, immutable after first attempt; Activity updates apply to future sessions | Accepted |
 
 ## Current decision chain
 
-ADR 0001 separates learning Activities from formal Assignments.
-ADR 0003 makes Assignment questions owned by the Assignment and defers Excel import and reorder work.
+ADR 0001 separates repeatable Activity practice from formal Assignment work.
+ADR 0003 defines Assignment-owned questions and lifecycle constraints; ADR 0024 adds ordered Assignment Composition and ADR 0025 freezes the Assignment after the first attempt starts.
 ADR 0008 places Activities under Units.
-ADR 0014 defines hint availability and older Practice interactions; ADR 0022 supersedes its old three-submission behavior with one retry.
+ADR 0014 defines hint/retry behavior; ADR 0022 fixes Practice to two submissions total (first answer + one retry).
 ADR 0015 defines Try Hard timing per question.
-ADR 0016 deliberately defers the shared Topic formula/reference sheet.
-ADR 0017 makes the student-selected Activity strategy part of ActivitySession.
-ADR 0018 keeps AssignmentQuestion.position-free; ADR 0024 supersedes its product-level no-reordering rule by putting order on Composition sections/items.
-ADR 0019 replaces the Release Answers timestamp concept with show_answers_after_submit.
-ADR 0020 defines the allowed Activity status transitions.
-ADR 0021 separates repeatable ActivitySession from formal AssessmentAttempt and forbids a shared polymorphic Attempt table. AssessmentAttempt is deferred.
-ADR 0022 fixes Practice semantics: no timer, one retry, optional Question hint, no detailed persisted Activity answer history.
-ADR 0023 accepts the shared Question Engine, durable Activity snapshots, D1–D8, Assignment part-result analytics and weighted scoring. Implementation is still outstanding. See `.agent/architecture/question-engine-v1.md`.
+ADR 0016 defers the shared Topic formula/reference sheet.
+ADR 0017 stores the selected Activity strategy on ActivitySession.
+ADR 0018 remains authoritative that AssignmentQuestion itself has no position. ADR 0024 supersedes its product-level no-reorder/order-by-ID rule: canonical Composition has persisted ordered sections/items/members.
+ADR 0019 controls Assignment post-submit answer visibility through show_answers_after_submit.
+ADR 0021 separates ActivitySession from formal AssessmentAttempt and forbids a shared polymorphic Attempt.
+ADR 0023 accepts Question Engine D1–D8. ADR 0025 refines Assignment scoring: Activity can retain automatic correctness feedback, but Assignment submissions are teacher-reviewed in v1.
+ADR 0024 makes the Assignment Builder demo the product prototype and defines Composition; current demo localStorage/seed persistence is not production persistence.
+ADR 0025 locks an Assignment after its first attempt starts. To change it, clone it. Activity edits are allowed; existing sessions keep their starting snapshot, and later sessions use the latest saved revision.
 
-ADR 0024 makes the Assignment Builder demo the product prototype and defines ordered Composition. See `.agent/architecture/assignment-composition-v1.md`.
+## Canonical implementation plan
+
+Read .agent/plans/PHASE_7B_IMPLEMENTATION_MIGRATION_PLAN.md before coding Phase 7B. It sequences environment validation, Question Engine contracts, Activity snapshots, Assignment Composition, AssessmentAttempt, teacher review, scoring, analytics and migration gates.
 
 ## Authority note
 
-Only ADRs marked Accepted define approved behavior. A Proposed ADR may guide review/planning but cannot override accepted ADRs or authorize code/schema changes.
+Only Accepted ADRs define approved behavior. Implementation status is tracked separately in PROGRESS.md; accepted architecture is not evidence of implemented code or passing tests.

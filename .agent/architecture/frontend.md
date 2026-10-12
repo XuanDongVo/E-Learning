@@ -50,4 +50,4 @@ This target is a proposal, not an instruction to begin refactoring before Owner 
 
 ## Assignment Composition
 
-See .agent/architecture/assignment-composition-v1.md. Preserve ordered sections/items, drag/drop, instruction/passage/image/pool blocks, groups, points/required/gradingMode/isExample, validation and Student Preview. Image + alt text supported in v1; audio deferred. Hide/disable MANUAL until its review workflow exists. Production persistence uses APIs, not localStorage/seed.
+See .agent/architecture/assignment-composition-v1.md. Preserve ordered sections/items, drag/drop, instruction/passage/image/pool blocks, groups, points/required/gradingMode/isExample, validation and Student Preview. Image + alt text supported in v1; audio deferred. Do not expose AUTO/MANUAL or manual grading; all Assignment submissions are auto-graded. Each scored Assignment item defaults to 1 point, teacher-editable. Expose `show_score_after_submit` separately from `show_answers_after_submit`. Production persistence uses APIs, not localStorage/seed.

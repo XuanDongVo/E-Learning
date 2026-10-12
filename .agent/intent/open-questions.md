@@ -1,5 +1,6 @@
 # Open questions
 
+## Deferred product questions
 | ID | Question | Disposition | Status |
 |---|---|---|---|
 | OQ-7 | Assignment Excel import | Deferred until contract finalized | Later |
@@ -8,38 +9,31 @@
 | OQ-17 | Hint XP deduction amount | Decide in Phase 9 | Later |
 | OQ-18 | When/how to activate Topic formula/reference sheet | Future product decision | Later |
 
-## Closed
-- OQ-1 one teacher/many classes — decided.
-- OQ-2 Activity under Unit — decided.
-- OQ-3 Assignment target CLASS or GRADE — decided.
-- OQ-4 Assignment completion = submitted — decided.
-- OQ-5 own-grade visibility — decided.
-- OQ-6 Learning: 2 answers total (first + 1 retry) + optional Question hint; formula sheet deferred — superseded by ADR 0022.
-- OQ-10 phase numbering — decided.
-- OQ-11 Assignment tracking requirements — decided.
-- OQ-12 phone and computer equally — decided.
-- OQ-13 Assignment timeout auto-submit — decided.
-- OQ-14 show_answers_after_submit controls answer/explanation visibility after teacher review is finalized — decided by ADR 0019 as refined by ADR 0025.
-- OQ-15 unfinished Activity run is not resumed — decided.
-- OQ-16 abandoned Activity results ignored — decided.
-- OQ-19 AssignmentQuestion has no position; question_id ASC — decided.
-- OQ-20 multiple Activity strategies require student choice; store on ActivitySession — superseded by ADR 0021.
-- OQ-21 Activity lifecycle transitions — decided.
-
-
-## Accepted decisions — 2026-10-12
-
-ADR 0025 closes OQ-22 and defines Assignment hard-lock/clone behavior and Activity snapshot-version behavior. Assignment answer normalization happens at answer intake, but correctness and earned points are assigned by teacher review in v1. Compound question part points default to equal split and may be edited while summing to the aggregate item total.
-
-ADR 0023 D1–D8 and ADR 0024 are accepted. They are no longer open questions. See the ADR index and canonical architecture documents.
+## Closed decisions
+- OQ-1 one teacher/many classes.
+- OQ-2 Activity under Unit.
+- OQ-3 Assignment target CLASS or GRADE.
+- OQ-4 Assignment completion = submitted.
+- OQ-5 own-grade visibility.
+- OQ-6 Learning allows two answers total (first + one retry) plus optional Question hint; formula sheet deferred (ADR 0022).
+- OQ-10 phase numbering.
+- OQ-11 Assignment tracking includes per-student status/score, class average, most-missed questions and CSV/Excel export.
+- OQ-12 phone and computer equally.
+- OQ-13 Assignment timeout auto-submits.
+- OQ-14 `show_answers_after_submit` controls answer/explanation visibility; `show_score_after_submit` independently controls whether the calculated score is shown immediately (ADR 0026).
+- OQ-15 unfinished Activity run is not resumed.
+- OQ-16 abandoned Activity results ignored.
+- OQ-19 AssignmentQuestion has no position; Composition section/item/member position defines product order. `question_id ASC` is only the legacy backfill order (ADR 0024).
+- OQ-20 multiple Activity strategies require student choice when needed; store on ActivitySession.
+- OQ-21 Activity lifecycle transitions.
+- OQ-22 Assignment is hard-locked after first AssessmentAttempt starts; duplicate/clone it to make changes (ADR 0025).
+- OQ-23 Assignment is automatically graded in v1; no manual grading workflow or AUTO/MANUAL selector. Each scored question defaults to 1 point; teachers may customize it per Assignment item. Compound part points default to equal split and may be adjusted while summing to the aggregate total (ADR 0026).
+- D1–D8 in ADR 0023 are accepted; ADR 0026 refines Assignment scoring and score visibility.
 
 ## Remaining implementation questions
-
 | ID | Question | Status / gate |
 |---|---|---|
-| OQ-22 | How should future Assignment edits work after an AssessmentAttempt exists? | Closed by ADR 0025: hard-lock the Assignment; duplicate/clone to change it |
-| OQ-23 | What is the exact teacher review workflow and permission model for Assignment submissions? | Scope B must implement teacher review for all Assignment submissions; no automatic grading or AUTO/MANUAL selector in v1 |
 | OQ-24 | Which image asset/media storage contract and allowed URL policy will be used in student views? | Resolve against existing media implementation before snapshot/API work |
-| OQ-25 | Which report export format details, filters and row granularity are required for CSV/Excel? | Basic Assignment export remains in product intent; finalize schema during reporting slice |
+| OQ-25 | Which report export format details, filters and row granularity are required for CSV/Excel? | Basic Assignment export remains product intent; finalize schema during reporting slice |
 
-ADR 0023 D1–D8 and ADR 0024 are accepted product/architecture decisions. Remaining questions above are implementation contracts, not permission to weaken accepted requirements.
+All other relevant questions have an accepted product/architecture decision. Check ADR 0023–0026 and the Phase 7B implementation/migration plan before code.

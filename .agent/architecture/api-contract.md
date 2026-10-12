@@ -74,7 +74,7 @@ The Activity start response returns the complete selected question set. Correct 
 - Teacher authoring responses may include correctness and accepted-answer details. Never reuse a teacher authoring DTO as a student runtime DTO.
 - Student runtime payloads must not expose correctness flags, accepted answers, normalized values, or explanations before the corresponding Practice/review rule allows them. Hint content is returned through the explicit hint action so use can be recorded.
 - ActivitySession uses the session endpoints above; do not reintroduce the legacy polymorphic `/v1/attempts/{id}` API from the historical tail of the old Phase 7 draft.
-- Accepted Question Engine domain contract: see `.agent/architecture/question-engine-v1.md` and ADR 0023 (refined by ADR 0025). The discriminated QuestionSpec contract is accepted, but the new implementation/wire DTOs are not yet delivered; do not represent planned endpoints as current routes.
+- Accepted Question Engine domain contract: see `.agent/architecture/question-engine-v1.md` and ADR 0023 (lifecycle refined by ADR 0025; Assignment scoring/display refined by ADR 0026). The discriminated QuestionSpec contract is accepted, but the new implementation/wire DTOs are not yet delivered; do not represent planned endpoints as current routes.
 
 
 ## Assignment Composition and AssessmentAttempt — accepted target contract, not yet implemented

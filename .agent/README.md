@@ -53,7 +53,7 @@ Question Engine v1 is accepted by ADR 0023 (D1–D8); implementation is not yet 
 
 ## Required Phase 7B planning input
 
-Before writing Phase 7B code, read `.agent/plans/PHASE_7B_IMPLEMENTATION_MIGRATION_PLAN.md` together with ADR 0023–0025, `.agent/architecture/question-engine-v1.md`, `.agent/architecture/assignment-composition-v1.md` and the active Phase 7 spec. ADR 0023 is Accepted, refined by ADR 0025 for Assignment lock/Activity update semantics and ADR 0026 for automatic Assignment scoring. Assignment locks after its first attempt starts and must be cloned to change; Activity edits remain allowed and apply to future sessions while existing sessions retain their snapshot.
+Before writing Phase 7B code, read `.agent/plans/PHASE_7B_IMPLEMENTATION_MIGRATION_PLAN.md` together with ADR 0023–0026, `.agent/architecture/question-engine-v1.md`, `.agent/architecture/assignment-composition-v1.md` and the active Phase 7 spec. ADR 0023 is Accepted, ADR 0025 governs Assignment lock/Activity update semantics, and ADR 0026 governs automatic Assignment scoring and score visibility. Assignment locks after its first attempt starts and must be cloned to change; Activity edits remain allowed and apply to future sessions while existing sessions retain their snapshot.
 
 Start by reading PROGRESS.md and the task-relevant ADR/spec/domain files.
 Before coding, resolve contradictions top-down through ADRs and active specs.

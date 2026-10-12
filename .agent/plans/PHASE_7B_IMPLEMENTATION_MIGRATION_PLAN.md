@@ -8,9 +8,10 @@
 
 Read first:
 - ADR 0021/0022 — ActivitySession and Practice rules.
-- ADR 0023 — Question Engine and D1–D8, as amended by ADR 0025.
+- ADR 0023 — Question Engine and D1–D8, refined by ADR 0025 and ADR 0026.
 - ADR 0024 — Assignment Composition.
-- ADR 0025 — Assignment teacher grading, post-attempt lock and Activity edit/version behavior.
+- ADR 0025 — Assignment hard-lock and Activity edit/version behavior.
+- ADR 0026 — automatic Assignment scoring, score visibility and per-question points.
 - `.agent/architecture/question-engine-v1.md`
 - `.agent/architecture/assignment-composition-v1.md`
 - `.agent/plans/E-LEARNING_PHASE_7_ATTEMPTS_SPEC.md`
@@ -23,7 +24,7 @@ Do not implement against stale statements that ADR 0023 is Proposed. Its target 
 - Do not modify or delete Flyway V1–V30. Re-list migrations and verify the current maximum immediately before adding a migration; choose the actual next unused version.
 - Assignment Composition is ordered; AssignmentQuestion remains position-free. Legacy Assignment order backfills as question_id ASC.
 - QuestionSpec is the one canonical type union. Composition is a separate model.
-- Activity uses automatic correctness feedback under its Practice/Try Hard rules. Formal Assignment submissions are also automatically graded by Question Engine in v1. No manual grading UI/API or AUTO/MANUAL selector is allowed.
+- Activity uses automatic correctness feedback under its Practice/Try Hard rules. Formal Assignment submissions are automatically graded by Question Engine in v1; ADR 0026 adds the score visibility option. No manual grading UI/API or AUTO/MANUAL selector is allowed.
 - After any AssessmentAttempt starts, freeze the entire Assignment for authoring. Any change requires a clone/new Assignment. Archiving/closing future starts may remain possible without changing past snapshots.
 - Activity updates are allowed. Existing ActivitySessions keep their immutable started snapshot; sessions started after an update use the latest saved Activity/configuration/question content.
 - Compound CLOZE/MATCHING aggregate points default to equal split across independently scored parts; teachers may edit allocations, but the parts must sum to the item's total.
@@ -70,7 +71,7 @@ Do not implement against stale statements that ADR 0023 is Proposed. Its target 
 7. Add ordering/backfill, readiness, ownership, and round-trip tests.
 
 ### Slice 5 — AssessmentAttempt and hard lock policy
-1. Create AssessmentAttempt and immutable ordered attempt snapshot. Snapshot includes Composition, QuestionSpecs/answer keys for teacher review, media refs, possible points per item/part, required/example flags, timing/target/review settings and schema/grading/normalization versions.
+1. Create AssessmentAttempt and immutable ordered attempt snapshot. Snapshot includes Composition, QuestionSpecs/answer keys needed for automatic grading and permitted post-submit review, media refs, possible points per item/part, required/example flags, timing/target/score-visibility and answer-reveal settings and schema/grading/normalization versions.
 2. Enforce one official attempt per student per Assignment and server-authoritative whole-attempt timer.
 3. Persist raw answers throughout attempt, support idempotent autosave/submit, auto-submit saved answers on timeout, mark late/timed-out without score penalty.
 4. Enforce hard authoring lock as soon as the first attempt starts: reject changes to Assignment metadata affecting work, target/schedule, Composition/order, question contents/membership, points and answer policy. Do not allow edits merely because status is not ARCHIVED.

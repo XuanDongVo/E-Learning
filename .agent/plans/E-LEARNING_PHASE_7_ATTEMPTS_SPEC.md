@@ -1,137 +1,88 @@
-# Phase 7 — Activity Sessions & Assessment Attempts
-Status: **Scope A present in code; Scope B deferred. Question Engine target is proposed under ADR 0023.**
-Date: 2026-10-12
+# Phase 7 — ActivitySession, Question Engine and AssessmentAttempt
 
-Phase 7 is split into two independent scopes. **Scope A — ActivitySession** is present in the audited codebase but still requires a configured validation run. **Scope B — AssessmentAttempt** remains deferred and is not implemented. ActivitySession and AssessmentAttempt must never be represented by one polymorphic Attempt table.
+**Status (2026-10-12):** Scope A exists in code and needs configured validation. Question Engine and Assignment Composition contracts are accepted. Scope B implementation is not started. This is the active plan; do not restore the old polymorphic Attempt model/routes.
 
-> **Current authority:** accepted ADRs 0021 and 0022 plus `.agent/architecture/api-contract.md` govern current runtime routes and Activity behavior. The old combined draft at the end of the prior version of this file used the superseded polymorphic `/v1/attempts/{id}` contract and old retry behavior; that legacy section is removed below. Do not restore its routes or requirements.
+**Authority:** ADR 0012, 0015, 0021, 0022, 0023 and 0024; .agent/architecture/api-contract.md; .agent/architecture/question-engine-v1.md; .agent/architecture/assignment-composition-v1.md.
 
-# Scope A — Activity Sessions
+## Scope A — ActivitySession
+- ActivitySession remains separate from AssessmentAttempt. Status: IN_PROGRESS, COMPLETED, GAME_OVER, ABANDONED.
+- Store student/activity, concrete mode/strategy, timestamps and aggregate counts/score/lives.
+- Do not persist detailed Activity answer/part history.
+- Before full snapshots are enforced, abandon legacy IN_PROGRESS sessions; never reconstruct historical content from mutable Questions.
+- Start validates published state, readiness and own-grade access; resolve mode/strategy and persist them.
+- Select full question set/order in one transaction and persist a full immutable QuestionSnapshot for every selected question. Use snapshots for display, grading, hint and reveal.
+- Student payloads must not contain correct/accepted/normalized answers or explanations before permitted reveal.
+- Practice: no timer, immediate feedback, two submissions total (one retry), optional hint, final reveal after retry exhaustion.
+- Try Hard: per-question timer, no hint/retry; wrong costs a life; timeout counts wrong but costs no life; zero lives after a wrong answer means GAME_OVER.
+- Starting a new run abandons the previous open session as required by ADR 0012.
 
-## Domain
-- Keep one `Activity` configuration. Practice and Try Hard are modes of the same Activity; do not create separate Activity entities.
-- Runtime entity: `ActivitySession`.
-- `ActivitySession` stores student, activity, concrete mode, concrete selection strategy, status, timestamps, question count, first-correct count, final-correct count, hint-used count, score and Try Hard lives.
-- Status: `IN_PROGRESS`, `COMPLETED`, `GAME_OVER`, `ABANDONED`.
-- Do not create a shared polymorphic `Attempt` table.
+### Scope A gate
+Run server/client tests in a configured environment; verify leakage, retry/hint/timer/lives/abandonment and snapshot behavior. Scope B cannot begin until this gate is recorded as passed.
 
-## Question set and FE flow
-- `activity_session_questions(session_id, question_id, position)` freezes selected Question IDs/order only. The audited V28 runtime rows still reference mutable Question content; a durable full-content snapshot is not implemented and is only proposed under ADR 0023 (D4 pending).
-- Do not persist Activity answer history.
-- Start returns the complete selected question set to FE. Do not fetch one question at a time.
-- The payload must not contain correct answers, accepted answers or explanations before the runtime flow allows them.
-- FE keeps the current session's selected responses for immediate review; BE remains authoritative for correctness, retry, hint, score, timer and lives.
+## Scope B — Assignment Composition and AssessmentAttempt
 
-## Start
-`POST /v1/activities/{activityId}/sessions`
-- Re-check published state, own-grade access and readiness.
-- If `BOTH`, require the concrete mode at runtime.
-- If multiple strategies exist, require the concrete strategy.
-- Abandon an existing open session before starting a new one.
-- Select the full question set in one transaction using `ActivityDistributionCalculator`.
+### B1. Product Composition
+The Assignment Builder demo is the product prototype, not disposable. Production preserves ordered sections/items, drag/drop, instruction/passage/image/pool blocks, grouped questions, per-item points/required/grading/example flags, validation and Student Preview. localStorage/seed is prototype-only.
+- Assignment -> ordered Composition sections -> ordered items and grouped member items.
+- Item kinds: Question or ContentBlock; v1 blocks: INSTRUCTIONS, PASSAGE, image MEDIA and POOL. Audio/nested blocks deferred.
+- AssignmentQuestion remains the ownership association without position. Composition owns ordering; ADR 0024 supersedes the no-reorder/order-by-ID product rule in ADR 0018.
+- One canonical QuestionSpec union is shared across backend, Question Bank, Assignment and runtime. Composition remains separate; align demo types, no third semantic union.
+- Map demo TEXT_INPUT -> TYPE_ANSWER; MULTI_TEXT_INPUT/passage blanks -> CLOZE; pool/matching rows -> MATCHING; TRUE_FALSE has its own discriminant.
+- Points/required/gradingMode/isExample are Assignment-specific and do not mutate reusable Question Bank content.
+- Legacy backfill: one section, items question_id ASC, defaults 1 point/required/AUTO/not-example unless explicit values exist.
 
-## Practice
-UI terminology is **Practice**; keep backend enum `LEARNING` in this phase to avoid an unnecessary enum/database migration.
-- No timer.
-- Immediate server-side correctness feedback.
-- Exactly 2 submissions: first answer + 1 retry.
-- Wrong first answer: show incorrect + retry; do not reveal the answer.
-- Correct retry: `first_correct=false`, `final_correct=true`.
-- Wrong retry: reveal correct answer + explanation and resolve.
-- `TRUE_FALSE` follows the same generic retry rule. A correct second boolean answer is final-correct.
-- Optional hint; hint request records `hint_used`; XP deduction is deferred to Phase 9.
-- Student-facing score uses `final_correct_count / total_questions`; retain `first_correct_count` for analytics.
-- Review is only the just-finished session, not Attempt History.
+### B2. Readiness and publishing
+Publishing is a server-side invariant: valid metadata, target/schedule, supported complete Questions, valid timer, valid Composition/block/group references and scoring. Total possible scored points must be > 0 after examples are excluded. MANUAL is allowed only if teacher review workflow is implemented. Drafts may remain incomplete. Return stable validation errors identifying section/item/question. Test invalid publish rejection.
 
-Answer: `POST /v1/activity-sessions/{sessionId}/questions/{sessionQuestionId}/answer`.
-Hint: `POST /v1/activity-sessions/{sessionId}/questions/{sessionQuestionId}/hint`.
+### B3. Locking and revisions
+Starting an AssessmentAttempt freezes ordered composition, QuestionSpecs, media refs, points/required/example/manual flags, show_answers_after_submit, time limit and grading/normalization versions. Live edits cannot mutate snapshots. Lock structure, membership/content, points and grading settings after an attempt starts with transaction-safe guards. Before implementation choose one policy for later edits: new revision/draft for future students or reject edits until archived. Historical attempts remain immutable. Test concurrent start/edit and publish/edit races.
 
-## Try Hard
-- Same `ActivitySession`, `mode=TRY_HARD`.
-- No hint and no retry.
-- `deadline_at = served_at + time_limit_seconds` for each question.
-- Wrong answer costs one life.
-- Timeout counts wrong but costs no life.
-- Zero lives after a wrong answer => `GAME_OVER`.
-- Timeout alone never causes `GAME_OVER`.
-- No whole-Activity timer.
+### B4. AssessmentAttempt lifecycle
+- Separate aggregate; no polymorphic Attempt table; one official attempt per student per Assignment.
+- Server-authoritative whole-attempt timer; reload/leave does not stop clock; timeout auto-submits saved answers and records timed-out flag while retaining submitted/completion semantics.
+- Persist answers and support autosave/idempotent retries without allowing a second official attempt.
+- State target: IN_PROGRESS, SUBMITTED, TIMED_OUT; manual review is a separate status, not another Attempt.
+- Enforce target/access/current-class membership, published/open/due policy on server.
+- Submit freezes answers and calculates automatic results once; late submissions remain accepted/labeled Late without score penalty.
 
-## Activity abandonment
-- Activity sessions are not resumable.
-- Leaving/starting a new run abandons the previous session.
-- Abandoned sessions are excluded from finalized results/analytics/XP.
+### B5. Answer and per-part grade persistence (D7)
+Persist raw answer for review, optional normalized submitted value for analytics, per-part status (CORRECT, PARTIALLY_CORRECT, INCORRECT, UNANSWERED, PENDING_MANUAL), earned/possible points, stable part key, snapshot and normalizer/grading version, and timestamps. Normalized values are internal and never exposed in in-progress student DTOs. After submit, apply show_answers_after_submit exactly; if false, suppress correct/accepted/normalized details and explanations.
 
-# Scope B — Assessment Attempts (deferred)
-- Runtime entity: `AssessmentAttempt`.
-- One official Assignment/Assessment attempt per student.
-- Immutable question snapshot and persisted answers/autosave.
-- Whole-attempt server timer, submit/timeout, official score and review controlled by `show_answers_after_submit`.
-- Structure: `Assignment -> AssessmentAttempt -> AssessmentAttemptQuestion -> Answer`.
-- No Activity fields on AssessmentAttempt and no Assignment fields on ActivitySession.
+### B6. Weighted scoring (D8)
+Points live on Composition items/parts, not shared Question Bank fields. earnedPoints = possiblePoints × scoreFraction. totalPossiblePoints sums scored non-example parts. totalEarnedPoints sums finalized graded parts. percentageScore = totalEarnedPoints / totalPossiblePoints × 100. Preserve raw points and percentage; round only for display. Examples are zero-point/excluded. MANUAL parts remain pending until teacher review; official score pending until all finalized. Existing types retain semantics; Matching/CLOZE partial-credit rules are tested. Readiness rejects zero possible scored points.
 
-# Existing code/UI impact
-## Keep Activity configuration
-The current `ActivityService`, `ActivityController`, `ActivityValidationService`, `ActivityReadinessService`, `ActivityDistributionCalculator`, repositories, CRUD, readiness, preview and lifecycle endpoints remain. Scope A adds student runtime endpoints; it does not replace teacher CRUD.
+### B7. Assignment analytics
+Intent 0001 §3b and A4 require per-student status/score, class average, most-missed questions and Excel/CSV export. Implement correct/partial/incorrect/unanswered counts by question/part; accuracy with explicit denominator; normalized submitted-answer distributions; exclude examples and pending manual parts from finalized automatic rates; enforce teacher ownership/target scope/privacy; derive analytics from persisted attempts, not live Questions or mock data. Weak-topic cross-Assignment analytics remains a later Analytics phase.
 
-## Teacher Activity UI changes
-- Keep one Activity editor and one Activity detail page.
-- Change student-facing `Learning` copy to **Practice**.
-- Remove the current incorrect wording that says the Activity time limit applies to the whole run.
-- Try Hard must say **seconds per question**.
-- Explain Practice: no timer, immediate feedback, 1 retry, optional hint.
-- Explain Try Hard: per-question timer, lives, no hint, no retry.
-- When BOTH is offered, show the two supported modes rather than treating BOTH as a gameplay mode.
-- Activity list needs only label/copy updates; no structural refactor.
+### B8. Review and media
+TRUE show_answers_after_submit: after submit, return permitted score, correct answers and explanations. FALSE: suppress correct/accepted/normalized values and explanations. Image + meaningful alt text in v1; audio deferred. Student renderer and teacher preview preserve same order/grouping. MANUAL workflow is in Scope B if offered in production; otherwise hide/disable MANUAL until implemented.
 
-## Student UI
-The repository currently has no completed real Activity runtime; student Activity routes are placeholders. Build a new ActivitySession runner rather than refactoring an existing Attempt runner.
-Required: mode selection for BOTH; Practice runner; Try Hard runner; result screen; loading/error/disabled/success states; responsive phone/desktop and keyboard accessibility.
+### B9. Required tests
+Backend: readiness/publish rejection; ordered composition/backfill; access/target/due/current-class; one attempt; autosave/idempotent submit; timeout; snapshot immutability; edit-lock concurrency; decimal scoring/examples/zero denominator/manual pending; normalized-answer analytics/denominators; reveal leakage; media/alt text; CLOZE/MATCHING; no polymorphic Attempt.
+Frontend: builder save/reload order; drag/drop/sections/items/blocks/groups; canonical QuestionSpec editors/validation/preview; Student Preview matches attempt; points/required/AUTO-MANUAL/example; responsive/touch/keyboard/UI states; no localStorage/seed in production.
 
-# Scope A API
-- `POST /v1/activities/{activityId}/sessions` — create session and return full selected question set.
-- `GET /v1/activity-sessions/{sessionId}` — current state without answer leakage.
-- `POST /v1/activity-sessions/{sessionId}/questions/{sessionQuestionId}/answer` — answer and feedback.
-- `POST /v1/activity-sessions/{sessionId}/questions/{sessionQuestionId}/hint` — Practice hint.
-- `POST /v1/activity-sessions/{sessionId}/finish` — finish if not auto-completed.
-- `GET /v1/activity-sessions/{sessionId}/result` — completed result.
+### B10. Implementation sequence
+1. Validate Scope A gate.
+2. Re-audit actual Flyway max/schema; never edit V1–V30.
+3. Add characterization tests for five current Question types.
+4. Implement QuestionSpec/handlers/registry/persistence mapping with parity tests.
+5. Add option order/revision and Activity snapshots; abandon legacy IN_PROGRESS sessions before enforcement.
+6. Implement Composition schema/API/backfill and frontend adapter.
+7. Implement AssessmentAttempt snapshots/answers/lifecycle/timeout.
+8. Implement weighted scoring and manual review if enabled.
+9. Implement analytics/export and security tests.
+10. Run server tests, frontend lint/typecheck/tests/build and record exact outcomes.
 
-# Database plan
-- Do **not** create the old polymorphic `attempts` table.
-- Scope A: `activity_sessions`, `activity_session_questions`.
-- No Activity `answers` persistence.
-- Scope B later: `assessment_attempts`, `assessment_attempt_questions`, `answers`.
-- Choose the actual Flyway version from the repository migration directory immediately before implementation; never edit an applied migration.
+## Existing gaps
+- AssignmentService status transition must enforce readiness, not trust UI.
+- AssignmentQuestionService edit guard only checks ARCHIVED; Scope B must lock structure/scoring after an attempt.
+- AssessmentAttempt and Question Engine handlers are not implemented.
+- ActivitySessionQuestion still references mutable Question content.
+- Older Question authoring paths omit hint in mapping; add round-trip tests/fix.
+- Demo uses localStorage/seed; production must use APIs and canonical models.
 
-# Scope A tests
-Backend: access/readiness, mode/strategy validation, distribution, full question selection, no answer leakage, Practice first-correct, one retry, final reveal, TRUE_FALSE retry, hint, Try Hard correctness/wrong/timeout/lives/no-retry/no-hint, abandonment, new random session and score aggregates.
+## Migration rules
+Never edit V1–V30. Re-read migration directory immediately before implementation and choose actual next version; do not assume V31–V33 remain available. Use incremental migrations for option order/revision, Activity snapshots, Composition, AssessmentAttempt snapshots/answers/part grades, with deterministic backfills. No migration is created in this documentation update.
 
-Frontend: mode selection, Practice feedback/retry/reveal, TRUE_FALSE retry, hint, Try Hard timer/lives/timeout, result/Practice Again, loading/error/disabled/success, responsive and keyboard accessibility.
-
-# Documentation synchronization required
-Update contradictory runtime references in: `.agent/domain/domain-model.md`, `.agent/domain/business-rules.md`, `.agent/domain/question-model.md`, `.agent/domain/glossary.md`, `.agent/architecture/backend.md`, `.agent/architecture/frontend.md`, `.agent/architecture/api-contract.md`, `.agent/ui/screens.md`, `.agent/ui/UI_ARCHITECTURE_GUIDELINES.md`, `.agent/design/spec-status.md`, `.agent/plans/PHASES.md`, `.agent/PROGRESS.md`.
-
-Controlling decisions: ADR 0012, ADR 0015, ADR 0021 and ADR 0022.
-
-# Definition of done — Scope A
-- Activity CRUD remains working.
-- Teacher UI reflects Practice/Try Hard semantics correctly.
-- Student can start a published Activity and receive the full question set.
-- Practice: no timer, immediate feedback, one retry, optional hint, final reveal.
-- TRUE_FALSE retry works as normal correctness.
-- Try Hard: per-question timer, no hint, no retry, lives and timeout behavior.
-- Server is authoritative.
-- Activity answer history is not persisted.
-- Abandoned sessions do not count as finalized results/XP.
-- No shared polymorphic Attempt is introduced.
-- Backend/frontend validation passes where the environment permits.
-- No contradictory Activity Attempt rules remain in active documentation.
-
-**Scope B starts only after Scope A passes this gate.**
-
----
-
-# Historical material removed from the active plan
-
-The former combined draft below this point described a single polymorphic `attempts` model for both Activity and Assignment, `/v1/attempts/{attemptId}` endpoints, Assignment autosave and response-history behavior in Activity, a three-submission Learning rule, and a Topic formula sheet endpoint. Those requirements conflict with accepted ADRs 0016, 0021 and 0022 and the current ActivitySession API contract, so they are not kept as executable requirements here. Git history retains the prior text for traceability.
-
-For current API paths and security rules, read `.agent/architecture/api-contract.md`. Scope B AssessmentAttempt details remain deferred until Scope A validation passes and a new explicit owner-approved scope is created.
+## Definition of done
+Scope A gate passed; immutable Activity snapshots active; Builder persists/reloads ordered Composition via APIs; AssessmentAttempt enforces one attempt, immutable snapshot, autosave, timeout, weighted score, review policy and manual review if enabled; readiness/locking server-enforced; analytics/export uses real persisted results; QuestionSpec is canonical; scoring/order/timeout/backfill/leakage/responsive tests pass. PROGRESS records exact results, never unrun checks.

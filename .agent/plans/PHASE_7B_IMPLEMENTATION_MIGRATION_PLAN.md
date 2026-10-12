@@ -23,7 +23,7 @@ Do not implement against stale statements that ADR 0023 is Proposed. Its target 
 - Do not modify or delete Flyway V1–V30. Re-list migrations and verify the current maximum immediately before adding a migration; choose the actual next unused version.
 - Assignment Composition is ordered; AssignmentQuestion remains position-free. Legacy Assignment order backfills as question_id ASC.
 - QuestionSpec is the one canonical type union. Composition is a separate model.
-- Activity uses automatic correctness feedback under its existing Practice/Try Hard rules. **Formal Assignment submissions are not automatically graded in v1**; a teacher-review UI/API is mandatory.
+- Activity uses automatic correctness feedback under its Practice/Try Hard rules. Formal Assignment submissions are also automatically graded by Question Engine in v1. No manual grading UI/API or AUTO/MANUAL selector is allowed.
 - After any AssessmentAttempt starts, freeze the entire Assignment for authoring. Any change requires a clone/new Assignment. Archiving/closing future starts may remain possible without changing past snapshots.
 - Activity updates are allowed. Existing ActivitySessions keep their immutable started snapshot; sessions started after an update use the latest saved Activity/configuration/question content.
 - Compound CLOZE/MATCHING aggregate points default to equal split across independently scored parts; teachers may edit allocations, but the parts must sum to the item's total.
@@ -40,7 +40,7 @@ Do not implement against stale statements that ADR 0023 is Proposed. Its target 
 ### Slice 1 — Question Engine characterization and domain contracts
 1. Add backend characterization tests for the five existing types and their current Activity grading/normalization semantics.
 2. Define immutable QuestionSpec records, RawAnswer, ValidatedAnswer, NormalizedAnswerValue, GradeResult and distinct four-value PartStatus (CORRECT, PARTIALLY_CORRECT, INCORRECT, UNANSWERED).
-3. Keep Assignment review workflow status out of the Engine's PartStatus enum. Use an Assignment-layer review state such as PENDING_REVIEW/REVIEWED alongside the final PartStatus.
+3. Keep PartStatus to CORRECT, PARTIALLY_CORRECT, INCORRECT and UNANSWERED. There is no Assignment manual-review lifecycle in v1.
 4. Add QuestionTypeHandler implementations/registry/capability policy and ensure handlers do not depend on repositories/JPA/JsonNode.
 5. GradeResult may carry optional normalizedSubmittedValue for engine-graded Activity outcomes. Independently, the Assignment answer intake normalizer captures a normalized submitted value when accepting/saving an answer; Assignment official score is not produced by QuestionEngine.grade.
 6. Add contract tests, registry startup checks, persistence round-trip tests and student-answer leakage tests.
@@ -77,31 +77,34 @@ Do not implement against stale statements that ADR 0023 is Proposed. Its target 
 5. Any desired amendment is performed by cloning Assignment to a new independent assignment with independent owned Questions and composition. Ensure cloning does not mutate original or existing attempt snapshots.
 6. Operational archive/close to prevent future starts may be allowed; it does not alter historical snapshots. Add transaction/concurrency tests for start-vs-edit, start-vs-publish/close and clone/source mutation.
 
-### Slice 6 — Teacher review and official scoring (no Assignment auto-grade)
-1. On submit/timeout, set review state PENDING_REVIEW. Submission and completion are recorded even if score is not finalized.
-2. Do not call QuestionEngine.grade to assign official Assignment points. It remains available for Activity Practice/Try Hard feedback.
-3. Provide teacher review list/detail, per-question/part outcome controls and earned-points input constrained between zero and possible points. Teacher may mark CORRECT, PARTIALLY_CORRECT, INCORRECT or UNANSWERED, with a comment/override note if required by UI contract.
-4. Assignment possible points are stored on Composition. For compound items, initialize equal point allocations across parts; teacher may edit. Validate aggregate sum.
-5. Final official score = total teacher-awarded earned points / total possible scored points × 100. Preserve raw earned points, possible points, percentage and review timestamps. Keep score PENDING_REVIEW until all required items are reviewed.
-6. Remove the AUTO/MANUAL mode selector from the v1 Assignment Builder. All formal Assignment grading uses teacher review in v1. This is different from Activity, where automatic correctness remains.
+### Slice 6 — Automatic scoring and score-display settings
+
+The Assignment Builder has no manual grading or AUTO/MANUAL selector. Teacher configuration is possible points per item (default 1) and optional compound part allocations. Every submit/timeout automatically calculates the result.
+1. On submit/timeout, run Question Engine grading deterministically from the immutable AssessmentAttempt snapshot and persist score/part results immediately.
+2. Use QuestionEngine.grade for official Assignment points as well as its existing Activity behavior. Preserve type semantics; do not introduce manual grading.
+3. Persist per-part status and earned/possible points returned from the Question Engine, plus optional normalized submitted values captured at answer intake. Student in-progress DTOs must not expose these internals.
+4. Assignment possible points are stored on Composition, default 1 point per scored question. For compound items, initialize equal point allocations across parts; teacher may edit. Validate the sum equals aggregate question points.
+5. Calculate score = total engine-awarded earned points / total possible scored points × 100. Preserve raw earned points, possible points and percentage; round only for display.
+6. Do not implement a manual grading UI or AUTO/MANUAL mode selector. Add Assignment-level `show_score_after_submit` (default true) for immediate score display; keep `show_answers_after_submit` independent for answer/explanation reveal.
 7. Readiness rejects zero total possible scored points. Examples have zero points and are excluded from denominator.
 
 ### Slice 7 — Assignment analytics and export
-1. Derive per-student status/score and class average from persisted AssessmentAttempt/review records.
+1. Derive per-student status/score and class average from persisted AssessmentAttempt/grade records.
 2. Provide per-question/part reviewed outcomes and most-missed counts; clearly define denominator and report unanswered and pending-review separately.
 3. Capture normalizedSubmittedValue with a type-aware normalizer at answer intake (not by the grader). Store optional normalization version.
-4. Report common normalized submissions/distractors. Only call a response “incorrect” for correctness-rate analytics after teacher has reviewed it; raw response distribution may include pending attempts separately.
+4. Report common normalized submissions/distractors from automatically graded outcomes.
 5. Examples and pending-review parts are excluded from finalized accuracy rates. Enforce teacher ownership/target scope/privacy in query and export.
 6. Implement CSV/Excel export and tests against known fixtures.
 
 ## 4. Migration planning boundaries (not version assignments)
 
-The 2026-10-12 audited baseline included V30. These are migration groups, not a declaration that the next versions are V31/V32/etc. Re-inspect Flyway immediately before coding:
+The 2026-10-12 audited baseline included V30. These are migration groups, not a declaration that the next versions are V31/V32/etc. Re-check the real current max before allocating versions. Re-inspect Flyway immediately before coding:
 1. Question option display order and Question content revision/provenance.
+2. Assignment `show_score_after_submit` boolean with default TRUE; keep separate from `show_answers_after_submit`.
 2. Activity revision metadata and durable ActivitySessionQuestion snapshot payload/schema version; legacy IN_PROGRESS abandonment rollout.
 3. Assignment Composition tables and deterministic legacy backfill.
-4. Assignment-specific points per composition item/part.
-5. AssessmentAttempt, ordered snapshot, saved raw answers, review state, per-part teacher outcomes, earned/possible points and normalized submitted values/version.
+5. Assignment-specific points per composition item/part (default 1 point per scored question) and compound-part allocation.
+6. AssessmentAttempt, ordered snapshot, saved raw answers, auto-graded per-part outcomes, earned/possible points and normalized submitted values/version.
 6. Needed indexes and uniqueness constraints for one attempt per student/Assignment, ordered children and idempotency.
 7. Any new QuestionSpec type-specific child tables/constraints (MATCHING/CLOZE) in the same vertical slice as support.
 
@@ -113,7 +116,7 @@ Migrations must be forward-only and incremental. Do not edit V1–V30 or invent 
 - Existing Activity sessions are abandoned before snapshot rollout; new sessions are immutable and Activity edits affect future sessions only.
 - Assignment Builder persists and reloads Composition through APIs, preserving order/grouping.
 - Assignment cannot be edited after first attempt; clone yields an independent new Assignment.
-- No Assignment auto-grading exists in v1; teacher review is implemented and score remains pending until complete.
+- Assignment is automatically graded on submit/timeout; `show_score_after_submit` controls immediate score display and `show_answers_after_submit` independently controls answer reveal.
 - Composite point split defaults equal and teacher edits are validated/snapshotted.
 - Readiness, timeout, scoring, review visibility, normalized-value analytics, most-missed reports and exports pass tests.
 - Frontend lint/typecheck/tests/build and backend tests are run and exact results written to PROGRESS. Never claim checks that were not run.

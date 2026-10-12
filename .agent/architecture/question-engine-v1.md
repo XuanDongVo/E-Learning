@@ -43,10 +43,10 @@ QuestionSpec is the canonical immutable domain representation. Use a Java 21 sea
 - TrueFalseSpec: expected boolean value.
 - FillInBlankSpec: preserve current accepted-alternative semantics until the product owner confirms a different contract.
 - TypeAnswerSpec: accepted text alternatives and explicit matching policy.
-- Future MatchingSpec: items, expected pairs and matching/scoring policy.
-- Future ClozeSpec: ordered text segments/blanks, accepted alternatives per blank and per-part scoring policy.
+- MatchingSpec: ordered prompt items, answer pool, expected pairs and per-part scoring policy.
+- ClozeSpec: ordered passage/text segments, stable blank IDs, accepted alternatives per blank and per-part scoring policy.
 
-Do not introduce Matching or Cloze into code or schema until their authoring, grading, media and persistence contracts are agreed.
+MATCHING and CLOZE are accepted target types. Implement each in a complete vertical slice across persistence, definition validation, normalization, teacher authoring, preview, student projection, snapshots and tests; do not ship an enum-only implementation.
 
 ### 3.3 QuestionSnapshot
 
@@ -274,7 +274,7 @@ Current latest is V30. No existing migration may be modified.
 
 For legacy IN_PROGRESS ActivitySessions, abandon the sessions before enforcing full snapshot support, per accepted D4/ADR 0025. Do not reconstruct a historical snapshot from current mutable content.
 
-Keep the current relational tables. Do not migrate all authored Question content to JSONB solely for uniformity. JSONB is a candidate for immutable runtime snapshot payloads; complex future types may need normalized relational child tables.
+Keep the current relational tables. Do not migrate all authored Question content to JSONB solely for uniformity. JSONB is a candidate for immutable runtime snapshot payloads; MATCHING/CLOZE children may need normalized relational storage. ADR 0025 governs Assignment teacher review and makes the current implementation plan mandatory before migrations.
 
 ## 12. Implementation and test order
 
@@ -287,7 +287,7 @@ Keep the current relational tables. Do not migrate all authored Question content
 7. Move Activity runtime semantics to snapshots while preserving its existing no-answer-history contract.
 8. Unify frontend question serialization/validation/preview definitions for Question Bank and Assignment.
 9. Add type-handler contract tests, persistence round-trip tests, student leakage tests and Activity runtime integration tests.
-10. Implement new types only as vertical slices across domain, persistence, capability, authoring UI, preview, runtime projection and tests.
+10. Implement MATCHING/CLOZE only as vertical slices across domain, persistence, capability, authoring UI, preview, runtime projection and tests.
 11. Start AssessmentAttempt only after Scope A gates pass and the Owner authorizes Phase 7B.
 
 The repository currently has only ServerApplicationTests on the backend and no dedicated frontend authoring tests. Test coverage is a required part of this work, not an optional follow-up.

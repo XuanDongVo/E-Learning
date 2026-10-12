@@ -19,7 +19,7 @@
 - OQ-11 Assignment tracking requirements — decided.
 - OQ-12 phone and computer equally — decided.
 - OQ-13 Assignment timeout auto-submit — decided.
-- OQ-14 show_answers_after_submit controls post-submit answers — decided.
+- OQ-14 show_answers_after_submit controls answer/explanation visibility after teacher review is finalized — decided by ADR 0019 as refined by ADR 0025.
 - OQ-15 unfinished Activity run is not resumed — decided.
 - OQ-16 abandoned Activity results ignored — decided.
 - OQ-19 AssignmentQuestion has no position; question_id ASC — decided.

@@ -28,7 +28,8 @@ An accepted ADR overrides lower-level documents. Never delete an ADR; supersede 
 | 0022 | Activity Practice interaction and one retry | Accepted |
 | 0023 | Question Engine architecture | Accepted; D7/D8 refined by 0025 for Assignment grading |
 | 0024 | Assignment Composition is an ordered product document | Accepted |
-| 0025 | Assignment teacher grading, immutable after first attempt; Activity updates apply to future sessions | Accepted |
+| 0025 | Assignment lock after first attempt; Activity updates apply to future sessions | Accepted; scoring superseded by 0026 |
+| 0026 | Assignment automatic scoring and score visibility | Accepted |
 
 ## Current decision chain
 
@@ -42,13 +43,13 @@ ADR 0017 stores the selected Activity strategy on ActivitySession.
 ADR 0018 remains authoritative that AssignmentQuestion itself has no position. ADR 0024 supersedes its product-level no-reorder/order-by-ID rule: canonical Composition has persisted ordered sections/items/members.
 ADR 0019 controls Assignment post-submit answer visibility through show_answers_after_submit.
 ADR 0021 separates ActivitySession from formal AssessmentAttempt and forbids a shared polymorphic Attempt.
-ADR 0023 accepts Question Engine D1–D8. ADR 0025 refines Assignment scoring: Activity can retain automatic correctness feedback, but Assignment submissions are teacher-reviewed in v1.
+ADR 0023 accepts Question Engine D1–D8. ADR 0025 governs Assignment hard-lock and Activity update/snapshot semantics. ADR 0026 supersedes ADR 0025 on grading: Assignment is automatically scored in v1.
 ADR 0024 makes the Assignment Builder demo the product prototype and defines Composition; current demo localStorage/seed persistence is not production persistence.
-ADR 0025 locks an Assignment after its first attempt starts. To change it, clone it. Activity edits are allowed; existing sessions keep their starting snapshot, and later sessions use the latest saved revision.
+ADR 0025 locks an Assignment after its first attempt starts; to change it, clone it. Activity edits are allowed; existing sessions keep their starting snapshot, and later sessions use the latest saved revision. ADR 0026 defines automatic scoring, per-question default/custom points, score visibility and the independent answer-reveal flag.
 
 ## Canonical implementation plan
 
-Read .agent/plans/PHASE_7B_IMPLEMENTATION_MIGRATION_PLAN.md before coding Phase 7B. It sequences environment validation, Question Engine contracts, Activity snapshots, Assignment Composition, AssessmentAttempt, teacher review, scoring, analytics and migration gates.
+Read .agent/plans/PHASE_7B_IMPLEMENTATION_MIGRATION_PLAN.md before coding Phase 7B. It sequences environment validation, Question Engine contracts, Activity snapshots, Assignment Composition, AssessmentAttempt, automatic scoring, analytics and migration gates.
 
 ## Authority note
 

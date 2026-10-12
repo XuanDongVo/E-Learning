@@ -81,7 +81,7 @@ A student has **completed** the Assignment when it is submitted; there is no sco
 | A student sees and practises published content of their own grade only ([ADR 0007](../decisions/0007-student-visibility-own-grade.md)) | To build with the student read APIs |
 | The Assignment clock is the server's: it keeps running if the student leaves; at expiry the answers so far are auto-submitted and flagged **Timed out**, which counts as submitted ([ADR 0009](../decisions/0009-assignment-timeout-auto-submit.md)) | To build with Attempts |
 | An Activity belongs to a Unit and may mix Topics of that Unit ([ADR 0008](../decisions/0008-activity-belongs-to-unit.md)) | `activities.unit_id` |
-| After submitting an Assignment the student sees the score and the correct answers with explanations immediately; there is no "Release answers" step ([ADR 0011](../decisions/0011-student-sees-answers-after-submit.md)) | To build with Attempts |
+| After submitting an Assignment, the student first sees Submitted / Pending review. Once the teacher finalizes grading, `show_answers_after_submit` controls whether the final score, correct answers and explanations are shown; there is no Release Answers step (ADR 0019, refined by ADR 0025). | To build with Attempts |
 | An unfinished Activity run is not saved or resumed; opening it again starts a new random run ([ADR 0012](../decisions/0012-activity-run-not-resumable.md)) | To build with Attempts |
 | Learning mode (Activity runs): on a wrong answer the student may answer up to 3 times in total (2 retries); an optional per-question hint costs part of the XP; a Topic formula/reference sheet is deferred; after the retries the answer and explanation are shown ([ADR 0014](../decisions/0014-learning-mode-hint-and-retry.md)) | To build with Attempts and N3b |
 | Future game presentation changes presentation only; GameTemplate is deferred and is not a current dependency | `domain-model.md` Game architecture; `GameTemplate` not built yet |
@@ -124,7 +124,7 @@ Further non-goals (payments, native mobile app, multi-school) are **not yet conf
 - A1. A teacher builds content, configures an Activity from real QuestionBanks, previews, publishes it, reloads and finds the same configuration. *(Phase 4 gate)*
 - A2. A teacher creates an Assignment with questions, a valid target and a schedule, publishes it only when READY, and a `STUDENT` gets 403 from teacher APIs. *(Phase 5 gate)*
 - A3. A student opens a published Activity, picks a mode if offered, finishes, sees the result; the question set stays fixed on refresh. *(Attempts gate, not started)*
-- A4. A student does an Assignment once; submissions after the due date are labelled Late with the same score. The teacher sees status per student, score per student, class average, most-missed questions, and can export Excel/CSV. *(Attempts and tracking gates, not started)*
+- A4. A student does an Assignment once; submission/timeout first records Submitted / Pending review, and submissions after the due date are labelled Late without penalty. After teacher review, the teacher sees finalized score per student, class average, most-missed questions and normalized wrong-answer distribution, and can export Excel/CSV. *(Attempts and tracking gates, not started)*
 - A5. The teacher sees weak topics only when enough data exists; no dashboard number is invented. *(Analytics / Dashboard gate)*
 
 ## 9. Change log
@@ -146,6 +146,9 @@ Further non-goals (payments, native mobile app, multi-school) are **not yet conf
 
 
 ## Owner product decisions recorded 2026-10-12
+
+- Formal Assignments are not auto-graded in v1; every submission waits for teacher review. The score is pending until required review is finalized, and `show_answers_after_submit` controls answer/explanation visibility after review.
+- Once the first AssessmentAttempt starts, reject Assignment edits; the teacher must clone the Assignment to create a changed version. Activity edits are allowed and apply to sessions started after the update; current sessions retain their original immutable snapshot.
 
 - Assignment Builder demo is the product prototype, not disposable. Ordered sections/items, drag/drop, passage/instruction/image/pool blocks, grouping, per-item points/required/grading/example flags, validation and Student Preview are product requirements (ADR 0024).
 - Canonical QuestionSpec is shared across Question Bank, Assignment, Activity and student views. Assignment Composition is a separate ordered document model.

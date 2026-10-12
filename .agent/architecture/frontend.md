@@ -13,8 +13,10 @@ Use TypeScript, central types, services and query keys. Do not invent API fields
 - No GameTemplate control in current scope.
 
 ## Assignment UI
-- Server order only.
-- No position/reorder controls.
+- Assignment Builder uses ordered Composition sections/items/blocks; drag/drop order persists on Composition, never on AssignmentQuestion.position.
+- Demo is the product prototype; localStorage/seed are not production persistence.
+- Use canonical QuestionSpec separately from Assignment Composition types.
+- Teacher preview and student runtime render identical order/grouping.
 - Whole-attempt time limit.
 - show_answers_after_submit setting.
 - No Release Answers UI.
@@ -44,3 +46,8 @@ Target proposed by ADR 0023:
 - Verify hint read/write round trips through every create/edit/bulk path; the audited code contains older hint mapping drift.
 
 This target is a proposal, not an instruction to begin refactoring before Owner review of ADR 0023 D1–D6.
+
+
+## Assignment Composition
+
+See .agent/architecture/assignment-composition-v1.md. Preserve ordered sections/items, drag/drop, instruction/passage/image/pool blocks, groups, points/required/gradingMode/isExample, validation and Student Preview. Image + alt text supported in v1; audio deferred. Hide/disable MANUAL until its review workflow exists. Production persistence uses APIs, not localStorage/seed.

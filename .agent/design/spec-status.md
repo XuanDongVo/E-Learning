@@ -27,7 +27,7 @@ Activity distribution/readiness/lifecycle; Assignment deterministic order; answe
 | ID | Contract / finding | Current state | Status |
 |---|---|---|---|
 | Q-01 | Five current Question types | Enum and schema support SINGLE_CHOICE, MULTIPLE_CHOICE, TRUE_FALSE, FILL_IN_BLANK, TYPE_ANSWER | Implemented baseline |
-| Q-02 | Type semantics centralized in Question Engine | Validator, persistence and Activity runtime contain distributed type-specific branches | Not implemented; ADR 0023 proposed |
+| Q-02 | Type semantics centralized in Question Engine | Validator, persistence and Activity runtime contain distributed type-specific branches | Architecture accepted by ADR 0023; implementation pending |
 | Q-03 | Student vs teacher projection separation | Teacher mapping includes correctness/accepted-answer data; student payload must remain restricted | Security boundary; audit each endpoint |
 | Q-04 | Explicit option order | No question_options.display_order in audited schema | Gap; migration not approved |
 | Q-05 | Full immutable Activity question snapshot | ActivitySessionQuestion references mutable Question data and freezes selected IDs/order only | Gap; ADR 0023 D4 pending |
@@ -43,7 +43,7 @@ This commit only synchronizes documentation. No application code or Flyway migra
 | ID | Contract | Current state | Status |
 |---|---|---|---|
 | A-01 | Demo is product prototype | Builder has sections/items/blocks/groups/points/preview; persistence is localStorage/seed | Product contract accepted; production integration pending |
-| A-02 | Ordered Assignment Composition | Current AssignmentQuestion has no position and follows legacy question_id order | Gap; Composition accepted by ADR 0024 |
+| A-02 | Ordered Assignment Composition | Composition section/item/member positions define canonical order; question_id ASC is legacy backfill only | Contract accepted by ADR 0024; implementation pending |
 | A-03 | Weighted scoring | Demo has per-item points; backend scoring contract not implemented | Gap; ADR 0023 D8 accepted |
 | A-04 | Assignment scoring | ADR 0026 requires automatic scoring; remove AUTO/MANUAL and manual review. Default 1 point per scored question, teacher-customizable | Accepted contract; implementation pending |
 | A-05 | Assignment part analytics | Intent requires most-missed questions; normalized distribution not implemented | Gap; ADR 0023 D7 accepted |

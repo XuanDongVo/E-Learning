@@ -26,8 +26,7 @@ The Assignment Builder demo is the product prototype. Canonical model: .agent/ar
 - Publish requires valid metadata, complete Questions, target/schedule, valid optional timer, valid Composition and total possible scored points > 0.
 
 ## Review and analytics
-TRUE show_answers_after_submit: after submit, student sees permitted score, correct answers and explanations.
-FALSE: suppress correct/accepted answers and explanations. Normalized values are internal analytics data, never returned in-progress.
+Until teacher review is complete, show Submitted / Pending review without a final score or answer-review payload. After review, TRUE show_answers_after_submit reveals the final score, correct answers and explanations; FALSE suppresses correct/accepted answers and explanations. Normalized values are internal analytics data, never returned in-progress.
 Teacher reports per-student status/score, class average, most-missed question/part and normalized wrong-answer distributions; unanswered and pending-review are reported separately. Export Excel/CSV remains required. Exclude examples and unreviewed parts from finalized outcome rates.
 
 ## Locking and cloning

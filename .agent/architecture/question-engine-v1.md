@@ -1,11 +1,11 @@
 # Question Engine Architecture v1
 
-**Status: PROPOSED — pending Owner approval**  
+**Status: ACCEPTED — implementation deferred until Phase 7 gates are met**  
 **Audit branch:** feature/phase-7-assigment  
 **Migration baseline observed:** V30  
 **Scope:** Question definition, validation, answer parsing, grading, persistence mapping, runtime snapshots, Assignment/Activity integration and frontend authoring.
 
-> This document records the proposed target architecture after a code-and-ADR audit. It does not by itself authorize code changes or migrations. Decisions D1–D6 at the end require explicit Owner resolution. Existing accepted product ADRs remain authoritative.
+> This document records the proposed target architecture after a code-and-ADR audit. The Owner accepted D1–D8 on 2026-10-12. Implementation still requires a vertical-slice plan and fresh migration audit. Existing accepted product ADRs remain authoritative.
 
 ## 1. Goals
 
@@ -78,7 +78,8 @@ record PartGrade(
     String partKey,
     PartStatus status,
     BigDecimal earnedWeight,
-    BigDecimal possibleWeight
+    BigDecimal possibleWeight,
+    Optional<NormalizedAnswerValue> normalizedSubmittedValue
 ) {}
 
 enum PartStatus {
@@ -291,13 +292,19 @@ Keep the current relational tables. Do not migrate all authored Question content
 
 The repository currently has only ServerApplicationTests on the backend and no dedicated frontend authoring tests. Test coverage is a required part of this work, not an optional follow-up.
 
-## 13. Decisions requiring Owner resolution
+## 13. Accepted decisions (D1–D8)
 
-- **D1 — Partial credit:** preserve existing types' scoring behavior; specify partial-credit rules separately for Matching/Cloze.
-- **D2 — Fill-in-blank semantics:** recommended to preserve existing single-answer-position behavior and use CLOZE for true multi-blank content.
-- **D3 — Wire format:** adopt a discriminated, type-specific QuestionSpec request/response contract, changing backend/frontend together.
-- **D4 — Activity snapshot:** approve full, durable content snapshots while retaining the no-persisted-answer-history rule.
-- **D5 — Part-level analytics:** engine can calculate part-level results; persistence in Activity requires a separate product decision.
-- **D6 — Runtime media:** confirm whether student Activity runtime must render authored image/audio media in v1.
+- **D1 — Partial credit:** accepted. Preserve existing types' scoring; new types may have explicit partial-credit rules.
+- **D2 — Fill-in-blank semantics:** accepted. Preserve FILL_IN_BLANK and implement multi-blank CLOZE separately.
+- **D3 — Wire format:** accepted. Use one discriminated QuestionSpec across backend/frontend and adapt demo types; keep Composition separate.
+- **D4 — Activity snapshot:** accepted. Persist complete durable snapshots; abandon legacy IN_PROGRESS sessions before enforcement, without reconstructing history.
+- **D5 — Part-level analytics:** accepted. Activity remains aggregate-only; Assignment part outcomes are persisted under D7.
+- **D6 — Runtime media:** accepted. Images and alt text in v1; audio deferred.
 
-Until these decisions are accepted, this document is a proposed architecture and does not authorize implementation or schema changes.
+### D7 — AssessmentAttempt part results
+Persist per-part status, earned/possible points and optional normalized submitted value for Assignment analytics. Normalized values remain internal and never appear in in-progress student payloads.
+
+### D8 — Assignment scoring
+Use Composition item/part points. Score = earned points / possible points × 100; examples excluded. MANUAL keeps official score pending until finalized; readiness rejects zero possible points.
+
+Assignment Composition is defined in ADR 0024 and `.agent/architecture/assignment-composition-v1.md`. Re-audit migrations before implementation; never modify V1–V30.

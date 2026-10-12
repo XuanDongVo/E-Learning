@@ -102,12 +102,12 @@ The Assignment Builder has no manual grading or AUTO/MANUAL selector. Teacher co
 The 2026-10-12 audited baseline included V30. These are migration groups, not a declaration that the next versions are V31/V32/etc. Re-check the real current max before allocating versions. Re-inspect Flyway immediately before coding:
 1. Question option display order and Question content revision/provenance.
 2. Assignment `show_score_after_submit` boolean with default TRUE; keep separate from `show_answers_after_submit`.
-2. Activity revision metadata and durable ActivitySessionQuestion snapshot payload/schema version; legacy IN_PROGRESS abandonment rollout.
-3. Assignment Composition tables and deterministic legacy backfill.
+3. Activity revision metadata and durable ActivitySessionQuestion snapshot payload/schema version; legacy IN_PROGRESS abandonment rollout.
+4. Assignment Composition tables and deterministic legacy backfill.
 5. Assignment-specific points per composition item/part (default 1 point per scored question) and compound-part allocation.
 6. AssessmentAttempt, ordered snapshot, saved raw answers, auto-graded per-part outcomes, earned/possible points and normalized submitted values/version.
-6. Needed indexes and uniqueness constraints for one attempt per student/Assignment, ordered children and idempotency.
-7. Any new QuestionSpec type-specific child tables/constraints (MATCHING/CLOZE) in the same vertical slice as support.
+7. Needed indexes and uniqueness constraints for one attempt per student/Assignment, ordered children and idempotency.
+8. Any new QuestionSpec type-specific child tables/constraints (MATCHING/CLOZE) in the same vertical slice as support.
 
 Migrations must be forward-only and incremental. Do not edit V1–V30 or invent historical section/media/group data. Rollout needs backup/transaction/validation strategy for backfills and a documented migration test.
 

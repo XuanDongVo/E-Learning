@@ -5,7 +5,7 @@
 **Migration baseline observed:** V30  
 **Scope:** Question definition, validation, answer parsing, grading, persistence mapping, runtime snapshots, Assignment/Activity integration and frontend authoring.
 
-> This document records the proposed target architecture after a code-and-ADR audit. The Owner accepted D1–D8 on 2026-10-12. Implementation still requires a vertical-slice plan and fresh migration audit. Existing accepted product ADRs remain authoritative.
+> This document records the accepted target architecture after a code-and-ADR audit. D1–D8 were accepted on 2026-10-12; ADR 0025 further specifies that formal Assignment submissions are teacher-reviewed rather than automatically graded in v1. Implementation plan: `.agent/plans/PHASE_7B_IMPLEMENTATION_MIGRATION_PLAN.md`. A fresh migration audit is still required. Existing accepted product ADRs remain authoritative.
 
 ## 1. Goals
 
@@ -90,13 +90,13 @@ enum PartStatus {
 }
 ~~~
 
-Invariants: scoreFraction is in [0,1]; part possible weights sum to 1; each earned weight is between 0 and its possible weight; score fraction equals the sum of earned weights. CORRECT means full credit; PARTIALLY_CORRECT means positive but not full credit; INCORRECT and UNANSWERED both earn zero but remain distinct.
+Invariants: scoreFraction is in [0,1]; part possible weights sum to 1; each earned weight is between 0 and its possible weight; score fraction equals the sum of earned weights. CORRECT means full credit; PARTIALLY_CORRECT means positive but not full credit; INCORRECT and UNANSWERED both earn zero but remain distinct. `PartStatus` is limited to these four outcomes. `PENDING_REVIEW` is an Assignment review-lifecycle state, not a Question Engine PartStatus. For Assignment, normalized input is captured by the type-aware normalizer when an answer is accepted/saved; this operation does not grade correctness.
 
 This result shape supports part-level analysis. It does not silently change current scoring: existing Multiple Choice remains exact-set/all-or-nothing unless a separately approved policy says otherwise. Persisting detailed Activity answer or part history remains outside ADR 0021/0022 unless an Owner decision changes that scope.
 
 ## 4. Question Engine interfaces
 
-The following is the proposed contract, not yet the committed Java API:
+This is the accepted target contract, not yet an implemented Java API:
 
 ~~~java
 interface QuestionEngine {
@@ -234,9 +234,9 @@ Do not add Visitor, Chain of Responsibility, event bus, UniversalQuestion<T> or 
 
 ### ActivitySession
 
-ADR 0021/0022 remain in force: ActivitySession is repeatable practice, remains independent from formal AssessmentAttempt and does not persist detailed student answer history. At session creation the proposed target is to select questions, load specs, construct snapshots and persist the selected snapshot/order in one transaction. All later content, options, hints, reveal and grading should use the stored snapshot.
+ADR 0021/0022/0025 remain in force: ActivitySession is repeatable practice, independent from AssessmentAttempt and does not persist detailed student answer history. At session creation, select questions, load specs, construct snapshots and persist the selected full snapshot/order in one transaction. Existing sessions continue to use their saved snapshot after Activity/source edits; sessions started after an edit use the newest saved configuration and content.
 
-This full-content snapshot requirement is proposed; current code stores a live Question FK plus order/runtime flags only. The existing runtime cannot yet guarantee content immutability after source edits.
+This full-content snapshot requirement is accepted but not yet implemented; current code stores a live Question FK plus order/runtime flags only. The runtime cannot yet guarantee content immutability after source edits.
 
 The student response must not include correctness flags, accepted answers, normalized answer values, or explanations before the applicable runtime reveal. A hint is retrieved through its explicit runtime action so usage can be recorded.
 
@@ -264,15 +264,15 @@ Teacher view can contain correctness and accepted-answer fields for authoring. S
 
 Current latest is V30. No existing migration may be modified.
 
-| Proposed migration | Change boundary | Status |
+| Migration workstream (version assigned after fresh audit) | Change boundary | Status |
 |---|---|---|
-| V31 | Add question_options.display_order, backfill existing options deterministically, then enforce stable order | Proposed; confirm backfill/order semantics |
-| V32 | Add Question content revision/version used by snapshot provenance | Proposed |
-| V33 | Add durable snapshot storage to ActivitySession question rows and required provenance/schema-version metadata | Proposed; includes legacy-session strategy |
+| Question option order | Add question_options.display_order, backfill existing options deterministically, then enforce stable order | Accepted requirement; migration not created |
+| Question content revision | Add Question content revision/version used by snapshot provenance | Accepted requirement; migration not created |
+| Activity snapshot storage | Add durable snapshot storage to ActivitySession question rows and provenance/schema-version metadata | Accepted requirement; migration not created |
 | Future type migration | Update ck_questions_type and add type-specific relational children as needed | Only with first approved new type |
 | Phase 7B migrations | Separate AssessmentAttempt, snapshot questions and persisted answers/results | Deferred |
 
-For legacy in-progress ActivitySessions, do not claim that the old content has been reconstructed historically if the source was edited. The migration/runtime rollout must choose either a clearly labeled best-effort snapshot of current content or abandonment of old in-progress sessions before enforcing the new snapshot guarantee.
+For legacy IN_PROGRESS ActivitySessions, abandon the sessions before enforcing full snapshot support, per accepted D4/ADR 0025. Do not reconstruct a historical snapshot from current mutable content.
 
 Keep the current relational tables. Do not migrate all authored Question content to JSONB solely for uniformity. JSONB is a candidate for immutable runtime snapshot payloads; complex future types may need normalized relational child tables.
 

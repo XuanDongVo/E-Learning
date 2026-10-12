@@ -23,7 +23,7 @@ Run server/client tests in a configured environment; verify leakage, retry/hint/
 ## Scope B — Assignment Composition and AssessmentAttempt
 
 ### B1. Product Composition
-The Assignment Builder demo is the product prototype, not disposable. Production preserves ordered sections/items, drag/drop, instruction/passage/image/pool blocks, grouped questions, per-item points/required/grading/example flags, validation and Student Preview. localStorage/seed is prototype-only.
+The Assignment Builder demo is the product prototype, not disposable. Production preserves ordered sections/items, drag/drop, instruction/passage/image/pool blocks, grouped questions, per-item points (default 1)/required/example flags, validation and Student Preview. Assignment grading is automatic; no manual grading selector/workflow. localStorage/seed is prototype-only.
 - Assignment -> ordered Composition sections -> ordered items and grouped member items.
 - Item kinds: Question or ContentBlock; v1 blocks: INSTRUCTIONS, PASSAGE, image MEDIA and POOL. Audio/nested blocks deferred.
 - AssignmentQuestion remains the ownership association without position. Composition owns ordering; ADR 0024 supersedes the no-reorder/order-by-ID product rule in ADR 0018.
@@ -57,7 +57,7 @@ Points live on Composition items/parts, not shared Question Bank fields. earnedP
 Intent 0001 §3b and A4 require per-student status/score, class average, most-missed questions and Excel/CSV export. Implement automatically calculated correct/partial/incorrect/unanswered counts by question/part; accuracy with explicit denominator; normalized submitted-answer distributions captured at intake; report unanswered separately; exclude examples and unreviewed parts from finalized outcome rates; enforce teacher ownership/target scope/privacy; derive analytics from persisted attempts, not live Questions or mock data. Weak-topic cross-Assignment analytics remains a later Analytics phase.
 
 ### B8. Review and media
-TRUE show_answers_after_submit: after submit, return permitted score, correct answers and explanations. FALSE: suppress correct/accepted/normalized values and explanations. Image + meaningful alt text in v1; audio deferred. Student renderer and teacher preview preserve same order/grouping. MANUAL workflow is in Scope B if offered in production; otherwise hide/disable MANUAL until implemented.
+`show_score_after_submit` (default TRUE) controls whether the automatically calculated score is shown immediately after submit. `show_answers_after_submit` independently controls correct-answer/explanation visibility. Image + meaningful alt text in v1; audio deferred. Student renderer and teacher preview preserve the same Composition order/grouping. No manual-grading workflow or AUTO/MANUAL selector is part of v1.
 
 ### B9. Required tests
 Backend: readiness/publish rejection; ordered composition/backfill; access/target/due/current-class; one attempt; autosave/idempotent submit; timeout; snapshot immutability; edit-lock concurrency; automatic decimal scoring/examples/zero denominator; normalized-answer analytics/denominators; reveal leakage; media/alt text; CLOZE/MATCHING; no polymorphic Attempt.
@@ -84,7 +84,7 @@ Frontend: builder save/reload order; drag/drop/sections/items/blocks/groups; can
 - Demo uses localStorage/seed; production must use APIs and canonical models.
 
 ## Migration rules
-Never edit V1–V30. Re-read migration directory immediately before implementation and choose actual next version; do not assume V31–V33 remain available. Use incremental migrations for option order/revision, Activity snapshots, Composition, AssessmentAttempt snapshots/answers/part grades, with deterministic backfills. No migration is created in this documentation update.
+Never edit V1–V30. Re-read migration directory immediately before implementation and choose actual next version; do not assume V31–V33 remain available. Include Assignment `show_score_after_submit` (default TRUE) separately from existing `show_answers_after_submit`. Use incremental migrations for option order/revision, Activity snapshots, Composition, AssessmentAttempt snapshots/answers/part grades, with deterministic backfills. No migration is created in this documentation update.
 
 ## Definition of done
 Scope A gate passed; immutable Activity snapshots active; Builder persists/reloads ordered Composition via APIs; AssessmentAttempt enforces one attempt, immutable snapshot, autosave, timeout, automatically calculated weighted score, and review policy; readiness/locking server-enforced; analytics/export uses real persisted results; QuestionSpec is canonical; scoring/order/timeout/backfill/leakage/responsive tests pass. PROGRESS records exact results, never unrun checks.

@@ -11,8 +11,8 @@ This update changes documentation only; code/test status is not claimed as fixed
 | D-04 | Activity preview | `POST /v1/activities/{id}/preview` returns readiness and deterministic ready-question samples without creating an Attempt | Fixed |
 | D-05 | Try Hard per-question timer | ActivitySession stores and enforces per-question deadlines with network grace | Implemented in Scope A
 | D-06 | Multi-strategy student choice + ActivitySession storage | ActivitySession start validates and stores concrete mode/strategy | Implemented in Scope A
-| D-07 | AssignmentQuestion no position; deterministic order | Entity has no position; reads use `ORDER BY question_id ASC` | Fixed |
-| D-08 | show_answers_after_submit | V26 schema/entity contract exists; Phase 7 must enforce it after teacher review is finalized | Open (implementation pending) |
+| D-07 | AssignmentQuestion no position; Composition ordering | Entity has no position; Composition section/item/member positions define product order; question_id ASC is legacy backfill only | Contract accepted; implementation pending |
+| D-08 | show_answers_after_submit | V26 schema/entity contract exists; Phase 7 must enforce answer/explanation reveal independently from score display | Implementation pending |
 | D-09 | Activity lifecycle | Service enforces the accepted transition matrix | Fixed |
 | D-10 | Formula/reference sheet deferred | No current requirement | Fixed |
 | D-11 | Optional Question hint | Persisted and ActivitySession Practice hint endpoint records usage | Implemented in Scope A
@@ -45,7 +45,7 @@ This commit only synchronizes documentation. No application code or Flyway migra
 | A-01 | Demo is product prototype | Builder has sections/items/blocks/groups/points/preview; persistence is localStorage/seed | Product contract accepted; production integration pending |
 | A-02 | Ordered Assignment Composition | Current AssignmentQuestion has no position and follows legacy question_id order | Gap; Composition accepted by ADR 0024 |
 | A-03 | Weighted scoring | Demo has per-item points; backend scoring contract not implemented | Gap; ADR 0023 D8 accepted |
-| A-04 | Assignment grading | Demo models AUTO/MANUAL; ADR 0025 removes both-mode selector and requires teacher review for all submissions in v1 | Accepted contract; teacher-review UI/API not implemented |
+| A-04 | Assignment scoring | ADR 0026 requires automatic scoring; remove AUTO/MANUAL and manual review. Default 1 point per scored question, teacher-customizable | Accepted contract; implementation pending |
 | A-05 | Assignment part analytics | Intent requires most-missed questions; normalized distribution not implemented | Gap; ADR 0023 D7 accepted |
 | A-06 | Readiness invariant | Assignment status transition does not enforce readiness as required | Scope B gate |
 | A-07 | Edit locking | AssessmentAttempt absent; current edit guard only checks ARCHIVED | Scope B gate |
@@ -54,3 +54,14 @@ This commit only synchronizes documentation. No application code or Flyway migra
 | A-10 | Immutable Activity snapshot | Session rows reference mutable Question | Gap; accepted D4 |
 
 No application code or Flyway migration changed in this documentation update. No tests/builds were run.
+
+
+## Assignment score-display decision (ADR 0026)
+
+| ID | Contract | Current state | Status |
+|---|---|---|---|
+| A-11 | show_score_after_submit | New Assignment-level boolean, default TRUE; server always calculates score but may hide it from immediate student response | Accepted; migration/API/UI implementation pending |
+| A-12 | Compound part points | Equal split by default for CLOZE/MATCHING; teacher may adjust while part sum equals question total | Accepted; implementation pending |
+| A-13 | Auto grading | Server grades Assignment on submit/timeout from immutable snapshot; no manual grading workflow | Accepted; implementation pending |
+
+This audit file distinguishes accepted contracts from implemented code. No application code or Flyway migration changed in this documentation update.

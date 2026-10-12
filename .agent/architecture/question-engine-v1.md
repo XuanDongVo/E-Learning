@@ -274,7 +274,7 @@ Current latest is V30. No existing migration may be modified.
 
 For legacy IN_PROGRESS ActivitySessions, abandon the sessions before enforcing full snapshot support, per accepted D4/ADR 0025. Do not reconstruct a historical snapshot from current mutable content.
 
-Keep the current relational tables. Do not migrate all authored Question content to JSONB solely for uniformity. JSONB is a candidate for immutable runtime snapshot payloads; MATCHING/CLOZE children may need normalized relational storage. ADR 0025 governs Assignment teacher review and makes the current implementation plan mandatory before migrations.
+Keep the current relational tables. Do not migrate all authored Question content to JSONB solely for uniformity. JSONB is a candidate for immutable runtime snapshot payloads; MATCHING/CLOZE children may need normalized relational storage. ADR 0025 governs the Assignment hard-lock and Activity update policy; ADR 0026 governs automatic Assignment scoring and score/answer display. Follow the Phase 7B plan before migrations.
 
 ## 12. Implementation and test order
 

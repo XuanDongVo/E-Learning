@@ -27,7 +27,11 @@
 - OQ-21 Activity lifecycle transitions — decided.
 
 
-## Question Engine owner review (ADR 0023 — pending)
+## Accepted decisions — 2026-10-12
+
+ADR 0023 D1–D8 and ADR 0024 are accepted. They are no longer open questions. See the ADR index and canonical architecture documents.
+
+## Remaining implementation questions
 
 | Decision | Question requiring explicit Owner resolution | Current recommendation in proposal |
 |---|---|---|

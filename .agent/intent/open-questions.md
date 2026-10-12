@@ -33,13 +33,11 @@ ADR 0023 D1–D8 and ADR 0024 are accepted. They are no longer open questions. S
 
 ## Remaining implementation questions
 
-| Decision | Question requiring explicit Owner resolution | Current recommendation in proposal |
+| ID | Question | Status / gate |
 |---|---|---|
-| D1 | Should existing types gain partial-credit grading? | Preserve current scoring semantics; design partial credit separately for new Matching/Cloze types. |
-| D2 | What is the semantic boundary for FILL_IN_BLANK vs CLOZE? | Preserve existing FILL_IN_BLANK; use a distinct CLOZE type for multi-blank content. |
-| D3 | Should Question APIs switch to a discriminated type-specific QuestionSpec contract? | Change backend and frontend together in one vertical slice, after approval. |
-| D4 | Should ActivitySession persist a full immutable question-content snapshot at start? | Approve durable content snapshot while preserving no detailed Activity answer-history persistence. |
-| D5 | Should part-level Activity grading/analytics be persisted? | Calculate part-level GradeResult in the engine; do not persist detailed Activity parts until separately approved. |
-| D6 | Must the Activity student runtime render authored image/audio media in v1? | Confirm supported media kinds and accessibility behavior before building snapshot/view contracts. |
+| OQ-22 | How should future Assignment edits work after an AssessmentAttempt exists: create a new revision/draft or reject edits until archived? | Must decide before Phase 7B implementation |
+| OQ-23 | What is the exact teacher review workflow and permission model for MANUAL grading? | Scope B must implement if MANUAL remains enabled in production; otherwise hide/disable it |
+| OQ-24 | Which image asset/media storage contract and allowed URL policy will be used in student views? | Resolve against existing media implementation before snapshot/API work |
+| OQ-25 | Which report export format details, filters and row granularity are required for CSV/Excel? | Basic Assignment export remains in product intent; finalize schema during reporting slice |
 
-These are not closed decisions. ADR 0023 and its architecture remain proposed and authorize no code/schema change.
+ADR 0023 D1–D8 and ADR 0024 are accepted product/architecture decisions. Remaining questions above are implementation contracts, not permission to weaken accepted requirements.

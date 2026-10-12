@@ -1,5 +1,5 @@
 # 0018 — AssignmentQuestion has no position; order is deterministic
-Status: Accepted
+Status: Partially superseded by ADR 0024
 Date: 2026-10-07
 Decided by: project owner
 
@@ -7,12 +7,16 @@ Decided by: project owner
 
 The product does not need teacher-controlled question reordering in Assignments.
 
-## Decision
+## Original decision (historical; partly superseded)
 
-- AssignmentQuestion has no position field.
-- No reorder endpoint, drag-and-drop UI, Move Up/Move Down action or persisted manual order exists.
-- Whenever AssignmentQuestions are listed or snapshotted, the server uses ORDER BY question_id ASC.
-- AttemptQuestion.position may still exist because it records runtime snapshot order; it is not an AssignmentQuestion position and must not be exposed as Assignment authoring order.
+- AssignmentQuestion has no position field. Still accepted.
+- No reorder endpoint/UI or persisted manual order exists. Superseded for product composition by ADR 0024.
+- ORDER BY question_id ASC is retained only as deterministic legacy backfill/compatibility fallback; canonical Composition uses persisted section/item/member order.
+- AttemptQuestion.position records runtime snapshot order; it is not an AssignmentQuestion position.
+
+## Current authority
+
+ADR 0024 supersedes this ADR only for the product-level no-reordering/order-by-ID policy. AssignmentQuestion remains an ownership association without a position column.
 
 ## Consequences
 

@@ -12,7 +12,7 @@ This update changes documentation only; code/test status is not claimed as fixed
 | D-05 | Try Hard per-question timer | ActivitySession stores and enforces per-question deadlines with network grace | Implemented in Scope A
 | D-06 | Multi-strategy student choice + ActivitySession storage | ActivitySession start validates and stores concrete mode/strategy | Implemented in Scope A
 | D-07 | AssignmentQuestion no position; deterministic order | Entity has no position; reads use `ORDER BY question_id ASC` | Fixed |
-| D-08 | show_answers_after_submit | V26 migrates schema/entity and assignment authoring contract; student review enforcement remains Phase 7 work | Open (partial) |
+| D-08 | show_answers_after_submit | V26 schema/entity contract exists; Phase 7 must enforce it after teacher review is finalized | Open (implementation pending) |
 | D-09 | Activity lifecycle | Service enforces the accepted transition matrix | Fixed |
 | D-10 | Formula/reference sheet deferred | No current requirement | Fixed |
 | D-11 | Optional Question hint | Persisted and ActivitySession Practice hint endpoint records usage | Implemented in Scope A

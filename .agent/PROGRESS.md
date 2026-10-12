@@ -2,50 +2,47 @@
 
 Audit date: 2026-10-12
 Branch: feature/phase-7-assigment
-Audited commit: 55f9ad1bf12ac34db3fc16044a6c2785498592cb
+Audited application baseline before documentation changes: c2a98fd9101d7b6613e5c2af6090eff8d189715e
 
 ## Current stage
-
 - Phase 6 Student Management: DONE.
-- Phase 7 Scope A ActivitySession: present in the audited codebase; behavior and test gates still require validation in a configured environment.
-- Phase 7 Scope B AssessmentAttempt: DEFERRED / NOT IMPLEMENTED.
-- Question Engine: architecture proposal documented under ADR 0023; **not approved and not implemented**. Do not begin a broad Question refactor or add schema migrations from the proposal alone.
+- Phase 7 Scope A ActivitySession: present in code; configured validation run still required.
+- Phase 7 Scope B AssessmentAttempt + Assignment Composition: contract accepted, implementation not started/not verified.
+- Question Engine: architecture accepted in ADR 0023; implementation not yet delivered.
+- Assignment Composition: product model accepted in ADR 0024; demo is product prototype. Current localStorage/seed persistence remains prototype-only.
 
-## Synchronized canonical decisions
+## Accepted contracts
+- Activity and Assignment have separate aggregates; no polymorphic Attempt table.
+- Activity uses ActivitySession and does not persist detailed answer/part history.
+- Full immutable Activity question snapshots are required. Before enforcing snapshots, abandon legacy IN_PROGRESS sessions; never reconstruct historical snapshots from mutable live content.
+- Question Engine D1–D8 accepted: preserve existing scoring; CLOZE separate from FILL_IN_BLANK; one QuestionSpec union; durable Activity snapshots; separate Activity/Assignment analytics; image-first media; persist Assignment part results and normalized submitted values; weighted Assignment points.
+- Assignment Composition is ordered sections/items/blocks/groups. Composition owns ordering; AssignmentQuestion remains position-free.
+- Assignment-specific points, required, gradingMode and isExample do not mutate shared Question Bank content.
+- Assignment analytics support correct/partial/incorrect/unanswered and normalized wrong-answer distributions.
+- Readiness blocks publishing if total possible scored points is zero. MANUAL items keep official score pending until reviewed.
+- Existing Assignments backfill to one section in question_id ascending order with defaults 1 point/required/AUTO/not-example unless explicit values exist.
 
-- Activity and Assignment have distinct product semantics and runtime aggregates.
-- Activity uses ActivitySession. It does not persist detailed response payload/history; AssessmentAttempt is a separate deferred formal Assignment runtime.
-- Activity is Unit-scoped. Multiple modes/selection strategies are resolved and stored at session start when required.
-- Practice has no timer, one retry (two submissions total) and an optional per-question hint. Try Hard timer is per question; timeout counts wrong and costs no life.
-- ActivitySession start currently records the selected question set/order, but the audited implementation still points to mutable Question rows. Full durable content snapshots are a proposed Question Engine change, not an existing guarantee.
-- Assignment owns its questions; AssignmentQuestion has no position/reorder contract; ordering is question_id ascending.
-- Assignment has a whole-attempt timer and post-submit answer visibility is controlled by show_answers_after_submit.
-- Topic formula/reference sheet and GameTemplate are deferred.
-- Never modify applied Flyway migrations V1–V30. Proposed V31–V33 boundaries in the architecture proposal are not approved migration numbers.
+## Implementation gaps
+- Existing Question types have distributed validation/persistence/grading logic; handlers/registry are not implemented.
+- question_options has no explicit display_order in the audited schema.
+- ActivitySessionQuestion still references mutable Question content; full snapshots are not implemented.
+- Older authoring paths omit hint in mapping and require round-trip tests/fixes.
+- AssignmentService status transition does not currently enforce readiness; AssignmentQuestionService edit guard does not lock by AssessmentAttempt.
+- AssessmentAttempt is not implemented; dedicated Question Engine/Attempt tests were not found.
+- Demo uses localStorage/seed; production must use APIs and canonical QuestionSpec + Composition.
 
-## Question Engine audit findings
+## Migration rules
+- Never edit Flyway migrations V1–V30.
+- Re-audit actual latest migration before choosing the next version; do not assume V31–V33 remain available.
+- Documentation acceptance does not mean code, tests, lint, TypeScript or builds pass.
 
-- Five existing types: SINGLE_CHOICE, MULTIPLE_CHOICE, TRUE_FALSE, FILL_IN_BLANK and TYPE_ANSWER.
-- Type-specific behavior is currently distributed across validation, persistence and Activity runtime services; the handler/registry design is not implemented.
-- Student and teacher question projections must remain separate. Do not expose correctness, accepted/raw/normalized answers or hidden explanations in an in-progress student payload.
-- Option order is not explicitly persisted in question_options; current order stability needs an explicit contract.
-- Hint integration has known authoring/API mapping drift in some older Question editing paths; verify each path before claiming it fixed.
-- FILL_IN_BLANK currently has no per-blank key/index contract and must not be treated as a general Cloze implementation.
-- Backend has only the general Spring context test; no dedicated Question Engine handler contract tests were found in the audited tree.
+## Next gates
+1. Re-run Scope A tests in configured environment.
+2. Write Phase 7B implementation/migration plan from current schema baseline.
+3. Add characterization tests for existing Question types.
+4. Implement QuestionSpec/handlers/registry and demo adapters.
+5. Implement Composition persistence/API and deterministic legacy backfill.
+6. Implement AssessmentAttempt snapshots, saved answers, timeout, review, weighted scoring and manual grading.
+7. Implement per-part analytics/export and tests for readiness, locking, scoring, leakage and ordering.
 
-## Validation status
-
-This was a documentation synchronization task; tests, lint, TypeScript checks and builds were **not run** for this update.
-Last known environment blockers from the prior audit (2026-10-07), not re-verified today:
-- Client test dependencies / lockfile state prevented a reliable full client test run.
-- Known client lint/typecheck/build errors remained in unrelated/pre-existing areas.
-- Server Maven tests were blocked by missing Java/JAVA_HOME.
-Do not represent these prior results as a fresh validation of the current commit.
-
-## Current next gates
-
-1. Owner reviews ADR 0023 decisions D1–D6 before approving the Question Engine contract.
-2. Re-run current client lint/typecheck/tests/build and server tests in a configured environment.
-3. Add characterization tests for the five existing question types before refactoring their behavior.
-4. Resolve the durable Activity snapshot and legacy in-progress session policy before implementing a full snapshot.
-5. Scope B (AssessmentAttempt) starts only after Scope A's validation gate passes and explicit approval.
+This file tracks implementation state and does not claim the above work is done.

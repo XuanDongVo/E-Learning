@@ -37,7 +37,7 @@ Assignment exposes show_answers_after_submit. No Release Answers endpoint.
 - Class roster responses contain ACTIVE members only.
 
 ## Contract rules
-- AssignmentQuestion order is question_id ascending.
+- AssignmentQuestion has no position. The canonical Assignment Builder and student runtime use Composition section/item/member position; question_id ASC is only legacy backfill/compatibility order.
 - AssignmentQuestion has no position.
 - Activity preview does not create ActivitySession state.
 - Multiple Activity strategies require student runtime choice; ActivitySession stores it.
@@ -80,3 +80,8 @@ The Activity start response returns the complete selected question set. Correct 
 ## Assignment Composition and AssessmentAttempt — accepted target contract, not yet implemented
 
 Canonical model: .agent/architecture/assignment-composition-v1.md. Phase 7B responsibilities (not claims of current routes): read/write ordered composition; validate readiness/publish; start/get/save/submit/get result for AssessmentAttempt; teacher reporting by student and question/part with normalized wrong-answer distributions and CSV/Excel export. Server owns timer, eligibility, scoring and immutable snapshot. Do not ship routes before request/response schemas and security are reviewed. Student in-progress DTOs never expose correct/accepted/normalized answers; after submit, show_answers_after_submit governs reveal. Manual grading is pending until finalized.
+
+
+## Assignment score visibility
+
+The server calculates and persists the Assignment score on submit/timeout regardless of `show_score_after_submit`. That boolean controls whether the student is shown the score immediately. `show_answers_after_submit` is a separate switch for correct answers and explanations. These are two independent response-projection policies.

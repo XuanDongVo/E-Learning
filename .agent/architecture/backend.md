@@ -13,7 +13,7 @@ activity, assignment, assessment-attempt, content, question, classes, grades, us
 - Errors use stable ErrorCode values.
 - Every entity change requires a new Flyway migration; never edit applied migrations.
 - Deterministic product order must be explicit in repository/service queries.
-- Assignment Composition sections/items/members use persisted position. AssignmentQuestion remains position-free; question_id ASC is legacy backfill only.
+- Assignment Composition sections/items/members use persisted position. AssignmentQuestion remains position-free; question_id ASC is legacy backfill only. Assignment is locked against authoring changes after the first attempt starts; changes require cloning. Assignment submissions are teacher-reviewed, not auto-graded, in v1. Activity edits are allowed, but active sessions use their immutable start snapshot and future sessions use the latest saved revision.
 - ActivitySession runtime state is separate from Activity configuration. AssessmentAttempt runtime state is separate from Assignment configuration.
 
 ## Activity
@@ -26,16 +26,16 @@ Owns AssignmentQuestion. No position. show_answers_after_submit controls review.
 Question.hint is optional, max 500 characters. Formula/reference sheet is deferred.
 
 
-## Question Engine — proposed, not yet accepted
+## Question Engine — accepted architecture, implementation pending
 
-See `.agent/architecture/question-engine-v1.md` and ADR 0023 for the target design. Until ADR 0023 is accepted:
+See `.agent/architecture/question-engine-v1.md` and ADR 0023 (refined by ADR 0025). The target design is accepted but not yet implemented:
 - Do not claim QuestionTypeHandler, QuestionSpec, QuestionSnapshot, registry or capability policy already exists.
 - Do not refactor the current validator/persistence/runtime services solely because the proposal describes a target boundary.
 - Existing type semantics must be preserved by characterization tests before moving code.
-- Handler/domain logic must not depend on JPA repositories, Spring web DTOs or Jackson JsonNode if/when the proposal is accepted.
+- Handler/domain logic must not depend on JPA repositories, Spring web DTOs or Jackson JsonNode.
 - Keep teacher and student projections separate.
 - ActivitySession and AssessmentAttempt remain separate aggregates. Activity has no persisted detailed answer history under ADRs 0021/0022.
-- No migration V1–V30 may be edited. V31/V32/V33 are illustrative proposed boundaries only, pending Owner approval and a fresh migration audit.
+- Never edit migrations V1–V30. Re-audit the latest migration before coding and select the actual next unused version. V31/V32/V33 are not reserved version numbers.
 
 
 ## Assignment Composition / AssessmentAttempt

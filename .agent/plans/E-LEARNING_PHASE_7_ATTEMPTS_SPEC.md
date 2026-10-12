@@ -16,7 +16,7 @@ Phase 7 is split into two independent scopes. **Scope A — ActivitySession** is
 - Do not create a shared polymorphic `Attempt` table.
 
 ## Question set and FE flow
-- Create `activity_session_questions(session_id, question_id, position)` to freeze the selected set/order.
+- `activity_session_questions(session_id, question_id, position)` freezes selected Question IDs/order only. The audited V28 runtime rows still reference mutable Question content; a durable full-content snapshot is not implemented and is only proposed under ADR 0023 (D4 pending).
 - Do not persist Activity answer history.
 - Start returns the complete selected question set to FE. Do not fetch one question at a time.
 - The payload must not contain correct answers, accepted answers or explanations before the runtime flow allows them.

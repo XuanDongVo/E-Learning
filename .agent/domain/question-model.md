@@ -18,7 +18,7 @@ This describes current code/schema, not the accepted-but-not-yet-implemented Que
 
 - Hint: one optional teacher-authored Question hint; nullable and max 500 characters. It does not affect completeness. Student hint retrieval is an explicit runtime action so hint usage can be recorded.
 - Topic formula/reference sheet is deferred; it is not a current schema/API/UI contract.
-- AssignmentQuestion has no position, topic_id or reorder contract. Order is question_id ASC.
+- AssignmentQuestion has no position, topic_id or reorder contract. Product order is Composition section/item/member position; question_id ASC is only the deterministic legacy backfill order.
 - Existing Multiple Choice grading uses exact set match; do not silently add partial credit.
 - Current FILL_IN_BLANK storage has no blank/part key. Do not treat it as a general multi-blank Cloze representation.
 - Teacher response contracts include answer/correctness data for authoring and must not be exposed directly by student runtime APIs.

@@ -29,7 +29,7 @@ This describes current code/schema, not the proposed QuestionSpec design. Curren
 ActivitySession start persists selected Question IDs/order and runtime flags, but the audited implementation retains a reference to the mutable Question row. It does **not** currently guarantee a durable full-content snapshot of prompt/options/answers/media/hint/explanation.
 ADR 0021/0022 remain authoritative: no detailed Activity response payload/history is persisted. The Question Engine proposal would make a full question-content snapshot durable while preserving that no-answer-history decision; this remains pending Owner approval under ADR 0023.
 
-## Proposed Question Engine model
+## Accepted Question Engine target model (implementation pending)
 
 See `.agent/architecture/question-engine-v1.md`:
 - immutable type-specific QuestionSpec and QuestionSnapshot with content revision and snapshot schema version;
@@ -39,4 +39,9 @@ See `.agent/architecture/question-engine-v1.md`:
 - separate TeacherQuestionView and StudentQuestionView;
 - type-specific frontend authoring/validation/preview registry.
 
-All of the above are proposed, not implemented. New question types such as Matching or Cloze require a separately approved full vertical slice and schema contract.
+Architecture is accepted by ADR 0023, but handler/registry/snapshot implementation is not yet present. MATCHING and CLOZE are accepted target types and require a full vertical slice. Assignment Composition is separate and defined in .agent/architecture/assignment-composition-v1.md.
+
+
+## Grading result
+
+Each PartGrade contains stable partKey, status, earned/possible weight and optional normalizedSubmittedValue. Assignment persistence additionally records earned/possible points derived from Composition points. Normalized values support wrong-answer distribution but are never returned in an in-progress student DTO. Activity still does not persist detailed answer/part history.

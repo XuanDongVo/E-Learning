@@ -2,13 +2,14 @@
 
 **Status (2026-10-12):** Scope A exists in code and needs configured validation. Question Engine and Assignment Composition contracts are accepted. Scope B implementation is not started. This is the active plan; do not restore the old polymorphic Attempt model/routes.
 
-**Authority:** ADR 0012, 0015, 0021, 0022, 0023 and 0024; .agent/architecture/api-contract.md; .agent/architecture/question-engine-v1.md; .agent/architecture/assignment-composition-v1.md.
+**Authority:** ADR 0012, 0015, 0021, 0022, 0023, 0024 and 0025; .agent/architecture/api-contract.md; .agent/architecture/question-engine-v1.md; .agent/architecture/assignment-composition-v1.md; .agent/plans/PHASE_7B_IMPLEMENTATION_MIGRATION_PLAN.md.
 
 ## Scope A — ActivitySession
 - ActivitySession remains separate from AssessmentAttempt. Status: IN_PROGRESS, COMPLETED, GAME_OVER, ABANDONED.
 - Store student/activity, concrete mode/strategy, timestamps and aggregate counts/score/lives.
 - Do not persist detailed Activity answer/part history.
 - Before full snapshots are enforced, abandon legacy IN_PROGRESS sessions; never reconstruct historical content from mutable Questions.
+- Activity edits are allowed while sessions exist. A current ActivitySession uses the immutable snapshot captured at start; a session started after the Activity/content update uses the latest saved revision/configuration.
 - Start validates published state, readiness and own-grade access; resolve mode/strategy and persist them.
 - Select full question set/order in one transaction and persist a full immutable QuestionSnapshot for every selected question. Use snapshots for display, grading, hint and reveal.
 - Student payloads must not contain correct/accepted/normalized answers or explanations before permitted reveal.
@@ -28,14 +29,14 @@ The Assignment Builder demo is the product prototype, not disposable. Production
 - AssignmentQuestion remains the ownership association without position. Composition owns ordering; ADR 0024 supersedes the no-reorder/order-by-ID product rule in ADR 0018.
 - One canonical QuestionSpec union is shared across backend, Question Bank, Assignment and runtime. Composition remains separate; align demo types, no third semantic union.
 - Map demo TEXT_INPUT -> TYPE_ANSWER; MULTI_TEXT_INPUT/passage blanks -> CLOZE; pool/matching rows -> MATCHING; TRUE_FALSE has its own discriminant.
-- Points/required/gradingMode/isExample are Assignment-specific and do not mutate reusable Question Bank content.
-- Legacy backfill: one section, items question_id ASC, defaults 1 point/required/AUTO/not-example unless explicit values exist.
+- Points/required/isExample are Assignment-specific and do not mutate reusable Question Bank content. Assignment v1 has no AUTO/MANUAL selector; all formal submissions are teacher-reviewed (ADR 0025).
+- Legacy backfill: one section, items question_id ASC, defaults 1 point/required/not-example unless explicit values exist.
 
 ### B2. Readiness and publishing
 Publishing is a server-side invariant: valid metadata, target/schedule, supported complete Questions, valid timer, valid Composition/block/group references and scoring. Total possible scored points must be > 0 after examples are excluded. MANUAL is allowed only if teacher review workflow is implemented. Drafts may remain incomplete. Return stable validation errors identifying section/item/question. Test invalid publish rejection.
 
 ### B3. Locking and revisions
-Starting an AssessmentAttempt freezes ordered composition, QuestionSpecs, media refs, points/required/example/manual flags, show_answers_after_submit, time limit and grading/normalization versions. Live edits cannot mutate snapshots. Lock structure, membership/content, points and grading settings after an attempt starts with transaction-safe guards. Before implementation choose one policy for later edits: new revision/draft for future students or reject edits until archived. Historical attempts remain immutable. Test concurrent start/edit and publish/edit races.
+Once the first AssessmentAttempt starts, reject every authoring change to the Assignment (composition/order, questions/content, points, required flags, targets/schedule/settings/review policy). The teacher must clone the Assignment to make changes; the clone has independent Composition and Assignment-owned Question copies. Historical snapshots remain immutable. Operationally closing/archive to prevent new starts may remain available but cannot mutate existing attempts. Enforce transaction-safe server guards. Test concurrent start/edit and clone/source mutation.
 
 ### B4. AssessmentAttempt lifecycle
 - Separate aggregate; no polymorphic Attempt table; one official attempt per student per Assignment.
@@ -43,23 +44,23 @@ Starting an AssessmentAttempt freezes ordered composition, QuestionSpecs, media 
 - Persist answers and support autosave/idempotent retries without allowing a second official attempt.
 - State target: IN_PROGRESS, SUBMITTED, TIMED_OUT; manual review is a separate status, not another Attempt.
 - Enforce target/access/current-class membership, published/open/due policy on server.
-- Submit freezes answers and calculates automatic results once; late submissions remain accepted/labeled Late without score penalty.
+- Submit freezes submitted answers and puts the attempt in PENDING_REVIEW; it does not calculate correctness or award official points automatically. Late submissions remain accepted/labeled Late without score penalty.
 
 ### B5. Answer and per-part grade persistence (D7)
-Persist raw answer for review, optional normalized submitted value for analytics, per-part status (CORRECT, PARTIALLY_CORRECT, INCORRECT, UNANSWERED, PENDING_MANUAL), earned/possible points, stable part key, snapshot and normalizer/grading version, and timestamps. Normalized values are internal and never exposed in in-progress student DTOs. After submit, apply show_answers_after_submit exactly; if false, suppress correct/accepted/normalized details and explanations.
+Persist raw answer for teacher review and optional normalized submitted value captured by the type-aware normalizer at answer intake (normalization is not correctness grading). `PartStatus` remains exactly CORRECT, PARTIALLY_CORRECT, INCORRECT or UNANSWERED; `PENDING_REVIEW` belongs to the attempt/review lifecycle, not the Question Engine enum. After review, persist the teacher-selected per-part status and earned/possible points, stable part key, snapshot/normalizer version and review timestamps. Normalized values are internal and never exposed in in-progress student DTOs. After submit, apply show_answers_after_submit exactly; if false, suppress correct/accepted/normalized details and explanations.
 
 ### B6. Weighted scoring (D8)
 Points live on Composition items/parts, not shared Question Bank fields. earnedPoints = possiblePoints × scoreFraction. totalPossiblePoints sums scored non-example parts. totalEarnedPoints sums finalized graded parts. percentageScore = totalEarnedPoints / totalPossiblePoints × 100. Preserve raw points and percentage; round only for display. Examples are zero-point/excluded. MANUAL parts remain pending until teacher review; official score pending until all finalized. Existing types retain semantics; Matching/CLOZE partial-credit rules are tested. Readiness rejects zero possible scored points.
 
 ### B7. Assignment analytics
-Intent 0001 §3b and A4 require per-student status/score, class average, most-missed questions and Excel/CSV export. Implement correct/partial/incorrect/unanswered counts by question/part; accuracy with explicit denominator; normalized submitted-answer distributions; exclude examples and pending manual parts from finalized automatic rates; enforce teacher ownership/target scope/privacy; derive analytics from persisted attempts, not live Questions or mock data. Weak-topic cross-Assignment analytics remains a later Analytics phase.
+Intent 0001 §3b and A4 require per-student status/score, class average, most-missed questions and Excel/CSV export. Implement teacher-reviewed correct/partial/incorrect/unanswered counts by question/part; accuracy with explicit denominator; normalized submitted-answer distributions captured at intake; report pending-review and unanswered separately; exclude examples and unreviewed parts from finalized outcome rates; enforce teacher ownership/target scope/privacy; derive analytics from persisted attempts, not live Questions or mock data. Weak-topic cross-Assignment analytics remains a later Analytics phase.
 
 ### B8. Review and media
 TRUE show_answers_after_submit: after submit, return permitted score, correct answers and explanations. FALSE: suppress correct/accepted/normalized values and explanations. Image + meaningful alt text in v1; audio deferred. Student renderer and teacher preview preserve same order/grouping. MANUAL workflow is in Scope B if offered in production; otherwise hide/disable MANUAL until implemented.
 
 ### B9. Required tests
-Backend: readiness/publish rejection; ordered composition/backfill; access/target/due/current-class; one attempt; autosave/idempotent submit; timeout; snapshot immutability; edit-lock concurrency; decimal scoring/examples/zero denominator/manual pending; normalized-answer analytics/denominators; reveal leakage; media/alt text; CLOZE/MATCHING; no polymorphic Attempt.
-Frontend: builder save/reload order; drag/drop/sections/items/blocks/groups; canonical QuestionSpec editors/validation/preview; Student Preview matches attempt; points/required/AUTO-MANUAL/example; responsive/touch/keyboard/UI states; no localStorage/seed in production.
+Backend: readiness/publish rejection; ordered composition/backfill; access/target/due/current-class; one attempt; autosave/idempotent submit; timeout; snapshot immutability; edit-lock concurrency; teacher-awarded decimal scoring/examples/zero denominator/pending review; normalized-answer analytics/denominators; reveal leakage; media/alt text; CLOZE/MATCHING; no polymorphic Attempt.
+Frontend: builder save/reload order; drag/drop/sections/items/blocks/groups; canonical QuestionSpec editors/validation/preview; Student Preview matches attempt; points/required/example; teacher-review queue/detail and per-part earned points; responsive/touch/keyboard/UI states; no localStorage/seed in production.
 
 ### B10. Implementation sequence
 1. Validate Scope A gate.
@@ -69,7 +70,7 @@ Frontend: builder save/reload order; drag/drop/sections/items/blocks/groups; can
 5. Add option order/revision and Activity snapshots; abandon legacy IN_PROGRESS sessions before enforcement.
 6. Implement Composition schema/API/backfill and frontend adapter.
 7. Implement AssessmentAttempt snapshots/answers/lifecycle/timeout.
-8. Implement weighted scoring and manual review if enabled.
+8. Implement weighted score aggregation from teacher-awarded points and the mandatory teacher-review workflow.
 9. Implement analytics/export and security tests.
 10. Run server tests, frontend lint/typecheck/tests/build and record exact outcomes.
 

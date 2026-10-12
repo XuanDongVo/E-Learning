@@ -53,7 +53,7 @@
 - V1 blocks: instructions, passage, image/media and answer pool; audio/nested blocks deferred.
 - Points, required and isExample are Assignment-specific; examples have zero points and are excluded from denominator/most-missed analytics. Assignment v1 uses teacher review for every submission, with no automatic grading selector.
 - Assignment percentage = total earned points / total possible scored points × 100; round only for display.
-- All Assignment submissions are pending review until teacher grading is finalized. Readiness blocks zero possible scored points.
+- All Assignment submissions are automatically graded on submit/timeout by Question Engine; no pending-review state or manual grading workflow exists in v1. Readiness blocks zero possible scored points.
 - AssessmentAttempt snapshots ordered composition, QuestionSpecs, scoring flags, media refs and normalization/review provenance.
 - Persist per-part outcomes and normalized submitted values for Assignment analytics; report unanswered separately from incorrect.
 - In-progress student payloads never leak correctness/answer keys/normalized values. After submission, show_score_after_submit controls score display; show_answers_after_submit independently controls answers/explanations.

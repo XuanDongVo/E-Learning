@@ -1,46 +1,51 @@
 # Project Progress
 
-Audit date: 2026-10-07
-Branch: phase-6-student-management
+Audit date: 2026-10-12
+Branch: feature/phase-7-assigment
+Audited commit: 55f9ad1bf12ac34db3fc16044a6c2785498592cb
 
 ## Current stage
 
-Phase 6 Student Management is done.
-Phase 7 Scope A ActivitySession is implemented in the working tree; Scope B AssessmentAttempt remains deferred.
+- Phase 6 Student Management: DONE.
+- Phase 7 Scope A ActivitySession: present in the audited codebase; behavior and test gates still require validation in a configured environment.
+- Phase 7 Scope B AssessmentAttempt: DEFERRED / NOT IMPLEMENTED.
+- Question Engine: architecture proposal documented under ADR 0023; **not approved and not implemented**. Do not begin a broad Question refactor or add schema migrations from the proposal alone.
 
-## Knowledge-base sync completed in this update
+## Synchronized canonical decisions
 
-- Activity is consistently Unit-scoped.
-- GameTemplate is removed from the current Activity domain contract and deferred as presentation work.
-- Activity strategy selection is explicit: student chooses when more than one strategy is available; ActivitySession stores the concrete strategy.
-- Try Hard timer is per question.
-- AssignmentQuestion has no position and no reorder contract; list order is deterministic by question_id ascending.
-- Assignment answer visibility is controlled by show_answers_after_submit; answers_released_at / Release Answers is historical only.
-- Activity lifecycle transitions are explicit.
-- Draft Activities may be incomplete; publish requires readiness.
-- Activity preview is a real Phase 4 workflow contract.
-- Learning Mode keeps the optional per-question hint; the Topic formula/reference sheet is deferred and not a current schema/UI requirement.
+- Activity and Assignment have distinct product semantics and runtime aggregates.
+- Activity uses ActivitySession. It does not persist detailed response payload/history; AssessmentAttempt is a separate deferred formal Assignment runtime.
+- Activity is Unit-scoped. Multiple modes/selection strategies are resolved and stored at session start when required.
+- Practice has no timer, one retry (two submissions total) and an optional per-question hint. Try Hard timer is per question; timeout counts wrong and costs no life.
+- ActivitySession start currently records the selected question set/order, but the audited implementation still points to mutable Question rows. Full durable content snapshots are a proposed Question Engine change, not an existing guarantee.
+- Assignment owns its questions; AssignmentQuestion has no position/reorder contract; ordering is question_id ascending.
+- Assignment has a whole-attempt timer and post-submit answer visibility is controlled by show_answers_after_submit.
+- Topic formula/reference sheet and GameTemplate are deferred.
+- Never modify applied Flyway migrations V1–V30. Proposed V31–V33 boundaries in the architecture proposal are not approved migration numbers.
 
-## Quality gate state
+## Question Engine audit findings
 
-- Client tests: not re-run; Vitest dependencies are unavailable in the current install.
-- Client ESLint: still failing on pre-existing errors in assignment/grades screens.
-- Client TypeScript/build: still failing on pre-existing student-management, QuestionPreviewModal and missing Vitest type errors; changed hint files have no reported problems.
-- npm ci: previously failed because the lockfile was out of sync.
-- Server ./mvnw test: blocked because JAVA_HOME/Java is not configured in this environment.
-- GitHub Actions: not present.
+- Five existing types: SINGLE_CHOICE, MULTIPLE_CHOICE, TRUE_FALSE, FILL_IN_BLANK and TYPE_ANSWER.
+- Type-specific behavior is currently distributed across validation, persistence and Activity runtime services; the handler/registry design is not implemented.
+- Student and teacher question projections must remain separate. Do not expose correctness, accepted/raw/normalized answers or hidden explanations in an in-progress student payload.
+- Option order is not explicitly persisted in question_options; current order stability needs an explicit contract.
+- Hint integration has known authoring/API mapping drift in some older Question editing paths; verify each path before claiming it fixed.
+- FILL_IN_BLANK currently has no per-blank key/index contract and must not be treated as a general Cloze implementation.
+- Backend has only the general Spring context test; no dedicated Question Engine handler contract tests were found in the audited tree.
 
-Activity Draft authoring, deterministic Activity Preview, Activity lifecycle transitions, and AssignmentQuestion question_id ordering
-are implemented. Targeted server execution remains blocked because this environment has no configured Java/JAVA_HOME.
-Assignment answer visibility authoring/schema migration is also prepared in V26; student review enforcement remains intentionally
-blocked behind the Phase 7 sign-off.
-Question hint authoring is now persisted through V27 and exposed in teacher question contracts/UI. Hint request/retry runtime remains
-blocked behind Phase 7. Teacher dashboard fabricated metrics were replaced with explicit unavailable states.
-Scope A adds V28 ActivitySession persistence and student runtime APIs/UI. The backend keeps no Activity answer history, and Scope B
-AssessmentAttempt is not implemented.
+## Validation status
 
-## Next implementation gates
+This was a documentation synchronization task; tests, lint, TypeScript checks and builds were **not run** for this update.
+Last known environment blockers from the prior audit (2026-10-07), not re-verified today:
+- Client test dependencies / lockfile state prevented a reliable full client test run.
+- Known client lint/typecheck/build errors remained in unrelated/pre-existing areas.
+- Server Maven tests were blocked by missing Java/JAVA_HOME.
+Do not represent these prior results as a fresh validation of the current commit.
 
-1. Re-run client lint/typecheck/test/build and server tests when the environment has the required dependencies/runtime.
-2. Run the server test suite when Java/JAVA_HOME is available.
-3. Scope B starts only after Scope A validation gate passes.
+## Current next gates
+
+1. Owner reviews ADR 0023 decisions D1–D6 before approving the Question Engine contract.
+2. Re-run current client lint/typecheck/tests/build and server tests in a configured environment.
+3. Add characterization tests for the five existing question types before refactoring their behavior.
+4. Resolve the durable Activity snapshot and legacy in-progress session policy before implementing a full snapshot.
+5. Scope B (AssessmentAttempt) starts only after Scope A's validation gate passes and explicit approval.

@@ -66,3 +66,12 @@ correct answers, accepted answers or explanations. Activity answers are evaluate
 as answer history.
 
 The Activity start response returns the complete selected question set. Correct answers are never included before the runtime flow permits them.
+
+
+## Question contract / security boundary
+
+- Existing Question authoring/runtime contracts are implemented as they exist in code; this document does not approve a new QuestionSpec wire format or add new public endpoints.
+- Teacher authoring responses may include correctness and accepted-answer details. Never reuse a teacher authoring DTO as a student runtime DTO.
+- Student runtime payloads must not expose correctness flags, accepted answers, normalized values, or explanations before the corresponding Practice/review rule allows them. Hint content is returned through the explicit hint action so use can be recorded.
+- ActivitySession uses the session endpoints above; do not reintroduce the legacy polymorphic `/v1/attempts/{id}` API from the historical tail of the old Phase 7 draft.
+- Proposed Question Engine API/domain contract: see `.agent/architecture/question-engine-v1.md` and proposed ADR 0023. Its discriminated QuestionSpec wire contract is **pending Owner approval** and is not a current endpoint contract.

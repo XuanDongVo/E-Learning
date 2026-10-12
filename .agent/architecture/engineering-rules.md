@@ -247,3 +247,11 @@ The database/domain model, backend API contract, frontend types, and UI must rem
 ---
 
 <!-- BEGIN:nextjs-agent-rules -->
+
+
+## Question Engine proposal boundary
+
+Before Question-type refactoring, read `.agent/architecture/question-engine-v1.md` and ADR 0023.
+ADR 0023 is currently **Proposed — pending Owner approval**. Its proposed interfaces, new type model, migrations V31–V33 and full Activity content snapshot are not existing code or approved work. Do not claim them implemented, and do not create migrations from that proposal without approval.
+
+When the architecture is accepted, implement it in vertical slices: characterize existing types, implement handlers with parity tests, introduce registry/policy, extract persistence mapping, migrate snapshots, then unify frontend authoring. Do not mix this with the deferred AssessmentAttempt scope.

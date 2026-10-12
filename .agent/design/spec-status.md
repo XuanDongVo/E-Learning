@@ -1,6 +1,6 @@
 # Spec status: docs vs implementation
 
-Audit date: 2026-10-07
+Audit date: 2026-10-12
 This update changes documentation only; code/test status is not claimed as fixed.
 
 | ID | Contract | Current state | Status |
@@ -20,3 +20,19 @@ This update changes documentation only; code/test status is not claimed as fixed
 
 ## Required tests
 Activity distribution/readiness/lifecycle; Assignment deterministic order; answer visibility; Question hint optionality; Phase 7 timer and strategy persistence.
+
+
+## Question Engine / Question data audit (documentation update 2026-10-12)
+
+| ID | Contract / finding | Current state | Status |
+|---|---|---|---|
+| Q-01 | Five current Question types | Enum and schema support SINGLE_CHOICE, MULTIPLE_CHOICE, TRUE_FALSE, FILL_IN_BLANK, TYPE_ANSWER | Implemented baseline |
+| Q-02 | Type semantics centralized in Question Engine | Validator, persistence and Activity runtime contain distributed type-specific branches | Not implemented; ADR 0023 proposed |
+| Q-03 | Student vs teacher projection separation | Teacher mapping includes correctness/accepted-answer data; student payload must remain restricted | Security boundary; audit each endpoint |
+| Q-04 | Explicit option order | No question_options.display_order in audited schema | Gap; migration not approved |
+| Q-05 | Full immutable Activity question snapshot | ActivitySessionQuestion references mutable Question data and freezes selected IDs/order only | Gap; ADR 0023 D4 pending |
+| Q-06 | FILL_IN_BLANK per-part model | No blank key/index in question_answers | Not a multi-blank Cloze implementation |
+| Q-07 | Hint end-to-end round trip | Older Question edit/mapping path showed hint omissions | Verify/fix per endpoint; not claimed fixed here |
+| Q-08 | Question Engine tests | No dedicated handler/contract tests found | Required before refactor |
+
+This commit only synchronizes documentation. No application code or Flyway migration has changed, and no tests/builds were run.

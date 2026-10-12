@@ -25,3 +25,17 @@
 - OQ-19 AssignmentQuestion has no position; question_id ASC — decided.
 - OQ-20 multiple Activity strategies require student choice; store on ActivitySession — superseded by ADR 0021.
 - OQ-21 Activity lifecycle transitions — decided.
+
+
+## Question Engine owner review (ADR 0023 — pending)
+
+| Decision | Question requiring explicit Owner resolution | Current recommendation in proposal |
+|---|---|---|
+| D1 | Should existing types gain partial-credit grading? | Preserve current scoring semantics; design partial credit separately for new Matching/Cloze types. |
+| D2 | What is the semantic boundary for FILL_IN_BLANK vs CLOZE? | Preserve existing FILL_IN_BLANK; use a distinct CLOZE type for multi-blank content. |
+| D3 | Should Question APIs switch to a discriminated type-specific QuestionSpec contract? | Change backend and frontend together in one vertical slice, after approval. |
+| D4 | Should ActivitySession persist a full immutable question-content snapshot at start? | Approve durable content snapshot while preserving no detailed Activity answer-history persistence. |
+| D5 | Should part-level Activity grading/analytics be persisted? | Calculate part-level GradeResult in the engine; do not persist detailed Activity parts until separately approved. |
+| D6 | Must the Activity student runtime render authored image/audio media in v1? | Confirm supported media kinds and accessibility behavior before building snapshot/view contracts. |
+
+These are not closed decisions. ADR 0023 and its architecture remain proposed and authorize no code/schema change.

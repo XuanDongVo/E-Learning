@@ -11,6 +11,7 @@ Entry point: AGENTS.md.
 ├── decisions/
 ├── domain/
 ├── architecture/
+│   └── question-engine-v1.md (proposed target architecture; see ADR 0023)
 ├── plans/
 ├── design/
 ├── ui/
@@ -32,6 +33,8 @@ When an ADR changes a previous rule, create a later ADR and remove the old execu
 
 ## Current canonical decisions
 
+Question Engine v1 is under proposal in ADR 0023 and `.agent/architecture/question-engine-v1.md`. It is not an accepted implementation contract until the Owner resolves D1–D6. No code or migration work should start from the proposal alone.
+
 - Activity belongs to Unit, not Topic.
 - Activity and Assignment are independent.
 - Activity can offer Learning, Try Hard or both; when both are available, the student chooses the concrete mode at start.
@@ -43,6 +46,7 @@ When an ADR changes a previous rule, create a later ADR and remove the old execu
 - Activity lifecycle: DRAFT -> PUBLISHED only when READY; DRAFT -> ARCHIVED; PUBLISHED -> ARCHIVED; ARCHIVED -> DRAFT. ARCHIVED cannot go directly to PUBLISHED.
 - GameTemplate is deferred. It is a presentation concern and is not a current Activity dependency, entity or API.
 - Learning Mode is shown as Practice in student UI: no timer, one retry and optional teacher-authored Question hint. The shared Topic formula/reference sheet is intentionally deferred; do not add it to the current implementation contract.
+- Question Bank and Assignment share question semantics but retain independent ownership and runtime lifecycle. Student views must never expose correctness/accepted-answer fields before permitted reveal. Proposed handler/snapshot architecture is documented separately until ADR 0023 is accepted.
 
 ## How agents work
 

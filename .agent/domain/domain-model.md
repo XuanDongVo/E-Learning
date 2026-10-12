@@ -25,4 +25,9 @@ Assignment stores show_answers_after_submit and optional whole-attempt time_limi
 
 ## AssessmentAttempt
 Assignment -> AssessmentAttempt -> AssessmentAttemptQuestion -> Answer.
-AssessmentAttempt is the formal Assignment runtime and is implemented separately from ActivitySession.
+AssessmentAttempt is the intended formal Assignment runtime, separate from ActivitySession, but it is deferred and not implemented in the audited codebase (Phase 7 Scope B).
+
+
+## Question Engine status
+
+The canonical Question Engine architecture is proposed in ADR 0023 / `.agent/architecture/question-engine-v1.md`. Do not model QuestionSpec, QuestionSnapshot or QuestionTypeHandler as existing persisted/core implementation until the proposal is accepted and implemented.

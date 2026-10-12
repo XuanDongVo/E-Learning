@@ -38,3 +38,8 @@ Teacher dashboard using real data only.
 
 ## Phase 11
 Reports and polish.
+
+
+## Cross-cutting Question Engine proposal
+
+ADR 0023 and `.agent/architecture/question-engine-v1.md` record a proposed architecture for existing and future Question types. It is **not a new numbered phase** and remains pending Owner approval. Before adding a new Question type or starting Phase 7 Scope B, resolve ADR 0023 decisions D1–D6, characterize current type behavior, and re-check the migration baseline. Do not implement speculative V31–V33 migrations from the proposal alone.

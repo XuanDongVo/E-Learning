@@ -24,3 +24,15 @@ Owns AssignmentQuestion. No position. show_answers_after_submit controls review.
 
 ## Question
 Question.hint is optional, max 500 characters. Formula/reference sheet is deferred.
+
+
+## Question Engine — proposed, not yet accepted
+
+See `.agent/architecture/question-engine-v1.md` and ADR 0023 for the target design. Until ADR 0023 is accepted:
+- Do not claim QuestionTypeHandler, QuestionSpec, QuestionSnapshot, registry or capability policy already exists.
+- Do not refactor the current validator/persistence/runtime services solely because the proposal describes a target boundary.
+- Existing type semantics must be preserved by characterization tests before moving code.
+- Handler/domain logic must not depend on JPA repositories, Spring web DTOs or Jackson JsonNode if/when the proposal is accepted.
+- Keep teacher and student projections separate.
+- ActivitySession and AssessmentAttempt remain separate aggregates. Activity has no persisted detailed answer history under ADRs 0021/0022.
+- No migration V1–V30 may be edited. V31/V32/V33 are illustrative proposed boundaries only, pending Owner approval and a fresh migration audit.

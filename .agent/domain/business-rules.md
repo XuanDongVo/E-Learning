@@ -51,7 +51,7 @@
 - Assignment is an ordered document: sections, items and grouped members have persisted order; AssignmentQuestion has no position.
 - The Assignment Builder demo is the product prototype; localStorage/seed is not production storage.
 - V1 blocks: instructions, passage, image/media and answer pool; audio/nested blocks deferred.
-- Points, required and isExample are Assignment-specific; examples have zero points and are excluded from denominator/most-missed analytics. Assignment v1 uses teacher review for every submission, with no automatic grading selector.
+- Points, required and isExample are Assignment-specific; examples have zero points and are excluded from denominator/most-missed analytics. Assignment v1 grades every submission automatically; no manual grading workflow or AUTO/MANUAL selector exists.
 - Assignment percentage = total earned points / total possible scored points × 100; round only for display.
 - All Assignment submissions are automatically graded on submit/timeout by Question Engine; no pending-review state or manual grading workflow exists in v1. Readiness blocks zero possible scored points.
 - AssessmentAttempt snapshots ordered composition, QuestionSpecs, scoring flags, media refs and normalization/review provenance.

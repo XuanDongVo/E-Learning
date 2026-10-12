@@ -33,7 +33,7 @@ The Assignment Builder demo is the product prototype, not disposable. Production
 - Legacy backfill: one section, items question_id ASC, defaults 1 point/required/not-example unless explicit values exist.
 
 ### B2. Readiness and publishing
-Publishing is a server-side invariant: valid metadata, target/schedule, supported complete Questions, valid timer, valid Composition/block/group references and scoring. Total possible scored points must be > 0 after examples are excluded. MANUAL is allowed only if teacher review workflow is implemented. Drafts may remain incomplete. Return stable validation errors identifying section/item/question. Test invalid publish rejection.
+Publishing is a server-side invariant: valid metadata, target/schedule, supported complete Questions, valid timer, valid Composition/block/group references and scoring. Total possible scored points must be > 0 after examples are excluded. Teacher review is mandatory for all Assignment submissions in v1; do not model AUTO/MANUAL grading modes. Drafts may remain incomplete. Return stable validation errors identifying section/item/question. Test invalid publish rejection.
 
 ### B3. Locking and revisions
 Once the first AssessmentAttempt starts, reject every authoring change to the Assignment (composition/order, questions/content, points, required flags, targets/schedule/settings/review policy). The teacher must clone the Assignment to make changes; the clone has independent Composition and Assignment-owned Question copies. Historical snapshots remain immutable. Operationally closing/archive to prevent new starts may remain available but cannot mutate existing attempts. Enforce transaction-safe server guards. Test concurrent start/edit and clone/source mutation.

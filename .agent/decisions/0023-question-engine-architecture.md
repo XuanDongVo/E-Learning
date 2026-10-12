@@ -1,69 +1,23 @@
 # 0023 — Question Engine architecture
 
-**Status: Proposed — pending Owner approval**  
+**Status: Accepted**  
 **Date:** 2026-10-12  
-**Scope:** Shared Question semantics and integration boundary across Question Bank, Activity and Assignment.
+**Decided by:** project owner
 
-## Context
+## Decision
+Adopt .agent/architecture/question-engine-v1.md with D1–D8 accepted. Assignment order/item/block composition is separately defined by ADR 0024 and .agent/architecture/assignment-composition-v1.md.
 
-The current implementation contains type-specific behavior in multiple shared services:
+- **D1 scoring:** preserve existing five types; Multiple Choice remains exact-set/all-or-nothing. Partial credit only for new types with explicit partial-credit rules.
+- **D2 semantics:** preserve FILL_IN_BLANK single-answer-position/accepted-alternative behavior; CLOZE is a separate multi-blank compound type. MATCHING is compound.
+- **D3 wire contract:** one canonical discriminated QuestionSpec union across backend/frontend/Question Bank/Assignment/Activity. Align demo types to it; Composition remains separate. Map TEXT_INPUT to TYPE_ANSWER, passage/multi-text blanks to CLOZE, pool/matching rows to MATCHING; TRUE_FALSE has its own discriminant.
+- **D4 Activity snapshots:** persist full immutable QuestionSnapshot for each selected session question. Do not persist Activity answer/part history. Abandon legacy IN_PROGRESS sessions before enforcement; do not reconstruct history from mutable Questions.
+- **D5 analytics:** Activity remains aggregate-only. Assignment part outcomes are persisted under D7.
+- **D6 media:** image plus meaningful alt text and safe asset references in v1; audio deferred.
+- **D7 AssessmentAttempt:** persist submitted answers and server-calculated per-part result (part key, status, earned/possible points, optional normalized submitted value, grading/normalizer/snapshot version). Support correct/partial/incorrect/unanswered counts and normalized wrong-answer distributions. Manual parts remain pending until reviewed. Normalized values are never exposed in in-progress student DTOs; after-submit reveal follows show_answers_after_submit.
+- **D8 Assignment scoring:** points live on Composition items/parts, not shared Question Bank Questions. earnedPoints = possiblePoints × scoreFraction; percentage = total earned / total possible × 100. Preserve raw points and percentage; round only for display. Examples are zero-point and excluded. MANUAL keeps official score pending. Readiness rejects zero possible scored points.
 
-- QuestionContentValidator branches on QuestionType.
-- QuestionPersistenceService branches when persisting options and answers and normalizing values.
-- ActivitySessionService branches for correctness and correct-answer reveal.
-- QuestionResponseMapper returns authoring data that includes correctness and accepted-answer details.
-- Question Bank and Assignment authoring serialize the same broad draft using separate paths.
-- ActivitySessionQuestion currently points to a mutable Question entity and does not persist a full content snapshot.
+## Architecture boundaries
+QuestionSpec is immutable type-specific content; QuestionSnapshot includes provenance/revision/schema version. RawAnswer, ValidatedAnswer and GradeResult are separate. QuestionTypeHandler/registry own type semantics and do not use repositories/JPA/Jackson JsonNode. TeacherQuestionView and StudentQuestionView are separate. ActivitySession and AssessmentAttempt remain separate aggregates. AssignmentComposition owns order and Assignment scoring flags. Characterize current semantics before refactoring.
 
-As a result, adding a question type requires touching multiple existing services and DTOs, and runtime behavior is vulnerable to source-question edits unless immutable snapshots are persisted.
-
-## Proposed decision
-
-Introduce a shared Question Engine with:
-
-1. Immutable, type-specific QuestionSpec domain contracts.
-2. QuestionSnapshot wrapping a spec, source/content provenance and snapshot schema version.
-3. QuestionTypeHandler Strategy implementations for definition validation, answer parsing/validation, grading and view projection.
-4. A registry that resolves one handler per type, plus a capability policy by feature.
-5. Persistence adapter/mappers and optional per-type persistence codecs. Handlers must never access JPA or repositories.
-6. Explicitly distinct TeacherQuestionView and StudentQuestionView contracts.
-7. GradeResult with normalized score and per-part results.
-8. Separate ActivitySession and AssessmentAttempt runtime aggregates; no polymorphic Attempt.
-9. A type-aware frontend authoring/validation/preview registry and shared API serialization rules.
-
-The full proposal, class diagram, dependency rules, pattern mapping and migration boundary are documented in [Question Engine Architecture v1](../architecture/question-engine-v1.md).
-
-## Constraints inherited from accepted ADRs
-
-- Activity and Assignment remain independent (ADR 0001).
-- Assignment owns Question rows through AssignmentQuestion; ordering is question_id ascending and no AssignmentQuestion.position is introduced (ADRs 0003, 0018).
-- Activity belongs to Unit and runtime selection strategy is chosen at run start when required (ADRs 0008, 0017).
-- ActivitySession and AssessmentAttempt remain separate runtime concepts (ADR 0021).
-- Activity Practice continues to allow at most two submissions per question and does not persist detailed answer history (ADR 0022).
-- Hint remains optional; Topic formula/reference sheet is deferred (ADR 0016).
-- Assignment review remains controlled by show_answers_after_submit (ADR 0019).
-- Existing scoring semantics must not silently change.
-
-## Decisions still requiring Owner resolution
-
-- D1: preserve existing scoring and define separate partial-credit rules for new types.
-- D2: confirm the boundary between current FILL_IN_BLANK and future CLOZE.
-- D3: confirm a discriminated type-specific wire contract.
-- D4: approve durable full-content snapshots for ActivitySession.
-- D5: decide whether per-part Activity results may be persisted in future analytics.
-- D6: confirm media rendering requirements in Activity student runtime.
-
-## Migration rules
-
-- Current baseline is V30 on the audited branch.
-- Never modify or delete V1–V30.
-- Any schema changes must be incremental new migrations, sequenced only after rechecking the latest migration immediately before implementation.
-- V31/V32/V33 in the architecture document are proposed boundaries, not committed version decisions.
-- No implementation or migration is authorized by this Proposed ADR alone.
-
-## Consequences if accepted
-
-- Implement the five existing type handlers before adding new types.
-- Add contract and security tests before removing existing type-specific logic.
-- Treat Question Engine as domain/application logic; keep feature lifecycle and access policies in their feature services.
-- Update the current .agent knowledge base before beginning implementation, keeping this ADR and the architecture document aligned.
+## Migration rule
+Audited baseline was V30. This documentation decision adds no migration. Never edit V1–V30. Re-audit before implementation and create incremental migrations for option order/revision, Activity snapshots, Composition/scoring, AssessmentAttempt snapshots/answers and part grades.

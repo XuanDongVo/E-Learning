@@ -5,7 +5,7 @@
 **Migration baseline observed:** V30  
 **Scope:** Question definition, validation, answer parsing, grading, persistence mapping, runtime snapshots, Assignment/Activity integration and frontend authoring.
 
-> This document records the accepted target architecture after a code-and-ADR audit. D1–D8 were accepted on 2026-10-12; ADR 0025 further specifies that formal Assignment submissions are teacher-reviewed rather than automatically graded in v1. Implementation plan: `.agent/plans/PHASE_7B_IMPLEMENTATION_MIGRATION_PLAN.md`. A fresh migration audit is still required. Existing accepted product ADRs remain authoritative.
+> This document records the accepted target architecture after a code-and-ADR audit. D1–D8 were accepted on 2026-10-12; ADR 0026 clarifies that Assignment submissions are automatically graded and adds independent score visibility. Implementation plan: `.agent/plans/PHASE_7B_IMPLEMENTATION_MIGRATION_PLAN.md`. A fresh migration audit is still required. Existing accepted product ADRs remain authoritative.
 
 ## 1. Goals
 

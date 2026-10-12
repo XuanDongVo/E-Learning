@@ -45,7 +45,7 @@ This commit only synchronizes documentation. No application code or Flyway migra
 | A-01 | Demo is product prototype | Builder has sections/items/blocks/groups/points/preview; persistence is localStorage/seed | Product contract accepted; production integration pending |
 | A-02 | Ordered Assignment Composition | Current AssignmentQuestion has no position and follows legacy question_id order | Gap; Composition accepted by ADR 0024 |
 | A-03 | Weighted scoring | Demo has per-item points; backend scoring contract not implemented | Gap; ADR 0023 D8 accepted |
-| A-04 | Manual grading | Demo models MANUAL; complete review workflow not confirmed | Implement in Scope B or hide/disable MANUAL in production |
+| A-04 | Assignment grading | Demo models AUTO/MANUAL; ADR 0025 removes both-mode selector and requires teacher review for all submissions in v1 | Accepted contract; teacher-review UI/API not implemented |
 | A-05 | Assignment part analytics | Intent requires most-missed questions; normalized distribution not implemented | Gap; ADR 0023 D7 accepted |
 | A-06 | Readiness invariant | Assignment status transition does not enforce readiness as required | Scope B gate |
 | A-07 | Edit locking | AssessmentAttempt absent; current edit guard only checks ARCHIVED | Scope B gate |

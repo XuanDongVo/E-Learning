@@ -28,7 +28,7 @@ Question.hint is optional, max 500 characters. Formula/reference sheet is deferr
 
 ## Question Engine — accepted architecture, implementation pending
 
-See `.agent/architecture/question-engine-v1.md` and ADR 0023 (refined by ADR 0025). The target design is accepted but not yet implemented:
+See `.agent/architecture/question-engine-v1.md` and ADR 0023 (lifecycle refined by ADR 0025; Assignment scoring refined by ADR 0026). The target design is accepted but not yet implemented:
 - Do not claim QuestionTypeHandler, QuestionSpec, QuestionSnapshot, registry or capability policy already exists.
 - Do not refactor the current validator/persistence/runtime services solely because the proposal describes a target boundary.
 - Existing type semantics must be preserved by characterization tests before moving code.

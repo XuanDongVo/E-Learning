@@ -53,8 +53,8 @@
 - V1 blocks: instructions, passage, image/media and answer pool; audio/nested blocks deferred.
 - Points, required and isExample are Assignment-specific; examples have zero points and are excluded from denominator/most-missed analytics. Assignment v1 uses teacher review for every submission, with no automatic grading selector.
 - Assignment percentage = total earned points / total possible scored points × 100; round only for display.
-- MANUAL items remain pending until teacher grading is finalized. Readiness blocks zero possible scored points.
+- All Assignment submissions are pending review until teacher grading is finalized. Readiness blocks zero possible scored points.
 - AssessmentAttempt snapshots ordered composition, QuestionSpecs, scoring flags, media refs and normalization/review provenance.
 - Persist per-part outcomes and normalized submitted values for Assignment analytics; report unanswered separately from incorrect.
-- Student answer/correctness/normalized-value exposure follows show_answers_after_submit; no in-progress leakage.
+- While review is pending, students see Submitted / Pending review only. After review is finalized, show_answers_after_submit controls answer/explanation visibility; no in-progress or pre-review answer leakage.
 - Publishing readiness is server-enforced; once any AssessmentAttempt starts, reject Assignment edits and require cloning to change it. Activity edits remain allowed: existing sessions keep their snapshots and future sessions use the latest saved version.

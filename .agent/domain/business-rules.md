@@ -58,3 +58,10 @@
 - Persist per-part outcomes and normalized submitted values for Assignment analytics; report unanswered separately from incorrect.
 - In-progress student payloads never leak correctness/answer keys/normalized values. After submission, show_score_after_submit controls score display; show_answers_after_submit independently controls answers/explanations.
 - Publishing readiness is server-enforced; once any AssessmentAttempt starts, reject Assignment edits and require cloning to change it. Activity edits remain allowed: existing sessions keep their snapshots and future sessions use the latest saved version.
+
+
+## Assignment score display (ADR 0026)
+- Every submission/timeout is graded server-side from the immutable AssessmentAttempt snapshot.
+- `show_score_after_submit` controls whether students see the calculated score immediately; the score is calculated and persisted either way.
+- `show_answers_after_submit` independently controls whether correct answers and explanations are revealed.
+- Composition position, not question ID, determines rendered item order. question_id ASC is only the legacy backfill order.

@@ -1,33 +1,20 @@
 # Domain Model
 
 ## Core
-User, Class, ClassMember, Grade, Unit, ClassUnit, Section, Topic, QuestionBank, Question, Activity, ActivityBank, ActivitySession, ActivitySessionQuestion, Assignment, AssignmentTarget, AssignmentQuestion, AssessmentAttempt, AssessmentAttemptQuestion, Answer, XPTransaction.
-
-GameTemplate is deferred and is not a current core entity.
+User, Class, ClassMember, Grade, Unit, ClassUnit, Section, Topic, QuestionBank, Question, Activity, ActivityBank, ActivitySession, ActivitySessionQuestion, Assignment, AssignmentTarget, AssignmentQuestion, AssignmentComposition, AssignmentCompositionSection, AssignmentCompositionItem, AssessmentAttempt, AssessmentAttemptQuestion, Answer, AttemptPartGrade, XPTransaction.
+GameTemplate is deferred.
 
 ## Content
 Grade -> Unit -> Section -> Topic -> QuestionBank -> Question.
 
-## Activity
-Activity -> ActivityBank -> QuestionBank -> Question.
-Activity is configuration only; it does not store student runtime state.
+## Question Engine
+QuestionSpec is a discriminated type-specific semantic model shared by Question Bank, Assignment, Activity and runtime projections. Types: SINGLE_CHOICE, MULTIPLE_CHOICE, TRUE_FALSE, FILL_IN_BLANK, TYPE_ANSWER, MATCHING and CLOZE. FILL_IN_BLANK keeps existing single-answer-position semantics; CLOZE is multi-blank. QuestionSpec does not own Assignment order or point allocation.
 
 ## ActivitySession
-Activity -> ActivitySession -> ActivitySessionQuestion.
-ActivitySession is one repeatable runtime session. It stores concrete mode/strategy and aggregate result. ActivitySessionQuestion freezes selected question/order. Detailed Activity answer history is not persisted.
+Activity -> ActivitySession -> ActivitySessionQuestion. Stores concrete mode/strategy and aggregate results. It must persist a full immutable QuestionSnapshot per selected question. Detailed Activity answer/part history is not persisted. Abandon legacy IN_PROGRESS sessions before enforcing full snapshots.
 
-## Assignment
-Assignment -> AssignmentQuestion -> Question.
-Assignment is independent of Activity and QuestionBank.
-AssignmentQuestion has only assignment_id and question_id.
-Order is question_id ascending.
-Assignment stores show_answers_after_submit and optional whole-attempt time_limit_seconds.
+## Assignment Composition
+Assignment -> ordered Composition sections -> ordered items/content blocks -> Assignment-owned Question or grouped members. Composition owns section/item/member order; AssignmentQuestion remains a position-free ownership association. V1 blocks: INSTRUCTIONS, PASSAGE, image MEDIA and POOL; nested blocks/audio deferred. Assignment item configuration includes points, required, gradingMode and isExample; these are not Question Bank fields.
 
 ## AssessmentAttempt
-Assignment -> AssessmentAttempt -> AssessmentAttemptQuestion -> Answer.
-AssessmentAttempt is the intended formal Assignment runtime, separate from ActivitySession, but it is deferred and not implemented in the audited codebase (Phase 7 Scope B).
-
-
-## Question Engine status
-
-The canonical Question Engine architecture is proposed in ADR 0023 / `.agent/architecture/question-engine-v1.md`. Do not model QuestionSpec, QuestionSnapshot or QuestionTypeHandler as existing persisted/core implementation until the proposal is accepted and implemented.
+Assignment -> AssessmentAttempt -> immutable ordered composition/question snapshot -> Answer + per-part grading result. One official attempt per student. Whole-attempt server timer; timeout auto-submits. Persist normalized submitted values for analytics, never expose in-progress. ActivitySession and AssessmentAttempt remain separate.

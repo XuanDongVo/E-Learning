@@ -54,3 +54,6 @@ Read .agent/plans/PHASE_7B_IMPLEMENTATION_MIGRATION_PLAN.md before coding Phase 
 ## Authority note
 
 Only Accepted ADRs define approved behavior. Implementation status is tracked separately in PROGRESS.md; accepted architecture is not evidence of implemented code or passing tests.
+
+
+ADR 0026 adds show_score_after_submit (default TRUE), independent from show_answers_after_submit, sets per-question points to default 1 with teacher customization, and requires automatic score calculation on submit/timeout. There is no manual grading UI or workflow in v1.

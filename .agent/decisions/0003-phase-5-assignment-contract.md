@@ -1,4 +1,6 @@
 # 0003 — Phase 5 assignment contract
+
+**Ordering amendment:** ADR 0024 supersedes this document's legacy product-ordering rules. AssignmentQuestion remains position-free; canonical product order is Composition section/item/member position.
 Status: Accepted
 Date: 2026-10-04
 
@@ -14,7 +16,7 @@ Phase 5 introduces formal Assignments independent from Activities. The Assignmen
 - Assignment questions are owned by the Assignment and do not reference Activity or QuestionBank.
 - AssignmentQuestion contains only assignment_id and question_id. It has no position, no topic_id and no manual order field.
 - There is no Assignment question reorder API or UI.
-- Assignment question lists are deterministic: the API returns AssignmentQuestions ordered by question_id ascending.
+- Legacy flat AssignmentQuestion listings and Composition backfill use question_id ASC for deterministic compatibility. The Assignment Builder, Student Preview and AssessmentAttempt use persisted Composition section/item/member position.
 - Assignment question creation accepts a list so the same endpoint supports one-question and bulk creation.
 - Shared Question persistence is extracted into QuestionPersistenceService.
 - Excel import is deferred until its contract is finalized.
@@ -22,4 +24,4 @@ Phase 5 introduces formal Assignments independent from Activities. The Assignmen
 
 ## Consequences
 
-The Assignment detail page numbers questions according to the server-returned deterministic list. The frontend must never infer or persist a position field. The same shared Question Core is reused for content and Assignment-owned questions.
+The Assignment Builder renders questions according to the ordered Composition returned by the server. The frontend must not infer order from IDs or add position to AssignmentQuestion; persisted positions belong to Composition items/sections/members. The same canonical QuestionSpec semantics are reused for content and Assignment-owned questions.

@@ -4,6 +4,8 @@ Entry point: AGENTS.md.
 
 ## Canonical structure
 
+Required Phase 7B plan: `.agent/plans/PHASE_7B_IMPLEMENTATION_MIGRATION_PLAN.md`
+
 .agent/
 ├── README.md
 ├── PROGRESS.md
@@ -47,9 +49,11 @@ Question Engine v1 is accepted by ADR 0023 (D1–D8); implementation is not yet 
 - Activity lifecycle: DRAFT -> PUBLISHED only when READY; DRAFT -> ARCHIVED; PUBLISHED -> ARCHIVED; ARCHIVED -> DRAFT. ARCHIVED cannot go directly to PUBLISHED.
 - GameTemplate is deferred. It is a presentation concern and is not a current Activity dependency, entity or API.
 - Learning Mode is shown as Practice in student UI: no timer, one retry and optional teacher-authored Question hint. The shared Topic formula/reference sheet is intentionally deferred; do not add it to the current implementation contract.
-- Question Bank and Assignment share question semantics but retain independent ownership and runtime lifecycle. Student views must never expose correctness/accepted-answer fields before permitted reveal. Proposed handler/snapshot architecture is documented separately until ADR 0023 is accepted.
+- Question Bank and Assignment share canonical QuestionSpec semantics but retain independent ownership/runtime. Student views must not expose correctness/accepted/normalized answers before permitted reveal. Assignment Composition is a separate ordered model.
 
-## How agents work
+## Required Phase 7B planning input
+
+Before writing Phase 7B code, read `.agent/plans/PHASE_7B_IMPLEMENTATION_MIGRATION_PLAN.md` together with ADR 0023–0025, `.agent/architecture/question-engine-v1.md`, `.agent/architecture/assignment-composition-v1.md` and the active Phase 7 spec. ADR 0023 is Accepted, refined by ADR 0025 for Assignment teacher review. Assignment locks after its first attempt starts and must be cloned to change; Activity edits remain allowed and apply to future sessions while existing sessions retain their snapshot.
 
 Start by reading PROGRESS.md and the task-relevant ADR/spec/domain files.
 Before coding, resolve contradictions top-down through ADRs and active specs.

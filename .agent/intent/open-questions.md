@@ -29,14 +29,16 @@
 
 ## Accepted decisions — 2026-10-12
 
+ADR 0025 closes OQ-22 and defines Assignment hard-lock/clone behavior and Activity snapshot-version behavior. Assignment answer normalization happens at answer intake, but correctness and earned points are assigned by teacher review in v1. Compound question part points default to equal split and may be edited while summing to the aggregate item total.
+
 ADR 0023 D1–D8 and ADR 0024 are accepted. They are no longer open questions. See the ADR index and canonical architecture documents.
 
 ## Remaining implementation questions
 
 | ID | Question | Status / gate |
 |---|---|---|
-| OQ-22 | How should future Assignment edits work after an AssessmentAttempt exists: create a new revision/draft or reject edits until archived? | Must decide before Phase 7B implementation |
-| OQ-23 | What is the exact teacher review workflow and permission model for MANUAL grading? | Scope B must implement if MANUAL remains enabled in production; otherwise hide/disable it |
+| OQ-22 | How should future Assignment edits work after an AssessmentAttempt exists? | Closed by ADR 0025: hard-lock the Assignment; duplicate/clone to change it |
+| OQ-23 | What is the exact teacher review workflow and permission model for Assignment submissions? | Scope B must implement teacher review for all Assignment submissions; no automatic grading or AUTO/MANUAL selector in v1 |
 | OQ-24 | Which image asset/media storage contract and allowed URL policy will be used in student views? | Resolve against existing media implementation before snapshot/API work |
 | OQ-25 | Which report export format details, filters and row granularity are required for CSV/Excel? | Basic Assignment export remains in product intent; finalize schema during reporting slice |
 

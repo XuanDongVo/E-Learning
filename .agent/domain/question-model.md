@@ -12,7 +12,7 @@ Current persistence concepts:
 - content_questions: ownership association for Question Bank.
 - assignment_questions: Assignment ownership association sharing question_id as the Question key.
 
-This describes current code/schema, not the proposed QuestionSpec design. Current type-specific validation/persistence/grading behavior is spread across QuestionContentValidator, QuestionPersistenceService and ActivitySessionService.
+This describes current code/schema, not the accepted-but-not-yet-implemented QuestionSpec design. Current type-specific validation/persistence/grading behavior is spread across QuestionContentValidator, QuestionPersistenceService and ActivitySessionService.
 
 ## Implemented semantics / constraints
 
@@ -27,7 +27,7 @@ This describes current code/schema, not the proposed QuestionSpec design. Curren
 ## Activity runtime — actual state vs target
 
 ActivitySession start persists selected Question IDs/order and runtime flags, but the audited implementation retains a reference to the mutable Question row. It does **not** currently guarantee a durable full-content snapshot of prompt/options/answers/media/hint/explanation.
-ADR 0021/0022 remain authoritative: no detailed Activity response payload/history is persisted. The Question Engine proposal would make a full question-content snapshot durable while preserving that no-answer-history decision; this remains pending Owner approval under ADR 0023.
+ADR 0021/0022 remain authoritative: no detailed Activity response payload/history is persisted. Accepted ADRs 0023/0025 require a full durable QuestionSnapshot while preserving the no-answer-history rule. Existing implementation has not yet delivered this guarantee. An Activity edit affects future sessions; already-started sessions keep their start snapshot.
 
 ## Accepted Question Engine target model (implementation pending)
 

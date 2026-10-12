@@ -90,7 +90,7 @@ enum PartStatus {
 }
 ~~~
 
-Invariants: scoreFraction is in [0,1]; part possible weights sum to 1; each earned weight is between 0 and its possible weight; score fraction equals the sum of earned weights. CORRECT means full credit; PARTIALLY_CORRECT means positive but not full credit; INCORRECT and UNANSWERED both earn zero but remain distinct. `PartStatus` is limited to these four outcomes. `PENDING_REVIEW` is an Assignment review-lifecycle state, not a Question Engine PartStatus. For Assignment, normalized input is captured by the type-aware normalizer when an answer is accepted/saved; this operation does not grade correctness.
+Invariants: scoreFraction is in [0,1]; part possible weights sum to 1; each earned weight is between 0 and its possible weight; score fraction equals the sum of earned weights. CORRECT means full credit; PARTIALLY_CORRECT means positive but not full credit; INCORRECT and UNANSWERED both earn zero but remain distinct. `PartStatus` is limited to these four outcomes. Assignment submissions are graded automatically, so v1 has no pending-review lifecycle state. For Assignment, normalized input is captured by the type-aware normalizer when an answer is accepted/saved; this operation does not grade correctness.
 
 This result shape supports part-level analysis. It does not silently change current scoring: existing Multiple Choice remains exact-set/all-or-nothing unless a separately approved policy says otherwise. Persisting detailed Activity answer or part history remains outside ADR 0021/0022 unless an Owner decision changes that scope.
 

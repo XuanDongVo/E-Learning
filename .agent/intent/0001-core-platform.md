@@ -1,6 +1,6 @@
 # Intent 0001 — Core platform
 
-Version: 1.2 — **Updated on 2026-10-09** (non-blocking questions remain in [`open-questions.md`](./open-questions.md))
+Version: 1.4 — **Updated on 2026-10-12** (non-blocking questions remain in [`open-questions.md`](./open-questions.md))
 Date: 2026-10-07
 Owner: project owner (product owner)
 Sources: the repo docs (ADR 0001–0003, phase specs), and the owner's 20 product answers of 2026-10 (see §6).
@@ -38,9 +38,9 @@ Students get a clear, motivating place to practise at any time and to do the wor
 | C2 | Classes and members | Teacher manages classes and class membership | Phase 2, Phase 6 plan |
 | C3 | Content hierarchy | Grade → Unit → Section → Topic → QuestionBank → Question; teacher can edit the structure | `domain/question-model.md` |
 | C4 | Activities | Repeatable learning/practice/game experience built from several QuestionBanks; Learning and Try Hard modes | Phase 4 spec, ADR 0001 |
-| C5 | Assignments | Formal task: own questions, target (class or grade), schedule, one attempt, official score, Late label | Phase 5 spec, ADR 0001, ADR 0003 |
+| C5 | Assignments | Formal task: owned questions in ordered composition, sections/content blocks, target, schedule, one attempt, weighted official score, Late label | Phase 5 spec, ADR 0001, ADR 0003, ADR 0024 |
 | C6 | Attempts and answers | A student really does an Activity or Assignment; exact question set is fixed per attempt | `domain/question-model.md`, PHASES (Attempts) |
-| C7 | Analytics | Weak-topic and performance insight derived from answers | PHASES (Analytics) |
+| C7 | Analytics | Per-student/class Assignment performance plus most-missed question/part and normalized wrong-answer distribution; weak-topic insight later | ADR 0023, PHASES (Analytics) |
 | C8 | XP and ranking | XP per attempt, ranking by grade, weekly/monthly | PHASES (XP) |
 | C9 | Teacher dashboard and reports | Aggregation of real data only | PHASES (Dashboard, Reports) |
 
@@ -115,7 +115,7 @@ traceability. To adopt any of them, write a new ADR that supersedes ADR 0001.
 
 ## 7. Non-goals (confirmed by repo docs)
 
-Ranking or StudentWeakness as entities; class-level ranking; shuffling questions/answers in Assignments; regrading after an
+Ranking or StudentWeakness as entities; class-level ranking; random shuffling of Assignment composition; composition order is authored and persisted; regrading after an
 attempt; gradebook; email/push notifications; separate Teacher/Student/School entities.
 Further non-goals (payments, native mobile app, multi-school) are **not yet confirmed** (OQ-8).
 
@@ -143,3 +143,12 @@ Further non-goals (payments, native mobile app, multi-school) are **not yet conf
 | 2026-10-07 | 1.5 | Learning mode details fixed (ADR 0014) |
 | 2026-10-07 | 1.6 | Learning: 3 answers in total per question (ADR 0014); Try Hard time limit is per question (ADR 0015) |
 | 2026-10-07 | 1.7 | Attempts-spec assumptions confirmed: Try Hard timeout costs no life, an Activity that is not ready cannot be started |
+
+
+## Owner product decisions recorded 2026-10-12
+
+- Assignment Builder demo is the product prototype, not disposable. Ordered sections/items, drag/drop, passage/instruction/image/pool blocks, grouping, per-item points/required/grading/example flags, validation and Student Preview are product requirements (ADR 0024).
+- Canonical QuestionSpec is shared across Question Bank, Assignment, Activity and student views. Assignment Composition is a separate ordered document model.
+- Assignment scoring uses per-item/part points and weighted percentage; examples are excluded. Manual-grade items leave official score pending until finalized.
+- Assignment analytics include per-question/part correct, partial, incorrect and unanswered counts plus normalized wrong-answer distributions. Activity remains aggregate-only.
+- Student views support image media with alt text in v1; audio is deferred.

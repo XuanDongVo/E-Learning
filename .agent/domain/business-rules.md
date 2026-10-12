@@ -38,7 +38,7 @@
 - Expiry auto-submits saved answers and marks Timed out.
 - Submission after due_at is Late without score penalty.
 - Completion means submitted.
-- show_answers_after_submit controls post-submit correct-answer visibility; default TRUE.
+- show_answers_after_submit controls correct-answer visibility after teacher review is finalized; default TRUE. Until review is complete, show Submitted / Pending review without a final score or answer review.
 - Official score is separate from XP.
 
 ## Snapshot

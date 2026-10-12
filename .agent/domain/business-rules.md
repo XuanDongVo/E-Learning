@@ -45,3 +45,16 @@
 - ActivitySession freezes the selected Activity question set/order. AssessmentAttempt will snapshot formal Assignment questions and answers separately.
 - AttemptQuestion.position is runtime snapshot order, not AssignmentQuestion authoring order.
 - Server is authoritative for correctness and scoring.
+
+
+## Assignment Composition (ADR 0024)
+- Assignment is an ordered document: sections, items and grouped members have persisted order; AssignmentQuestion has no position.
+- The Assignment Builder demo is the product prototype; localStorage/seed is not production storage.
+- V1 blocks: instructions, passage, image/media and answer pool; audio/nested blocks deferred.
+- Points, required, gradingMode and isExample are Assignment-specific; examples have zero points and are excluded from denominator/most-missed analytics.
+- Assignment percentage = total earned points / total possible scored points × 100; round only for display.
+- MANUAL items remain pending until teacher grading is finalized. Readiness blocks zero possible scored points.
+- AssessmentAttempt snapshots ordered composition, QuestionSpecs, scoring flags, media refs and grading/normalization versions.
+- Persist per-part outcomes and normalized submitted values for Assignment analytics; report unanswered separately from incorrect.
+- Student answer/correctness/normalized-value exposure follows show_answers_after_submit; no in-progress leakage.
+- Publishing readiness is server-enforced; after an attempt starts, edits must not mutate that attempt's snapshot.

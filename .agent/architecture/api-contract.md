@@ -74,9 +74,9 @@ The Activity start response returns the complete selected question set. Correct 
 - Teacher authoring responses may include correctness and accepted-answer details. Never reuse a teacher authoring DTO as a student runtime DTO.
 - Student runtime payloads must not expose correctness flags, accepted answers, normalized values, or explanations before the corresponding Practice/review rule allows them. Hint content is returned through the explicit hint action so use can be recorded.
 - ActivitySession uses the session endpoints above; do not reintroduce the legacy polymorphic `/v1/attempts/{id}` API from the historical tail of the old Phase 7 draft.
-- Proposed Question Engine API/domain contract: see `.agent/architecture/question-engine-v1.md` and proposed ADR 0023. Its discriminated QuestionSpec wire contract is **pending Owner approval** and is not a current endpoint contract.
+- Accepted Question Engine domain contract: see `.agent/architecture/question-engine-v1.md` and ADR 0023 (refined by ADR 0025). The discriminated QuestionSpec contract is accepted, but the new implementation/wire DTOs are not yet delivered; do not represent planned endpoints as current routes.
 
 
-## Assignment Composition and AssessmentAttempt — target contract, not yet implemented
+## Assignment Composition and AssessmentAttempt — accepted target contract, not yet implemented
 
 Canonical model: .agent/architecture/assignment-composition-v1.md. Phase 7B responsibilities (not claims of current routes): read/write ordered composition; validate readiness/publish; start/get/save/submit/get result for AssessmentAttempt; teacher reporting by student and question/part with normalized wrong-answer distributions and CSV/Excel export. Server owns timer, eligibility, scoring and immutable snapshot. Do not ship routes before request/response schemas and security are reviewed. Student in-progress DTOs never expose correct/accepted/normalized answers; after submit, show_answers_after_submit governs reveal. Manual grading is pending until finalized.

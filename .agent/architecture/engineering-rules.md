@@ -252,6 +252,6 @@ The database/domain model, backend API contract, frontend types, and UI must rem
 ## Question Engine proposal boundary
 
 Before Question-type refactoring, read `.agent/architecture/question-engine-v1.md` and ADR 0023.
-ADR 0023 is currently **Proposed — pending Owner approval**. Its proposed interfaces, new type model, migrations V31–V33 and full Activity content snapshot are not existing code or approved work. Do not claim them implemented, and do not create migrations from that proposal without approval.
+ADR 0023 is **Accepted** (D1–D8); ADR 0025 refines the Assignment grading/lifecycle rules. The architecture is approved, but it is not yet implemented. Before coding Phase 7B, read `.agent/plans/PHASE_7B_IMPLEMENTATION_MIGRATION_PLAN.md`, verify Scope A's gate, and re-audit the current Flyway maximum. Never modify V1–V30; do not assume V31–V33 remain the next versions. Keep Activity automatic correctness feedback, but do not automatically grade formal Assignment submissions in v1.
 
 When the architecture is accepted, implement it in vertical slices: characterize existing types, implement handlers with parity tests, introduce registry/policy, extract persistence mapping, migrate snapshots, then unify frontend authoring. Do not mix this with the deferred AssessmentAttempt scope.

@@ -14,18 +14,18 @@ public class QuestionContentValidator {
 
     public ValidationResult validate(
             QuestionType type,
-            String prompt,
+            String content,
             List<QuestionOptionRequest> options,
             List<QuestionAnswerRequest> answers
     ) {
         List<String> errors = new ArrayList<>();
 
-        if (!StringUtils.hasText(prompt)) {
+        if (!StringUtils.hasText(content)) {
             errors.add("content.required");
             return new ValidationResult(false, errors);
         }
 
-        String trimmedPrompt = prompt.trim();
+        String trimmedContent = content.trim();
 
         if (type == QuestionType.SINGLE_CHOICE || type == QuestionType.MULTIPLE_CHOICE) {
             if (options == null || options.size() < 2) {
@@ -56,7 +56,7 @@ public class QuestionContentValidator {
                 errors.add("answers.true_false.required");
             }
         } else if (type == QuestionType.FILL_IN_BLANK) {
-            if (!trimmedPrompt.contains("____")) {
+            if (!trimmedContent.contains("____")) {
                 errors.add("content.blank_marker.required");
             }
             if (!hasNonEmptyAnswer(answers)) {
@@ -71,11 +71,11 @@ public class QuestionContentValidator {
 
     public boolean isComplete(
             QuestionType type,
-            String prompt,
+            String content,
             List<QuestionOptionRequest> options,
             List<QuestionAnswerRequest> answers
     ) {
-        return validate(type, prompt, options, answers).complete();
+        return validate(type, content, options, answers).complete();
     }
 
     private boolean hasNonEmptyAnswer(List<QuestionAnswerRequest> answers) {

@@ -15,7 +15,7 @@ public class ActivitySessionQuestion {
     @ManyToOne(fetch = FetchType.LAZY, optional = false) @JoinColumn(name = "question_id") private Question question;
     @Column(name = "snapshot_schema_version") private Integer snapshotSchemaVersion;
     @Column(name = "snapshot_content_revision") private Long snapshotContentRevision;
-    @Lob @Column(name = "snapshot_payload") private String snapshotPayload;
+    @Column(name = "snapshot_payload", columnDefinition = "TEXT") private String snapshotPayload;
     @Column(nullable = false) private int position;
     @Column(name = "served_at") private LocalDateTime servedAt;
     @Column(name = "deadline_at") private LocalDateTime deadlineAt;

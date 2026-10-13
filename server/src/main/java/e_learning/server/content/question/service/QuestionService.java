@@ -155,6 +155,7 @@ public class QuestionService {
                 .difficulty(content.getDifficulty())
                 .content(content.getContent())
                 .explanation(content.getExplanation())
+                .hint(content.getHint())
                 .complete(content.isComplete())
                 .matchingMode(content.getMatchingMode())
                 .options(content.getOptions())

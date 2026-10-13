@@ -14,6 +14,8 @@ import e_learning.server.question.entity.QuestionMedia;
 import e_learning.server.question.entity.QuestionOption;
 import e_learning.server.question.enums.Difficulty;
 import e_learning.server.question.enums.QuestionType;
+import e_learning.server.question.engine.QuestionEngine;
+import e_learning.server.question.engine.QuestionSpecRequestFactory;
 import e_learning.server.question.repository.QuestionAnswerRepository;
 import e_learning.server.question.repository.QuestionMediaRepository;
 import e_learning.server.question.repository.QuestionOptionRepository;
@@ -35,7 +37,8 @@ public class QuestionPersistenceService {
     private final QuestionAnswerRepository questionAnswerRepository;
     private final QuestionMediaRepository questionMediaRepository;
     private final MediaRepository mediaRepository;
-    private final QuestionContentValidator questionContentValidator;
+    private final QuestionEngine questionEngine;
+    private final QuestionSpecRequestFactory questionSpecRequestFactory;
     private final EntityManager entityManager;
 
     @Transactional
@@ -47,12 +50,7 @@ public class QuestionPersistenceService {
         List<Question> questions = new ArrayList<>();
 
         for (QuestionWriteRequest request : requests) {
-            boolean complete = questionContentValidator.isComplete(
-                    request.getType(),
-                    request.getContent(),
-                    request.getOptions(),
-                    request.getAnswers()
-            );
+            boolean complete = questionEngine.validateDefinition(questionSpecRequestFactory.toSpec(request)).ready();
 
             Question question = Question.builder()
                     .type(request.getType())
@@ -64,6 +62,7 @@ public class QuestionPersistenceService {
                             ? request.getHint().trim() : null)
                     .complete(complete)
                     .matchingMode("CASE_INSENSITIVE_TRIM")
+                    .contentRevision(1L)
                     .build();
 
             Question saved = questionRepository.save(question);
@@ -87,12 +86,8 @@ public class QuestionPersistenceService {
                 ? request.getExplanation().trim() : null);
         question.setHint(StringUtils.hasText(request.getHint())
                 ? request.getHint().trim() : null);
-        question.setComplete(questionContentValidator.isComplete(
-                request.getType(),
-                request.getContent(),
-                request.getOptions(),
-                request.getAnswers()
-        ));
+        question.setComplete(questionEngine.validateDefinition(questionSpecRequestFactory.toSpec(request)).ready());
+        question.setContentRevision(question.getContentRevision() + 1);
         updateChildEntities(question, request);
         return question;
     }
@@ -126,6 +121,7 @@ public class QuestionPersistenceService {
                         .optionKey(toOptionKey(i))
                         .content(option.getContent() != null ? option.getContent().trim() : "")
                         .correct(option.isCorrect())
+                        .displayOrder(i + 1)
                         .build());
             }
 

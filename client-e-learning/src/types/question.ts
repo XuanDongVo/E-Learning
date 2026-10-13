@@ -34,7 +34,77 @@ export type QuestionType =
   | "MULTIPLE_CHOICE"
   | "TRUE_FALSE"
   | "FILL_IN_BLANK"
-  | "TYPE_ANSWER";
+  | "TYPE_ANSWER"
+  | "MATCHING"
+  | "CLOZE";
+
+export interface QuestionCommonSpec {
+  prompt: string;
+  difficulty: QuestionDifficulty;
+  explanation?: string;
+  hint?: string;
+  media: QuestionMediaDraft[];
+}
+
+export interface SingleChoiceSpec extends QuestionCommonSpec {
+  type: "SINGLE_CHOICE";
+  choices: QuestionOptionDraft[];
+  correctChoiceKey: string;
+}
+
+export interface MultipleChoiceSpec extends QuestionCommonSpec {
+  type: "MULTIPLE_CHOICE";
+  choices: QuestionOptionDraft[];
+  correctChoiceKeys: string[];
+}
+
+export interface TrueFalseSpec extends QuestionCommonSpec {
+  type: "TRUE_FALSE";
+  expected: TrueFalseAnswer;
+}
+
+export interface FillInBlankSpec extends QuestionCommonSpec {
+  type: "FILL_IN_BLANK";
+  acceptedAnswers: string[];
+}
+
+export interface TypeAnswerSpec extends QuestionCommonSpec {
+  type: "TYPE_ANSWER";
+  acceptedAnswers: string[];
+  matchingMode: "CASE_INSENSITIVE_TRIM" | "CASE_SENSITIVE_TRIM";
+}
+
+export interface MatchingPairSpec {
+  itemKey: string;
+  answerKey: string;
+}
+
+export interface MatchingSpec extends QuestionCommonSpec {
+  type: "MATCHING";
+  items: { key: string; content: string }[];
+  answerPool: { key: string; content: string }[];
+  pairs: MatchingPairSpec[];
+}
+
+export interface ClozeBlankSpec {
+  key: string;
+  acceptedAnswers: string[];
+}
+
+export interface ClozeSpec extends QuestionCommonSpec {
+  type: "CLOZE";
+  segments: { text: string; blankKey?: string }[];
+  blanks: ClozeBlankSpec[];
+}
+
+export type QuestionSpec =
+  | SingleChoiceSpec
+  | MultipleChoiceSpec
+  | TrueFalseSpec
+  | FillInBlankSpec
+  | TypeAnswerSpec
+  | MatchingSpec
+  | ClozeSpec;
 
 export const questionTypeOptions: {
   value: QuestionType;
@@ -45,6 +115,8 @@ export const questionTypeOptions: {
   { value: "TRUE_FALSE", label: "True / False" },
   { value: "FILL_IN_BLANK", label: "Fill in the Blank" },
   { value: "TYPE_ANSWER", label: "Type Answer" },
+  { value: "MATCHING", label: "Matching" },
+  { value: "CLOZE", label: "Cloze" },
 ];
 
 export const questionDifficultyOptions: {

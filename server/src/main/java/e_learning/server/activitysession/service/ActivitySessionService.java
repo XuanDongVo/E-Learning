@@ -41,6 +41,7 @@ public class ActivitySessionService {
     private final UserRepository userRepository;
     private final QuestionOptionRepository optionRepository;
     private final QuestionAnswerRepository answerRepository;
+    private final ActivityQuestionSnapshotAssembler snapshotAssembler;
 
     @Transactional(readOnly = true)
     public ActivitySessionOptionsResponse options(Long activityId, Long studentId) {
@@ -74,7 +75,10 @@ public class ActivitySessionService {
         List<Question> selected = selectQuestions(activity);
         ActivitySession session = new ActivitySession(student, activity, mode, strategy, selected.size(),
                 mode == ActivityMode.TRY_HARD ? activity.getLives() : null);
-        for (int i = 0; i < selected.size(); i++) session.addQuestion(new ActivitySessionQuestion(selected.get(i), i));
+        for (int i = 0; i < selected.size(); i++) {
+            ActivityQuestionSnapshot snapshot = snapshotAssembler.assemble(selected.get(i));
+            session.addQuestion(new ActivitySessionQuestion(selected.get(i), i, snapshot));
+        }
         ActivitySession saved = sessionRepository.save(session);
         serveCurrent(saved);
         return toResponse(saved);
@@ -100,7 +104,8 @@ public class ActivitySessionService {
         if (item.isResolved()) throw new AppException(ErrorCode.ACTIVITY_SESSION_RETRY_EXHAUSTED);
         serve(item, session.getActivity());
         boolean timedOut = isTimedOut(item);
-        boolean correct = !timedOut && isCorrect(item.getQuestion(), request.answer());
+        ActivityQuestionSnapshot snapshot = snapshotAssembler.read(item);
+        boolean correct = !timedOut && isCorrect(snapshot, request.answer());
         int attempt = item.getAnswerAttempts() + 1;
         item.setAnswerAttempts(attempt);
         boolean retry = session.getMode() == ActivityMode.LEARNING && !correct && attempt == 1;
@@ -135,8 +140,8 @@ public class ActivitySessionService {
         if (session.getStatus() == ActivitySessionStatus.IN_PROGRESS
                 && session.getQuestions().stream().allMatch(ActivitySessionQuestion::isResolved)) complete(session);
         sessionRepository.save(session);
-        String correctAnswer = reveal ? correctAnswer(item.getQuestion()) : null;
-        String explanation = reveal ? item.getQuestion().getExplanation() : null;
+        String correctAnswer = reveal ? correctAnswer(snapshot) : null;
+        String explanation = reveal ? snapshot.explanation() : null;
         return new ActivitySessionAnswerResponse(toResponse(session), correct, retry, reveal, correctAnswer, explanation);
     }
 
@@ -148,7 +153,8 @@ public class ActivitySessionService {
         if (session.getMode() != ActivityMode.LEARNING)
             throw new AppException(ErrorCode.ACTIVITY_SESSION_HINT_UNAVAILABLE);
         ActivitySessionQuestion item = question(sessionId, questionId);
-        if (item.isResolved() || item.getQuestion().getHint() == null || item.getQuestion().getHint().isBlank()) {
+        ActivityQuestionSnapshot snapshot = snapshotAssembler.read(item);
+        if (item.isResolved() || snapshot.hint() == null || snapshot.hint().isBlank()) {
             throw new AppException(ErrorCode.ACTIVITY_SESSION_HINT_UNAVAILABLE);
         }
         if (!item.isHintUsed()) {
@@ -156,7 +162,7 @@ public class ActivitySessionService {
             session.setHintUsedCount(session.getHintUsedCount() + 1);
             sessionRepository.save(session);
         }
-        return new ActivitySessionHintResponse(toResponse(session), item.getQuestion().getHint());
+        return new ActivitySessionHintResponse(toResponse(session), snapshot.hint());
     }
 
     @Transactional
@@ -237,30 +243,30 @@ public class ActivitySessionService {
         return item.getDeadlineAt() != null && LocalDateTime.now().isAfter(item.getDeadlineAt().plusSeconds(NETWORK_GRACE_SECONDS));
     }
 
-    private boolean isCorrect(Question question, JsonNode node) {
+    private boolean isCorrect(ActivityQuestionSnapshot snapshot, JsonNode node) {
         if (node == null) return false;
-        if (question.getType() == e_learning.server.question.enums.QuestionType.MULTIPLE_CHOICE) {
+        if (snapshot.type() == e_learning.server.question.enums.QuestionType.MULTIPLE_CHOICE) {
             Set<String> submitted = new TreeSet<>();
             node.forEach(n -> submitted.add(n.asText().trim().toUpperCase()));
-            Set<String> expected = optionRepository.findByQuestionId(question.getId()).stream().filter(QuestionOption::isCorrect)
-                    .map(QuestionOption::getOptionKey).collect(java.util.stream.Collectors.toCollection(TreeSet::new));
+            Set<String> expected = snapshot.options().stream().filter(ActivityQuestionSnapshot.Option::correct)
+                    .map(ActivityQuestionSnapshot.Option::key).collect(java.util.stream.Collectors.toCollection(TreeSet::new));
             return submitted.equals(expected);
         }
         String value = node.isArray() ? node.toString() : node.asText().trim();
-        if (question.getType() == e_learning.server.question.enums.QuestionType.SINGLE_CHOICE) {
-            return optionRepository.findByQuestionId(question.getId()).stream()
-                    .anyMatch(o -> o.getOptionKey().equalsIgnoreCase(value) && o.isCorrect());
+        if (snapshot.type() == e_learning.server.question.enums.QuestionType.SINGLE_CHOICE) {
+            return snapshot.options().stream()
+                    .anyMatch(o -> o.key().equalsIgnoreCase(value) && o.correct());
         }
-        return answerRepository.findByQuestionId(question.getId()).stream()
-                .anyMatch(a -> a.getNormalizedValue().equals(value.toLowerCase(Locale.ROOT)));
+        return snapshot.answers().stream()
+                .anyMatch(a -> a.trim().equalsIgnoreCase(value));
     }
 
-    private String correctAnswer(Question question) {
-        if (question.getType() == e_learning.server.question.enums.QuestionType.SINGLE_CHOICE
-                || question.getType() == e_learning.server.question.enums.QuestionType.MULTIPLE_CHOICE)
-            return optionRepository.findByQuestionId(question.getId()).stream().filter(QuestionOption::isCorrect)
-                    .map(QuestionOption::getOptionKey).sorted().collect(java.util.stream.Collectors.joining(","));
-        return answerRepository.findByQuestionId(question.getId()).stream().map(QuestionAnswer::getRawValue)
+    private String correctAnswer(ActivityQuestionSnapshot snapshot) {
+        if (snapshot.type() == e_learning.server.question.enums.QuestionType.SINGLE_CHOICE
+                || snapshot.type() == e_learning.server.question.enums.QuestionType.MULTIPLE_CHOICE)
+            return snapshot.options().stream().filter(ActivityQuestionSnapshot.Option::correct)
+                    .map(ActivityQuestionSnapshot.Option::key).sorted().collect(java.util.stream.Collectors.joining(","));
+        return snapshot.answers().stream()
                 .collect(java.util.stream.Collectors.joining(", "));
     }
 
@@ -316,10 +322,12 @@ public class ActivitySessionService {
     }
 
     private ActivitySessionQuestionResponse toQuestionResponse(ActivitySessionQuestion item) {
-        List<ActivitySessionQuestionResponse.Option> options = optionRepository.findByQuestionId(item.getQuestion().getId()).stream()
-                .map(o -> new ActivitySessionQuestionResponse.Option(o.getOptionKey(), o.getContent())).toList();
-        return new ActivitySessionQuestionResponse(item.getId(), item.getPosition(), item.getQuestion().getType(),
-                item.getQuestion().getContent(), options, item.getDeadlineAt(), item.isResolved(),
-                item.getAnswerAttempts(), item.getFirstCorrect(), item.getFinalCorrect(), item.isHintUsed(), item.getQuestion().getHint() != null && !item.getQuestion().getHint().isBlank());
+        ActivityQuestionSnapshot snapshot = snapshotAssembler.read(item);
+        List<ActivitySessionQuestionResponse.Option> options = snapshot.options().stream()
+                .map(o -> new ActivitySessionQuestionResponse.Option(o.key(), o.content())).toList();
+        return new ActivitySessionQuestionResponse(item.getId(), item.getPosition(), snapshot.type(),
+                snapshot.content(), options, item.getDeadlineAt(), item.isResolved(),
+                item.getAnswerAttempts(), item.getFirstCorrect(), item.getFinalCorrect(), item.isHintUsed(),
+                snapshot.hint() != null && !snapshot.hint().isBlank());
     }
 }

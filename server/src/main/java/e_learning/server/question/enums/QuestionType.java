@@ -5,5 +5,7 @@ public enum QuestionType {
     MULTIPLE_CHOICE,
     TRUE_FALSE,
     FILL_IN_BLANK,
-    TYPE_ANSWER
+    TYPE_ANSWER,
+    MATCHING,
+    CLOZE
 }

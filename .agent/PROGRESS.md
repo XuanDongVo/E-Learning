@@ -8,7 +8,10 @@ Audited application baseline before documentation changes: c2a98fd9101d7b6613e5c
 - Phase 6 Student Management: DONE.
 - Phase 7 Scope A ActivitySession: present in code; configured validation run still required.
 - Phase 7 Scope B AssessmentAttempt + Assignment Composition: contract accepted, implementation not started/not verified.
-- Question Engine: architecture accepted in ADR 0023; implementation not yet delivered.
+- Question Engine Slice 1: immutable five-type contracts, handlers, registry, facade and focused unit tests added; persistence/snapshot integration remains outstanding.
+- Question Engine Slice 2: V31 adds content revisions and deterministic option ordering; entity persistence and QuestionSpec mapping now use the engine for authoring completeness. Snapshot/Activity integration remains deferred.
+- Question Engine Slice 3: V32 abandons legacy in-progress ActivitySessions and captures immutable question payloads/revision metadata at session start; ActivitySession runtime reads snapshot content. Legacy completed sessions without snapshots remain historical and are not eligible for runtime continuation.
+- Question Engine Slice 4: MATCHING and CLOZE immutable specs, validated answers, handlers, normalized per-part grading, registry support and focused tests added. Existing flat authoring/persistence mapping explicitly rejects these types until type-specific fields exist.
 - Assignment Composition: product model accepted in ADR 0024; demo is product prototype. Current localStorage/seed persistence remains prototype-only.
 
 ## Accepted contracts
@@ -23,7 +26,7 @@ Audited application baseline before documentation changes: c2a98fd9101d7b6613e5c
 - Existing Assignments backfill to one section in question_id ascending order with defaults 1 point/required/not-example unless explicit values exist. After backfill, Composition positions—not question_id—define product order.
 
 ## Implementation gaps
-- Existing Question types have distributed validation/persistence/grading logic; handlers/registry are not implemented.
+- Existing Question types still have distributed validation/persistence logic; Slice 1 handlers/registry now provide pure domain validation, parsing and grading parity for the five current types.
 - question_options has no explicit display_order in the audited schema.
 - ActivitySessionQuestion still references mutable Question content; full snapshots are not implemented.
 - Older authoring paths omit hint in mapping and require round-trip tests/fixes.

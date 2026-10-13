@@ -40,6 +40,9 @@ public class Question {
     @Column(name = "is_complete", nullable = false)
     private boolean complete;
 
+    @Column(name = "content_revision", nullable = false)
+    private long contentRevision;
+
     @Column(name = "matching_mode", nullable = false, length = 30)
     private String matchingMode;
 

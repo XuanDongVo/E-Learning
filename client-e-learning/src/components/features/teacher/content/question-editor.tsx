@@ -75,6 +75,7 @@ function toDraft(q: QuestionResponse) {
     acceptedAnswers: loadedAccepted,
     media: loadedMedia,
     explanation: q.explanation ?? "",
+    hint: q.hint ?? "",
   };
 }
 
@@ -142,6 +143,7 @@ function QuestionEditorForm({
         difficulty: draft.difficulty,
         content: draft.text.trim(),
         explanation: draft.explanation.trim() || undefined,
+        hint: draft.hint?.trim() || undefined,
         options:
           draft.type === "SINGLE_CHOICE" || draft.type === "MULTIPLE_CHOICE"
             ? draft.options.map((opt) => ({

@@ -11,7 +11,7 @@ abstract class AbstractQuestionTypeHandler implements QuestionTypeHandler {
     }
     protected DefinitionValidation common(QuestionSpec spec) {
         requireType(spec);
-        if (spec.prompt().isBlank()) return DefinitionValidation.incomplete("content.required");
+        if (spec.content().isBlank()) return DefinitionValidation.incomplete("content.required");
         return null;
     }
     protected GradeResult gradeOne(String key, boolean answered, boolean correct, String normalized) {

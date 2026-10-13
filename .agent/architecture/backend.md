@@ -26,16 +26,15 @@ Owns AssignmentQuestion. No position; Composition positions define official orde
 Question.hint is optional, max 500 characters. Formula/reference sheet is deferred.
 
 
-## Question Engine — accepted architecture, implementation pending
+## Question Engine — implementation and boundary rules
 
-See `.agent/architecture/question-engine-v1.md` and ADR 0023 (lifecycle refined by ADR 0025; Assignment scoring refined by ADR 0026). The target design is accepted but not yet implemented:
-- Do not claim QuestionTypeHandler, QuestionSpec, QuestionSnapshot, registry or capability policy already exists.
-- Do not refactor the current validator/persistence/runtime services solely because the proposal describes a target boundary.
-- Existing type semantics must be preserved by characterization tests before moving code.
-- Handler/domain logic must not depend on JPA repositories, Spring web DTOs or Jackson JsonNode.
+See `.agent/architecture/question-engine-v1.md` and ADR 0023 (lifecycle refined by ADR 0025; Assignment scoring refined by ADR 0026). The Question Engine package structure and handler/spec/result contracts are present on the current Phase 7 branch; full compile/test validation remains required.
+- `QuestionSpecMapper` is the persistence-to-engine boundary. Engine code must not depend on JPA repositories/entities, Spring web DTOs, or Jackson `JsonNode`.
+- Preserve existing question-type semantics with characterization tests when moving behavior.
 - Keep teacher and student projections separate.
 - ActivitySession and AssessmentAttempt remain separate aggregates. Activity has no persisted detailed answer history under ADRs 0021/0022.
-- Never edit migrations V1–V30. Re-audit the latest migration before coding and select the actual next unused version. V31/V32/V33 are not reserved version numbers.
+- ActivitySession orchestration delegates question selection to `activitysession/selection` and immutable snapshot assembly to `activitysession/snapshot`; runtime lifecycle remains in `ActivitySessionService` until behavior-focused tests support further extraction.
+- Never edit applied migrations. Re-audit the latest migration before coding and select the actual next unused version; do not assume a version number is reserved.
 
 
 ## Assignment Composition / AssessmentAttempt
@@ -45,7 +44,7 @@ Canonical contract: .agent/architecture/assignment-composition-v1.md; active pla
 - Snapshot ordered composition, QuestionSpecs, item points/flags, media refs and grading/normalizer versions when AssessmentAttempt starts.
 - Lock edits that would alter an active/published attempt's structure, content, points or grading mode; historical snapshots are immutable.
 - Persist raw answers for review and per-part grade results including optional normalized submitted value. Keep these out of in-progress student DTOs.
-- Weighted score uses earned/possible points × 100; examples excluded; manual items keep official score pending until reviewed.
+- Weighted score uses earned/possible points × 100; examples excluded. All scored question types in v1 are automatically graded; there is no manual-review or pending-score workflow.
 - Never merge AssessmentAttempt with ActivitySession.
 
 

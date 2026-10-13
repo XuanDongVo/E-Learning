@@ -141,7 +141,7 @@ export interface QuestionOption {
 export interface QuestionItem {
   id: string;
   questionNumber: number;
-  prompt: string;
+  content: string;
   instruction?: string;
   options: QuestionOption[];
   correctOptionKey: "A" | "B" | "C" | "D";

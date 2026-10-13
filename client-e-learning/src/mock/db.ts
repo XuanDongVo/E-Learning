@@ -285,7 +285,7 @@ export const mockQuizQuestions: QuestionItem[] = [
   {
     id: "q-1",
     questionNumber: 1,
-    prompt: "What does 'environment' mean?",
+    content: "What does 'environment' mean?",
     instruction: "Choose the correct answer.",
     options: [
       { id: "opt-1", key: "A", text: "A place where people live" },
@@ -299,7 +299,7 @@ export const mockQuizQuestions: QuestionItem[] = [
   {
     id: "q-2",
     questionNumber: 2,
-    prompt: "Which vehicle is used for travelling across the ocean?",
+    content: "Which vehicle is used for travelling across the ocean?",
     instruction: "Choose the correct answer.",
     options: [
       { id: "opt-1", key: "A", text: "Cruise Ship" },
@@ -313,7 +313,7 @@ export const mockQuizQuestions: QuestionItem[] = [
   {
     id: "q-3",
     questionNumber: 3,
-    prompt: "When you pack your bags for a holiday, you prepare your ______.",
+    content: "When you pack your bags for a holiday, you prepare your ______.",
     instruction: "Fill in the blank.",
     options: [
       { id: "opt-1", key: "A", text: "homework" },
@@ -331,7 +331,7 @@ for (let i = 4; i <= 20; i++) {
   mockQuizQuestions.push({
     id: `q-${i}`,
     questionNumber: i,
-    prompt: `Sample Question ${i}: Which sentence describes a holiday in the mountains?`,
+    content: `Sample Question ${i}: Which sentence describes a holiday in the mountains?`,
     instruction: "Choose the correct answer.",
     options: [
       { id: "opt-1", key: "A", text: `Option A for question ${i} - Hiking along scenic trails.` },

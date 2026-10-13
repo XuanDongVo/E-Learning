@@ -1,6 +1,7 @@
 package e_learning.server.activitysession.service;
 
 import e_learning.server.activitysession.snapshot.ActivityQuestionSnapshotAssembler;
+import e_learning.server.activitysession.selection.ActivityQuestionSelectionService;
 
 
 import e_learning.server.activity.entity.*;
@@ -13,8 +14,6 @@ import e_learning.server.activitysession.enums.ActivitySessionStatus;
 import e_learning.server.activitysession.repository.*;
 import e_learning.server.classes.repository.ClassMemberRepository;
 import e_learning.server.common.exception.*;
-import e_learning.server.content.question.entity.ContentQuestion;
-import e_learning.server.content.question.repository.ContentQuestionRepository;
 import e_learning.server.question.entity.*;
 import e_learning.server.question.repository.*;
 import e_learning.server.user.entity.User;
@@ -34,9 +33,7 @@ import java.util.*;
 public class ActivitySessionService {
     private static final int NETWORK_GRACE_SECONDS = 5;
     private final ActivityRepository activityRepository;
-    private final ActivityBankRepository activityBankRepository;
     private final ActivityReadinessService readinessService;
-    private final ContentQuestionRepository contentQuestionRepository;
     private final ActivitySessionRepository sessionRepository;
     private final ActivitySessionQuestionRepository sessionQuestionRepository;
     private final ClassMemberRepository classMemberRepository;
@@ -44,6 +41,7 @@ public class ActivitySessionService {
     private final QuestionOptionRepository optionRepository;
     private final QuestionAnswerRepository answerRepository;
     private final ActivityQuestionSnapshotAssembler snapshotAssembler;
+    private final ActivityQuestionSelectionService questionSelectionService;
 
     @Transactional(readOnly = true)
     public ActivitySessionOptionsResponse options(Long activityId, Long studentId) {
@@ -74,7 +72,7 @@ public class ActivitySessionService {
                         List.of(ActivitySessionStatus.IN_PROGRESS))
                 .forEach(open -> abandon(open));
 
-        List<Question> selected = selectQuestions(activity);
+        List<Question> selected = questionSelectionService.selectQuestions(activity);
         ActivitySession session = new ActivitySession(student, activity, mode, strategy, selected.size(),
                 mode == ActivityMode.TRY_HARD ? activity.getLives() : null);
         for (int i = 0; i < selected.size(); i++) {
@@ -186,26 +184,6 @@ public class ActivitySessionService {
         return new ActivitySessionResultResponse(session.getId(), session.getStatus(), session.getMode(),
                 session.getSelectionStrategy(), session.getTotalQuestions(), session.getFirstCorrectCount(),
                 session.getFinalCorrectCount(), session.getHintUsedCount(), session.getScore(), session.getLives());
-    }
-
-    private List<Question> selectQuestions(Activity activity) {
-        List<ActivityBank> banks = activityBankRepository.findByActivityIdOrderByDisplayOrderAsc(activity.getId());
-        Map<Long, Integer> allocations = e_learning.server.activity.distribution.ActivityDistributionCalculator.calculate(activity, banks);
-        List<Question> result = new ArrayList<>();
-        for (ActivityBank bank : banks) {
-            List<Question> pool = contentQuestionRepository
-                    .findAllByQuestionBankIdAndQuestionCompleteTrueOrderByQuestionIdAsc(bank.getQuestionBank().getId())
-                    .stream().map(ContentQuestion::getQuestion)
-                    .filter(question -> activity.getQuestionDifficulty() == ActivityDifficulty.MIXED
-                            || question.getDifficulty().name().equals(activity.getQuestionDifficulty().name()))
-                    .collect(java.util.stream.Collectors.toCollection(ArrayList::new));
-            Collections.shuffle(pool);
-            int count = allocations.getOrDefault(bank.getQuestionBank().getId(), 0);
-            if (pool.size() < count) throw new AppException(ErrorCode.ACTIVITY_SESSION_NOT_READY);
-            result.addAll(pool.subList(0, count));
-        }
-        Collections.shuffle(result);
-        return result;
     }
 
     private ActivityMode resolveMode(Activity activity, ActivityMode requested) {

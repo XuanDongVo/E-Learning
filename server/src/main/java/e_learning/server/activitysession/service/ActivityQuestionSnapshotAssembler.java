@@ -24,7 +24,7 @@ public class ActivityQuestionSnapshotAssembler {
                 .map(o -> new ActivityQuestionSnapshot.Option(o.getOptionKey(), o.getContent(), o.isCorrect())).toList();
         var answers = answerRepository.findByQuestionId(question.getId()).stream().map(a -> a.getRawValue()).toList();
         var snapshot = new ActivityQuestionSnapshot(SNAPSHOT_SCHEMA_VERSION, question.getContentRevision(),
-                question.getType(), spec.prompt(), question.getExplanation(), question.getHint(),
+                question.getType(), spec.content(), question.getExplanation(), question.getHint(),
                 question.getMatchingMode(), options, answers, null);
         try {
             return new ActivityQuestionSnapshot(snapshot.schemaVersion(), snapshot.contentRevision(), snapshot.type(),

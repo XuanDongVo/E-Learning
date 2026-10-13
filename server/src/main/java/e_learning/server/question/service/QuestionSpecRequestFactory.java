@@ -1,7 +1,15 @@
 package e_learning.server.question.service;
 
 import e_learning.server.question.dto.QuestionWriteRequest;
-import e_learning.server.question.engine.*;
+import e_learning.server.question.engine.model.QuestionSpec;
+import e_learning.server.question.engine.types.choice.MultipleChoiceSpec;
+import e_learning.server.question.engine.types.choice.SingleChoiceSpec;
+import e_learning.server.question.engine.types.compound.MatchingSpec;
+import e_learning.server.question.engine.types.compound.ClozeSpec;
+import e_learning.server.question.engine.types.text.FillInBlankSpec;
+import e_learning.server.question.engine.types.text.MatchingMode;
+import e_learning.server.question.engine.types.text.TypeAnswerSpec;
+import e_learning.server.question.engine.types.truefalse.TrueFalseSpec;
 import e_learning.server.question.enums.Difficulty;
 import org.springframework.stereotype.Component;
 

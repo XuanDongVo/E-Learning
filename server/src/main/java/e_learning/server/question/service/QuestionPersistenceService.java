@@ -8,14 +8,13 @@ import e_learning.server.content.media.repository.MediaRepository;
 import e_learning.server.question.dto.QuestionAnswerRequest;
 import e_learning.server.question.dto.QuestionOptionRequest;
 import e_learning.server.question.dto.QuestionWriteRequest;
+import e_learning.server.question.engine.core.QuestionEngine;
 import e_learning.server.question.entity.Question;
 import e_learning.server.question.entity.QuestionAnswer;
 import e_learning.server.question.entity.QuestionMedia;
 import e_learning.server.question.entity.QuestionOption;
 import e_learning.server.question.enums.Difficulty;
 import e_learning.server.question.enums.QuestionType;
-import e_learning.server.question.engine.QuestionEngine;
-import e_learning.server.question.engine.QuestionSpecRequestFactory;
 import e_learning.server.question.repository.QuestionAnswerRepository;
 import e_learning.server.question.repository.QuestionMediaRepository;
 import e_learning.server.question.repository.QuestionOptionRepository;
@@ -50,7 +49,7 @@ public class QuestionPersistenceService {
         List<Question> questions = new ArrayList<>();
 
         for (QuestionWriteRequest request : requests) {
-            boolean complete = questionEngine.validateDefinition(questionSpecRequestFactory.toSpec(request)).ready();
+            boolean complete = questionEngine.validateDefinition(questionSpecRequestFactory.toSpec(request)).isReady();
 
             Question question = Question.builder()
                     .type(request.getType())
@@ -86,7 +85,7 @@ public class QuestionPersistenceService {
                 ? request.getExplanation().trim() : null);
         question.setHint(StringUtils.hasText(request.getHint())
                 ? request.getHint().trim() : null);
-        question.setComplete(questionEngine.validateDefinition(questionSpecRequestFactory.toSpec(request)).ready());
+        question.setComplete(questionEngine.validateDefinition(questionSpecRequestFactory.toSpec(request)).isReady());
         question.setContentRevision(question.getContentRevision() + 1);
         updateChildEntities(question, request);
         return question;

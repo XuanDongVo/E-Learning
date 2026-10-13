@@ -39,7 +39,7 @@ export type QuestionType =
   | "CLOZE";
 
 export interface QuestionCommonSpec {
-  prompt: string;
+  content: string;
   difficulty: QuestionDifficulty;
   explanation?: string;
   hint?: string;

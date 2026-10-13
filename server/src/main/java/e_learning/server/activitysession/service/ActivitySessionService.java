@@ -1,5 +1,7 @@
 package e_learning.server.activitysession.service;
 
+import e_learning.server.activitysession.snapshot.ActivityQuestionSnapshotAssembler;
+
 
 import e_learning.server.activity.entity.*;
 import e_learning.server.activity.enums.*;

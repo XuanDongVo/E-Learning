@@ -3,7 +3,7 @@ import type { QuestionSpec, QuestionType } from "@/types/question";
 export type QuestionSpecValidator = (spec: QuestionSpec) => string[];
 
 const commonErrors = (spec: QuestionSpec): string[] =>
-  spec.prompt.trim() ? [] : ["content.required"];
+  spec.content.trim() ? [] : ["content.required"];
 
 const validators: Record<QuestionType, QuestionSpecValidator> = {
   SINGLE_CHOICE: (spec) => {
@@ -35,7 +35,7 @@ const validators: Record<QuestionType, QuestionSpecValidator> = {
     if (spec.type !== "FILL_IN_BLANK") return ["question.type.invalid"];
     return [
       ...commonErrors(spec),
-      ...(spec.prompt.includes("____") ? [] : ["content.blank_marker.required"]),
+      ...(spec.content.includes("____") ? [] : ["content.blank_marker.required"]),
       ...(spec.acceptedAnswers.some((answer) => answer.trim())
         ? []
         : ["answers.required"]),

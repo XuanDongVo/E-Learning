@@ -13,8 +13,8 @@ import {
   ToggleLeft,
   type LucideIcon,
 } from "lucide-react";
-import { useBuilder } from "../store";
-import type { ToolKey } from "../types";
+import { useBuilder } from "@/features/assignment-builder/store";
+import type { ToolKey } from "@/features/assignment-builder/types";
 
 export const TOOLS: { key: ToolKey; label: string; desc: string; icon: LucideIcon; group: string }[] = [
   { key: "SINGLE_CHOICE", label: "Single choice", desc: "One correct option (A–D)", icon: CircleDot, group: "Questions" },

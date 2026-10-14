@@ -6,9 +6,7 @@ import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
@@ -39,7 +37,6 @@ export function Header() {
   const a = useBuilder((s) => s.assignment);
   const mode = useBuilder((s) => s.mode);
   const autosave = useBuilder((s) => s.autosave);
-  const simulateFailure = useBuilder((s) => s.simulateFailure);
   const status = useBuilder((s) => s.saveStatus);
   const { set, mutate, save, ask } = useBuilder.getState();
   const dirty = useIsDirty();
@@ -57,30 +54,6 @@ export function Header() {
       ],
     });
   };
-
-  const duplicateAssignment = async () => {
-    const copy = { ...structuredClone(a), id: uid("asg"), title: `${a.title} (copy)` };
-    await localRepository.save(copy);
-    toast.success("Assignment duplicated — opening the copy");
-    router.push(`/teacher/assignments/demo?id=${encodeURIComponent(copy.id)}`);
-  };
-  const deleteAssignment = () =>
-    ask({
-      title: "Delete this assignment?",
-      description: `"${a.title}" and all of its questions will be permanently removed.`,
-      actions: [
-        {
-          label: "Delete assignment",
-          variant: "destructive",
-          run: async () => {
-            await localRepository.remove(a.id);
-            useBuilder.getState().load(a); // clear dirty state so leaving is not blocked
-            toast("Assignment deleted");
-            leave();
-          },
-        },
-      ],
-    });
 
   return (
     <header className="grid h-14 shrink-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b bg-card px-3">

@@ -201,10 +201,13 @@ public class QuestionPersistenceService {
 
         if (type == QuestionType.TRUE_FALSE) {
             if ("TRUE".equalsIgnoreCase(raw)) {
-                raw = "TRUE";
-            } else if ("FALSE".equalsIgnoreCase(raw)) {
-                raw = "FALSE";
+                return "TRUE";
             }
+            if ("FALSE".equalsIgnoreCase(raw)) {
+                return "FALSE";
+            }
+            // Preserve invalid draft input so validation cannot silently turn it into FALSE.
+            return raw;
         }
 
         return raw;

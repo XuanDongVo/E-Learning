@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CheckCircle2, Clock3, FileSpreadsheet, Plus, Search, Upload, Users } from "lucide-react";
+import { BookOpen, CheckCircle2, Clock3, FileSpreadsheet, Plus, Search, Upload, Users } from "lucide-react";
 import { toast } from "sonner";
 
 import { classService } from "@/services/class.service";
@@ -15,6 +15,7 @@ import { AssignmentImportDialog } from "@/components/features/teacher/assignment
 import { AssignmentList } from "@/components/features/teacher/assignments/main/AssignmentList";
 import { AssignmentWizard } from "@/components/features/teacher/assignments/main/AssignmentWizard";
 import { SummaryCard } from "@/components/features/teacher/assignments/main/SummaryCard";
+import { TeacherAssignmentGuide } from "@/components/features/teacher/assignments/main/TeacherAssignmentGuide";
 
 const initialForm: CreateAssignmentRequest = {
   gradeLevel: 6,
@@ -29,6 +30,7 @@ const initialForm: CreateAssignmentRequest = {
 export default function TeacherAssignmentsPage() {
   const queryClient = useQueryClient();
   const [wizardOpen, setWizardOpen] = useState(false);
+  const [guideOpen, setGuideOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] =
@@ -67,6 +69,15 @@ export default function TeacherAssignmentsPage() {
     setWizardOpen(true);
   };
 
+  const openGuide = () => {
+    setGuideOpen(true);
+  };
+
+  const startCreatingFromGuide = () => {
+    setGuideOpen(false);
+    openWizard();
+  };
+
   return (
     <div className="mx-auto max-w-[1180px] space-y-5">
       <header className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
@@ -77,13 +88,22 @@ export default function TeacherAssignmentsPage() {
             Track due dates, submissions to grade, and progress across classes.
           </p>
         </div>
-        <button
-          type="button"
-          onClick={openWizard}
-          className="inline-flex h-9 items-center gap-2 rounded-lg bg-primary px-3 text-body-sm font-bold text-primary-foreground"
-        >
-          <Plus className="size-4" /> Create assignment
-        </button>
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={openGuide}
+            className="inline-flex h-9 items-center gap-2 rounded-lg border border-input px-3 text-body-sm font-bold hover:bg-muted"
+          >
+            <BookOpen className="size-4" /> How to create
+          </button>
+          <button
+            type="button"
+            onClick={openWizard}
+            className="inline-flex h-9 items-center gap-2 rounded-lg bg-primary px-3 text-body-sm font-bold text-primary-foreground"
+          >
+            <Plus className="size-4" /> Create assignment
+          </button>
+        </div>
       </header>
 
       <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -120,10 +140,9 @@ export default function TeacherAssignmentsPage() {
             </div>
           </div>
           <div className="mt-4 flex flex-wrap gap-2">
-            {(["ALL", "PUBLISHED", "DRAFT", "ARCHIVED"] as const).map((status) => (
-              <button key={status} type="button" onClick={() => setStatusFilter(status)}
-                className={`rounded-lg border px-3 py-1.5 text-body-sm font-semibold ${statusFilter === status ? "border-primary bg-primary text-primary-foreground" : "border-border hover:bg-muted"
-                  }`}>
+            {["ALL", "PUBLISHED", "DRAFT", "ARCHIVED"].map((status) => (
+              <button key={status} type="button" onClick={() => setStatusFilter(status as typeof statusFilter)}
+                className={`rounded-lg border px-3 py-1.5 text-body-sm font-semibold ${statusFilter === status ? "border-primary bg-primary text-primary-foreground" : "border-border hover:bg-muted"}`}>
                 {status === "ALL" ? "All" : status === "PUBLISHED" ? "Active" : status === "DRAFT" ? "Draft" : "Archived"}
               </button>
             ))}
@@ -143,6 +162,11 @@ export default function TeacherAssignmentsPage() {
         onSubmit={(payload) => create.mutate(payload)}
       />
       <AssignmentImportDialog open={importOpen} onClose={() => setImportOpen(false)} />
+      <TeacherAssignmentGuide
+        open={guideOpen}
+        onClose={() => setGuideOpen(false)}
+        onStartCreating={startCreatingFromGuide}
+      />
     </div>
   );
 }

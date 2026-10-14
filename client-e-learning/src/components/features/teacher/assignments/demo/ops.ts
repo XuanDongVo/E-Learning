@@ -133,9 +133,6 @@ export function duplicateItem(a: Assignment, id: ID): ID | null {
   if (clone.kind === "block") clone.compositionItemId = undefined;
   if (clone.kind === "question") {
     clone.serverQuestionId = undefined;
-    clone.serverType = undefined;
-    clone.serverDifficulty = undefined;
-    clone.serverMediaIds = undefined;
     clone.compositionItemId = undefined;
     clone.serverQuestionSnapshot = undefined;
   }
@@ -157,9 +154,6 @@ export function duplicateItem(a: Assignment, id: ID): ID | null {
       const q = structuredClone(a.items[m]) as QuestionItem;
       q.id = uid("q");
       q.serverQuestionId = undefined;
-      q.serverType = undefined;
-      q.serverDifficulty = undefined;
-      q.serverMediaIds = undefined;
       q.compositionItemId = undefined;
       q.serverQuestionSnapshot = undefined;
       q.config.groupId = clone.id;

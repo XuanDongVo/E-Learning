@@ -29,7 +29,6 @@ interface BuilderState {
   saveError: string | null;
   lastSavedAt: string | null;
   autosave: boolean;
-  simulateFailure: boolean;
   confirm: ConfirmState | null;
   settingsOpen: boolean;
 
@@ -58,7 +57,6 @@ export const useBuilder = create<BuilderState>((set, get) => ({
   saveError: null,
   lastSavedAt: null,
   autosave: true,
-  simulateFailure: false,
   confirm: null,
   settingsOpen: false,
 

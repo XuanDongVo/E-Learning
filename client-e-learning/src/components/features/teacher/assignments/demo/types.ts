@@ -122,6 +122,7 @@ export interface AssignmentSettings {
   dueAt: string;
   classIds: string[];
   showAnswers: ShowAnswers;
+  showScoreAfterSubmit: boolean;
   showPoints: boolean;
   shuffle: boolean;
 }

@@ -8,12 +8,12 @@ Audited application baseline before documentation changes: c2a98fd9101d7b6613e5c
 ## Current stage
 - Phase 6 Student Management: DONE.
 - Phase 7 Scope A ActivitySession: present in code; configured validation run still required.
-- Phase 7 Scope B AssessmentAttempt + Assignment Composition: contract accepted, implementation not started/not verified.
+- Phase 7 Scope B AssessmentAttempt + Assignment Composition: Composition backend implementation started on 2026-10-14; V33 and initial read/write API are committed, but UI integration and test/build verification remain outstanding.
 - Question Engine Slice 1: canonical QuestionSpec, RawAnswer/ValidatedAnswer, GradeResult/PartStatus, seven handlers and registry exist. Added characterization tests for existing five types, exact-set Multiple Choice, invalid option/type inputs, text normalization and definition readiness. Added factory tests to ensure invalid TRUE_FALSE input does not silently become FALSE. Test execution has not been verified in a configured build environment.
 - Question Engine Slice 2: V31 already adds `questions.content_revision` and deterministic `question_options.display_order`; update paths increment content revision and option persistence/query paths use display order. API option responses now include `displayOrder`. Hint is mapped through shared QuestionWriteRequest/QuestionPersistenceService/QuestionResponseMapper; older frontend paths still need a full round-trip audit. TRUE_FALSE request mapping and persistence were corrected to preserve invalid draft input instead of silently converting it to FALSE.
 - Question Engine Slice 3: V32 adds ActivitySession question snapshot metadata/payload columns and abandons legacy IN_PROGRESS sessions. ActivitySession start assembles snapshots and runtime reads the snapshot payload. Migration/application integration tests and fresh database validation remain to be run.
 - Question Engine Slice 4: MATCHING and CLOZE immutable specs, validated answers, handlers, normalized per-part grading, registry support and focused tests exist. Existing flat authoring/persistence mapping explicitly rejects these types until type-specific fields exist.
-- Assignment Composition: product model accepted in ADR 0024; demo is product prototype. Current localStorage/seed persistence remains prototype-only.
+- Assignment Composition: V33 adds ordered section/item persistence, JSONB block payloads, points/required/example flags, show_score_after_submit, and deterministic legacy backfill. GET/PUT /v1/assignments/{id}/composition and server validation are added. Legacy question creation now creates default Composition items. The Assignment Builder frontend still uses localStorage/seed and is NOT yet wired to these APIs; do not mark the feature complete.
 
 ## Accepted contracts
 - Activity and Assignment have separate aggregates; no polymorphic Attempt table.
@@ -59,3 +59,12 @@ This file tracks implementation state and does not claim the above work is done.
 - Added backend characterization tests for SINGLE_CHOICE, MULTIPLE_CHOICE exact-set scoring, TRUE_FALSE parsing, FILL_IN_BLANK marker/accepted alternatives, TYPE_ANSWER trim/case normalization, validation status and mismatched answer types; added QuestionSpecRequestFactory tests for TRUE_FALSE.
 - No new Flyway migration was needed: the current branch already contains V31 and V32 for the schema changes touched here.
 - Tests/builds were not run from this GitHub-only editing session; do not treat commits as a passing CI/build signal.
+
+
+## Assignment Composition implementation update (2026-10-14)
+- Added Flyway V33 after verifying V32 was the highest migration on this branch. Do not edit V1-V33; future schema changes must use the next unused migration number.
+- V33 creates assignment_sections and assignment_items, adds composition schema version/provenance and show_score_after_submit, and backfills existing Assignments into one LEGACY_GENERATED section with questions ordered by question_id ASC and 1-point defaults.
+- Added JPA entities/repositories, nested Composition DTOs, GET/PUT /v1/assignments/{assignmentId}/composition, server-side validation and compatibility behavior so legacy question creation adds an ordered Composition item.
+- Reordering uses a temporary high-position range before persisting requested order to avoid transient unique-position conflicts.
+- IMPORTANT remaining work: connect /teacher/assignments/demo to the new API (it still uses localStorage/seed), align UI aliases to canonical QuestionSpec, add service/integration tests, run backend tests and Flyway validation, and verify media asset IDs against the actual media contract. This feature is not DONE until those gates pass.
+- No build or test command has been executed/verified during this GitHub-only session.

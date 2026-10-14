@@ -25,10 +25,16 @@ public class AssignmentCompositionService {
     private final AssignmentSectionRepository sectionRepository;
     private final AssignmentItemRepository itemRepository;
 
-    @Transactional(readOnly = true)
     public AssignmentCompositionResponse get(Long assignmentId) {
         Assignment assignment = findAssignment(assignmentId);
         List<AssignmentSection> sections = sectionRepository.findAllByAssignmentIdOrderByPositionAscIdAsc(assignmentId);
+        if (sections.isEmpty()) {
+            AssignmentSection section = new AssignmentSection();
+            section.setAssignment(assignment);
+            section.setPosition(1);
+            section.setTitle("Section 1");
+            sections = List.of(sectionRepository.save(section));
+        }
         List<AssignmentItem> items = itemRepository.findAllByAssignmentIdOrderBySectionIdAscParentItemIdAscPositionAscIdAsc(assignmentId);
         return toResponse(assignment, sections, items);
     }
@@ -47,6 +53,11 @@ public class AssignmentCompositionService {
         Map<Long, AssignmentSection> sectionById = currentSections.stream().collect(Collectors.toMap(AssignmentSection::getId, s -> s));
         Map<Long, AssignmentItem> itemById = currentItems.stream().collect(Collectors.toMap(AssignmentItem::getId, i -> i));
 
+        // Move existing rows out of the target position range first, so drag/drop reorders
+        // do not transiently violate unique (container, position) constraints.
+        sectionRepository.shiftPositionsForReplacement(assignmentId);
+        itemRepository.shiftPositionsForReplacement(assignmentId);
+
         Set<Long> usedSectionIds = new HashSet<>();
         Set<Long> usedItemIds = new HashSet<>();
         Set<Long> questionIds = new HashSet<>();
@@ -61,7 +72,7 @@ public class AssignmentCompositionService {
             } else {
                 section = sectionById.get(sectionRequest.id());
                 if (section == null) throw invalid("Section ID does not belong to this assignment.");
-                usedSectionIds.add(section.getId());
+                if (!usedSectionIds.add(section.getId())) throw invalid("A section ID cannot appear more than once.");
             }
             section.setAssignment(assignment);
             section.setPosition(sectionRequest.position());
@@ -235,7 +246,7 @@ public class AssignmentCompositionService {
 
     private AppException invalid(String message) {
         // Keep the API error vocabulary stable while returning a precise validation message in logs.
-        return new AppException(ErrorCode.ASSIGNMENT_INVALID_CONFIGURATION);
+        return new AppException(ErrorCode.ASSIGNMENT_COMPOSITION_INVALID);
     }
 
     private String trim(String value) {

@@ -36,7 +36,7 @@ Audited application baseline before documentation changes: c2a98fd9101d7b6613e5c
 - Demo uses localStorage/seed; production must use APIs and canonical QuestionSpec + Composition.
 
 ## Migration rules
-- Never edit Flyway migrations V1–V30.
+- Never edit applied Flyway migrations; in this branch V1–V32 are already present and must not be modified.
 - Re-audit actual latest migration before choosing the next version; do not assume V31–V33 remain available.
 - Documentation acceptance does not mean code, tests, lint, TypeScript or builds pass.
 

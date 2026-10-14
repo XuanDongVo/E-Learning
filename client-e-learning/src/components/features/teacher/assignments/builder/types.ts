@@ -1,3 +1,5 @@
+import type { QuestionDifficulty } from "@/types/question";
+
 export type ID = string;
 
 export type InteractionType =
@@ -72,7 +74,7 @@ export interface QuestionItem {
   kind: "question";
   serverQuestionId?: number;
   serverType?: string;
-  serverDifficulty?: "EASY" | "MEDIUM" | "HARD";
+  serverDifficulty?: QuestionDifficulty;
   serverMediaIds?: number[];
   compositionItemId?: number;
   serverQuestionSnapshot?: string;

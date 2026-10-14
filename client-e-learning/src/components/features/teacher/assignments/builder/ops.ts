@@ -10,6 +10,15 @@ import type {
   ToolKey,
 } from "./types";
 
+/** Empty state only; actual assignment content must come from the backend. */
+export function createEmptyAssignment(): Assignment {
+  return {
+    id: "", title: "", grade: 6, instructions: "",
+    settings: { timeLimitMin: null, startAt: "", dueAt: "", classIds: [], showAnswers: "off", showScoreAfterSubmit: true, showPoints: true, shuffle: false },
+    sections: [], items: {}, updatedAt: "",
+  };
+}
+
 export const uid = (p = "id") => `${p}_${Math.random().toString(36).slice(2, 10)}`;
 export const letter = (i: number) => String.fromCharCode(65 + i);
 

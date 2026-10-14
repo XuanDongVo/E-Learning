@@ -2,7 +2,7 @@ import { request } from "@/services/api.service";
 import { getAssignment, updateAssignment } from "@/services/assignment.service";
 import { assignmentQuestionService } from "@/services/assignment/assignment.question.service";
 import type { Assignment as ApiAssignment, AssignmentQuestion } from "@/types/assignment";
-import type { Assignment as BuilderAssignment, BlockItem, Item, QuestionItem, Section } from "@/components/features/teacher/assignments/demo/types";
+import type { Assignment as BuilderAssignment, BlockItem, Item, QuestionItem, Section } from "@/components/features/teacher/assignments/builder/types";
 
 type ApiItem = {
   id: number;

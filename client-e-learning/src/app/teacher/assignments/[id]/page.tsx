@@ -1,4 +1,4 @@
-import { AssignmentBuilder } from "@/components/features/teacher/assignments/demo/components/AssignmentBuilder";
+import { AssignmentBuilder } from "@/components/features/teacher/assignments/builder/components/AssignmentBuilder";
 
 export default async function AssignmentDetailPage({
   params,

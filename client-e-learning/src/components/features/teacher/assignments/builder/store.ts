@@ -1,8 +1,7 @@
 import { create } from "zustand";
 import { toast } from "sonner";
 import * as ops from "./ops";
-import { createSeed } from "./seed";
-import { loadCompositionAssignment, saveCompositionAssignment } from "./composition-api";
+import { loadBuilderAssignment, saveBuilderAssignment } from "@/services/assignment/assignment-composition.service";
 import type { Assignment, ID, InsertTarget, Selection, ToolKey } from "./types";
 
 export const snapshotOf = (a: Assignment) => JSON.stringify({ ...a, updatedAt: "" });
@@ -44,11 +43,11 @@ interface BuilderState {
   ask: (c: ConfirmState) => void;
 }
 
-const seed = createSeed();
+const initialAssignment = ops.createEmptyAssignment();
 
 export const useBuilder = create<BuilderState>((set, get) => ({
-  assignment: seed,
-  savedSnapshot: snapshotOf(seed),
+  assignment: initialAssignment,
+  savedSnapshot: snapshotOf(initialAssignment),
   loaded: false,
   loadError: null,
   selection: null,
@@ -75,7 +74,7 @@ export const useBuilder = create<BuilderState>((set, get) => ({
     const a = get().assignment;
     set({ saveStatus: "saving", saveError: null });
     try {
-      const saved = await saveCompositionAssignment(a);
+      const saved = await saveBuilderAssignment(a);
       set({ assignment: saved, saveStatus: "idle", savedSnapshot: snapshotOf(saved), lastSavedAt: saved.updatedAt, loadError: null });
       return true;
     } catch (e) {
@@ -165,7 +164,7 @@ export async function loadAssignment(id?: string) {
   useBuilder.setState({ loaded: false, loadError: null, saveStatus: "idle", saveError: null });
   try {
     if (!id) throw new Error("Select or create an Assignment from the Assignments page first.");
-    const assignment = await loadCompositionAssignment(id);
+    const assignment = await loadBuilderAssignment(id);
     useBuilder.getState().load(assignment);
   } catch (error) {
     useBuilder.setState({ loaded: true, loadError: error instanceof Error ? error.message : "Could not load Assignment." });

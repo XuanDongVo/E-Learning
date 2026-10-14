@@ -13,6 +13,7 @@ import lombok.NoArgsConstructor;
 public class QuestionOptionResponse {
     private Long id;
     private String content;
+    private int displayOrder;
 
     @JsonProperty("isCorrect")
     private boolean correct;

@@ -157,8 +157,12 @@ export async function loadCompositionAssignment(id: string): Promise<Assignment>
 
 function blockPayload(block: BlockItem["block"]): Record<string, unknown> {
   switch (block.type) {
-    case "INSTRUCTIONS": return { text: block.text };
-    case "PASSAGE": return { title: block.title, text: block.text };
+    case "INSTRUCTIONS":
+      if (!block.text.trim()) throw new Error("Instruction blocks need text before saving.");
+      return { text: block.text };
+    case "PASSAGE":
+      if (!block.text.trim()) throw new Error("Passage blocks need text before saving.");
+      return { title: block.title, text: block.text };
     case "MEDIA":
       if (!block.url.trim() || !block.alt.trim()) throw new Error("Media blocks need both a URL and alternative text before saving.");
       return { url: block.url.trim(), altText: block.alt.trim(), caption: block.caption };
@@ -172,7 +176,11 @@ export async function saveCompositionAssignment(a: Assignment): Promise<Assignme
   if (!a.serverId) throw new Error("Assignment has no server ID. Create it from the Assignments list first.");
   const id = a.serverId;
   const questions = Object.values(a.items).filter((item): item is QuestionItem => item.kind === "question");
-  // Validate every question and block before issuing any destructive request.
+  // Validate the full draft before issuing any destructive request.
+  if (!a.sections.length) throw new Error("An Assignment must have at least one Section.");
+  if (a.title.trim().length > 200) throw new Error("Assignment title cannot exceed 200 characters.");
+  if (a.instructions.length > 2000) throw new Error("Assignment instructions cannot exceed 2,000 characters.");
+  if (a.sections.some(section => section.titleEn.trim().length > 200)) throw new Error("Section titles cannot exceed 200 characters.");
   const questionPayloads = new Map(questions.map(q => [q.id, toQuestionWrite(q)]));
   const validateItems = (ids: string[]) => ids.forEach(itemId => {
     const item = a.items[itemId];

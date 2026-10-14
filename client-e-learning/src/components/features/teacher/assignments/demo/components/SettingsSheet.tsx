@@ -87,6 +87,10 @@ export function SettingsSheet() {
             </Select>
           </div>
           <label className="flex items-center justify-between gap-3 text-sm">
+            <span>Show score after submission</span>
+            <Switch checked={st.showScoreAfterSubmit} onCheckedChange={(v) => upd({ showScoreAfterSubmit: v })} />
+          </label>
+          <label className="flex items-center justify-between gap-3 text-sm">
             <span>Show points per question</span>
             <Switch checked={st.showPoints} onCheckedChange={(v) => upd({ showPoints: v })} />
           </label>

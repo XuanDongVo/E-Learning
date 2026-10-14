@@ -1,3 +1,5 @@
+"use client";
+
 import { DndContext, DragOverlay, PointerSensor, closestCenter, useSensor, useSensors, type DragEndEvent, type DragStartEvent } from "@dnd-kit/core";
 import { Loader2, PanelLeft, PanelRight } from "lucide-react";
 import { useEffect, useState } from "react";

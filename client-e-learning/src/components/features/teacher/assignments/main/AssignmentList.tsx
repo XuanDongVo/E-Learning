@@ -50,7 +50,7 @@ export function AssignmentList({
       {assignments.map((assignment) => (
         <Link
           key={assignment.id}
-          href={`/teacher/assignments/${assignment.id}`}
+          href={`/teacher/assignments/demo?id=${assignment.id}`}
           className="grid items-center gap-3 px-4 py-4 transition-colors hover:bg-muted/40 lg:grid-cols-[minmax(260px,1.5fr)_0.7fr_0.8fr_1.2fr_20px]"
         >
           <div className="min-w-0">

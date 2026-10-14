@@ -1,10 +1,10 @@
 # Assignment Composition v1
 
-**Status: Accepted product model; implementation deferred to Phase 7B**  
+**Status: Accepted product model; implementation in progress on `feature/phase-7-assigment`**  
 **Authority:** ADR 0024 defines product Composition. ADR 0026 defines automatic Assignment scoring. AssignmentQuestion remains position-free.
 
 ## 1. Product model
-The Assignment Builder demo is the intended product prototype. Ordered sections/items, drag/drop, grouping, passage/instruction/image/pool blocks, per-item points/required/example flags, validation and Student Preview are product requirements. Current localStorage/seed persistence is prototype-only, not production API/storage.
+The Assignment Builder at `/teacher/assignments/demo` is the canonical authoring UI. Ordered sections/items, drag/drop, grouping, passage/instruction/image/pool blocks, per-item points/required/example flags, validation and Student Preview are product requirements. The frontend has been wired to backend Assignment/Question/Composition APIs and the localStorage repository removed; build and end-to-end verification are still outstanding.
 
 ## 2. Separate semantic and composition models
 QuestionSpec is the canonical union shared by Question Bank, Assignment, Activity and runtime: SINGLE_CHOICE, MULTIPLE_CHOICE, TRUE_FALSE, FILL_IN_BLANK, TYPE_ANSWER, MATCHING, CLOZE. FILL_IN_BLANK retains current single-answer-position/accepted-alternative semantics; CLOZE is multi-blank; MATCHING is compound. Map demo TEXT_INPUT to TYPE_ANSWER; passage/multi-text blanks to CLOZE; pool/matching rows to MATCHING; TRUE_FALSE has its own discriminant. Do not maintain a third demo-only semantic union.
@@ -90,3 +90,12 @@ Persist raw submitted answers required for permitted review, normalized submitte
 6. Score visibility and answer visibility settings are independent.
 7. Analytics use persisted real attempts and per-part results.
 8. No student payload leaks answer/normalized data before the permitted reveal point.
+
+
+## 9. Implementation status (2026-10-14)
+- V33 creates ordered section/item tables and backfills existing Assignments deterministically. V34 persists `show_points_per_question` separately from `show_score_after_submit`.
+- GET/PUT `/v1/assignments/{id}/composition` are implemented with server validation. Legacy AssignmentQuestion create adds default root items for compatibility; Composition remains the canonical order.
+- `/teacher/assignments` create/list flows open `/teacher/assignments/demo?id={id}`. Legacy `/teacher/assignments/[id]` and `/teacher/assignments/[id]/questions/create` redirect to the canonical Builder.
+- The current Builder supports persistence adapters for SINGLE_CHOICE, MULTIPLE_CHOICE, TRUE_FALSE, FILL_IN_BLANK and TYPE_ANSWER. MATCHING/CLOZE authoring remains blocked because the current question write DTO/factory does not carry type-specific fields; those creation tools are hidden. Do not silently map these types to another semantic type.
+- MEDIA blocks upload an image and persist its media asset ID, alt text, optional caption and preview URL. Image/audio parity beyond images is not part of v1.
+- Verification gates still open: run Flyway validation against both fresh and existing databases, frontend typecheck/lint/build, backend tests, and browser end-to-end tests for create/edit/reorder/group/delete/reload and failed-save recovery. No test/build success is claimed.

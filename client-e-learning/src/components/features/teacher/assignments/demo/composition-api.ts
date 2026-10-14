@@ -171,15 +171,27 @@ function blockPayload(block: BlockItem["block"]): Record<string, unknown> {
 export async function saveCompositionAssignment(a: Assignment): Promise<Assignment> {
   if (!a.serverId) throw new Error("Assignment has no server ID. Create it from the Assignments list first.");
   const id = a.serverId;
+  const questions = Object.values(a.items).filter((item): item is QuestionItem => item.kind === "question");
+  // Validate every question and block before issuing any destructive request.
+  const questionPayloads = new Map(questions.map(q => [q.id, toQuestionWrite(q)]));
+  const validateItems = (ids: string[]) => ids.forEach(itemId => {
+    const item = a.items[itemId];
+    if (!item) throw new Error(`Composition item ${itemId} no longer exists.`);
+    if (item.kind === "block") {
+      blockPayload(item.block);
+      validateItems(item.memberIds);
+    }
+  });
+  a.sections.forEach(section => validateItems(section.itemIds));
+
   const original = await assignmentQuestionService.list(id);
   const originalIds = new Set((original.data ?? []).map(q => q.questionId));
-  const questions = Object.values(a.items).filter((item): item is QuestionItem => item.kind === "question");
   const currentIds = new Set(questions.map(q => q.serverQuestionId).filter((v): v is number => typeof v === "number"));
   const removed = [...originalIds].filter(questionId => !currentIds.has(questionId));
   if (removed.length) await assignmentQuestionService.bulkDelete(id, { ids: removed });
 
   for (const q of questions) {
-    const payload = toQuestionWrite(q);
+    const payload = questionPayloads.get(q.id)!;
     if (!q.serverQuestionId) {
       const created = await assignmentQuestionService.create(id, [payload]);
       const saved = created.data?.[0];

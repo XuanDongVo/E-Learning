@@ -7,6 +7,7 @@ import java.util.List;
 
 public record AssignmentCompositionRequest(
         @NotEmpty List<@Valid CompositionSectionRequest> sections,
-        Boolean showScoreAfterSubmit
+        Boolean showScoreAfterSubmit,
+        Boolean showPointsPerQuestion
 ) {
 }

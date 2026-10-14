@@ -162,6 +162,7 @@ export function useIsDirty() {
 }
 
 export async function loadAssignment(id?: string) {
+  useBuilder.setState({ loaded: false, loadError: null, saveStatus: "idle", saveError: null });
   try {
     if (!id) throw new Error("Select or create an Assignment from the Assignments page first.");
     const assignment = await loadCompositionAssignment(id);

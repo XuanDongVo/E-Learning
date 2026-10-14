@@ -33,18 +33,21 @@ function toQuestionWrite(q: QuestionItem): CreateAssignmentQuestionRequest {
     const trueFalse = c.type === "SINGLE_CHOICE" && c.options.length === 2 &&
       c.options.some((o) => o.text.toLowerCase() === "true") && c.options.some((o) => o.text.toLowerCase() === "false");
     return {
-      type: trueFalse ? "TRUE_FALSE" : c.type,
-      difficulty: "EASY",
+      type: trueFalse ? "TRUE_FALSE" : (q.serverType === "FILL_IN_BLANK" ? "FILL_IN_BLANK" : c.type),
+      difficulty: q.serverDifficulty ?? "EASY",
       content: c.prompt.trim() || (trueFalse ? "True or false?" : "Choose the correct answer."),
       explanation: c.explanation, hint: c.hint,
+      mediaIds: q.serverMediaIds,
       options: trueFalse ? undefined : c.options.map((o) => ({ content: o.text, isCorrect: o.isCorrect })),
       answers: trueFalse ? [{ rawValue: c.options.find((o) => o.isCorrect)?.text.toUpperCase() ?? "TRUE" }] : undefined,
     };
   }
   if (c.type === "TEXT_INPUT") return {
-    type: "TYPE_ANSWER", difficulty: "EASY",
+    type: q.serverType === "FILL_IN_BLANK" ? "FILL_IN_BLANK" : "TYPE_ANSWER",
+    difficulty: q.serverDifficulty ?? "EASY",
     content: c.prompt.trim() || "Type your answer.",
     explanation: c.explanation, hint: c.hint,
+    mediaIds: q.serverMediaIds,
     answers: c.acceptedAnswers.filter((x) => x.trim()).map((rawValue) => ({ rawValue: rawValue.trim() })),
   };
   throw new Error(`Question type ${c.type} cannot be persisted by the current Question Engine API yet. No Composition changes were saved.`);
@@ -75,7 +78,9 @@ function mapQuestion(q: AssignmentQuestion, item: CompositionItemDto): QuestionI
       throw new Error(`Assignment question #${q.questionId} has type ${source.type}. The current Builder cannot safely edit this type yet; no data was changed.`);
   }
   const mapped: QuestionItem = {
-    id: qid(q.questionId), kind: "question", serverQuestionId: q.questionId, compositionItemId: item.id,
+    id: qid(q.questionId), kind: "question", serverQuestionId: q.questionId, serverType: source.type,
+    serverDifficulty: source.difficulty, serverMediaIds: (source.media ?? []).map((m) => m.mediaId).filter((v): v is number => typeof v === "number"),
+    compositionItemId: item.id,
     content: { ...content, explanation: source.explanation ?? undefined, hint: source.hint ?? undefined } as QuestionItem["content"],
     config: { points: Number(item.possiblePoints ?? 1), required: item.required, gradingMode: "AUTO", isExample: item.example, groupId: null },
   };

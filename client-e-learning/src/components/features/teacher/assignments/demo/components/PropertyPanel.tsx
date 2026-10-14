@@ -1,6 +1,7 @@
 import { AlertCircle, AlertTriangle, Copy, Plus, Trash2, Wand2, X } from "lucide-react";
 import type { ReactNode } from "react";
 import { toast } from "sonner";
+import { contentService } from "@/services/content.service";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -328,10 +329,30 @@ function BlockEditor({ b }: { b: BlockItem }) {
         )}
         {blk.type === "MEDIA" && (
           <>
-            <Field label="Image URL" hint="Leave empty to show a placeholder.">
-              <Input className="h-8" placeholder="https://…" value={blk.url} onChange={(e) => updB(b.id, (x) => x.block.type === "MEDIA" && (x.block.url = e.target.value))} />
+            <Field label="Upload image" hint="Uploaded images are saved as media assets and referenced by asset ID.">
+              <Input className="h-8" type="file" accept="image/*" onChange={async (e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                try {
+                  const response = await contentService.uploadMedia(file);
+                  if (!response.data) throw new Error("Upload completed without media metadata.");
+                  updB(b.id, (x) => {
+                    if (x.block.type === "MEDIA") {
+                      x.block.assetId = String(response.data!.id);
+                      x.block.url = response.data!.url ?? "";
+                    }
+                  });
+                  toast.success("Image uploaded.");
+                } catch (error) {
+                  toast.error(error instanceof Error ? error.message : "Image upload failed.");
+                }
+              }} />
+              <Input className="mt-1 h-8" value={blk.assetId ?? ""} readOnly aria-label="Media asset ID" placeholder="Media asset ID appears after upload" />
             </Field>
-            <Field label="Alt text (for screen readers)" error={!blk.alt.trim() ? "Recommended: describe the picture" : null}>
+            <Field label="Image URL (preview)">
+              <Input className="h-8" placeholder="Filled automatically after upload" value={blk.url} readOnly />
+            </Field>
+            <Field label="Alt text (for screen readers)" error={!blk.alt.trim() ? "Describe the picture before saving" : null}>
               <Input className="h-8" value={blk.alt} onChange={(e) => updB(b.id, (x) => x.block.type === "MEDIA" && (x.block.alt = e.target.value))} />
             </Field>
             <Field label="Caption">

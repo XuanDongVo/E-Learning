@@ -187,7 +187,7 @@ export async function saveCompositionAssignment(a: Assignment): Promise<Assignme
     }
   }
 
-  const writeItem = (itemId: string, position: number): CompositionItemWrite => {
+  function writeItem(itemId: string, position: number): CompositionItemWrite {
     const item = a.items[itemId];
     if (!item) throw new Error(`Composition item ${itemId} no longer exists.`);
     if (item.kind === "question") {
@@ -199,8 +199,7 @@ export async function saveCompositionAssignment(a: Assignment): Promise<Assignme
     return { ...(item.compositionItemId ? { id: item.compositionItemId } : {}), position, itemType: item.block.type,
       possiblePoints: 0, required: true, example: false, blockPayload: blockPayload(item.block),
       children: item.memberIds.map((child, i) => writeItem(child, i + 1)) };
-  };
-  const writeItem = writeItem;
+  }
   await updateAssignment(id, {
     gradeLevel: a.grade, academicYear: a.academicYear ?? "2026 - 2027",
     name: a.title.trim() || "Untitled assignment", description: a.instructions,

@@ -112,7 +112,7 @@ export function createSeed(id = "asg_grade6_unit1"): Assignment {
     title: "Unit 1 – My New School · Review Test",
     grade: 6,
     instructions: "Answer all the questions. Read each section's instructions carefully before you begin.",
-    settings: { timeLimitMin: 45, startAt: "2026-10-12T07:30", dueAt: "2026-10-19T21:00", classIds: ["6A1"], showAnswers: "after_due", showPoints: true, shuffle: false },
+    settings: { timeLimitMin: 45, startAt: "2026-10-12T07:30", dueAt: "2026-10-19T21:00", classIds: ["6A1"], showAnswers: "after_due", showScoreAfterSubmit: true, showPoints: true, shuffle: false },
     sections: [s1, s2, s3, s4, s5, s6, s7, s8, s9],
     items,
     updatedAt: "2026-10-10T08:00:00.000Z",

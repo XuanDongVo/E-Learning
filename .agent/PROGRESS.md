@@ -8,7 +8,7 @@ Audited application baseline before documentation changes: c2a98fd9101d7b6613e5c
 ## Current stage
 - Phase 6 Student Management: DONE.
 - Phase 7 Scope A ActivitySession: present in code; configured validation run still required.
-- Phase 7 Scope B AssessmentAttempt + Assignment Composition: Composition backend implementation started on 2026-10-14; V33 and initial read/write API are committed, but UI integration and test/build verification remain outstanding.
+- Phase 7 Scope B Assignment Composition: V33–V34 schema and initial read/write API are implemented; Builder is wired to backend APIs and legacy authoring routes redirect to the Builder. End-to-end, migration, test and build verification remain outstanding. AssessmentAttempt implementation is not claimed complete.
 - Question Engine Slice 1: canonical QuestionSpec, RawAnswer/ValidatedAnswer, GradeResult/PartStatus, seven handlers and registry exist. Added characterization tests for existing five types, exact-set Multiple Choice, invalid option/type inputs, text normalization and definition readiness. Added factory tests to ensure invalid TRUE_FALSE input does not silently become FALSE. Test execution has not been verified in a configured build environment.
 - Question Engine Slice 2: V31 already adds `questions.content_revision` and deterministic `question_options.display_order`; update paths increment content revision and option persistence/query paths use display order. API option responses now include `displayOrder`. Hint is mapped through shared QuestionWriteRequest/QuestionPersistenceService/QuestionResponseMapper; older frontend paths still need a full round-trip audit. TRUE_FALSE request mapping and persistence were corrected to preserve invalid draft input instead of silently converting it to FALSE.
 - Question Engine Slice 3: V32 adds ActivitySession question snapshot metadata/payload columns and abandons legacy IN_PROGRESS sessions. ActivitySession start assembles snapshots and runtime reads the snapshot payload. Migration/application integration tests and fresh database validation remain to be run.
@@ -62,7 +62,7 @@ This file tracks implementation state and does not claim the above work is done.
 
 
 ## Assignment Composition implementation update (2026-10-14)
-- Added Flyway V33 after verifying V32 was the highest migration on this branch. Do not edit V1-V33; future schema changes must use the next unused migration number.
+- Added Flyway V33 after verifying V32 was the highest migration on this branch, then V34 for the independent show_points_per_question setting. Do not edit V1-V34; future schema changes must use the next unused migration number.
 - V33 creates assignment_sections and assignment_items, adds composition schema version/provenance and show_score_after_submit, and backfills existing Assignments into one LEGACY_GENERATED section with questions ordered by question_id ASC and 1-point defaults.
 - Added JPA entities/repositories, nested Composition DTOs, GET/PUT /v1/assignments/{assignmentId}/composition, server-side validation and compatibility behavior so legacy question creation adds an ordered Composition item.
 - Reordering uses a temporary high-position range before persisting requested order to avoid transient unique-position conflicts.

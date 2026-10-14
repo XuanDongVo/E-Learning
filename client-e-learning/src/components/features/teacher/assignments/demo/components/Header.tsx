@@ -1,5 +1,5 @@
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Copy, Eye, Loader2, MoreHorizontal, PencilLine, Save, Settings, Trash2 } from "lucide-react";
+import { ArrowLeft, Eye, Loader2, MoreHorizontal, PencilLine, Save, Settings } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,8 +12,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
-import { uid } from "../ops";
-import { localRepository } from "../save-service";
 import { useBuilder, useIsDirty } from "../store";
 import { useIssues } from "./Canvas";
 
@@ -116,13 +114,10 @@ export function Header() {
             <Button variant="ghost" size="icon" aria-label="More"><MoreHorizontal className="h-4 w-4" /></Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-60">
-            <DropdownMenuItem onClick={duplicateAssignment}><Copy className="h-4 w-4" /> Duplicate assignment</DropdownMenuItem>
-            <DropdownMenuSeparator />
+
             <DropdownMenuLabel className="text-xs text-muted-foreground">Saving</DropdownMenuLabel>
             <DropdownMenuCheckboxItem checked={autosave} onCheckedChange={(v) => set({ autosave: !!v })}>Autosave (5s after last change)</DropdownMenuCheckboxItem>
-            <DropdownMenuCheckboxItem checked={simulateFailure} onCheckedChange={(v) => set({ simulateFailure: !!v })}>Simulate save failure</DropdownMenuCheckboxItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={deleteAssignment}><Trash2 className="h-4 w-4" /> Delete assignment</DropdownMenuItem>
+
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

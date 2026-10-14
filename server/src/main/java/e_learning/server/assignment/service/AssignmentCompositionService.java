@@ -188,7 +188,7 @@ public class AssignmentCompositionService {
             case "INSTRUCTIONS" -> requireText(payload, "text", "INSTRUCTIONS blocks require text.");
             case "PASSAGE" -> requireText(payload, "text", "PASSAGE blocks require text.");
             case "MEDIA" -> {
-                requireText(payload, "url", "MEDIA blocks require a URL.");
+                requireText(payload, "assetId", "MEDIA blocks require an assetId.");
                 requireText(payload, "altText", "MEDIA blocks require meaningful altText.");
             }
             case "POOL" -> {

@@ -165,9 +165,9 @@ export function StudentPreview() {
           <div className="space-y-8 px-10 py-6">
             {view.sections.map((s) => (
               <section key={s.id}>
-                <h2 className="text-lg font-bold">{s.titleEn}</h2>
+                <h2 className="text-lg font-bold">{s.title}</h2>
                 {s.titleVi && <div className="font-sans text-xs text-muted-foreground">{s.titleVi}</div>}
-                {s.instructionsEn && <p className="mt-1 italic">{s.instructionsEn}</p>}
+                {s.instructions && <p className="mt-1 italic">{s.instructions}</p>}
                 {s.instructionsVi && <p className="font-sans text-xs italic text-muted-foreground">{s.instructionsVi}</p>}
                 <div className="mt-3 space-y-2">
                   {s.units.map((u) =>

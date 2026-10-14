@@ -262,10 +262,11 @@ function mapAssignment(
         }
       }
     }
-    const title = s.title ?? "Section";
+    const title = s.title?.trim() || "Section";
+
     return {
       id: asId("s", s.id),
-      title: s.title,
+      title,
       titleVi: s.titleVi ?? "",
       instructions: s.instructions ?? "",
       instructionsVi: s.instructionsVi ?? "",

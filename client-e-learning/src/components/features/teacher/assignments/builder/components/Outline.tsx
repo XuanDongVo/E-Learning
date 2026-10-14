@@ -158,14 +158,14 @@ function SectionNode({ s, index, count }: { s: Section; index: number; count: nu
         <div className="min-w-0 flex-1 truncate">
           {renaming ? (
             <Rename
-              value={s.titleEn}
+              value={s.title}
               onDone={(v) => {
                 setRenaming(false);
-                if (v != null) mutate((d) => (d.sections.find((x) => x.id === s.id)!.titleEn = v));
+                if (v != null) mutate((d) => (d.sections.find((x) => x.id === s.id)!.title = v));
               }}
             />
           ) : (
-            s.titleEn || <span className="italic text-destructive">Untitled section</span>
+            s.title || <span className="italic text-destructive">Untitled section</span>
           )}
         </div>
         <div className="hidden shrink-0 items-center group-hover/row:flex">

@@ -149,7 +149,7 @@ export const useBuilder = create<BuilderState>((set, get) => ({
     };
     if (s.itemIds.length === 0) return run();
     get().ask({
-      title: `Delete section "${s.titleEn || "Untitled"}"?`,
+      title: `Delete section "${s.title || "Untitled"}"?`,
       description: "All items in this section will be deleted.",
       actions: [{ label: "Delete section", variant: "destructive", run }],
     });

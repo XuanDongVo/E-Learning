@@ -182,9 +182,9 @@ export function duplicateItem(a: Assignment, id: ID): ID | null {
 export function newSection(): Section {
   return {
     id: uid("s"),
-    titleEn: "New section",
+    title: "New section",
     titleVi: "",
-    instructionsEn: "",
+    instructions: "",
     instructionsVi: "",
     itemIds: [],
   };

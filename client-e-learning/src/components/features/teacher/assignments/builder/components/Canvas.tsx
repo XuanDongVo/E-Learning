@@ -331,9 +331,9 @@ function SectionView({ s, index }: { s: Section; index: number }) {
         onClick={(e) => (e.stopPropagation(), select({ kind: "section", id: s.id }))}
         className={cn("cursor-pointer rounded-md border px-3 py-2", selected ? "border-slate-500 ring-2 ring-slate-200" : "border-slate-200 hover:border-slate-400")}
       >
-        <h3 className={cn("text-lg font-bold", !s.titleEn.trim() && "italic text-destructive")}>{s.titleEn || `Section ${index + 1} (untitled)`}</h3>
+        <h3 className={cn("text-lg font-bold", !s.title.trim() && "italic text-destructive")}>{s.title || `Section ${index + 1} (untitled)`}</h3>
         {s.titleVi && <div className="font-sans text-xs text-muted-foreground">{s.titleVi}</div>}
-        {s.instructionsEn && <p className="mt-1 text-[15px] italic">{s.instructionsEn}</p>}
+        {s.instructions && <p className="mt-1 text-[15px] italic">{s.instructions}</p>}
         {s.instructionsVi && <p className="font-sans text-xs italic text-muted-foreground">{s.instructionsVi}</p>}
       </div>
       <div ref={setNodeRef} className={cn("min-h-12 space-y-3 rounded-md", isOver && "bg-slate-50")}>

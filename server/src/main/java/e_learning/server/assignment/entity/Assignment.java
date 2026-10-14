@@ -53,6 +53,9 @@ public class Assignment {
     @Column(name = "show_score_after_submit", nullable = false)
     private boolean showScoreAfterSubmit = true;
 
+    @Column(name = "show_points_per_question", nullable = false)
+    private boolean showPointsPerQuestion = true;
+
     @Column(name = "composition_schema_version", nullable = false)
     private int compositionSchemaVersion = 1;
 

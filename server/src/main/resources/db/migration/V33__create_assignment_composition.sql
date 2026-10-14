@@ -44,8 +44,10 @@ CREATE TABLE assignment_items (
     CONSTRAINT fk_assignment_item_section
         FOREIGN KEY (section_id, assignment_id)
         REFERENCES assignment_sections(id, assignment_id) ON DELETE CASCADE,
+    CONSTRAINT uq_assignment_item_parent_scope UNIQUE (id, assignment_id, section_id),
     CONSTRAINT fk_assignment_item_parent
-        FOREIGN KEY (parent_item_id) REFERENCES assignment_items(id) ON DELETE CASCADE,
+        FOREIGN KEY (parent_item_id, assignment_id, section_id)
+        REFERENCES assignment_items(id, assignment_id, section_id) ON DELETE CASCADE,
     CONSTRAINT fk_assignment_item_question
         FOREIGN KEY (question_id) REFERENCES assignment_questions(question_id) ON DELETE CASCADE,
     CONSTRAINT ck_assignment_item_position_positive CHECK (position > 0),
@@ -100,12 +102,4 @@ WHERE NOT EXISTS (
 );
 
 UPDATE assignments
-SET composition_provenance = 'LEGACY_GENERATED'
-WHERE EXISTS (
-    SELECT 1 FROM assignment_sections s
-    WHERE s.assignment_id = assignments.id
-)
-AND NOT EXISTS (
-    SELECT 1 FROM assignment_items i
-    WHERE i.assignment_id = assignments.id
-);
+SET composition_provenance = 'LEGACY_GENERATED';

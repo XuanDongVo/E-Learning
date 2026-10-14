@@ -2,7 +2,7 @@ import { request } from "@/services/api.service";
 import { getAssignment, updateAssignment } from "@/services/assignment.service";
 import { assignmentQuestionService } from "@/services/assignment/assignment.question.service";
 import type { Assignment as ApiAssignment, AssignmentQuestion } from "@/types/assignment";
-import type { Assignment as BuilderAssignment, BlockItem, Item, QuestionItem, Section } from "@/features/assignment-builder/types";
+import type { Assignment as BuilderAssignment, BlockItem, Item, QuestionItem, Section } from "@/types/assignment-builder";
 
 type ApiItem = {
   id: number;
@@ -169,7 +169,8 @@ function mapAssignment(api: ApiAssignment, composition: ApiComposition, question
     dueAt: api.dueAt ?? "",
     classIds: api.targets.filter((t) => t.type === "CLASS" && t.classId != null).map((t) => String(t.classId)),
     showAnswers: api.showAnswersAfterSubmit ? "after_submission" as const : "off" as const,
-    showPoints: composition.showScoreAfterSubmit,
+    showScoreAfterSubmit: composition.showScoreAfterSubmit,
+    showPoints: true,
     shuffle: false,
   };
   return {
@@ -319,7 +320,7 @@ export async function saveBuilderAssignment(a: BuilderAssignment): Promise<Build
   }));
   const compositionResponse = await request<ApiComposition>(`/v1/assignments/${id}/composition`, {
     method: "PUT",
-    body: JSON.stringify({ sections, showScoreAfterSubmit: a.settings.showPoints }),
+    body: JSON.stringify({ sections, showScoreAfterSubmit: a.settings.showScoreAfterSubmit }),
   });
   if (!compositionResponse.data) throw new Error("Composition save returned no data.");
   return await loadBuilderAssignment(String(id));

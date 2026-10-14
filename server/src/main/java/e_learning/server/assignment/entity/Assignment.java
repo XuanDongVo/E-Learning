@@ -50,6 +50,15 @@ public class Assignment {
     @Column(name = "show_answers_after_submit", nullable = false)
     private boolean showAnswersAfterSubmit = true;
 
+    @Column(name = "show_score_after_submit", nullable = false)
+    private boolean showScoreAfterSubmit = true;
+
+    @Column(name = "composition_schema_version", nullable = false)
+    private int compositionSchemaVersion = 1;
+
+    @Column(name = "composition_provenance", nullable = false, length = 30)
+    private String compositionProvenance = "AUTHOR_CREATED";
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;

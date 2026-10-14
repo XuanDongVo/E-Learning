@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { toast } from "sonner";
 import * as ops from "./ops";
 import { createSeed } from "./seed";
-import { localRepository } from "./save-service";
+import { loadCompositionAssignment, saveCompositionAssignment } from "./composition-api";
 import type { Assignment, ID, InsertTarget, Selection, ToolKey } from "./types";
 
 export const snapshotOf = (a: Assignment) => JSON.stringify({ ...a, updatedAt: "" });
@@ -22,6 +22,7 @@ interface BuilderState {
   assignment: Assignment;
   savedSnapshot: string;
   loaded: boolean;
+  loadError: string | null;
   selection: Selection;
   mode: "edit" | "preview";
   saveStatus: "idle" | "saving" | "error";
@@ -50,6 +51,7 @@ export const useBuilder = create<BuilderState>((set, get) => ({
   assignment: seed,
   savedSnapshot: snapshotOf(seed),
   loaded: false,
+  loadError: null,
   selection: null,
   mode: "edit",
   saveStatus: "idle",
@@ -60,7 +62,7 @@ export const useBuilder = create<BuilderState>((set, get) => ({
   confirm: null,
   settingsOpen: false,
 
-  load: (a) => set({ assignment: a, savedSnapshot: snapshotOf(a), loaded: true, selection: null, saveStatus: "idle", lastSavedAt: a.updatedAt }),
+  load: (a) => set({ assignment: a, savedSnapshot: snapshotOf(a), loaded: true, loadError: null, selection: null, saveStatus: "idle", lastSavedAt: a.updatedAt }),
   mutate: (fn) => {
     const draft = structuredClone(get().assignment);
     fn(draft);
@@ -75,8 +77,8 @@ export const useBuilder = create<BuilderState>((set, get) => ({
     const a = get().assignment;
     set({ saveStatus: "saving", saveError: null });
     try {
-      const saved = await localRepository.save(a, { simulateFailure: get().simulateFailure });
-      set({ saveStatus: "idle", savedSnapshot: snapshotOf(a), lastSavedAt: saved.updatedAt });
+      const saved = await saveCompositionAssignment(a);
+      set({ assignment: saved, saveStatus: "idle", savedSnapshot: snapshotOf(saved), lastSavedAt: saved.updatedAt, loadError: null });
       return true;
     } catch (e) {
       set({ saveStatus: "error", saveError: (e as Error).message });
@@ -162,7 +164,11 @@ export function useIsDirty() {
 }
 
 export async function loadAssignment(id?: string) {
-  const all = await localRepository.list();
-  const a = (id && (await localRepository.get(id))) || all[0] || createSeed();
-  useBuilder.getState().load(a);
+  try {
+    if (!id) throw new Error("Select or create an Assignment from the Assignments page first.");
+    const assignment = await loadCompositionAssignment(id);
+    useBuilder.getState().load(assignment);
+  } catch (error) {
+    useBuilder.setState({ loaded: true, loadError: error instanceof Error ? error.message : "Could not load Assignment." });
+  }
 }

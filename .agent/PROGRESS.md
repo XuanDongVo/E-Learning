@@ -13,7 +13,7 @@ Audited application baseline before documentation changes: c2a98fd9101d7b6613e5c
 - Question Engine Slice 2: V31 already adds `questions.content_revision` and deterministic `question_options.display_order`; update paths increment content revision and option persistence/query paths use display order. API option responses now include `displayOrder`. Hint is mapped through shared QuestionWriteRequest/QuestionPersistenceService/QuestionResponseMapper; older frontend paths still need a full round-trip audit. TRUE_FALSE request mapping and persistence were corrected to preserve invalid draft input instead of silently converting it to FALSE.
 - Question Engine Slice 3: V32 adds ActivitySession question snapshot metadata/payload columns and abandons legacy IN_PROGRESS sessions. ActivitySession start assembles snapshots and runtime reads the snapshot payload. Migration/application integration tests and fresh database validation remain to be run.
 - Question Engine Slice 4: MATCHING and CLOZE immutable specs, validated answers, handlers, normalized per-part grading, registry support and focused tests exist. Existing flat authoring/persistence mapping explicitly rejects these types until type-specific fields exist.
-- Assignment Composition: V33 adds ordered section/item persistence, JSONB block payloads, points/required/example flags, show_score_after_submit, and deterministic legacy backfill. GET/PUT /v1/assignments/{id}/composition and server validation are added. Legacy question creation now creates default Composition items. The Assignment Builder frontend still uses localStorage/seed and is NOT yet wired to these APIs; do not mark the feature complete.
+- Assignment Composition: V33–V34 add ordered section/item persistence, JSONB block payloads, points/required/example flags, score visibility settings and deterministic legacy backfill. GET/PUT /v1/assignments/{id}/composition and server validation are added. Legacy question creation adds default Composition items. Builder API wiring is implemented, but unverified until tests/build/end-to-end pass.
 
 ## Accepted contracts
 - Activity and Assignment have separate aggregates; no polymorphic Attempt table.
@@ -33,7 +33,7 @@ Audited application baseline before documentation changes: c2a98fd9101d7b6613e5c
 - Audit every Question Bank and Assignment authoring path for hint round-trip and canonical semantic type mapping; the Assignment Builder still has demo-only aliases (`TEXT_INPUT`, `MULTI_TEXT_INPUT`) and represents TRUE_FALSE as SINGLE_CHOICE.
 - AssignmentService status transition does not currently enforce readiness; AssignmentQuestionService edit guard does not lock by AssessmentAttempt.
 - AssessmentAttempt is not implemented; dedicated Question Engine/Attempt tests were not found.
-- Demo uses localStorage/seed; production must use APIs and canonical QuestionSpec + Composition.
+- Builder no longer uses localStorage/seed for persistence. A seed object remains only as the store's pre-load placeholder; load errors are displayed instead of falling back to seed data.
 
 ## Migration rules
 - Never edit applied Flyway migrations; in this branch V1–V32 are already present and must not be modified.

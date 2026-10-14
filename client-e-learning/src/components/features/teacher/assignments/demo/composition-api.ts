@@ -185,11 +185,29 @@ export async function saveCompositionAssignment(a: Assignment): Promise<Assignme
       const saved = created.data?.[0];
       if (!saved) throw new Error("The server did not return the newly created question.");
       q.serverQuestionId = saved.questionId;
+      q.serverType = saved.question.type;
+      q.serverDifficulty = saved.question.difficulty;
+      q.serverMediaIds = (saved.question.media ?? []).map((m) => m.mediaId).filter((v): v is number => typeof v === "number");
       q.serverQuestionSnapshot = questionWriteSnapshot(q);
     } else if (questionWriteSnapshot(q) !== q.serverQuestionSnapshot) {
       await assignmentQuestionService.update(id, q.serverQuestionId, payload);
       q.serverQuestionSnapshot = questionWriteSnapshot(q);
     }
+  }
+
+  // Legacy question creation inserts a default root Composition item. Reuse that row
+  // for newly-created questions so the unique (assignment_id, question_id) index is respected.
+  const currentComposition = await request<CompositionDto>(`/v1/assignments/${id}/composition`);
+  const compositionItemByQuestion = new Map<number, number>();
+  const collectQuestionItems = (items: CompositionItemDto[]) => {
+    for (const item of items) {
+      if (item.itemType === "QUESTION" && item.questionId != null) compositionItemByQuestion.set(item.questionId, item.id);
+      collectQuestionItems(item.children ?? []);
+    }
+  };
+  for (const section of currentComposition.data?.sections ?? []) collectQuestionItems(section.items ?? []);
+  for (const q of questions) {
+    if (!q.compositionItemId && q.serverQuestionId) q.compositionItemId = compositionItemByQuestion.get(q.serverQuestionId);
   }
 
   function writeItem(itemId: string, position: number): CompositionItemWrite {

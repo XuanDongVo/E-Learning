@@ -26,6 +26,7 @@ import org.springframework.util.StringUtils;
 
 import jakarta.persistence.EntityManager;
 import java.util.*;
+import java.util.Locale;
 
 @Service
 @RequiredArgsConstructor
@@ -191,7 +192,7 @@ public class QuestionPersistenceService {
         return QuestionAnswer.builder()
                 .question(question)
                 .rawValue(raw)
-                .normalizedValue(raw.toLowerCase())
+                .normalizedValue(raw.toLowerCase(Locale.ROOT))
                 .build();
     }
 
@@ -199,7 +200,11 @@ public class QuestionPersistenceService {
         String raw = rawValue.trim();
 
         if (type == QuestionType.TRUE_FALSE) {
-            raw = "TRUE".equalsIgnoreCase(raw) ? "TRUE" : "FALSE";
+            if ("TRUE".equalsIgnoreCase(raw)) {
+                raw = "TRUE";
+            } else if ("FALSE".equalsIgnoreCase(raw)) {
+                raw = "FALSE";
+            }
         }
 
         return raw;

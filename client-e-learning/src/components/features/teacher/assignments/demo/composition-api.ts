@@ -59,7 +59,7 @@ function mapQuestion(q: AssignmentQuestion, item: CompositionItemDto): QuestionI
       content = { type: "SINGLE_CHOICE", prompt, display: "list", options: (source.options ?? []).map(o => ({ id: String(o.id), text: o.content, isCorrect: Boolean(o.isCorrect ?? (o as unknown as { correct?: boolean }).correct) })) };
       break;
     case "MULTIPLE_CHOICE":
-      content = { type: "MULTIPLE_CHOICE", prompt, options: (source.options ?? []).map(o => ({ id: String(o.id), text: o.content, isCorrect: o.isCorrect })) };
+      content = { type: "MULTIPLE_CHOICE", prompt, options: (source.options ?? []).map(o => ({ id: String(o.id), text: o.content, isCorrect: Boolean(o.isCorrect ?? (o as unknown as { correct?: boolean }).correct) })) };
       break;
     case "TRUE_FALSE":
       content = { type: "SINGLE_CHOICE", prompt, display: "list", options: [

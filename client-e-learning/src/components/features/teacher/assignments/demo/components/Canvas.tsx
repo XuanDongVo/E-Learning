@@ -23,7 +23,7 @@ import { validate } from "../validation";
 import { BlankChip, RichText } from "./RichText";
 import { TOOLS } from "./Toolbox";
 
-const QUESTION_TOOL_DEFS = TOOLS.filter((t) => ops.isQuestionTool(t.key));
+const QUESTION_TOOL_DEFS = TOOLS.filter((t) => ops.isQuestionTool(t.key) && t.key !== "MATCHING" && t.key !== "MULTI_BLANKS");
 
 export function useNumbering() {
   const a = useBuilder((s) => s.assignment);

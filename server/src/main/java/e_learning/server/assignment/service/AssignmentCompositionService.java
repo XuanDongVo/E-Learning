@@ -110,6 +110,7 @@ public class AssignmentCompositionService {
         if (!staleSectionIds.isEmpty()) sectionRepository.deleteAllById(staleSectionIds);
 
         assignment.setShowScoreAfterSubmit(request.showScoreAfterSubmit() == null || request.showScoreAfterSubmit());
+        assignment.setShowPointsPerQuestion(request.showPointsPerQuestion() == null || request.showPointsPerQuestion());
         assignmentRepository.save(assignment);
 
         return toResponse(assignment,
@@ -236,7 +237,8 @@ public class AssignmentCompositionService {
                         .map(item -> toItemResponse(item, childrenByParent)).toList())
         ).toList();
         return new AssignmentCompositionResponse(assignment.getId(), assignment.getCompositionSchemaVersion(),
-                assignment.getCompositionProvenance(), assignment.isShowScoreAfterSubmit(), sectionResponses);
+                assignment.getCompositionProvenance(), assignment.isShowScoreAfterSubmit(),
+                assignment.isShowPointsPerQuestion(), sectionResponses);
     }
 
     private CompositionItemResponse toItemResponse(AssignmentItem item, Map<Long, List<AssignmentItem>> childrenByParent) {

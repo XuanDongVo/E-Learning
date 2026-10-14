@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Loader2, Save, X } from "lucide-react";
 import type {
   AssignmentQuestion,
@@ -89,9 +89,6 @@ export function AssignmentQuestionEditor({
     [question],
   );
 
-  useEffect(() => {
-    setDraft(toDraft(question));
-  }, [question]);
 
   const handleUploadMedia = async (file: File) => {
     const response = await contentService.uploadQuestionDraftMedia(file);

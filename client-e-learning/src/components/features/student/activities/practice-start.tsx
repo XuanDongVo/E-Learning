@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, Clock3, Heart, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -97,11 +98,12 @@ export function PracticeStart(p: Props) {
       className="fixed inset-0 z-[45] overflow-y-auto bg-practice-blue text-practice-ink"
       aria-label="Bắt đầu luyện tập"
     >
-      <img
-        src={garden.src}
+      <Image
+        src={garden}
         alt=""
         width={1920}
         height={1024}
+        priority
         className="fixed inset-0 h-full w-full object-cover"
       />
       <div className="relative mx-auto flex min-h-svh max-w-[640px] flex-col px-4 pb-6 pt-7">

@@ -82,7 +82,7 @@ function TeacherSidebar({
           <p className="px-2.5 pb-2 text-[0.625rem] font-bold uppercase tracking-wide text-muted-foreground">
             Không gian giáo viên
           </p>
-          {navigation.map(({ key, href, icon: Icon, badge }) => {
+          {navigation.map(({ key, href, icon: Icon }) => {
             const active = href === "/teacher"
               ? pathname === href
               : pathname.startsWith(href);
@@ -174,7 +174,7 @@ export default function TeacherLayout({ children }: { children: React.ReactNode 
               </button>
             </div>
           </header>
-          <main className="mx-auto w-full max-w-[1400px] p-4 sm:p-6">{children}</main>
+          <main className="mx-auto w-full max-w-[1500px] p-4 sm:p-6">{children}</main>
         </div>
       </div>
       </LocaleProvider>

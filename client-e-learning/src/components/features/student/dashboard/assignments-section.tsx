@@ -11,7 +11,7 @@ interface AssignmentsSectionProps {
 }
 
 export function AssignmentsSection({ assignments }: AssignmentsSectionProps) {
-  const getItemConfig = (index: number, skill: string) => {
+  const getItemConfig = (index: number) => {
     if (index === 0) {
       return {
         icon: BookOpen,
@@ -75,7 +75,7 @@ export function AssignmentsSection({ assignments }: AssignmentsSectionProps) {
         ) : (
           <div className="space-y-3.5">
             {assignments.slice(0, 3).map((item, idx) => {
-              const config = getItemConfig(idx, item.skill);
+              const config = getItemConfig(idx);
               const Icon = config.icon;
 
               return (

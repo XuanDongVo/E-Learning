@@ -102,6 +102,7 @@ export interface QuestionResponse {
   difficulty: ContentDifficulty;
   content: string;
   explanation?: string;
+  hint?: string;
   complete: boolean;
   is_complete?: boolean;
   matchingMode?: string;
@@ -149,6 +150,7 @@ export interface CreateQuestionRequest {
   difficulty?: ContentDifficulty;
   content: string;
   explanation?: string;
+  hint?: string;
   options?: QuestionOptionRequest[];
   answers?: QuestionAnswerRequest[];
   mediaIds?: number[];
@@ -159,6 +161,7 @@ export interface UpdateQuestionRequest {
   difficulty?: ContentDifficulty;
   content: string;
   explanation?: string;
+  hint?: string;
   options?: QuestionOptionRequest[];
   answers?: QuestionAnswerRequest[];
   mediaIds?: number[];

@@ -1,5 +1,8 @@
 package e_learning.server.activitysession.service;
 
+import e_learning.server.activitysession.snapshot.ActivityQuestionSnapshotAssembler;
+import e_learning.server.activitysession.selection.ActivityQuestionSelectionService;
+
 
 import e_learning.server.activity.entity.*;
 import e_learning.server.activity.enums.*;
@@ -11,8 +14,6 @@ import e_learning.server.activitysession.enums.ActivitySessionStatus;
 import e_learning.server.activitysession.repository.*;
 import e_learning.server.classes.repository.ClassMemberRepository;
 import e_learning.server.common.exception.*;
-import e_learning.server.content.question.entity.ContentQuestion;
-import e_learning.server.content.question.repository.ContentQuestionRepository;
 import e_learning.server.question.entity.*;
 import e_learning.server.question.repository.*;
 import e_learning.server.user.entity.User;
@@ -32,15 +33,15 @@ import java.util.*;
 public class ActivitySessionService {
     private static final int NETWORK_GRACE_SECONDS = 5;
     private final ActivityRepository activityRepository;
-    private final ActivityBankRepository activityBankRepository;
     private final ActivityReadinessService readinessService;
-    private final ContentQuestionRepository contentQuestionRepository;
     private final ActivitySessionRepository sessionRepository;
     private final ActivitySessionQuestionRepository sessionQuestionRepository;
     private final ClassMemberRepository classMemberRepository;
     private final UserRepository userRepository;
     private final QuestionOptionRepository optionRepository;
     private final QuestionAnswerRepository answerRepository;
+    private final ActivityQuestionSnapshotAssembler snapshotAssembler;
+    private final ActivityQuestionSelectionService questionSelectionService;
 
     @Transactional(readOnly = true)
     public ActivitySessionOptionsResponse options(Long activityId, Long studentId) {
@@ -71,10 +72,13 @@ public class ActivitySessionService {
                         List.of(ActivitySessionStatus.IN_PROGRESS))
                 .forEach(open -> abandon(open));
 
-        List<Question> selected = selectQuestions(activity);
+        List<Question> selected = questionSelectionService.selectQuestions(activity);
         ActivitySession session = new ActivitySession(student, activity, mode, strategy, selected.size(),
                 mode == ActivityMode.TRY_HARD ? activity.getLives() : null);
-        for (int i = 0; i < selected.size(); i++) session.addQuestion(new ActivitySessionQuestion(selected.get(i), i));
+        for (int i = 0; i < selected.size(); i++) {
+            ActivityQuestionSnapshot snapshot = snapshotAssembler.assemble(selected.get(i));
+            session.addQuestion(new ActivitySessionQuestion(selected.get(i), i, snapshot));
+        }
         ActivitySession saved = sessionRepository.save(session);
         serveCurrent(saved);
         return toResponse(saved);
@@ -100,7 +104,8 @@ public class ActivitySessionService {
         if (item.isResolved()) throw new AppException(ErrorCode.ACTIVITY_SESSION_RETRY_EXHAUSTED);
         serve(item, session.getActivity());
         boolean timedOut = isTimedOut(item);
-        boolean correct = !timedOut && isCorrect(item.getQuestion(), request.answer());
+        ActivityQuestionSnapshot snapshot = snapshotAssembler.read(item);
+        boolean correct = !timedOut && isCorrect(snapshot, request.answer());
         int attempt = item.getAnswerAttempts() + 1;
         item.setAnswerAttempts(attempt);
         boolean retry = session.getMode() == ActivityMode.LEARNING && !correct && attempt == 1;
@@ -135,8 +140,8 @@ public class ActivitySessionService {
         if (session.getStatus() == ActivitySessionStatus.IN_PROGRESS
                 && session.getQuestions().stream().allMatch(ActivitySessionQuestion::isResolved)) complete(session);
         sessionRepository.save(session);
-        String correctAnswer = reveal ? correctAnswer(item.getQuestion()) : null;
-        String explanation = reveal ? item.getQuestion().getExplanation() : null;
+        String correctAnswer = reveal ? correctAnswer(snapshot) : null;
+        String explanation = reveal ? snapshot.explanation() : null;
         return new ActivitySessionAnswerResponse(toResponse(session), correct, retry, reveal, correctAnswer, explanation);
     }
 
@@ -148,7 +153,8 @@ public class ActivitySessionService {
         if (session.getMode() != ActivityMode.LEARNING)
             throw new AppException(ErrorCode.ACTIVITY_SESSION_HINT_UNAVAILABLE);
         ActivitySessionQuestion item = question(sessionId, questionId);
-        if (item.isResolved() || item.getQuestion().getHint() == null || item.getQuestion().getHint().isBlank()) {
+        ActivityQuestionSnapshot snapshot = snapshotAssembler.read(item);
+        if (item.isResolved() || snapshot.hint() == null || snapshot.hint().isBlank()) {
             throw new AppException(ErrorCode.ACTIVITY_SESSION_HINT_UNAVAILABLE);
         }
         if (!item.isHintUsed()) {
@@ -156,7 +162,7 @@ public class ActivitySessionService {
             session.setHintUsedCount(session.getHintUsedCount() + 1);
             sessionRepository.save(session);
         }
-        return new ActivitySessionHintResponse(toResponse(session), item.getQuestion().getHint());
+        return new ActivitySessionHintResponse(toResponse(session), snapshot.hint());
     }
 
     @Transactional
@@ -178,26 +184,6 @@ public class ActivitySessionService {
         return new ActivitySessionResultResponse(session.getId(), session.getStatus(), session.getMode(),
                 session.getSelectionStrategy(), session.getTotalQuestions(), session.getFirstCorrectCount(),
                 session.getFinalCorrectCount(), session.getHintUsedCount(), session.getScore(), session.getLives());
-    }
-
-    private List<Question> selectQuestions(Activity activity) {
-        List<ActivityBank> banks = activityBankRepository.findByActivityIdOrderByDisplayOrderAsc(activity.getId());
-        Map<Long, Integer> allocations = e_learning.server.activity.distribution.ActivityDistributionCalculator.calculate(activity, banks);
-        List<Question> result = new ArrayList<>();
-        for (ActivityBank bank : banks) {
-            List<Question> pool = contentQuestionRepository
-                    .findAllByQuestionBankIdAndQuestionCompleteTrueOrderByQuestionIdAsc(bank.getQuestionBank().getId())
-                    .stream().map(ContentQuestion::getQuestion)
-                    .filter(question -> activity.getQuestionDifficulty() == ActivityDifficulty.MIXED
-                            || question.getDifficulty().name().equals(activity.getQuestionDifficulty().name()))
-                    .collect(java.util.stream.Collectors.toCollection(ArrayList::new));
-            Collections.shuffle(pool);
-            int count = allocations.getOrDefault(bank.getQuestionBank().getId(), 0);
-            if (pool.size() < count) throw new AppException(ErrorCode.ACTIVITY_SESSION_NOT_READY);
-            result.addAll(pool.subList(0, count));
-        }
-        Collections.shuffle(result);
-        return result;
     }
 
     private ActivityMode resolveMode(Activity activity, ActivityMode requested) {
@@ -237,30 +223,30 @@ public class ActivitySessionService {
         return item.getDeadlineAt() != null && LocalDateTime.now().isAfter(item.getDeadlineAt().plusSeconds(NETWORK_GRACE_SECONDS));
     }
 
-    private boolean isCorrect(Question question, JsonNode node) {
+    private boolean isCorrect(ActivityQuestionSnapshot snapshot, JsonNode node) {
         if (node == null) return false;
-        if (question.getType() == e_learning.server.question.enums.QuestionType.MULTIPLE_CHOICE) {
+        if (snapshot.type() == e_learning.server.question.enums.QuestionType.MULTIPLE_CHOICE) {
             Set<String> submitted = new TreeSet<>();
             node.forEach(n -> submitted.add(n.asText().trim().toUpperCase()));
-            Set<String> expected = optionRepository.findByQuestionId(question.getId()).stream().filter(QuestionOption::isCorrect)
-                    .map(QuestionOption::getOptionKey).collect(java.util.stream.Collectors.toCollection(TreeSet::new));
+            Set<String> expected = snapshot.options().stream().filter(ActivityQuestionSnapshot.Option::correct)
+                    .map(ActivityQuestionSnapshot.Option::key).collect(java.util.stream.Collectors.toCollection(TreeSet::new));
             return submitted.equals(expected);
         }
         String value = node.isArray() ? node.toString() : node.asText().trim();
-        if (question.getType() == e_learning.server.question.enums.QuestionType.SINGLE_CHOICE) {
-            return optionRepository.findByQuestionId(question.getId()).stream()
-                    .anyMatch(o -> o.getOptionKey().equalsIgnoreCase(value) && o.isCorrect());
+        if (snapshot.type() == e_learning.server.question.enums.QuestionType.SINGLE_CHOICE) {
+            return snapshot.options().stream()
+                    .anyMatch(o -> o.key().equalsIgnoreCase(value) && o.correct());
         }
-        return answerRepository.findByQuestionId(question.getId()).stream()
-                .anyMatch(a -> a.getNormalizedValue().equals(value.toLowerCase(Locale.ROOT)));
+        return snapshot.answers().stream()
+                .anyMatch(a -> a.trim().equalsIgnoreCase(value));
     }
 
-    private String correctAnswer(Question question) {
-        if (question.getType() == e_learning.server.question.enums.QuestionType.SINGLE_CHOICE
-                || question.getType() == e_learning.server.question.enums.QuestionType.MULTIPLE_CHOICE)
-            return optionRepository.findByQuestionId(question.getId()).stream().filter(QuestionOption::isCorrect)
-                    .map(QuestionOption::getOptionKey).sorted().collect(java.util.stream.Collectors.joining(","));
-        return answerRepository.findByQuestionId(question.getId()).stream().map(QuestionAnswer::getRawValue)
+    private String correctAnswer(ActivityQuestionSnapshot snapshot) {
+        if (snapshot.type() == e_learning.server.question.enums.QuestionType.SINGLE_CHOICE
+                || snapshot.type() == e_learning.server.question.enums.QuestionType.MULTIPLE_CHOICE)
+            return snapshot.options().stream().filter(ActivityQuestionSnapshot.Option::correct)
+                    .map(ActivityQuestionSnapshot.Option::key).sorted().collect(java.util.stream.Collectors.joining(","));
+        return snapshot.answers().stream()
                 .collect(java.util.stream.Collectors.joining(", "));
     }
 
@@ -316,10 +302,12 @@ public class ActivitySessionService {
     }
 
     private ActivitySessionQuestionResponse toQuestionResponse(ActivitySessionQuestion item) {
-        List<ActivitySessionQuestionResponse.Option> options = optionRepository.findByQuestionId(item.getQuestion().getId()).stream()
-                .map(o -> new ActivitySessionQuestionResponse.Option(o.getOptionKey(), o.getContent())).toList();
-        return new ActivitySessionQuestionResponse(item.getId(), item.getPosition(), item.getQuestion().getType(),
-                item.getQuestion().getContent(), options, item.getDeadlineAt(), item.isResolved(),
-                item.getAnswerAttempts(), item.getFirstCorrect(), item.getFinalCorrect(), item.isHintUsed(), item.getQuestion().getHint() != null && !item.getQuestion().getHint().isBlank());
+        ActivityQuestionSnapshot snapshot = snapshotAssembler.read(item);
+        List<ActivitySessionQuestionResponse.Option> options = snapshot.options().stream()
+                .map(o -> new ActivitySessionQuestionResponse.Option(o.key(), o.content())).toList();
+        return new ActivitySessionQuestionResponse(item.getId(), item.getPosition(), snapshot.type(),
+                snapshot.content(), options, item.getDeadlineAt(), item.isResolved(),
+                item.getAnswerAttempts(), item.getFirstCorrect(), item.getFinalCorrect(), item.isHintUsed(),
+                snapshot.hint() != null && !snapshot.hint().isBlank());
     }
 }

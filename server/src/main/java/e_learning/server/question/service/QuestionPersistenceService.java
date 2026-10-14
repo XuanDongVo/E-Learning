@@ -8,6 +8,7 @@ import e_learning.server.content.media.repository.MediaRepository;
 import e_learning.server.question.dto.QuestionAnswerRequest;
 import e_learning.server.question.dto.QuestionOptionRequest;
 import e_learning.server.question.dto.QuestionWriteRequest;
+import e_learning.server.question.engine.core.QuestionEngine;
 import e_learning.server.question.entity.Question;
 import e_learning.server.question.entity.QuestionAnswer;
 import e_learning.server.question.entity.QuestionMedia;
@@ -35,7 +36,8 @@ public class QuestionPersistenceService {
     private final QuestionAnswerRepository questionAnswerRepository;
     private final QuestionMediaRepository questionMediaRepository;
     private final MediaRepository mediaRepository;
-    private final QuestionContentValidator questionContentValidator;
+    private final QuestionEngine questionEngine;
+    private final QuestionSpecRequestFactory questionSpecRequestFactory;
     private final EntityManager entityManager;
 
     @Transactional
@@ -47,12 +49,7 @@ public class QuestionPersistenceService {
         List<Question> questions = new ArrayList<>();
 
         for (QuestionWriteRequest request : requests) {
-            boolean complete = questionContentValidator.isComplete(
-                    request.getType(),
-                    request.getContent(),
-                    request.getOptions(),
-                    request.getAnswers()
-            );
+            boolean complete = questionEngine.validateDefinition(questionSpecRequestFactory.toSpec(request)).isReady();
 
             Question question = Question.builder()
                     .type(request.getType())
@@ -64,6 +61,7 @@ public class QuestionPersistenceService {
                             ? request.getHint().trim() : null)
                     .complete(complete)
                     .matchingMode("CASE_INSENSITIVE_TRIM")
+                    .contentRevision(1L)
                     .build();
 
             Question saved = questionRepository.save(question);
@@ -87,12 +85,8 @@ public class QuestionPersistenceService {
                 ? request.getExplanation().trim() : null);
         question.setHint(StringUtils.hasText(request.getHint())
                 ? request.getHint().trim() : null);
-        question.setComplete(questionContentValidator.isComplete(
-                request.getType(),
-                request.getContent(),
-                request.getOptions(),
-                request.getAnswers()
-        ));
+        question.setComplete(questionEngine.validateDefinition(questionSpecRequestFactory.toSpec(request)).isReady());
+        question.setContentRevision(question.getContentRevision() + 1);
         updateChildEntities(question, request);
         return question;
     }
@@ -126,6 +120,7 @@ public class QuestionPersistenceService {
                         .optionKey(toOptionKey(i))
                         .content(option.getContent() != null ? option.getContent().trim() : "")
                         .correct(option.isCorrect())
+                        .displayOrder(i + 1)
                         .build());
             }
 

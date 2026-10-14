@@ -170,6 +170,7 @@ export function CreateUnitModal({
             <Field label="Cover image" optional error={coverError}>
               <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-dashed border-slate-300 bg-slate-50/60 p-3 hover:border-primary/40">
                 {coverPreview ? (
+                  /* eslint-disable-next-line @next/next/no-img-element */
                   <img
                     src={coverPreview}
                     alt="Unit cover preview"

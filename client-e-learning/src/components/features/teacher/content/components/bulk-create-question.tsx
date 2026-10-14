@@ -1,5 +1,6 @@
 "use client";
 
+import type { CreateQuestionRequest } from "@/types/content";
 import { contentService } from "@/services/content.service";
 import { QuestionComposer } from "@/components/features/teacher/question-authoring/QuestionComposer";
 
@@ -28,7 +29,7 @@ export function BulkQuestionCreator({
         };
       }}
       onSave={async (questions) => {
-        const payload = questions.map((question) => ({
+        const payload: CreateQuestionRequest[] = questions.map((question) => ({
           questionBankId: bankId,
           type: question.type,
           difficulty: question.difficulty,
@@ -57,7 +58,7 @@ export function BulkQuestionCreator({
             .filter((id) => !Number.isNaN(id)),
         }));
 
-        await contentService.createQuestion(payload as any);
+        await contentService.createQuestion(payload);
       }}
       successDescription={bankName ? `Saved in ${bankName}.` : undefined}
       onSaveSuccess={() => {

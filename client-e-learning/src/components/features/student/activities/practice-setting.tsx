@@ -1,10 +1,10 @@
 "use client";
 
+import NextImage from "next/image";
 import * as Dialog from "@radix-ui/react-dialog";
 import {
   Check,
-  Gamepad2,
-  Image,
+  Image as LucideImage,
   Keyboard,
   Lightbulb,
   SlidersHorizontal,
@@ -78,7 +78,7 @@ export function PracticeSettings({
           >
             {[
               { id: "keys", label: "Phím tắt", icon: Keyboard },
-              { id: "background", label: "Đổi ảnh nền", icon: Image },
+              { id: "background", label: "Đổi ảnh nền", icon: LucideImage },
             ].map(({ id, label, icon: Icon }) => (
               <Button
                 key={id}
@@ -140,8 +140,8 @@ export function PracticeSettings({
                       className={`relative h-36 overflow-hidden p-0 ${background === item ? "outline-[3px] outline-offset-2 outline-practice-blue" : ""}`}
                       onClick={() => onBackgroundChange(item)}
                     >
-                      <img
-                        src={garden.src}
+                      <NextImage
+                        src={garden}
                         alt={
                           item === "garden"
                             ? "Vườn mộng mơ"

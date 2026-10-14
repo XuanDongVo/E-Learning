@@ -3,7 +3,10 @@ package e_learning.server.content.question.service;
 import e_learning.server.common.dto.PageResponse;
 import e_learning.server.common.exception.AppException;
 import e_learning.server.common.exception.ErrorCode;
-import e_learning.server.content.question.dto.*;
+import e_learning.server.content.question.dto.BulkDeleteQuestionsRequest;
+import e_learning.server.content.question.dto.CreateQuestionRequest;
+import e_learning.server.content.question.dto.QuestionResponse;
+import e_learning.server.content.question.dto.UpdateQuestionRequest;
 import e_learning.server.content.question.entity.ContentQuestion;
 import e_learning.server.content.question.repository.ContentQuestionRepository;
 import e_learning.server.content.questionBank.repository.QuestionBankRepository;
@@ -126,7 +129,7 @@ public class QuestionService {
 
     @Transactional
     public void deleteQuestion(BulkDeleteQuestionsRequest request) {
-        var ids = new java.util.HashSet<>(request.getIds());
+        var ids = new java.util.HashSet<>(request.ids());
         List<ContentQuestion> ownerships = contentQuestionRepository.findAllById(ids);
 
         if (ownerships.size() != ids.size()) {
@@ -134,7 +137,7 @@ public class QuestionService {
         }
 
         boolean allInBank = ownerships.stream().allMatch(cq ->
-                cq.getQuestionBank().getId().equals(request.getQuestionBankId()));
+                cq.getQuestionBank().getId().equals(request.questionBankId()));
 
         if (!allInBank) {
             throw new IllegalArgumentException(
@@ -155,6 +158,7 @@ public class QuestionService {
                 .difficulty(content.getDifficulty())
                 .content(content.getContent())
                 .explanation(content.getExplanation())
+                .hint(content.getHint())
                 .complete(content.isComplete())
                 .matchingMode(content.getMatchingMode())
                 .options(content.getOptions())

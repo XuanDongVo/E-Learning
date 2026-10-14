@@ -1,9 +1,9 @@
-import { Check, Edit3, MoreHorizontal, Archive } from "lucide-react";
+import { Check, MoreHorizontal, Archive } from "lucide-react";
 import type { ContentStatus } from "@/types/content";
 
 interface ContentActionMenuProps {
   status: ContentStatus;
-  onEdit: () => void;
+  onEdit?: () => void;
   onStatusChange: (status: ContentStatus) => void;
   onArchive: () => void;
   pending?: boolean;
@@ -11,7 +11,6 @@ interface ContentActionMenuProps {
 
 export function ContentActionMenu({
   status,
-  onEdit,
   onStatusChange,
   onArchive,
   pending,

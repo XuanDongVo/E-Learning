@@ -268,7 +268,7 @@ export function SectionDetail({
             <Layers className="text-slate-300" size={26} strokeWidth={1.5} />
             <p className="text-body-sm  text-slate-500">No topics yet</p>
             <p className="text-xs text-slate-400">
-              Add a topic to start organizing this section's question banks.
+              Add a topic to start organizing this section&apos;s question banks.
             </p>
           </div>
         ) : (

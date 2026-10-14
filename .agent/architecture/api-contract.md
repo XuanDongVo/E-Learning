@@ -37,7 +37,7 @@ Assignment exposes show_answers_after_submit. No Release Answers endpoint.
 - Class roster responses contain ACTIVE members only.
 
 ## Contract rules
-- AssignmentQuestion order is question_id ascending.
+- AssignmentQuestion has no position. The canonical Assignment Builder and student runtime use Composition section/item/member position; question_id ASC is only legacy backfill/compatibility order.
 - AssignmentQuestion has no position.
 - Activity preview does not create ActivitySession state.
 - Multiple Activity strategies require student runtime choice; ActivitySession stores it.
@@ -66,3 +66,22 @@ correct answers, accepted answers or explanations. Activity answers are evaluate
 as answer history.
 
 The Activity start response returns the complete selected question set. Correct answers are never included before the runtime flow permits them.
+
+
+## Question contract / security boundary
+
+- Existing Question authoring/runtime contracts are implemented as they exist in code; this document does not approve a new QuestionSpec wire format or add new public endpoints.
+- Teacher authoring responses may include correctness and accepted-answer details. Never reuse a teacher authoring DTO as a student runtime DTO.
+- Student runtime payloads must not expose correctness flags, accepted answers, normalized values, or explanations before the corresponding Practice/review rule allows them. Hint content is returned through the explicit hint action so use can be recorded.
+- ActivitySession uses the session endpoints above; do not reintroduce the legacy polymorphic `/v1/attempts/{id}` API from the historical tail of the old Phase 7 draft.
+- Accepted Question Engine domain contract: see `.agent/architecture/question-engine-v1.md` and ADR 0023 (lifecycle refined by ADR 0025; Assignment scoring/display refined by ADR 0026). The discriminated QuestionSpec contract is accepted, but the new implementation/wire DTOs are not yet delivered; do not represent planned endpoints as current routes.
+
+
+## Assignment Composition and AssessmentAttempt — accepted target contract, not yet implemented
+
+Canonical model: .agent/architecture/assignment-composition-v1.md. Phase 7B responsibilities (not claims of current routes): read/write ordered composition; validate readiness/publish; start/get/save/submit/get result for AssessmentAttempt; teacher reporting by student and question/part with normalized wrong-answer distributions and CSV/Excel export. Server owns timer, eligibility, scoring and immutable snapshot. Do not ship routes before request/response schemas and security are reviewed. Student in-progress DTOs never expose correct/accepted/normalized answers; after submit, show_answers_after_submit governs reveal. Automatic grading runs on submit/timeout; no manual grading workflow exists in v1.
+
+
+## Assignment score visibility
+
+The server calculates and persists the Assignment score on submit/timeout regardless of `show_score_after_submit`. That boolean controls whether the student is shown the score immediately. `show_answers_after_submit` is a separate switch for correct answers and explanations. These are two independent response-projection policies. Scored questions default to 1 point; a teacher may customize possible points per Assignment item. Compound parts default to equal allocation with editable per-part points that must sum to the aggregate question points.

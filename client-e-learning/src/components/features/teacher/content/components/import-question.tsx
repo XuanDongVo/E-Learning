@@ -3,12 +3,10 @@
 import { useRef, useState } from "react";
 import {
   AlertTriangle,
-  ArrowLeft,
   CheckCircle2,
   Download,
   FileSpreadsheet,
   Loader2,
-  Upload,
   X,
   XCircle,
 } from "lucide-react";

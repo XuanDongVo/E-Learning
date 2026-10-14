@@ -6,6 +6,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface QuestionOptionRepository extends JpaRepository<QuestionOption, Long> {
-    List<QuestionOption> findByQuestionId(Long questionId);
+    List<QuestionOption> findByQuestionIdOrderByDisplayOrderAsc(Long questionId);
+    default List<QuestionOption> findByQuestionId(Long questionId) {
+        return findByQuestionIdOrderByDisplayOrderAsc(questionId);
+    }
     void deleteByQuestionId(Long questionId);
 }

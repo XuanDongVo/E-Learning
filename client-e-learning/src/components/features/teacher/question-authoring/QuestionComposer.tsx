@@ -73,13 +73,12 @@ export function QuestionComposer({
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    setAutoSaveStatus("saving");
-
     if (autoSaveTimerRef.current) {
       clearTimeout(autoSaveTimerRef.current);
     }
 
-    autoSaveTimerRef.current = setTimeout(() => {
+    const timer = setTimeout(() => {
+      setAutoSaveStatus("saving");
       try {
         localStorage.setItem(storageKey, JSON.stringify(questions));
       } catch {
@@ -94,6 +93,7 @@ export function QuestionComposer({
     }, AUTOSAVE_DEBOUNCE_MS);
 
     return () => {
+      clearTimeout(timer);
       if (autoSaveTimerRef.current) {
         clearTimeout(autoSaveTimerRef.current);
       }

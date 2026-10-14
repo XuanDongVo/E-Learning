@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   AlertTriangle,
   ArrowUpDown,
@@ -21,12 +22,20 @@ const emptyForm = {
 };
 
 export default function TeacherGradesPage() {
-  const [grades, setGrades] = useState<Grade[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const gradesQuery = useQuery({
+    queryKey: ["teacher-grades-all"],
+    queryFn: async () => (await gradeService.listAll()).data ?? [],
+  });
+  const isLoading = gradesQuery.isLoading;
   const [isSaving, setIsSaving] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState<CreateGradeRequest>(emptyForm);
+
+  const grades = useMemo(
+  () => gradesQuery.data ?? [],
+  [gradesQuery.data]
+);
 
   const activeGrades = useMemo(
     () => grades.filter((grade) => grade.status !== "INACTIVE"),
@@ -37,25 +46,6 @@ export default function TeacherGradesPage() {
     () => grades.filter((grade) => grade.status === "INACTIVE"),
     [grades],
   );
-
-  const loadGrades = async () => {
-    try {
-      setIsLoading(true);
-      const response = await gradeService.listAll();
-      setGrades(response.data ?? []);
-      setError(null);
-    } catch (loadError) {
-      setError(
-        loadError instanceof Error ? loadError.message : "Unable to load grades",
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    void loadGrades();
-  }, []);
 
   const resetForm = () => {
     setForm(emptyForm);
@@ -86,7 +76,7 @@ export default function TeacherGradesPage() {
 
       setError(null);
       resetForm();
-      await loadGrades();
+      await gradesQuery.refetch();
     } catch (submitError) {
       setError(
         submitError instanceof Error
@@ -111,7 +101,7 @@ export default function TeacherGradesPage() {
   const handleDeactivate = async (gradeId: number) => {
     try {
       await gradeService.deactivate(gradeId);
-      await loadGrades();
+      await gradesQuery.refetch();
       setError(null);
     } catch (deactivateError) {
       setError(
@@ -125,7 +115,7 @@ export default function TeacherGradesPage() {
   const handleActivate = async (gradeId: number) => {
     try {
       await gradeService.activate(gradeId);
-      await loadGrades();
+      await gradesQuery.refetch();
       setError(null);
     } catch (activateError) {
       setError(
@@ -144,7 +134,7 @@ export default function TeacherGradesPage() {
 
     try {
       await gradeService.delete(gradeId);
-      await loadGrades();
+      await gradesQuery.refetch();
       if (editingId === gradeId) {
         resetForm();
       }

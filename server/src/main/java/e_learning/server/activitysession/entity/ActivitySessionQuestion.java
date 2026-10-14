@@ -13,6 +13,9 @@ public class ActivitySessionQuestion {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY) private Long id;
     @ManyToOne(fetch = FetchType.LAZY, optional = false) @JoinColumn(name = "session_id") private ActivitySession session;
     @ManyToOne(fetch = FetchType.LAZY, optional = false) @JoinColumn(name = "question_id") private Question question;
+    @Column(name = "snapshot_schema_version") private Integer snapshotSchemaVersion;
+    @Column(name = "snapshot_content_revision") private Long snapshotContentRevision;
+    @Column(name = "snapshot_payload", columnDefinition = "TEXT") private String snapshotPayload;
     @Column(nullable = false) private int position;
     @Column(name = "served_at") private LocalDateTime servedAt;
     @Column(name = "deadline_at") private LocalDateTime deadlineAt;
@@ -22,4 +25,11 @@ public class ActivitySessionQuestion {
     @Column(name = "hint_used", nullable = false) private boolean hintUsed;
     @Column(nullable = false) private boolean resolved;
     public ActivitySessionQuestion(Question question, int position) { this.question = question; this.position = position; }
+
+    public ActivitySessionQuestion(Question question, int position, ActivityQuestionSnapshot snapshot) {
+        this(question, position);
+        this.snapshotSchemaVersion = snapshot.schemaVersion();
+        this.snapshotContentRevision = snapshot.contentRevision();
+        this.snapshotPayload = snapshot.payload();
+    }
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
@@ -494,11 +495,12 @@ export function PracticeRunner({
       className="fixed inset-0 z-[45] overflow-y-auto bg-practice-blue text-practice-ink"
       aria-label="Luyện tập tiếng Anh"
     >
-      <img
-        src={garden.src}
+      <Image
+        src={garden}
         alt=""
         width={1920}
         height={1024}
+        priority
         className={`fixed inset-0 h-full w-full object-cover ${background === "calm" ? "hue-rotate-[25deg] saturate-[0.65]" : ""}`}
       />
       <div className="relative mx-auto flex min-h-svh max-w-[880px] flex-col px-4 pb-5 pt-7 max-sm:pt-[18px] lg:max-w-[1140px]">
@@ -602,8 +604,8 @@ export function PracticeRunner({
                 <div className="relative rounded-[18px] bg-practice-paper px-3 py-3 text-center text-xs leading-5 shadow-[0_4px_0_var(--color-practice-border)]">
                   {mascotText}
                 </div>
-                <img
-                  src={mascot.src}
+                <Image
+                  src={mascot}
                   alt="Việt Cường đang cổ vũ bạn"
                   width={816}
                   height={816}

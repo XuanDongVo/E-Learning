@@ -317,7 +317,7 @@ export function UnitDetail({
             <Layers className="text-slate-300" size={26} strokeWidth={1.5} />
             <p className="text-body-sm  text-slate-500">No sections yet</p>
             <p className="text-xs text-slate-400">
-              Add a section to start organizing this unit's topics.
+              Add a section to start organizing this unit&apos;s topics.
             </p>
           </div>
         ) : (

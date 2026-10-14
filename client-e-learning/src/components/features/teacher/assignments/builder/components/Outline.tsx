@@ -4,9 +4,9 @@ import { CSS } from "@dnd-kit/utilities";
 import { ArrowDown, ArrowUp, ChevronRight, GripVertical, Pencil, Trash2 } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
-import * as ops from "@/features/assignment-builder/ops";
-import { useBuilder } from "@/features/assignment-builder/store";
-import type { BlockItem, ID, Item, Section } from "@/features/assignment-builder/types";
+import * as ops from "@/components/features/teacher/assignments/builder/ops";
+import { useBuilder } from "@/components/features/teacher/assignments/builder/store";
+import type { BlockItem, ID, Item, Section } from "@/types/assignment-builder";
 import { useIssues, useNumbering } from "./Canvas";
 
 function itemLabel(it: Item, num?: number) {

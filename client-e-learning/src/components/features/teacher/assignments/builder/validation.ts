@@ -1,5 +1,5 @@
 import { blankNumbers, blankTokens, docOrder, letter } from "./ops";
-import type { Assignment, BlockItem, ID } from "./types";
+import type { Assignment, BlockItem, ID } from "@/types/assignment-builder";
 
 export interface Issue {
   key: string;

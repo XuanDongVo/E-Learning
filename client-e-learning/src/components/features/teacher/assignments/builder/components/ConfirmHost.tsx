@@ -1,6 +1,6 @@
 import { AlertDialog, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { useBuilder } from "@/features/assignment-builder/store";
+import { useBuilder } from "@/components/features/teacher/assignments/builder/store";
 
 export function ConfirmHost() {
   const c = useBuilder((s) => s.confirm);

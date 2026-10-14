@@ -4,7 +4,7 @@
  * Only example items keep their (public) model answer.
  */
 import { computeNumbering, letter } from "./ops";
-import type { Assignment, BlockItem, ID, InteractionType, QuestionItem } from "./types";
+import type { Assignment, BlockItem, ID, InteractionType, QuestionItem } from "@/types/assignment-builder";
 
 export interface SQuestion {
   id: ID;

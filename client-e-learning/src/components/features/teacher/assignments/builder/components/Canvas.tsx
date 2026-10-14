@@ -16,10 +16,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
-import * as ops from "@/features/assignment-builder/ops";
-import { useBuilder } from "@/features/assignment-builder/store";
-import type { BlockItem, ID, QuestionItem, Section, ToolKey } from "@/features/assignment-builder/types";
-import { validate } from "@/features/assignment-builder/validation";
+import * as ops from "@/components/features/teacher/assignments/builder/ops";
+import { useBuilder } from "@/components/features/teacher/assignments/builder/store";
+import type { BlockItem, ID, QuestionItem, Section, ToolKey } from "@/types/assignment-builder";
+import { validate } from "@/components/features/teacher/assignments/builder/validation";
 import { BlankChip, RichText } from "./RichText";
 import { TOOLS } from "./Toolbox";
 

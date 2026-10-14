@@ -8,7 +8,7 @@ import type {
   Section,
   Selection,
   ToolKey,
-} from "./types";
+} from "@/types/assignment-builder";
 
 /** Empty state only; actual assignment content must come from the backend. */
 export function createEmptyAssignment(): Assignment {

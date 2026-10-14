@@ -29,13 +29,14 @@ const questionWriteSnapshot = (q: QuestionItem) => JSON.stringify(toQuestionWrit
 
 function toQuestionWrite(q: QuestionItem): CreateAssignmentQuestionRequest {
   const c = q.content;
+  if (!c.prompt.trim()) throw new Error("Question prompt is required before saving. The server Question Engine requires non-empty question content.");
   if (c.type === "SINGLE_CHOICE" || c.type === "MULTIPLE_CHOICE") {
     const trueFalse = c.type === "SINGLE_CHOICE" && c.options.length === 2 &&
       c.options.some((o) => o.text.toLowerCase() === "true") && c.options.some((o) => o.text.toLowerCase() === "false");
     return {
       type: trueFalse ? "TRUE_FALSE" : (q.serverType === "FILL_IN_BLANK" ? "FILL_IN_BLANK" : c.type),
       difficulty: q.serverDifficulty ?? "EASY",
-      content: c.prompt.trim() || (trueFalse ? "True or false?" : "Choose the correct answer."),
+      content: c.prompt.trim(),
       explanation: c.explanation, hint: c.hint,
       mediaIds: q.serverMediaIds,
       options: trueFalse ? undefined : c.options.map((o) => ({ content: o.text, isCorrect: o.isCorrect })),
@@ -45,7 +46,7 @@ function toQuestionWrite(q: QuestionItem): CreateAssignmentQuestionRequest {
   if (c.type === "TEXT_INPUT") return {
     type: q.serverType === "FILL_IN_BLANK" ? "FILL_IN_BLANK" : "TYPE_ANSWER",
     difficulty: q.serverDifficulty ?? "EASY",
-    content: c.prompt.trim() || "Type your answer.",
+    content: c.prompt.trim(),
     explanation: c.explanation, hint: c.hint,
     mediaIds: q.serverMediaIds,
     answers: c.acceptedAnswers.filter((x) => x.trim()).map((rawValue) => ({ rawValue: rawValue.trim() })),

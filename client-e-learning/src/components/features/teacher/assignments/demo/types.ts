@@ -71,6 +71,9 @@ export interface QuestionItem {
   id: ID;
   kind: "question";
   serverQuestionId?: number;
+  serverType?: string;
+  serverDifficulty?: "EASY" | "MEDIUM" | "HARD";
+  serverMediaIds?: number[];
   compositionItemId?: number;
   serverQuestionSnapshot?: string;
   content: QuestionContent;

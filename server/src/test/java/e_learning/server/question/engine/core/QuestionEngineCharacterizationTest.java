@@ -101,6 +101,16 @@ class QuestionEngineCharacterizationTest {
         assertFalse(engine.parseAndValidate(spec, new RawAnswer("   ")).valid());
     }
 
+
+    @Test
+    void gradingRejectsValidatedAnswerFromAnotherQuestionType() {
+        QuestionSpec spec = new SingleChoiceSpec(common,
+                List.of(new QuestionSpec.Choice("A", "Alpha"), new QuestionSpec.Choice("B", "Beta")), "A");
+        ValidatedAnswer wrongType = new ValidatedAnswer(QuestionType.TRUE_FALSE, Boolean.TRUE);
+
+        assertThrows(IllegalArgumentException.class, () -> engine.grade(spec, wrongType));
+    }
+
     @Test
     void definitionValidationDistinguishesIncompleteFromInvalid() {
         QuestionSpec incomplete = new SingleChoiceSpec(common,

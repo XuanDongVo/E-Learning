@@ -4,9 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
-import { letter } from "@/features/assignment-builder/ops";
-import { useBuilder } from "@/features/assignment-builder/store";
-import { buildStudentView, type SBlock, type SQuestion } from "@/features/assignment-builder/student-view";
+import { letter } from "@/components/features/teacher/assignments/builder/ops";
+import { useBuilder } from "@/components/features/teacher/assignments/builder/store";
+import { buildStudentView, type SBlock, type SQuestion } from "@/components/features/teacher/assignments/builder/student-view";
 import { BlankChip, RichText } from "./RichText";
 
 type Answers = Record<string, string | string[] | Record<number, string>>;

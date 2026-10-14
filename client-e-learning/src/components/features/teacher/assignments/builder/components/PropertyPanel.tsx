@@ -10,9 +10,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
-import * as ops from "@/features/assignment-builder/ops";
-import { useBuilder } from "@/features/assignment-builder/store";
-import type { BlockItem, ID, QuestionItem, Section } from "@/features/assignment-builder/types";
+import * as ops from "@/components/features/teacher/assignments/builder/ops";
+import { useBuilder } from "@/components/features/teacher/assignments/builder/store";
+import type { BlockItem, ID, QuestionItem, Section } from "@/types/assignment-builder";
 import { createBlankQuestions, useIssues, useNumbering } from "./Canvas";
 
 function Field({ label, children, hint, error }: { label: string; children: ReactNode; hint?: string; error?: string | null }) {

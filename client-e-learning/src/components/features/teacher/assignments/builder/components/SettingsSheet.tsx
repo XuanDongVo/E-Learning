@@ -7,8 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { useBuilder } from "@/features/assignment-builder/store";
-import type { AssignmentSettings, ShowAnswers } from "@/features/assignment-builder/types";
+import { useBuilder } from "@/components/features/teacher/assignments/builder/store";
+import type { AssignmentSettings, ShowAnswers } from "@/types/assignment-builder";
 
 export function SettingsSheet() {
   const open = useBuilder((s) => s.settingsOpen);

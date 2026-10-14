@@ -154,7 +154,7 @@ public class AssignmentCompositionService {
             validateBlockPayload(type, request.blockPayload());
         }
         List<CompositionItemRequest> children = request.children() == null ? List.of() : request.children();
-        if (!children.isEmpty() && ("QUESTION".equals(type) || "INSTRUCTIONS".equals(type) || "MEDIA".equals(type))) {
+        if (!children.isEmpty() && ("QUESTION".equals(type) || "INSTRUCTIONS".equals(type))) {
             throw invalid("Only PASSAGE and POOL blocks may contain child items.");
         }
         requireContiguousPositions(children.stream().map(CompositionItemRequest::position).toList(), "child item");
@@ -187,13 +187,20 @@ public class AssignmentCompositionService {
             case "INSTRUCTIONS" -> requireText(payload, "text", "INSTRUCTIONS blocks require text.");
             case "PASSAGE" -> requireText(payload, "text", "PASSAGE blocks require text.");
             case "MEDIA" -> {
-                requireText(payload, "assetId", "MEDIA blocks require an assetId.");
+                requireText(payload, "url", "MEDIA blocks require a URL.");
                 requireText(payload, "altText", "MEDIA blocks require meaningful altText.");
             }
             case "POOL" -> {
                 Object entries = payload.get("entries");
                 if (!(entries instanceof List<?> list) || list.isEmpty()) {
                     throw invalid("POOL blocks require a non-empty entries array.");
+                }
+                for (Object entry : list) {
+                    if (!(entry instanceof Map<?, ?> map)
+                            || !(map.get("text") instanceof String text)
+                            || text.isBlank()) {
+                        throw invalid("Every POOL entry requires non-empty text.");
+                    }
                 }
             }
             default -> throw invalid("Unsupported block type.");

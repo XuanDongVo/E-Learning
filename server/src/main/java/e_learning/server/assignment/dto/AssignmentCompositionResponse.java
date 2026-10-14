@@ -7,6 +7,7 @@ public record AssignmentCompositionResponse(
         int schemaVersion,
         String provenance,
         boolean showScoreAfterSubmit,
+        boolean showPointsPerQuestion,
         List<CompositionSectionResponse> sections
 ) {
 }

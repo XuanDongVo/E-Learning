@@ -29,7 +29,6 @@ function useWide() {
   return wide;
 }
 
-/** Resolve a dnd-kit "over" id into an insert position. */
 function targetFromOver(overId: string, activeIsTool: boolean): InsertTarget | null {
   const a = useBuilder.getState().assignment;
   const [kind, id] = [overId.slice(0, overId.indexOf(":")), overId.slice(overId.indexOf(":") + 1)];

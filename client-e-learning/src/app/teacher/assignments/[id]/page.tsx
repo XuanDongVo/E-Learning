@@ -1,10 +1,22 @@
-import { redirect } from "next/navigation";
+"use client";
 
-export default async function AssignmentDetailPage({
+import { Suspense } from "react";
+import { AssignmentBuilder } from "@/components/features/teacher/assignments/demo/components/AssignmentBuilder";
+
+export default function AssignmentDetailPage({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: { id: string };
 }) {
-  const { id } = await params;
-  redirect(`/teacher/assignments/demo?id=${encodeURIComponent(id)}`);
+  return (
+    <Suspense
+      fallback={
+        <div className="p-8 text-sm text-muted-foreground">
+          Loading assignment builder…
+        </div>
+      }
+    >
+      <AssignmentBuilder id={params.id} />
+    </Suspense>
+  );
 }

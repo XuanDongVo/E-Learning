@@ -58,7 +58,7 @@ export default function TeacherAssignmentsPage() {
         return;
       }
       toast.success("Assignment draft created. Opening the Builder.");
-      router.push(`/teacher/assignments/demo?id=${response.data.id}`);
+      router.push(`/teacher/assignments/${response.data.id}`);
     },
     onError: (error) => {
       toast.error(error instanceof Error ? error.message : "Could not create assignment.");

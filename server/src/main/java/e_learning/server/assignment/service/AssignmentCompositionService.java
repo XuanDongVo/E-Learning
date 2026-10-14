@@ -237,7 +237,7 @@ public class AssignmentCompositionService {
                         .map(item -> toItemResponse(item, childrenByParent)).toList())
         ).toList();
         return new AssignmentCompositionResponse(assignment.getId(), assignment.getCompositionSchemaVersion(),
-                assignment.getCompositionProvenance(), assignment.isShowScoreAfterSubmit(),
+                 assignment.isShowScoreAfterSubmit(),
                 assignment.isShowPointsPerQuestion(), sectionResponses);
     }
 

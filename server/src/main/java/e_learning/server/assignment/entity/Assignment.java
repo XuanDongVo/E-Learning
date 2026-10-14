@@ -59,8 +59,8 @@ public class Assignment {
     @Column(name = "composition_schema_version", nullable = false)
     private int compositionSchemaVersion = 1;
 
-    @Column(name = "composition_provenance", nullable = false, length = 30)
-    private String compositionProvenance = "AUTHOR_CREATED";
+//    @Column(name = "composition_provenance", nullable = false, length = 30)
+//    private String compositionProvenance = "AUTHOR_CREATED";
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)

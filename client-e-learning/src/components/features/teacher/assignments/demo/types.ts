@@ -70,6 +70,9 @@ export interface ItemConfig {
 export interface QuestionItem {
   id: ID;
   kind: "question";
+  serverQuestionId?: number;
+  compositionItemId?: number;
+  serverQuestionSnapshot?: string;
   content: QuestionContent;
   config: ItemConfig;
 }
@@ -90,6 +93,7 @@ export type BlockType = BlockContent["type"];
 export interface BlockItem {
   id: ID;
   kind: "block";
+  compositionItemId?: number;
   block: BlockContent;
   /** Ordered ids of questions owned by this shared block (their config.groupId === this id). */
   memberIds: ID[];
@@ -99,6 +103,7 @@ export type Item = QuestionItem | BlockItem;
 
 export interface Section {
   id: ID;
+  serverId?: number;
   titleEn: string;
   titleVi: string;
   instructionsEn: string;
@@ -120,6 +125,9 @@ export interface AssignmentSettings {
 
 export interface Assignment {
   id: ID;
+  serverId?: number;
+  academicYear?: string;
+  status?: "DRAFT" | "PUBLISHED" | "ARCHIVED";
   title: string;
   grade: 6 | 7 | 8;
   instructions: string;

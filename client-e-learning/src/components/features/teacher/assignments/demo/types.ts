@@ -88,7 +88,7 @@ export interface PoolEntry {
 export type BlockContent =
   | { type: "INSTRUCTIONS"; text: string }
   | { type: "PASSAGE"; title: string; text: string }
-  | { type: "MEDIA"; url: string; alt: string; caption: string }
+  | { type: "MEDIA"; assetId?: string; url: string; alt: string; caption: string }
   | { type: "POOL"; title: string; entries: PoolEntry[] };
 
 export type BlockType = BlockContent["type"];

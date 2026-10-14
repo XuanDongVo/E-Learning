@@ -56,7 +56,7 @@ function mapQuestion(q: AssignmentQuestion, item: CompositionItemDto): QuestionI
   let content: QuestionItem["content"];
   switch (source.type) {
     case "SINGLE_CHOICE":
-      content = { type: "SINGLE_CHOICE", prompt, display: "list", options: (source.options ?? []).map(o => ({ id: String(o.id), text: o.content, isCorrect: o.isCorrect })) };
+      content = { type: "SINGLE_CHOICE", prompt, display: "list", options: (source.options ?? []).map(o => ({ id: String(o.id), text: o.content, isCorrect: Boolean(o.isCorrect ?? (o as unknown as { correct?: boolean }).correct) })) };
       break;
     case "MULTIPLE_CHOICE":
       content = { type: "MULTIPLE_CHOICE", prompt, options: (source.options ?? []).map(o => ({ id: String(o.id), text: o.content, isCorrect: o.isCorrect })) };

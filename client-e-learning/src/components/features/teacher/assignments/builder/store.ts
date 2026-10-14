@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { toast } from "sonner";
 import * as ops from "./ops";
 import { loadBuilderAssignment, saveBuilderAssignment } from "@/services/assignment/assignment-composition.service";
-import type { Assignment, ID, InsertTarget, Selection, ToolKey } from "./types";
+import type { Assignment, ID, InsertTarget, Selection, ToolKey } from "@/types/assignment-builder";
 
 export const snapshotOf = (a: Assignment) => JSON.stringify({ ...a, updatedAt: "" });
 

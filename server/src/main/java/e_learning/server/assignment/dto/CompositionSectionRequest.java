@@ -12,6 +12,8 @@ public record CompositionSectionRequest(
         @NotNull @Positive Integer position,
         @Size(max = 200) String title,
         String instructions,
+        @Size(max = 200) String titleVi,
+        String instructionsVi,
         @Valid List<CompositionItemRequest> items
 ) {
 }

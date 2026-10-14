@@ -14,9 +14,9 @@ export function validate(a: Assignment): Issue[] {
     out.push({ key: `${id}:${out.length}`, level, message, target: { kind, id } });
 
   for (const s of a.sections) {
-    if (!s.titleEn.trim()) add("error", "section", s.id, "Section title is empty");
+    if (!s.title.trim()) add("error", "section", s.id, "Section title is empty");
     if (!s.titleVi.trim()) add("warning", "section", s.id, "Missing Vietnamese section title");
-    if (s.instructionsEn.trim() && !s.instructionsVi.trim()) add("warning", "section", s.id, "Missing Vietnamese instructions");
+    if (s.instructions.trim() && !s.instructionsVi.trim()) add("warning", "section", s.id, "Missing Vietnamese instructions");
     if (s.itemIds.length === 0) add("warning", "section", s.id, "Section is empty");
   }
 

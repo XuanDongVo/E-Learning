@@ -19,7 +19,6 @@ interface BaseQuestion {
   prompt: string;
   explanation?: string;
   hint?: string;
-  /** Number of the passage blank ({{n}}) this question answers, when inside a cloze passage group. */
   blankRef?: number | null;
 }
 
@@ -109,9 +108,9 @@ export type Item = QuestionItem | BlockItem;
 export interface Section {
   id: ID;
   serverId?: number;
-  titleEn: string;
+  title: string;
   titleVi: string;
-  instructionsEn: string;
+  instructions: string;
   instructionsVi: string;
   itemIds: ID[];
 }

@@ -7,6 +7,8 @@ public record CompositionSectionResponse(
         Integer position,
         String title,
         String instructions,
+        String titleVi,
+        String instructionsVi,
         List<CompositionItemResponse> items
 ) {
 }

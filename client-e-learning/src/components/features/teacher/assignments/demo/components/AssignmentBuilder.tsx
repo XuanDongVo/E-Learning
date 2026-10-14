@@ -164,16 +164,32 @@ export function AssignmentBuilder({ id }: { id?: string }) {
 
   return (
     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={onDragStart} onDragEnd={onDragEnd}>
-      <div className="flex h-screen flex-col overflow-hidden bg-background">
+      <div className="flex h-screen flex-col overflow-hidden bg-white text-slate-900">
         <Header />
+        {mode !== "preview" && (
+          <div className="shrink-0 border-b border-slate-200 bg-white px-4 py-3 sm:px-6">
+            <div className="mx-auto flex max-w-7xl flex-col gap-2 text-sm sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <p className="font-semibold text-slate-800">Quick guide · Build an assignment</p>
+                <p className="mt-1 text-slate-600">
+                  1. Add a question or content from the left panel. 2. Select an item to edit its settings on the right.
+                  3. Drag items to reorder them. 4. Use Student Preview to check the student experience, then Save Draft.
+                </p>
+              </div>
+              <p className="shrink-0 rounded-md border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs text-slate-600">
+                Tip: click a question to select it · Ctrl/Cmd + S to save
+              </p>
+            </div>
+          </div>
+        )}
         {mode === "preview" ? (
           <div className="min-h-0 flex-1"><StudentPreview /></div>
         ) : (
           <div className="flex min-h-0 flex-1">
-            {wide && <aside className="w-72 shrink-0 border-r bg-sidebar"><LeftPanel /></aside>}
+            {wide && <aside className="w-72 shrink-0 border-r border-slate-200 bg-white"><LeftPanel /></aside>}
             <main className="flex min-w-0 flex-1 flex-col">
               {!wide && (
-                <div className="flex items-center justify-between border-b bg-card px-3 py-1.5">
+                <div className="flex items-center justify-between border-b border-slate-200 bg-white px-3 py-1.5">
                   <Button variant="ghost" size="sm" onClick={() => setLeftOpen(true)}><PanelLeft className="h-4 w-4" /> Add & outline</Button>
                   <Button variant="ghost" size="sm" onClick={() => setRightOpen(true)}><PanelRight className="h-4 w-4" /> Properties</Button>
                 </div>
@@ -188,13 +204,13 @@ export function AssignmentBuilder({ id }: { id?: string }) {
       {!wide && (
         <>
           <Sheet open={leftOpen} onOpenChange={setLeftOpen}>
-            <SheetContent side="left" className="w-80 p-0">
+            <SheetContent side="left" className="w-80 border-slate-200 bg-white p-0">
               <SheetHeader className="sr-only"><SheetTitle>Add content and outline</SheetTitle></SheetHeader>
               <div className="h-full pt-8"><LeftPanel /></div>
             </SheetContent>
           </Sheet>
           <Sheet open={rightOpen} onOpenChange={setRightOpen} modal={false}>
-            <SheetContent side="right" className="w-96 overflow-y-auto p-0">
+            <SheetContent side="right" className="w-96 border-slate-200 bg-white overflow-y-auto p-0">
               <SheetHeader className="sr-only"><SheetTitle>Properties</SheetTitle></SheetHeader>
               <div className="pt-8"><PropertyPanel /></div>
             </SheetContent>

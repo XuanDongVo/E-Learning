@@ -53,6 +53,10 @@ export default function TeacherAssignmentsPage() {
       void queryClient.invalidateQueries({ queryKey: ["assignments"] });
       setWizardOpen(false);
       setForm(initialForm);
+      if (!response.data) {
+        toast.error("Assignment was created, but the server returned no Assignment ID.");
+        return;
+      }
       toast.success("Assignment draft created. Opening the Builder.");
       router.push(`/teacher/assignments/demo?id=${response.data.id}`);
     },

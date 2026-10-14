@@ -130,6 +130,7 @@ export function duplicateItem(a: Assignment, id: ID): ID | null {
   if (!item || !loc) return null;
   const clone = structuredClone(item) as Item;
   clone.id = uid(item.kind === "block" ? "b" : "q");
+  if (clone.kind === "block") clone.compositionItemId = undefined;
   if (clone.kind === "question") {
     clone.serverQuestionId = undefined;
     clone.serverType = undefined;

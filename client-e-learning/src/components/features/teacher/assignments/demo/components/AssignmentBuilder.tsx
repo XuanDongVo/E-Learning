@@ -62,6 +62,7 @@ function LeftPanel() {
 
 export function AssignmentBuilder({ id }: { id?: string }) {
   const loaded = useBuilder((s) => s.loaded);
+  const loadError = useBuilder((s) => s.loadError);
   const mode = useBuilder((s) => s.mode);
   const assignment = useBuilder((s) => s.assignment);
   const autosave = useBuilder((s) => s.autosave);
@@ -139,6 +140,19 @@ export function AssignmentBuilder({ id }: { id?: string }) {
     if (overId.slice(2) === itemId) return;
     st.mutate((d) => ops.moveTo(d, itemId, target));
   };
+
+  if (loadError) return (
+    <div className="grid min-h-screen place-items-center p-6">
+      <div className="max-w-xl space-y-3 rounded-xl border bg-card p-6">
+        <h1 className="text-lg font-semibold">Could not open Assignment Builder</h1>
+        <p className="text-sm text-muted-foreground">{loadError}</p>
+        <div className="flex gap-2">
+          <Button onClick={() => void loadAssignment(id)}>Retry</Button>
+          <Button variant="outline" onClick={() => window.location.assign("/teacher/assignments")}>Back to assignments</Button>
+        </div>
+      </div>
+    </div>
+  );
 
   if (!loaded)
     return (

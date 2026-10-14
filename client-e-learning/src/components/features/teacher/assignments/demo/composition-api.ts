@@ -14,7 +14,7 @@ type CompositionItemDto = {
   blockPayload: Record<string, unknown> | null; children: CompositionItemDto[];
 };
 type CompositionSectionDto = { id: number; position: number; title: string | null; instructions: string | null; items: CompositionItemDto[] };
-type CompositionDto = { assignmentId: number; schemaVersion: number; provenance: string; showScoreAfterSubmit: boolean; sections: CompositionSectionDto[] };
+type CompositionDto = { assignmentId: number; schemaVersion: number; provenance: string; showScoreAfterSubmit: boolean; showPointsPerQuestion: boolean; sections: CompositionSectionDto[] };
 type CompositionItemWrite = {
   id?: number; position: number; itemType: string; questionId?: number;
   possiblePoints: number; required: boolean; example: boolean;
@@ -137,7 +137,8 @@ function mapAssignment(api: ApiAssignment, composition: CompositionDto, question
       startAt: api.startAt?.slice(0, 16) ?? "", dueAt: api.dueAt?.slice(0, 16) ?? "",
       classIds: (api.targets ?? []).filter(t => t.type === "CLASS" && t.classId != null).map(t => String(t.classId)),
       showAnswers: api.showAnswersAfterSubmit ? "after_submission" : "off",
-      showPoints: composition.showScoreAfterSubmit, shuffle: false,
+      showScoreAfterSubmit: composition.showScoreAfterSubmit,
+      showPoints: composition.showPointsPerQuestion, shuffle: false,
     },
     sections, items, updatedAt: api.dueAt ?? new Date().toISOString(),
   };
@@ -257,7 +258,8 @@ export async function saveCompositionAssignment(a: Assignment): Promise<Assignme
   await request<CompositionDto>(`/v1/assignments/${id}/composition`, {
     method: "PUT",
     body: JSON.stringify({
-      showScoreAfterSubmit: a.settings.showPoints,
+      showScoreAfterSubmit: a.settings.showScoreAfterSubmit,
+      showPointsPerQuestion: a.settings.showPoints,
       sections: a.sections.map((section, i) => ({
         ...(section.serverId ? { id: section.serverId } : {}),
         position: i + 1, title: section.titleEn.trim() || `Section ${i + 1}`,

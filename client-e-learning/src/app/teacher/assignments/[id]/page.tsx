@@ -1,22 +1,11 @@
-"use client";
-
-import { Suspense } from "react";
 import { AssignmentBuilder } from "@/components/features/teacher/assignments/demo/components/AssignmentBuilder";
 
-export default function AssignmentDetailPage({
+export default async function AssignmentDetailPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
-  return (
-    <Suspense
-      fallback={
-        <div className="p-8 text-sm text-muted-foreground">
-          Loading assignment builder…
-        </div>
-      }
-    >
-      <AssignmentBuilder id={params.id} />
-    </Suspense>
-  );
+  const { id } = await params;
+
+  return <AssignmentBuilder id={id} />;
 }

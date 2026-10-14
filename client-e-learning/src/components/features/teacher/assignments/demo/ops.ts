@@ -130,6 +130,14 @@ export function duplicateItem(a: Assignment, id: ID): ID | null {
   if (!item || !loc) return null;
   const clone = structuredClone(item) as Item;
   clone.id = uid(item.kind === "block" ? "b" : "q");
+  if (clone.kind === "question") {
+    clone.serverQuestionId = undefined;
+    clone.serverType = undefined;
+    clone.serverDifficulty = undefined;
+    clone.serverMediaIds = undefined;
+    clone.compositionItemId = undefined;
+    clone.serverQuestionSnapshot = undefined;
+  }
   if (clone.kind === "question" && "options" in clone.content)
     clone.content.options.forEach((o) => (o.id = uid("o")));
   if (clone.kind === "question" && clone.content.type === "MULTI_TEXT_INPUT")
@@ -147,6 +155,12 @@ export function duplicateItem(a: Assignment, id: ID): ID | null {
     for (const m of (item as BlockItem).memberIds) {
       const q = structuredClone(a.items[m]) as QuestionItem;
       q.id = uid("q");
+      q.serverQuestionId = undefined;
+      q.serverType = undefined;
+      q.serverDifficulty = undefined;
+      q.serverMediaIds = undefined;
+      q.compositionItemId = undefined;
+      q.serverQuestionSnapshot = undefined;
       q.config.groupId = clone.id;
       if (q.content.type === "MATCHING" && q.content.poolId === id) {
         q.content.poolId = clone.id;

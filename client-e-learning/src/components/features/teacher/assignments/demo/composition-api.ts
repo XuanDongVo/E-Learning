@@ -95,7 +95,7 @@ function mapBlock(dto: CompositionItemDto): BlockItem {
   switch (dto.itemType) {
     case "INSTRUCTIONS": block = { type: "INSTRUCTIONS", text: str(p.text) }; break;
     case "PASSAGE": block = { type: "PASSAGE", title: str(p.title), text: str(p.text) }; break;
-    case "MEDIA": block = { type: "MEDIA", url: str(p.url), alt: str(p.altText), caption: str(p.caption) }; break;
+    case "MEDIA": block = { type: "MEDIA", assetId: str(p.assetId), url: str(p.url), alt: str(p.altText), caption: str(p.caption) }; break;
     case "POOL": block = { type: "POOL", title: str(p.title), entries: (Array.isArray(p.entries) ? p.entries : []).map((raw, i) => {
       const e = raw as Record<string, unknown>; return { id: str(e.id, `entry_${i}`), text: str(e.text) };
     }) }; break;
@@ -166,8 +166,9 @@ function blockPayload(block: BlockItem["block"]): Record<string, unknown> {
       if (!block.text.trim()) throw new Error("Passage blocks need text before saving.");
       return { title: block.title, text: block.text };
     case "MEDIA":
-      if (!block.url.trim() || !block.alt.trim()) throw new Error("Media blocks need both a URL and alternative text before saving.");
-      return { url: block.url.trim(), altText: block.alt.trim(), caption: block.caption };
+      if (!block.assetId?.trim()) throw new Error("Upload an image to attach a valid media asset before saving.");
+      if (!block.alt.trim()) throw new Error("Media blocks need alternative text before saving.");
+      return { assetId: block.assetId.trim(), url: block.url.trim(), altText: block.alt.trim(), caption: block.caption };
     case "POOL":
       if (!block.entries.length || block.entries.some(e => !e.text.trim())) throw new Error("Every answer-pool entry must have text.");
       return { title: block.title, entries: block.entries.map(e => ({ id: e.id, text: e.text })) };

@@ -91,12 +91,12 @@ function ItemShell({ id, children, label }: { id: ID; children: ReactNode; label
         select({ kind: "item", id });
       }}
       className={cn(
-        "group/item relative rounded-md border bg-card transition-shadow",
-        selected ? "border-primary ring-2 ring-primary/15" : "border-transparent hover:border-border",
+        "group/item relative rounded-md border bg-white transition-shadow",
+        selected ? "border-slate-500 ring-2 ring-slate-200" : "border-slate-200 hover:border-slate-400",
         isDragging && "z-10 opacity-60 shadow-lg",
       )}
     >
-      <div className={cn("absolute -top-3 right-2 z-10 flex items-center gap-0.5 rounded-md border bg-card px-0.5 shadow-sm", selected ? "flex" : "hidden group-hover/item:flex")}>
+      <div className={cn("absolute -top-3 right-2 z-10 flex items-center gap-0.5 rounded-md border border-slate-200 bg-white px-0.5 shadow-sm", selected ? "flex" : "hidden group-hover/item:flex")}>
         <Button size="icon" variant="ghost" className="h-6 w-6" aria-label="Move up" onClick={(e) => (e.stopPropagation(), mutate((d) => ops.moveBy(d, id, -1)))}>
           <ArrowUp className="h-3.5 w-3.5" />
         </Button>
@@ -286,7 +286,7 @@ function GroupCard({ b }: { b: BlockItem }) {
         </span>
       </div>
       <BlockBody b={b} />
-      <div ref={setNodeRef} className={cn("mt-3 space-y-2 border-l-2 pl-3", isOver ? "border-primary" : "border-primary/20")}>
+      <div ref={setNodeRef} className={cn("mt-3 space-y-2 border-l-2 pl-3", isOver ? "border-slate-500" : "border-slate-300")}>
         <SortableContext items={b.memberIds.map((m) => `c:${m}`)} strategy={verticalListSortingStrategy}>
           {b.memberIds.map((m) => {
             const q = a.items[m];
@@ -329,14 +329,14 @@ function SectionView({ s, index }: { s: Section; index: number }) {
     <section id={`section-${s.id}`} className="space-y-3">
       <div
         onClick={(e) => (e.stopPropagation(), select({ kind: "section", id: s.id }))}
-        className={cn("cursor-pointer rounded-md border px-3 py-2", selected ? "border-primary ring-2 ring-primary/15" : "border-transparent hover:border-border")}
+        className={cn("cursor-pointer rounded-md border px-3 py-2", selected ? "border-slate-500 ring-2 ring-slate-200" : "border-slate-200 hover:border-slate-400")}
       >
         <h3 className={cn("text-lg font-bold", !s.titleEn.trim() && "italic text-destructive")}>{s.titleEn || `Section ${index + 1} (untitled)`}</h3>
         {s.titleVi && <div className="font-sans text-xs text-muted-foreground">{s.titleVi}</div>}
         {s.instructionsEn && <p className="mt-1 text-[15px] italic">{s.instructionsEn}</p>}
         {s.instructionsVi && <p className="font-sans text-xs italic text-muted-foreground">{s.instructionsVi}</p>}
       </div>
-      <div ref={setNodeRef} className={cn("min-h-12 space-y-3 rounded-md", isOver && "bg-primary/5")}>
+      <div ref={setNodeRef} className={cn("min-h-12 space-y-3 rounded-md", isOver && "bg-slate-50")}>
         <SortableContext items={s.itemIds.map((id) => `c:${id}`)} strategy={verticalListSortingStrategy}>
           {s.itemIds.map((id) => {
             const it = a.items[id];
@@ -371,7 +371,7 @@ export function Canvas() {
   const empty = Object.keys(a.items).length === 0;
   return (
     <div className="px-4 py-6 sm:px-8" onClick={() => select(null)}>
-      <article className="mx-auto max-w-[820px] rounded-lg border bg-paper font-serif shadow-sm">
+      <article className="mx-auto max-w-[820px] rounded-lg border border-slate-200 bg-white font-serif shadow-sm">
         <header className="border-b px-8 py-6 sm:px-12">
           <div className="font-sans text-xs font-medium uppercase tracking-wider text-muted-foreground">English · Grade {a.grade}</div>
           <h2 className="mt-1 text-2xl font-bold">{a.title || "Untitled assignment"}</h2>

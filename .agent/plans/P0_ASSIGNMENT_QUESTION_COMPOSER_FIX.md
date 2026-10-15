@@ -21,10 +21,10 @@ Base: `main` at `2678e570a75a86a7664ee60c88097c6df7887f2e`
 - [x] On successful authoring, validate returned server question IDs and insert the persisted questions at the selected Composition target.
 - [ ] Restrict PropertyPanel to Composition properties; question content edits must go through QuestionComposer.
 - [x] Change Composition Save to persist Assignment metadata and the Composition tree only; it no longer rewrites question content.
-- [ ] Refactor PropertyPanel question content editing to use an edit-capable QuestionComposer flow (the legacy editor is still present and must not be treated as persisted).
-- [ ] Define safe unlink/delete semantics so removing an item from an Assignment cannot accidentally delete a reusable Question Bank question.
-- [ ] Add backend and frontend tests for create, edit, reorder, move/group, remove, save/autosave, reload, duplicate-submit and unsupported question types.
-- [ ] Run backend tests, frontend lint/typecheck/build, migration validation and end-to-end browser checks.
+- [x] Refactor PropertyPanel question content editing to delegate prompt/answers/hint/explanation/media to QuestionComposer; keep only Composition settings in the panel.
+- [x] Define safe unlink semantics: Composition replacement removes stale AssignmentItem and detached AssignmentQuestion association rows without deleting the underlying Question record. The legacy explicit bulk-delete endpoint still deletes Question records and must not be used for Builder unlink.
+- [x] Add frontend unit tests for ordering and local unlink; backend suite runs in CI. End-to-end browser coverage for Composer create/edit/reload and duplicate-submit remains a follow-up.
+- [ ] Confirm the latest GitHub Actions run passes frontend lint/tests/build and backend tests. No browser E2E or live database migration validation has been run outside CI.
 
 ## Acceptance criteria
 
@@ -38,4 +38,4 @@ Base: `main` at `2678e570a75a86a7664ee60c88097c6df7887f2e`
 
 ## Current known limitation
 
-The branch now routes question creation through QuestionComposer and keeps Composition Save from rewriting question content. However, PropertyPanel still contains the legacy content editor and existing-question edit mode has not yet been connected to QuestionComposer. Backend/frontend tests and builds have not been run, so **P0 is not complete and this branch is not yet ready to merge**.
+The branch routes new question creation and supported existing-question edits through QuestionComposer; Composition Save persists only Assignment metadata and the Composition tree. Removed questions are unlinked from Assignment without deleting their Question records, and detached questions are not resurrected on reload. Matching/Cloze remain explicitly blocked until the Assignment Question API supports lossless round-tripping. **P0 is not merge-ready until the latest CI run passes and browser E2E is completed.**

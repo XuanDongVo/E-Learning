@@ -196,6 +196,11 @@ export function AssignmentQuestionComposerDialog({ assignmentId }: { assignmentI
         `The server returned ${created.length} saved question(s) for ${drafts.length} draft(s). Reload the Assignment before retrying to avoid duplicates.`,
       );
     }
+    if (created.some((item) => !Number.isSafeInteger(item.questionId) || item.questionId <= 0)) {
+      throw new Error(
+        "The server saved the request but returned an invalid question ID. Reload the Assignment before retrying to avoid duplicates.",
+      );
+    }
 
     const state = useBuilder.getState();
     const current = state.assignment;

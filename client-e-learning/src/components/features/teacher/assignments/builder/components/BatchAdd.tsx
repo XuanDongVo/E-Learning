@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { isQuestionTool } from "../ops";
 import { useBuilder } from "../store";
-import type { InsertTarget, ToolKey } from "../types";
+import type { InsertTarget, ToolKey } from "@/types/assignment-builder";
 import { TOOLS } from "./Toolbox";
 
 /** Pick one question type and insert multiple empty drafts at the selected location. */

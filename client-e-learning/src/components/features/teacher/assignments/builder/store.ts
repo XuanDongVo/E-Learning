@@ -6,186 +6,82 @@ import type { Assignment, ID, InsertTarget, Selection, ToolKey } from "@/types/a
 import type { DraftQuestion } from "@/types/question";
 
 export const snapshotOf = (a: Assignment) => JSON.stringify({ ...a, updatedAt: "" });
-
-export interface ConfirmAction {
-  label: string;
-  variant?: "default" | "destructive" | "outline";
-  run: () => void;
-}
-export interface ConfirmState {
-  title: string;
-  description: string;
-  actions: ConfirmAction[];
-}
-
+export interface ConfirmAction { label: string; variant?: "default" | "destructive" | "outline"; run: () => void; }
+export interface ConfirmState { title: string; description: string; actions: ConfirmAction[]; }
 interface BuilderState {
-  assignment: Assignment;
-  savedSnapshot: string;
-  loaded: boolean;
-  loadError: string | null;
-  selection: Selection;
-  mode: "edit" | "preview";
-  saveStatus: "idle" | "saving" | "error";
-  saveError: string | null;
-  lastSavedAt: string | null;
-  autosave: boolean;
-  confirm: ConfirmState | null;
-  settingsOpen: boolean;
-  questionComposerOpen: boolean;
-  questionComposerTarget: InsertTarget | null;
-  questionComposerEditId: ID | null;
-  questionComposerInitialQuestions: DraftQuestion[] | null;
-  questionComposerBlankRefs: number[];
-
+  assignment: Assignment; savedSnapshot: string; loaded: boolean; loadError: string | null; selection: Selection;
+  mode: "edit" | "preview"; saveStatus: "idle" | "saving" | "error"; saveError: string | null; lastSavedAt: string | null;
+  autosave: boolean; confirm: ConfirmState | null; settingsOpen: boolean;
+  questionComposerOpen: boolean; questionComposerTarget: InsertTarget | null; questionComposerEditId: ID | null;
+  questionComposerInitialQuestions: DraftQuestion[] | null; questionComposerBlankRefs: number[];
   load: (a: Assignment) => void;
   openQuestionComposer: (target?: InsertTarget | null, editId?: ID | null, initialQuestions?: DraftQuestion[] | null, blankRefs?: number[]) => void;
-  closeQuestionComposer: () => void;
-  mutate: (fn: (draft: Assignment) => void) => void;
-  select: (s: Selection) => void;
-  set: (p: Partial<BuilderState>) => void;
-  save: () => Promise<boolean>;
+  closeQuestionComposer: () => void; mutate: (fn: (draft: Assignment) => void) => void; select: (s: Selection) => void;
+  set: (p: Partial<BuilderState>) => void; save: () => Promise<boolean>;
   addTool: (tool: ToolKey, target?: InsertTarget | null) => void;
-  requestDeleteItem: (id: ID) => void;
-  requestDeleteSection: (id: ID) => void;
-  duplicate: (id: ID) => void;
-  ask: (c: ConfirmState) => void;
+  requestDeleteItem: (id: ID) => void; requestDeleteSection: (id: ID) => void; duplicate: (id: ID) => void; ask: (c: ConfirmState) => void;
 }
-
 const initialAssignment = ops.createEmptyAssignment();
-
 export const useBuilder = create<BuilderState>((set, get) => ({
-  assignment: initialAssignment,
-  savedSnapshot: snapshotOf(initialAssignment),
-  loaded: false,
-  loadError: null,
-  selection: null,
-  mode: "edit",
-  saveStatus: "idle",
-  saveError: null,
-  lastSavedAt: null,
-  autosave: true,
-  confirm: null,
-  settingsOpen: false,
-  questionComposerOpen: false,
-  questionComposerTarget: null,
-  questionComposerEditId: null,
-  questionComposerInitialQuestions: null,
-  questionComposerBlankRefs: [],
-
+  assignment: initialAssignment, savedSnapshot: snapshotOf(initialAssignment), loaded: false, loadError: null, selection: null,
+  mode: "edit", saveStatus: "idle", saveError: null, lastSavedAt: null, autosave: true, confirm: null, settingsOpen: false,
+  questionComposerOpen: false, questionComposerTarget: null, questionComposerEditId: null, questionComposerInitialQuestions: null, questionComposerBlankRefs: [],
   load: (a) => set({ assignment: a, savedSnapshot: snapshotOf(a), loaded: true, loadError: null, selection: null, saveStatus: "idle", lastSavedAt: a.updatedAt }),
-  mutate: (fn) => {
-    const draft = structuredClone(get().assignment);
-    fn(draft);
-    set({ assignment: draft });
-  },
+  mutate: (fn) => { const draft = structuredClone(get().assignment); fn(draft); set({ assignment: draft }); },
   select: (selection) => set({ selection }),
   openQuestionComposer: (target, editId, initialQuestions, blankRefs) => set({ questionComposerOpen: true, questionComposerTarget: target ?? null, questionComposerEditId: editId ?? null, questionComposerInitialQuestions: initialQuestions ?? null, questionComposerBlankRefs: blankRefs ?? [] }),
   closeQuestionComposer: () => set({ questionComposerOpen: false, questionComposerTarget: null, questionComposerEditId: null, questionComposerInitialQuestions: null, questionComposerBlankRefs: [] }),
-  set: (p) => set(p),
-  ask: (confirm) => set({ confirm }),
-
+  set: (p) => set(p), ask: (confirm) => set({ confirm }),
   save: async () => {
     if (get().saveStatus === "saving") return false;
-    const a = get().assignment;
-    set({ saveStatus: "saving", saveError: null });
-    try {
-      const saved = await saveBuilderAssignment(a);
-      set({ assignment: saved, saveStatus: "idle", savedSnapshot: snapshotOf(saved), lastSavedAt: saved.updatedAt, loadError: null });
-      return true;
-    } catch (e) {
-      set({ saveStatus: "error", saveError: (e as Error).message });
-      return false;
-    }
+    const a = get().assignment; set({ saveStatus: "saving", saveError: null });
+    try { const saved = await saveBuilderAssignment(a); set({ assignment: saved, saveStatus: "idle", savedSnapshot: snapshotOf(saved), lastSavedAt: saved.updatedAt, loadError: null }); return true; }
+    catch (e) { set({ saveStatus: "error", saveError: (e as Error).message }); return false; }
   },
-
   addTool: (tool, target) => {
+    const { selection } = get();
     if (ops.isQuestionTool(tool)) {
-      get().openQuestionComposer(target ?? ops.targetFromSelection(get().assignment, get().selection, false));
+      const item = ops.createItem(tool);
+      get().mutate((d) => {
+        let t = target ?? ops.targetFromSelection(d, selection, false);
+        if (!t) { const s = ops.newSection(); d.sections.push(s); t = { sectionId: s.id, groupId: null, index: 0 }; }
+        d.items[item.id] = item; ops.place(d, item.id, t);
+      });
+      set({ selection: { kind: "item", id: item.id } });
+      setTimeout(() => document.getElementById(`item-${item.id}`)?.scrollIntoView({ block: "center", behavior: "smooth" }), 50);
       return;
     }
-    const { selection } = get();
     if (tool === "SECTION") {
       const s = ops.newSection();
-      get().mutate((d) => {
-        const cur = selection ? (selection.kind === "section" ? selection.id : ops.locate(d, selection.id)?.sectionId) : null;
-        const idx = cur ? d.sections.findIndex((x) => x.id === cur) + 1 : d.sections.length;
-        d.sections.splice(idx, 0, s);
-      });
-      set({ selection: { kind: "section", id: s.id } });
-      return;
+      get().mutate((d) => { const cur = selection ? (selection.kind === "section" ? selection.id : ops.locate(d, selection.id)?.sectionId) : null; const idx = cur ? d.sections.findIndex((x) => x.id === cur) + 1 : d.sections.length; d.sections.splice(idx, 0, s); });
+      set({ selection: { kind: "section", id: s.id } }); return;
     }
     const item = ops.createItem(tool);
     get().mutate((d) => {
       let t = target ?? ops.targetFromSelection(d, selection, item.kind === "block");
-      if (!t) {
-        const s = ops.newSection();
-        d.sections.push(s);
-        t = { sectionId: s.id, groupId: null, index: 0 };
-      }
-      d.items[item.id] = item;
-      ops.place(d, item.id, t);
+      if (!t) { const s = ops.newSection(); d.sections.push(s); t = { sectionId: s.id, groupId: null, index: 0 }; }
+      d.items[item.id] = item; ops.place(d, item.id, t);
     });
     set({ selection: { kind: "item", id: item.id } });
     setTimeout(() => document.getElementById(`item-${item.id}`)?.scrollIntoView({ block: "center", behavior: "smooth" }), 50);
   },
-
-  duplicate: (id) => {
-    let nid: ID | null = null;
-    get().mutate((d) => (nid = ops.duplicateItem(d, id)));
-    if (nid) set({ selection: { kind: "item", id: nid } });
-    toast.success("Duplicated");
-  },
-
+  duplicate: (id) => { let nid: ID | null = null; get().mutate((d) => (nid = ops.duplicateItem(d, id))); if (nid) set({ selection: { kind: "item", id: nid } }); toast.success("Duplicated"); },
   requestDeleteItem: (id) => {
-    const a = get().assignment;
-    const it = a.items[id];
-    if (!it) return;
-    const done = () => {
-      if (get().selection?.id === id) set({ selection: null });
-    };
-    if (it.kind === "block" && it.memberIds.length) {
-      get().ask({
-        title: `Delete "${ops.blockLabel(it)}"?`,
-        description: `This shared block owns ${it.memberIds.length} question(s). Delete them too, or keep them as standalone questions?`,
-        actions: [
-          { label: "Ungroup & keep questions", variant: "outline", run: () => (get().mutate((d) => ops.removeItem(d, id, false)), done()) },
-          { label: "Delete with members", variant: "destructive", run: () => (get().mutate((d) => ops.removeItem(d, id, true)), done()) },
-        ],
-      });
-      return;
-    }
-    get().mutate((d) => ops.removeItem(d, id));
-    done();
-    toast("Item deleted");
+    const a = get().assignment; const it = a.items[id]; if (!it) return;
+    const done = () => { if (get().selection?.id === id) set({ selection: null }); };
+    if (it.kind === "block" && it.memberIds.length) { get().ask({ title: `Delete "${ops.blockLabel(it)}"?`, description: `This shared block owns ${it.memberIds.length} question(s). Delete them too, or keep them as standalone questions?`, actions: [{ label: "Ungroup & keep questions", variant: "outline", run: () => (get().mutate((d) => ops.removeItem(d, id, false)), done()) }, { label: "Delete with members", variant: "destructive", run: () => (get().mutate((d) => ops.removeItem(d, id, true)), done()) }] }); return; }
+    get().mutate((d) => ops.removeItem(d, id)); done(); toast("Item deleted");
   },
-
   requestDeleteSection: (id) => {
-    const s = get().assignment.sections.find((x) => x.id === id);
-    if (!s) return;
-    const run = () => {
-      get().mutate((d) => ops.removeSection(d, id));
-      if (get().selection?.id === id) set({ selection: null });
-    };
+    const s = get().assignment.sections.find((x) => x.id === id); if (!s) return;
+    const run = () => { get().mutate((d) => ops.removeSection(d, id)); if (get().selection?.id === id) set({ selection: null }); };
     if (s.itemIds.length === 0) return run();
-    get().ask({
-      title: `Delete section "${s.title || "Untitled"}"?`,
-      description: "All items in this section will be deleted.",
-      actions: [{ label: "Delete section", variant: "destructive", run }],
-    });
+    get().ask({ title: `Delete section "${s.title || "Untitled"}"?`, description: "All items in this section will be deleted.", actions: [{ label: "Delete section", variant: "destructive", run }] });
   },
 }));
-
-export function useIsDirty() {
-  return useBuilder((s) => snapshotOf(s.assignment) !== s.savedSnapshot);
-}
-
+export function useIsDirty() { return useBuilder((s) => snapshotOf(s.assignment) !== s.savedSnapshot); }
 export async function loadAssignment(id?: string) {
   useBuilder.setState({ loaded: false, loadError: null, saveStatus: "idle", saveError: null });
-  try {
-    if (!id) throw new Error("Select or create an Assignment from the Assignments page first.");
-    const assignment = await loadBuilderAssignment(id);
-    useBuilder.getState().load(assignment);
-  } catch (error) {
-    useBuilder.setState({ loaded: true, loadError: error instanceof Error ? error.message : "Could not load Assignment." });
-  }
+  try { if (!id) throw new Error("Select or create an Assignment from the Assignments page first."); useBuilder.getState().load(await loadBuilderAssignment(id)); }
+  catch (error) { useBuilder.setState({ loaded: true, loadError: error instanceof Error ? error.message : "Could not load Assignment." }); }
 }

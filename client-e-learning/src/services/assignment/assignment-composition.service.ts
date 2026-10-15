@@ -168,6 +168,16 @@ function mapQuestion(
   return {
     id: asId("q", row.questionId),
     kind: "question",
+    serverQuestionId: row.questionId,
+    serverType: q.type,
+    serverDifficulty: q.difficulty,
+    serverMediaIds: (q.media ?? []).map((media) => media.mediaId),
+    serverMedia: (q.media ?? []).map((media) => ({
+      mediaId: media.mediaId,
+      mediaType: media.mediaType,
+      url: media.url,
+    })),
+    compositionItemId: item?.id,
     content,
     config: {
       points: item?.possiblePoints ?? 1,
@@ -211,6 +221,7 @@ function blockFromApi(item: ApiItem): BlockItem {
   return {
     id: asId("b", item.id),
     kind: "block",
+    compositionItemId: item.id,
     block,
     memberIds: (item.children ?? []).map((child) =>
       asId("q", child.questionId ?? child.id),
@@ -273,23 +284,8 @@ function mapAssignment(
     };
   });
 
-  // Keep legacy-owned questions visible even if older Composition data was incomplete.
-  for (const row of questions) {
-    const id = asId("q", row.questionId);
-    if (!items[id]) {
-      items[id] = mapQuestion(row, undefined);
-      if (!sections.length)
-        sections.push({
-          id: "s-local-1",
-          title: "Section 1",
-          titleVi: "Section 1",
-          instructions: "",
-          instructionsVi: "",
-          itemIds: [],
-        });
-      sections[0].itemIds.push(id);
-    }
-  }
+  // AssignmentQuestion ownership is not a placement/order source of truth.
+  // Detached questions must not be resurrected into Composition on reload.
 
   const settings = {
     timeLimitMin: api.timeLimitSeconds
@@ -357,10 +353,10 @@ function serializeQuestion(
   id: number | null,
 ): WriteItem {
   return {
-    id,
+    id: q.compositionItemId ?? null,
     position,
     itemType: "QUESTION",
-    questionId: numberId(q.id, "q"),
+    questionId: q.serverQuestionId ?? numberId(q.id, "q"),
     possiblePoints: q.config.isExample ? 0 : q.config.points,
     required: q.config.required,
     example: q.config.isExample,
@@ -378,7 +374,7 @@ function serializeItem(
   if (item.kind === "question")
     return serializeQuestion(item, position, numberId(item.id, "item"));
   const b = serializeBlock(item.block);
-  const id = numberId(item.id, "b");
+  const id = item.compositionItemId ?? numberId(item.id, "b");
   const children = item.memberIds
     .map((memberId, index) => allItems[memberId])
     .filter((x): x is QuestionItem => x?.kind === "question")

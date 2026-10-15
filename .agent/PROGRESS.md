@@ -95,3 +95,16 @@ This file tracks implementation state and does not claim the above work is done.
 - [x] Composition Save no longer updates question content; it writes Assignment metadata and Composition structure only.
 - [ ] Existing-question content editing is not yet integrated with an edit-capable Composer flow. The legacy PropertyPanel question editor still needs refactoring before this can be considered complete.
 - [ ] No build, lint, unit, integration or browser tests were run through the GitHub connector. Verify locally/CI before merge.
+
+
+### P0 completion follow-up — unlink safety, edit mode and CI (2026-10-15)
+- [x] PropertyPanel delegates persisted question content edits to QuestionComposer; points/required/example/grading remain Composition properties.
+- [x] Existing supported question types load as Composer drafts and save via Assignment Question update API. Matching/Cloze edits are blocked with an explicit message until their full data contract can be round-tripped.
+- [x] Composition serialization preserves server AssignmentItem IDs for questions and blocks. Save no longer rewrites question content and no longer resets persisted item IDs.
+- [x] Composition loading no longer appends orphan AssignmentQuestion rows into the visible Composition, preventing removed questions from reappearing.
+- [x] Composition replacement now deletes only stale AssignmentItem rows and the corresponding detached AssignmentQuestion association rows; it does not delete underlying Question records.
+- [x] Passage blank authoring now seeds QuestionComposer drafts instead of creating local-only questions that cannot be persisted.
+- [x] Disabled unsafe duplicate actions for persisted questions/populated groups until duplicate-as-new-question is implemented.
+- [x] Added frontend unit tests for Composition ordering and unlink behavior; added GitHub Actions workflow for frontend lint/tests/build and backend tests with PostgreSQL.
+- [ ] Latest CI run must pass after the final commit. Browser E2E and a manual live-assignment verification are still outstanding.
+- Note: the legacy explicit AssignmentQuestion bulk-delete endpoint still deletes Question records. Builder unlink does not call it; keep that endpoint out of the unlink flow.

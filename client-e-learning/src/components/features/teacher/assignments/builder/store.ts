@@ -11,6 +11,7 @@ export interface ConfirmState { title: string; description: string; actions: Con
 interface BuilderState {
   assignment: Assignment; savedSnapshot: string; loaded: boolean; loadError: string | null; selection: Selection;
   mode: "edit" | "preview"; saveStatus: "idle" | "saving" | "error"; saveError: string | null; lastSavedAt: string | null;
+  revision: number; savedRevision: number;
   autosave: boolean; confirm: ConfirmState | null; settingsOpen: boolean;
   questionComposerOpen: boolean; questionComposerTarget: InsertTarget | null; questionComposerEditId: ID | null;
   questionComposerInitialQuestions: DraftQuestion[] | null; questionComposerBlankRefs: number[];
@@ -22,21 +23,116 @@ interface BuilderState {
   requestDeleteItem: (id: ID) => void; requestDeleteSection: (id: ID) => void; duplicate: (id: ID) => void; ask: (c: ConfirmState) => void;
 }
 const initialAssignment = ops.createEmptyAssignment();
+
+function mergePersistedIdentity(draft: Assignment, saved: Assignment): Assignment {
+  const savedSections = new Map(saved.sections.map((section) => [section.id, section]));
+  const savedItems = saved.items;
+  const items = { ...draft.items };
+
+  for (const [id, item] of Object.entries(items)) {
+    const persisted = savedItems[id];
+    if (!persisted || persisted.kind !== item.kind) continue;
+
+    if (item.kind === "question" && persisted.kind === "question") {
+      items[id] = {
+        ...item,
+        compositionItemId: persisted.compositionItemId ?? item.compositionItemId,
+        serverQuestionId: persisted.serverQuestionId ?? item.serverQuestionId,
+        serverType: persisted.serverType ?? item.serverType,
+        serverDifficulty: persisted.serverDifficulty ?? item.serverDifficulty,
+        serverMediaIds: persisted.serverMediaIds ?? item.serverMediaIds,
+        serverMedia: persisted.serverMedia ?? item.serverMedia,
+        serverQuestionSnapshot: persisted.serverQuestionSnapshot ?? item.serverQuestionSnapshot,
+      };
+    } else if (item.kind === "block" && persisted.kind === "block") {
+      items[id] = { ...item, compositionItemId: persisted.compositionItemId ?? item.compositionItemId };
+    }
+  }
+
+  return {
+    ...draft,
+    serverId: saved.serverId ?? draft.serverId,
+    updatedAt: saved.updatedAt ?? draft.updatedAt,
+    sections: draft.sections.map((section) => ({
+      ...section,
+      serverId: savedSections.get(section.id)?.serverId ?? section.serverId,
+    })),
+    items,
+  };
+}
+
+let savePromise: Promise<boolean> | null = null;
+let saveRequested = false;
+
 export const useBuilder = create<BuilderState>((set, get) => ({
   assignment: initialAssignment, savedSnapshot: snapshotOf(initialAssignment), loaded: false, loadError: null, selection: null,
-  mode: "edit", saveStatus: "idle", saveError: null, lastSavedAt: null, autosave: true, confirm: null, settingsOpen: false,
+  mode: "edit", saveStatus: "idle", saveError: null, lastSavedAt: null, revision: 0, savedRevision: 0, autosave: true, confirm: null, settingsOpen: false,
   questionComposerOpen: false, questionComposerTarget: null, questionComposerEditId: null, questionComposerInitialQuestions: null, questionComposerBlankRefs: [],
-  load: (a) => set({ assignment: a, savedSnapshot: snapshotOf(a), loaded: true, loadError: null, selection: null, saveStatus: "idle", lastSavedAt: a.updatedAt }),
-  mutate: (fn) => { const draft = structuredClone(get().assignment); fn(draft); set({ assignment: draft }); },
+  load: (a) => {
+    saveRequested = false;
+    set({ assignment: a, savedSnapshot: snapshotOf(a), revision: 0, savedRevision: 0, loaded: true, loadError: null, selection: null, saveStatus: "idle", saveError: null, lastSavedAt: a.updatedAt });
+  },
+  mutate: (fn) => {
+    const draft = structuredClone(get().assignment);
+    fn(draft);
+    set((state) => ({ assignment: draft, revision: state.revision + 1 }));
+  },
   select: (selection) => set({ selection }),
   openQuestionComposer: (target, editId, initialQuestions, blankRefs) => set({ questionComposerOpen: true, questionComposerTarget: target ?? null, questionComposerEditId: editId ?? null, questionComposerInitialQuestions: initialQuestions ?? null, questionComposerBlankRefs: blankRefs ?? [] }),
   closeQuestionComposer: () => set({ questionComposerOpen: false, questionComposerTarget: null, questionComposerEditId: null, questionComposerInitialQuestions: null, questionComposerBlankRefs: [] }),
   set: (p) => set(p), ask: (confirm) => set({ confirm }),
-  save: async () => {
-    if (get().saveStatus === "saving") return false;
-    const a = get().assignment; set({ saveStatus: "saving", saveError: null });
-    try { const saved = await saveBuilderAssignment(a); set({ assignment: saved, saveStatus: "idle", savedSnapshot: snapshotOf(saved), lastSavedAt: saved.updatedAt, loadError: null }); return true; }
-    catch (e) { set({ saveStatus: "error", saveError: (e as Error).message }); return false; }
+  save: () => {
+    if (savePromise) {
+      saveRequested = true;
+      return savePromise;
+    }
+
+    savePromise = (async () => {
+      let savedAtLeastOnce = false;
+      try {
+        do {
+          saveRequested = false;
+          const start = get();
+          const revisionAtStart = start.revision;
+          const assignmentAtStart = structuredClone(start.assignment);
+          set({ saveStatus: "saving", saveError: null });
+
+          const saved = await saveBuilderAssignment(assignmentAtStart);
+          const latest = get();
+          const changedDuringSave = latest.revision !== revisionAtStart;
+          const assignment = changedDuringSave
+            ? mergePersistedIdentity(latest.assignment, saved)
+            : saved;
+
+          set({
+            assignment,
+            saveStatus: "idle",
+            savedSnapshot: snapshotOf(saved),
+            savedRevision: revisionAtStart,
+            lastSavedAt: saved.updatedAt,
+            loadError: null,
+          });
+          savedAtLeastOnce = true;
+
+          // Do not overwrite edits made while the request was in flight.
+          // If another edit/save was requested, immediately persist the newer revision.
+          if (!changedDuringSave && !saveRequested) break;
+        } while (true);
+
+        return savedAtLeastOnce;
+      } catch (error) {
+        set({
+          saveStatus: "error",
+          saveError: error instanceof Error ? error.message : "Could not save Assignment.",
+        });
+        return false;
+      } finally {
+        savePromise = null;
+        saveRequested = false;
+      }
+    })();
+
+    return savePromise;
   },
   addTool: (tool, target, count = 1) => {
     const { selection } = get();

@@ -32,9 +32,10 @@ interface BuilderState {
   settingsOpen: boolean;
   questionComposerOpen: boolean;
   questionComposerTarget: InsertTarget | null;
+  questionComposerEditId: ID | null;
 
   load: (a: Assignment) => void;
-  openQuestionComposer: (target?: InsertTarget | null) => void;
+  openQuestionComposer: (target?: InsertTarget | null, editId?: ID | null) => void;
   closeQuestionComposer: () => void;
   mutate: (fn: (draft: Assignment) => void) => void;
   select: (s: Selection) => void;
@@ -64,6 +65,7 @@ export const useBuilder = create<BuilderState>((set, get) => ({
   settingsOpen: false,
   questionComposerOpen: false,
   questionComposerTarget: null,
+  questionComposerEditId: null,
 
   load: (a) => set({ assignment: a, savedSnapshot: snapshotOf(a), loaded: true, loadError: null, selection: null, saveStatus: "idle", lastSavedAt: a.updatedAt }),
   mutate: (fn) => {
@@ -72,8 +74,8 @@ export const useBuilder = create<BuilderState>((set, get) => ({
     set({ assignment: draft });
   },
   select: (selection) => set({ selection }),
-  openQuestionComposer: (target) => set({ questionComposerOpen: true, questionComposerTarget: target ?? null }),
-  closeQuestionComposer: () => set({ questionComposerOpen: false, questionComposerTarget: null }),
+  openQuestionComposer: (target, editId) => set({ questionComposerOpen: true, questionComposerTarget: target ?? null, questionComposerEditId: editId ?? null }),
+  closeQuestionComposer: () => set({ questionComposerOpen: false, questionComposerTarget: null, questionComposerEditId: null }),
   set: (p) => set(p),
   ask: (confirm) => set({ confirm }),
 

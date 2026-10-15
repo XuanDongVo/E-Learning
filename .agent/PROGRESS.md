@@ -78,3 +78,11 @@ This file tracks implementation state and does not claim the above work is done.
 - The current backend Question Engine does not safely accept MATCHING/CLOZE authoring payloads. These tools are hidden from new-item menus; if an existing Assignment contains a type the adapter cannot safely represent, loading stops with a visible error instead of silently rewriting it.
 - Media blocks now upload an image through the existing media API and persist `assetId`, alt text, caption and preview URL; asset IDs are required by server validation.
 - No build, lint, test, migration validation or browser end-to-end run has been executed/verified in this session.
+
+
+## P0 Assignment Question Composer fix (2026-10-15)
+- Created branch `fix/assignment-p0-question-composer-main` from `main` at `2678e570a75a86a7664ee60c88097c6df7887f2e`.
+- Removed the legacy side effect from `AssignmentQuestionService.create()`: creating question ownership no longer creates a default Section or AssignmentItem. Composition placement is owned by the Composition API.
+- Added `.agent/plans/P0_ASSIGNMENT_QUESTION_COMPOSER_FIX.md` with the architecture contract, remaining implementation tasks and acceptance criteria.
+- **P0 remains IN PROGRESS.** Toolbox/QuestionComposer integration, PropertyPanel boundary, composition-only save, deletion semantics and tests are still outstanding.
+- No build, lint, test or end-to-end checks were run in this GitHub-only update. Do not treat this commit as a passing verification signal.

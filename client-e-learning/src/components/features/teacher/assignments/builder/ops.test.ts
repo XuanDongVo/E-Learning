@@ -34,11 +34,10 @@ describe("Assignment Builder composition operations", () => {
     const section = newSection();
     assignment.sections.push(section);
 
-    const question = createItem("SINGLE_CHOICE");
-    assignment.items[question.id] = {
-      ...question,
-      serverQuestionId: 42,
-    };
+    const created = createItem("SINGLE_CHOICE");
+    if (created.kind !== "question") throw new Error("Expected a question item.");
+    const question = { ...created, serverQuestionId: 42 };
+    assignment.items[question.id] = question;
     place(assignment, question.id, { sectionId: section.id, groupId: null, index: 0 });
 
     removeItem(assignment, question.id);

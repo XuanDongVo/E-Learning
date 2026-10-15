@@ -31,7 +31,10 @@ public class QuestionSpecRequestFactory {
         return switch (request.getType()) {
             case SINGLE_CHOICE -> new SingleChoiceSpec(common, choices, correctKey(request));
             case MULTIPLE_CHOICE -> new MultipleChoiceSpec(common, choices, correctKeys(request));
-            case TRUE_FALSE -> new TrueFalseSpec(common, answerValues.stream().findFirst().map(v -> "TRUE".equalsIgnoreCase(v)).orElse(null));
+            case TRUE_FALSE -> new TrueFalseSpec(common, answerValues.stream().findFirst()
+                    .filter(v -> "TRUE".equalsIgnoreCase(v) || "FALSE".equalsIgnoreCase(v))
+                    .map(v -> "TRUE".equalsIgnoreCase(v))
+                    .orElse(null));
             case FILL_IN_BLANK -> new FillInBlankSpec(common, answerValues);
             case TYPE_ANSWER -> new TypeAnswerSpec(common, answerValues, MatchingMode.CASE_INSENSITIVE_TRIM);
             case MATCHING, CLOZE -> throw new IllegalArgumentException("MATCHING and CLOZE require type-specific authoring fields");

@@ -106,7 +106,7 @@ export function QuestionEditor({
     <QuestionEditorForm
       key={questionId ?? "new"}
       questionId={questionId}
-      initialQuestion={questionQuery.data}
+      initialQuestion={questionQuery.data ?? undefined}
       bankName={bankName}
       onNavigate={onNavigate}
     />

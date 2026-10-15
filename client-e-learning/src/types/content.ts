@@ -79,6 +79,8 @@ export interface ContentQuestionBank {
 export interface QuestionOptionResponse {
   id: number;
   content: string;
+  /** Stable order persisted by the backend; older API fixtures may omit it. */
+  displayOrder?: number;
   isCorrect: boolean;
 }
 

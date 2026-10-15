@@ -8,7 +8,16 @@ import type {
   Section,
   Selection,
   ToolKey,
-} from "./types";
+} from "@/types/assignment-builder";
+
+/** Empty state only; actual assignment content must come from the backend. */
+export function createEmptyAssignment(): Assignment {
+  return {
+    id: "", title: "", grade: 6, instructions: "",
+    settings: { timeLimitMin: null, startAt: "", dueAt: "", classIds: [], showAnswers: "off", showScoreAfterSubmit: true, showPoints: true, shuffle: false },
+    sections: [], items: {}, updatedAt: "",
+  };
+}
 
 export const uid = (p = "id") => `${p}_${Math.random().toString(36).slice(2, 10)}`;
 export const letter = (i: number) => String.fromCharCode(65 + i);
@@ -130,6 +139,12 @@ export function duplicateItem(a: Assignment, id: ID): ID | null {
   if (!item || !loc) return null;
   const clone = structuredClone(item) as Item;
   clone.id = uid(item.kind === "block" ? "b" : "q");
+  if (clone.kind === "block") clone.compositionItemId = undefined;
+  if (clone.kind === "question") {
+    clone.serverQuestionId = undefined;
+    clone.compositionItemId = undefined;
+    clone.serverQuestionSnapshot = undefined;
+  }
   if (clone.kind === "question" && "options" in clone.content)
     clone.content.options.forEach((o) => (o.id = uid("o")));
   if (clone.kind === "question" && clone.content.type === "MULTI_TEXT_INPUT")
@@ -147,6 +162,9 @@ export function duplicateItem(a: Assignment, id: ID): ID | null {
     for (const m of (item as BlockItem).memberIds) {
       const q = structuredClone(a.items[m]) as QuestionItem;
       q.id = uid("q");
+      q.serverQuestionId = undefined;
+      q.compositionItemId = undefined;
+      q.serverQuestionSnapshot = undefined;
       q.config.groupId = clone.id;
       if (q.content.type === "MATCHING" && q.content.poolId === id) {
         q.content.poolId = clone.id;
@@ -164,9 +182,9 @@ export function duplicateItem(a: Assignment, id: ID): ID | null {
 export function newSection(): Section {
   return {
     id: uid("s"),
-    titleEn: "New section",
+    title: "New section",
     titleVi: "",
-    instructionsEn: "",
+    instructions: "",
     instructionsVi: "",
     itemIds: [],
   };

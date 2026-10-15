@@ -1,8 +1,8 @@
 import { AlertCircle, AlertTriangle, CheckCircle2, ChevronUp } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { useBuilder } from "../store";
-import type { Issue } from "../validation";
+import { useBuilder } from "@/components/features/teacher/assignments/builder/store";
+import type { Issue } from "@/components/features/teacher/assignments/builder/validation";
 import { useIssues } from "./Canvas";
 
 export function goToIssue(i: Issue) {

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { BookOpen, CheckCircle2, Clock3, FileSpreadsheet, Plus, Search, Upload, Users } from "lucide-react";
 import { toast } from "sonner";
@@ -29,6 +30,7 @@ const initialForm: CreateAssignmentRequest = {
 
 export default function TeacherAssignmentsPage() {
   const queryClient = useQueryClient();
+  const router = useRouter();
   const [wizardOpen, setWizardOpen] = useState(false);
   const [guideOpen, setGuideOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
@@ -47,11 +49,16 @@ export default function TeacherAssignmentsPage() {
   });
   const create = useMutation({
     mutationFn: createAssignment,
-    onSuccess: () => {
+    onSuccess: (response) => {
       void queryClient.invalidateQueries({ queryKey: ["assignments"] });
       setWizardOpen(false);
       setForm(initialForm);
-      toast.success("Assignment draft created.");
+      if (!response.data) {
+        toast.error("Assignment was created, but the server returned no Assignment ID.");
+        return;
+      }
+      toast.success("Assignment draft created. Opening the Builder.");
+      router.push(`/teacher/assignments/${response.data.id}`);
     },
     onError: (error) => {
       toast.error(error instanceof Error ? error.message : "Could not create assignment.");

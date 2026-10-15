@@ -1,16 +1,18 @@
+import { useQuery } from "@tanstack/react-query";
 import { Checkbox } from "@/components/ui/checkbox";
+import { classService } from "@/services/class.service";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { MOCK_CLASSES } from "../seed";
-import { useBuilder } from "../store";
-import type { AssignmentSettings, ShowAnswers } from "../types";
+import { useBuilder } from "@/components/features/teacher/assignments/builder/store";
+import type { AssignmentSettings, ShowAnswers } from "@/types/assignment-builder";
 
 export function SettingsSheet() {
   const open = useBuilder((s) => s.settingsOpen);
+  const classes = useQuery({ queryKey: ["classes"], queryFn: classService.list });
   const a = useBuilder((s) => s.assignment);
   const { set, mutate } = useBuilder.getState();
   const st = a.settings;
@@ -62,14 +64,16 @@ export function SettingsSheet() {
           <div className="space-y-1.5">
             <Label>Target classes</Label>
             <div className="grid grid-cols-3 gap-2 rounded-md border p-3">
-              {MOCK_CLASSES.map((c) => (
-                <label key={c} className="flex items-center gap-2 text-sm">
-                  <Checkbox checked={st.classIds.includes(c)} onCheckedChange={(v) => upd({ classIds: v ? [...st.classIds, c] : st.classIds.filter((x) => x !== c) })} />
-                  {c}
+              {(classes.data?.data ?? []).filter((classItem) => classItem.status === "ACTIVE" &&
+                (Number(classItem.grade.code) === a.grade || classItem.grade.name.includes(String(a.grade)))).map((classItem) => (
+                <label key={classItem.id} className="flex items-center gap-2 text-sm">
+                  <Checkbox checked={st.classIds.includes(String(classItem.id))} onCheckedChange={(v) => upd({ classIds: v ? [...new Set([...st.classIds, String(classItem.id)])] : st.classIds.filter((x) => x !== String(classItem.id)) })} />
+                  {classItem.name}
                 </label>
               ))}
             </div>
-            {st.classIds.length === 0 && <p className="text-xs text-warning-foreground">No class selected yet</p>}
+            {classes.isLoading ? <p className="text-xs text-muted-foreground">Loading classes…</p> : st.classIds.length === 0 && <p className="text-xs text-warning-foreground">No class selected; this Assignment targets the whole grade when saved.</p>}
+            {classes.isError && <p className="text-xs text-destructive">Could not load classes. Check your connection and retry.</p>}
           </div>
           <div className="space-y-1.5">
             <Label>Show answers to students</Label>
@@ -82,6 +86,10 @@ export function SettingsSheet() {
               </SelectContent>
             </Select>
           </div>
+          <label className="flex items-center justify-between gap-3 text-sm">
+            <span>Show score after submission</span>
+            <Switch checked={st.showScoreAfterSubmit} onCheckedChange={(v) => upd({ showScoreAfterSubmit: v })} />
+          </label>
           <label className="flex items-center justify-between gap-3 text-sm">
             <span>Show points per question</span>
             <Switch checked={st.showPoints} onCheckedChange={(v) => upd({ showPoints: v })} />

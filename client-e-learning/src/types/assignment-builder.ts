@@ -1,3 +1,5 @@
+import type { QuestionDifficulty } from "@/types/question";
+
 export type ID = string;
 
 export type InteractionType =
@@ -17,7 +19,6 @@ interface BaseQuestion {
   prompt: string;
   explanation?: string;
   hint?: string;
-  /** Number of the passage blank ({{n}}) this question answers, when inside a cloze passage group. */
   blankRef?: number | null;
 }
 
@@ -70,6 +71,12 @@ export interface ItemConfig {
 export interface QuestionItem {
   id: ID;
   kind: "question";
+  serverQuestionId?: number;
+  serverType?: string;
+  serverDifficulty?: QuestionDifficulty;
+  serverMediaIds?: number[];
+  compositionItemId?: number;
+  serverQuestionSnapshot?: string;
   content: QuestionContent;
   config: ItemConfig;
 }
@@ -82,7 +89,7 @@ export interface PoolEntry {
 export type BlockContent =
   | { type: "INSTRUCTIONS"; text: string }
   | { type: "PASSAGE"; title: string; text: string }
-  | { type: "MEDIA"; url: string; alt: string; caption: string }
+  | { type: "MEDIA"; assetId?: string; url: string; alt: string; caption: string }
   | { type: "POOL"; title: string; entries: PoolEntry[] };
 
 export type BlockType = BlockContent["type"];
@@ -90,6 +97,7 @@ export type BlockType = BlockContent["type"];
 export interface BlockItem {
   id: ID;
   kind: "block";
+  compositionItemId?: number;
   block: BlockContent;
   /** Ordered ids of questions owned by this shared block (their config.groupId === this id). */
   memberIds: ID[];
@@ -99,9 +107,10 @@ export type Item = QuestionItem | BlockItem;
 
 export interface Section {
   id: ID;
-  titleEn: string;
+  serverId?: number;
+  title: string;
   titleVi: string;
-  instructionsEn: string;
+  instructions: string;
   instructionsVi: string;
   itemIds: ID[];
 }
@@ -114,12 +123,16 @@ export interface AssignmentSettings {
   dueAt: string;
   classIds: string[];
   showAnswers: ShowAnswers;
+  showScoreAfterSubmit: boolean;
   showPoints: boolean;
   shuffle: boolean;
 }
 
 export interface Assignment {
   id: ID;
+  serverId?: number;
+  academicYear?: string;
+  status?: "DRAFT" | "PUBLISHED" | "ARCHIVED";
   title: string;
   grade: 6 | 7 | 8;
   instructions: string;

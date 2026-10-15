@@ -4,9 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
-import { letter } from "../ops";
-import { useBuilder } from "../store";
-import { buildStudentView, type SBlock, type SQuestion } from "../student-view";
+import { letter } from "@/components/features/teacher/assignments/builder/ops";
+import { useBuilder } from "@/components/features/teacher/assignments/builder/store";
+import { buildStudentView, type SBlock, type SQuestion } from "@/components/features/teacher/assignments/builder/student-view";
 import { BlankChip, RichText } from "./RichText";
 
 type Answers = Record<string, string | string[] | Record<number, string>>;
@@ -165,9 +165,9 @@ export function StudentPreview() {
           <div className="space-y-8 px-10 py-6">
             {view.sections.map((s) => (
               <section key={s.id}>
-                <h2 className="text-lg font-bold">{s.titleEn}</h2>
+                <h2 className="text-lg font-bold">{s.title}</h2>
                 {s.titleVi && <div className="font-sans text-xs text-muted-foreground">{s.titleVi}</div>}
-                {s.instructionsEn && <p className="mt-1 italic">{s.instructionsEn}</p>}
+                {s.instructions && <p className="mt-1 italic">{s.instructions}</p>}
                 {s.instructionsVi && <p className="font-sans text-xs italic text-muted-foreground">{s.instructionsVi}</p>}
                 <div className="mt-3 space-y-2">
                   {s.units.map((u) =>

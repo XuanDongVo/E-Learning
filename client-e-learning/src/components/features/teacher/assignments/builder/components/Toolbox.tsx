@@ -13,8 +13,8 @@ import {
   ToggleLeft,
   type LucideIcon,
 } from "lucide-react";
-import { useBuilder } from "../store";
-import type { ToolKey } from "../types";
+import { useBuilder } from "@/components/features/teacher/assignments/builder/store";
+import type { ToolKey } from "@/types/assignment-builder";
 
 export const TOOLS: { key: ToolKey; label: string; desc: string; icon: LucideIcon; group: string }[] = [
   { key: "SINGLE_CHOICE", label: "Single choice", desc: "One correct option (A–D)", icon: CircleDot, group: "Questions" },
@@ -29,6 +29,8 @@ export const TOOLS: { key: ToolKey; label: string; desc: string; icon: LucideIco
   { key: "MEDIA", label: "Image", desc: "Picture with alt text & caption", icon: ImageIcon, group: "Shared content" },
   { key: "POOL", label: "Answer pool", desc: "Lettered list A, B, C… for matching", icon: ListChecks, group: "Shared content" },
 ];
+
+const AVAILABLE_TOOLS = TOOLS.filter((tool) => tool.key !== "MATCHING" && tool.key !== "MULTI_BLANKS");
 
 function ToolButton({ t }: { t: (typeof TOOLS)[number] }) {
   const addTool = useBuilder((s) => s.addTool);
@@ -54,7 +56,7 @@ function ToolButton({ t }: { t: (typeof TOOLS)[number] }) {
 }
 
 export function Toolbox() {
-  const groups = [...new Set(TOOLS.map((t) => t.group))];
+  const groups = [...new Set(AVAILABLE_TOOLS.map((t) => t.group))];
   return (
     <div className="space-y-4 p-3">
       <p className="px-1 text-xs text-muted-foreground">Click to add after the selected item, or drag onto the page.</p>
@@ -62,7 +64,7 @@ export function Toolbox() {
         <div key={g}>
           <div className="mb-1 px-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{g}</div>
           <div className="space-y-0.5">
-            {TOOLS.filter((t) => t.group === g).map((t) => (
+            {AVAILABLE_TOOLS.filter((t) => t.group === g).map((t) => (
               <ToolButton key={t.key} t={t} />
             ))}
           </div>

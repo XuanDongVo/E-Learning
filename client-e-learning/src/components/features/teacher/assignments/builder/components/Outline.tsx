@@ -4,9 +4,9 @@ import { CSS } from "@dnd-kit/utilities";
 import { ArrowDown, ArrowUp, ChevronRight, GripVertical, Pencil, Trash2 } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
-import * as ops from "../ops";
-import { useBuilder } from "../store";
-import type { BlockItem, ID, Item, Section } from "../types";
+import * as ops from "@/components/features/teacher/assignments/builder/ops";
+import { useBuilder } from "@/components/features/teacher/assignments/builder/store";
+import type { BlockItem, ID, Item, Section } from "@/types/assignment-builder";
 import { useIssues, useNumbering } from "./Canvas";
 
 function itemLabel(it: Item, num?: number) {
@@ -158,14 +158,14 @@ function SectionNode({ s, index, count }: { s: Section; index: number; count: nu
         <div className="min-w-0 flex-1 truncate">
           {renaming ? (
             <Rename
-              value={s.titleEn}
+              value={s.title}
               onDone={(v) => {
                 setRenaming(false);
-                if (v != null) mutate((d) => (d.sections.find((x) => x.id === s.id)!.titleEn = v));
+                if (v != null) mutate((d) => (d.sections.find((x) => x.id === s.id)!.title = v));
               }}
             />
           ) : (
-            s.titleEn || <span className="italic text-destructive">Untitled section</span>
+            s.title || <span className="italic text-destructive">Untitled section</span>
           )}
         </div>
         <div className="hidden shrink-0 items-center group-hover/row:flex">

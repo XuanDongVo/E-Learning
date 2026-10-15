@@ -2,7 +2,7 @@
 
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
-import { AssignmentBuilder } from "@/components/features/teacher/assignments/demo/components/AssignmentBuilder";
+import { AssignmentBuilder } from "@/components/features/teacher/assignments/builder/components/AssignmentBuilder";
 
 function AssignmentDemoContent() {
   const searchParams = useSearchParams();

@@ -4,7 +4,7 @@
  * Only example items keep their (public) model answer.
  */
 import { computeNumbering, letter } from "./ops";
-import type { Assignment, BlockItem, ID, InteractionType, QuestionItem } from "./types";
+import type { Assignment, BlockItem, ID, InteractionType, QuestionItem } from "@/types/assignment-builder";
 
 export interface SQuestion {
   id: ID;
@@ -35,9 +35,9 @@ export interface SBlock {
 export type SUnit = { kind: "question"; q: SQuestion } | { kind: "group"; block: SBlock; members: SQuestion[] };
 export interface SSection {
   id: ID;
-  titleEn: string;
+  title: string;
   titleVi: string;
-  instructionsEn: string;
+  instructions: string;
   instructionsVi: string;
   units: SUnit[];
 }
@@ -101,9 +101,9 @@ export function buildStudentView(a: Assignment): StudentAssignment {
   const { numbers, total, points } = computeNumbering(a);
   const sections: SSection[] = a.sections.map((s) => ({
     id: s.id,
-    titleEn: s.titleEn,
+    title: s.title,
     titleVi: s.titleVi,
-    instructionsEn: s.instructionsEn,
+    instructions: s.instructions,
     instructionsVi: s.instructionsVi,
     units: s.itemIds
       .map((id): SUnit | null => {

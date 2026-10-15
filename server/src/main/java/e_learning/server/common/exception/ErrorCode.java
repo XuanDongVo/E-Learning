@@ -44,6 +44,7 @@ public enum ErrorCode {
 
     ASSIGNMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "ASSIGNMENT_NOT_FOUND", "Assignment not found"),
     ASSIGNMENT_INVALID_CONFIGURATION(HttpStatus.BAD_REQUEST, "ASSIGNMENT_INVALID_CONFIGURATION", "The assignment configuration is invalid"),
+    ASSIGNMENT_COMPOSITION_INVALID(HttpStatus.BAD_REQUEST, "ASSIGNMENT_COMPOSITION_INVALID", "The assignment composition is invalid"),
     ASSIGNMENT_TARGET_REQUIRED(HttpStatus.BAD_REQUEST, "ASSIGNMENT_TARGET_REQUIRED", "At least one assignment target is required"),
     ASSIGNMENT_TARGET_INVALID(HttpStatus.BAD_REQUEST, "ASSIGNMENT_TARGET_INVALID", "The assignment target is invalid"),
     ASSIGNMENT_SCHEDULE_INVALID(HttpStatus.BAD_REQUEST, "ASSIGNMENT_SCHEDULE_INVALID", "The assignment schedule is invalid"),

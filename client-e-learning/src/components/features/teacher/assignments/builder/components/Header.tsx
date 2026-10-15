@@ -1,20 +1,16 @@
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Copy, Eye, Loader2, MoreHorizontal, PencilLine, Save, Settings, Trash2 } from "lucide-react";
+import { ArrowLeft, Eye, Loader2, MoreHorizontal, PencilLine, Save, Settings } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
-import { uid } from "../ops";
-import { localRepository } from "../save-service";
-import { useBuilder, useIsDirty } from "../store";
+import { useBuilder, useIsDirty } from "@/components/features/teacher/assignments/builder/store";
 import { useIssues } from "./Canvas";
 
 export function StatusBadge() {
@@ -41,7 +37,6 @@ export function Header() {
   const a = useBuilder((s) => s.assignment);
   const mode = useBuilder((s) => s.mode);
   const autosave = useBuilder((s) => s.autosave);
-  const simulateFailure = useBuilder((s) => s.simulateFailure);
   const status = useBuilder((s) => s.saveStatus);
   const { set, mutate, save, ask } = useBuilder.getState();
   const dirty = useIsDirty();
@@ -59,30 +54,6 @@ export function Header() {
       ],
     });
   };
-
-  const duplicateAssignment = async () => {
-    const copy = { ...structuredClone(a), id: uid("asg"), title: `${a.title} (copy)` };
-    await localRepository.save(copy);
-    toast.success("Assignment duplicated — opening the copy");
-    router.push(`/teacher/assignments/demo?id=${encodeURIComponent(copy.id)}`);
-  };
-  const deleteAssignment = () =>
-    ask({
-      title: "Delete this assignment?",
-      description: `"${a.title}" and all of its questions will be permanently removed.`,
-      actions: [
-        {
-          label: "Delete assignment",
-          variant: "destructive",
-          run: async () => {
-            await localRepository.remove(a.id);
-            useBuilder.getState().load(a); // clear dirty state so leaving is not blocked
-            toast("Assignment deleted");
-            leave();
-          },
-        },
-      ],
-    });
 
   return (
     <header className="grid h-14 shrink-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b bg-card px-3">
@@ -116,13 +87,10 @@ export function Header() {
             <Button variant="ghost" size="icon" aria-label="More"><MoreHorizontal className="h-4 w-4" /></Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-60">
-            <DropdownMenuItem onClick={duplicateAssignment}><Copy className="h-4 w-4" /> Duplicate assignment</DropdownMenuItem>
-            <DropdownMenuSeparator />
+
             <DropdownMenuLabel className="text-xs text-muted-foreground">Saving</DropdownMenuLabel>
             <DropdownMenuCheckboxItem checked={autosave} onCheckedChange={(v) => set({ autosave: !!v })}>Autosave (5s after last change)</DropdownMenuCheckboxItem>
-            <DropdownMenuCheckboxItem checked={simulateFailure} onCheckedChange={(v) => set({ simulateFailure: !!v })}>Simulate save failure</DropdownMenuCheckboxItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={deleteAssignment}><Trash2 className="h-4 w-4" /> Delete assignment</DropdownMenuItem>
+
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

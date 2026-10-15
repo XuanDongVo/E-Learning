@@ -33,6 +33,7 @@ public class QuestionResponseMapper {
                         .map(o -> QuestionOptionResponse.builder()
                                 .id(o.getId())
                                 .content(o.getContent())
+                                .displayOrder(o.getDisplayOrder())
                                 .correct(o.isCorrect())
                                 .build())
                         .toList())

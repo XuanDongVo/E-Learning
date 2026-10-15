@@ -66,6 +66,7 @@ export function AssignmentBuilder({ id }: { id?: string }) {
   const loaded = useBuilder((s) => s.loaded);
   const loadError = useBuilder((s) => s.loadError);
   const mode = useBuilder((s) => s.mode);
+  const questionComposerOpen = useBuilder((s) => s.questionComposerOpen);
   const assignment = useBuilder((s) => s.assignment);
   const autosave = useBuilder((s) => s.autosave);
   const selection = useBuilder((s) => s.selection);
@@ -163,6 +164,10 @@ export function AssignmentBuilder({ id }: { id?: string }) {
       </div>
     );
 
+  if (questionComposerOpen) {
+    return <AssignmentQuestionComposerDialog assignmentId={id ?? assignment.id} />;
+  }
+
   return (
     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={onDragStart} onDragEnd={onDragEnd}>
       <div className="flex h-screen flex-col overflow-hidden bg-white text-slate-900">
@@ -219,7 +224,6 @@ export function AssignmentBuilder({ id }: { id?: string }) {
         </>
       )}
       <DragOverlay>{dragLabel ? <div className="rounded-md border bg-card px-3 py-2 text-sm font-medium shadow-lg">+ {dragLabel}</div> : null}</DragOverlay>
-      <AssignmentQuestionComposerDialog assignmentId={id ?? assignment.id} />
       <SettingsSheet />
       <ConfirmHost />
     </DndContext>

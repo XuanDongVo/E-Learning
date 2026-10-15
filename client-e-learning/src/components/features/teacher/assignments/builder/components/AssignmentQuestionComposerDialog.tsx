@@ -196,10 +196,12 @@ export function AssignmentQuestionComposerDialog({ assignmentId }: { assignmentI
   const open = useBuilder((state) => state.questionComposerOpen);
   const target = useBuilder((state) => state.questionComposerTarget);
   const editId = useBuilder((state) => state.questionComposerEditId);
+  const seededQuestions = useBuilder((state) => state.questionComposerInitialQuestions);
+  const blankRefs = useBuilder((state) => state.questionComposerBlankRefs);
   const assignment = useBuilder((state) => state.assignment);
   const close = useBuilder((state) => state.closeQuestionComposer);
   const editingItem = editId ? assignment.items[editId] : undefined;
-  const initialQuestions = editingItem?.kind === "question" ? [toDraftQuestion(editingItem)] : undefined;
+  const initialQuestions = editingItem?.kind === "question" ? [toDraftQuestion(editingItem)] : seededQuestions ?? undefined;
 
   const uploadMedia = useCallback(async (file: File) => {
     const response = await contentService.uploadQuestionDraftMedia(file);
@@ -274,6 +276,7 @@ export function AssignmentQuestionComposerDialog({ assignmentId }: { assignmentI
           throw new Error("The server response did not contain a valid question ID.");
         }
         const item = toBuilderItem(draftQuestion, questionId, baseTarget);
+        if (blankRefs[index] != null) item.content.blankRef = blankRefs[index];
         draft.items[item.id] = item;
         ops.place(draft, item.id, {
           ...baseTarget,
@@ -286,7 +289,7 @@ export function AssignmentQuestionComposerDialog({ assignmentId }: { assignmentI
     state.select({ kind: "item", id: `q-${firstQuestionId}` });
     state.closeQuestionComposer();
     toast.success(`${created.length} question(s) added to the Assignment`);
-  }, [assignmentId, target, editId, editingItem, assignment]);
+  }, [assignmentId, target, editId, editingItem, assignment, blankRefs]);
 
   if (!open) return null;
 
@@ -321,7 +324,7 @@ export function AssignmentQuestionComposerDialog({ assignmentId }: { assignmentI
             title="Question Composer"
             description="Create and validate questions before inserting them into the Assignment."
             key={editId ?? "new"}
-            storageKey={"assignment-question-composer:" + assignmentId + ":" + (editId ?? "new")}
+            storageKey={"assignment-question-composer:" + assignmentId + ":" + (editId ?? initialQuestions?.[0]?.draftId ?? "new")}
             initialQuestions={initialQuestions}
             onUploadMedia={uploadMedia}
             onSave={saveQuestions}

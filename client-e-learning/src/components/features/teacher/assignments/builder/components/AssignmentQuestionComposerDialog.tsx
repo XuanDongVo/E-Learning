@@ -159,6 +159,9 @@ function toBuilderItem(
     serverMediaIds: draft.media
       .map((media) => Number(media.id))
       .filter((id) => Number.isSafeInteger(id) && id > 0),
+    serverMedia: draft.media
+      .map((media) => ({ mediaId: Number(media.id), mediaType: media.kind.toUpperCase(), url: media.url ?? "" }))
+      .filter((media) => Number.isSafeInteger(media.mediaId) && media.mediaId > 0),
     content,
     config: {
       points: 1,

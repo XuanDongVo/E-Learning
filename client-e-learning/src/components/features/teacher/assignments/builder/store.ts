@@ -18,7 +18,7 @@ interface BuilderState {
   openQuestionComposer: (target?: InsertTarget | null, editId?: ID | null, initialQuestions?: DraftQuestion[] | null, blankRefs?: number[]) => void;
   closeQuestionComposer: () => void; mutate: (fn: (draft: Assignment) => void) => void; select: (s: Selection) => void;
   set: (p: Partial<BuilderState>) => void; save: () => Promise<boolean>;
-  addTool: (tool: ToolKey, target?: InsertTarget | null) => void;
+  addTool: (tool: ToolKey, target?: InsertTarget | null, count?: number) => void;
   requestDeleteItem: (id: ID) => void; requestDeleteSection: (id: ID) => void; duplicate: (id: ID) => void; ask: (c: ConfirmState) => void;
 }
 const initialAssignment = ops.createEmptyAssignment();
@@ -38,17 +38,24 @@ export const useBuilder = create<BuilderState>((set, get) => ({
     try { const saved = await saveBuilderAssignment(a); set({ assignment: saved, saveStatus: "idle", savedSnapshot: snapshotOf(saved), lastSavedAt: saved.updatedAt, loadError: null }); return true; }
     catch (e) { set({ saveStatus: "error", saveError: (e as Error).message }); return false; }
   },
-  addTool: (tool, target) => {
+  addTool: (tool, target, count = 1) => {
     const { selection } = get();
     if (ops.isQuestionTool(tool)) {
-      const item = ops.createItem(tool);
+      const total = Math.max(1, Math.min(50, Math.floor(count)));
+      const created: ID[] = [];
       get().mutate((d) => {
         let t = target ?? ops.targetFromSelection(d, selection, false);
         if (!t) { const s = ops.newSection(); d.sections.push(s); t = { sectionId: s.id, groupId: null, index: 0 }; }
-        d.items[item.id] = item; ops.place(d, item.id, t);
+        for (let i = 0; i < total; i += 1) {
+          const item = ops.createItem(tool);
+          d.items[item.id] = item;
+          ops.place(d, item.id, { ...t, index: t.index + i });
+          created.push(item.id);
+        }
       });
-      set({ selection: { kind: "item", id: item.id } });
-      setTimeout(() => document.getElementById(`item-${item.id}`)?.scrollIntoView({ block: "center", behavior: "smooth" }), 50);
+      const last = created.at(-1);
+      if (last) set({ selection: { kind: "item", id: last } });
+      if (created.length === 1) setTimeout(() => document.getElementById(`item-${created[0]}`)?.scrollIntoView({ block: "center", behavior: "smooth" }), 50);
       return;
     }
     if (tool === "SECTION") {

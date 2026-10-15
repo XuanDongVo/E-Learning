@@ -5,6 +5,7 @@ import { ArrowDown, ArrowUp, Check, Copy, GripVertical, ImageIcon, MoreHorizonta
 import { useMemo, type ReactNode } from "react";
 import { toast } from "sonner";
 import { makeDraftQuestion } from "@/components/features/teacher/question-authoring/question-draft";
+import type { DraftQuestion } from "@/types/question";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -45,7 +46,7 @@ export function createBlankQuestions(blockId: ID) {
     return item?.kind === "question" ? item.content.blankRef : null;
   }));
   const tokens = ops.blankTokens(block.block.text);
-  const drafts = [];
+  const drafts: DraftQuestion[] = [];
   const blankRefs: number[] = [];
   ops.blankNumbers(block.block.text).forEach((number, index) => {
     if (taken.has(number)) return;

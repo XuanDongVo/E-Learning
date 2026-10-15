@@ -72,10 +72,6 @@ function ListEditor({ values, onChange, placeholder, addLabel }: { values: strin
   );
 }
 
-const updateQ = (id: ID, fn: (q: QuestionItem) => void) => useBuilder.getState().mutate((d) => fn(d.items[id] as QuestionItem));
-function ListEditor({ values, onChange, placeholder, addLabel }: { values: string[]; onChange: (v: string[]) => void; placeholder: string; addLabel: string }) {
-  return <div className="space-y-1.5">{values.map((v, i) => <div key={i} className="flex gap-1"><Input value={v} placeholder={placeholder} onChange={(e) => onChange(values.map((x, j) => j === i ? e.target.value : x))} className="h-8"/><Button size="icon" variant="ghost" className="h-8 w-8" aria-label="Remove" disabled={values.length <= 1} onClick={() => onChange(values.filter((_, j) => j !== i))}><X className="h-3.5 w-3.5"/></Button></div>)}<Button variant="ghost" size="sm" className="h-7 text-xs text-primary" onClick={() => onChange([...values, ""])}><Plus className="h-3.5 w-3.5"/> {addLabel}</Button></div>;
-}
 function ClozeEditor({ q }: { q: QuestionItem }) {
   if (q.content.type !== "CLOZE") return null;
   const c = q.content;

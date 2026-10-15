@@ -212,6 +212,28 @@ export function AssignmentQuestionComposerDialog({ assignmentId }: { assignmentI
 
     // Validate every type before making the request so a mixed batch cannot partially save.
     const payload = drafts.map(toPayload);
+    if (editId) {
+      if (drafts.length !== 1 || !editingItem || editingItem.kind !== "question") {
+        throw new Error("Question edit state is stale. Close the editor and reopen the question.");
+      }
+      const questionId = editingItem.serverQuestionId;
+      if (!questionId) throw new Error("This question has no persisted Question Engine ID and cannot be edited here.");
+      await assignmentQuestionService.update(id, questionId, payload[0]);
+      const updatedItem = toBuilderItem(drafts[0], questionId, target ?? ops.locate(assignment, editId) ?? { sectionId: assignment.sections[0]?.id ?? "", groupId: null, index: 0 });
+      const state = useBuilder.getState();
+      state.mutate((draft) => {
+        const existing = draft.items[editId];
+        if (!existing || existing.kind !== "question") throw new Error("Question was removed while editing.");
+        existing.content = updatedItem.content;
+        existing.serverType = drafts[0].type;
+        existing.serverDifficulty = drafts[0].difficulty;
+        existing.serverMediaIds = drafts[0].media.map((media) => Number(media.id)).filter((mediaId) => Number.isSafeInteger(mediaId) && mediaId > 0);
+        existing.serverMedia = drafts[0].media.map((media) => ({ mediaId: Number(media.id), mediaType: media.kind.toUpperCase(), url: media.url ?? "" })).filter((media) => Number.isSafeInteger(media.mediaId) && media.mediaId > 0);
+      });
+      state.closeQuestionComposer();
+      toast.success("Question updated");
+      return;
+    }
     const response = await assignmentQuestionService.create(id, payload);
     const created = response.data ?? [];
     if (created.length !== drafts.length) {

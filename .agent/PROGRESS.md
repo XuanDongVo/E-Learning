@@ -86,3 +86,12 @@ This file tracks implementation state and does not claim the above work is done.
 - Added `.agent/plans/P0_ASSIGNMENT_QUESTION_COMPOSER_FIX.md` with the architecture contract, remaining implementation tasks and acceptance criteria.
 - **P0 remains IN PROGRESS.** Toolbox/QuestionComposer integration, PropertyPanel boundary, composition-only save, deletion semantics and tests are still outstanding.
 - No build, lint, test or end-to-end checks were run in this GitHub-only update. Do not treat this commit as a passing verification signal.
+
+
+### P0 follow-up — QuestionComposer integration (2026-10-15)
+- [x] Added `AssignmentQuestionComposerDialog.tsx`: uses the existing QuestionComposer, uploads question-draft media, validates the supported question types, saves through `assignmentQuestionService.create()`, validates returned IDs and inserts server-backed question items into the selected Builder target.
+- [x] Builder store routes question tools to the Composer instead of creating local unsaved question drafts.
+- [x] Mounted the Composer dialog in `AssignmentBuilder.tsx`.
+- [x] Composition Save no longer updates question content; it writes Assignment metadata and Composition structure only.
+- [ ] Existing-question content editing is not yet integrated with an edit-capable Composer flow. The legacy PropertyPanel question editor still needs refactoring before this can be considered complete.
+- [ ] No build, lint, unit, integration or browser tests were run through the GitHub connector. Verify locally/CI before merge.

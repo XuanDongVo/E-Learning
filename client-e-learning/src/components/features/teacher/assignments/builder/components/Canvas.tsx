@@ -51,7 +51,7 @@ export function createBlankQuestions(blockId: ID) {
   ops.blankNumbers(block.block.text).forEach((number, index) => {
     if (taken.has(number)) return;
     const raw = tokens[index] ?? "";
-    const answers = /^\\d+$/.test(raw.trim()) ? [""] : raw.split("|").map((value) => value.trim()).filter(Boolean);
+    const answers = /^\d+$/.test(raw.trim()) ? [""] : raw.split("|").map((value) => value.trim()).filter(Boolean);
     drafts.push(makeDraftQuestion({
       type: "FILL_IN_BLANK",
       text: `Answer blank (${number}) in the passage`,

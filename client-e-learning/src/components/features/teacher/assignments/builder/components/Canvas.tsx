@@ -4,6 +4,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { ArrowDown, ArrowUp, Check, Copy, GripVertical, ImageIcon, MoreHorizontal, Plus, Trash2, Wand2 } from "lucide-react";
 import { useMemo, type ReactNode } from "react";
 import { toast } from "sonner";
+import { makeDraftQuestion } from "@/components/features/teacher/question-authoring/question-draft";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -35,28 +36,43 @@ export function useIssues() {
 }
 
 export function createBlankQuestions(blockId: ID) {
-  const st = useBuilder.getState();
-  let created = 0;
-  st.mutate((d) => {
-    const b = d.items[blockId] as BlockItem;
-    if (b.block.type !== "PASSAGE") return;
-    const taken = new Set(b.memberIds.map((m) => (d.items[m] as QuestionItem).content.blankRef));
-    const tokens = ops.blankTokens(b.block.text);
-    ops.blankNumbers(b.block.text).forEach((n, i) => {
-      if (taken.has(n)) return;
-      const raw = tokens[i];
-      const answers = /^\d+$/.test(raw.trim()) ? [""] : raw.split("|").map((x) => x.trim());
-      const q = ops.createItem("TEXT_INPUT") as QuestionItem;
-      if (q.content.type === "TEXT_INPUT") q.content.acceptedAnswers = answers;
-      q.content.blankRef = n;
-      d.items[q.id] = q;
-      ops.place(d, q.id, { sectionId: ops.locate(d, blockId)!.sectionId, groupId: blockId, index: b.memberIds.length });
-      created++;
-    });
-    // keep members ordered by blank number
-    b.memberIds.sort((x, y) => ((d.items[x] as QuestionItem).content.blankRef ?? 999) - ((d.items[y] as QuestionItem).content.blankRef ?? 999));
+  const state = useBuilder.getState();
+  const assignment = state.assignment;
+  const block = assignment.items[blockId];
+  if (!block || block.kind !== "block" || block.block.type !== "PASSAGE") return;
+  const taken = new Set(block.memberIds.map((memberId) => {
+    const item = assignment.items[memberId];
+    return item?.kind === "question" ? item.content.blankRef : null;
+  }));
+  const tokens = ops.blankTokens(block.block.text);
+  const drafts = [];
+  const blankRefs: number[] = [];
+  ops.blankNumbers(block.block.text).forEach((number, index) => {
+    if (taken.has(number)) return;
+    const raw = tokens[index] ?? "";
+    const answers = /^\\d+$/.test(raw.trim()) ? [""] : raw.split("|").map((value) => value.trim()).filter(Boolean);
+    drafts.push(makeDraftQuestion({
+      type: "FILL_IN_BLANK",
+      text: `Answer blank (${number}) in the passage`,
+      acceptedAnswers: answers.length ? answers : [""],
+    }));
+    blankRefs.push(number);
   });
-  toast(created ? `Created ${created} question(s) for blanks` : "Every blank already has a question");
+  if (!drafts.length) {
+    toast("Every blank already has a question");
+    return;
+  }
+  const location = ops.locate(assignment, blockId);
+  if (!location) {
+    toast.error("Could not find the passage in Composition.");
+    return;
+  }
+  state.openQuestionComposer(
+    { sectionId: location.sectionId, groupId: blockId, index: block.memberIds.length },
+    null,
+    drafts,
+    blankRefs,
+  );
 }
 
 function AddMenuItems({ onPick }: { onPick: (t: ToolKey) => void }) {

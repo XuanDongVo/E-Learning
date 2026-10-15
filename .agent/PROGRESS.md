@@ -108,3 +108,11 @@ This file tracks implementation state and does not claim the above work is done.
 - [x] Added frontend unit tests for Composition ordering and unlink behavior; added GitHub Actions workflow for frontend lint/tests/build and backend tests with PostgreSQL.
 - [ ] Latest CI run must pass after the final commit. Browser E2E and a manual live-assignment verification are still outstanding.
 - Note: the legacy explicit AssignmentQuestion bulk-delete endpoint still deletes Question records. Builder unlink does not call it; keep that endpoint out of the unlink flow.
+
+
+### CI result — P0 code commit `146ba0b2ae5e9945ac9cc07b001a0f1cc68971dc` (2026-10-15)
+- [x] Frontend `npm run lint`: passed with 0 errors (one pre-existing navigation warning remains).
+- [x] Frontend `npm test`: passed, 1 test file / 2 tests.
+- [x] Frontend `npm run build`: passed; Next.js production build and TypeScript checks completed.
+- [x] Backend `./mvnw -B test`: passed with PostgreSQL service enabled.
+- [ ] Browser E2E and manual live-assignment checks are still outstanding; do not equate unit/build CI with complete runtime acceptance.

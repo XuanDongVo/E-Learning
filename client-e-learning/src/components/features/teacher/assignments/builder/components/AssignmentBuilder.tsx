@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import * as ops from "@/components/features/teacher/assignments/builder/ops";
 import { loadAssignment, useBuilder, useIsDirty } from "@/components/features/teacher/assignments/builder/store";
 import type { InsertTarget, ToolKey } from "@/types/assignment-builder";
+import { AssignmentQuestionComposerDialog } from "./AssignmentQuestionComposerDialog";
 import { Canvas } from "./Canvas";
 import { ConfirmHost } from "./ConfirmHost";
 import { Header } from "./Header";
@@ -218,6 +219,7 @@ export function AssignmentBuilder({ id }: { id?: string }) {
         </>
       )}
       <DragOverlay>{dragLabel ? <div className="rounded-md border bg-card px-3 py-2 text-sm font-medium shadow-lg">+ {dragLabel}</div> : null}</DragOverlay>
+      <AssignmentQuestionComposerDialog assignmentId={id ?? assignment.id} />
       <SettingsSheet />
       <ConfirmHost />
     </DndContext>

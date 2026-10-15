@@ -30,8 +30,12 @@ interface BuilderState {
   autosave: boolean;
   confirm: ConfirmState | null;
   settingsOpen: boolean;
+  questionComposerOpen: boolean;
+  questionComposerTarget: InsertTarget | null;
 
   load: (a: Assignment) => void;
+  openQuestionComposer: (target?: InsertTarget | null) => void;
+  closeQuestionComposer: () => void;
   mutate: (fn: (draft: Assignment) => void) => void;
   select: (s: Selection) => void;
   set: (p: Partial<BuilderState>) => void;
@@ -58,6 +62,8 @@ export const useBuilder = create<BuilderState>((set, get) => ({
   autosave: true,
   confirm: null,
   settingsOpen: false,
+  questionComposerOpen: false,
+  questionComposerTarget: null,
 
   load: (a) => set({ assignment: a, savedSnapshot: snapshotOf(a), loaded: true, loadError: null, selection: null, saveStatus: "idle", lastSavedAt: a.updatedAt }),
   mutate: (fn) => {
@@ -66,6 +72,8 @@ export const useBuilder = create<BuilderState>((set, get) => ({
     set({ assignment: draft });
   },
   select: (selection) => set({ selection }),
+  openQuestionComposer: (target) => set({ questionComposerOpen: true, questionComposerTarget: target ?? null }),
+  closeQuestionComposer: () => set({ questionComposerOpen: false, questionComposerTarget: null }),
   set: (p) => set(p),
   ask: (confirm) => set({ confirm }),
 
@@ -84,6 +92,10 @@ export const useBuilder = create<BuilderState>((set, get) => ({
   },
 
   addTool: (tool, target) => {
+    if (ops.isQuestionTool(tool)) {
+      get().openQuestionComposer(target ?? ops.targetFromSelection(get().assignment, get().selection, false));
+      return;
+    }
     const { selection } = get();
     if (tool === "SECTION") {
       const s = ops.newSection();

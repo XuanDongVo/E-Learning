@@ -104,24 +104,10 @@ function mapQuestion(
       content = { ...common, type: "MULTIPLE_CHOICE", options };
       break;
     case "TRUE_FALSE": {
-      const answer = answers[0]?.toUpperCase();
-      content = {
-        ...common,
-        type: "SINGLE_CHOICE",
-        options: [
-          {
-            id: `tf-true-${row.questionId}`,
-            text: "True",
-            isCorrect: answer === "TRUE",
-          },
-          {
-            id: `tf-false-${row.questionId}`,
-            text: "False",
-            isCorrect: answer === "FALSE",
-          },
-        ],
-        display: "list",
-      };
+      const rawAnswer = answers[0]?.trim().toUpperCase();
+      const answer =
+        rawAnswer === "TRUE" || rawAnswer === "FALSE" ? rawAnswer : null;
+      content = { ...common, type: "TRUE_FALSE", answer };
       break;
     }
     case "TYPE_ANSWER":
@@ -136,45 +122,67 @@ function mapQuestion(
       };
       break;
     case "CLOZE": {
-      const blankCount = (prompt.match(/\{\{\s*\d+\s*\}\}/g) ?? []).length;
+      const definition = q.definition && "cloze" in q.definition
+        ? q.definition.cloze
+        : undefined;
+      const blanks = (definition?.blanks ?? []).map((blank, index) => ({
+        id: `blank-${row.questionId}-${blank.key || index + 1}`,
+        key: blank.key || `blank-${index + 1}`,
+        acceptedAnswers: [...(blank.acceptedAnswers ?? [])],
+      }));
+      const segments = (definition?.segments ?? []).map((segment, index) => ({
+        id: `segment-${row.questionId}-${index + 1}`,
+        text: segment.text ?? "",
+      }));
+      const reconstructedPrompt = segments.length
+        ? segments.reduce(
+            (text, segment, index) =>
+              text + segment.text + (index < blanks.length ? `{{${index + 1}}}` : ""),
+            "",
+          )
+        : prompt;
       content = {
         ...common,
-        type: "MULTI_TEXT_INPUT",
-        blanks: Array.from({ length: blankCount }, (_, i) => ({
-          id: `blank-${row.questionId}-${i + 1}`,
-          acceptedAnswers: answers[i] ? [answers[i]] : [],
-        })),
-        caseSensitive: q.matchingMode === "CASE_SENSITIVE_TRIM",
+        type: "CLOZE",
+        prompt: reconstructedPrompt,
+        segments: segments.length
+          ? segments
+          : [{ id: `segment-${row.questionId}-1`, text: prompt }],
+        blanks,
+        caseSensitive:
+          definition?.caseSensitive ??
+          q.matchingMode === "CASE_SENSITIVE_TRIM",
       };
       break;
     }
-    case "MATCHING":
-      {
-        const def = q.definition?.matching;
-        const answers = (def?.answerPool ?? []).map((text, i) => ({
-          id: `ans-${row.questionId}-${i + 1}`,
-          key: `answer-${i + 1}`,
-          text,
-        }));
-        content = {
-          ...common,
-          type: "MATCHING",
-          items: (def?.items ?? []).map((item) => ({
-            id: `item-${row.questionId}-${item.key}`,
-            key: item.key,
-            prompt: item.prompt,
-            correctAnswerId:
-              answers.find((a) => a.text === def?.expectedPairs[item.key])
-                ?.id ?? null,
-          })),
-          answers,
-          shuffleAnswers: def?.shuffleAnswers ?? false,
-          poolId: null,
-          correctEntryId: null,
-        };
-        break;
-      }
+    case "MATCHING": {
+      const definition = q.definition && "matching" in q.definition
+        ? q.definition.matching
+        : undefined;
+      const matchingAnswers = (definition?.answerPool ?? []).map((text, index) => ({
+        id: `ans-${row.questionId}-${index + 1}`,
+        key: `answer-${index + 1}`,
+        text,
+      }));
+      content = {
+        ...common,
+        type: "MATCHING",
+        items: (definition?.items ?? []).map((matchItem, index) => ({
+          id: `item-${row.questionId}-${matchItem.key || index + 1}`,
+          key: matchItem.key || `item-${index + 1}`,
+          prompt: matchItem.prompt,
+          correctAnswerId:
+            matchingAnswers.find(
+              (answer) => answer.text === definition?.expectedPairs?.[matchItem.key],
+            )?.id ?? null,
+        })),
+        answers: matchingAnswers,
+        shuffleAnswers: definition?.shuffleAnswers ?? true,
+        poolId: null,
+        correctEntryId: null,
+      };
       break;
+    }
     default:
       content = {
         ...common,

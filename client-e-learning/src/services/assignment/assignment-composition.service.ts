@@ -377,7 +377,7 @@ function serializeItem(
   const b = serializeBlock(item.block);
   const id = item.compositionItemId ?? numberId(item.id, "b");
   const children = item.memberIds
-    .map((memberId, index) => allItems[memberId])
+    .map((memberId) => allItems[memberId])
     .filter((x): x is QuestionItem => x?.kind === "question")
     .map((q, index) => serializeQuestion(q, index + 1, numberId(q.id, "item")));
   return {
@@ -446,11 +446,12 @@ export async function saveBuilderAssignment(
         ? undefined
         : Math.round(a.settings.timeLimitMin * 60),
     showAnswersAfterSubmit: a.settings.showAnswers !== "off",
-    targets: current.targets.map((t) =>
-      t.type === "CLASS"
-        ? { type: "CLASS" as const, classId: t.classId! }
-        : { type: "GRADE" as const },
-    ),
+    targets: [
+      ...Array.from(targetIds).map((classId) => ({ type: "CLASS" as const, classId })),
+      ...(current.targets.some((target) => target.type === "GRADE")
+        ? [{ type: "GRADE" as const }]
+        : []),
+    ],
   });
 
   const sections: WriteSection[] = a.sections.map((section, sectionIndex) => ({

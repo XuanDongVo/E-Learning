@@ -24,7 +24,8 @@ Base: `main` at `2678e570a75a86a7664ee60c88097c6df7887f2e`
 - [x] Refactor PropertyPanel question content editing to delegate prompt/answers/hint/explanation/media to QuestionComposer; keep only Composition settings in the panel.
 - [x] Define safe unlink semantics: Composition replacement removes stale AssignmentItem and detached AssignmentQuestion association rows without deleting the underlying Question record. The legacy explicit bulk-delete endpoint still deletes Question records and must not be used for Builder unlink.
 - [x] Add frontend unit tests for ordering and local unlink; backend suite runs in CI. End-to-end browser coverage for Composer create/edit/reload and duplicate-submit remains a follow-up.
-- [ ] Confirm the latest GitHub Actions run passes frontend lint/tests/build and backend tests. No browser E2E or live database migration validation has been run outside CI.
+- [x] GitHub Actions passed at code commit `146ba0b2ae5e9945ac9cc07b001a0f1cc68971dc`: frontend lint, 2 Vitest tests, Next.js production build, and backend Maven tests with PostgreSQL.
+- [ ] Complete browser E2E for Composer create/edit/reload, reorder/move, unlink, autosave and duplicate-submit. CI is not a substitute for live UI verification.
 
 ## Acceptance criteria
 
@@ -38,4 +39,4 @@ Base: `main` at `2678e570a75a86a7664ee60c88097c6df7887f2e`
 
 ## Current known limitation
 
-The branch routes new question creation and supported existing-question edits through QuestionComposer; Composition Save persists only Assignment metadata and the Composition tree. Removed questions are unlinked from Assignment without deleting their Question records, and detached questions are not resurrected on reload. Matching/Cloze remain explicitly blocked until the Assignment Question API supports lossless round-tripping. **P0 is not merge-ready until the latest CI run passes and browser E2E is completed.**
+The branch routes new question creation and supported existing-question edits through QuestionComposer; Composition Save persists only Assignment metadata and the Composition tree. Removed questions are unlinked from Assignment without deleting their Question records, and detached questions are not resurrected on reload. Matching/Cloze remain explicitly blocked until the Assignment Question API supports lossless round-tripping. **Build and automated test checks pass. P0 is awaiting browser E2E verification before merge.**

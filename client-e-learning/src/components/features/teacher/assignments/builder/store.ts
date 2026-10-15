@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import * as ops from "./ops";
 import { loadBuilderAssignment, saveBuilderAssignment } from "@/services/assignment/assignment-composition.service";
 import type { Assignment, ID, InsertTarget, Selection, ToolKey } from "@/types/assignment-builder";
+import type { DraftQuestion } from "@/types/question";
 
 export const snapshotOf = (a: Assignment) => JSON.stringify({ ...a, updatedAt: "" });
 
@@ -33,9 +34,11 @@ interface BuilderState {
   questionComposerOpen: boolean;
   questionComposerTarget: InsertTarget | null;
   questionComposerEditId: ID | null;
+  questionComposerInitialQuestions: DraftQuestion[] | null;
+  questionComposerBlankRefs: number[];
 
   load: (a: Assignment) => void;
-  openQuestionComposer: (target?: InsertTarget | null, editId?: ID | null) => void;
+  openQuestionComposer: (target?: InsertTarget | null, editId?: ID | null, initialQuestions?: DraftQuestion[] | null, blankRefs?: number[]) => void;
   closeQuestionComposer: () => void;
   mutate: (fn: (draft: Assignment) => void) => void;
   select: (s: Selection) => void;
@@ -66,6 +69,8 @@ export const useBuilder = create<BuilderState>((set, get) => ({
   questionComposerOpen: false,
   questionComposerTarget: null,
   questionComposerEditId: null,
+  questionComposerInitialQuestions: null,
+  questionComposerBlankRefs: [],
 
   load: (a) => set({ assignment: a, savedSnapshot: snapshotOf(a), loaded: true, loadError: null, selection: null, saveStatus: "idle", lastSavedAt: a.updatedAt }),
   mutate: (fn) => {
@@ -74,8 +79,8 @@ export const useBuilder = create<BuilderState>((set, get) => ({
     set({ assignment: draft });
   },
   select: (selection) => set({ selection }),
-  openQuestionComposer: (target, editId) => set({ questionComposerOpen: true, questionComposerTarget: target ?? null, questionComposerEditId: editId ?? null }),
-  closeQuestionComposer: () => set({ questionComposerOpen: false, questionComposerTarget: null, questionComposerEditId: null }),
+  openQuestionComposer: (target, editId, initialQuestions, blankRefs) => set({ questionComposerOpen: true, questionComposerTarget: target ?? null, questionComposerEditId: editId ?? null, questionComposerInitialQuestions: initialQuestions ?? null, questionComposerBlankRefs: blankRefs ?? [] }),
+  closeQuestionComposer: () => set({ questionComposerOpen: false, questionComposerTarget: null, questionComposerEditId: null, questionComposerInitialQuestions: null, questionComposerBlankRefs: [] }),
   set: (p) => set(p),
   ask: (confirm) => set({ confirm }),
 

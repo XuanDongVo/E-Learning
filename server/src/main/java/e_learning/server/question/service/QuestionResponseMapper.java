@@ -1,5 +1,7 @@
 package e_learning.server.question.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import e_learning.server.question.dto.QuestionAnswerResponse;
 import e_learning.server.question.dto.QuestionContentResponse;
 import e_learning.server.question.dto.QuestionMediaResponse;
@@ -14,47 +16,32 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class QuestionResponseMapper {
-
     private final QuestionOptionRepository questionOptionRepository;
     private final QuestionAnswerRepository questionAnswerRepository;
     private final QuestionMediaRepository questionMediaRepository;
+    private final ObjectMapper objectMapper;
 
     public QuestionContentResponse toContentResponse(Question question) {
+        JsonNode definition = null;
+        if (question.getDefinition() != null && !question.getDefinition().isBlank()) {
+            try { definition = objectMapper.readTree(question.getDefinition()); }
+            catch (Exception ignored) { /* legacy/invalid rows expose null definition */ }
+        }
         return QuestionContentResponse.builder()
-                .id(question.getId())
-                .type(question.getType())
-                .difficulty(question.getDifficulty())
-                .content(question.getContent())
-                .explanation(question.getExplanation())
-                .hint(question.getHint())
-                .complete(question.isComplete())
-                .matchingMode(question.getMatchingMode())
+                .id(question.getId()).type(question.getType()).difficulty(question.getDifficulty())
+                .content(question.getContent()).explanation(question.getExplanation()).hint(question.getHint())
+                .complete(question.isComplete()).matchingMode(question.getMatchingMode()).definition(definition)
                 .options(questionOptionRepository.findByQuestionId(question.getId()).stream()
-                        .map(o -> QuestionOptionResponse.builder()
-                                .id(o.getId())
-                                .content(o.getContent())
-                                .displayOrder(o.getDisplayOrder())
-                                .correct(o.isCorrect())
-                                .build())
-                        .toList())
+                        .map(o -> QuestionOptionResponse.builder().id(o.getId()).content(o.getContent())
+                                .displayOrder(o.getDisplayOrder()).correct(o.isCorrect()).build()).toList())
                 .answers(questionAnswerRepository.findByQuestionId(question.getId()).stream()
-                        .map(a -> QuestionAnswerResponse.builder()
-                                .id(a.getId())
-                                .rawValue(a.getRawValue())
-                                .normalizedValue(a.getNormalizedValue())
-                                .build())
-                        .toList())
+                        .map(a -> QuestionAnswerResponse.builder().id(a.getId()).rawValue(a.getRawValue())
+                                .normalizedValue(a.getNormalizedValue()).build()).toList())
                 .media(questionMediaRepository.findByQuestionIdOrderByDisplayOrderAsc(question.getId()).stream()
-                        .map(m -> QuestionMediaResponse.builder()
-                                .id(m.getId())
+                        .map(m -> QuestionMediaResponse.builder().id(m.getId())
                                 .mediaId(m.getMedia() != null ? m.getMedia().getId() : null)
-                                .mediaType(m.getMedia() != null && m.getMedia().getMediaType() != null
-                                        ? m.getMedia().getMediaType().name() : null)
-                                .url(m.getMedia() != null ? m.getMedia().getPublicId() : null)
-                                .build())
-                        .toList())
-                .createdAt(question.getCreatedAt())
-                .updatedAt(question.getUpdatedAt())
-                .build();
+                                .mediaType(m.getMedia() != null && m.getMedia().getMediaType() != null ? m.getMedia().getMediaType().name() : null)
+                                .url(m.getMedia() != null ? m.getMedia().getPublicId() : null).build()).toList())
+                .createdAt(question.getCreatedAt()).updatedAt(question.getUpdatedAt()).build();
     }
 }

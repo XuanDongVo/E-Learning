@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback } from "react";
-import { X } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 
 import { QuestionComposer } from "@/components/features/teacher/question-authoring/QuestionComposer";
@@ -293,45 +293,34 @@ export function AssignmentQuestionComposerDialog({ assignmentId }: { assignmentI
 
   if (!open) return null;
 
+  const currentCount = Object.values(assignment.items).filter(
+    (item) => item.kind === "question",
+  ).length;
+  const title = editId
+    ? `Edit questions for ${assignment.title}`
+    : `Create questions for ${assignment.title}`;
+
   return (
-    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/50 p-3 backdrop-blur-sm sm:p-6">
-      <section
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="assignment-question-composer-title"
-        className="flex h-[min(94vh,1000px)] w-full max-w-7xl flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-2xl"
+    <div className="mx-auto w-full max-w-[1400px] p-4 sm:p-6">
+      <button
+        type="button"
+        onClick={close}
+        className="mb-4 inline-flex items-center gap-2 text-body-sm font-bold text-primary"
       >
-        <header className="flex shrink-0 items-center justify-between border-b px-4 py-3 sm:px-6">
-          <div>
-            <h2 id="assignment-question-composer-title" className="text-sm font-semibold text-slate-900">
-              Add questions to Assignment
-            </h2>
-            <p className="mt-1 text-xs text-slate-500">
-              Questions are saved through Question Engine; section and item order remain controlled by the Builder.
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={close}
-            aria-label="Close question composer"
-            className="rounded-md p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-900"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        </header>
-        <div className="min-h-0 flex-1 overflow-y-auto p-3 sm:p-5">
-          <QuestionComposer
-            title="Question Composer"
-            description="Create and validate questions before inserting them into the Assignment."
-            key={editId ?? "new"}
-            storageKey={"assignment-question-composer:" + assignmentId + ":" + (editId ?? initialQuestions?.[0]?.draftId ?? "new")}
-            initialQuestions={initialQuestions}
-            onUploadMedia={uploadMedia}
-            onSave={saveQuestions}
-            successDescription="Saved questions have been inserted into the Builder."
-          />
-        </div>
-      </section>
+        <ArrowLeft className="size-4" />
+        Back to {assignment.title}
+      </button>
+
+      <QuestionComposer
+        title={title}
+        description={`${currentCount}/100 questions currently in this Assignment. Add and edit multiple questions, then save them together.`}
+        key={editId ?? "new"}
+        storageKey={"assignment-question-composer:" + assignmentId + ":" + (editId ?? initialQuestions?.[0]?.draftId ?? "new")}
+        initialQuestions={initialQuestions}
+        onUploadMedia={uploadMedia}
+        onSave={saveQuestions}
+        successDescription={`Saved to ${assignment.title}.`}
+      />
     </div>
   );
 }

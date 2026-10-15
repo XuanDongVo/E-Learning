@@ -17,10 +17,11 @@ Base: `main` at `2678e570a75a86a7664ee60c88097c6df7887f2e`
 
 - [x] Create this fix branch from `main`.
 - [x] Remove implicit Section/Item creation from `AssignmentQuestionService.create()`; it now creates question records and AssignmentQuestion ownership rows only.
-- [ ] Connect Toolbox “Add question” to QuestionComposer and save through the canonical question authoring API.
-- [ ] On successful authoring, add the returned server question ID to Builder state and insert it at the chosen Composition target.
+- [x] Route Builder question tools through the QuestionComposer dialog and save through the Assignment Question API.
+- [x] On successful authoring, validate returned server question IDs and insert the persisted questions at the selected Composition target.
 - [ ] Restrict PropertyPanel to Composition properties; question content edits must go through QuestionComposer.
-- [ ] Change Composition Save to persist only Assignment metadata and the Composition tree; remove the per-question content update loop after the Composer edit flow is wired.
+- [x] Change Composition Save to persist Assignment metadata and the Composition tree only; it no longer rewrites question content.
+- [ ] Refactor PropertyPanel question content editing to use an edit-capable QuestionComposer flow (the legacy editor is still present and must not be treated as persisted).
 - [ ] Define safe unlink/delete semantics so removing an item from an Assignment cannot accidentally delete a reusable Question Bank question.
 - [ ] Add backend and frontend tests for create, edit, reorder, move/group, remove, save/autosave, reload, duplicate-submit and unsupported question types.
 - [ ] Run backend tests, frontend lint/typecheck/build, migration validation and end-to-end browser checks.
@@ -37,4 +38,4 @@ Base: `main` at `2678e570a75a86a7664ee60c88097c6df7887f2e`
 
 ## Current known limitation
 
-The branch has only completed the backend ownership-boundary change. The frontend still contains the legacy Builder question editor and its save adapter, so **P0 is not complete and this branch is not yet ready to merge**. No build/test results are claimed until the commands are actually run.
+The branch now routes question creation through QuestionComposer and keeps Composition Save from rewriting question content. However, PropertyPanel still contains the legacy content editor and existing-question edit mode has not yet been connected to QuestionComposer. Backend/frontend tests and builds have not been run, so **P0 is not complete and this branch is not yet ready to merge**.

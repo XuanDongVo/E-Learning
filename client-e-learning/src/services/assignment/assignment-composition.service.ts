@@ -1,6 +1,5 @@
 import { request } from "@/services/api.service";
 import { getAssignment, updateAssignment } from "@/services/assignment.service";
-import { assignmentQuestionService } from "@/services/assignment/assignment.question.service";
 import type {
   Assignment as ApiAssignment,
   AssignmentQuestion,
@@ -397,53 +396,6 @@ function serializeItem(
   };
 }
 
-function questionPayload(q: QuestionItem) {
-  const c = q.content;
-  if (c.type === "MATCHING") {
-    throw new Error(
-      "This question uses Matching, which the legacy question-write API cannot persist losslessly yet. Do not save until the canonical QuestionSpec write endpoint is connected.",
-    );
-  }
-  if (c.type === "MULTI_TEXT_INPUT") {
-    throw new Error(
-      "This question uses Cloze/multiple blanks, which the legacy question-write API cannot persist losslessly yet. Do not save until the canonical QuestionSpec write endpoint is connected.",
-    );
-  }
-  if (c.type === "SINGLE_CHOICE" || c.type === "MULTIPLE_CHOICE") {
-    const trueFalse =
-      c.options.length === 2 &&
-      c.options.every((o) =>
-        ["true", "false"].includes(o.text.trim().toLowerCase()),
-      ) &&
-      c.options.some((o) => o.id.startsWith("tf-"));
-    return {
-      type: trueFalse ? "TRUE_FALSE" : c.type,
-      difficulty: "MEDIUM",
-      content: c.prompt,
-      explanation: c.explanation || undefined,
-      hint: c.hint || undefined,
-      options: trueFalse
-        ? undefined
-        : c.options.map((o) => ({ content: o.text, isCorrect: o.isCorrect })),
-      answers: trueFalse
-        ? [{ rawValue: c.options.find((o) => o.isCorrect)?.text.toUpperCase() }]
-        : undefined,
-      mediaIds: [],
-    };
-  }
-  return {
-    type: "TYPE_ANSWER",
-    difficulty: "MEDIUM",
-    content: c.prompt,
-    explanation: c.explanation || undefined,
-    hint: c.hint || undefined,
-    answers: c.acceptedAnswers
-      .filter((x) => x.trim())
-      .map((rawValue) => ({ rawValue })),
-    mediaIds: [],
-  };
-}
-
 export async function loadBuilderAssignment(
   id?: string,
 ): Promise<BuilderAssignment> {
@@ -503,26 +455,6 @@ export async function saveBuilderAssignment(
         : { type: "GRADE" as const },
     ),
   });
-
-  const questionRows = (await assignmentQuestionService.list(id)).data ?? [];
-  const rowById = new Map(
-    questionRows.map((row) => [asId("q", row.questionId), row]),
-  );
-  for (const item of Object.values(a.items)) {
-    if (item.kind !== "question") continue;
-    const row = rowById.get(item.id);
-    if (!row) {
-      throw new Error(
-        "New questions must be saved through the Question Engine before saving Composition.",
-      );
-    }
-    const payload = questionPayload(item);
-    await assignmentQuestionService.update(
-      id,
-      row.questionId,
-      payload as never,
-    );
-  }
 
   const sections: WriteSection[] = a.sections.map((section, sectionIndex) => ({
     id: numberId(section.id, "s"),

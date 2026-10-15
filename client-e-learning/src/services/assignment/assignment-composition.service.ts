@@ -353,7 +353,7 @@ function serializeQuestion(
   id: number | null,
 ): WriteItem {
   return {
-    id: q.compositionItemId ?? null,
+    id: q.compositionItemId ?? id,
     position,
     itemType: "QUESTION",
     questionId: q.serverQuestionId ?? numberId(q.id, "q"),
@@ -469,7 +469,6 @@ export async function saveBuilderAssignment(
           itemIndex + 1,
           numberId(item.id, "item"),
         );
-        q.id = numberId(item.id, "item");
         return q;
       }
       const serialized = serializeItem(
@@ -478,7 +477,6 @@ export async function saveBuilderAssignment(
         section.id,
         a.items,
       );
-      serialized.id = numberId(item.id, "b");
       serialized.children = item.memberIds.map((memberId, childIndex) => {
         const child = a.items[memberId];
         if (!child || child.kind !== "question")

@@ -239,8 +239,8 @@ function BlockEditor({ b }: { b: BlockItem }) {
             );
           })}
         </div>
-        <Button variant="outline" size="sm" onClick={() => addTool(blk.type === "POOL" ? "MATCHING" : blk.type === "PASSAGE" ? "SINGLE_CHOICE" : "TEXT_INPUT", { sectionId, groupId: b.id, index: b.memberIds.length })}>
-          <Plus className="h-4 w-4" /> Add question to this group
+        <Button variant="outline" size="sm" disabled={blk.type === "POOL"} onClick={() => addTool(blk.type === "PASSAGE" ? "SINGLE_CHOICE" : "TEXT_INPUT", { sectionId, groupId: b.id, index: b.memberIds.length })}>
+          <Plus className="h-4 w-4" /> {blk.type === "POOL" ? "Matching questions not supported yet" : "Add question to this group"}
         </Button>
       </Group>
     </>

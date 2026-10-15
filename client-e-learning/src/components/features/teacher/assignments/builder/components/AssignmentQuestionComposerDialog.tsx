@@ -192,7 +192,11 @@ function toDraftQuestion(item: QuestionItem): DraftQuestion {
 export function AssignmentQuestionComposerDialog({ assignmentId }: { assignmentId: string }) {
   const open = useBuilder((state) => state.questionComposerOpen);
   const target = useBuilder((state) => state.questionComposerTarget);
+  const editId = useBuilder((state) => state.questionComposerEditId);
+  const assignment = useBuilder((state) => state.assignment);
   const close = useBuilder((state) => state.closeQuestionComposer);
+  const editingItem = editId ? assignment.items[editId] : undefined;
+  const initialQuestions = editingItem?.kind === "question" ? [toDraftQuestion(editingItem)] : undefined;
 
   const uploadMedia = useCallback(async (file: File) => {
     const response = await contentService.uploadQuestionDraftMedia(file);
@@ -257,7 +261,7 @@ export function AssignmentQuestionComposerDialog({ assignmentId }: { assignmentI
     state.select({ kind: "item", id: `q-${firstQuestionId}` });
     state.closeQuestionComposer();
     toast.success(`${created.length} question(s) added to the Assignment`);
-  }, [assignmentId, target]);
+  }, [assignmentId, target, editId, editingItem, assignment]);
 
   if (!open) return null;
 
@@ -291,7 +295,9 @@ export function AssignmentQuestionComposerDialog({ assignmentId }: { assignmentI
           <QuestionComposer
             title="Question Composer"
             description="Create and validate questions before inserting them into the Assignment."
-            storageKey={`assignment-question-composer:${assignmentId}`}
+            key={editId ?? "new"}
+            storageKey={"assignment-question-composer:" + assignmentId + ":" + (editId ?? "new")}
+            initialQuestions={initialQuestions}
             onUploadMedia={uploadMedia}
             onSave={saveQuestions}
             successDescription="Saved questions have been inserted into the Builder."

@@ -50,26 +50,8 @@ function IssueList({ id }: { id: ID }) {
   );
 }
 
-const updateQ = (id: ID, fn: (q: QuestionItem) => void) => useBuilder.getState().mutate((d) => fn(d.items[id] as QuestionItem));
 const updateB = (id: ID, fn: (b: BlockItem) => void) => useBuilder.getState().mutate((d) => fn(d.items[id] as BlockItem));
 
-function ListEditor({ values, onChange, placeholder, addLabel }: { values: string[]; onChange: (v: string[]) => void; placeholder: string; addLabel: string }) {
-  return (
-    <div className="space-y-1.5">
-      {values.map((v, i) => (
-        <div key={i} className="flex gap-1">
-          <Input value={v} placeholder={placeholder} onChange={(e) => onChange(values.map((x, j) => (j === i ? e.target.value : x)))} className="h-8" />
-          <Button size="icon" variant="ghost" className="h-8 w-8 shrink-0" aria-label="Remove" disabled={values.length <= 1} onClick={() => onChange(values.filter((_, j) => j !== i))}>
-            <X className="h-3.5 w-3.5" />
-          </Button>
-        </div>
-      ))}
-      <Button variant="ghost" size="sm" className="h-7 text-xs text-primary" onClick={() => onChange([...values, ""])}>
-        <Plus className="h-3.5 w-3.5" /> {addLabel}
-      </Button>
-    </div>
-  );
-}
 
 function QuestionEditor({ q }: { q: QuestionItem }) {
   const a = useBuilder((s) => s.assignment);
@@ -93,7 +75,7 @@ function QuestionEditor({ q }: { q: QuestionItem }) {
         <p className="text-xs leading-relaxed text-muted-foreground">
           Prompt, answer choices, accepted answers, hint, explanation and media are owned by Question Engine. Edit them in QuestionComposer.
         </p>
-        {q.serverType === "MATCHING" || q.serverType === "CLOZE" ? (
+        {q.serverType === "MATCHING" || q.serverType === "CLOZE" || q.content.type === "MATCHING" || q.content.type === "MULTI_TEXT_INPUT" ? (
           <p className="rounded-md border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800">
             This question type is not fully supported by the Assignment Question API. Editing is disabled to avoid losing its answer structure.
           </p>

@@ -214,15 +214,15 @@ function QuestionEditor({ q }: { q: QuestionItem }) {
           <Field label="Points" error={!q.config.isExample && !(q.config.points > 0) ? "Must be > 0" : null}>
             <Input type="number" step="0.25" min={0} className="h-8" disabled={q.config.isExample} value={Number.isFinite(q.config.points) ? q.config.points : ""} onChange={(e) => updateQ(q.id, (x) => (x.config.points = e.target.value === "" ? NaN : Number(e.target.value)))} />
           </Field>
-          <Field label="Grading">
-            <Select value={q.config.gradingMode} onValueChange={(v) => updateQ(q.id, (x) => (x.config.gradingMode = v as "AUTO" | "MANUAL"))}>
+          {/* <Field label="Grading">
+            <Select value={q.config.gradingMode} onValueChange={(v) => updateQ(q.id, (x) => (x.config.gradingMode))}>
               <SelectTrigger className="h-8"><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="AUTO">Automatic</SelectItem>
                 <SelectItem value="MANUAL">Manual (teacher)</SelectItem>
               </SelectContent>
             </Select>
-          </Field>
+          </Field> */}
         </div>
         <label className="flex items-center justify-between text-sm">
           Required

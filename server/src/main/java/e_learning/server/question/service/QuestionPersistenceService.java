@@ -1,6 +1,5 @@
 package e_learning.server.question.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import e_learning.server.common.exception.AppException;
 import e_learning.server.common.exception.ErrorCode;
 import e_learning.server.content.media.entity.Media;
@@ -26,6 +25,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import jakarta.persistence.EntityManager;
+import tools.jackson.databind.ObjectMapper;
+
 import java.util.*;
 
 @Service

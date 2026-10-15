@@ -1,7 +1,5 @@
 package e_learning.server.question.service;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import e_learning.server.question.dto.QuestionAnswerResponse;
 import e_learning.server.question.dto.QuestionContentResponse;
 import e_learning.server.question.dto.QuestionMediaResponse;
@@ -12,6 +10,8 @@ import e_learning.server.question.repository.QuestionMediaRepository;
 import e_learning.server.question.repository.QuestionOptionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 @Component
 @RequiredArgsConstructor

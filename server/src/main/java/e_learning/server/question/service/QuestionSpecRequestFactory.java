@@ -1,6 +1,5 @@
 package e_learning.server.question.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import e_learning.server.question.dto.QuestionWriteRequest;
 import e_learning.server.question.dto.QuestionDefinitionRequest;
 import e_learning.server.question.engine.model.QuestionSpec;
@@ -68,7 +67,10 @@ public class QuestionSpecRequestFactory {
         return new ClozeSpec(common, segments, blanks);
     }
 
-    private String correctKey(QuestionWriteRequest r) { return correctKeys(r).stream().findFirst().orElse(null); }
+    private String correctKey(QuestionWriteRequest r) {
+        return correctKeys(r).stream().findFirst().orElse(null);
+    }
+
     private java.util.Set<String> correctKeys(QuestionWriteRequest r) {
         if (r.getOptions() == null) return java.util.Set.of();
         return java.util.stream.IntStream.range(0, r.getOptions().size()).filter(i -> r.getOptions().get(i).isCorrect())

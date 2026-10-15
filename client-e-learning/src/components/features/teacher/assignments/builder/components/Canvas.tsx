@@ -195,7 +195,7 @@ function QuestionBody({ q }: { q: QuestionItem }) {
         </span>
         <span className="font-sans text-[11px] text-muted-foreground">
           {ops.TYPE_LABEL[c.type]} · {q.config.isExample ? "unscored" : `${q.config.points} pt`}
-          {q.config.gradingMode === "MANUAL" ? " · manual" : ""}
+          {q.config.gradingMode}
         </span>
       </div>
       {c.prompt ? (

@@ -149,14 +149,31 @@ function mapQuestion(
       break;
     }
     case "MATCHING":
-      // The current AssignmentQuestion API does not expose matching pairs or an answer-pool relation.
-      // Preserve the item and make the unsupported legacy representation explicit instead of inventing answers.
-      content = {
-        ...common,
-        type: "MATCHING",
-        poolId: null,
-        correctEntryId: null,
-      };
+      {
+        const def = q.definition?.matching;
+        const answers = (def?.answerPool ?? []).map((text, i) => ({
+          id: `ans-${row.questionId}-${i + 1}`,
+          key: `answer-${i + 1}`,
+          text,
+        }));
+        content = {
+          ...common,
+          type: "MATCHING",
+          items: (def?.items ?? []).map((item) => ({
+            id: `item-${row.questionId}-${item.key}`,
+            key: item.key,
+            prompt: item.prompt,
+            correctAnswerId:
+              answers.find((a) => a.text === def?.expectedPairs[item.key])
+                ?.id ?? null,
+          })),
+          answers,
+          shuffleAnswers: def?.shuffleAnswers ?? false,
+          poolId: null,
+          correctEntryId: null,
+        };
+        break;
+      }
       break;
     default:
       content = {
@@ -447,7 +464,10 @@ export async function saveBuilderAssignment(
         : Math.round(a.settings.timeLimitMin * 60),
     showAnswersAfterSubmit: a.settings.showAnswers !== "off",
     targets: [
-      ...Array.from(targetIds).map((classId) => ({ type: "CLASS" as const, classId })),
+      ...Array.from(targetIds).map((classId) => ({
+        type: "CLASS" as const,
+        classId,
+      })),
       ...(current.targets.some((target) => target.type === "GRADE")
         ? [{ type: "GRADE" as const }]
         : []),

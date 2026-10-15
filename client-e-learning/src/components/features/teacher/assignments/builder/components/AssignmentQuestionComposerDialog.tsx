@@ -10,7 +10,7 @@ import * as ops from "@/components/features/teacher/assignments/builder/ops";
 import { assignmentQuestionService } from "@/services/assignment/assignment.question.service";
 import { contentService } from "@/services/content.service";
 import type { CreateAssignmentQuestionRequest } from "@/types/assignment";
-import type { DraftQuestion } from "@/types/question";
+import type { DraftQuestion, QuestionType } from "@/types/question";
 import type { QuestionItem, InsertTarget } from "@/types/assignment-builder";
 
 function toPayload(question: DraftQuestion): CreateAssignmentQuestionRequest {
@@ -170,6 +170,25 @@ function toBuilderItem(
   };
 }
 
+function toDraftQuestion(item: QuestionItem): DraftQuestion {
+  const content = item.content;
+  const options = "options" in content ? content.options.map((option) => ({ id: option.id, text: option.text })) : [];
+  const correctOptionIds = "options" in content ? content.options.filter((option) => option.isCorrect).map((option) => option.id) : [];
+  const serverType = (item.serverType ?? content.type) as QuestionType;
+  const acceptedAnswers = content.type === "TEXT_INPUT" ? [...content.acceptedAnswers] : [""];
+  const media = (item.serverMedia ?? []).map((asset) => ({
+    id: String(asset.mediaId), name: "Question media",
+    kind: asset.mediaType.toUpperCase().includes("AUDIO") ? "audio" as const : "image" as const,
+    url: asset.url,
+  }));
+  return {
+    draftId: "edit-" + String(item.serverQuestionId ?? item.id),
+    type: serverType, difficulty: item.serverDifficulty ?? "EASY", text: content.prompt,
+    options, correctOptionIds,
+    trueFalseAnswer: options.some((option) => option.text.toUpperCase() === "FALSE" && correctOptionIds.includes(option.id)) ? "FALSE" : "TRUE",
+    acceptedAnswers, media, explanation: content.explanation ?? "", hint: content.hint ?? "",
+  };
+}
 export function AssignmentQuestionComposerDialog({ assignmentId }: { assignmentId: string }) {
   const open = useBuilder((state) => state.questionComposerOpen);
   const target = useBuilder((state) => state.questionComposerTarget);

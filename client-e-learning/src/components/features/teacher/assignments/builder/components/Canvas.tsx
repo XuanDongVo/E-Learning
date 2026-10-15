@@ -90,6 +90,7 @@ function AddMenuItems({ onPick }: { onPick: (t: ToolKey) => void }) {
 
 function ItemShell({ id, children, label }: { id: ID; children: ReactNode; label: string }) {
   const selected = useBuilder((s) => s.selection?.kind === "item" && s.selection.id === id);
+  const item = useBuilder((s) => s.assignment.items[id]);
   const { select, mutate, duplicate, requestDeleteItem, addTool } = useBuilder.getState();
   const issues = useIssues().filter((i) => i.target.id === id);
   const errs = issues.filter((i) => i.level === "error").length;
@@ -127,8 +128,12 @@ function ItemShell({ id, children, label }: { id: ID; children: ReactNode; label
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-            <DropdownMenuItem onClick={() => duplicate(id)}>
+            <DropdownMenuItem
+              disabled={(item?.kind === "question" && !!item.serverQuestionId) || (item?.kind === "block" && item.memberIds.length > 0)}
+              onClick={() => duplicate(id)}
+            >
               <Copy className="h-4 w-4" /> Duplicate
+              {(item?.kind === "question" && !!item.serverQuestionId) || (item?.kind === "block" && item.memberIds.length > 0) ? " (not available for persisted questions/groups)" : ""}
             </DropdownMenuItem>
             <DropdownMenuSub>
               <DropdownMenuSubTrigger>Add before</DropdownMenuSubTrigger>

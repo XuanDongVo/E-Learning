@@ -1,5 +1,6 @@
 import { request } from "@/services/api.service";
 import { getAssignment, updateAssignment } from "@/services/assignment.service";
+import { assignmentQuestionService } from "@/services/assignment/assignment.question.service";
 import type {
   Assignment as ApiAssignment,
   AssignmentQuestion,

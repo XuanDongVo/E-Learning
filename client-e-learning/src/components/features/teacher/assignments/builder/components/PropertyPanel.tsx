@@ -73,7 +73,7 @@ function ListEditor({ values, onChange, placeholder, addLabel }: { values: strin
 
 function QuestionEditor({ q }: { q: QuestionItem }) {
   const a = useBuilder((s) => s.assignment);
-  const { duplicate, requestDeleteItem, mutate, openQuestionComposer } = useBuilder.getState();
+  const { requestDeleteItem, mutate, openQuestionComposer } = useBuilder.getState();
   const { numbers, total } = useNumbering();
   const location = ops.locate(a, q.id);
 
@@ -85,7 +85,6 @@ function QuestionEditor({ q }: { q: QuestionItem }) {
           <div className="text-xs text-muted-foreground">{ops.TYPE_LABEL[q.content.type]}</div>
         </div>
         <div className="flex shrink-0 gap-1">
-          <Button size="icon" variant="ghost" className="h-8 w-8" aria-label="Duplicate" onClick={() => duplicate(q.id)}><Copy className="h-4 w-4" /></Button>
           <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive" aria-label="Remove from Assignment" onClick={() => requestDeleteItem(q.id)}><Trash2 className="h-4 w-4" /></Button>
         </div>
       </div>
@@ -94,9 +93,15 @@ function QuestionEditor({ q }: { q: QuestionItem }) {
         <p className="text-xs leading-relaxed text-muted-foreground">
           Prompt, answer choices, accepted answers, hint, explanation and media are owned by Question Engine. Edit them in QuestionComposer.
         </p>
-        <Button className="w-full" onClick={() => openQuestionComposer(location, q.id)}>
-          Edit question in QuestionComposer
-        </Button>
+        {q.serverType === "MATCHING" || q.serverType === "CLOZE" ? (
+          <p className="rounded-md border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800">
+            This question type is not fully supported by the Assignment Question API. Editing is disabled to avoid losing its answer structure.
+          </p>
+        ) : (
+          <Button className="w-full" onClick={() => openQuestionComposer(location, q.id)}>
+            Edit question in QuestionComposer
+          </Button>
+        )}
       </Group>
       <Group title="Composition properties">
         <div className="grid grid-cols-2 gap-2">

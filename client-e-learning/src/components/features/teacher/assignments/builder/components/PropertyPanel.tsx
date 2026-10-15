@@ -129,7 +129,7 @@ function BlockEditor({ b }: { b: BlockItem }) {
           <div className="text-xs text-muted-foreground">{ops.TYPE_LABEL[blk.type]} · shared by {b.memberIds.length} question(s)</div>
         </div>
         <div className="flex shrink-0 gap-1">
-          <Button size="icon" variant="ghost" className="h-8 w-8" aria-label="Duplicate" onClick={() => duplicate(b.id)}><Copy className="h-4 w-4" /></Button>
+          <Button size="icon" variant="ghost" className="h-8 w-8" aria-label="Duplicate" title={b.memberIds.length ? "Cannot duplicate a group containing persisted questions" : "Duplicate"} disabled={b.memberIds.length > 0} onClick={() => duplicate(b.id)}><Copy className="h-4 w-4" /></Button>
           <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive" aria-label="Delete" onClick={() => requestDeleteItem(b.id)}><Trash2 className="h-4 w-4" /></Button>
         </div>
       </div>

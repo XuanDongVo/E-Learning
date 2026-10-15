@@ -75,6 +75,7 @@ export interface QuestionItem {
   serverType?: string;
   serverDifficulty?: QuestionDifficulty;
   serverMediaIds?: number[];
+  serverMedia?: { mediaId: number; mediaType: string; url: string }[];
   compositionItemId?: number;
   serverQuestionSnapshot?: string;
   content: QuestionContent;

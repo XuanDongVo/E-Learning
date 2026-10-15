@@ -18,7 +18,7 @@ class CompoundQuestionHandlerTest {
     void matchingGradesEachPairWithEqualWeight() {
         MatchingSpec spec = new MatchingSpec(common, List.of(new MatchingSpec.Item("one", "One"), new MatchingSpec.Item("two", "Two")), List.of("A", "B"), Map.of("one", "A", "two", "B"));
         QuestionEngine engine = new QuestionEngine();
-        ValidatedAnswer answer = engine.parseAndValidate(spec, new RawAnswer(Map.of("one", "A", "two", "wrong"))).answer().orElseThrow();
+        ValidatedAnswer answer = engine.parseAndValidate(spec, new RawAnswer(Map.of("one", "A", "two", "A"))).answer().orElseThrow();
         GradeResult result = engine.grade(spec, answer);
         assertEquals(2, result.parts().size());
         assertEquals(0.5, result.scoreFraction().doubleValue(), 0.0001);

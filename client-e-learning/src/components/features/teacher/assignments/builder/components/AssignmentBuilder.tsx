@@ -67,6 +67,7 @@ export function AssignmentBuilder({ id }: { id?: string }) {
   const loadError = useBuilder((s) => s.loadError);
   const mode = useBuilder((s) => s.mode);
   const questionComposerOpen = useBuilder((s) => s.questionComposerOpen);
+  const questionComposerEditId = useBuilder((s) => s.questionComposerEditId);
   const assignment = useBuilder((s) => s.assignment);
   const autosave = useBuilder((s) => s.autosave);
   const selection = useBuilder((s) => s.selection);
@@ -164,7 +165,7 @@ export function AssignmentBuilder({ id }: { id?: string }) {
       </div>
     );
 
-  if (questionComposerOpen) {
+  if (questionComposerOpen && !questionComposerEditId) {
     return <AssignmentQuestionComposerDialog assignmentId={id ?? assignment.id} />;
   }
 

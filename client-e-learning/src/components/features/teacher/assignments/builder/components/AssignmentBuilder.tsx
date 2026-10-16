@@ -102,12 +102,13 @@ export function AssignmentBuilder({ id }: { id?: string }) {
     return () => window.removeEventListener("beforeunload", on);
   }, [dirty]);
 
-  // Autosave 5s after the last change
+  // Autosave after a short idle period; the store serializes overlapping saves
   useEffect(() => {
     if (!autosave || !dirty || !loaded) return;
     const t = setTimeout(() => {
-      if (useBuilder.getState().saveStatus !== "saving") useBuilder.getState().save();
-    }, 5000);
+      // The store queues this request if another save is in flight.
+      void useBuilder.getState().save();
+    }, 1200);
     return () => clearTimeout(t);
   }, [assignment, autosave, dirty, loaded]);
 

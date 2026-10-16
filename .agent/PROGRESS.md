@@ -34,6 +34,7 @@ Audited application baseline before documentation changes: c2a98fd9101d7b6613e5c
 - AssignmentService status transition does not currently enforce readiness; AssignmentQuestionService edit guard does not lock by AssessmentAttempt.
 - AssessmentAttempt is not implemented; dedicated Question Engine/Attempt tests were not found.
 - Builder no longer uses localStorage/seed for persistence. A seed object remains only as the store's pre-load placeholder; load errors are displayed instead of falling back to seed data.
+- Assignment incremental-save refactor is in progress on `fix/assignment-p0-question-composer-main`: inline editors and Question-before-Composition coordination are wired, but backend/migration validation and E2E are not yet verified.
 
 ## Migration rules
 - Never edit applied Flyway migrations; in this branch V1–V32 are already present and must not be modified.
@@ -78,3 +79,41 @@ This file tracks implementation state and does not claim the above work is done.
 - The current backend Question Engine does not safely accept MATCHING/CLOZE authoring payloads. These tools are hidden from new-item menus; if an existing Assignment contains a type the adapter cannot safely represent, loading stops with a visible error instead of silently rewriting it.
 - Media blocks now upload an image through the existing media API and persist `assetId`, alt text, caption and preview URL; asset IDs are required by server validation.
 - No build, lint, test, migration validation or browser end-to-end run has been executed/verified in this session.
+
+
+## P0 Assignment Question Composer fix (2026-10-15)
+- Created branch `fix/assignment-p0-question-composer-main` from `main` at `2678e570a75a86a7664ee60c88097c6df7887f2e`.
+- Removed the legacy side effect from `AssignmentQuestionService.create()`: creating question ownership no longer creates a default Section or AssignmentItem. Composition placement is owned by the Composition API.
+- Added `.agent/plans/P0_ASSIGNMENT_QUESTION_COMPOSER_FIX.md` with the architecture contract, remaining implementation tasks and acceptance criteria.
+- **P0 remains IN PROGRESS.** Toolbox/QuestionComposer integration, PropertyPanel boundary, composition-only save, deletion semantics and tests are still outstanding.
+- No build, lint, test or end-to-end checks were run in this GitHub-only update. Do not treat this commit as a passing verification signal.
+
+
+### P0 follow-up — QuestionComposer integration (2026-10-15)
+- [x] Added `AssignmentQuestionComposerDialog.tsx`: uses the existing QuestionComposer, uploads question-draft media, validates the supported question types, saves through `assignmentQuestionService.create()`, validates returned IDs and inserts server-backed question items into the selected Builder target.
+- [x] Builder store routes question tools to the Composer instead of creating local unsaved question drafts.
+- [x] Mounted the Composer dialog in `AssignmentBuilder.tsx`.
+- [x] Composition Save no longer updates question content; it writes Assignment metadata and Composition structure only.
+- [ ] Existing-question content editing is not yet integrated with an edit-capable Composer flow. The legacy PropertyPanel question editor still needs refactoring before this can be considered complete.
+- [ ] No build, lint, unit, integration or browser tests were run through the GitHub connector. Verify locally/CI before merge.
+
+
+### P0 completion follow-up — unlink safety, edit mode and CI (2026-10-15)
+- [x] PropertyPanel delegates persisted question content edits to QuestionComposer; points/required/example/grading remain Composition properties.
+- [x] Existing supported question types load as Composer drafts and save via Assignment Question update API. Matching/Cloze edits are blocked with an explicit message until their full data contract can be round-tripped.
+- [x] Composition serialization preserves server AssignmentItem IDs for questions and blocks. Save no longer rewrites question content and no longer resets persisted item IDs.
+- [x] Composition loading no longer appends orphan AssignmentQuestion rows into the visible Composition, preventing removed questions from reappearing.
+- [x] Composition replacement now deletes only stale AssignmentItem rows and the corresponding detached AssignmentQuestion association rows; it does not delete underlying Question records.
+- [x] Passage blank authoring now seeds QuestionComposer drafts instead of creating local-only questions that cannot be persisted.
+- [x] Disabled unsafe duplicate actions for persisted questions/populated groups until duplicate-as-new-question is implemented.
+- [x] Added frontend unit tests for Composition ordering and unlink behavior; added GitHub Actions workflow for frontend lint/tests/build and backend tests with PostgreSQL.
+- [ ] Latest CI run must pass after the final commit. Browser E2E and a manual live-assignment verification are still outstanding.
+- Note: the legacy explicit AssignmentQuestion bulk-delete endpoint still deletes Question records. Builder unlink does not call it; keep that endpoint out of the unlink flow.
+
+
+### CI result — P0 code commit `146ba0b2ae5e9945ac9cc07b001a0f1cc68971dc` (2026-10-15)
+- [x] Frontend `npm run lint`: passed with 0 errors (one pre-existing navigation warning remains).
+- [x] Frontend `npm test`: passed, 1 test file / 2 tests.
+- [x] Frontend `npm run build`: passed; Next.js production build and TypeScript checks completed.
+- [x] Backend `./mvnw -B test`: passed with PostgreSQL service enabled.
+- [ ] Browser E2E and manual live-assignment checks are still outstanding; do not equate unit/build CI with complete runtime acceptance.

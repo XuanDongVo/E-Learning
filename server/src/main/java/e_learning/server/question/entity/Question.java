@@ -37,6 +37,10 @@ public class Question {
     @Column(columnDefinition = "TEXT")
     private String hint;
 
+    /** Canonical type-specific definition for compound questions; JSON text keeps legacy rows readable. */
+    @Column(columnDefinition = "TEXT")
+    private String definition;
+
     @Column(name = "is_complete", nullable = false)
     private boolean complete;
 
@@ -57,13 +61,9 @@ public class Question {
         LocalDateTime now = LocalDateTime.now();
         createdAt = now;
         updatedAt = now;
-        if (matchingMode == null) {
-            matchingMode = "CASE_INSENSITIVE_TRIM";
-        }
+        if (matchingMode == null) matchingMode = "CASE_INSENSITIVE_TRIM";
     }
 
     @PreUpdate
-    void onUpdate() {
-        updatedAt = LocalDateTime.now();
-    }
+    void onUpdate() { updatedAt = LocalDateTime.now(); }
 }

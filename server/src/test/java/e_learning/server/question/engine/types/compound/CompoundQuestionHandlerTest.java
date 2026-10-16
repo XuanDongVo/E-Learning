@@ -18,7 +18,7 @@ class CompoundQuestionHandlerTest {
     void matchingGradesEachPairWithEqualWeight() {
         MatchingSpec spec = new MatchingSpec(common, List.of(new MatchingSpec.Item("one", "One"), new MatchingSpec.Item("two", "Two")), List.of("A", "B"), Map.of("one", "A", "two", "B"));
         QuestionEngine engine = new QuestionEngine();
-        ValidatedAnswer answer = engine.parseAndValidate(spec, new RawAnswer(Map.of("one", "A", "two", "wrong"))).answer().orElseThrow();
+        ValidatedAnswer answer = engine.parseAndValidate(spec, new RawAnswer(Map.of("one", "A", "two", "A"))).answer().orElseThrow();
         GradeResult result = engine.grade(spec, answer);
         assertEquals(2, result.parts().size());
         assertEquals(0.5, result.scoreFraction().doubleValue(), 0.0001);
@@ -27,12 +27,26 @@ class CompoundQuestionHandlerTest {
 
     @Test
     void clozeNormalizesAndGradesBlankParts() {
-        ClozeSpec spec = new ClozeSpec(common, List.of(new ClozeSpec.Segment("I ____ it.")), List.of(new ClozeSpec.Blank("b1", List.of("like")), new ClozeSpec.Blank("b2", List.of("English"))));
+        ClozeSpec spec = new ClozeSpec(common, List.of(new ClozeSpec.Segment("I ____ it.")), List.of(new ClozeSpec.Blank("b1", List.of("like")), new ClozeSpec.Blank("b2", List.of("English"))), false);
         QuestionEngine engine = new QuestionEngine();
         ValidatedAnswer answer = engine.parseAndValidate(spec, new RawAnswer(Map.of("b1", " LIKE ", "b2", "no"))).answer().orElseThrow();
         GradeResult result = engine.grade(spec, answer);
         assertEquals(0.5, result.scoreFraction().doubleValue(), 0.0001);
         assertEquals("like", result.parts().get(0).normalizedSubmittedValue().orElseThrow().value());
+    }
+
+    @Test
+    void clozeCanGradeCaseSensitiveAnswers() {
+        ClozeSpec spec = new ClozeSpec(
+                common,
+                List.of(new ClozeSpec.Segment("Use the exact form.")),
+                List.of(new ClozeSpec.Blank("b1", List.of("London"))),
+                true
+        );
+        QuestionEngine engine = new QuestionEngine();
+        ValidatedAnswer answer = engine.parseAndValidate(
+                spec, new RawAnswer(Map.of("b1", "london"))).answer().orElseThrow();
+        assertEquals(PartStatus.INCORRECT, engine.grade(spec, answer).parts().getFirst().status());
     }
 
     @Test

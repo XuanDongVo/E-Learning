@@ -3,6 +3,7 @@ package e_learning.server.question.dto;
 import e_learning.server.question.enums.Difficulty;
 import e_learning.server.question.enums.QuestionType;
 import lombok.*;
+import tools.jackson.databind.JsonNode;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -20,6 +21,7 @@ public class QuestionContentResponse {
     private String hint;
     private boolean complete;
     private String matchingMode;
+    private JsonNode definition;
     private List<QuestionOptionResponse> options;
     private List<QuestionAnswerResponse> answers;
     private List<QuestionMediaResponse> media;

@@ -4,7 +4,13 @@
  * Only example items keep their (public) model answer.
  */
 import { computeNumbering, letter } from "./ops";
-import type { Assignment, BlockItem, ID, InteractionType, QuestionItem } from "@/types/assignment-builder";
+import type {
+  Assignment,
+  BlockItem,
+  ID,
+  InteractionType,
+  QuestionItem,
+} from "@/types/assignment-builder";
 
 export interface SQuestion {
   id: ID;
@@ -32,7 +38,9 @@ export interface SBlock {
   url?: string;
   entries?: { id: ID; letter: string; text: string }[];
 }
-export type SUnit = { kind: "question"; q: SQuestion } | { kind: "group"; block: SBlock; members: SQuestion[] };
+export type SUnit =
+  | { kind: "question"; q: SQuestion }
+  | { kind: "group"; block: SBlock; members: SQuestion[] };
 export interface SSection {
   id: ID;
   title: string;
@@ -63,10 +71,18 @@ export function sanitizeMarkup(text: string) {
 function entriesOf(a: Assignment, poolId: ID | null) {
   const p = poolId ? (a.items[poolId] as BlockItem | undefined) : undefined;
   if (!p || p.block.type !== "POOL") return [];
-  return p.block.entries.map((e, i) => ({ id: e.id, letter: letter(i), text: e.text }));
+  return p.block.entries.map((e, i) => ({
+    id: e.id,
+    letter: letter(i),
+    text: e.text,
+  }));
 }
 
-function toSQ(a: Assignment, q: QuestionItem, number: number | null): SQuestion {
+function toSQ(
+  a: Assignment,
+  q: QuestionItem,
+  number: number | null,
+): SQuestion {
   const c = q.content;
   const base: SQuestion = {
     id: q.id,
@@ -82,7 +98,10 @@ function toSQ(a: Assignment, q: QuestionItem, number: number | null): SQuestion 
   if (c.type === "SINGLE_CHOICE" || c.type === "MULTIPLE_CHOICE") {
     base.options = c.options.map((o) => ({ id: o.id, text: o.text }));
     base.display = c.type === "SINGLE_CHOICE" ? c.display : "list";
-    ex = c.options.filter((o) => o.isCorrect).map((o) => o.text).join(", ");
+    ex = c.options
+      .filter((o) => o.isCorrect)
+      .map((o) => o.text)
+      .join(", ");
   } else if (c.type === "TEXT_INPUT") {
     base.prefix = c.prefix;
     base.cue = c.cue;
@@ -90,7 +109,7 @@ function toSQ(a: Assignment, q: QuestionItem, number: number | null): SQuestion 
   } else if (c.type === "MULTI_TEXT_INPUT") {
     ex = c.blanks.map((b) => b.acceptedAnswers[0]).join(" / ");
   } else if (c.type === "MATCHING") {
-    base.poolEntries = entriesOf(a, c.poolId);
+    base.poolEntries = entriesOf(a, c.poolId ?? null);
     ex = base.poolEntries.find((e) => e.id === c.correctEntryId)?.letter;
   }
   if (q.config.isExample) base.exampleAnswer = ex;
@@ -109,13 +128,23 @@ export function buildStudentView(a: Assignment): StudentAssignment {
       .map((id): SUnit | null => {
         const it = a.items[id];
         if (!it) return null;
-        if (it.kind === "question") return { kind: "question", q: toSQ(a, it, numbers.get(id) ?? null) };
+        if (it.kind === "question")
+          return { kind: "question", q: toSQ(a, it, numbers.get(id) ?? null) };
         const b = it.block;
         const block: SBlock = { id: it.id, type: b.type };
-        if (b.type === "PASSAGE") Object.assign(block, { title: b.title, text: sanitizeMarkup(b.text) });
+        if (b.type === "PASSAGE")
+          Object.assign(block, {
+            title: b.title,
+            text: sanitizeMarkup(b.text),
+          });
         if (b.type === "INSTRUCTIONS") block.text = b.text;
-        if (b.type === "MEDIA") Object.assign(block, { url: b.url, alt: b.alt, caption: b.caption });
-        if (b.type === "POOL") Object.assign(block, { title: b.title, entries: entriesOf(a, it.id) });
+        if (b.type === "MEDIA")
+          Object.assign(block, { url: b.url, alt: b.alt, caption: b.caption });
+        if (b.type === "POOL")
+          Object.assign(block, {
+            title: b.title,
+            entries: entriesOf(a, it.id),
+          });
         const members = it.memberIds
           .map((m) => a.items[m])
           .filter((m): m is QuestionItem => m?.kind === "question")
@@ -124,5 +153,13 @@ export function buildStudentView(a: Assignment): StudentAssignment {
       })
       .filter((u): u is SUnit => !!u),
   }));
-  return { title: a.title, grade: a.grade, instructions: a.instructions, timeLimitMin: a.settings.timeLimitMin, totalQuestions: total, totalPoints: points, sections };
+  return {
+    title: a.title,
+    grade: a.grade,
+    instructions: a.instructions,
+    timeLimitMin: a.settings.timeLimitMin,
+    totalQuestions: total,
+    totalPoints: points,
+    sections,
+  };
 }

@@ -192,11 +192,19 @@ public class AssignmentCompositionService {
             }
         }
 
-        // ---------- 8. Kiểm tra toàn vẹn: không thiếu, không trùng câu hỏi ----------
-        if (!questionIds.equals(ownedQuestionIds)) {
-            Set<Long> missing = new HashSet<>(ownedQuestionIds);
-            missing.removeAll(questionIds);
-            throw invalid("Every assignment-owned question must appear exactly once in Composition. Missing question IDs: " + missing);
+        // ---------- 8. Đồng bộ liên kết AssignmentQuestion với Composition ----------
+        // Composition là nguồn sự thật cho việc câu hỏi nào đang được đặt trong Assignment.
+        // Câu hỏi bị gỡ khỏi Composition chỉ mất liên kết AssignmentQuestion; không xóa Question gốc.
+        if (!ownedQuestionIds.containsAll(questionIds)) {
+            throw invalid("Composition contains a question that is not linked to this assignment.");
+        }
+        Set<Long> detachedQuestionIds = new HashSet<>(ownedQuestionIds);
+        detachedQuestionIds.removeAll(questionIds);
+        if (!detachedQuestionIds.isEmpty()) {
+            // AssignmentQuestion uses question_id as its primary key. Delete association rows only.
+            // Do not call QuestionPersistenceService.deleteQuestions() here.
+            assignmentQuestionRepository.deleteAllById(detachedQuestionIds);
+            assignmentQuestionRepository.flush();
         }
 
         // ---------- 9. Xóa section cũ không còn dùng ----------

@@ -89,7 +89,7 @@ export function Header() {
           <DropdownMenuContent align="end" className="w-60">
 
             <DropdownMenuLabel className="text-xs text-muted-foreground">Saving</DropdownMenuLabel>
-            <DropdownMenuCheckboxItem checked={autosave} onCheckedChange={(v) => set({ autosave: !!v })}>Autosave (5s after last change)</DropdownMenuCheckboxItem>
+            <DropdownMenuCheckboxItem checked={autosave} onCheckedChange={(v) => set({ autosave: !!v })}>Autosave (1.2s after last change)</DropdownMenuCheckboxItem>
 
           </DropdownMenuContent>
         </DropdownMenu>

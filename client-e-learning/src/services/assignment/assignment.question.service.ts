@@ -15,12 +15,14 @@ export const assignmentQuestionService = {
   create: (
     assignmentId: number,
     payload: CreateAssignmentQuestionRequest[],
+    idempotencyKey?: string,
   ) =>
     request<AssignmentQuestion[]>(
       `/v1/assignments/${assignmentId}/questions`,
       {
         method: "POST",
         body: JSON.stringify(payload),
+        headers: idempotencyKey ? { "Idempotency-Key": idempotencyKey } : undefined,
       },
     ),
 

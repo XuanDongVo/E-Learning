@@ -1,6 +1,7 @@
 import { request } from "@/services/api.service";
 import { getAssignment, updateAssignment } from "@/services/assignment.service";
 import { assignmentQuestionService } from "@/services/assignment/assignment.question.service";
+import { persistBuilderQuestions } from "@/services/assignment/assignment-question-persistence.service";
 import type {
   Assignment as ApiAssignment,
   AssignmentQuestion,
@@ -104,24 +105,10 @@ function mapQuestion(
       content = { ...common, type: "MULTIPLE_CHOICE", options };
       break;
     case "TRUE_FALSE": {
-      const answer = answers[0]?.toUpperCase();
-      content = {
-        ...common,
-        type: "SINGLE_CHOICE",
-        options: [
-          {
-            id: `tf-true-${row.questionId}`,
-            text: "True",
-            isCorrect: answer === "TRUE",
-          },
-          {
-            id: `tf-false-${row.questionId}`,
-            text: "False",
-            isCorrect: answer === "FALSE",
-          },
-        ],
-        display: "list",
-      };
+      const rawAnswer = answers[0]?.trim().toUpperCase();
+      const answer =
+        rawAnswer === "TRUE" || rawAnswer === "FALSE" ? rawAnswer : null;
+      content = { ...common, type: "TRUE_FALSE", answer };
       break;
     }
     case "TYPE_ANSWER":
@@ -136,28 +123,67 @@ function mapQuestion(
       };
       break;
     case "CLOZE": {
-      const blankCount = (prompt.match(/\{\{\s*\d+\s*\}\}/g) ?? []).length;
+      const definition = q.definition && "cloze" in q.definition
+        ? q.definition.cloze
+        : undefined;
+      const blanks = (definition?.blanks ?? []).map((blank, index) => ({
+        id: `blank-${row.questionId}-${blank.key || index + 1}`,
+        key: blank.key || `blank-${index + 1}`,
+        acceptedAnswers: [...(blank.acceptedAnswers ?? [])],
+      }));
+      const segments = (definition?.segments ?? []).map((segment, index) => ({
+        id: `segment-${row.questionId}-${index + 1}`,
+        text: segment.text ?? "",
+      }));
+      const reconstructedPrompt = segments.length
+        ? segments.reduce(
+            (text, segment, index) =>
+              text + segment.text + (index < blanks.length ? `{{${index + 1}}}` : ""),
+            "",
+          )
+        : prompt;
       content = {
         ...common,
-        type: "MULTI_TEXT_INPUT",
-        blanks: Array.from({ length: blankCount }, (_, i) => ({
-          id: `blank-${row.questionId}-${i + 1}`,
-          acceptedAnswers: answers[i] ? [answers[i]] : [],
-        })),
-        caseSensitive: q.matchingMode === "CASE_SENSITIVE_TRIM",
+        type: "CLOZE",
+        prompt: reconstructedPrompt,
+        segments: segments.length
+          ? segments
+          : [{ id: `segment-${row.questionId}-1`, text: prompt }],
+        blanks,
+        caseSensitive:
+          definition?.caseSensitive ??
+          q.matchingMode === "CASE_SENSITIVE_TRIM",
       };
       break;
     }
-    case "MATCHING":
-      // The current AssignmentQuestion API does not expose matching pairs or an answer-pool relation.
-      // Preserve the item and make the unsupported legacy representation explicit instead of inventing answers.
+    case "MATCHING": {
+      const definition = q.definition && "matching" in q.definition
+        ? q.definition.matching
+        : undefined;
+      const matchingAnswers = (definition?.answerPool ?? []).map((text, index) => ({
+        id: `ans-${row.questionId}-${index + 1}`,
+        key: `answer-${index + 1}`,
+        text,
+      }));
       content = {
         ...common,
         type: "MATCHING",
+        items: (definition?.items ?? []).map((matchItem, index) => ({
+          id: `item-${row.questionId}-${matchItem.key || index + 1}`,
+          key: matchItem.key || `item-${index + 1}`,
+          prompt: matchItem.prompt,
+          correctAnswerId:
+            matchingAnswers.find(
+              (answer) => answer.text === definition?.expectedPairs?.[matchItem.key],
+            )?.id ?? null,
+        })),
+        answers: matchingAnswers,
+        shuffleAnswers: definition?.shuffleAnswers ?? true,
         poolId: null,
         correctEntryId: null,
       };
       break;
+    }
     default:
       content = {
         ...common,
@@ -169,6 +195,16 @@ function mapQuestion(
   return {
     id: asId("q", row.questionId),
     kind: "question",
+    serverQuestionId: row.questionId,
+    serverType: q.type,
+    serverDifficulty: q.difficulty,
+    serverMediaIds: (q.media ?? []).map((media) => media.mediaId),
+    serverMedia: (q.media ?? []).map((media) => ({
+      mediaId: media.mediaId,
+      mediaType: media.mediaType,
+      url: media.url,
+    })),
+    compositionItemId: item?.id,
     content,
     config: {
       points: item?.possiblePoints ?? 1,
@@ -212,6 +248,7 @@ function blockFromApi(item: ApiItem): BlockItem {
   return {
     id: asId("b", item.id),
     kind: "block",
+    compositionItemId: item.id,
     block,
     memberIds: (item.children ?? []).map((child) =>
       asId("q", child.questionId ?? child.id),
@@ -274,23 +311,8 @@ function mapAssignment(
     };
   });
 
-  // Keep legacy-owned questions visible even if older Composition data was incomplete.
-  for (const row of questions) {
-    const id = asId("q", row.questionId);
-    if (!items[id]) {
-      items[id] = mapQuestion(row, undefined);
-      if (!sections.length)
-        sections.push({
-          id: "s-local-1",
-          title: "Section 1",
-          titleVi: "Section 1",
-          instructions: "",
-          instructionsVi: "",
-          itemIds: [],
-        });
-      sections[0].itemIds.push(id);
-    }
-  }
+  // AssignmentQuestion ownership is not a placement/order source of truth.
+  // Detached questions must not be resurrected into Composition on reload.
 
   const settings = {
     timeLimitMin: api.timeLimitSeconds
@@ -358,10 +380,10 @@ function serializeQuestion(
   id: number | null,
 ): WriteItem {
   return {
-    id,
+    id: q.compositionItemId ?? id,
     position,
     itemType: "QUESTION",
-    questionId: numberId(q.id, "q"),
+    questionId: q.serverQuestionId ?? numberId(q.id, "q"),
     possiblePoints: q.config.isExample ? 0 : q.config.points,
     required: q.config.required,
     example: q.config.isExample,
@@ -379,9 +401,9 @@ function serializeItem(
   if (item.kind === "question")
     return serializeQuestion(item, position, numberId(item.id, "item"));
   const b = serializeBlock(item.block);
-  const id = numberId(item.id, "b");
+  const id = item.compositionItemId ?? numberId(item.id, "b");
   const children = item.memberIds
-    .map((memberId, index) => allItems[memberId])
+    .map((memberId) => allItems[memberId])
     .filter((x): x is QuestionItem => x?.kind === "question")
     .map((q, index) => serializeQuestion(q, index + 1, numberId(q.id, "item")));
   return {
@@ -394,53 +416,6 @@ function serializeItem(
     example: false,
     blockPayload: b.blockPayload,
     children,
-  };
-}
-
-function questionPayload(q: QuestionItem) {
-  const c = q.content;
-  if (c.type === "MATCHING") {
-    throw new Error(
-      "This question uses Matching, which the legacy question-write API cannot persist losslessly yet. Do not save until the canonical QuestionSpec write endpoint is connected.",
-    );
-  }
-  if (c.type === "MULTI_TEXT_INPUT") {
-    throw new Error(
-      "This question uses Cloze/multiple blanks, which the legacy question-write API cannot persist losslessly yet. Do not save until the canonical QuestionSpec write endpoint is connected.",
-    );
-  }
-  if (c.type === "SINGLE_CHOICE" || c.type === "MULTIPLE_CHOICE") {
-    const trueFalse =
-      c.options.length === 2 &&
-      c.options.every((o) =>
-        ["true", "false"].includes(o.text.trim().toLowerCase()),
-      ) &&
-      c.options.some((o) => o.id.startsWith("tf-"));
-    return {
-      type: trueFalse ? "TRUE_FALSE" : c.type,
-      difficulty: "MEDIUM",
-      content: c.prompt,
-      explanation: c.explanation || undefined,
-      hint: c.hint || undefined,
-      options: trueFalse
-        ? undefined
-        : c.options.map((o) => ({ content: o.text, isCorrect: o.isCorrect })),
-      answers: trueFalse
-        ? [{ rawValue: c.options.find((o) => o.isCorrect)?.text.toUpperCase() }]
-        : undefined,
-      mediaIds: [],
-    };
-  }
-  return {
-    type: "TYPE_ANSWER",
-    difficulty: "MEDIUM",
-    content: c.prompt,
-    explanation: c.explanation || undefined,
-    hint: c.hint || undefined,
-    answers: c.acceptedAnswers
-      .filter((x) => x.trim())
-      .map((rawValue) => ({ rawValue })),
-    mediaIds: [],
   };
 }
 
@@ -478,53 +453,38 @@ export async function saveBuilderAssignment(
   const assignmentResponse = await getAssignment(id);
   const current = assignmentResponse.data;
   if (!current) throw new Error("Assignment not found.");
+  const withQuestions = await persistBuilderQuestions(a);
   const targetIds = new Set(
-    a.settings.classIds
+    withQuestions.settings.classIds
       .map(Number)
       .filter((x) => Number.isSafeInteger(x) && x > 0),
   );
   const dueAt = a.settings.dueAt || current.dueAt;
   const startAt = a.settings.startAt || current.startAt;
   await updateAssignment(id, {
-    gradeLevel: a.grade,
+    gradeLevel: withQuestions.grade,
     academicYear: current.academicYear,
-    name: a.title.trim() || current.name,
-    description: a.instructions,
+    name: withQuestions.title.trim() || current.name,
+    description: withQuestions.instructions,
     startAt: startAt || undefined,
     dueAt,
     timeLimitSeconds:
-      a.settings.timeLimitMin == null
+      withQuestions.settings.timeLimitMin == null
         ? undefined
-        : Math.round(a.settings.timeLimitMin * 60),
-    showAnswersAfterSubmit: a.settings.showAnswers !== "off",
-    targets: current.targets.map((t) =>
-      t.type === "CLASS"
-        ? { type: "CLASS" as const, classId: t.classId! }
-        : { type: "GRADE" as const },
-    ),
+        : Math.round(withQuestions.settings.timeLimitMin * 60),
+    showAnswersAfterSubmit: withQuestions.settings.showAnswers !== "off",
+    targets: [
+      ...Array.from(targetIds).map((classId) => ({
+        type: "CLASS" as const,
+        classId,
+      })),
+      ...(current.targets.some((target) => target.type === "GRADE")
+        ? [{ type: "GRADE" as const }]
+        : []),
+    ],
   });
 
-  const questionRows = (await assignmentQuestionService.list(id)).data ?? [];
-  const rowById = new Map(
-    questionRows.map((row) => [asId("q", row.questionId), row]),
-  );
-  for (const item of Object.values(a.items)) {
-    if (item.kind !== "question") continue;
-    const row = rowById.get(item.id);
-    if (!row) {
-      throw new Error(
-        "New questions must be saved through the Question Engine before saving Composition.",
-      );
-    }
-    const payload = questionPayload(item);
-    await assignmentQuestionService.update(
-      id,
-      row.questionId,
-      payload as never,
-    );
-  }
-
-  const sections: WriteSection[] = a.sections.map((section, sectionIndex) => ({
+  const sections: WriteSection[] = withQuestions.sections.map((section, sectionIndex) => ({
     id: numberId(section.id, "s"),
     position: sectionIndex + 1,
     title: section.title.trim() || `Section ${sectionIndex + 1}`,
@@ -532,7 +492,7 @@ export async function saveBuilderAssignment(
     titleVi: section.titleVi.trim() || `Section ${sectionIndex + 1}`,
     instructionsVi: section.instructionsVi || "",
     items: section.itemIds.map((itemId, itemIndex) => {
-      const item = a.items[itemId];
+      const item = withQuestions.items[itemId];
       if (!item)
         throw new Error(`Composition contains missing item ${itemId}.`);
       if (item.kind === "question") {
@@ -541,18 +501,16 @@ export async function saveBuilderAssignment(
           itemIndex + 1,
           numberId(item.id, "item"),
         );
-        q.id = numberId(item.id, "item");
         return q;
       }
       const serialized = serializeItem(
         item,
         itemIndex + 1,
         section.id,
-        a.items,
+        withQuestions.items,
       );
-      serialized.id = numberId(item.id, "b");
       serialized.children = item.memberIds.map((memberId, childIndex) => {
-        const child = a.items[memberId];
+        const child = withQuestions.items[memberId];
         if (!child || child.kind !== "question")
           throw new Error(
             "Only question items may be nested inside a shared block.",
@@ -572,7 +530,7 @@ export async function saveBuilderAssignment(
       method: "PUT",
       body: JSON.stringify({
         sections,
-        showScoreAfterSubmit: a.settings.showScoreAfterSubmit,
+        showScoreAfterSubmit: withQuestions.settings.showScoreAfterSubmit,
       }),
     },
   );

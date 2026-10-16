@@ -4,7 +4,7 @@ import e_learning.server.question.engine.model.QuestionSpec;
 import e_learning.server.question.enums.QuestionType;
 import java.util.*;
 
-public record ClozeSpec(QuestionSpec.QuestionCommon common, List<Segment> segments, List<Blank> blanks) implements QuestionSpec {
+public record ClozeSpec(QuestionSpec.QuestionCommon common, List<Segment> segments, List<Blank> blanks, boolean caseSensitive) implements QuestionSpec {
     public ClozeSpec { common = Objects.requireNonNull(common); segments = List.copyOf(segments == null ? List.of() : segments); blanks = List.copyOf(blanks == null ? List.of() : blanks); }
     public QuestionType type() { return QuestionType.CLOZE; }
     public record Segment(String text) { public Segment { text = Objects.requireNonNull(text); } }

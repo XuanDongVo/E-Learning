@@ -1,0 +1,70 @@
+name: Assignment P0 checks
+
+on:
+  push:
+    branches:
+      - fix/assignment-p0-question-composer-main
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "client-e-learning/**"
+      - "server/**"
+      - ".github/workflows/assignment-p0-checks.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  frontend:
+    name: Frontend lint, tests and build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: client-e-learning
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: client-e-learning/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build
+
+  backend:
+    name: Backend tests
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: e_learning
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: "123456"
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d e_learning"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DB_URL: jdbc:postgresql://localhost:5432/e_learning
+      DB_USERNAME: postgres
+      DB_PASSWORD: "123456"
+    defaults:
+      run:
+        working-directory: server
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: maven
+      - run: chmod +x ./mvnw
+      - run: ./mvnw -B test

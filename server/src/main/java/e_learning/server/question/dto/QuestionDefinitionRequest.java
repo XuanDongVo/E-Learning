@@ -26,6 +26,7 @@ public class QuestionDefinitionRequest {
 
     @Data
     public static class Cloze {
+        private Boolean caseSensitive;
         private List<Segment> segments;
         private List<Blank> blanks;
 

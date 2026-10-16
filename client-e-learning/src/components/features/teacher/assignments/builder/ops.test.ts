@@ -46,4 +46,24 @@ describe("Assignment Builder composition operations", () => {
     expect(assignment.items[question.id]).toBeUndefined();
     expect(locate(assignment, question.id)).toBeNull();
   });
+
+  it("appends a new question after the selected item", () => {
+    const assignment = createEmptyAssignment();
+    const section = newSection();
+    assignment.sections.push(section);
+
+    const first = createItem("SINGLE_CHOICE");
+    const second = createItem("MULTIPLE_CHOICE");
+    assignment.items[first.id] = first;
+    assignment.items[second.id] = second;
+    place(assignment, first.id, { sectionId: section.id, groupId: null, index: 0 });
+    place(assignment, second.id, { sectionId: section.id, groupId: null, index: 1 });
+
+    const target = { sectionId: section.id, groupId: null, index: section.itemIds.length };
+    const created = createItem("TRUE_FALSE");
+    assignment.items[created.id] = created;
+    place(assignment, created.id, target);
+
+    expect(section.itemIds).toEqual([first.id, second.id, created.id]);
+  });
 });

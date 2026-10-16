@@ -4,9 +4,10 @@ import { CSS } from "@dnd-kit/utilities";
 import { ArrowDown, ArrowUp, Check, Copy, GripVertical, ImageIcon, MoreHorizontal, Plus, Trash2, Wand2 } from "lucide-react";
 import { useMemo, type ReactNode } from "react";
 import { toast } from "sonner";
-import { makeDraftQuestion } from "@/components/features/teacher/question-authoring/question-draft";
-import type { DraftQuestion } from "@/types/question";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,12 +21,12 @@ import {
 import { cn } from "@/lib/utils";
 import * as ops from "@/components/features/teacher/assignments/builder/ops";
 import { useBuilder } from "@/components/features/teacher/assignments/builder/store";
-import type { BlockItem, ID, QuestionItem, Section, ToolKey } from "@/types/assignment-builder";
+import type { BlockItem, ID, QuestionContent, QuestionItem, Section, ToolKey } from "@/types/assignment-builder";
 import { validate } from "@/components/features/teacher/assignments/builder/validation";
 import { BlankChip, RichText } from "./RichText";
 import { TOOLS } from "./Toolbox";
 
-const QUESTION_TOOL_DEFS = TOOLS.filter((t) => ops.isQuestionTool(t.key) && t.key !== "MATCHING" && t.key !== "MULTI_BLANKS");
+const QUESTION_TOOL_DEFS = TOOLS.filter((t) => ops.isQuestionTool(t.key));
 
 export function useNumbering() {
   const a = useBuilder((s) => s.assignment);
@@ -45,35 +46,33 @@ export function createBlankQuestions(blockId: ID) {
     const item = assignment.items[memberId];
     return item?.kind === "question" ? item.content.blankRef : null;
   }));
-  const tokens = ops.blankTokens(block.block.text);
-  const drafts: DraftQuestion[] = [];
-  const blankRefs: number[] = [];
-  ops.blankNumbers(block.block.text).forEach((number, index) => {
-    if (taken.has(number)) return;
-    const raw = tokens[index] ?? "";
-    const answers = /^\d+$/.test(raw.trim()) ? [""] : raw.split("|").map((value) => value.trim()).filter(Boolean);
-    drafts.push(makeDraftQuestion({
-      type: "FILL_IN_BLANK",
-      text: `Answer blank (${number}) in the passage`,
-      acceptedAnswers: answers.length ? answers : [""],
-    }));
-    blankRefs.push(number);
-  });
-  if (!drafts.length) {
-    toast("Every blank already has a question");
-    return;
-  }
   const location = ops.locate(assignment, blockId);
   if (!location) {
     toast.error("Could not find the passage in Composition.");
     return;
   }
-  state.openQuestionComposer(
-    { sectionId: location.sectionId, groupId: blockId, index: block.memberIds.length },
-    null,
-    drafts,
-    blankRefs,
-  );
+  const tokens = ops.blankTokens(block.block.text);
+  const created: ID[] = [];
+  ops.blankNumbers(block.block.text).forEach((number, index) => {
+    if (taken.has(number)) return;
+    const raw = tokens[index] ?? "";
+    const answers = /^\d+$/.test(raw.trim()) ? [""] : raw.split("|").map((value) => value.trim()).filter(Boolean);
+    const question = ops.createItem("TEXT_INPUT");
+    if (question.kind !== "question" || question.content.type !== "TEXT_INPUT") return;
+    question.content.prompt = `Answer blank (${number}) in the passage`;
+    question.content.acceptedAnswers = answers.length ? answers : [""];
+    question.content.blankRef = number;
+    created.push(question.id);
+    state.mutate((draft) => {
+      draft.items[question.id] = question;
+      ops.place(draft, question.id, { sectionId: location.sectionId, groupId: blockId, index: block.memberIds.length + index });
+    });
+  });
+  if (!created.length) {
+    toast("Every blank already has a question");
+    return;
+  }
+  state.select({ kind: "item", id: created[0] });
 }
 
 function AddMenuItems({ onPick }: { onPick: (t: ToolKey) => void }) {
@@ -175,8 +174,12 @@ function ItemShell({ id, children, label }: { id: ID; children: ReactNode; label
 function InlineEditor({ q }: { q: QuestionItem }) {
   const mutate = useBuilder((s) => s.mutate);
   const c = q.content;
-  const edit = (fn: (c: any) => void) => mutate((d) => fn((d.items[q.id] as QuestionItem).content));
+  const edit = (fn: (c: QuestionContent) => void) => mutate((d) => fn((d.items[q.id] as QuestionItem).content));
   const input = "w-full rounded border bg-background px-2 py-1 font-sans text-sm focus:outline-none focus:ring-2 focus:ring-primary/30";
+  const updateCommon = (field: "explanation" | "hint", value: string) =>
+    edit((x) => {
+      x[field] = value;
+    });
   return (
     <div className="space-y-2 font-sans" onClick={(e) => e.stopPropagation()}>
       <span className="text-xs font-semibold text-primary">Sửa trực tiếp · {ops.TYPE_LABEL[c.type]}</span>
@@ -191,19 +194,82 @@ function InlineEditor({ q }: { q: QuestionItem }) {
                 type={c.type === "SINGLE_CHOICE" ? "radio" : "checkbox"}
                 checked={o.isCorrect}
                 aria-label={`Đáp án đúng ${ops.letter(i)}`}
-                // onChange={() => edit((x) => x.options.forEach((p, j) => (c.type === "SINGLE_CHOICE" ? (p.isCorrect = j === i) : j === i && (p.isCorrect = !p.isCorrect))))}
+                onChange={() =>
+                  edit((x) => {
+                    if (!("options" in x)) return;
+                    x.options.forEach((p, j) => {
+                      if (c.type === "SINGLE_CHOICE") p.isCorrect = j === i;
+                      else if (j === i) p.isCorrect = !p.isCorrect;
+                    });
+                  })
+                }
               />
               <span className="w-4 text-xs text-muted-foreground">{ops.letter(i)}.</span>
-              <input className={input} value={o.text} placeholder="Lựa chọn…" onChange={(e) => edit((x) => (x.options[i].text = e.target.value))} />
-              <Button size="icon" variant="ghost" className="h-7 w-7 shrink-0" aria-label="Xóa lựa chọn" onClick={() => edit((x) => x.options.splice(i, 1))}><Trash2 className="h-3.5 w-3.5" /></Button>
+              <input className={input} value={o.text} placeholder="Lựa chọn…" onChange={(e) => edit((x) => { if ("options" in x) x.options[i].text = e.target.value; })} />
+              <Button size="icon" variant="ghost" className="h-7 w-7 shrink-0" aria-label="Xóa lựa chọn" onClick={() => edit((x) => { if ("options" in x) x.options.splice(i, 1); })}><Trash2 className="h-3.5 w-3.5" /></Button>
             </div>
           ))}
-          <Button size="sm" variant="ghost" onClick={() => edit((x) => x.options.push({ id: ops.uid("o"), text: "", isCorrect: false }))}><Plus className="h-3.5 w-3.5" /> Thêm lựa chọn</Button>
+          <Button size="sm" variant="ghost" onClick={() => edit((x) => { if ("options" in x) x.options.push({ id: ops.uid("o"), text: "", isCorrect: false }); })}><Plus className="h-3.5 w-3.5" /> Thêm lựa chọn</Button>
+        </div>
+      )}
+      {c.type === "TRUE_FALSE" && (
+        <div className="flex gap-4 text-sm">
+          {(["TRUE", "FALSE"] as const).map((answer) => (
+            <label key={answer} className="flex items-center gap-2">
+              <input
+                type="radio"
+                name={`true-false-${q.id}`}
+                checked={c.answer === answer}
+                onChange={() => edit((x) => { if (x.type === "TRUE_FALSE") x.answer = answer; })}
+              />
+              {answer === "TRUE" ? "True" : "False"}
+            </label>
+          ))}
         </div>
       )}
       {c.type === "TEXT_INPUT" && (
-        <input className={input} placeholder="Đáp án chấp nhận, cách nhau bằng dấu /" value={c.acceptedAnswers.join(" / ")} onChange={(e) => edit((x) => (x.acceptedAnswers = e.target.value.split("/").map((s) => s.trim())))} />
+        <input className={input} placeholder="Đáp án chấp nhận, cách nhau bằng dấu /" value={c.acceptedAnswers.join(" / ")} onChange={(e) => edit((x) => { if (x.type === "TEXT_INPUT") x.acceptedAnswers = e.target.value.split("/").map((s) => s.trim()); })} />
       )}
+      {c.type === "CLOZE" && (
+        <div className="space-y-2 rounded border bg-muted/20 p-2">
+          <Textarea className={input} rows={2} value={c.prompt} onChange={(e) => edit((x) => { if (x.type === "CLOZE") x.prompt = e.target.value; })} placeholder="Use {{1}}, {{2}} for blanks" />
+          {c.blanks.map((blank, index) => (
+            <div key={blank.id} className="flex items-center gap-2">
+              <span className="w-16 shrink-0 text-xs text-muted-foreground">Blank {index + 1}</span>
+              <Input className={input} value={blank.acceptedAnswers.join(" / ")} onChange={(e) => edit((x) => { if (x.type === "CLOZE") x.blanks[index].acceptedAnswers = e.target.value.split("/").map((value) => value.trim()); })} />
+            </div>
+          ))}
+          <label className="flex items-center justify-between text-xs">
+            Case sensitive
+            <Switch checked={c.caseSensitive} onCheckedChange={(value) => edit((x) => { if (x.type === "CLOZE") x.caseSensitive = value; })} />
+          </label>
+        </div>
+      )}
+      {c.type === "MATCHING" && (
+        <div className="space-y-2 rounded border bg-muted/20 p-2">
+          <Textarea className={input} rows={2} value={c.prompt} onChange={(e) => edit((x) => { if (x.type === "MATCHING") x.prompt = e.target.value; })} placeholder="Matching instructions" />
+          {c.items.map((item, index) => (
+            <div key={item.id} className="grid grid-cols-[1fr_1fr] gap-2">
+              <Input className={input} value={item.prompt} placeholder={`Item ${index + 1}`} onChange={(e) => edit((x) => { if (x.type === "MATCHING") x.items[index].prompt = e.target.value; })} />
+              <select className={input} value={item.correctAnswerId ?? ""} aria-label={`Correct answer for item ${index + 1}`} onChange={(e) => edit((x) => { if (x.type === "MATCHING") x.items[index].correctAnswerId = e.target.value || null; })}>
+                <option value="">Select answer</option>
+                {c.answers.map((answer) => <option key={answer.id} value={answer.id}>{answer.text || "Untitled answer"}</option>)}
+              </select>
+            </div>
+          ))}
+          {c.answers.map((answer, index) => (
+            <Input key={answer.id} className={input} value={answer.text} placeholder={`Answer ${index + 1}`} onChange={(e) => edit((x) => { if (x.type === "MATCHING") x.answers[index].text = e.target.value; })} />
+          ))}
+          <label className="flex items-center justify-between text-xs">
+            Shuffle answers
+            <Switch checked={c.shuffleAnswers} onCheckedChange={(value) => edit((x) => { if (x.type === "MATCHING") x.shuffleAnswers = value; })} />
+          </label>
+        </div>
+      )}
+      <div className="grid gap-2 sm:grid-cols-2">
+        <Textarea rows={2} maxLength={500} value={c.hint ?? ""} placeholder="Hint (optional)" onChange={(e) => updateCommon("hint", e.target.value)} />
+        <Textarea rows={2} maxLength={2000} value={c.explanation ?? ""} placeholder="Explanation (optional)" onChange={(e) => updateCommon("explanation", e.target.value)} />
+      </div>
       <p className="text-[11px] text-muted-foreground">Điểm, chế độ chấm, nhóm… ở cột cài đặt nâng cao bên phải.</p>
     </div>
   );
@@ -211,7 +277,7 @@ function InlineEditor({ q }: { q: QuestionItem }) {
 
 function QuestionBody({ q }: { q: QuestionItem }) {
   const selected = useBuilder((s) => s.selection?.kind === "item" && s.selection.id === q.id);
-  if (selected && ["SINGLE_CHOICE", "MULTIPLE_CHOICE", "TEXT_INPUT"].includes(q.content.type)) return <InlineEditor q={q} />;
+  if (selected && ["SINGLE_CHOICE", "MULTIPLE_CHOICE", "TRUE_FALSE", "TEXT_INPUT", "CLOZE", "MATCHING"].includes(q.content.type)) return <InlineEditor q={q} />;
   return <QuestionView q={q} />;
 }
 
@@ -239,7 +305,7 @@ function QuestionView({ q }: { q: QuestionItem }) {
         </span>
         <span className="font-sans text-[11px] text-muted-foreground">
           {ops.TYPE_LABEL[c.type]} · {q.config.isExample ? "unscored" : `${q.config.points} pt`}
-          {q.config.gradingMode}
+          {/* {q.config.gradingMode} */}
         </span>
       </div>
       {c.prompt ? (

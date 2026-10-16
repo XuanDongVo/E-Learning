@@ -246,6 +246,16 @@ The branch already contains a Builder save queue/revision tracking and a debounc
 
 The existing `P0_ASSIGNMENT_QUESTION_COMPOSER_FIX.md` records the current ownership contract and notes that browser E2E remains a follow-up. This plan expands that work into an ordered implementation sequence; it does not supersede backend contract checks or E2E acceptance.
 
+### Implementation evidence — 2026-10-15
+
+- Builder dirty state now derives from `revision !== savedRevision`, and inline choice controls update correctness instead of using the former dead handler.
+- Inline editing now covers Single Choice, Multiple Choice, True/False, Text Input, Matching and Cloze, including hint/explanation fields and Cloze case sensitivity.
+- Question persistence is coordinated before Composition PUT. New local items use stable local IDs and an `Idempotency-Key`; the server stores an assignment/key/request fingerprint mapping in Flyway V37.
+- Composition remains a whole-tree PUT and receives only placement/settings data after Question persistence.
+- `AssignmentQuestionComposerDialog` and its store/render references were removed after the inline path was wired.
+- Frontend `npm test -- --run` passed (1 file, 2 tests) and `npm run build` passed on 2026-10-15. `npm run lint` has 0 errors and 2 pre-existing warnings in `AssignmentBuilder.tsx` and `Toolbox.tsx`.
+- Backend Maven validation is blocked in the current environment because `JAVA_HOME` is not defined and no JDK was available. Backend tests, Flyway validation, coordinator tests, browser E2E, and final PropertyPanel ownership audit remain outstanding.
+
 ## 12. Implementation rule
 
 Work one step at a time. For each step:

@@ -34,6 +34,7 @@ Audited application baseline before documentation changes: c2a98fd9101d7b6613e5c
 - AssignmentService status transition does not currently enforce readiness; AssignmentQuestionService edit guard does not lock by AssessmentAttempt.
 - AssessmentAttempt is not implemented; dedicated Question Engine/Attempt tests were not found.
 - Builder no longer uses localStorage/seed for persistence. A seed object remains only as the store's pre-load placeholder; load errors are displayed instead of falling back to seed data.
+- Assignment incremental-save refactor is in progress on `fix/assignment-p0-question-composer-main`: inline editors and Question-before-Composition coordination are wired, but backend/migration validation and E2E are not yet verified.
 
 ## Migration rules
 - Never edit applied Flyway migrations; in this branch V1–V32 are already present and must not be modified.

@@ -1,6 +1,7 @@
 import { request } from "@/services/api.service";
 import { getAssignment, updateAssignment } from "@/services/assignment.service";
 import { assignmentQuestionService } from "@/services/assignment/assignment.question.service";
+import { persistBuilderQuestions } from "@/services/assignment/assignment-question-persistence.service";
 import type {
   Assignment as ApiAssignment,
   AssignmentQuestion,
@@ -452,25 +453,26 @@ export async function saveBuilderAssignment(
   const assignmentResponse = await getAssignment(id);
   const current = assignmentResponse.data;
   if (!current) throw new Error("Assignment not found.");
+  const withQuestions = await persistBuilderQuestions(a);
   const targetIds = new Set(
-    a.settings.classIds
+    withQuestions.settings.classIds
       .map(Number)
       .filter((x) => Number.isSafeInteger(x) && x > 0),
   );
   const dueAt = a.settings.dueAt || current.dueAt;
   const startAt = a.settings.startAt || current.startAt;
   await updateAssignment(id, {
-    gradeLevel: a.grade,
+    gradeLevel: withQuestions.grade,
     academicYear: current.academicYear,
-    name: a.title.trim() || current.name,
-    description: a.instructions,
+    name: withQuestions.title.trim() || current.name,
+    description: withQuestions.instructions,
     startAt: startAt || undefined,
     dueAt,
     timeLimitSeconds:
-      a.settings.timeLimitMin == null
+      withQuestions.settings.timeLimitMin == null
         ? undefined
-        : Math.round(a.settings.timeLimitMin * 60),
-    showAnswersAfterSubmit: a.settings.showAnswers !== "off",
+        : Math.round(withQuestions.settings.timeLimitMin * 60),
+    showAnswersAfterSubmit: withQuestions.settings.showAnswers !== "off",
     targets: [
       ...Array.from(targetIds).map((classId) => ({
         type: "CLASS" as const,
@@ -482,7 +484,7 @@ export async function saveBuilderAssignment(
     ],
   });
 
-  const sections: WriteSection[] = a.sections.map((section, sectionIndex) => ({
+  const sections: WriteSection[] = withQuestions.sections.map((section, sectionIndex) => ({
     id: numberId(section.id, "s"),
     position: sectionIndex + 1,
     title: section.title.trim() || `Section ${sectionIndex + 1}`,
@@ -490,7 +492,7 @@ export async function saveBuilderAssignment(
     titleVi: section.titleVi.trim() || `Section ${sectionIndex + 1}`,
     instructionsVi: section.instructionsVi || "",
     items: section.itemIds.map((itemId, itemIndex) => {
-      const item = a.items[itemId];
+      const item = withQuestions.items[itemId];
       if (!item)
         throw new Error(`Composition contains missing item ${itemId}.`);
       if (item.kind === "question") {
@@ -505,10 +507,10 @@ export async function saveBuilderAssignment(
         item,
         itemIndex + 1,
         section.id,
-        a.items,
+        withQuestions.items,
       );
       serialized.children = item.memberIds.map((memberId, childIndex) => {
-        const child = a.items[memberId];
+        const child = withQuestions.items[memberId];
         if (!child || child.kind !== "question")
           throw new Error(
             "Only question items may be nested inside a shared block.",
@@ -528,7 +530,7 @@ export async function saveBuilderAssignment(
       method: "PUT",
       body: JSON.stringify({
         sections,
-        showScoreAfterSubmit: a.settings.showScoreAfterSubmit,
+        showScoreAfterSubmit: withQuestions.settings.showScoreAfterSubmit,
       }),
     },
   );

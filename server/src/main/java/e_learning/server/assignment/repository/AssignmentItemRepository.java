@@ -12,7 +12,7 @@ public interface AssignmentItemRepository extends JpaRepository<AssignmentItem, 
     List<AssignmentItem> findAllByAssignmentIdOrderBySectionIdAscParentItemIdAscPositionAscIdAsc(Long assignmentId);
     List<AssignmentItem> findAllByAssignmentIdAndSectionIdOrderByPositionAscIdAsc(Long assignmentId, Long sectionId);
 
-    @Modifying
+    @Modifying(flushAutomatically = true, clearAutomatically = true)
     @Query("update AssignmentItem i set i.position = i.position + 1000000 where i.assignment.id = :assignmentId")
     int shiftPositionsForReplacement(@Param("assignmentId") Long assignmentId);
 }

@@ -28,11 +28,12 @@ public class AssignmentQuestionController {
     @PostMapping
     public ResponseEntity<ApiResponse<List<AssignmentQuestionResponse>>> create(
             @PathVariable Long assignmentId,
-            @Valid @RequestBody List<CreateAssignmentQuestionRequest> request
+            @Valid @RequestBody List<CreateAssignmentQuestionRequest> request,
+            @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey
     ) {
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(
                 "Assignment questions created",
-                assignmentQuestionService.create(assignmentId, request)
+                assignmentQuestionService.create(assignmentId, request, idempotencyKey)
         ));
     }
 

@@ -3,7 +3,6 @@ import { toast } from "sonner";
 import * as ops from "./ops";
 import { loadBuilderAssignment, saveBuilderAssignment } from "@/services/assignment/assignment-composition.service";
 import type { Assignment, ID, InsertTarget, Selection, ToolKey } from "@/types/assignment-builder";
-import type { DraftQuestion } from "@/types/question";
 
 export const snapshotOf = (a: Assignment) => JSON.stringify({ ...a, updatedAt: "" });
 export interface ConfirmAction { label: string; variant?: "default" | "destructive" | "outline"; run: () => void; }
@@ -13,11 +12,8 @@ interface BuilderState {
   mode: "edit" | "preview"; saveStatus: "idle" | "saving" | "error"; saveError: string | null; lastSavedAt: string | null;
   revision: number; savedRevision: number;
   autosave: boolean; confirm: ConfirmState | null; settingsOpen: boolean;
-  questionComposerOpen: boolean; questionComposerTarget: InsertTarget | null; questionComposerEditId: ID | null;
-  questionComposerInitialQuestions: DraftQuestion[] | null; questionComposerBlankRefs: number[];
   load: (a: Assignment) => void;
-  openQuestionComposer: (target?: InsertTarget | null, editId?: ID | null, initialQuestions?: DraftQuestion[] | null, blankRefs?: number[]) => void;
-  closeQuestionComposer: () => void; mutate: (fn: (draft: Assignment) => void) => void; select: (s: Selection) => void;
+  mutate: (fn: (draft: Assignment) => void) => void; select: (s: Selection) => void;
   set: (p: Partial<BuilderState>) => void; save: () => Promise<boolean>;
   addTool: (tool: ToolKey, target?: InsertTarget | null, count?: number) => void;
   requestDeleteItem: (id: ID) => void; requestDeleteSection: (id: ID) => void; duplicate: (id: ID) => void; ask: (c: ConfirmState) => void;
@@ -67,7 +63,6 @@ let saveRequested = false;
 export const useBuilder = create<BuilderState>((set, get) => ({
   assignment: initialAssignment, savedSnapshot: snapshotOf(initialAssignment), loaded: false, loadError: null, selection: null,
   mode: "edit", saveStatus: "idle", saveError: null, lastSavedAt: null, revision: 0, savedRevision: 0, autosave: true, confirm: null, settingsOpen: false,
-  questionComposerOpen: false, questionComposerTarget: null, questionComposerEditId: null, questionComposerInitialQuestions: null, questionComposerBlankRefs: [],
   load: (a) => {
     saveRequested = false;
     set({ assignment: a, savedSnapshot: snapshotOf(a), revision: 0, savedRevision: 0, loaded: true, loadError: null, selection: null, saveStatus: "idle", saveError: null, lastSavedAt: a.updatedAt });
@@ -78,8 +73,6 @@ export const useBuilder = create<BuilderState>((set, get) => ({
     set((state) => ({ assignment: draft, revision: state.revision + 1 }));
   },
   select: (selection) => set({ selection }),
-  openQuestionComposer: (target, editId, initialQuestions, blankRefs) => set({ questionComposerOpen: true, questionComposerTarget: target ?? null, questionComposerEditId: editId ?? null, questionComposerInitialQuestions: initialQuestions ?? null, questionComposerBlankRefs: blankRefs ?? [] }),
-  closeQuestionComposer: () => set({ questionComposerOpen: false, questionComposerTarget: null, questionComposerEditId: null, questionComposerInitialQuestions: null, questionComposerBlankRefs: [] }),
   set: (p) => set(p), ask: (confirm) => set({ confirm }),
   save: () => {
     if (savePromise) {
@@ -182,7 +175,9 @@ export const useBuilder = create<BuilderState>((set, get) => ({
     get().ask({ title: `Delete section "${s.title || "Untitled"}"?`, description: "All items in this section will be deleted.", actions: [{ label: "Delete section", variant: "destructive", run }] });
   },
 }));
-export function useIsDirty() { return useBuilder((s) => snapshotOf(s.assignment) !== s.savedSnapshot); }
+export function useIsDirty() {
+  return useBuilder((s) => s.revision !== s.savedRevision);
+}
 export async function loadAssignment(id?: string) {
   useBuilder.setState({ loaded: false, loadError: null, saveStatus: "idle", saveError: null });
   try { if (!id) throw new Error("Select or create an Assignment from the Assignments page first."); useBuilder.getState().load(await loadBuilderAssignment(id)); }

@@ -11,7 +11,7 @@ import java.util.List;
 public interface AssignmentSectionRepository extends JpaRepository<AssignmentSection, Long> {
     List<AssignmentSection> findAllByAssignmentIdOrderByPositionAscIdAsc(Long assignmentId);
 
-    @Modifying
+    @Modifying(flushAutomatically = true, clearAutomatically = true)
     @Query("update AssignmentSection s set s.position = s.position + 1000000 where s.assignment.id = :assignmentId")
     int shiftPositionsForReplacement(@Param("assignmentId") Long assignmentId);
 }

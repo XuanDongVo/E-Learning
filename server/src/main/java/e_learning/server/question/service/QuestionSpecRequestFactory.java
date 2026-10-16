@@ -58,13 +58,13 @@ public class QuestionSpecRequestFactory {
 
     private ClozeSpec cloze(QuestionSpec.QuestionCommon common, QuestionDefinitionRequest definition) {
         QuestionDefinitionRequest.Cloze d = definition == null ? null : definition.getCloze();
-        if (d == null) return new ClozeSpec(common, List.of(), List.of());
+        if (d == null) return new ClozeSpec(common, List.of(), List.of(), false);
         List<ClozeSpec.Segment> segments = d.getSegments() == null ? List.of() : d.getSegments().stream()
                 .map(s -> new ClozeSpec.Segment(s.getText() == null ? "" : s.getText())).toList();
         List<ClozeSpec.Blank> blanks = d.getBlanks() == null ? List.of() : d.getBlanks().stream()
                 .map(b -> new ClozeSpec.Blank(b.getKey() == null ? "" : b.getKey(), b.getAcceptedAnswers()))
                 .toList();
-        return new ClozeSpec(common, segments, blanks);
+        return new ClozeSpec(common, segments, blanks, Boolean.TRUE.equals(d.getCaseSensitive()));
     }
 
     private String correctKey(QuestionWriteRequest r) {

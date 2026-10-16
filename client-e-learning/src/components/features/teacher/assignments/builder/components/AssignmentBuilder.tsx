@@ -9,7 +9,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import * as ops from "@/components/features/teacher/assignments/builder/ops";
 import { loadAssignment, useBuilder, useIsDirty } from "@/components/features/teacher/assignments/builder/store";
 import type { InsertTarget, ToolKey } from "@/types/assignment-builder";
-import { AssignmentQuestionComposerDialog } from "./AssignmentQuestionComposerDialog";
 import { Canvas } from "./Canvas";
 import { ConfirmHost } from "./ConfirmHost";
 import { Header } from "./Header";
@@ -66,8 +65,6 @@ export function AssignmentBuilder({ id }: { id?: string }) {
   const loaded = useBuilder((s) => s.loaded);
   const loadError = useBuilder((s) => s.loadError);
   const mode = useBuilder((s) => s.mode);
-  const questionComposerOpen = useBuilder((s) => s.questionComposerOpen);
-  const questionComposerEditId = useBuilder((s) => s.questionComposerEditId);
   const assignment = useBuilder((s) => s.assignment);
   const autosave = useBuilder((s) => s.autosave);
   const selection = useBuilder((s) => s.selection);
@@ -165,10 +162,6 @@ export function AssignmentBuilder({ id }: { id?: string }) {
         <Loader2 className="h-5 w-5 animate-spin" />
       </div>
     );
-
-  if (questionComposerOpen && !questionComposerEditId) {
-    return <AssignmentQuestionComposerDialog assignmentId={id ?? assignment.id} />;
-  }
 
   return (
     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={onDragStart} onDragEnd={onDragEnd}>

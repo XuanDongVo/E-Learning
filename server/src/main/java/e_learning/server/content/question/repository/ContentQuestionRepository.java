@@ -13,7 +13,12 @@ public interface ContentQuestionRepository
 
     long countByQuestionBankId(Long questionBankId);
 
-    long countByQuestionBankIdAndQuestionCompleteTrue(Long questionBankId);
+    @Query("""
+        select count(cq) from ContentQuestion cq
+        join cq.question q
+        where cq.questionBank.id = :questionBankId and q.complete = true
+        """)
+    long countByQuestionBankIdAndQuestionCompleteTrue(@Param("questionBankId") Long questionBankId);
 
     @Query("""
         select cq.questionBank.id, count(cq), sum(case when q.complete = true then 1 else 0 end)

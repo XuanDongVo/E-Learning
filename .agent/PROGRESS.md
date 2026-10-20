@@ -131,3 +131,13 @@ This file tracks implementation state and does not claim the above work is done.
 - Added explicit retry controls for Grade, Unit, Section and expanded-Topic loading failures in `content-overview.tsx`. Error states now provide a direct retry action instead of asking the teacher to refresh the entire page.
 - This is a narrow first implementation slice for Phase UI-1; it does not claim the whole Explorer phase is complete.
 - Validation not run: no frontend lint, typecheck, build or browser test was executed in this GitHub-only session.
+
+## Question Bank UI continuation (2026-10-20)
+
+- UI-2 partial implementation on `refactor/teacher-content-ui-routing`:
+  - `questionBankService.list(topicId, includeArchived = false)` now forwards the server-supported `includeArchived=true` query parameter when selected.
+  - Topic detail exposes an explicit Include archived toggle, separates bank-list load errors from empty results, and offers Retry for bank/topic load errors.
+  - The archived filter participates in the React Query key, so active and include-archived lists do not share cached results.
+- Commits: `56f4b0fb` (service contract), `62ac32e8` (Topic detail UI).
+- UI-2 remains in progress: editing bank metadata/status/archive from the Topic list itself and a full regression pass have not been completed in this slice. Existing bank detail actions remain unchanged.
+- Validation: not run; this GitHub-only session did not execute frontend lint, tests, typecheck, build or browser tests.

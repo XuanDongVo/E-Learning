@@ -193,3 +193,14 @@ The source contract matches: `GET /v1/content/question-banks?topicId=<topicId>` 
 - Counts and hierarchy metadata are server-provided; no fake data, global cross-question search, or N+1-per-row count amplification.
 - Existing Topic detail and bank detail routes remain operational; Question Editor source/payload/navigation behavior remains untouched.
 - Do not mark done unless the build/test outcomes are recorded.
+
+### Global Question Bank implementation slice (2026-10-20)
+
+- Implemented the owner-approved global route at `/teacher/content/question-banks`, retaining the existing `/[bankId]` detail route and Topic-scoped list endpoint.
+- Added `GET /v1/content/question-banks/browse` with optional Grade/Unit/Section/Topic filters, case-insensitive search across bank name/description only, `includeArchived=false` by default, and 1-based server pagination (default size 20, capped at 100).
+- Added a global response DTO with hierarchy metadata and total/ready question counts. The current page uses a batched grouped count query rather than per-bank count queries.
+- Added typed frontend browse service/query key and URL-backed filter/page state. Parent filter changes clear dependent child filters; search submits bank-name/description only; Archived is opt-in.
+- Added a nested Content sidebar group with Content Explorer and Question Banks, plus VI/EN labels for these navigation entries.
+- Question Editor source was not intentionally edited; it remains a required regression check.
+- Commits for this slice include: `98dcfffd` (approved plan), `c848c001`/`73e40f54` (repository/count query), `b05de5aa`/`4ba5ece6` (browse service/controller), `efe6e3ff`/`0e88d279`/`e52b28e7` (frontend types/service/query key), `983a5f9b`/`c8330fbd` (global list/route), `858f3868`/`55f53292` (navigation/labels).
+- Validation status: not run in a local checkout in this GitHub-only editing session. Maven tests, frontend lint, Vitest, typecheck/build and browser navigation/filter checks remain outstanding. Do not consider the slice fully verified until those checks pass.

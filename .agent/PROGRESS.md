@@ -173,3 +173,5 @@ This file tracks implementation state and does not claim the above work is done.
 - Commits: `05ec0f08`, `6fb6ac2b`; plan update `0257138f`.
 - Question Editor internals were not modified. No API, schema or migration changes were made.
 - Validation not run in this GitHub-only editing session: frontend lint, tests, typecheck, production build and browser verification remain outstanding. Do not treat the UI-3 slice as fully verified.
+
+- Follow-up UI-3 safety: disabled the Question Bank Import toolbar action and labeled it “Import (coming soon)” because the linked import screen currently fabricates preview rows and simulates validation/import with timers; no real import API workflow is confirmed. Commit: `8f2b6046`.

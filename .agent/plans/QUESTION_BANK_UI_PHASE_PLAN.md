@@ -65,11 +65,13 @@
 
 ## Phase UI-3 — Question Manager filters and pagination
 
+**Status:** Partial implementation committed; lint/typecheck/build and browser verification outstanding.
+
 **Goal:** Make Question lists fully use the existing server list contract.
 
 **Scope**
-- Add All / Complete / Incomplete filter wired to `isComplete`.
-- Verify type/difficulty option values against server enums.
+- [x] Add All / Complete / Incomplete filter wired to `isComplete` in both request params and React Query key.
+- [x] Verify UI question type values include the current server enum values (`SINGLE_CHOICE`, `MULTIPLE_CHOICE`, `TRUE_FALSE`, `FILL_IN_BLANK`, `TYPE_ANSWER`, `MATCHING`, `CLOZE`) and difficulty values (`EASY`, `MEDIUM`, `HARD`).
 - Ensure search/filter changes reset page and debounce works.
 - Preserve server-side pagination and selection behavior.
 - Keep bulk delete; do not add single delete or drag-reorder.
@@ -128,3 +130,12 @@ The source contract matches: `GET /v1/content/question-banks?topicId=<topicId>` 
 - Added temporary `RequestMappingHandlerMapping=TRACE` logging in backend `application.properties` to diagnose why the running app does not register `QuestionBankController`.
 - Endpoint source path is consistent across frontend and controller. The user-provided log shows authenticated JWT/ROLE_TEACHER then `NoResourceFoundException`; verify controller registration at startup and confirm the running server uses this branch/build. Do not change API paths or security rules without new evidence.
 - Runtime validation, Maven tests, frontend lint/typecheck/build and browser checks remain outstanding.
+
+
+### UI-3 implementation slice (2026-10-20)
+
+- Added All / Complete / Incomplete filter to Question Manager. The selected state is included in `QUERY_KEYS.contentQuestions` and sent as `isComplete=true|false` using the existing service contract.
+- Completeness changes reset pagination to page 1. Empty results now say no questions match the filters; list errors show the API error and Retry instead of appearing as an empty bank.
+- Normalized `totalPages` to at least 1 for safe pagination rendering. Verified the visible question-type filters against the current server `QuestionType` enum and retained all seven values; difficulty values remain EASY/MEDIUM/HARD.
+- Commits: `05ec0f08` (filter, request/key, list error state), `6fb6ac2b` (retain all server enum filter values).
+- Validation not run in this GitHub-only editing session: frontend lint, tests, typecheck, build and browser checks remain outstanding.

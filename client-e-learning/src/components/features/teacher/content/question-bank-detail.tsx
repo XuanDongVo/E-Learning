@@ -380,10 +380,26 @@ export function QuestionBankDetail({
         </div>
       )}
 
-      <section className="mb-5 overflow-x-auto rounded-[9px] border border-slate-200 bg-white p-3 shadow-[0_5px_18px_rgba(94,134,173,0.04)] sm:p-[18px]">
+      <section className="mb-5 rounded-xl border border-slate-200 bg-white p-3 shadow-[0_5px_18px_rgba(94,134,173,0.04)] sm:p-5">
+        <div className="mb-5 border-b border-slate-100 pb-4">
+          <div className="flex flex-wrap items-center gap-2 text-sm text-slate-500">
+            <Link href="/teacher/content" className="hover:text-primary hover:underline">Content Explorer</Link>
+            {unitQuery.data && <><span>/</span><Link href={`/teacher/content/units/${unitQuery.data.id}`} className="hover:text-primary hover:underline">{unitQuery.data.name}</Link></>}
+            {topicQuery.data && <><span>/</span><Link href={`/teacher/content/topics/${topicQuery.data.id}`} className="hover:text-primary hover:underline">{topicQuery.data.name}</Link></>}
+            <span>/</span><span className="font-medium text-slate-800">{bank?.name ?? "Question Bank"}</span>
+          </div>
+          <div className="mt-3 flex flex-wrap items-start justify-between gap-3">
+            <div><h2 className="text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">{topicQuery.data?.name ?? bank?.name ?? "Question Bank"} — Question Bank</h2><p className="mt-1 text-sm text-slate-500">Question bank · {bank?.status?.toLowerCase() ?? "loading"}</p></div>
+            <div className="flex flex-wrap gap-2">
+              <div className="min-w-[105px] rounded-lg border border-slate-200 px-3 py-2"><p className="text-xs text-slate-500">Questions</p><p className="mt-0.5 text-lg font-semibold text-slate-900">{bank?.totalQuestions ?? 0}</p></div>
+              <div className="min-w-[105px] rounded-lg border border-emerald-100 bg-emerald-50/50 px-3 py-2"><p className="text-xs text-emerald-700">Complete</p><p className="mt-0.5 text-lg font-semibold text-emerald-800">{bank?.readyQuestions ?? 0}</p></div>
+              <div className="min-w-[105px] rounded-lg border border-amber-100 bg-amber-50/50 px-3 py-2"><p className="text-xs text-amber-700">Incomplete</p><p className="mt-0.5 text-lg font-semibold text-amber-800">{Math.max(0, (bank?.totalQuestions ?? 0) - (bank?.readyQuestions ?? 0))}</p></div>
+            </div>
+          </div>
+        </div>
         {/* Toolbar */}
-        <div className="mb-3 flex min-w-[640px] items-center gap-2">
-          <div className="mr-auto flex h-8 w-[220px] items-center gap-1.5 rounded-md border border-slate-200 bg-white px-2 text-slate-400">
+        <div className="mb-3 flex flex-wrap items-center gap-2">
+          <div className="flex h-9 min-w-[220px] flex-1 items-center gap-1.5 rounded-md border border-slate-200 bg-white px-2.5 text-slate-400 sm:max-w-sm">
             <Search size={14} />
 
             <input

@@ -184,20 +184,42 @@ export function QuestionBankDetail({
       contentService.updateQuestionBankStatus(bankId, {
         status: nextStatus,
       }),
-    onSuccess: () => {
-      client.invalidateQueries({
-        queryKey: QUERY_KEYS.contentQuestionBank(bankId),
-      });
+    onSuccess: async () => {
+      await Promise.all([
+        client.invalidateQueries({
+          queryKey: QUERY_KEYS.contentQuestionBank(bankId),
+        }),
+        ...(bank?.topicId
+          ? [client.invalidateQueries({
+              queryKey: QUERY_KEYS.contentQuestionBanks(bank.topicId),
+            })]
+          : []),
+      ]);
+      toast.success("Question bank status updated");
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : "Could not update question bank status");
     },
   });
 
   // Archive mutation
   const archiveMutation = useMutation({
     mutationFn: () => contentService.archiveQuestionBank(bankId),
-    onSuccess: () => {
-      client.invalidateQueries({
-        queryKey: QUERY_KEYS.contentQuestionBank(bankId),
-      });
+    onSuccess: async () => {
+      await Promise.all([
+        client.invalidateQueries({
+          queryKey: QUERY_KEYS.contentQuestionBank(bankId),
+        }),
+        ...(bank?.topicId
+          ? [client.invalidateQueries({
+              queryKey: QUERY_KEYS.contentQuestionBanks(bank.topicId),
+            })]
+          : []),
+      ]);
+      toast.success("Question bank archived");
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : "Could not archive question bank");
     },
   });
 
@@ -205,9 +227,22 @@ export function QuestionBankDetail({
   const update = useMutation({
     mutationFn: (payload: UpdateQuestionBankRequest) =>
       contentService.updateQuestionBank(bankId, payload),
-    onSuccess: () => {
-      bankQuery.refetch();
+    onSuccess: async () => {
+      await Promise.all([
+        client.invalidateQueries({
+          queryKey: QUERY_KEYS.contentQuestionBank(bankId),
+        }),
+        ...(bank?.topicId
+          ? [client.invalidateQueries({
+              queryKey: QUERY_KEYS.contentQuestionBanks(bank.topicId),
+            })]
+          : []),
+      ]);
       setEditOpen(false);
+      toast.success("Question bank updated");
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : "Could not save question bank");
     },
   });
 

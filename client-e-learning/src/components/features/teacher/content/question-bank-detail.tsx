@@ -524,231 +524,125 @@ export function QuestionBankDetail({
           </div>
         )}
 
-        {/* Questions Table */}
-        <table className="w-full min-w-[680px] border-collapse text-body-sm">
-          <thead>
-            <tr>
-              {/* Select all */}
-              <th className="w-10 bg-slate-50 p-2.5 text-left">
-                <input
-                  type="checkbox"
-                  aria-label="Select all questions on this page"
-                  checked={allOnPageSelected}
-                  ref={(el) => {
-                    if (el) {
-                      el.indeterminate =
-                        someOnPageSelected;
-                    }
-                  }}
-                  onChange={toggleAllOnPage}
-                  disabled={pageIds.length === 0}
-                  className="h-4 w-4 cursor-pointer rounded border-slate-300 accent-primary disabled:cursor-not-allowed"
-                />
-              </th>
+        {/* Hybrid Question List: readable cards with Moodle-style management controls */}
+        <div className="space-y-2" role="list" aria-label="Questions in this bank">
+          <div className="flex items-center gap-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+            <input
+              type="checkbox"
+              aria-label="Select all questions on this page"
+              checked={allOnPageSelected}
+              ref={(el) => {
+                if (el) el.indeterminate = someOnPageSelected;
+              }}
+              onChange={toggleAllOnPage}
+              disabled={pageIds.length === 0}
+              className="h-4 w-4 cursor-pointer rounded border-slate-300 accent-primary disabled:cursor-not-allowed"
+            />
+            <span className="flex-1">Question</span>
+            <span className="hidden sm:block">Management actions</span>
+          </div>
 
-              <th className="bg-slate-50 p-2.5 text-left text-sm text-slate-500">
-                #
-              </th>
+          {questionsQuery.isLoading ? (
+            <div className="rounded-lg border border-slate-200 p-8 text-center text-sm text-slate-400" role="status">
+              Loading questions...
+            </div>
+          ) : questionsQuery.isError ? (
+            <div className="rounded-lg border border-rose-200 bg-rose-50/40 p-8 text-center text-sm text-slate-600">
+              <p role="alert">{questionsQuery.error instanceof Error ? questionsQuery.error.message : "Could not load questions."}</p>
+              <button
+                type="button"
+                onClick={() => questionsQuery.refetch()}
+                className="mt-2 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+              >
+                Retry
+              </button>
+            </div>
+          ) : questionsList.length === 0 ? (
+            <div className="rounded-lg border border-dashed border-slate-300 p-8 text-center">
+              <p className="font-semibold text-slate-700">No questions found</p>
+              <p className="mt-1 text-sm text-slate-500">Try changing your filters, or add a question to this bank.</p>
+            </div>
+          ) : (
+            questionsList.map((question, index) => {
+              const rowIndex = (page - 1) * pageSize + index + 1;
+              const isReady = question.complete ?? question.is_complete;
+              const isSelected = selectedIds.has(question.id);
+              const typeLabel = questionTypeOptions.find((item) => item.value === question.type)?.label ?? question.type;
 
-              <th className="bg-slate-50 p-2.5 text-left text-sm text-slate-500">
-                Question Content
-              </th>
-
-              <th className="bg-slate-50 p-2.5 text-left text-sm text-slate-500">
-                Type
-              </th>
-
-              <th className="bg-slate-50 p-2.5 text-left text-sm text-slate-500">
-                Difficulty
-              </th>
-
-              <th className="bg-slate-50 p-2.5 text-left text-sm text-slate-500">
-                Completeness
-              </th>
-
-              <th className="bg-slate-50 p-2.5 text-left text-sm text-slate-500">
-                Actions
-              </th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {questionsQuery.isLoading ? (
-              <tr>
-                <td
-                  colSpan={7}
-                  className="p-8 text-center text-sm text-slate-400"
+              return (
+                <article
+                  key={question.id}
+                  role="listitem"
+                  className={`group rounded-xl border transition-colors ${isSelected
+                    ? "border-primary/40 bg-primary-light/30"
+                    : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/50"
+                    }`}
                 >
-                  Loading questions...
-                </td>
-              </tr>
-            ) : questionsQuery.isError ? (
-              <tr>
-                <td colSpan={7} className="p-8 text-center text-sm text-slate-600">
-                  <p role="alert">{questionsQuery.error instanceof Error ? questionsQuery.error.message : "Could not load questions."}</p>
-                  <button
-                    type="button"
-                    onClick={() => questionsQuery.refetch()}
-                    className="mt-2 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50"
-                  >
-                    Retry
-                  </button>
-                </td>
-              </tr>
-            ) : questionsList.length === 0 ? (
-              <tr>
-                <td
-                  colSpan={7}
-                  className="p-8 text-center text-sm text-slate-400"
-                >
-                  No questions match these filters. Try changing or clearing your filters.
-                </td>
-              </tr>
-            ) : (
-              questionsList.map((question, index) => {
-                const rowIndex =
-                  (page - 1) * pageSize + index + 1;
-
-                const isReady =
-                  question.complete ??
-                  question.is_complete;
-
-                const isSelected =
-                  selectedIds.has(question.id);
-
-                return (
-                  <tr
-                    key={question.id}
-                    className={`cursor-pointer transition ${isSelected
-                      ? "bg-primary-light/40 hover:bg-primary-light/50"
-                      : "hover:bg-slate-50/80"
-                      }`}
-                    onClick={() =>
-                      setPreviewQuestion(question)
-                    }
-                  >
-                    {/* Checkbox */}
-                    <td
-                      className="border-b border-slate-100 p-2.5"
-                      onClick={(e) =>
-                        e.stopPropagation()
-                      }
-                    >
+                  <div className="flex items-start gap-3 p-3 sm:gap-4 sm:p-4">
+                    <div className="flex items-start gap-2 pt-0.5">
                       <input
                         type="checkbox"
                         aria-label={`Select question ${rowIndex}`}
                         checked={isSelected}
-                        onChange={() =>
-                          toggleOne(question.id)
-                        }
-                        className="h-4 w-4 cursor-pointer rounded border-slate-300 accent-primary"
+                        onChange={() => toggleOne(question.id)}
+                        className="mt-1 h-4 w-4 cursor-pointer rounded border-slate-300 accent-primary"
                       />
-                    </td>
+                      <span className="min-w-6 pt-0.5 text-xs font-medium tabular-nums text-slate-400">{rowIndex}.</span>
+                    </div>
 
-                    {/* Row number */}
-                    <td className="border-b border-slate-100 p-2.5 text-sm text-slate-400">
-                      {rowIndex}
-                    </td>
-
-                    {/* Content */}
-                    <td className="border-b border-slate-100 p-2.5 text-sm text-slate-700">
-                      <b className="font-semibold text-slate-900">
-                        {question.content}
-                      </b>
-                    </td>
-
-                    {/* Type */}
-                    <td className="border-b border-slate-100 p-2.5 text-sm text-slate-500">
-                      <Badge tone="blue">
-                        {questionTypeOptions.find((item) => item.value === question.type)?.label ?? question.type}
-                      </Badge>
-                    </td>
-
-                    {/* Difficulty */}
-                    <td className="border-b border-slate-100 p-2.5 text-sm text-slate-500">
-                      <Badge
-                        tone={
-                          question.difficulty ===
-                            "EASY"
-                            ? "easy"
-                            : question.difficulty ===
-                              "MEDIUM"
-                              ? "medium"
-                              : "hard"
-                        }
-                      >
-                        {question.difficulty}
-                      </Badge>
-                    </td>
-
-                    {/* Completeness */}
-                    <td className="border-b border-slate-100 p-2.5 text-sm text-slate-500">
-                      <Badge
-                        tone={
-                          isReady ? "green" : "gray"
-                        }
-                      >
-                        {isReady
-                          ? "Complete"
-                          : "Incomplete"}
-                      </Badge>
-                    </td>
-
-                    {/* Actions */}
-                    <td
-                      className="border-b border-slate-100 p-2.5 text-sm text-slate-500"
-                      onClick={(e) =>
-                        e.stopPropagation()
-                      }
+                    <button
+                      type="button"
+                      onClick={() => setPreviewQuestion(question)}
+                      className="min-w-0 flex-1 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded-md"
+                      aria-label={`Preview question ${rowIndex}: ${question.content}`}
                     >
-                      <div className="flex items-center gap-2">
-                        <button
-                          type="button"
-                          title="Preview Question"
-                          onClick={() =>
-                            setPreviewQuestion(question)
-                          }
-                          className="rounded p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
-                        >
-                          <Eye size={16} />
-                        </button>
+                      <span className="block whitespace-pre-wrap break-words text-sm font-semibold leading-6 text-slate-900">
+                        {question.content || "Untitled question"}
+                      </span>
+                      <span className="mt-3 flex flex-wrap items-center gap-1.5">
+                        <Badge tone="blue">{typeLabel}</Badge>
+                        <Badge tone={question.difficulty === "EASY" ? "easy" : question.difficulty === "MEDIUM" ? "medium" : "hard"}>
+                          {question.difficulty}
+                        </Badge>
+                        <Badge tone={isReady ? "green" : "gray"}>{isReady ? "Complete" : "Incomplete"}</Badge>
+                      </span>
+                    </button>
 
-                        <button
-                          type="button"
-                          title="Edit Question"
-                          onClick={() =>
-                            onNavigate(
-                              "question",
-                              question.id,
-                              bank?.name,
-                            )
-                          }
-                          className="rounded p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
-                        >
-                          <SquarePen size={16} />
-                        </button>
-
-                        {/* Delete */}
-                        <button
-                          type="button"
-                          title="Delete Question"
-                          onClick={() =>
-                            setDeleteTargetIds([
-                              question.id,
-                            ])
-                          }
-                          className="rounded p-1 text-slate-400 hover:bg-rose-50 hover:text-rose-600"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })
-            )}
-          </tbody>
-        </table>
+                    <div className="flex shrink-0 items-center gap-1" aria-label={`Actions for question ${rowIndex}`}>
+                      <button
+                        type="button"
+                        title="Preview Question"
+                        aria-label={`Preview question ${rowIndex}`}
+                        onClick={() => setPreviewQuestion(question)}
+                        className="rounded-md p-2 text-slate-500 hover:bg-slate-200/70 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      >
+                        <Eye size={16} />
+                      </button>
+                      <button
+                        type="button"
+                        title="Edit Question"
+                        aria-label={`Edit question ${rowIndex}`}
+                        onClick={() => onNavigate("question", question.id, bank?.name)}
+                        className="rounded-md p-2 text-slate-500 hover:bg-slate-200/70 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      >
+                        <SquarePen size={16} />
+                      </button>
+                      <button
+                        type="button"
+                        title="Delete Question"
+                        aria-label={`Delete question ${rowIndex}`}
+                        onClick={() => setDeleteTargetIds([question.id])}
+                        className="rounded-md p-2 text-slate-500 hover:bg-rose-50 hover:text-rose-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </div>
+                </article>
+              );
+            })
+          )}
+        </div>
 
         {/* Server Pagination Controls */}
         <div className="flex min-w-[640px] items-center justify-between pt-4 text-sm text-slate-500">

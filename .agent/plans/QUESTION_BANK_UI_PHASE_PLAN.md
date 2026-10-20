@@ -1,6 +1,6 @@
 # Question Bank UI — Phased Implementation Plan
 
-**Status:** Planned; not an implementation-complete claim.  
+**Status:** In progress; UI-1 and UI-2 have partial code slices, neither phase is fully verified.  
 **Branch:** `refactor/teacher-content-ui-routing`  
 **Companion blueprint:** [Teacher Content UI Blueprint](../ui/QUESTION_BANK_QUESTION_MANAGEMENT_BLUEPRINT.md)
 
@@ -36,6 +36,8 @@
 
 ## Phase UI-2 — Question Bank Manager
 
+**Status:** In progress (partial slice committed; validation outstanding).
+
 **Goal:** Align Topic detail with the bank lifecycle and server data.
 
 **Scope**
@@ -51,6 +53,10 @@
 - `client-e-learning/src/types/content.ts` only if a contract-alignment change is required.
 
 **Exit criteria**
+- [x] Include-archived toggle is wired to the confirmed `includeArchived` API parameter.
+- [x] Topic/bank-list load errors have retry UI and are distinct from empty results.
+- [ ] Complete lifecycle interactions and mutation invalidation audit.
+- [ ] Verify frontend lint/typecheck/build and browser behavior.
 - Bank lifecycle actions match confirmed API contracts.
 - Errors do not masquerade as empty results.
 - Query invalidation works after create/update/archive/status changes.

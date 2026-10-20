@@ -38,7 +38,7 @@ export function GlobalQuestionBankList() {
 
   const filters: GlobalQuestionBankFilters = useMemo(
     () => ({ gradeId, unitId, sectionId, topicId, search, includeArchived, page, size }),
-    [gradeId, unitId, sectionId, topicId, search, includeArchived, page],
+    [gradeId, unitId, sectionId, topicId, search, includeArchived, page, size],
   );
 
   const gradesQuery = useQuery({ queryKey: ["grades"], queryFn: () => gradeService.list() });

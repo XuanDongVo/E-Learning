@@ -134,6 +134,32 @@ export function QuestionBankDetail({
   });
 
   const bank = bankQuery.data;
+
+  const topicQuery = useQuery({
+    queryKey: QUERY_KEYS.contentTopic(bank?.topicId ?? 0),
+    queryFn: async () => (await contentService.getTopic(bank!.topicId)).data,
+    enabled: Boolean(bank?.topicId),
+  });
+  const sectionQuery = useQuery({
+    queryKey: QUERY_KEYS.contentSection(topicQuery.data?.sectionId ?? 0),
+    queryFn: async () => (await contentService.getSection(topicQuery.data!.sectionId)).data,
+    enabled: Boolean(topicQuery.data?.sectionId),
+  });
+  const unitQuery = useQuery({
+    queryKey: QUERY_KEYS.contentUnit(sectionQuery.data?.unitId ?? 0),
+    queryFn: async () => (await contentService.getUnit(sectionQuery.data!.unitId)).data,
+    enabled: Boolean(sectionQuery.data?.unitId),
+  });
+
+  useEffect(() => {
+    if (!previewQuestion) return;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setPreviewQuestion(null);
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [previewQuestion]);
+
   const pageData = questionsQuery.data;
   const questionsList = pageData?.items ?? [];
   const totalElements = pageData?.totalElements ?? 0;
@@ -307,6 +333,38 @@ export function QuestionBankDetail({
           update.isPending
         }
       />
+
+      <nav aria-label="Breadcrumb" className="mt-3 flex flex-wrap items-center gap-1.5 text-sm text-muted-foreground">
+        <button type="button" onClick={() => onNavigate("overview")} className="rounded hover:text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+          Content
+        </button>
+        {unitQuery.data && (
+          <>
+            <span aria-hidden="true">/</span>
+            <button type="button" onClick={() => onNavigate("unit", unitQuery.data!.id)} className="max-w-[180px] truncate rounded hover:text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+              {unitQuery.data.name}
+            </button>
+          </>
+        )}
+        {sectionQuery.data && (
+          <>
+            <span aria-hidden="true">/</span>
+            <button type="button" onClick={() => onNavigate("section", sectionQuery.data!.id)} className="max-w-[180px] truncate rounded hover:text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+              {sectionQuery.data.name}
+            </button>
+          </>
+        )}
+        {topicQuery.data && (
+          <>
+            <span aria-hidden="true">/</span>
+            <button type="button" onClick={() => onNavigate("topic", topicQuery.data!.id)} className="max-w-[180px] truncate rounded hover:text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+              {topicQuery.data.name}
+            </button>
+          </>
+        )}
+        <span aria-hidden="true">/</span>
+        <span aria-current="page" className="max-w-[220px] truncate font-semibold text-foreground">{bank?.name ?? "Question Bank"}</span>
+      </nav>
 
       {editOpen && (
         <div className="mt-5">
@@ -786,7 +844,7 @@ export function QuestionBankDetail({
       {/* Quick Preview Modal */}
       {previewQuestion && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-lg rounded-xl bg-white p-5 shadow-xl">
+          <section role="dialog" aria-modal="true" aria-labelledby="question-preview-title" className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-xl bg-white p-5 shadow-xl">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div className="flex items-center gap-2">
                 <Badge tone="blue">
@@ -825,9 +883,9 @@ export function QuestionBankDetail({
                   PROMPT
                 </p>
 
-                <p className="mt-1 text-base font-bold text-slate-900">
+                <h2 id="question-preview-title" className="mt-1 text-base font-bold text-slate-900">
                   {previewQuestion.content}
-                </p>
+                </h2>
               </div>
 
               {/* Display Options */}
@@ -930,7 +988,7 @@ export function QuestionBankDetail({
                 Edit Question
               </button>
             </div>
-          </div>
+          </section>
         </div>
       )}
 

@@ -15,6 +15,7 @@ import {
   Plus,
   Search,
   ExternalLink,
+  ArrowRight,
 } from "lucide-react";
 
 import { contentService } from "@/services/content.service";
@@ -165,14 +166,19 @@ export function ContentOverview({
         ))}
       </div>
 
-      <section className="grid min-h-[calc(100vh-20rem)] overflow-hidden rounded-lg border border-border bg-card shadow-sm lg:grid-cols-[20rem_minmax(0,1fr)]">
+      <section aria-label="Content Explorer and workspace" className="grid min-h-[calc(100vh-20rem)] overflow-hidden rounded-xl border border-border bg-card shadow-sm lg:grid-cols-[19rem_minmax(0,1fr)]">
         <aside className="flex min-h-0 flex-col border-b border-border lg:border-b-0 lg:border-r">
-          <div className="border-b border-border p-4">
-            <h2 className="text-section-title font-bold">{t("units")}</h2>
+          <div className="border-b border-border bg-muted/30 p-4">
+            <div className="flex items-center justify-between gap-2">
+              <h2 className="text-section-title font-bold">Content Explorer</h2>
+              <span className="rounded-md border border-border bg-card px-2 py-1 text-[0.65rem] font-semibold text-muted-foreground">Grade → Unit</span>
+            </div>
+            <p className="mt-1 text-body-sm text-muted-foreground">Choose a unit to explore its sections and topics.</p>
+            <div className="mt-3 flex items-center justify-between gap-2">
+              <h3 className="text-body-sm font-bold">{t("units")}</h3>
 
-            <p className="mt-1 text-body-sm text-muted-foreground">
-              {visibleUnits.length} {t("unitCount")}
-            </p>
+              <span className="text-body-sm text-muted-foreground">{visibleUnits.length} {t("unitCount")}</span>
+            </div>
 
             <label className="relative mt-3 block">
               <Search className="absolute left-2.5 top-2.5 size-3.5 text-muted-foreground" />
@@ -193,7 +199,13 @@ export function ContentOverview({
               </p>
             )}
 
-            {!units.isLoading && visibleUnits.length === 0 && (
+            {units.isError && (
+              <div className="m-2 rounded-lg border border-destructive/20 bg-destructive/5 p-3 text-body-sm text-destructive">
+                Could not load units. Refresh the page and try again.
+              </div>
+            )}
+
+            {!units.isLoading && !units.isError && visibleUnits.length === 0 && (
               <p className="p-3 text-body-sm text-muted-foreground">
                 {t("noUnits")}
               </p>
@@ -214,8 +226,13 @@ export function ContentOverview({
         <div className="min-w-0">
           {activeUnit ? (
             <>
-              <div className="border-b border-border p-4">
-                <div className="border-b border-border pb-2">
+              <div className="border-b border-border bg-card p-4">
+                <nav aria-label="Content breadcrumb" className="mb-3 flex flex-wrap items-center gap-1.5 text-body-sm text-muted-foreground">
+                  <button type="button" onClick={() => onNavigate("overview")} className="hover:text-primary hover:underline">Content</button>
+                  <ChevronRight className="size-3.5" />
+                  <span className="font-semibold text-foreground">{activeUnit.code} · {activeUnit.name}</span>
+                </nav>
+                <div className="flex flex-col justify-between gap-3 border-b border-border pb-3 sm:flex-row sm:items-start">
                   <h2 className="text-section-title font-bold">
                     <button
                       type="button"
@@ -225,11 +242,17 @@ export function ContentOverview({
                       {activeUnit.code} · {activeUnit.name}
                     </button>
                   </h2>
+                  <button type="button" onClick={() => onNavigate("unit", activeUnit.id)} className="inline-flex shrink-0 items-center gap-1 self-start rounded-lg border border-border px-3 py-2 text-body-sm font-semibold text-muted-foreground hover:bg-muted hover:text-foreground">
+                    Manage unit <ArrowRight className="size-3.5" />
+                  </button>
                 </div>
 
-                <p className="mt-1 text-body-sm text-muted-foreground">
-                  {t("sectionsAndTopics")}
-                </p>
+                <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-body-sm text-muted-foreground">
+                  <span>{activeUnit.totalSection} sections</span>
+                  <span>{activeUnit.totalTopic} topics</span>
+                  <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-semibold">{activeUnit.status}</span>
+                  <span className="sm:ml-auto">{t("sectionsAndTopics")}</span>
+                </div>
               </div>
 
               <div className="space-y-3 p-4">
@@ -239,7 +262,24 @@ export function ContentOverview({
                   </p>
                 )}
 
-                {!sections.isLoading &&
+                {sections.isError && (
+                  <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-4 text-body-sm text-destructive">
+                    Could not load sections for this unit. Try opening the unit details or refresh the page.
+                  </div>
+                )}
+
+                {!sections.isLoading && !sections.isError && (sections.data ?? []).length === 0 && (
+                  <div className="rounded-xl border border-dashed border-border px-6 py-10 text-center">
+                    <Layers className="mx-auto size-8 text-muted-foreground" />
+                    <p className="mt-3 font-semibold">No sections in this unit yet</p>
+                    <p className="mt-1 text-body-sm text-muted-foreground">Create the first section to start organizing topics.</p>
+                    <button type="button" onClick={() => onNavigate("unit", activeUnit.id)} className="mt-4 inline-flex items-center gap-2 rounded-lg bg-primary px-3 py-2 text-body-sm font-bold text-primary-foreground">
+                      Manage unit <ArrowRight className="size-3.5" />
+                    </button>
+                  </div>
+                )}
+
+                {!sections.isLoading && !sections.isError &&
                   (sections.data ?? []).map((section) => {
                     const expanded = expandedSections.includes(section.id);
                     const sectionTopics = topicsFor(section);
@@ -268,12 +308,18 @@ export function ContentOverview({
 
                           <StatusBadge status={section.status} />
                           <span className="text-body-sm text-muted-foreground">
-                            {section.totalTopic} {t("unitCount")}
+                            {section.totalTopic} topics
+                          </span>
+                          <span role="button" aria-label={`Open section ${section.name}`} onClick={(event) => { event.stopPropagation(); onNavigate("section", section.id); }} className="rounded-md p-1.5 text-muted-foreground hover:bg-primary/10 hover:text-primary">
+                            <ExternalLink className="size-3.5" />
                           </span>
                         </button>
 
                         {expanded && (
                           <div className="divide-y divide-border border-t border-border">
+                            {topics[(sections.data ?? []).findIndex((item) => item.id === section.id)]?.isLoading && (
+                              <p className="px-4 py-3 text-body-sm text-muted-foreground">{t("loading")}</p>
+                            )}
                             {sectionTopics.map((topic) => (
                               <button
                                 key={topic.id}
@@ -294,7 +340,7 @@ export function ContentOverview({
                               </button>
                             ))}
 
-                            {sectionTopics.length === 0 && (
+                            {!topics[(sections.data ?? []).findIndex((item) => item.id === section.id)]?.isLoading && sectionTopics.length === 0 && (
                               <p className="px-4 py-3 text-body-sm text-muted-foreground">
                                 {t("noTopics")}
                               </p>

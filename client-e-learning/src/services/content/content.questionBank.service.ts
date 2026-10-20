@@ -7,7 +7,11 @@ import type {
 } from "@/types/content";
 
 export const questionBankService = {
-    list: (topicId: number) => request<ContentQuestionBank[]>(`/v1/content/question-banks?topicId=${topicId}`),
+    list: (topicId: number, includeArchived = false) => {
+        const query = new URLSearchParams({ topicId: String(topicId) });
+        if (includeArchived) query.set("includeArchived", "true");
+        return request<ContentQuestionBank[]>(`/v1/content/question-banks?${query.toString()}`);
+    },
     get: (id: number) => request<ContentQuestionBank>(`/v1/content/question-banks/${id}`),
     create: (payload: CreateQuestionBankRequest) =>
         request<ContentQuestionBank>("/v1/content/question-banks", { method: "POST", body: JSON.stringify(payload) }),

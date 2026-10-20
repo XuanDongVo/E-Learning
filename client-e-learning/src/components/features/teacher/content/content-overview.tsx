@@ -150,6 +150,17 @@ export function ContentOverview({
         </button>
       </header>
 
+      {grades.isLoading && (
+        <p className="mb-3 text-body-sm text-muted-foreground">{t("loading")}</p>
+      )}
+      {grades.isError && (
+        <div role="alert" className="mb-3 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-destructive/20 bg-destructive/5 p-3 text-body-sm text-destructive">
+          <span>Could not load grades. Try again.</span>
+          <button type="button" onClick={() => void grades.refetch()} className="rounded-md border border-destructive/30 px-3 py-1.5 font-semibold hover:bg-destructive/10">
+            Retry
+          </button>
+        </div>
+      )}
       <div className="mb-4 flex gap-2 overflow-x-auto">
         {(grades.data ?? []).map((grade) => (
           <button
@@ -205,8 +216,11 @@ export function ContentOverview({
             )}
 
             {units.isError && (
-              <div className="m-2 rounded-lg border border-destructive/20 bg-destructive/5 p-3 text-body-sm text-destructive">
-                Could not load units. Refresh the page and try again.
+              <div role="alert" className="m-2 rounded-lg border border-destructive/20 bg-destructive/5 p-3 text-body-sm text-destructive">
+                <p>Could not load units.</p>
+                <button type="button" onClick={() => void units.refetch()} className="mt-2 rounded-md border border-destructive/30 px-3 py-1.5 font-semibold hover:bg-destructive/10">
+                  Retry
+                </button>
               </div>
             )}
 
@@ -268,8 +282,11 @@ export function ContentOverview({
                 )}
 
                 {sections.isError && (
-                  <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-4 text-body-sm text-destructive">
-                    Could not load sections for this unit. Try opening the unit details or refresh the page.
+                  <div role="alert" className="rounded-lg border border-destructive/20 bg-destructive/5 p-4 text-body-sm text-destructive">
+                    <p>Could not load sections for this unit.</p>
+                    <button type="button" onClick={() => void sections.refetch()} className="mt-2 rounded-md border border-destructive/30 px-3 py-1.5 font-semibold hover:bg-destructive/10">
+                      Retry
+                    </button>
                   </div>
                 )}
 
@@ -331,8 +348,15 @@ export function ContentOverview({
                               <p className="px-4 py-3 text-body-sm text-muted-foreground">{t("loading")}</p>
                             )}
                             {topics[(sections.data ?? []).findIndex((item) => item.id === section.id)]?.isError && (
-                              <div className="px-4 py-3 text-body-sm text-destructive">
-                                Could not load topics. Open the section to retry.
+                              <div role="alert" className="px-4 py-3 text-body-sm text-destructive">
+                                <p>Could not load topics.</p>
+                                <button
+                                  type="button"
+                                  onClick={() => void topics[(sections.data ?? []).findIndex((item) => item.id === section.id)]?.refetch()}
+                                  className="mt-2 rounded-md border border-destructive/30 px-3 py-1.5 font-semibold hover:bg-destructive/10"
+                                >
+                                  Retry
+                                </button>
                               </div>
                             )}
                             {sectionTopics.map((topic) => (

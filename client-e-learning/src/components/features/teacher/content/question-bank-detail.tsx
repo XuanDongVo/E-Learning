@@ -197,7 +197,7 @@ export function QuestionBankDetail({
         }),
         ...(bankQuery.data?.topicId
           ? [client.invalidateQueries({
-              queryKey: QUERY_KEYS.contentQuestionBanks(bank.topicId),
+              queryKey: QUERY_KEYS.contentQuestionBanks(bankQuery.data.topicId),
             })]
           : []),
       ]);
@@ -218,7 +218,7 @@ export function QuestionBankDetail({
         }),
         ...(bankQuery.data?.topicId
           ? [client.invalidateQueries({
-              queryKey: QUERY_KEYS.contentQuestionBanks(bank.topicId),
+              queryKey: QUERY_KEYS.contentQuestionBanks(bankQuery.data.topicId),
             })]
           : []),
       ]);
@@ -240,7 +240,7 @@ export function QuestionBankDetail({
         }),
         ...(bankQuery.data?.topicId
           ? [client.invalidateQueries({
-              queryKey: QUERY_KEYS.contentQuestionBanks(bank.topicId),
+              queryKey: QUERY_KEYS.contentQuestionBanks(bankQuery.data.topicId),
             })]
           : []),
       ]);

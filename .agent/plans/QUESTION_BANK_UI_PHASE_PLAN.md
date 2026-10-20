@@ -75,7 +75,7 @@
 - Ensure search/filter changes reset page and debounce works.
 - Preserve server-side pagination and selection behavior.
 - Keep bulk delete; do not add single delete or drag-reorder.
-- Review import action and hide/label it appropriately unless a real workflow is confirmed.
+- [x] Disable the import entry point and label it coming soon until the mock-only import workflow is backed by a real server API.
 - Preserve existing preview/edit navigation; do not change editor internals.
 
 **Likely files**
@@ -139,3 +139,5 @@ The source contract matches: `GET /v1/content/question-banks?topicId=<topicId>` 
 - Normalized `totalPages` to at least 1 for safe pagination rendering. Verified the visible question-type filters against the current server `QuestionType` enum and retained all seven values; difficulty values remain EASY/MEDIUM/HARD.
 - Commits: `05ec0f08` (filter, request/key, list error state), `6fb6ac2b` (retain all server enum filter values).
 - Validation not run in this GitHub-only editing session: frontend lint, tests, typecheck, build and browser checks remain outstanding.
+
+- Follow-up: disabled the mock-only Import toolbar action and labeled it “Import (coming soon)” because its current screen uses fabricated validation rows and timers, not a confirmed server workflow (commit `8f2b6046`).

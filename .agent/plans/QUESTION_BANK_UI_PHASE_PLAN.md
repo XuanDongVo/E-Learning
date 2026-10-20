@@ -92,19 +92,23 @@
 
 ## Phase UI-4 — Navigation, preview and consistency audit
 
+**Status:** Partial implementation committed; route-state persistence and validation remain outstanding.
+
 **Goal:** Verify the teacher journey end-to-end without expanding into editor refactoring.
 
 **Scope**
-- Verify breadcrumbs and parent context where metadata is available.
-- Ensure preview closes back to the same bank/list state.
+- [x] Add Question Bank breadcrumbs using loaded Unit → Section → Topic metadata, with links back to those parent views.
+- [x] Make the question preview a labeled modal dialog, constrain it to the viewport with internal scrolling, and support Escape to close.
+- [x] Display readable labels for question types in both the list and preview while retaining server enum values as filter values.
+- [ ] Ensure preview closes back to the same bank/list state and add focus management (focus trap/restore) if the existing dialog primitives support it.
 - Verify route IDs are stable across refresh and Back/Forward where current router supports it.
-- Audit shared tokens/components, keyboard use and responsive behavior.
+- [ ] Audit shared tokens/components, full keyboard navigation and responsive behavior.
 - Confirm current server type values are displayed accurately.
 - Run regression review to confirm Question Editor was not changed.
 
 **Exit criteria**
-- Content Explorer → Topic → Bank → preview/edit navigation is coherent.
-- No lost filters/page on return where route design can preserve them.
+- [ ] Content Explorer → Topic → Bank → preview/edit navigation is coherent across refresh and Back/Forward.
+- [ ] No lost filters/page on return where route design can preserve them.
 - No unsupported action is presented as API-backed.
 - Validation outcome and residual gaps recorded.
 
@@ -141,3 +145,13 @@ The source contract matches: `GET /v1/content/question-banks?topicId=<topicId>` 
 - Validation not run in this GitHub-only editing session: frontend lint, tests, typecheck, build and browser checks remain outstanding.
 
 - Follow-up: disabled the mock-only Import toolbar action and labeled it “Import (coming soon)” because its current screen uses fabricated validation rows and timers, not a confirmed server workflow (commit `8f2b6046`).
+
+
+### UI-4 implementation slice (2026-10-20)
+
+- Question Bank detail now loads parent Topic → Section → Unit metadata and renders navigable breadcrumbs. Breadcrumb links use existing `onNavigate` route contracts; no new routes or API endpoints were introduced.
+- Question preview now has dialog semantics (`role=dialog`, `aria-modal`, accessible title), a viewport-bounded scrollable panel, and Escape-to-close behavior.
+- Question type names are mapped to readable labels in the Question list and preview; filter values remain the existing server enum strings.
+- Commits: `3d94f7dc` (breadcrumbs and preview accessibility), `c576c211` (readable question type labels).
+- Remaining: browser-test direct refresh and Back/Forward, verify parent breadcrumbs under loading/error conditions, ensure filter/page restoration after editor navigation, audit responsive and keyboard/focus behavior, run lint/typecheck/build/tests, and verify Question Editor source remains unchanged.
+- No tests, lint, typecheck or build were run in this GitHub-only editing session.

@@ -169,6 +169,7 @@ export function ContentOverview({
             onClick={() => {
               setGradeId(grade.id);
               setSelectedUnitId(undefined);
+              setExpandedSections([]);
             }}
             className={`shrink-0 rounded-lg border px-4 py-2 text-body-sm font-bold ${selectedGradeId === grade.id ? "border-primary bg-primary text-primary-foreground" : "border-border bg-card text-muted-foreground hover:bg-muted"}`}
           >

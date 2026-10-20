@@ -47,6 +47,7 @@ export function QuestionBankDetail({
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [selectedType, setSelectedType] = useState<string>("");
   const [selectedDifficulty, setSelectedDifficulty] = useState<string>("");
+  const [selectedCompleteness, setSelectedCompleteness] = useState<"" | "complete" | "incomplete">("");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
 
@@ -77,6 +78,7 @@ export function QuestionBankDetail({
     debouncedSearch,
     selectedType,
     selectedDifficulty,
+    selectedCompleteness,
   });
   if (
     filterKey.bankId !== bankId ||
@@ -84,7 +86,8 @@ export function QuestionBankDetail({
     filterKey.pageSize !== pageSize ||
     filterKey.debouncedSearch !== debouncedSearch ||
     filterKey.selectedType !== selectedType ||
-    filterKey.selectedDifficulty !== selectedDifficulty
+    filterKey.selectedDifficulty !== selectedDifficulty ||
+    filterKey.selectedCompleteness !== selectedCompleteness
   ) {
     setFilterKey({
       bankId,
@@ -93,6 +96,7 @@ export function QuestionBankDetail({
       debouncedSearch,
       selectedType,
       selectedDifficulty,
+      selectedCompleteness,
     });
     setSelectedIds(new Set());
   }
@@ -110,6 +114,7 @@ export function QuestionBankDetail({
       search: debouncedSearch,
       type: selectedType || undefined,
       difficulty: selectedDifficulty || undefined,
+      isComplete: selectedCompleteness === "" ? undefined : selectedCompleteness === "complete",
       page,
       size: pageSize,
     }),
@@ -120,6 +125,7 @@ export function QuestionBankDetail({
           search: debouncedSearch || undefined,
           type: selectedType || undefined,
           difficulty: selectedDifficulty || undefined,
+          isComplete: selectedCompleteness === "" ? undefined : selectedCompleteness === "complete",
           page,
           size: pageSize,
         })
@@ -131,7 +137,7 @@ export function QuestionBankDetail({
   const pageData = questionsQuery.data;
   const questionsList = pageData?.items ?? [];
   const totalElements = pageData?.totalElements ?? 0;
-  const totalPages = pageData?.totalPages ?? 1;
+  const totalPages = Math.max(1, pageData?.totalPages ?? 1);
 
   // Selection helpers
   const pageIds = questionsList.map((q) => q.id);
@@ -361,7 +367,7 @@ export function QuestionBankDetail({
           >
             <option value="">All Types</option>
 
-            {questionTypeOptions.map((item) => (
+            {questionTypeOptions.filter((item) => item.value !== "MATCHING" && item.value !== "CLOZE").map((item) => (
               <option
                 key={item.value}
                 value={item.value}
@@ -372,6 +378,7 @@ export function QuestionBankDetail({
           </select>
 
           <select
+            aria-label="Filter by difficulty"
             value={selectedDifficulty}
             onChange={(e) => {
               setSelectedDifficulty(e.target.value);
@@ -389,6 +396,20 @@ export function QuestionBankDetail({
                 {item.label}
               </option>
             ))}
+          </select>
+
+          <select
+            aria-label="Filter by completeness"
+            value={selectedCompleteness}
+            onChange={(e) => {
+              setSelectedCompleteness(e.target.value as "" | "complete" | "incomplete");
+              setPage(1);
+            }}
+            className="h-8 rounded-md border border-slate-200 bg-white px-2 text-body-sm text-slate-700 outline-none"
+          >
+            <option value="">All Completeness</option>
+            <option value="complete">Complete</option>
+            <option value="incomplete">Incomplete</option>
           </select>
 
           <button
@@ -512,13 +533,26 @@ export function QuestionBankDetail({
                   Loading questions...
                 </td>
               </tr>
+            ) : questionsQuery.isError ? (
+              <tr>
+                <td colSpan={7} className="p-8 text-center text-sm text-slate-600">
+                  <p role="alert">{questionsQuery.error instanceof Error ? questionsQuery.error.message : "Could not load questions."}</p>
+                  <button
+                    type="button"
+                    onClick={() => questionsQuery.refetch()}
+                    className="mt-2 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                  >
+                    Retry
+                  </button>
+                </td>
+              </tr>
             ) : questionsList.length === 0 ? (
               <tr>
                 <td
                   colSpan={7}
                   className="p-8 text-center text-sm text-slate-400"
                 >
-                  No questions found in this bank.
+                  No questions match these filters. Try changing or clearing your filters.
                 </td>
               </tr>
             ) : (

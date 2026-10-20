@@ -189,7 +189,7 @@ export function QuestionBankDetail({
         client.invalidateQueries({
           queryKey: QUERY_KEYS.contentQuestionBank(bankId),
         }),
-        ...(bank?.topicId
+        ...(bankQuery.data?.topicId
           ? [client.invalidateQueries({
               queryKey: QUERY_KEYS.contentQuestionBanks(bank.topicId),
             })]
@@ -210,7 +210,7 @@ export function QuestionBankDetail({
         client.invalidateQueries({
           queryKey: QUERY_KEYS.contentQuestionBank(bankId),
         }),
-        ...(bank?.topicId
+        ...(bankQuery.data?.topicId
           ? [client.invalidateQueries({
               queryKey: QUERY_KEYS.contentQuestionBanks(bank.topicId),
             })]
@@ -232,7 +232,7 @@ export function QuestionBankDetail({
         client.invalidateQueries({
           queryKey: QUERY_KEYS.contentQuestionBank(bankId),
         }),
-        ...(bank?.topicId
+        ...(bankQuery.data?.topicId
           ? [client.invalidateQueries({
               queryKey: QUERY_KEYS.contentQuestionBanks(bank.topicId),
             })]

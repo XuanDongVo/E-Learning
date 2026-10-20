@@ -74,7 +74,7 @@ export function ContentOverview({
   }, [query, units.data]);
 
   const activeUnit =
-    (units.data ?? []).find((unit) => unit.id === selectedUnitId) ??
+    visibleUnits.find((unit) => unit.id === selectedUnitId) ??
     visibleUnits[0];
   const sections = useQuery({
     queryKey: QUERY_KEYS.contentSections(activeUnit?.id ?? 0),
@@ -193,6 +193,11 @@ export function ContentOverview({
           </div>
 
           <div className="min-h-0 flex-1 space-y-1 overflow-y-auto p-2">
+            {createUnit.isError && (
+              <div className="m-2 rounded-lg border border-destructive/20 bg-destructive/5 p-3 text-body-sm text-destructive">
+                Could not create the unit. Check the details and try again.
+              </div>
+            )}
             {units.isLoading && (
               <p className="p-3 text-body-sm text-muted-foreground">
                 {t("loading")}

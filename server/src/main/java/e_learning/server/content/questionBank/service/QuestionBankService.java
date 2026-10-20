@@ -1,5 +1,6 @@
 package e_learning.server.content.questionBank.service;
 
+import e_learning.server.common.dto.PageResponse;
 import e_learning.server.common.exception.AppException;
 import e_learning.server.common.exception.ErrorCode;
 import e_learning.server.content.common.dto.ReorderRequest;
@@ -7,6 +8,7 @@ import e_learning.server.content.common.dto.UpdateStatusRequest;
 import e_learning.server.content.common.enums.ContentStatus;
 import e_learning.server.content.question.repository.ContentQuestionRepository;
 import e_learning.server.content.questionBank.dto.CreateQuestionBankRequest;
+import e_learning.server.content.questionBank.dto.GlobalQuestionBankResponse;
 import e_learning.server.content.questionBank.dto.QuestionBankResponse;
 import e_learning.server.content.questionBank.dto.UpdateQuestionBankRequest;
 import e_learning.server.content.questionBank.entity.QuestionBank;
@@ -14,9 +16,18 @@ import e_learning.server.content.questionBank.repository.QuestionBankRepository;
 import e_learning.server.content.topic.entity.Topic;
 import e_learning.server.content.topic.repository.TopicRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -73,6 +84,76 @@ public class QuestionBankService {
         }
 
         return banks.stream().map(this::mapToResponse).collect(Collectors.toList());
+    }
+
+    public PageResponse<GlobalQuestionBankResponse> browse(
+            Long gradeId,
+            Long unitId,
+            Long sectionId,
+            Long topicId,
+            String search,
+            boolean includeArchived,
+            int page,
+            int size
+    ) {
+        int safePage = Math.max(page, 1);
+        int safeSize = Math.max(1, Math.min(size, 100));
+        Pageable pageable = PageRequest.of(safePage - 1, safeSize,
+                Sort.by(Sort.Order.asc("name"), Sort.Order.asc("id")));
+
+        Specification<QuestionBank> specification = (root, query, cb) -> {
+            Join<Object, Object> topic = root.join("topic", JoinType.INNER);
+            Join<Object, Object> section = topic.join("section", JoinType.INNER);
+            Join<Object, Object> unit = section.join("unit", JoinType.INNER);
+            Join<Object, Object> grade = unit.join("grade", JoinType.INNER);
+            var predicates = cb.conjunction();
+
+            if (!includeArchived) {
+                predicates = cb.and(predicates, root.get("status").in(ContentStatus.DRAFT, ContentStatus.PUBLISHED));
+            }
+            if (gradeId != null) predicates = cb.and(predicates, cb.equal(grade.get("id"), gradeId));
+            if (unitId != null) predicates = cb.and(predicates, cb.equal(unit.get("id"), unitId));
+            if (sectionId != null) predicates = cb.and(predicates, cb.equal(section.get("id"), sectionId));
+            if (topicId != null) predicates = cb.and(predicates, cb.equal(topic.get("id"), topicId));
+            if (search != null && !search.isBlank()) {
+                String pattern = "%" + search.trim().toLowerCase() + "%";
+                predicates = cb.and(predicates, cb.or(
+                        cb.like(cb.lower(root.get("name")), pattern),
+                        cb.like(cb.lower(root.get("description")), pattern)
+                ));
+            }
+            return predicates;
+        };
+
+        Page<QuestionBank> bankPage = questionBankRepository.findAll(specification, pageable);
+        List<QuestionBank> banks = bankPage.getContent();
+        Map<Long, long[]> counts = new HashMap<>();
+        if (!banks.isEmpty()) {
+            Collection<Long> bankIds = banks.stream().map(QuestionBank::getId).toList();
+            for (Object[] row : contentQuestionRepository.countQuestionTotalsByBankIds(bankIds)) {
+                counts.put((Long) row[0], new long[]{
+                        ((Number) row[1]).longValue(),
+                        row[2] == null ? 0L : ((Number) row[2]).longValue()
+                });
+            }
+        }
+
+        List<GlobalQuestionBankResponse> responses = banks.stream().map(bank -> {
+            var topic = bank.getTopic();
+            var section = topic.getSection();
+            var unit = section.getUnit();
+            var grade = unit.getGrade();
+            long[] total = counts.getOrDefault(bank.getId(), new long[]{0L, 0L});
+            return new GlobalQuestionBankResponse(
+                    bank.getId(), bank.getName(), bank.getDescription(), bank.getStatus(),
+                    bank.getDisplayOrder(), bank.getCreatedAt(), bank.getUpdatedAt(),
+                    topic.getId(), topic.getName(), section.getId(), section.getName(),
+                    unit.getId(), unit.getCode(), unit.getName(), grade.getId(), grade.getName(),
+                    total[0], total[1]
+            );
+        }).toList();
+
+        return PageResponse.from(bankPage, responses);
     }
 
     @Transactional

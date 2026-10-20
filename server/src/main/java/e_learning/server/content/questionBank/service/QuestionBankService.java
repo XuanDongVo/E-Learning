@@ -102,10 +102,10 @@ public class QuestionBankService {
                 Sort.by(Sort.Order.asc("name"), Sort.Order.asc("id")));
 
         Specification<QuestionBank> specification = (root, query, cb) -> {
-            Join<Object, Object> topic = root.join("topic", JoinType.INNER);
-            Join<Object, Object> section = topic.join("section", JoinType.INNER);
-            Join<Object, Object> unit = section.join("unit", JoinType.INNER);
-            Join<Object, Object> grade = unit.join("grade", JoinType.INNER);
+            Join<?, ?> topic = root.join("topic", JoinType.INNER);
+            Join<?, ?> section = topic.join("section", JoinType.INNER);
+            Join<?, ?> unit = section.join("unit", JoinType.INNER);
+            Join<?, ?> grade = unit.join("grade", JoinType.INNER);
             var predicates = cb.conjunction();
 
             if (!includeArchived) {

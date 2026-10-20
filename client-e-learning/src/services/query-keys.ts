@@ -9,6 +9,7 @@ export const QUERY_KEYS = {
   contentTopics:(sectionId:number)=>["content","topics",sectionId] as const,
   contentTopic:(id:number)=>["content","topic",id] as const,
   contentQuestionBanks:(topicId:number)=>["content","questionBanks",topicId] as const,
+  globalQuestionBanks:(filters:Record<string,unknown>)=>["content","globalQuestionBanks",filters] as const,
   contentQuestionBank:(id:number)=>["content","questionBank",id] as const,
   contentQuestions:(params:Record<string,unknown>)=>["content","questions",params] as const,
   contentQuestion:(id:number)=>["content","question",id] as const,

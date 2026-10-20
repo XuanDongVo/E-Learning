@@ -125,3 +125,9 @@ This file tracks implementation state and does not claim the above work is done.
 - This is a documentation/planning update only. No frontend runtime code, API, schema or migration was changed in this documentation commit.
 - Question Editor redesign/refactor is explicitly out of scope. Current backend limitations are recorded: no confirmed global bank search, Question reorder API, single-question delete API or server import API.
 - Validation: documentation paths and content were written through GitHub API; frontend lint/typecheck/build and browser verification have not been run in this session.
+
+### UI-1 implementation slice (2026-10-20)
+
+- Added explicit retry controls for Grade, Unit, Section and expanded-Topic loading failures in `content-overview.tsx`. Error states now provide a direct retry action instead of asking the teacher to refresh the entire page.
+- This is a narrow first implementation slice for Phase UI-1; it does not claim the whole Explorer phase is complete.
+- Validation not run: no frontend lint, typecheck, build or browser test was executed in this GitHub-only session.

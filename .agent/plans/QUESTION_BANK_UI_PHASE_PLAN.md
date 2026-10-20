@@ -116,3 +116,7 @@ This is a future planning gate, not authorization to modify the editor now. Crea
 - If an API mismatch is discovered, stop and document it; do not silently expand the phase into backend work.
 - Question Editor, Assignment Builder, student runtime, Question Engine, Activity/Attempt flows and global search are out of scope.
 - UI implementation completion must not be confused with successful production validation.
+
+## Runtime issue to verify — Question Bank collection endpoint
+
+The source contract matches: `GET /v1/content/question-banks?topicId=<topicId>` maps to `QuestionBankController.list(@RequestParam Long topicId, @RequestParam(defaultValue = "false") boolean includeArchived)`. If runtime still reports `NoResourceFoundException` for `/v1/content/question-banks`, verify the running backend build/branch, active process and startup logs for controller registration; repository source alone cannot confirm a live route. The UI now surfaces the server error. Runtime verification remains outstanding.

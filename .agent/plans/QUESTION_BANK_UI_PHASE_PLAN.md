@@ -120,3 +120,11 @@ This is a future planning gate, not authorization to modify the editor now. Crea
 ## Runtime issue to verify — Question Bank collection endpoint
 
 The source contract matches: `GET /v1/content/question-banks?topicId=<topicId>` maps to `QuestionBankController.list(@RequestParam Long topicId, @RequestParam(defaultValue = "false") boolean includeArchived)`. If runtime still reports `NoResourceFoundException` for `/v1/content/question-banks`, verify the running backend build/branch, active process and startup logs for controller registration; repository source alone cannot confirm a live route. The UI now surfaces the server error. Runtime verification remains outstanding.
+
+## Latest continuation — UI-1 / UI-2 and route diagnostics (2026-10-20)
+
+- UI-1 now clears expanded Sections when switching Grade or Unit so expansion state cannot leak into another hierarchy context.
+- UI-2 Question Bank detail now invalidates both bank detail and Topic bank-list query prefixes after update/status/archive and surfaces mutation success/failure via toast.
+- Added temporary `RequestMappingHandlerMapping=TRACE` logging in backend `application.properties` to diagnose why the running app does not register `QuestionBankController`.
+- Endpoint source path is consistent across frontend and controller. The user-provided log shows authenticated JWT/ROLE_TEACHER then `NoResourceFoundException`; verify controller registration at startup and confirm the running server uses this branch/build. Do not change API paths or security rules without new evidence.
+- Runtime validation, Maven tests, frontend lint/typecheck/build and browser checks remain outstanding.

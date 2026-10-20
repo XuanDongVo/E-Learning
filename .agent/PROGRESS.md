@@ -175,3 +175,4 @@ This file tracks implementation state and does not claim the above work is done.
 - Validation not run in this GitHub-only editing session: frontend lint, tests, typecheck, production build and browser verification remain outstanding. Do not treat the UI-3 slice as fully verified.
 
 - Follow-up UI-3 safety: disabled the Question Bank Import toolbar action and labeled it “Import (coming soon)” because the linked import screen currently fabricates preview rows and simulates validation/import with timers; no real import API workflow is confirmed. Commit: `8f2b6046`.
+- Question Bank mutation invalidation cleanup: status/archive/update callbacks now use the narrowed `bankQuery.data.topicId` source consistently when invalidating the Topic bank list (commit `7b79c271`). This is part of the UI-2 cache invalidation audit; validation is still outstanding.

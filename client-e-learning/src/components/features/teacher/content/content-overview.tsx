@@ -289,36 +289,46 @@ export function ContentOverview({
                         key={section.id}
                         className="overflow-hidden rounded-lg border border-border"
                       >
-                        <button
-                          type="button"
-                          onClick={() => toggleSection(section.id)}
-                          className="flex w-full items-center gap-2 bg-background px-3 py-2.5 text-left hover:bg-muted"
-                        >
-                          {expanded ? (
-                            <ChevronDown className="size-4 text-primary" />
-                          ) : (
-                            <ChevronRight className="size-4 text-muted-foreground" />
-                          )}
-
-                          <Layers className="size-4 text-primary" />
-
-                          <span className="flex-1 text-body font-bold">
-                            {section.name}
-                          </span>
-
+                        <div className="flex items-center gap-2 bg-background px-3 py-2.5">
+                          <button
+                            type="button"
+                            aria-expanded={expanded}
+                            onClick={() => toggleSection(section.id)}
+                            className="flex min-w-0 flex-1 items-center gap-2 text-left"
+                          >
+                            {expanded ? (
+                              <ChevronDown className="size-4 shrink-0 text-primary" />
+                            ) : (
+                              <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
+                            )}
+                            <Layers className="size-4 shrink-0 text-primary" />
+                            <span className="min-w-0 flex-1 truncate text-body font-bold">
+                              {section.name}
+                            </span>
+                          </button>
                           <StatusBadge status={section.status} />
-                          <span className="text-body-sm text-muted-foreground">
+                          <span className="shrink-0 text-body-sm text-muted-foreground">
                             {section.totalTopic} topics
                           </span>
-                          <span role="button" aria-label={`Open section ${section.name}`} onClick={(event) => { event.stopPropagation(); onNavigate("section", section.id); }} className="rounded-md p-1.5 text-muted-foreground hover:bg-primary/10 hover:text-primary">
+                          <button
+                            type="button"
+                            aria-label={`Open section ${section.name}`}
+                            onClick={() => onNavigate("section", section.id)}
+                            className="rounded-md p-1.5 text-muted-foreground hover:bg-primary/10 hover:text-primary"
+                          >
                             <ExternalLink className="size-3.5" />
-                          </span>
-                        </button>
+                          </button>
+                        </div>
 
                         {expanded && (
                           <div className="divide-y divide-border border-t border-border">
                             {topics[(sections.data ?? []).findIndex((item) => item.id === section.id)]?.isLoading && (
                               <p className="px-4 py-3 text-body-sm text-muted-foreground">{t("loading")}</p>
+                            )}
+                            {topics[(sections.data ?? []).findIndex((item) => item.id === section.id)]?.isError && (
+                              <div className="px-4 py-3 text-body-sm text-destructive">
+                                Could not load topics. Open the section to retry.
+                              </div>
                             )}
                             {sectionTopics.map((topic) => (
                               <button
@@ -340,7 +350,7 @@ export function ContentOverview({
                               </button>
                             ))}
 
-                            {!topics[(sections.data ?? []).findIndex((item) => item.id === section.id)]?.isLoading && sectionTopics.length === 0 && (
+                            {!topics[(sections.data ?? []).findIndex((item) => item.id === section.id)]?.isLoading && !topics[(sections.data ?? []).findIndex((item) => item.id === section.id)]?.isError && sectionTopics.length === 0 && (
                               <p className="px-4 py-3 text-body-sm text-muted-foreground">
                                 {t("noTopics")}
                               </p>

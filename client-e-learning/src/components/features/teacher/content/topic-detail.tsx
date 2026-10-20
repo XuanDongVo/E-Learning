@@ -221,7 +221,11 @@ export function TopicDetail({
               </div>
 
               {createBank.isError && (
-                <p className="text-xs text-rose-600">Failed to create question bank. Ensure name is unique.</p>
+                <p role="alert" className="rounded-md border border-rose-200 bg-rose-50 p-3 text-xs text-rose-700">
+                  {createBank.error instanceof Error
+                    ? createBank.error.message
+                    : "Could not create question bank. Please try again."}
+                </p>
               )}
 
               <div className="flex justify-end gap-2 pt-2">
@@ -284,6 +288,11 @@ export function TopicDetail({
         ) : questionBanks.isError ? (
           <div role="alert" className="p-6 text-center text-sm text-rose-700">
             <p>Could not load question banks.</p>
+            <p className="mt-1 break-words text-xs text-rose-600">
+              {questionBanks.error instanceof Error
+                ? questionBanks.error.message
+                : "The request failed. Check the API server and try again."}
+            </p>
             <button type="button" onClick={() => void questionBanks.refetch()} className="mt-2 rounded-md border border-rose-200 px-3 py-1.5 font-semibold hover:bg-rose-50">
               Retry
             </button>

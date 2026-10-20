@@ -2,11 +2,9 @@ import { ContentRoutePage } from "@/components/features/teacher/content/content-
 
 type PageProps = {
   params: Promise<{ questionId: string }>;
-  searchParams: Promise<{ bankName?: string }>;
 };
 
-export default async function Page({ params, searchParams }: PageProps) {
+export default async function Page({ params }: PageProps) {
   const { questionId } = await params;
-  const query = await searchParams;
   return <ContentRoutePage view="question" id={Number(questionId)} />;
 }

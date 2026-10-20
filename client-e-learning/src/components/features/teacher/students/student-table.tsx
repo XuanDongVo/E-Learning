@@ -46,10 +46,10 @@ export function StudentTable({
   );
 
   return (
-    <div className="overflow-x-auto rounded-[var(--radius-md)] border border-border-color bg-card-bg">
+    <div className="overflow-x-auto rounded-2xl border-2 border-ink bg-card shadow-pop">
       <table className="w-full min-w-[760px] text-left">
-        <thead className="border-b border-border-color bg-background-app text-body-sm  tracking-wide text-neutral-muted">
-          <tr className="border-b border-border-color bg-background-app">
+        <thead className="border-b-2 border-border bg-background-app/70 text-body-sm tracking-wide text-neutral-muted">
+          <tr className="border-b-2 border-border bg-card">
             <th className="w-12 px-5 py-4">
               <input
                 type="checkbox"

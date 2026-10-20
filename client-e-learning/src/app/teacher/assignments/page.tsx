@@ -95,25 +95,25 @@ export default function TeacherAssignmentsPage() {
             Track due dates, submissions to grade, and progress across classes.
           </p>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2.5">
           <button
             type="button"
             onClick={openGuide}
-            className="inline-flex h-9 items-center gap-2 rounded-lg border border-input px-3 text-body-sm font-bold hover:bg-muted"
+            className="inline-flex h-10 items-center gap-2 rounded-xl border-2 border-border bg-card px-4 text-body-sm font-bold shadow-pop-sm transition hover:bg-muted active:translate-y-0.5"
           >
             <BookOpen className="size-4" /> How to create
           </button>
           <button
             type="button"
             onClick={openWizard}
-            className="inline-flex h-9 items-center gap-2 rounded-lg bg-primary px-3 text-body-sm font-bold text-primary-foreground"
+            className="inline-flex h-10 items-center gap-2 rounded-xl border border-primary bg-primary px-4 text-body-sm font-bold text-primary-foreground shadow-pop-sm transition hover:bg-primary-hover active:translate-y-0.5"
           >
             <Plus className="size-4" /> Create assignment
           </button>
         </div>
       </header>
 
-      <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <SummaryCard icon={<Clock3 className="size-4" />} label="Active"
           value={assignmentList.filter((item) => item.status === "PUBLISHED").length}
           hint="Assignments currently open to students" tone="orange" />
@@ -125,31 +125,31 @@ export default function TeacherAssignmentsPage() {
           value="—" hint="Result data is not available yet" tone="blue" />
       </section>
 
-      <section className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
-        <div className="border-b border-border px-4 py-4">
+      <section className="overflow-hidden rounded-2xl border-2 border-ink bg-card shadow-pop">
+        <div className="border-b-2 border-border px-5 py-4 bg-card">
           <div className="flex flex-col justify-between gap-3 lg:flex-row lg:items-start">
             <div>
-              <h2 className="text-section-title font-bold">All assignments</h2>
+              <h2 className="text-section-title font-extrabold text-foreground">All assignments</h2>
               <p className="text-body-sm text-muted-foreground">
                 {visibleAssignments.length} matching assignments
               </p>
             </div>
-            <div className="flex flex-col gap-2 sm:flex-row">
-              <label className="flex h-9 items-center gap-2 rounded-lg border border-input px-3 text-body-sm text-muted-foreground">
+            <div className="flex flex-col gap-2.5 sm:flex-row">
+              <label className="flex h-10 items-center gap-2 rounded-xl border-2 border-border bg-card px-3.5 text-body-sm text-muted-foreground shadow-pop-sm focus-within:border-primary">
                 <Search className="size-4" />
                 <input value={search} onChange={(event) => setSearch(event.target.value)}
-                  placeholder="Search assignments..." className="w-44 bg-transparent outline-none" />
+                  placeholder="Search assignments..." className="w-44 bg-transparent outline-none font-medium text-foreground placeholder:text-muted-foreground" />
               </label>
               <button type="button" onClick={() => setImportOpen(true)}
-                className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-input px-3 text-body-sm font-bold hover:bg-muted">
+                className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border-2 border-border bg-card px-4 text-body-sm font-bold shadow-pop-sm transition hover:bg-muted active:translate-y-0.5">
                 <Upload className="size-4" /> Import questions
               </button>
             </div>
           </div>
-          <div className="mt-4 flex flex-wrap gap-2">
+          <div className="mt-4 flex flex-wrap gap-2.5">
             {["ALL", "PUBLISHED", "DRAFT", "ARCHIVED"].map((status) => (
               <button key={status} type="button" onClick={() => setStatusFilter(status as typeof statusFilter)}
-                className={`rounded-lg border px-3 py-1.5 text-body-sm font-semibold ${statusFilter === status ? "border-primary bg-primary text-primary-foreground" : "border-border hover:bg-muted"}`}>
+                className={`rounded-xl border-2 px-3.5 py-1.5 text-body-sm font-bold shadow-pop-sm transition-all ${statusFilter === status ? "border-primary bg-primary text-primary-foreground -translate-y-0.5" : "border-border bg-card hover:bg-muted hover:text-foreground"}`}>
                 {status === "ALL" ? "All" : status === "PUBLISHED" ? "Active" : status === "DRAFT" ? "Draft" : "Archived"}
               </button>
             ))}

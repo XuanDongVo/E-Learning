@@ -110,7 +110,7 @@ export function GlobalQuestionBankList() {
         <div className="text-sm text-muted-foreground">{pageData?.totalElements ?? "—"} banks</div>
       </div>
 
-      <section className="rounded-xl border border-border bg-card p-4 sm:p-5">
+      <section className="rounded-xl border-2 border-ink bg-card p-4 sm:p-5">
         <form onSubmit={onSearch} className="mb-4 flex flex-col gap-2 sm:flex-row">
           <label className="relative min-w-0 flex-1">
             <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
@@ -123,7 +123,7 @@ export function GlobalQuestionBankList() {
             />
           </label>
           <button type="submit" className="h-10 rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground">Search</button>
-          <button type="button" onClick={resetFilters} className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-border px-3 text-sm font-medium hover:bg-muted">
+          <button type="button" onClick={resetFilters} className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border-2 border-ink px-3 text-sm font-medium hover:bg-muted">
             <RotateCcw className="size-4" /> Reset
           </button>
         </form>
@@ -170,20 +170,20 @@ export function GlobalQuestionBankList() {
       </section>
 
       {banksQuery.isLoading ? (
-        <div className="rounded-xl border border-border bg-card p-12 text-center text-sm text-muted-foreground">Loading question banks…</div>
+        <div className="rounded-xl border-2 border-ink bg-card p-12 text-center text-sm text-muted-foreground">Loading question banks…</div>
       ) : banksQuery.isError ? (
         <div className="rounded-xl border border-destructive/30 bg-card p-8 text-center">
           <p className="text-sm text-destructive">Could not load question banks.</p>
-          <button onClick={() => void banksQuery.refetch()} className="mt-3 rounded-lg border border-border px-4 py-2 text-sm font-semibold hover:bg-muted">Retry</button>
+          <button onClick={() => void banksQuery.refetch()} className="mt-3 rounded-lg border-2 border-ink px-4 py-2 text-sm font-semibold hover:bg-muted">Retry</button>
         </div>
       ) : banks.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-border bg-card p-12 text-center">
+        <div className="rounded-xl border border-dashed border-2 border-ink bg-card p-12 text-center">
           <LibraryBig className="mx-auto size-8 text-muted-foreground" />
           <h2 className="mt-3 font-semibold">{search || gradeId || unitId || sectionId || topicId ? "No banks match these filters" : "No question banks yet"}</h2>
           <p className="mt-1 text-sm text-muted-foreground">Try adjusting the search or hierarchy filters.</p>
         </div>
       ) : (
-        <div className="overflow-hidden rounded-xl border border-border bg-card">
+        <div className="overflow-hidden rounded-xl border-2 border-ink bg-card">
           <div className="divide-y divide-border">
             {banks.map((bank) => (
               <Link key={bank.id} href={`/teacher/content/question-banks/${bank.id}`} className="block p-4 transition-colors hover:bg-muted/40 sm:p-5">
@@ -204,11 +204,11 @@ export function GlobalQuestionBankList() {
               </Link>
             ))}
           </div>
-          <div className="flex items-center justify-between border-t border-border px-4 py-3 text-sm">
+          <div className="flex items-center justify-between border-t border-ink px-4 py-3 text-sm">
             <span className="text-muted-foreground">Page {pageData?.page ?? page} of {Math.max(1, pageData?.totalPages ?? 1)} · {pageData?.totalElements ?? 0} banks</span>
             <div className="flex gap-2">
-              <button disabled={page <= 1} onClick={() => updateUrl({ page: String(page - 1) }, false)} className="inline-flex h-9 items-center gap-1 rounded-lg border border-border px-3 disabled:opacity-40"><ChevronLeft className="size-4" /> Previous</button>
-              <button disabled={!pageData || page >= pageData.totalPages} onClick={() => updateUrl({ page: String(page + 1) }, false)} className="inline-flex h-9 items-center gap-1 rounded-lg border border-border px-3 disabled:opacity-40">Next <ChevronRight className="size-4" /></button>
+              <button disabled={page <= 1} onClick={() => updateUrl({ page: String(page - 1) }, false)} className="inline-flex h-9 items-center gap-1 rounded-lg border border-ink px-3 disabled:opacity-40"><ChevronLeft className="size-4" /> Previous</button>
+              <button disabled={!pageData || page >= pageData.totalPages} onClick={() => updateUrl({ page: String(page + 1) }, false)} className="inline-flex h-9 items-center gap-1 rounded-lg border border-ink px-3 disabled:opacity-40">Next <ChevronRight className="size-4" /></button>
             </div>
           </div>
         </div>

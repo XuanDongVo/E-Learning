@@ -220,20 +220,20 @@ export function ActivityWorkspace() {
       </section>
 
       {!selectedUnit ? (
-        <section className="border border-border-color bg-card-bg p-10 text-center text-body text-neutral-muted">
+        <section className="rounded-2xl border-2 border-ink bg-card p-10 text-center text-body text-neutral-muted shadow-pop">
           Select a Unit to view activities.
         </section>
       ) : activities.isLoading ? (
-        <section className="border border-border-color bg-card-bg p-6 text-body text-neutral-muted">
+        <section className="rounded-2xl border-2 border-ink bg-card p-6 text-body text-neutral-muted shadow-pop">
           Loading activities…
         </section>
       ) : activities.isError ? (
-        <section className="border border-danger-light bg-danger-light p-6 text-body text-danger-text">
+        <section className="rounded-2xl border-2 border-destructive/30 bg-destructive/5 p-6 text-body text-destructive shadow-pop">
           Could not load activities. Try again.
         </section>
       ) : visible.length === 0 ? (
-        <section className="border border-border-color bg-card-bg p-10 text-center">
-          <p className="text-section-title font-semibold">
+        <section className="rounded-2xl border-2 border-ink bg-card p-10 text-center shadow-pop">
+          <p className="text-section-title font-bold text-foreground">
             No activities found
           </p>
           <p className="mt-2 text-body text-neutral-muted">
@@ -242,22 +242,22 @@ export function ActivityWorkspace() {
           </p>
           <Link
             href={`/teacher/activities/new?unitId=${selectedUnit.id}`}
-            className="mt-4 inline-flex h-10 items-center rounded-lg bg-primary px-4 text-body font-semibold text-primary-foreground"
+            className="mt-4 inline-flex h-10 items-center rounded-xl border border-primary bg-primary px-4 text-body font-bold text-primary-foreground shadow-pop-sm transition hover:bg-primary-hover active:translate-y-0.5"
           >
             Create activity
           </Link>
         </section>
       ) : (
-        <section className="border border-border-color bg-card-bg">
-          <div className="flex flex-col gap-1 border-b border-border-color px-4 py-4 sm:flex-row sm:items-baseline sm:justify-between">
+        <section className="overflow-hidden rounded-2xl border-2 border-ink bg-card shadow-pop">
+          <div className="flex flex-col gap-1 border-b-2 border-border px-5 py-4 sm:flex-row sm:items-baseline sm:justify-between bg-card">
             <div>
-              <h2 className="text-card-title font-bold">Activity list</h2>
+              <h2 className="text-card-title font-extrabold text-foreground">Activity list</h2>
               <p className="mt-1 text-body-sm text-neutral-muted">
                 {selectedUnit?.code} activities, sorted by most recently
                 updated.
               </p>
             </div>
-            <span className="text-body-sm text-neutral-muted">
+            <span className="rounded-lg border border-border bg-background-app px-2.5 py-1 text-body-sm font-bold text-neutral-muted shadow-pop-sm">
               {filtered.length}{" "}
               {filtered.length === 1 ? "activity" : "activities"}
             </span>

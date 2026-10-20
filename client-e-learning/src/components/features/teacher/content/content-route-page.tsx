@@ -48,76 +48,61 @@ export function ContentRoutePage({ view, id }: ContentRoutePageProps) {
       return;
     }
 
-    if (nextView === "bank" && !nextId && view === "question") {
-      return;
-    }
-
+    const resolvedId = nextId ?? (nextView === view ? id : undefined);
     const basePath = contentPaths[nextView];
     if (!basePath) return;
 
-    if (nextId) {
-      const query = nextView === "question" && bankName
-        ? `?bankName=${encodeURIComponent(bankName)}`
-        : "";
-      router.push(`${basePath}/${nextId}${query}`);
+    if (!resolvedId) {
+      router.push("/teacher/content");
       return;
     }
 
-    router.push(basePath);
+    const query = nextView === "question" && bankName
+      ? `?bankName=${encodeURIComponent(bankName)}`
+      : "";
+    router.push(`${basePath}/${resolvedId}${query}`);
   };
 
-  const renderRoute = () => {
-    if (view === "overview") {
-      return <ContentOverview onNavigate={navigate} />;
-    }
+  if (view === "overview") {
+    return <div className="space-y-6"><ContentOverview onNavigate={navigate} /></div>;
+  }
 
-    if (!id) {
-      return (
-        <div className="rounded-lg border border-border bg-card p-8 text-center text-sm text-muted-foreground">
-          Missing content identifier.
-        </div>
-      );
-    }
-
-    if (view === "unit") {
-      return <UnitDetail unitId={id} onNavigate={navigate} />;
-    }
-
-    if (view === "section") {
-      return <SectionDetail sectionId={id} onNavigate={navigate} />;
-    }
-
-    if (view === "topic") {
-      return <TopicDetail topicId={id} onNavigate={navigate} />;
-    }
-
-    if (view === "bank") {
-      if (mode === "bulk-create") {
-        return (
-          <BulkQuestionCreator
-            bankId={id}
-            bankName=""
-            onNavigate={navigate}
-          />
-        );
-      }
-
-      if (mode === "import") {
-        return <ImportQuestions onNavigate={navigate} />;
-      }
-
-      return <QuestionBankDetail bankId={id} onNavigate={navigate} />;
-    }
-
-    const bankName = searchParams.get("bankName") ?? undefined;
+  if (!id) {
     return (
-      <QuestionEditor
-        questionId={id}
-        bankName={bankName}
-        onNavigate={navigate}
-      />
+      <div className="rounded-lg border border-border bg-card p-8 text-center text-sm text-muted-foreground">
+        Missing content identifier.
+      </div>
     );
-  };
+  }
 
-  return <div className="space-y-6">{renderRoute()}</div>;
+  if (view === "unit") {
+    return <div className="space-y-6"><UnitDetail unitId={id} onNavigate={navigate} /></div>;
+  }
+
+  if (view === "section") {
+    return <div className="space-y-6"><SectionDetail sectionId={id} onNavigate={navigate} /></div>;
+  }
+
+  if (view === "topic") {
+    return <div className="space-y-6"><TopicDetail topicId={id} onNavigate={navigate} /></div>;
+  }
+
+  if (view === "bank") {
+    if (mode === "bulk-create") {
+      return <div className="space-y-6"><BulkQuestionCreator bankId={id} bankName="" onNavigate={navigate} /></div>;
+    }
+
+    if (mode === "import") {
+      return <div className="space-y-6"><ImportQuestions onNavigate={navigate} /></div>;
+    }
+
+    return <div className="space-y-6"><QuestionBankDetail bankId={id} onNavigate={navigate} /></div>;
+  }
+
+  const bankName = searchParams.get("bankName") ?? undefined;
+  return (
+    <div className="space-y-6">
+      <QuestionEditor questionId={id} bankName={bankName} onNavigate={navigate} />
+    </div>
+  );
 }

@@ -163,3 +163,13 @@ This file tracks implementation state and does not claim the above work is done.
 - No backend URL/security workaround or explicit component-scan workaround was added because repository code does not justify one. Runtime root cause remains unverified.
 - Validation: no Maven test, frontend lint/typecheck/build or browser test was run in this GitHub-only session.
 - Follow-up safety cleanup: mutation invalidation reads the Topic ID from `bankQuery.data` directly (commit `0cca6a37`) so callbacks do not depend on a later derived local variable.
+
+
+## Teacher Content UI — Question Manager UI-3 slice (2026-10-20)
+
+- Added All / Complete / Incomplete filtering to Question Manager. The selected value is part of the React Query key and reaches the existing question-list API as `isComplete=true|false`; the All option omits the parameter.
+- Changing completeness resets to page 1. Question-list errors now show the server error and a Retry action instead of looking like an empty result; empty filtered results explain that filters may need changing.
+- Guarded pagination rendering with a minimum one-page value and checked the question filter values against the current server enum: SINGLE_CHOICE, MULTIPLE_CHOICE, TRUE_FALSE, FILL_IN_BLANK, TYPE_ANSWER, MATCHING, CLOZE. Difficulty remains EASY/MEDIUM/HARD.
+- Commits: `05ec0f08`, `6fb6ac2b`; plan update `0257138f`.
+- Question Editor internals were not modified. No API, schema or migration changes were made.
+- Validation not run in this GitHub-only editing session: frontend lint, tests, typecheck, production build and browser verification remain outstanding. Do not treat the UI-3 slice as fully verified.

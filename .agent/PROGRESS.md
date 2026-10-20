@@ -141,3 +141,14 @@ This file tracks implementation state and does not claim the above work is done.
 - Commits: `56f4b0fb` (service contract), `62ac32e8` (Topic detail UI).
 - UI-2 remains in progress: editing bank metadata/status/archive from the Topic list itself and a full regression pass have not been completed in this slice. Existing bank detail actions remain unchanged.
 - Validation: not run; this GitHub-only session did not execute frontend lint, tests, typecheck, build or browser tests.
+
+## Question Bank endpoint investigation (2026-10-20)
+
+- Reported runtime error: `NoResourceFoundException: No static resource v1/content/question-banks for request '/v1/content/question-banks'`.
+- Compared frontend service and backend controller on `refactor/teacher-content-ui-routing`:
+  - Frontend `questionBankService.list(topicId, includeArchived)` calls `GET /v1/content/question-banks?topicId=<id>`, with `includeArchived=true` only when enabled.
+  - Backend `QuestionBankController` has class mapping `/v1/content/question-banks` and `@GetMapping` requiring `topicId`; `includeArchived` defaults to false. The URL path and parameter names match.
+  - Backend controller also defines POST at the collection path, GET by ID, PUT by ID, PATCH archive/status and PUT order.
+- Therefore the exception is not explained by a path mismatch in the checked branch. Spring is treating the collection path as a static resource, which commonly means the running process/deployment did not register this controller (e.g. stale/wrong server build, wrong running application/profile/context, or controller scan/startup issue). This cannot be conclusively distinguished from repository inspection alone.
+- Frontend now surfaces the actual API error text for bank-list failures and create-bank failures (commit `86fa5c13`) to avoid hiding the server response behind generic messages.
+- Runtime endpoint verification, backend tests and frontend lint/typecheck/build have not been executed from this session. Do not mark endpoint as runtime-verified until the user runs the server or CI proves it.

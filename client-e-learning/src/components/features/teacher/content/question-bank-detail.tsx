@@ -670,7 +670,7 @@ export function QuestionBankDetail({
                     {/* Type */}
                     <td className="border-b border-slate-100 p-2.5 text-sm text-slate-500">
                       <Badge tone="blue">
-                        {question.type}
+                        {questionTypeOptions.find((item) => item.value === question.type)?.label ?? question.type}
                       </Badge>
                     </td>
 
@@ -848,7 +848,7 @@ export function QuestionBankDetail({
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div className="flex items-center gap-2">
                 <Badge tone="blue">
-                  {previewQuestion.type}
+                  {questionTypeOptions.find((item) => item.value === previewQuestion.type)?.label ?? previewQuestion.type}
                 </Badge>
 
                 <Badge

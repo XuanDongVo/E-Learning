@@ -196,3 +196,4 @@ This file tracks implementation state and does not claim the above work is done.
 - Frontend uses URL query parameters for hierarchy filters, search, archive toggle and page; changing a parent filter clears descendants. Sidebar now nests Content Explorer and Question Banks under Content. Added VI/EN labels for the navigation.
 - Question Editor files were not part of the implementation edits; a final regression diff is still required.
 - Validation not run: Maven tests, frontend lint, Vitest, typecheck/build, browser refresh/Back/Forward, filter cascade and Archived visibility remain unverified. Treat implementation as committed but not verified.
+- Backend compatibility correction: the `ContentQuestionRepository` ready-count/list methods now explicitly join `ContentQuestion.question` and filter `Question.complete`, matching the current entity model rather than relying on a non-existent `ContentQuestion.questionComplete` property.

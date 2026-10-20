@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { Search, RotateCcw, ChevronLeft, ChevronRight, LibraryBig } from "lucide-react";
@@ -34,6 +34,8 @@ export function GlobalQuestionBankList() {
   const size = 20;
   const [searchDraft, setSearchDraft] = useState(search);
 
+  useEffect(() => setSearchDraft(search), [search]);
+
   const filters: GlobalQuestionBankFilters = useMemo(
     () => ({ gradeId, unitId, sectionId, topicId, search, includeArchived, page, size }),
     [gradeId, unitId, sectionId, topicId, search, includeArchived, page],
@@ -56,7 +58,7 @@ export function GlobalQuestionBankList() {
     enabled: Boolean(sectionId),
   });
   const banksQuery = useQuery({
-    queryKey: QUERY_KEYS.globalQuestionBanks(filters as Record<string, unknown>),
+    queryKey: QUERY_KEYS.globalQuestionBanks({ gradeId, unitId, sectionId, topicId, search, includeArchived, page, size }),
     queryFn: () => questionBankService.browse(filters),
     placeholderData: (previous) => previous,
   });

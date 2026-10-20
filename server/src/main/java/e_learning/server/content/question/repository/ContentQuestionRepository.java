@@ -29,7 +29,19 @@ public interface ContentQuestionRepository
         """)
     List<Object[]> countQuestionTotalsByBankIds(@Param("bankIds") Collection<Long> bankIds);
 
-    List<ContentQuestion> findTop100ByQuestionBankIdAndQuestionCompleteTrueOrderByQuestionIdAsc(Long questionBankId);
+    @Query("""
+        select cq from ContentQuestion cq
+        join cq.question q
+        where cq.questionBank.id = :questionBankId and q.complete = true
+        order by cq.questionId asc
+        """)
+    List<ContentQuestion> findTop100ByQuestionBankIdAndQuestionCompleteTrueOrderByQuestionIdAsc(@Param("questionBankId") Long questionBankId);
 
-    List<ContentQuestion> findAllByQuestionBankIdAndQuestionCompleteTrueOrderByQuestionIdAsc(Long questionBankId);
+    @Query("""
+        select cq from ContentQuestion cq
+        join cq.question q
+        where cq.questionBank.id = :questionBankId and q.complete = true
+        order by cq.questionId asc
+        """)
+    List<ContentQuestion> findAllByQuestionBankIdAndQuestionCompleteTrueOrderByQuestionIdAsc(@Param("questionBankId") Long questionBankId);
 }

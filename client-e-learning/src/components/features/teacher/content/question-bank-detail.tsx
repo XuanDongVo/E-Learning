@@ -391,7 +391,7 @@ export function QuestionBankDetail({
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full border-0 text-body-sm text-slate-700 outline-none"
-              placeholder="Search question..."
+              placeholder="Search questions..."
             />
 
             {search && (
@@ -524,7 +524,11 @@ export function QuestionBankDetail({
           </div>
         )}
 
-        {/* Hybrid Question List: readable cards with Moodle-style management controls */}
+        {/* Hybrid Question List: content-first cards with administration controls */}
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+          <p className="text-sm text-slate-500">Showing {totalElements === 0 ? 0 : (page - 1) * pageSize + 1}–{Math.min(page * pageSize, totalElements)} of {totalElements} questions</p>
+          <span className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-sm font-medium text-slate-700"><FileQuestion size={15} /> List</span>
+        </div>
         <div className="space-y-2" role="list" aria-label="Questions in this bank">
           <div className="flex items-center gap-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
             <input
@@ -568,6 +572,11 @@ export function QuestionBankDetail({
               const isReady = question.complete ?? question.is_complete;
               const isSelected = selectedIds.has(question.id);
               const typeLabel = questionTypeOptions.find((item) => item.value === question.type)?.label ?? question.type;
+              const questionCode = "Q" + String(rowIndex).padStart(2, "0");
+              const optionCount = question.options?.length ?? 0;
+              const correctOptionCount = question.options?.filter((option) => option.isCorrect).length ?? 0;
+              const answerCount = question.answers?.length ?? 0;
+              const questionType = String(question.type).toUpperCase();
 
               return (
                 <article
@@ -587,7 +596,7 @@ export function QuestionBankDetail({
                         onChange={() => toggleOne(question.id)}
                         className="mt-1 h-4 w-4 cursor-pointer rounded border-slate-300 accent-primary"
                       />
-                      <span className="min-w-6 pt-0.5 text-xs font-medium tabular-nums text-slate-400">{rowIndex}.</span>
+                      <span className="min-w-8 pt-0.5 text-xs font-semibold tabular-nums text-slate-400">{questionCode}</span>
                     </div>
 
                     <button

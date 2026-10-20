@@ -236,7 +236,10 @@ export function ContentOverview({
                 key={unit.id}
                 unit={unit}
                 active={activeUnit?.id === unit.id}
-                onClick={() => setSelectedUnitId(unit.id)}
+                onClick={() => {
+                  setSelectedUnitId(unit.id);
+                  setExpandedSections([]);
+                }}
                 onOpen={() => onNavigate("unit", unit.id)}
               />
             ))}

@@ -367,7 +367,7 @@ export function QuestionBankDetail({
           >
             <option value="">All Types</option>
 
-            {questionTypeOptions.filter((item) => item.value !== "MATCHING" && item.value !== "CLOZE").map((item) => (
+            {questionTypeOptions.map((item) => (
               <option
                 key={item.value}
                 value={item.value}

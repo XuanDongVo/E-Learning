@@ -152,3 +152,13 @@ This file tracks implementation state and does not claim the above work is done.
 - Therefore the exception is not explained by a path mismatch in the checked branch. Spring is treating the collection path as a static resource, which commonly means the running process/deployment did not register this controller (e.g. stale/wrong server build, wrong running application/profile/context, or controller scan/startup issue). This cannot be conclusively distinguished from repository inspection alone.
 - Frontend now surfaces the actual API error text for bank-list failures and create-bank failures (commit `86fa5c13`) to avoid hiding the server response behind generic messages.
 - Runtime endpoint verification, backend tests and frontend lint/typecheck/build have not been executed from this session. Do not mark endpoint as runtime-verified until the user runs the server or CI proves it.
+
+## UI-1 / UI-2 continuation and API route diagnosis (2026-10-20)
+
+- Latest user runtime log confirms bearer JWT authentication and `ROLE_TEACHER`, then `NoResourceFoundException` for `/v1/content/question-banks`. This is consistent with no MVC handler being registered for that path; it is not evidence of a JWT/role denial.
+- Re-inspected `QuestionBankController`: `@RestController`, class mapping `/v1/content/question-banks`, and collection `@GetMapping` with `topicId` + optional `includeArchived` match the frontend URL. `ServerApplication` is rooted at package `e_learning.server`, which should component-scan the controller package. Source-level path mismatch has not been found.
+- Added temporary TRACE logging for `RequestMappingHandlerMapping` to `server/src/main/resources/application.properties` (commit `5be8b523`) so the next backend startup can show registered controller mappings. This changes logging only; runtime still needs restart and confirmation.
+- UI-1: changing Grade and Unit now clears expanded Section IDs to avoid carrying stale expansion state across hierarchy contexts (commits `afd8d709`, `573e7f15`).
+- UI-2: Question Bank update/status/archive mutations now invalidate the bank detail and topic's bank-list query prefix and show success/error toasts (commit `bb48c993`).
+- No backend URL/security workaround or explicit component-scan workaround was added because repository code does not justify one. Runtime root cause remains unverified.
+- Validation: no Maven test, frontend lint/typecheck/build or browser test was run in this GitHub-only session.

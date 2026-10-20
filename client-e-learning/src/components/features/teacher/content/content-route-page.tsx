@@ -15,10 +15,7 @@ import { QuestionEditor } from "./question-editor";
 import { BulkQuestionCreator } from "./components/bulk-create-question";
 import { ImportQuestions } from "./components/import-question";
 
-type ContentRoutePageProps = {
-  view: ContentView;
-  id?: number;
-};
+type ContentRoutePageProps = { view: ContentView; id?: number };
 
 const contentPaths: Record<Exclude<ContentView, "overview" | "bulk-create" | "import">, string> = {
   unit: "/teacher/content/units",
@@ -32,7 +29,6 @@ function QuestionRouteBreadcrumb({ questionId, bankId }: { questionId: number; b
   const questionQuery = useQuery({
     queryKey: QUERY_KEYS.contentQuestion(questionId),
     queryFn: async () => (await contentService.getQuestion(questionId)).data,
-    enabled: Boolean(questionId),
   });
   const resolvedBankId = bankId ?? questionQuery.data?.questionBankId;
   const bankQuery = useQuery({
@@ -55,7 +51,6 @@ function QuestionRouteBreadcrumb({ questionId, bankId }: { questionId: number; b
     queryFn: async () => (await contentService.getUnit(sectionQuery.data!.unitId)).data,
     enabled: Boolean(sectionQuery.data?.unitId),
   });
-
   const bankHref = resolvedBankId ? `/teacher/content/question-banks/${resolvedBankId}` : "/teacher/content/question-banks";
 
   return (
@@ -64,10 +59,8 @@ function QuestionRouteBreadcrumb({ questionId, bankId }: { questionId: number; b
       {unitQuery.data && <><span aria-hidden="true">/</span><Link href={`/teacher/content/units/${unitQuery.data.id}`} className="max-w-[180px] truncate rounded hover:text-primary hover:underline">{unitQuery.data.name}</Link></>}
       {sectionQuery.data && <><span aria-hidden="true">/</span><Link href={`/teacher/content/sections/${sectionQuery.data.id}`} className="max-w-[180px] truncate rounded hover:text-primary hover:underline">{sectionQuery.data.name}</Link></>}
       {topicQuery.data && <><span aria-hidden="true">/</span><Link href={`/teacher/content/topics/${topicQuery.data.id}`} className="max-w-[180px] truncate rounded hover:text-primary hover:underline">{topicQuery.data.name}</Link></>}
-      <span aria-hidden="true">/</span>
-      <Link href={bankHref} className="max-w-[220px] truncate rounded hover:text-primary hover:underline">{bankQuery.data?.name ?? "Question Bank"}</Link>
-      <span aria-hidden="true">/</span>
-      <span aria-current="page" className="font-semibold text-foreground">Edit Question</span>
+      <span aria-hidden="true">/</span><Link href={bankHref} className="max-w-[220px] truncate rounded hover:text-primary hover:underline">{bankQuery.data?.name ?? "Question Bank"}</Link>
+      <span aria-hidden="true">/</span><span aria-current="page" className="font-semibold text-foreground">Edit Question</span>
     </nav>
   );
 }
@@ -83,13 +76,11 @@ export function ContentRoutePage({ view, id }: ContentRoutePageProps) {
       router.push("/teacher/content");
       return;
     }
-
     if (nextView === "bulk-create") {
       if (!nextId) return;
       router.push(`/teacher/content/question-banks/${nextId}?mode=bulk-create&source=${source}`);
       return;
     }
-
     if (nextView === "import") {
       const bankId = nextId ?? id;
       if (!bankId) return;
@@ -97,14 +88,11 @@ export function ContentRoutePage({ view, id }: ContentRoutePageProps) {
       return;
     }
 
-    // Question Editor may request "bank" without an id on Cancel/Save.
-    // Resolve the bank from the current URL before falling back to Content.
     const resolvedId = nextView === "bank" && !nextId
       ? Number(searchParams.get("bankId")) || undefined
       : nextId ?? (nextView === view ? id : undefined);
     const basePath = contentPaths[nextView];
     if (!basePath) return;
-
     if (!resolvedId) {
       router.push("/teacher/content");
       return;
@@ -112,7 +100,8 @@ export function ContentRoutePage({ view, id }: ContentRoutePageProps) {
 
     if (nextView === "question") {
       const params = new URLSearchParams();
-      const currentBankId = Number(searchParams.get("bankId")) || undefined;
+      // When navigating from a bank, the current route id is the bank id.
+      const currentBankId = Number(searchParams.get("bankId")) || (view === "bank" ? id : undefined);
       if (currentBankId) params.set("bankId", String(currentBankId));
       if (bankName) params.set("bankName", bankName);
       if (source === "global") params.set("source", "global");
@@ -125,18 +114,11 @@ export function ContentRoutePage({ view, id }: ContentRoutePageProps) {
     router.push(`${basePath}/${resolvedId}${query}`);
   };
 
-  if (view === "overview") {
-    return <div className="space-y-6"><ContentOverview onNavigate={navigate} /></div>;
-  }
-
-  if (!id) {
-    return <div className="rounded-lg border border-border bg-card p-8 text-center text-sm text-muted-foreground">Missing content identifier.</div>;
-  }
-
+  if (view === "overview") return <div className="space-y-6"><ContentOverview onNavigate={navigate} /></div>;
+  if (!id) return <div className="rounded-lg border border-border bg-card p-8 text-center text-sm text-muted-foreground">Missing content identifier.</div>;
   if (view === "unit") return <div className="space-y-6"><UnitDetail unitId={id} onNavigate={navigate} /></div>;
   if (view === "section") return <div className="space-y-6"><SectionDetail sectionId={id} onNavigate={navigate} /></div>;
   if (view === "topic") return <div className="space-y-6"><TopicDetail topicId={id} onNavigate={navigate} /></div>;
-
   if (view === "bank") {
     if (mode === "bulk-create") return <div className="space-y-6"><BulkQuestionCreator bankId={id} bankName="" onNavigate={navigate} /></div>;
     if (mode === "import") return <div className="space-y-6"><ImportQuestions onNavigate={navigate} /></div>;
@@ -145,10 +127,5 @@ export function ContentRoutePage({ view, id }: ContentRoutePageProps) {
 
   const bankId = Number(searchParams.get("bankId")) || undefined;
   const bankName = searchParams.get("bankName") ?? undefined;
-  return (
-    <div className="space-y-6">
-      <QuestionRouteBreadcrumb questionId={id} bankId={bankId} />
-      <QuestionEditor questionId={id} bankName={bankName} onNavigate={navigate} />
-    </div>
-  );
+  return <div className="space-y-6"><QuestionRouteBreadcrumb questionId={id} bankId={bankId} /><QuestionEditor questionId={id} bankName={bankName} onNavigate={navigate} /></div>;
 }

@@ -162,3 +162,4 @@ This file tracks implementation state and does not claim the above work is done.
 - UI-2: Question Bank update/status/archive mutations now invalidate the bank detail and topic's bank-list query prefix and show success/error toasts (commit `bb48c993`).
 - No backend URL/security workaround or explicit component-scan workaround was added because repository code does not justify one. Runtime root cause remains unverified.
 - Validation: no Maven test, frontend lint/typecheck/build or browser test was run in this GitHub-only session.
+- Follow-up safety cleanup: mutation invalidation reads the Topic ID from `bankQuery.data` directly (commit `0cca6a37`) so callbacks do not depend on a later derived local variable.

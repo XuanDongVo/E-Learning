@@ -117,3 +117,11 @@ This file tracks implementation state and does not claim the above work is done.
 - [x] Frontend `npm run build`: passed; Next.js production build and TypeScript checks completed.
 - [x] Backend `./mvnw -B test`: passed with PostgreSQL service enabled.
 - [ ] Browser E2E and manual live-assignment checks are still outstanding; do not equate unit/build CI with complete runtime acceptance.
+
+## Teacher Content UI blueprint update (2026-10-20, branch `refactor/teacher-content-ui-routing`)
+
+- Added `.agent/ui/QUESTION_BANK_QUESTION_MANAGEMENT_BLUEPRINT.md`: screen-by-screen UI contract for Content Explorer, Topic/Question Bank Manager, Question Manager and read-only Question preview.
+- Added `.agent/plans/QUESTION_BANK_UI_PHASE_PLAN.md`: sequenced implementation into UI-1 Explorer, UI-2 Bank Manager, UI-3 Question filters/pagination, UI-4 navigation/consistency audit, and a separate future UI-5 editor planning gate.
+- This is a documentation/planning update only. No frontend runtime code, API, schema or migration was changed in this documentation commit.
+- Question Editor redesign/refactor is explicitly out of scope. Current backend limitations are recorded: no confirmed global bank search, Question reorder API, single-question delete API or server import API.
+- Validation: documentation paths and content were written through GitHub API; frontend lint/typecheck/build and browser verification have not been run in this session.

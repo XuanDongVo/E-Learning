@@ -155,3 +155,41 @@ The source contract matches: `GET /v1/content/question-banks?topicId=<topicId>` 
 - Commits: `3d94f7dc` (breadcrumbs and preview accessibility), `c576c211` (readable question type labels).
 - Remaining: browser-test direct refresh and Back/Forward, verify parent breadcrumbs under loading/error conditions, ensure filter/page restoration after editor navigation, audit responsive and keyboard/focus behavior, run lint/typecheck/build/tests, and verify Question Editor source remains unchanged.
 - No tests, lint, typecheck or build were run in this GitHub-only editing session.
+
+## Approved Global Question Bank plan (2026-10-20)
+
+**Owner-approved decisions**
+- Navigation: `Question Banks` is a child of the `Content` sidebar group, alongside `Content Explorer`; it is not a separate top-level area.
+- Search scope for v1: Question Bank name and description only. Do not implement cross-bank question-text search.
+- Archived visibility: default list excludes ARCHIVED (DRAFT and PUBLISHED remain visible); a deliberate Include archived toggle reveals archived banks.
+- Question Editor is explicitly out of scope and must remain unmodified.
+
+**Route and UI**
+- Add the global list route at `/teacher/content/question-banks`; retain the existing `/teacher/content/question-banks/{bankId}` detail route and current Topic-scoped bank list.
+- Sidebar Content becomes an expandable group with Content Explorer (`/teacher/content`) and Question Banks (`/teacher/content/question-banks`).
+- Global list provides dependent Grade → Unit → Section → Topic filters, server-side name/description search, Include archived, server pagination, and a row/card for each bank with hierarchy path, status, totalQuestions and readyQuestions.
+- URL query parameters are the source of truth for global list filters and pagination; changing a parent filter clears dependent child selections and resets page to 1.
+- Screen states: loading, retryable error, no banks at all, no matches for current filters, and list success. Creating a new bank from this global screen is deferred: bank creation requires a concrete Topic and already exists on Topic detail.
+
+**Backend contract prerequisite**
+- Existing `GET /v1/content/question-banks?topicId=...` remains unchanged for Topic detail.
+- Add `GET /v1/content/question-banks/browse` with optional `gradeId`, `unitId`, `sectionId`, `topicId`, `search`, `includeArchived` (default false), `page` (1-based default 1), and `size` (default 20).
+- Response uses the existing `PageResponse` envelope around a global-bank DTO containing bank id/name/description/status/displayOrder/createdAt/updatedAt, topic id/name, section id/name, unit id/code/name, grade id/name, totalQuestions and readyQuestions.
+- Filtering, search and pagination must execute in the database, not by fetching every Topic's banks and filtering in the browser. Avoid per-row count-query amplification; use a bounded/projection/count strategy for the current page.
+- Archived toggle includes ARCHIVED as well as DRAFT/PUBLISHED; default excludes ARCHIVED.
+- No schema migration is expected. Add focused repository/service/controller tests where existing test infrastructure permits.
+
+**Execution order**
+1. Implement and test the paginated backend browse query/DTO/endpoint, preserving the existing Topic-scoped API.
+2. Add the typed frontend service and query key for global browsing; wire dependent dropdown options through existing Grade/Unit/Section/Topic list APIs.
+3. Add the global screen and route; parse/write filters and pagination in the URL; reuse project design tokens and current visual components.
+4. Add the nested Content navigation and vi/en labels; ensure active-state behavior for the global route and existing content routes.
+5. Run relevant backend/frontend checks where executable, inspect the final diff to confirm Question Editor is unchanged, and record exact validation results.
+
+**Acceptance criteria**
+- Global screen can be opened directly, refreshed and navigated with Back/Forward without losing URL-backed filter context.
+- Parent/child dropdowns remain consistent and changing a parent clears invalid descendant filters.
+- Name/description search, hierarchy filters, includeArchived and server pagination all map to the existing/new confirmed contract.
+- Counts and hierarchy metadata are server-provided; no fake data, global cross-question search, or N+1-per-row count amplification.
+- Existing Topic detail and bank detail routes remain operational; Question Editor source/payload/navigation behavior remains untouched.
+- Do not mark done unless the build/test outcomes are recorded.

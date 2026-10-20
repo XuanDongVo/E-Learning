@@ -186,3 +186,13 @@ This file tracks implementation state and does not claim the above work is done.
 - Commits: `3d94f7dc` (breadcrumbs/preview accessibility), `c576c211` (readable type labels); plan update `be059818`.
 - Still outstanding: route refresh and Back/Forward browser checks, restoration of list filters/page when returning from editor navigation, focus trap/restore audit, responsive/keyboard regression checks, lint/typecheck/build/tests, and a regression diff confirming Question Editor source is unchanged.
 - Validation not run in this GitHub-only editing session. UI-4 is partial, not complete; no backend schema/API changes were made.
+
+
+## Global Question Bank — implementation slice (2026-10-20)
+
+- Added the approved global browse screen at `/teacher/content/question-banks`; existing bank detail route `/teacher/content/question-banks/[bankId]` and Topic-scoped bank endpoint remain unchanged.
+- Added server endpoint `GET /v1/content/question-banks/browse`: optional hierarchy IDs, case-insensitive search over bank name/description only, server-side pagination, default DRAFT/PUBLISHED visibility, and opt-in Archived visibility.
+- Browse response supplies Grade → Unit → Section → Topic labels and question/ready counts. Counts are aggregated for the current page in one grouped query to avoid a count query per bank.
+- Frontend uses URL query parameters for hierarchy filters, search, archive toggle and page; changing a parent filter clears descendants. Sidebar now nests Content Explorer and Question Banks under Content. Added VI/EN labels for the navigation.
+- Question Editor files were not part of the implementation edits; a final regression diff is still required.
+- Validation not run: Maven tests, frontend lint, Vitest, typecheck/build, browser refresh/Back/Forward, filter cascade and Archived visibility remain unverified. Treat implementation as committed but not verified.

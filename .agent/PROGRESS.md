@@ -176,3 +176,13 @@ This file tracks implementation state and does not claim the above work is done.
 
 - Follow-up UI-3 safety: disabled the Question Bank Import toolbar action and labeled it “Import (coming soon)” because the linked import screen currently fabricates preview rows and simulates validation/import with timers; no real import API workflow is confirmed. Commit: `8f2b6046`.
 - Question Bank mutation invalidation cleanup: status/archive/update callbacks now use the narrowed `bankQuery.data.topicId` source consistently when invalidating the Topic bank list (commit `7b79c271`). This is part of the UI-2 cache invalidation audit; validation is still outstanding.
+
+
+## Teacher Content UI — UI-4 navigation/consistency slice (2026-10-20)
+
+- Question Bank detail now fetches parent Topic, Section and Unit metadata using existing query keys/services and renders a breadcrumb back through those parent views. No route or API contract changes were introduced.
+- Question preview is now exposed as an accessible dialog with a labeled title, `aria-modal`, viewport-bounded internal scrolling, and Escape-to-close behavior.
+- Question type labels in the list and preview now use the existing human-readable option labels, falling back to the raw server value for unknown/future enum values. Filter values remain unchanged.
+- Commits: `3d94f7dc` (breadcrumbs/preview accessibility), `c576c211` (readable type labels); plan update `be059818`.
+- Still outstanding: route refresh and Back/Forward browser checks, restoration of list filters/page when returning from editor navigation, focus trap/restore audit, responsive/keyboard regression checks, lint/typecheck/build/tests, and a regression diff confirming Question Editor source is unchanged.
+- Validation not run in this GitHub-only editing session. UI-4 is partial, not complete; no backend schema/API changes were made.

@@ -62,6 +62,27 @@ export interface ContentTopic {
   createdAt: string;
   updatedAt: string;
 }
+export interface GlobalQuestionBank extends ContentQuestionBank {
+  sectionId: number;
+  sectionName: string;
+  unitId: number;
+  unitCode: string;
+  unitName: string;
+  gradeId: number;
+  gradeName: string;
+}
+
+export interface GlobalQuestionBankFilters {
+  gradeId?: number;
+  unitId?: number;
+  sectionId?: number;
+  topicId?: number;
+  search?: string;
+  includeArchived?: boolean;
+  page?: number;
+  size?: number;
+}
+
 export interface ContentQuestionBank {
   id: number;
   topicId: number;

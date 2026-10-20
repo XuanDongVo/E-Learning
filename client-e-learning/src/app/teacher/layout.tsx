@@ -7,6 +7,8 @@ import {
   Bell,
   BookOpen,
   CircleHelp,
+  ChevronDown,
+  ChevronRight,
   ClipboardList,
   GraduationCap,
   LayoutDashboard,
@@ -17,17 +19,16 @@ import {
   X,
   type LucideIcon,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { AuthGuard } from "@/components/auth/auth-guard";
 import { LocaleProvider, useLocale } from "@/components/i18n/locale-provider";
 
-const navigation: { key: "overview" | "classes" | "students" | "content" | "activities" | "assignments" | "analytics"; href: string; icon: LucideIcon; badge?: string }[] = [
+const navigation: { key: "overview" | "classes" | "students" | "activities" | "assignments" | "analytics"; href: string; icon: LucideIcon; badge?: string }[] = [
   { key: "overview", href: "/teacher", icon: LayoutDashboard },
   { key: "classes", href: "/teacher/classes", icon: Users },
   { key: "students", href: "/teacher/students", icon: Users },
-  { key: "content", href: "/teacher/content", icon: BookOpen },
   { key: "activities", href: "/teacher/activities", icon: ClipboardList },
   { key: "assignments", href: "/teacher/assignments", icon: ClipboardList, badge: "8" },
   { key: "analytics", href: "/teacher/reports", icon: BarChart3 },
@@ -42,6 +43,13 @@ function TeacherSidebar({
 }) {
   const pathname = usePathname();
   const { t } = useLocale();
+  const [contentExpanded, setContentExpanded] = useState(pathname.startsWith("/teacher/content"));
+  const questionBanksActive = pathname.startsWith("/teacher/content/question-banks");
+  const explorerActive = pathname.startsWith("/teacher/content") && !questionBanksActive;
+
+  useEffect(() => {
+    if (pathname.startsWith("/teacher/content")) setContentExpanded(true);
+  }, [pathname]);
 
   return (
     <>
@@ -107,6 +115,19 @@ function TeacherSidebar({
               </Link>
             );
           })}
+          <div className="space-y-1">
+            <button type="button" aria-expanded={contentExpanded} onClick={() => setContentExpanded((expanded) => !expanded)} className={`flex h-9 w-full items-center gap-3 rounded-lg px-2.5 text-[0.8125rem] font-semibold transition-colors ${explorerActive || questionBanksActive ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-muted hover:text-foreground"}`}>
+              <BookOpen className="size-[1rem]" />
+              <span className="flex-1 text-left">{t("content")}</span>
+              {contentExpanded ? <ChevronDown className="size-4" /> : <ChevronRight className="size-4" />}
+            </button>
+            {contentExpanded && (
+              <div className="ml-4 space-y-1 border-l border-border pl-3">
+                <Link href="/teacher/content" onClick={onClose} aria-current={explorerActive ? "page" : undefined} className={`flex h-8 items-center rounded-md px-2.5 text-xs font-medium ${explorerActive ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-muted hover:text-foreground"}`}>{t("contentExplorer")}</Link>
+                <Link href="/teacher/content/question-banks" onClick={onClose} aria-current={questionBanksActive ? "page" : undefined} className={`flex h-8 items-center rounded-md px-2.5 text-xs font-medium ${questionBanksActive ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-muted hover:text-foreground"}`}>{t("questionBanksNav")}</Link>
+              </div>
+            )}
+          </div>
         </nav>
 
         <div className="border-t border-sidebar-border p-2.5">

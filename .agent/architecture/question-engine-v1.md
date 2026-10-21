@@ -1,6 +1,6 @@
 # Question Engine Architecture v1
 
-**Status: ACCEPTED — implementation deferred until Phase 7 gates are met**  
+**Status: ACCEPTED — core spec/handler/factory code exists; end-to-end persistence, runtime and snapshot guarantees remain to be verified.**  
 **Audit branch:** feature/phase-7-assigment  
 **Migration baseline observed:** V30  
 **Scope:** Question definition, validation, answer parsing, grading, persistence mapping, runtime snapshots, Assignment/Activity integration and frontend authoring.
@@ -308,3 +308,26 @@ Persist Question Engine-calculated per-part status, earned/possible points and o
 Each scored question defaults to 1 possible point and teachers may customize points per Assignment item. CLOZE/MATCHING part points default to equal split and may be edited while the sum equals aggregate question points. The server calculates earned points from Question Engine score fractions; percentage = earned / possible scored points × 100. Examples are excluded; readiness rejects zero possible points. show_score_after_submit (default true) independently controls score display, while show_answers_after_submit controls answer/explanation reveal.
 
 Assignment Composition is defined in ADR 0024 and `.agent/architecture/assignment-composition-v1.md`. Re-audit migrations before implementation; never modify V1–V30.
+
+
+## 11. Audit bổ sung: MATCHING/CLOZE và Content Sharing (2026-10-21)
+
+Code hiện có `QuestionWriteRequest.definition`, `QuestionDefinitionRequest`, `QuestionSpecRequestFactory`, `MatchingSpec/Handler`, `ClozeSpec/Handler` và test cơ bản. Vì vậy, mô tả cũ rằng handler/registry chưa hiện diện không còn chính xác. Tuy nhiên, các thành phần này chưa đủ để kết luận full vertical slice đã hoàn thành.
+
+### MATCHING — hợp đồng cần sửa trước khi mở rộng
+- Hiện tại `MatchingSpec.answerPool` dùng `List<String>` và `expectedPairs` map row key sang answer text. Text không phải identity ổn định: duplicate text và sửa nội dung làm mapping mơ hồ.
+- Chuyển sang answer entry có stable key/ID; expected pair phải trỏ bằng entry key. UI ID của pool entry phải được giữ xuyên qua request/response và Composition reference.
+- `shuffleAnswers` có ở frontend payload nhưng chưa được biểu diễn trong DTO/spec được audit. Phải đưa vào canonical contract hoặc bỏ khỏi UI.
+- Nếu Matching dùng POOL block thuộc Assignment, reference tới block là Composition concern, không nhúng ID block Assignment vào Question Bank QuestionSpec. Runtime snapshot cần resolve pool và expected entry keys bất biến.
+- Chốt chính sách answer entry có được tái sử dụng ở nhiều row không; validate và test theo chính sách đó.
+
+### CLOZE — invariant cần bổ sung
+- `ClozeSpec` hiện có hai list độc lập: segments và blanks. Bắt buộc `segments.size() == blanks.size() + 1`, key blank duy nhất, mỗi blank có ít nhất một accepted answer hợp lệ.
+- Test hiện có tạo 1 segment với 2 blanks, nên test fixture chưa phản ánh invariant đúng; sửa test đồng thời thêm test cấu trúc không hợp lệ.
+- Stable blank key và thứ tự phải sống sót qua edit/reorder/save/reload. Không dùng prompt string hoặc index hiển thị làm identity.
+- Reference tới Passage dùng chung phải được lưu ở Assignment Composition, không nhúng database ID của block vào QuestionSpec tái sử dụng.
+
+### Composition boundary
+- Xem ADR 0024 và `.agent/plans/CONTENT_SHARING_MATCHING_CLOZE_AUDIT.md` để biết hợp đồng Content Sharing: membership trong group và semantic Question–Block references là hai quan hệ riêng.
+- Các handler hiện tại chia điểm đều và trả per-part results; việc teacher override điểm part theo ADR 0026 cần contract riêng ở Composition và snapshot, không phải thay đổi canonical QuestionSpec.
+- Trước khi mở UI tạo Matching/Cloze, cần kiểm tra create/read/update mapping, student projection không lộ đáp án, runtime snapshot, submit grading, migration và E2E. Không bật chỉ dựa vào enum/spec/handler.

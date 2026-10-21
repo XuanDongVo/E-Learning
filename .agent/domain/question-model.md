@@ -39,9 +39,18 @@ See `.agent/architecture/question-engine-v1.md`:
 - separate TeacherQuestionView and StudentQuestionView;
 - type-specific frontend authoring/validation/preview registry.
 
-Architecture is accepted by ADR 0023, but handler/registry/snapshot implementation is not yet present. MATCHING and CLOZE are accepted target types and require a full vertical slice. Assignment Composition is separate and defined in .agent/architecture/assignment-composition-v1.md.
+Architecture is accepted by ADR 0023. Core QuestionSpec, compound handlers, request factory and focused tests exist in code; full persistence/read round-trip, frontend authoring, student runtime, immutable snapshot and E2E verification remain incomplete/unverified. MATCHING and CLOZE require a complete vertical slice. Assignment Composition is separate and defined in .agent/architecture/assignment-composition-v1.md.
 
 
 ## Grading result
 
 Each PartGrade contains stable partKey, status, earned/possible weight and optional normalizedSubmittedValue. Assignment persistence additionally records earned/possible points derived from Composition points. Normalized values support wrong-answer distribution but are never returned in an in-progress student DTO. Activity still does not persist detailed answer/part history.
+
+
+## Audit bổ sung — compound questions và Content Sharing (2026-10-21)
+
+- MATCHING hiện dùng text làm khóa answer pool và expected pair; cần stable entry key/ID, nhất là khi dùng POOL block.
+- `shuffleAnswers` chưa được chứng minh là round-trip trong backend QuestionSpec/DTO.
+- CLOZE cần invariant `segments = blanks + 1`; blank keys phải ổn định, duy nhất, có accepted answer hợp lệ.
+- Question có thể độc lập hoặc là thành viên Content Sharing group. Membership phục vụ cấu trúc UI; tham chiếu tới PASSAGE/POOL/MEDIA/INSTRUCTIONS là quan hệ Composition riêng.
+- Chi tiết phát hiện, schema mục tiêu và acceptance criteria nằm trong `.agent/plans/CONTENT_SHARING_MATCHING_CLOZE_AUDIT.md`.

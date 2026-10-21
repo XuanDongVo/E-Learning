@@ -78,3 +78,11 @@ This file tracks implementation state and does not claim the above work is done.
 - The current backend Question Engine does not safely accept MATCHING/CLOZE authoring payloads. These tools are hidden from new-item menus; if an existing Assignment contains a type the adapter cannot safely represent, loading stops with a visible error instead of silently rewriting it.
 - Media blocks now upload an image through the existing media API and persist `assetId`, alt text, caption and preview URL; asset IDs are required by server validation.
 - No build, lint, test, migration validation or browser end-to-end run has been executed/verified in this session.
+
+## Documentation update (2026-10-21) — Question Pooling proposal
+
+- Added `.agent/plans/QUESTION_POOLING_SPEC.md` and `.agent/plans/QUESTION_POOLING_IMPLEMENTATION_PLAN.md` as a proposed extension to Assignment Composition.
+- Added links and the proposal's non-normative status to `.agent/README.md`.
+- The proposal keeps `QUESTION_POOL` (random draw of candidate questions for an AssessmentAttempt) distinct from the existing `POOL` answer-entry block used by MATCHING. It proposes server-side draw without replacement, immutable attempt snapshots, equal total points across candidates, selected-only scoring/analytics, and no re-draw on refresh/autosave/submit/timeout.
+- **Owner approval and a new ADR are still required.** These documents do not change the accepted Phase 7B contract or authorize implementation.
+- The supplied ChatGPT share link could not be retrieved through the available path in this session, so the proposal is based on the repository's current ADRs/specs and needs reconciliation against the shared conversation. No application code or migration was changed, and no test/build was run for this documentation-only update.

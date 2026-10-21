@@ -3,7 +3,6 @@
 Entry point: AGENTS.md.
 
 ## Canonical structure
-
 Required Phase 7B plan: `.agent/plans/PHASE_7B_IMPLEMENTATION_MIGRATION_PLAN.md`
 
 .agent/
@@ -55,9 +54,16 @@ Question Engine v1 is accepted by ADR 0023 (D1–D8); implementation is not yet 
 
 Before writing Phase 7B code, read `.agent/plans/PHASE_7B_IMPLEMENTATION_MIGRATION_PLAN.md` together with ADR 0023–0026, `.agent/architecture/question-engine-v1.md`, `.agent/architecture/assignment-composition-v1.md` and the active Phase 7 spec. ADR 0023 is Accepted, ADR 0025 governs Assignment lock/Activity update semantics, and ADR 0026 governs automatic Assignment scoring and score visibility. Assignment locks after its first attempt starts and must be cloned to change; Activity edits remain allowed and apply to future sessions while existing sessions retain their snapshot.
 
+### Proposed extension: Question Pooling (not yet approved)
+
+- Product/technical proposal: `.agent/plans/QUESTION_POOLING_SPEC.md`
+- Gated implementation plan: `.agent/plans/QUESTION_POOLING_IMPLEMENTATION_PLAN.md`
+- Both documents are **PROPOSED, not normative**. Do not implement until the owner approves the behavior and a new ADR is recorded.
+- In these documents, `QUESTION_POOL` means a Composition container that draws candidate questions for an AssessmentAttempt. It is intentionally distinct from the existing `POOL` answer-entry block used by MATCHING. Do not change the existing `POOL` discriminator by implication.
+- The shared ChatGPT link provided for context was not readable through the available retrieval path in this session. Reconcile these proposals with that conversation before treating them as its definitive interpretation.
+
 Start by reading PROGRESS.md and the task-relevant ADR/spec/domain files.
 Before coding, resolve contradictions top-down through ADRs and active specs.
 At the end of a task, update PROGRESS.md with what was changed and what was not verified.
-
 
 Assignment score contract: each scored question defaults to 1 point and can be customized per Assignment item. Assignment is automatically graded on submit/timeout; there is no manual grading workflow. `show_score_after_submit` (default TRUE) controls immediate score display; `show_answers_after_submit` independently controls answer/explanation visibility. Composition order comes from persisted section/item/member positions, never question_id order except for legacy backfill.

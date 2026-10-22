@@ -87,7 +87,16 @@ public class QuestionPersistenceService {
     }
 
     private String serializeDefinition(QuestionWriteRequest request) {
-        if (request.getDefinition() == null || (request.getType() != QuestionType.MATCHING && request.getType() != QuestionType.CLOZE)) return null;
+        if (request.getDefinition() == null) return null;
+
+        QuestionType type = request.getType();
+        boolean supportsDefinition = type == QuestionType.MATCHING
+                || type == QuestionType.CLOZE
+                || type == QuestionType.TYPE_ANSWER
+                || type == QuestionType.FILL_IN_BLANK;
+
+        if (!supportsDefinition) return null;
+
         try {
             return objectMapper.writeValueAsString(request.getDefinition());
         } catch (Exception e) {

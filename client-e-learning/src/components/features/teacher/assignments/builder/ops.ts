@@ -1,6 +1,7 @@
 import type {
   Assignment,
   BlockItem,
+  ClozeContent,
   ID,
   InsertTarget,
   Item,
@@ -292,7 +293,18 @@ export function createItem(tool: ToolKey): Item {
     case "TEXT_INPUT":
       return { id, kind: "question", config, content: { type: "TEXT_INPUT", prompt: "", acceptedAnswers: [""], caseSensitive: false } };
     case "MULTI_BLANKS":
-      return { id, kind: "question", config, content: { type: "MULTI_TEXT_INPUT", prompt: "", caseSensitive: false, blanks: [] } };
+      return {
+        id,
+        kind: "question",
+        config,
+        content: {
+          type: "CLOZE",
+          prompt: "{{1}}",
+          caseSensitive: false,
+          segments: [{ id: uid("seg"), text: "" }, { id: uid("seg"), text: "" }],
+          blanks: [{ id: uid("bl"), key: "blank-1", acceptedAnswers: [""] }],
+        },
+      };
     // case "MATCHING":
     //   return { id, kind: "question", config, content: { type: "MATCHING", prompt: "",  items: [],answers: [],shuffleAnswers: true,} };
     case "MATCHING":
@@ -365,6 +377,54 @@ export function computeNumbering(a: Assignment) {
 }
 export function blankTokens(text: string): string[] {
   return [...text.matchAll(/\{\{(.+?)\}\}/g)].map((m) => m[1]);
+}
+
+/** Split the authored Cloze prompt around its blank markers. */
+export function clozeSegmentsFromPrompt(prompt: string): string[] {
+  const segments: string[] = [];
+  const marker = /\{\{(.+?)\}\}/g;
+  let lastIndex = 0;
+  for (const match of prompt.matchAll(marker)) {
+    const index = match.index ?? lastIndex;
+    segments.push(prompt.slice(lastIndex, index));
+    lastIndex = index + match[0].length;
+  }
+  segments.push(prompt.slice(lastIndex));
+  return segments;
+}
+
+/** Keep Cloze segments and answer sets derived from the canonical prompt. */
+export function syncClozeContent(content: ClozeContent): ClozeContent {
+  const tokens = blankTokens(content.prompt);
+  const segmentTexts = clozeSegmentsFromPrompt(content.prompt);
+  const numericKeyCounts = new Map<string, number>();
+  for (const token of tokens) {
+    if (/^\d+$/.test(token.trim())) {
+      const key = `blank-${Number(token.trim())}`;
+      numericKeyCounts.set(key, (numericKeyCounts.get(key) ?? 0) + 1);
+    }
+  }
+  const keys = tokens.map((token, index) => {
+    const trimmed = token.trim();
+    const key = `blank-${Number(trimmed)}`;
+    return /^\d+$/.test(trimmed) && numericKeyCounts.get(key) === 1 ? key : `blank-${index + 1}`;
+  });
+  const byKey = new Map(content.blanks.map((blank) => [blank.key, blank]));
+  return {
+    ...content,
+    segments: segmentTexts.map((text, index) => ({
+      id: content.segments[index]?.id ?? uid("seg"),
+      text,
+    })),
+    blanks: keys.map((key, index) => {
+      const previous = byKey.get(key) ?? content.blanks[index];
+      return {
+        id: previous?.id ?? uid("bl"),
+        key,
+        acceptedAnswers: previous ? [...previous.acceptedAnswers] : [""],
+      };
+    }),
+  };
 }
 export function blankNumbers(text: string): number[] {
   return blankTokens(text).map((t, i) =>

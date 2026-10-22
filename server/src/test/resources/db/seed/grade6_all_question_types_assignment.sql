@@ -89,7 +89,7 @@ VALUES
  '[{"rawValue":"library"}]', TRUE),
 
 ('pronunciation', 'TYPE_ANSWER', 'MEDIUM',
- 'Pronunciation: In the word “fi̲sh̲”, the underlined letters “sh” make which sound? Type the two-letter spelling.',
+ 'Pronunciation: In the word “fis̲h̲”, the underlined letters “sh” make which sound? Type the two-letter spelling.',
  'The letters sh represent the /ʃ/ sound.',
  NULL, 'CASE_INSENSITIVE_TRIM', NULL, '[]',
  '[{"rawValue":"sh"}]', TRUE),

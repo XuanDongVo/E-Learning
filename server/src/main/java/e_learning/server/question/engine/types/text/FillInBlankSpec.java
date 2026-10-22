@@ -10,7 +10,7 @@ public record FillInBlankSpec(QuestionSpec.QuestionCommon common,
     public FillInBlankSpec {
         common = Objects.requireNonNull(common);
         acceptedAnswers = List.copyOf(acceptedAnswers == null ? List.of() : acceptedAnswers);
-        matchingMode = matchingMode == null ? MatchingMode.CASE_INSENSITIVE_TRIM : matchingMode;
+        matchingMode = Objects.requireNonNull(matchingMode, "matchingMode must be normalized before creating a spec");
     }
 
     public QuestionType type() {

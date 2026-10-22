@@ -272,24 +272,16 @@ function InlineEditor({ q }: { q: QuestionItem }) {
         </div>
       )}
       {c.type === "MATCHING" && (
-        <div className="space-y-2 rounded border bg-muted/20 p-2">
-          <Textarea className={input} rows={2} value={c.prompt} onChange={(e) => edit((x) => { if (x.type === "MATCHING") x.prompt = e.target.value; })} placeholder="Matching instructions" />
-          {c.items.map((item, index) => (
-            <div key={item.id} className="grid grid-cols-[1fr_1fr] gap-2">
-              <Input className={input} value={item.prompt} placeholder={`Item ${index + 1}`} onChange={(e) => edit((x) => { if (x.type === "MATCHING") x.items[index].prompt = e.target.value; })} />
-              <select className={input} value={item.correctAnswerId ?? ""} aria-label={`Correct answer for item ${index + 1}`} onChange={(e) => edit((x) => { if (x.type === "MATCHING") x.items[index].correctAnswerId = e.target.value || null; })}>
-                <option value="">Select answer</option>
-                {c.answers.map((answer) => <option key={answer.id} value={answer.id}>{answer.text || "Untitled answer"}</option>)}
-              </select>
-            </div>
-          ))}
-          {c.answers.map((answer, index) => (
-            <Input key={answer.id} className={input} value={answer.text} placeholder={`Answer ${index + 1}`} onChange={(e) => edit((x) => { if (x.type === "MATCHING") x.answers[index].text = e.target.value; })} />
-          ))}
-          <label className="flex items-center justify-between text-xs">
-            Shuffle answers
-            <Switch checked={c.shuffleAnswers} onCheckedChange={(value) => edit((x) => { if (x.type === "MATCHING") x.shuffleAnswers = value; })} />
-          </label>
+        <div className="space-y-1 rounded border bg-muted/20 p-2 text-xs">
+          <p>{c.prompt || "Matching instructions"}</p>
+          <p>
+            Answer pool: {pool?.block.type === "POOL" ? pool.block.title || "Answer Pool" : "Not selected"}
+          </p>
+          <p>
+            Correct entry: {pool?.block.type === "POOL" && entryIdx >= 0
+              ? `${ops.letter(entryIdx)}. ${pool.block.entries[entryIdx].text}`
+              : "Not selected"}
+          </p>
         </div>
       )}
       <div className="grid gap-2 sm:grid-cols-2">

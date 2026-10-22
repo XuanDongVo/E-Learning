@@ -1,4 +1,4 @@
-package e_learning.server.question.dto;
+package e_learning.server.question.dto.request;
 
 import lombok.Data;
 

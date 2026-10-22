@@ -1,6 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   CheckCircle2,
@@ -39,6 +41,8 @@ export function QuestionBankDetail({
   onNavigate: (view: ContentView, id?: number, bankName?: string) => void;
 }) {
   const client = useQueryClient();
+  const searchParams = useSearchParams();
+  const source = searchParams.get("source") === "global" ? "global" : "content";
 
   const [editOpen, setEditOpen] = useState(false);
 
@@ -47,6 +51,7 @@ export function QuestionBankDetail({
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [selectedType, setSelectedType] = useState<string>("");
   const [selectedDifficulty, setSelectedDifficulty] = useState<string>("");
+  const [selectedCompleteness, setSelectedCompleteness] = useState<"" | "complete" | "incomplete">("");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
 
@@ -77,6 +82,7 @@ export function QuestionBankDetail({
     debouncedSearch,
     selectedType,
     selectedDifficulty,
+    selectedCompleteness,
   });
   if (
     filterKey.bankId !== bankId ||
@@ -84,7 +90,8 @@ export function QuestionBankDetail({
     filterKey.pageSize !== pageSize ||
     filterKey.debouncedSearch !== debouncedSearch ||
     filterKey.selectedType !== selectedType ||
-    filterKey.selectedDifficulty !== selectedDifficulty
+    filterKey.selectedDifficulty !== selectedDifficulty ||
+    filterKey.selectedCompleteness !== selectedCompleteness
   ) {
     setFilterKey({
       bankId,
@@ -93,6 +100,7 @@ export function QuestionBankDetail({
       debouncedSearch,
       selectedType,
       selectedDifficulty,
+      selectedCompleteness,
     });
     setSelectedIds(new Set());
   }
@@ -110,6 +118,7 @@ export function QuestionBankDetail({
       search: debouncedSearch,
       type: selectedType || undefined,
       difficulty: selectedDifficulty || undefined,
+      isComplete: selectedCompleteness === "" ? undefined : selectedCompleteness === "complete",
       page,
       size: pageSize,
     }),
@@ -120,6 +129,7 @@ export function QuestionBankDetail({
           search: debouncedSearch || undefined,
           type: selectedType || undefined,
           difficulty: selectedDifficulty || undefined,
+          isComplete: selectedCompleteness === "" ? undefined : selectedCompleteness === "complete",
           page,
           size: pageSize,
         })
@@ -128,10 +138,36 @@ export function QuestionBankDetail({
   });
 
   const bank = bankQuery.data;
+
+  const topicQuery = useQuery({
+    queryKey: QUERY_KEYS.contentTopic(bank?.topicId ?? 0),
+    queryFn: async () => (await contentService.getTopic(bank!.topicId)).data,
+    enabled: Boolean(bank?.topicId),
+  });
+  const sectionQuery = useQuery({
+    queryKey: QUERY_KEYS.contentSection(topicQuery.data?.sectionId ?? 0),
+    queryFn: async () => (await contentService.getSection(topicQuery.data!.sectionId)).data,
+    enabled: Boolean(topicQuery.data?.sectionId),
+  });
+  const unitQuery = useQuery({
+    queryKey: QUERY_KEYS.contentUnit(sectionQuery.data?.unitId ?? 0),
+    queryFn: async () => (await contentService.getUnit(sectionQuery.data!.unitId)).data,
+    enabled: Boolean(sectionQuery.data?.unitId),
+  });
+
+  useEffect(() => {
+    if (!previewQuestion) return;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setPreviewQuestion(null);
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [previewQuestion]);
+
   const pageData = questionsQuery.data;
   const questionsList = pageData?.items ?? [];
   const totalElements = pageData?.totalElements ?? 0;
-  const totalPages = pageData?.totalPages ?? 1;
+  const totalPages = Math.max(1, pageData?.totalPages ?? 1);
 
   // Selection helpers
   const pageIds = questionsList.map((q) => q.id);
@@ -184,20 +220,42 @@ export function QuestionBankDetail({
       contentService.updateQuestionBankStatus(bankId, {
         status: nextStatus,
       }),
-    onSuccess: () => {
-      client.invalidateQueries({
-        queryKey: QUERY_KEYS.contentQuestionBank(bankId),
-      });
+    onSuccess: async () => {
+      await Promise.all([
+        client.invalidateQueries({
+          queryKey: QUERY_KEYS.contentQuestionBank(bankId),
+        }),
+        ...(bankQuery.data?.topicId
+          ? [client.invalidateQueries({
+              queryKey: QUERY_KEYS.contentQuestionBanks(bankQuery.data.topicId),
+            })]
+          : []),
+      ]);
+      toast.success("Question bank status updated");
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : "Could not update question bank status");
     },
   });
 
   // Archive mutation
   const archiveMutation = useMutation({
     mutationFn: () => contentService.archiveQuestionBank(bankId),
-    onSuccess: () => {
-      client.invalidateQueries({
-        queryKey: QUERY_KEYS.contentQuestionBank(bankId),
-      });
+    onSuccess: async () => {
+      await Promise.all([
+        client.invalidateQueries({
+          queryKey: QUERY_KEYS.contentQuestionBank(bankId),
+        }),
+        ...(bankQuery.data?.topicId
+          ? [client.invalidateQueries({
+              queryKey: QUERY_KEYS.contentQuestionBanks(bankQuery.data.topicId),
+            })]
+          : []),
+      ]);
+      toast.success("Question bank archived");
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : "Could not archive question bank");
     },
   });
 
@@ -205,9 +263,22 @@ export function QuestionBankDetail({
   const update = useMutation({
     mutationFn: (payload: UpdateQuestionBankRequest) =>
       contentService.updateQuestionBank(bankId, payload),
-    onSuccess: () => {
-      bankQuery.refetch();
+    onSuccess: async () => {
+      await Promise.all([
+        client.invalidateQueries({
+          queryKey: QUERY_KEYS.contentQuestionBank(bankId),
+        }),
+        ...(bankQuery.data?.topicId
+          ? [client.invalidateQueries({
+              queryKey: QUERY_KEYS.contentQuestionBanks(bankQuery.data.topicId),
+            })]
+          : []),
+      ]);
       setEditOpen(false);
+      toast.success("Question bank updated");
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : "Could not save question bank");
     },
   });
 
@@ -267,6 +338,24 @@ export function QuestionBankDetail({
         }
       />
 
+      <nav aria-label="Breadcrumb" className="mt-3 flex flex-wrap items-center gap-1.5 text-sm text-muted-foreground">
+        {source === "global" ? (
+          <>
+            <Link href="/teacher/content/question-banks" className="rounded hover:text-primary hover:underline">Question Banks</Link>
+            <span aria-hidden="true">/</span>
+          </>
+        ) : (
+          <button type="button" onClick={() => onNavigate("overview")} className="rounded hover:text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+            Content
+          </button>
+        )}
+        {unitQuery.data && <><span aria-hidden="true">/</span><Link href={`/teacher/content/units/${unitQuery.data.id}`} className="max-w-[180px] truncate rounded hover:text-primary hover:underline">{unitQuery.data.name}</Link></>}
+        {sectionQuery.data && <><span aria-hidden="true">/</span><Link href={`/teacher/content/sections/${sectionQuery.data.id}`} className="max-w-[180px] truncate rounded hover:text-primary hover:underline">{sectionQuery.data.name}</Link></>}
+        {topicQuery.data && <><span aria-hidden="true">/</span><Link href={`/teacher/content/topics/${topicQuery.data.id}`} className="max-w-[180px] truncate rounded hover:text-primary hover:underline">{topicQuery.data.name}</Link></>}
+        <span aria-hidden="true">/</span>
+        <span aria-current="page" className="max-w-[220px] truncate font-semibold text-foreground">{bank?.name ?? "Question Bank"}</span>
+      </nav>
+
       {editOpen && (
         <div className="mt-5">
           <ContentEditor
@@ -291,10 +380,26 @@ export function QuestionBankDetail({
         </div>
       )}
 
-      <section className="mb-5 overflow-x-auto rounded-[9px] border border-slate-200 bg-white p-3 shadow-[0_5px_18px_rgba(94,134,173,0.04)] sm:p-[18px]">
+      <section className="mb-5 rounded-xl border border-slate-200 bg-white p-3 shadow-[0_5px_18px_rgba(94,134,173,0.04)] sm:p-5">
+        <div className="mb-5 border-b border-slate-100 pb-4">
+          <div className="flex flex-wrap items-center gap-2 text-sm text-slate-500">
+            <Link href="/teacher/content" className="hover:text-primary hover:underline">Content Explorer</Link>
+            {unitQuery.data && <><span>/</span><Link href={`/teacher/content/units/${unitQuery.data.id}`} className="hover:text-primary hover:underline">{unitQuery.data.name}</Link></>}
+            {topicQuery.data && <><span>/</span><Link href={`/teacher/content/topics/${topicQuery.data.id}`} className="hover:text-primary hover:underline">{topicQuery.data.name}</Link></>}
+            <span>/</span><span className="font-medium text-slate-800">{bank?.name ?? "Question Bank"}</span>
+          </div>
+          <div className="mt-3 flex flex-wrap items-start justify-between gap-3">
+            <div><h2 className="text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">{topicQuery.data?.name ?? bank?.name ?? "Question Bank"} — Question Bank</h2><p className="mt-1 text-sm text-slate-500">Question bank · {bank?.status?.toLowerCase() ?? "loading"}</p></div>
+            <div className="flex flex-wrap gap-2">
+              <div className="min-w-[105px] rounded-lg border border-slate-200 px-3 py-2"><p className="text-xs text-slate-500">Questions</p><p className="mt-0.5 text-lg font-semibold text-slate-900">{bank?.totalQuestions ?? 0}</p></div>
+              <div className="min-w-[105px] rounded-lg border border-emerald-100 bg-emerald-50/50 px-3 py-2"><p className="text-xs text-emerald-700">Complete</p><p className="mt-0.5 text-lg font-semibold text-emerald-800">{bank?.readyQuestions ?? 0}</p></div>
+              <div className="min-w-[105px] rounded-lg border border-amber-100 bg-amber-50/50 px-3 py-2"><p className="text-xs text-amber-700">Incomplete</p><p className="mt-0.5 text-lg font-semibold text-amber-800">{Math.max(0, (bank?.totalQuestions ?? 0) - (bank?.readyQuestions ?? 0))}</p></div>
+            </div>
+          </div>
+        </div>
         {/* Toolbar */}
-        <div className="mb-3 flex min-w-[640px] items-center gap-2">
-          <div className="mr-auto flex h-8 w-[220px] items-center gap-1.5 rounded-md border border-slate-200 bg-white px-2 text-slate-400">
+        <div className="mb-3 flex flex-wrap items-center gap-2">
+          <div className="flex h-9 min-w-[220px] flex-1 items-center gap-1.5 rounded-md border border-slate-200 bg-white px-2.5 text-slate-400 sm:max-w-sm">
             <Search size={14} />
 
             <input
@@ -302,7 +407,7 @@ export function QuestionBankDetail({
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full border-0 text-body-sm text-slate-700 outline-none"
-              placeholder="Search question..."
+              placeholder="Search questions..."
             />
 
             {search && (
@@ -337,6 +442,7 @@ export function QuestionBankDetail({
           </select>
 
           <select
+            aria-label="Filter by difficulty"
             value={selectedDifficulty}
             onChange={(e) => {
               setSelectedDifficulty(e.target.value);
@@ -356,13 +462,28 @@ export function QuestionBankDetail({
             ))}
           </select>
 
+          <select
+            aria-label="Filter by completeness"
+            value={selectedCompleteness}
+            onChange={(e) => {
+              setSelectedCompleteness(e.target.value as "" | "complete" | "incomplete");
+              setPage(1);
+            }}
+            className="h-8 rounded-md border border-slate-200 bg-white px-2 text-body-sm text-slate-700 outline-none"
+          >
+            <option value="">All Completeness</option>
+            <option value="complete">Complete</option>
+            <option value="incomplete">Incomplete</option>
+          </select>
+
           <button
             type="button"
-            onClick={() => onNavigate("import")}
-            className="flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 py-2 text-body-sm font-semibold text-slate-600 transition hover:border-slate-300 hover:bg-slate-50"
+            disabled
+            title="Question import is not connected to a server API yet"
+            className="flex cursor-not-allowed items-center gap-1.5 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-body-sm font-semibold text-slate-400"
           >
             <Upload size={14} />
-            Import
+            Import (coming soon)
           </button>
 
           <button
@@ -419,218 +540,134 @@ export function QuestionBankDetail({
           </div>
         )}
 
-        {/* Questions Table */}
-        <table className="w-full min-w-[680px] border-collapse text-body-sm">
-          <thead>
-            <tr>
-              {/* Select all */}
-              <th className="w-10 bg-slate-50 p-2.5 text-left">
-                <input
-                  type="checkbox"
-                  aria-label="Select all questions on this page"
-                  checked={allOnPageSelected}
-                  ref={(el) => {
-                    if (el) {
-                      el.indeterminate =
-                        someOnPageSelected;
-                    }
-                  }}
-                  onChange={toggleAllOnPage}
-                  disabled={pageIds.length === 0}
-                  className="h-4 w-4 cursor-pointer rounded border-slate-300 accent-primary disabled:cursor-not-allowed"
-                />
-              </th>
+        {/* Hybrid Question List: content-first cards with administration controls */}
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+          <p className="text-sm text-slate-500">Showing {totalElements === 0 ? 0 : (page - 1) * pageSize + 1}–{Math.min(page * pageSize, totalElements)} of {totalElements} questions</p>
+          <span className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-sm font-medium text-slate-700"><FileQuestion size={15} /> List</span>
+        </div>
+        <div className="space-y-2" role="list" aria-label="Questions in this bank">
+          <div className="flex items-center gap-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+            <input
+              type="checkbox"
+              aria-label="Select all questions on this page"
+              checked={allOnPageSelected}
+              ref={(el) => {
+                if (el) el.indeterminate = someOnPageSelected;
+              }}
+              onChange={toggleAllOnPage}
+              disabled={pageIds.length === 0}
+              className="h-4 w-4 cursor-pointer rounded border-slate-300 accent-primary disabled:cursor-not-allowed"
+            />
+            <span className="flex-1">Question</span>
+            <span className="hidden sm:block">Management actions</span>
+          </div>
 
-              <th className="bg-slate-50 p-2.5 text-left text-sm text-slate-500">
-                #
-              </th>
+          {questionsQuery.isLoading ? (
+            <div className="rounded-lg border border-slate-200 p-8 text-center text-sm text-slate-400" role="status">
+              Loading questions...
+            </div>
+          ) : questionsQuery.isError ? (
+            <div className="rounded-lg border border-rose-200 bg-rose-50/40 p-8 text-center text-sm text-slate-600">
+              <p role="alert">{questionsQuery.error instanceof Error ? questionsQuery.error.message : "Could not load questions."}</p>
+              <button
+                type="button"
+                onClick={() => questionsQuery.refetch()}
+                className="mt-2 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+              >
+                Retry
+              </button>
+            </div>
+          ) : questionsList.length === 0 ? (
+            <div className="rounded-lg border border-dashed border-slate-300 p-8 text-center">
+              <p className="font-semibold text-slate-700">No questions found</p>
+              <p className="mt-1 text-sm text-slate-500">Try changing your filters, or add a question to this bank.</p>
+            </div>
+          ) : (
+            questionsList.map((question, index) => {
+              const rowIndex = (page - 1) * pageSize + index + 1;
+              const isReady = question.complete ?? question.is_complete;
+              const isSelected = selectedIds.has(question.id);
+              const typeLabel = questionTypeOptions.find((item) => item.value === question.type)?.label ?? question.type;
+              const questionCode = "Q" + String(rowIndex).padStart(2, "0");
+              const optionCount = question.options?.length ?? 0;
+              const correctOptionCount = question.options?.filter((option) => option.isCorrect).length ?? 0;
+              const answerCount = question.answers?.length ?? 0;
+              const questionType = String(question.type).toUpperCase();
 
-              <th className="bg-slate-50 p-2.5 text-left text-sm text-slate-500">
-                Question Content
-              </th>
-
-              <th className="bg-slate-50 p-2.5 text-left text-sm text-slate-500">
-                Type
-              </th>
-
-              <th className="bg-slate-50 p-2.5 text-left text-sm text-slate-500">
-                Difficulty
-              </th>
-
-              <th className="bg-slate-50 p-2.5 text-left text-sm text-slate-500">
-                Completeness
-              </th>
-
-              <th className="bg-slate-50 p-2.5 text-left text-sm text-slate-500">
-                Actions
-              </th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {questionsQuery.isLoading ? (
-              <tr>
-                <td
-                  colSpan={7}
-                  className="p-8 text-center text-sm text-slate-400"
+              return (
+                <article
+                  key={question.id}
+                  role="listitem"
+                  className={`group rounded-xl border transition-colors ${isSelected
+                    ? "border-primary/40 bg-primary-light/30"
+                    : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/50"
+                    }`}
                 >
-                  Loading questions...
-                </td>
-              </tr>
-            ) : questionsList.length === 0 ? (
-              <tr>
-                <td
-                  colSpan={7}
-                  className="p-8 text-center text-sm text-slate-400"
-                >
-                  No questions found in this bank.
-                </td>
-              </tr>
-            ) : (
-              questionsList.map((question, index) => {
-                const rowIndex =
-                  (page - 1) * pageSize + index + 1;
-
-                const isReady =
-                  question.complete ??
-                  question.is_complete;
-
-                const isSelected =
-                  selectedIds.has(question.id);
-
-                return (
-                  <tr
-                    key={question.id}
-                    className={`cursor-pointer transition ${isSelected
-                      ? "bg-primary-light/40 hover:bg-primary-light/50"
-                      : "hover:bg-slate-50/80"
-                      }`}
-                    onClick={() =>
-                      setPreviewQuestion(question)
-                    }
-                  >
-                    {/* Checkbox */}
-                    <td
-                      className="border-b border-slate-100 p-2.5"
-                      onClick={(e) =>
-                        e.stopPropagation()
-                      }
-                    >
+                  <div className="flex items-start gap-3 p-3 sm:gap-4 sm:p-4">
+                    <div className="flex items-start gap-2 pt-0.5">
                       <input
                         type="checkbox"
                         aria-label={`Select question ${rowIndex}`}
                         checked={isSelected}
-                        onChange={() =>
-                          toggleOne(question.id)
-                        }
-                        className="h-4 w-4 cursor-pointer rounded border-slate-300 accent-primary"
+                        onChange={() => toggleOne(question.id)}
+                        className="mt-1 h-4 w-4 cursor-pointer rounded border-slate-300 accent-primary"
                       />
-                    </td>
+                      <span className="min-w-8 pt-0.5 text-xs font-semibold tabular-nums text-slate-400">{questionCode}</span>
+                    </div>
 
-                    {/* Row number */}
-                    <td className="border-b border-slate-100 p-2.5 text-sm text-slate-400">
-                      {rowIndex}
-                    </td>
-
-                    {/* Content */}
-                    <td className="border-b border-slate-100 p-2.5 text-sm text-slate-700">
-                      <b className="font-semibold text-slate-900">
-                        {question.content}
-                      </b>
-                    </td>
-
-                    {/* Type */}
-                    <td className="border-b border-slate-100 p-2.5 text-sm text-slate-500">
-                      <Badge tone="blue">
-                        {question.type}
-                      </Badge>
-                    </td>
-
-                    {/* Difficulty */}
-                    <td className="border-b border-slate-100 p-2.5 text-sm text-slate-500">
-                      <Badge
-                        tone={
-                          question.difficulty ===
-                            "EASY"
-                            ? "easy"
-                            : question.difficulty ===
-                              "MEDIUM"
-                              ? "medium"
-                              : "hard"
-                        }
-                      >
-                        {question.difficulty}
-                      </Badge>
-                    </td>
-
-                    {/* Completeness */}
-                    <td className="border-b border-slate-100 p-2.5 text-sm text-slate-500">
-                      <Badge
-                        tone={
-                          isReady ? "green" : "gray"
-                        }
-                      >
-                        {isReady
-                          ? "Complete"
-                          : "Incomplete"}
-                      </Badge>
-                    </td>
-
-                    {/* Actions */}
-                    <td
-                      className="border-b border-slate-100 p-2.5 text-sm text-slate-500"
-                      onClick={(e) =>
-                        e.stopPropagation()
-                      }
+                    <button
+                      type="button"
+                      onClick={() => setPreviewQuestion(question)}
+                      className="min-w-0 flex-1 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded-md"
+                      aria-label={`Preview question ${rowIndex}: ${question.content}`}
                     >
-                      <div className="flex items-center gap-2">
-                        <button
-                          type="button"
-                          title="Preview Question"
-                          onClick={() =>
-                            setPreviewQuestion(question)
-                          }
-                          className="rounded p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
-                        >
-                          <Eye size={16} />
-                        </button>
+                      <span className="block whitespace-pre-wrap break-words text-sm font-semibold leading-6 text-slate-900">
+                        {question.content || "Untitled question"}
+                      </span>
+                      <span className="mt-3 flex flex-wrap items-center gap-1.5">
+                        <Badge tone="blue">{typeLabel}</Badge>
+                        <Badge tone={question.difficulty === "EASY" ? "easy" : question.difficulty === "MEDIUM" ? "medium" : "hard"}>
+                          {question.difficulty}
+                        </Badge>
+                        <Badge tone={isReady ? "green" : "gray"}>{isReady ? "Complete" : "Incomplete"}</Badge>
+                      </span>
+                    </button>
 
-                        <button
-                          type="button"
-                          title="Edit Question"
-                          onClick={() =>
-                            onNavigate(
-                              "question",
-                              question.id,
-                              bank?.name,
-                            )
-                          }
-                          className="rounded p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
-                        >
-                          <SquarePen size={16} />
-                        </button>
-
-                        {/* Delete */}
-                        <button
-                          type="button"
-                          title="Delete Question"
-                          onClick={() =>
-                            setDeleteTargetIds([
-                              question.id,
-                            ])
-                          }
-                          className="rounded p-1 text-slate-400 hover:bg-rose-50 hover:text-rose-600"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })
-            )}
-          </tbody>
-        </table>
+                    <div className="flex shrink-0 items-center gap-1" aria-label={`Actions for question ${rowIndex}`}>
+                      <button
+                        type="button"
+                        title="Preview Question"
+                        aria-label={`Preview question ${rowIndex}`}
+                        onClick={() => setPreviewQuestion(question)}
+                        className="rounded-md p-2 text-slate-500 hover:bg-slate-200/70 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      >
+                        <Eye size={16} />
+                      </button>
+                      <button
+                        type="button"
+                        title="Edit Question"
+                        aria-label={`Edit question ${rowIndex}`}
+                        onClick={() => onNavigate("question", question.id, bank?.name)}
+                        className="rounded-md p-2 text-slate-500 hover:bg-slate-200/70 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      >
+                        <SquarePen size={16} />
+                      </button>
+                      <button
+                        type="button"
+                        title="Delete Question"
+                        aria-label={`Delete question ${rowIndex}`}
+                        onClick={() => setDeleteTargetIds([question.id])}
+                        className="rounded-md p-2 text-slate-500 hover:bg-rose-50 hover:text-rose-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </div>
+                </article>
+              );
+            })
+          )}
+        </div>
 
         {/* Server Pagination Controls */}
         <div className="flex min-w-[640px] items-center justify-between pt-4 text-sm text-slate-500">
@@ -716,11 +753,11 @@ export function QuestionBankDetail({
       {/* Quick Preview Modal */}
       {previewQuestion && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-lg rounded-xl bg-white p-5 shadow-xl">
+          <section role="dialog" aria-modal="true" aria-labelledby="question-preview-title" className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-xl bg-white p-5 shadow-xl">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div className="flex items-center gap-2">
                 <Badge tone="blue">
-                  {previewQuestion.type}
+                  {questionTypeOptions.find((item) => item.value === previewQuestion.type)?.label ?? previewQuestion.type}
                 </Badge>
 
                 <Badge
@@ -755,9 +792,9 @@ export function QuestionBankDetail({
                   PROMPT
                 </p>
 
-                <p className="mt-1 text-base font-bold text-slate-900">
+                <h2 id="question-preview-title" className="mt-1 text-base font-bold text-slate-900">
                   {previewQuestion.content}
-                </p>
+                </h2>
               </div>
 
               {/* Display Options */}
@@ -860,7 +897,7 @@ export function QuestionBankDetail({
                 Edit Question
               </button>
             </div>
-          </div>
+          </section>
         </div>
       )}
 

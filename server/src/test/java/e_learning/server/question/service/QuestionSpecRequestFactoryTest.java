@@ -1,9 +1,12 @@
 package e_learning.server.question.service;
 
-import e_learning.server.question.dto.QuestionAnswerRequest;
-import e_learning.server.question.dto.QuestionWriteRequest;
+import e_learning.server.question.dto.request.QuestionAnswerRequest;
+import e_learning.server.question.dto.request.QuestionWriteRequest;
 import e_learning.server.question.engine.core.QuestionEngine;
 import e_learning.server.question.engine.result.DefinitionValidation;
+import e_learning.server.question.engine.types.text.FillInBlankSpec;
+import e_learning.server.question.engine.types.text.MatchingMode;
+import e_learning.server.question.engine.types.text.TypeAnswerSpec;
 import e_learning.server.question.engine.types.truefalse.TrueFalseSpec;
 import e_learning.server.question.enums.QuestionType;
 import org.junit.jupiter.api.Test;
@@ -40,6 +43,34 @@ class QuestionSpecRequestFactoryTest {
 
         assertEquals(Boolean.FALSE, spec.expected());
         assertEquals(DefinitionValidation.Status.READY, engine.validateDefinition(spec).status());
+    }
+
+    @Test
+    void fillInBlankUsesExplicitMatchingModeFromRequest() {
+        QuestionWriteRequest request = textRequest(QuestionType.FILL_IN_BLANK);
+        request.setMatchingMode(MatchingMode.CASE_SENSITIVE_TRIM);
+
+        FillInBlankSpec spec = (FillInBlankSpec) factory.toSpec(request);
+
+        assertEquals(MatchingMode.CASE_SENSITIVE_TRIM, spec.matchingMode());
+    }
+
+    @Test
+    void typeAnswerUsesExplicitMatchingModeFromRequest() {
+        QuestionWriteRequest request = textRequest(QuestionType.TYPE_ANSWER);
+        request.setMatchingMode(MatchingMode.CASE_SENSITIVE_TRIM);
+
+        TypeAnswerSpec spec = (TypeAnswerSpec) factory.toSpec(request);
+
+        assertEquals(MatchingMode.CASE_SENSITIVE_TRIM, spec.matchingMode());
+    }
+
+    private QuestionWriteRequest textRequest(QuestionType type) {
+        QuestionWriteRequest request = new QuestionWriteRequest();
+        request.setType(type);
+        request.setContent("Answer the question");
+        request.setAnswers(List.of(answer("Answer")));
+        return request;
     }
 
     private QuestionAnswerRequest answer(String rawValue) {

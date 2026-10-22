@@ -1,4 +1,5 @@
 export type QuestionDifficulty = "EASY" | "MEDIUM" | "HARD";
+export type QuestionMatchingMode = "CASE_INSENSITIVE_TRIM" | "CASE_SENSITIVE_TRIM";
 export type TrueFalseAnswer = "TRUE" | "FALSE";
 export type QuestionMediaKind = "image" | "audio";
 export interface QuestionOptionDraft { id: string; text: string; }
@@ -14,8 +15,8 @@ export interface QuestionCommonSpec { content: string; difficulty: QuestionDiffi
 export interface SingleChoiceSpec extends QuestionCommonSpec { type: "SINGLE_CHOICE"; choices: QuestionOptionDraft[]; correctChoiceKey: string; }
 export interface MultipleChoiceSpec extends QuestionCommonSpec { type: "MULTIPLE_CHOICE"; choices: QuestionOptionDraft[]; correctChoiceKeys: string[]; }
 export interface TrueFalseSpec extends QuestionCommonSpec { type: "TRUE_FALSE"; expected: TrueFalseAnswer; }
-export interface FillInBlankSpec extends QuestionCommonSpec { type: "FILL_IN_BLANK"; acceptedAnswers: string[]; }
-export interface TypeAnswerSpec extends QuestionCommonSpec { type: "TYPE_ANSWER"; acceptedAnswers: string[]; matchingMode: "CASE_INSENSITIVE_TRIM" | "CASE_SENSITIVE_TRIM"; }
+export interface FillInBlankSpec extends QuestionCommonSpec { type: "FILL_IN_BLANK"; acceptedAnswers: string[]; matchingMode: QuestionMatchingMode; }
+export interface TypeAnswerSpec extends QuestionCommonSpec { type: "TYPE_ANSWER"; acceptedAnswers: string[]; matchingMode: QuestionMatchingMode; }
 export interface MatchingPairSpec { itemKey: string; answerKey: string; }
 export interface MatchingSpec extends QuestionCommonSpec { type: "MATCHING"; items: { key: string; content: string }[]; answerPool: { key: string; content: string }[]; pairs: MatchingPairSpec[]; }
 export interface ClozeBlankSpec { key: string; acceptedAnswers: string[]; }

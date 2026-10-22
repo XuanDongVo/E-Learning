@@ -42,7 +42,7 @@ export function validate(a: Assignment): Issue[] {
     if (cf.groupId && !group) add("error", "item", it.id, "Linked shared block no longer exists");
     const hasBlank = c.blankRef != null;
     if (!c.prompt.trim() && !hasBlank && !("options" in c && c.options.length > 0 && c.options.some((o) => o.text.includes("[["))))
-      add("error", "item", it.id, "Prompt is empty");
+      add("error", "item", it.id, "Content is empty");
     if (hasBlank) {
       if (group?.block.type !== "PASSAGE" || !blankNumbers(group.block.text).includes(c.blankRef!))
         add("error", "item", it.id, `Refers to passage blank ${c.blankRef} that does not exist`);
@@ -56,7 +56,7 @@ export function validate(a: Assignment): Issue[] {
     if (c.type === "TEXT_INPUT" && cf.gradingMode === "AUTO" && !c.acceptedAnswers.some((x) => x.trim()))
       add("error", "item", it.id, "Auto-graded question has no accepted answer");
     if (c.type === "MULTI_TEXT_INPUT") {
-      if (blankTokens(c.prompt).length !== c.blanks.length) add("error", "item", it.id, `Prompt has ${blankTokens(c.prompt).length} blanks but ${c.blanks.length} answer sets`);
+      if (blankTokens(c.prompt).length !== c.blanks.length) add("error", "item", it.id, `Content has ${blankTokens(c.prompt).length} blanks but ${c.blanks.length} answer sets`);
       if (cf.gradingMode === "AUTO" && c.blanks.some((b) => !b.acceptedAnswers.some((x) => x.trim())))
         add("error", "item", it.id, "A blank has no accepted answer");
     }

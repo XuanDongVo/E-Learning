@@ -10,7 +10,6 @@ public record CompositionItemResponse(
         String itemType,
         Long questionId,
         BigDecimal possiblePoints,
-        boolean required,
         boolean example,
         Map<String, Object> blockPayload,
         List<CompositionItemResponse> children

@@ -1,4 +1,5 @@
 import { assignmentQuestionService } from "./assignment.question.service";
+import * as ops from "@/components/features/teacher/assignments/builder/ops";
 import type {
   CreateAssignmentQuestionRequest,
   AssignmentQuestion,
@@ -50,39 +51,56 @@ function toPayload(item: QuestionItem): CreateAssignmentQuestionRequest {
         .map((answer) => answer.trim())
         .filter(Boolean)
         .map((rawValue) => ({ rawValue })),
+        definition: {
+          textInput: {
+            prefix: content.prefix?.trim() || null,
+            cue: content.cue?.trim() || null,
+          },
+        },
     };
   }
   if (content.type === "MATCHING") {
-    const answerById = new Map(content.answers.map((answer) => [answer.id, answer.text.trim()]));
     return {
       ...common,
       type: "MATCHING",
       definition: {
         matching: {
-          items: content.items.map((match) => ({ key: match.key, prompt: match.prompt.trim() })),
-          answerPool: content.answers.map((answer) => answer.text.trim()),
-          expectedPairs: Object.fromEntries(
-            content.items
-              .filter((match) => match.correctAnswerId && answerById.has(match.correctAnswerId))
-              .map((match) => [match.key, answerById.get(match.correctAnswerId!)!]),
-          ),
-          shuffleAnswers: content.shuffleAnswers,
+          poolId: content.poolId,
+          correctEntryId: content.correctEntryId,
         },
       },
     };
   }
-  if (content.type === "CLOZE") {
+  if (content.type === "CLOZE" || content.type === "MULTI_TEXT_INPUT") {
+    const authored = {
+      type: "CLOZE" as const,
+      prompt: content.prompt,
+      explanation: content.explanation,
+      hint: content.hint,
+      blankRef: content.blankRef,
+      caseSensitive: content.caseSensitive,
+      segments: content.type === "CLOZE" ? content.segments : [],
+      blanks: content.blanks.map((blank, index) => ({
+        id: blank.id,
+        key: "key" in blank ? blank.key : `blank-${index + 1}`,
+        acceptedAnswers: [...blank.acceptedAnswers],
+      })),
+    };
+    const synchronized = ops.syncClozeContent(authored);
     return {
       ...common,
+      content: content.prompt,
       type: "CLOZE",
       definition: {
         cloze: {
-          segments: content.segments.map((segment) => ({ text: segment.text })),
-          blanks: content.blanks.map((blank) => ({
-            key: blank.key,
-            acceptedAnswers: blank.acceptedAnswers.map((answer) => answer.trim()).filter(Boolean),
-          })),
-          caseSensitive: content.caseSensitive,
+          segments: synchronized.segments.map((segment) => ({ text: segment.text })),
+          blanks: synchronized.blanks.map((blank) => {
+            const acceptedAnswers = blank.acceptedAnswers
+              .map((answer) => answer.trim())
+              .filter(Boolean);
+            return { key: blank.key, acceptedAnswers: acceptedAnswers.length ? acceptedAnswers : [""] };
+          }),
+          caseSensitive: synchronized.caseSensitive,
         },
       },
     };

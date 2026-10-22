@@ -1,6 +1,6 @@
 # Assignment Composition v1
 
-**Status: Accepted product model; implementation in progress on `feature/phase-7-assigment`**  
+**Trạng thái:** Mô hình sản phẩm được chấp nhận; implementation còn thiếu các phần nêu trong audit ngày 2026-10-21. Nhánh kiểm toán: `refactor/teacher-content-ui-routing`.  
 **Authority:** ADR 0024 defines product Composition. ADR 0026 defines automatic Assignment scoring. AssignmentQuestion remains position-free.
 
 ## 1. Product model
@@ -92,10 +92,41 @@ Persist raw submitted answers required for permitted review, normalized submitte
 8. No student payload leaks answer/normalized data before the permitted reveal point.
 
 
-## 9. Implementation status (2026-10-14)
+## 12. Implementation status (cập nhật audit 2026-10-21)
 - V33 creates ordered section/item tables and backfills existing Assignments deterministically. V34 persists `show_points_per_question` separately from `show_score_after_submit`.
 - GET/PUT `/v1/assignments/{id}/composition` are implemented with server validation. Legacy AssignmentQuestion create adds default root items for compatibility; Composition remains the canonical order.
 - `/teacher/assignments` create/list flows open `/teacher/assignments/demo?id={id}`. Legacy `/teacher/assignments/[id]` and `/teacher/assignments/[id]/questions/create` redirect to the canonical Builder.
-- The current Builder supports persistence adapters for SINGLE_CHOICE, MULTIPLE_CHOICE, TRUE_FALSE, FILL_IN_BLANK and TYPE_ANSWER. MATCHING/CLOZE authoring remains blocked because the current question write DTO/factory does not carry type-specific fields; those creation tools are hidden. Do not silently map these types to another semantic type.
+- `QuestionWriteRequest` và `QuestionDefinitionRequest` hiện có contract `definition` cho MATCHING/CLOZE và `QuestionSpecRequestFactory` tạo spec tương ứng. Tuy nhiên, round-trip, preview/runtime, shared pool references và các invariant cấu trúc vẫn chưa được xác minh end-to-end. Không tuyên bố hoàn tất chỉ vì DTO/factory/handler đã tồn tại.
 - MEDIA blocks upload an image and persist its media asset ID, alt text, optional caption and preview URL. Image/audio parity beyond images is not part of v1.
 - Verification gates still open: run Flyway validation against both fresh and existing databases, frontend typecheck/lint/build, backend tests, and browser end-to-end tests for create/edit/reorder/group/delete/reload and failed-save recovery. No test/build success is claimed.
+
+
+## 12. Kiểm toán hiện trạng Content Sharing, MATCHING và CLOZE — 2026-10-21
+
+### 12.1 Kết luận quan trọng
+
+Code hiện tại có Composition dạng cây và hỗ trợ một số block có Question con, nhưng **chưa có Content Sharing group đúng nghĩa và chưa có quan hệ Question–Block tường minh**. Không nên coi `parent_item_id`, `groupId` ở frontend hoặc `poolId` là mô hình hoàn chỉnh cho tính năng này.
+
+### 12.2 Phát hiện từ code hiện tại
+
+1. `AssignmentItem.itemType` và constraint V33 chỉ cho phép `QUESTION`, `INSTRUCTIONS`, `PASSAGE`, `MEDIA`, `POOL`; chưa có loại container `CONTENT_SHARING`.
+2. `AssignmentCompositionService` chỉ cho PASSAGE/POOL có Question con; INSTRUCTIONS và QUESTION không được có con; không có logic group chứa đồng thời nhiều block và nhiều Question.
+3. `CompositionItemRequest/Response` chỉ có `children`, không có danh sách Question–Block references. Backend không thể biểu diễn một Question dùng đồng thời Passage và Pool bằng cây một-cha.
+4. `assignment_items.question_id` có unique index theo Assignment, đúng để một Question chỉ có một placement; không nên bỏ constraint này để mô phỏng nhiều references.
+5. `MatchingSpec` hiện lưu answer pool là `List<String>` và đáp án đúng là `Map<String,String>` dựa trên text. Hai đáp án có text trùng sẽ mơ hồ; đổi text có thể làm mất ghép cặp; không liên kết ổn định với `POOL.entries[].id`.
+6. Frontend tạo ID cho pool entry nhưng khi serialize Matching lại chỉ gửi text và expectedPairs theo text. `poolId`/ `correctEntryId` có trong type UI nhưng không tạo thành contract backend/reference thực sự. `shuffleAnswers` được gửi từ frontend nhưng không có trường tương ứng trong DTO/spec hiện tại, nên không được round-trip đáng tin cậy.
+7. `MatchingHandler` kiểm tra expectedPairs theo text; parser cho phép thiếu câu trả lời (được chấm là UNANSWERED) nhưng chưa quy định/kiểm tra việc tái sử dụng cùng một answer entry ở nhiều hàng. Đây là quyết định sản phẩm cần ghi rõ, không nên để phát sinh ngẫu nhiên từ so sánh text.
+8. `ClozeSpec` lưu segments và blanks thành hai list độc lập. Handler kiểm tra có segment và blank nhưng không kiểm tra quan hệ `segments.size() == blanks.size() + 1`, cũng chưa kiểm tra trùng lặp/khóa blank tương ứng một cách đầy đủ ngoài key duy nhất. Test hiện tại còn tạo hai blanks với một segment, nên test không bắt invariant cấu trúc.
+9. Frontend dựng prompt Cloze bằng cách ghép segment với placeholder theo index. Nếu số segment/blank không khớp, cấu trúc hiển thị có thể không tương ứng dữ liệu chấm điểm. Cần một canonical representation có blank ID ổn định và validator đồng bộ ở client/server.
+10. `QuestionWriteRequest` và `QuestionDefinitionRequest` hiện đã có trường `definition` cho MATCHING/CLOZE; vì vậy tuyên bố cũ ở mục Implementation status rằng DTO/factory chưa hỗ trợ các trường này đã lỗi thời. Tuy nhiên, sự hiện diện của DTO không chứng minh toàn bộ luồng save/load/preview/runtime đã đúng.
+11. `assignment-composition.service.ts` ánh xạ và serialize Composition, nhưng phần Content Sharing hiện chỉ suy membership từ `children`. Không có đường round-trip cho semantic references vì API contract chưa chứa chúng.
+12. `AssignmentCompositionService.validateBlockPayload` kiểm tra pool entry có text nhưng không yêu cầu ID ổn định/duy nhất; điều này chưa đủ cho Matching tham chiếu entry theo ID.
+13. Cần kiểm tra các trạng thái xóa/sửa block, tách Question khỏi group, di chuyển Question giữa group/section, duplicate submit, save lỗi một phần và reload. Save hiện thực hiện persist Question trước rồi mới PUT Composition; nếu PUT thất bại có thể Question đã được cập nhật nhưng Composition chưa cập nhật, do hai thao tác không nằm trong một transaction chung.
+
+### 12.3 Kiến trúc mục tiêu
+
+Thêm `CONTENT_SHARING` làm container Composition; container chứa ordered members gồm Content Blocks và Question items. Bổ sung quan hệ riêng QuestionItem → ContentBlock với role, được kiểm tra trong cùng Assignment. Không dùng quan hệ cha-con để thay thế references. Chi tiết hợp đồng và lộ trình nằm trong `.agent/plans/CONTENT_SHARING_MATCHING_CLOZE_AUDIT.md`.
+
+### 12.4 Trạng thái xác minh
+
+Đây là audit tĩnh theo file trên nhánh được nêu. Chưa xác minh build, Flyway trên DB mới/đã có dữ liệu, end-to-end trên browser hoặc việc các API runtime thực tế đã dùng hết các type mới. Không được đánh dấu tính năng hoàn tất chỉ dựa vào sự tồn tại của spec/handler/DTO.

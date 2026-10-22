@@ -3,10 +3,12 @@ package e_learning.server.content.question.dto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import e_learning.server.question.enums.Difficulty;
 import e_learning.server.question.enums.QuestionType;
-import e_learning.server.question.dto.QuestionAnswerResponse;
-import e_learning.server.question.dto.QuestionMediaResponse;
-import e_learning.server.question.dto.QuestionOptionResponse;
+import e_learning.server.question.dto.response.QuestionAnswerResponse;
+import e_learning.server.question.dto.response.QuestionMediaResponse;
+import e_learning.server.question.dto.response.QuestionOptionResponse;
 import lombok.*;
+import tools.jackson.databind.JsonNode;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -28,6 +30,7 @@ public class QuestionResponse {
     @JsonProperty("is_complete")
     public boolean getIsComplete() { return complete; }
     private String matchingMode;
+    private JsonNode definition;
     private List<QuestionOptionResponse> options;
     private List<QuestionAnswerResponse> answers;
     private List<QuestionMediaResponse> media;

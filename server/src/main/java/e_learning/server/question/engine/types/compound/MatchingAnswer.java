@@ -1,9 +1,17 @@
 package e_learning.server.question.engine.types.compound;
 
 import java.util.Map;
+import java.util.Objects;
 
-public record MatchingAnswer(Map<String, String> pairs) {
+public record MatchingAnswer(String entryId) {
     public MatchingAnswer {
-        pairs = Map.copyOf(pairs == null ? Map.of() : pairs);
+        entryId = Objects.requireNonNull(entryId, "entryId")
+                .trim();
+
+        if (entryId.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "entryId must not be blank"
+            );
+        }
     }
 }

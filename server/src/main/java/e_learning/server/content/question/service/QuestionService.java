@@ -10,7 +10,7 @@ import e_learning.server.content.question.dto.UpdateQuestionRequest;
 import e_learning.server.content.question.entity.ContentQuestion;
 import e_learning.server.content.question.repository.ContentQuestionRepository;
 import e_learning.server.content.questionBank.repository.QuestionBankRepository;
-import e_learning.server.question.dto.QuestionContentResponse;
+import e_learning.server.question.dto.response.QuestionContentResponse;
 import e_learning.server.question.entity.Question;
 import e_learning.server.question.enums.Difficulty;
 import e_learning.server.question.enums.QuestionType;
@@ -161,6 +161,7 @@ public class QuestionService {
                 .hint(content.getHint())
                 .complete(content.isComplete())
                 .matchingMode(content.getMatchingMode())
+                .definition(content.getDefinition())
                 .options(content.getOptions())
                 .answers(content.getAnswers())
                 .media(content.getMedia())

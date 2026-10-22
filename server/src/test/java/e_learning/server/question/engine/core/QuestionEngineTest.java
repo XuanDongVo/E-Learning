@@ -68,7 +68,7 @@ class QuestionEngineTest {
 
     @Test
     void fillInBlankRequiresItsLegacyMarker() {
-        QuestionSpec spec = new FillInBlankSpec(common, List.of("answer"));
+        QuestionSpec spec = new FillInBlankSpec(common, List.of("answer"), MatchingMode.CASE_INSENSITIVE_TRIM);
         assertEquals(DefinitionValidation.Status.INVALID, new QuestionEngine().validateDefinition(spec).status());
     }
 

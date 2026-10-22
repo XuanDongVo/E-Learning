@@ -40,17 +40,17 @@ const strategies: {
   label: string;
   description: string;
 }[] = [
-  {
-    value: "RANDOM",
-    label: "Random",
-    description: "Choose randomly inside each bank quota.",
-  },
-  {
-    value: "WEAKNESS_PRIORITY",
-    label: "Weakness priority",
-    description: "Prioritize weaker areas when answer history exists.",
-  },
-];
+    {
+      value: "RANDOM",
+      label: "Random",
+      description: "Choose randomly inside each bank quota.",
+    },
+    {
+      value: "WEAKNESS_PRIORITY",
+      label: "Weakness priority",
+      description: "Prioritize weaker areas when answer history exists.",
+    },
+  ];
 
 const modes: { value: ActivityMode; label: string; description: string }[] = [
   {
@@ -75,22 +75,22 @@ const distributions: {
   label: string;
   description: string;
 }[] = [
-  {
-    value: "EQUAL",
-    label: "Equal",
-    description: "Every bank gets the same number of questions.",
-  },
-  {
-    value: "PERCENTAGE",
-    label: "Percentage",
-    description: "Set a share per bank. Must total 100%.",
-  },
-  {
-    value: "FIXED_COUNT",
-    label: "Fixed count",
-    description: "Set an exact number per bank.",
-  },
-];
+    {
+      value: "EQUAL",
+      label: "Equal",
+      description: "Every bank gets the same number of questions.",
+    },
+    {
+      value: "PERCENTAGE",
+      label: "Percentage",
+      description: "Set a share per bank. Must total 100%.",
+    },
+    {
+      value: "FIXED_COUNT",
+      label: "Fixed count",
+      description: "Set an exact number per bank.",
+    },
+  ];
 
 const btnPrimary =
   "inline-flex h-10 shrink-0 items-center justify-center rounded-lg bg-primary px-4 text-body font-semibold text-primary-foreground transition-colors hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-50";
@@ -191,11 +191,11 @@ function ActivityEditorForm({
   const [banks, setBanks] = useState<SelectedBank[]>(() =>
     initialActivity
       ? initialActivity.banks.map((b) => ({
-          ...b,
-          status: "PUBLISHED",
-          percentage: b.percentage ?? undefined,
-          fixedCount: b.fixedCount ?? undefined,
-        }))
+        ...b,
+        status: "PUBLISHED",
+        percentage: b.percentage ?? undefined,
+        fixedCount: b.fixedCount ?? undefined,
+      }))
       : [],
   );
   const [search, setSearch] = useState("");
@@ -297,12 +297,12 @@ function ActivityEditorForm({
     : distribution === "EQUAL" && total % banks.length !== 0
       ? "Equal distribution must divide evenly."
       : distribution === "PERCENTAGE" &&
-          (percentageTotal !== 100 ||
-            banks.some((b) => !b.percentage || b.percentage < 1))
+        (percentageTotal !== 100 ||
+          banks.some((b) => !b.percentage || b.percentage < 1))
         ? "Percentages must be positive and total exactly 100%."
         : distribution === "FIXED_COUNT" &&
-            (fixedTotal !== total ||
-              banks.some((b) => !b.fixedCount || b.fixedCount < 1))
+          (fixedTotal !== total ||
+            banks.some((b) => !b.fixedCount || b.fixedCount < 1))
           ? "Fixed counts must be positive and add up to the total."
           : "";
   const formError = !unitId
@@ -366,14 +366,14 @@ function ActivityEditorForm({
       const next = exists
         ? cur.filter((b) => b.questionBankId !== source.questionBankId)
         : [
-            ...cur,
-            {
-              ...source,
-              displayOrder: cur.length,
-              ...(distribution === "PERCENTAGE" ? { percentage: 0 } : {}),
-              ...(distribution === "FIXED_COUNT" ? { fixedCount: 1 } : {}),
-            },
-          ];
+          ...cur,
+          {
+            ...source,
+            displayOrder: cur.length,
+            ...(distribution === "PERCENTAGE" ? { percentage: 0 } : {}),
+            ...(distribution === "FIXED_COUNT" ? { fixedCount: 1 } : {}),
+          },
+        ];
 
       if (distribution === "FIXED_COUNT") {
         setTotal(next.reduce((sum, bank) => sum + (bank.fixedCount || 0), 0));
@@ -812,11 +812,11 @@ function ActivityEditorForm({
                               cur.map((x) =>
                                 x.questionBankId === b.questionBankId
                                   ? {
-                                      ...x,
-                                      ...(distribution === "PERCENTAGE"
-                                        ? { percentage: value }
-                                        : { fixedCount: value }),
-                                    }
+                                    ...x,
+                                    ...(distribution === "PERCENTAGE"
+                                      ? { percentage: value }
+                                      : { fixedCount: value }),
+                                  }
                                   : x,
                               ),
                             );

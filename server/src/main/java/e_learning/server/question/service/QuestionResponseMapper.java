@@ -1,9 +1,9 @@
 package e_learning.server.question.service;
 
-import e_learning.server.question.dto.QuestionAnswerResponse;
-import e_learning.server.question.dto.QuestionContentResponse;
-import e_learning.server.question.dto.QuestionMediaResponse;
-import e_learning.server.question.dto.QuestionOptionResponse;
+import e_learning.server.question.dto.response.QuestionAnswerResponse;
+import e_learning.server.question.dto.response.QuestionContentResponse;
+import e_learning.server.question.dto.response.QuestionMediaResponse;
+import e_learning.server.question.dto.response.QuestionOptionResponse;
 import e_learning.server.question.entity.Question;
 import e_learning.server.question.repository.QuestionAnswerRepository;
 import e_learning.server.question.repository.QuestionMediaRepository;

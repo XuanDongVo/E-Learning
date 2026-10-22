@@ -2,17 +2,25 @@ package e_learning.server.content.questionBank.repository;
 
 import e_learning.server.content.common.enums.ContentStatus;
 import e_learning.server.content.questionBank.entity.QuestionBank;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 import java.util.List;
 
-public interface QuestionBankRepository extends JpaRepository<QuestionBank, Long> {
+public interface QuestionBankRepository extends JpaRepository<QuestionBank, Long>, JpaSpecificationExecutor<QuestionBank> {
     List<QuestionBank> findByTopicIdOrderByDisplayOrderAsc(Long topicId);
     List<QuestionBank> findByTopicIdAndStatusInOrderByDisplayOrderAsc(Long topicId, List<ContentStatus> statuses);
     List<QuestionBank> findByTopicIdAndStatusOrderByDisplayOrderAsc(Long topicId, ContentStatus status);
     boolean existsByTopicIdAndNameIgnoreCase(Long topicId, String name);
     boolean existsByTopicIdAndNameIgnoreCaseAndIdNot(Long topicId, String name, Long id);
     long countByTopicId(Long topicId);
+
+    @Override
+    @EntityGraph(attributePaths = {"topic", "topic.section", "topic.section.unit", "topic.section.unit.grade"})
+    Page<QuestionBank> findAll(Specification<QuestionBank> spec, Pageable pageable);
+
     @Query("""
         select qb from QuestionBank qb
         join fetch qb.topic t

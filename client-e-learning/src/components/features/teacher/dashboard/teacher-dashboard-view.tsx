@@ -14,7 +14,7 @@ export function TeacherDashboardView() {
           <h1 className="mt-1 text-ui-3xl font-extrabold tracking-tight">Tổng quan lớp học</h1>
           <p className="mt-1 text-body text-neutral-muted">Theo dõi nhịp học và chuẩn bị bài giảng tiếp theo.</p>
         </div>
-        <button className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-border bg-card px-3 text-body-sm font-bold shadow-sm hover:bg-muted">
+        <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border-2 border-border bg-card px-4 text-body-sm font-bold shadow-pop-sm transition hover:bg-muted active:translate-y-0.5">
           <Download className="size-4" /> Xuất báo cáo
         </button>
       </section>
@@ -28,37 +28,37 @@ export function TeacherDashboardView() {
         <ClassPerformanceCard />
         <RecentActivityCard />
       </section>
-      <section className="rounded-[var(--radius-md)] border border-border-color bg-card-bg p-5 shadow-sm">
+      <section className="rounded-2xl border-2 border-ink bg-card p-6 shadow-pop">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-body-sm font-bold uppercase tracking-[0.14em] text-neutral-subtle">
               Bài tập
             </p>
-            <h2 className="mt-1 text-card-title font-extrabold">
+            <h2 className="mt-1 text-card-title font-extrabold text-foreground">
               Chưa có bài tập cần chấm
             </h2>
           </div>
-          <button className="inline-flex items-center gap-2 rounded-lg bg-primary px-3 py-2 text-body-sm font-bold text-primary-foreground">
+          <button className="inline-flex items-center gap-2 rounded-xl border border-primary bg-primary px-4 py-2.5 text-body-sm font-bold text-primary-foreground shadow-pop-sm transition hover:bg-primary-hover active:translate-y-0.5">
             <Plus className="size-3.5" /> Tạo bài tập
           </button>
         </div>
-        <div className="mt-5 grid gap-3 md:grid-cols-3">
-          <div className="rounded-[var(--radius-md)] bg-primary-light p-4">
-            <p className="text-body-sm font-bold text-primary">            Assignment results unavailable</p>
+        <div className="mt-5 grid gap-3.5 md:grid-cols-3">
+          <div className="rounded-xl border border-primary/20 bg-primary/10 p-4 shadow-pop-sm">
+            <p className="text-body-sm font-bold text-primary">Assignment results unavailable</p>
             <p className="mt-2 text-ui-xl font-extrabold">—</p>
             <p className="mt-1 text-body-sm text-neutral-muted">
               students completed
             </p>
           </div>
-          <div className="rounded-[var(--radius-md)] bg-secondary-light p-4">
-            <p className="text-body-sm font-bold text-secondary-hover">
+          <div className="rounded-xl border border-border bg-secondary p-4 shadow-pop-sm">
+            <p className="text-body-sm font-bold text-foreground">
               Assignment results unavailable
             </p>
             <p className="mt-2 text-ui-xl font-extrabold">—</p>
             <p className="mt-1 text-body-sm text-neutral-muted">Attempt analytics unavailable</p>
           </div>
-          <div className="rounded-[var(--radius-md)] bg-accent-light p-4">
-            <p className="text-body-sm font-bold text-accent">Reading Review</p>
+          <div className="rounded-xl border border-accent/30 bg-accent/15 p-4 shadow-pop-sm">
+            <p className="text-body-sm font-bold text-foreground">Reading Review</p>
             <p className="mt-2 text-ui-xl font-extrabold">—</p>
             <p className="mt-1 text-body-sm text-neutral-muted">
               Attempt analytics unavailable

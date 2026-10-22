@@ -12,6 +12,7 @@ public final class ClozeHandler extends AbstractQuestionTypeHandler {
     public DefinitionValidation validateDefinition(QuestionSpec spec) {
         DefinitionValidation common = common(spec); if (common != null) return common; ClozeSpec q = (ClozeSpec) spec;
         if (q.segments().isEmpty() || q.blanks().isEmpty()) return DefinitionValidation.incomplete("cloze.blanks.required");
+        if (q.segments().size() != q.blanks().size() + 1) return DefinitionValidation.incomplete("cloze.segments.invalid");
         Set<String> keys = new HashSet<>();
         if (q.blanks().stream().anyMatch(b -> b.key().isBlank() || !keys.add(b.key()) || b.acceptedAnswers().stream().noneMatch(v -> v != null && !v.isBlank()))) return DefinitionValidation.incomplete("cloze.blank.invalid");
         return DefinitionValidation.ready();

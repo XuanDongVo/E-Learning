@@ -2,10 +2,21 @@ package e_learning.server.question.engine.types.compound;
 
 import e_learning.server.question.engine.model.QuestionSpec;
 import e_learning.server.question.enums.QuestionType;
+
 import java.util.*;
 
-public record MatchingSpec(QuestionSpec.QuestionCommon common, List<Item> items, List<String> answerPool, Map<String, String> expectedPairs) implements QuestionSpec {
-    public MatchingSpec { common = Objects.requireNonNull(common); items = List.copyOf(items == null ? List.of() : items); answerPool = List.copyOf(answerPool == null ? List.of() : answerPool); expectedPairs = Map.copyOf(expectedPairs == null ? Map.of() : expectedPairs); }
-    public QuestionType type() { return QuestionType.MATCHING; }
-    public record Item(String key, String prompt) { public Item { key = Objects.requireNonNull(key).trim(); prompt = Objects.requireNonNull(prompt); } }
+public record MatchingSpec(QuestionSpec.QuestionCommon common, String poolId,
+                           String correctEntryId) implements QuestionSpec {
+
+    public MatchingSpec {
+        common = Objects.requireNonNull(common);
+
+        poolId = poolId == null || poolId.isBlank() ? null : poolId.trim();
+        correctEntryId = correctEntryId == null || correctEntryId.isBlank() ? null : correctEntryId.trim();
+    }
+
+    @Override
+    public QuestionType type() {
+        return QuestionType.MATCHING;
+    }
 }

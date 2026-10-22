@@ -31,6 +31,7 @@ export function TopicDetail({
   const [createBankOpen, setCreateBankOpen] = useState(false);
   const [bankName, setBankName] = useState("");
   const [bankDescription, setBankDescription] = useState("");
+  const [includeArchived, setIncludeArchived] = useState(false);
 
   const topic = useQuery({
     queryKey: QUERY_KEYS.contentTopic(topicId),
@@ -38,8 +39,8 @@ export function TopicDetail({
   });
 
   const questionBanks = useQuery({
-    queryKey: QUERY_KEYS.contentQuestionBanks(topicId),
-    queryFn: async () => (await contentService.listQuestionBanks(topicId)).data,
+    queryKey: [...QUERY_KEYS.contentQuestionBanks(topicId), { includeArchived }],
+    queryFn: async () => (await contentService.listQuestionBanks(topicId, includeArchived)).data,
     enabled: !!topic.data,
   });
   const section = useQuery({
@@ -90,9 +91,12 @@ export function TopicDetail({
     return <p className="text-sm text-slate-400">Loading topic...</p>;
   if (topic.isError || !topic.data)
     return (
-      <p className="rounded-lg bg-rose-50 p-4 text-sm text-rose-600">
-        Could not load topic.
-      </p>
+      <div role="alert" className="rounded-lg border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">
+        <p>Could not load topic.</p>
+        <button type="button" onClick={() => void topic.refetch()} className="mt-2 rounded-md border border-rose-200 px-3 py-1.5 font-semibold hover:bg-rose-100">
+          Retry
+        </button>
+      </div>
     );
 
   const bankList: ContentQuestionBank[] = questionBanks.data ?? [];
@@ -217,7 +221,11 @@ export function TopicDetail({
               </div>
 
               {createBank.isError && (
-                <p className="text-xs text-rose-600">Failed to create question bank. Ensure name is unique.</p>
+                <p role="alert" className="rounded-md border border-rose-200 bg-rose-50 p-3 text-xs text-rose-700">
+                  {createBank.error instanceof Error
+                    ? createBank.error.message
+                    : "Could not create question bank. Please try again."}
+                </p>
               )}
 
               <div className="flex justify-end gap-2 pt-2">
@@ -252,8 +260,17 @@ export function TopicDetail({
             </h2>
           </div>
           <div className="flex items-center gap-3">
+            <label className="flex items-center gap-2 text-sm text-slate-600">
+              <input
+                type="checkbox"
+                checked={includeArchived}
+                onChange={(event) => setIncludeArchived(event.target.checked)}
+                className="size-4 rounded border-slate-300 accent-primary"
+              />
+              Include archived
+            </label>
             <span className="text-sm text-slate-400">
-              {bankList.length} banks
+              {bankList.length} {bankList.length === 1 ? "bank" : "banks"}
             </span>
             <button
               type="button"
@@ -268,9 +285,23 @@ export function TopicDetail({
 
         {questionBanks.isLoading ? (
           <div className="p-6 text-center text-sm text-slate-400">Loading banks...</div>
+        ) : questionBanks.isError ? (
+          <div role="alert" className="p-6 text-center text-sm text-rose-700">
+            <p>Could not load question banks.</p>
+            <p className="mt-1 break-words text-xs text-rose-600">
+              {questionBanks.error instanceof Error
+                ? questionBanks.error.message
+                : "The request failed. Check the API server and try again."}
+            </p>
+            <button type="button" onClick={() => void questionBanks.refetch()} className="mt-2 rounded-md border border-rose-200 px-3 py-1.5 font-semibold hover:bg-rose-50">
+              Retry
+            </button>
+          </div>
         ) : bankList.length === 0 ? (
-          <div className="p-8 text-center text-sm text-slate-400">
-            No question banks created yet. Click <b>Add Bank</b> to create one.
+          <div className="p-8 text-center text-sm text-slate-500">
+            {includeArchived
+              ? "No question banks match this view."
+              : <>No active question banks yet. Click <b>Add Bank</b> to create one, or include archived banks to view them.</>}
           </div>
         ) : (
           <ul className="divide-y divide-slate-100">

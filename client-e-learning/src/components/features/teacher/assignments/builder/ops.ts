@@ -1,6 +1,7 @@
 import type {
   Assignment,
   BlockItem,
+  ClozeContent,
   ID,
   InsertTarget,
   Item,
@@ -74,29 +75,48 @@ export function detach(a: Assignment, id: ID) {
   if (loc) container(a, loc).splice(loc.index, 1);
   return loc;
 }
+// export function place(a: Assignment, id: ID, target: InsertTarget) {
+//   const item = a.items[id];
+//   let t = target;
+//   if (item.kind === "block" && t.groupId) {
+//     const s = getSection(a, t.sectionId)!;
+//     t = {
+//       sectionId: t.sectionId,
+//       groupId: null,
+//       index: s.itemIds.indexOf(t.groupId) + 1,
+//     };
+//   }
+//   const arr = container(a, t);
+//   arr.splice(Math.max(0, Math.min(t.index, arr.length)), 0, id);
+//   if (item.kind === "question") {
+//     item.config.groupId = t.groupId;
+//     if (item.content.type === "MULTI_TEXT_INPUT")
+//       item.content = migrateLegacyMultiText(item.content);
+//     if (
+//       item.content.type !== "CLOZE" 
+//     )
+//       item.content.blankRef = null;
+//   }
+// }
+
 export function place(a: Assignment, id: ID, target: InsertTarget) {
   const item = a.items[id];
   let t = target;
   if (item.kind === "block" && t.groupId) {
     const s = getSection(a, t.sectionId)!;
-    t = {
-      sectionId: t.sectionId,
-      groupId: null,
-      index: s.itemIds.indexOf(t.groupId) + 1,
-    };
+    t = { sectionId: t.sectionId, groupId: null, index: s.itemIds.indexOf(t.groupId) + 1 };
   }
   const arr = container(a, t);
   arr.splice(Math.max(0, Math.min(t.index, arr.length)), 0, id);
   if (item.kind === "question") {
     item.config.groupId = t.groupId;
-    if (item.content.type === "MULTI_TEXT_INPUT")
-      item.content = migrateLegacyMultiText(item.content);
-    if (
-      item.content.type !== "CLOZE" 
-    )
-      item.content.blankRef = null;
+    const g = t.groupId ? (a.items[t.groupId] as BlockItem) : null;
+    if (item.content.type === "MATCHING" && g?.block.type === "POOL" && !item.content.poolId)
+      item.content.poolId = g.id;
+    if (g?.block.type !== "PASSAGE") item.content.blankRef = null;
   }
 }
+
 function migrateLegacyMultiText(
   content: Extract<QuestionItem["content"], { type: "MULTI_TEXT_INPUT" }>,
 ): Extract<QuestionItem["content"], { type: "CLOZE" }> {
@@ -159,49 +179,86 @@ export function removeSection(a: Assignment, sectionId: ID) {
   [...s.itemIds].forEach((id) => removeItem(a, id, true));
   a.sections = a.sections.filter((x) => x.id !== sectionId);
 }
+// export function duplicateItem(a: Assignment, id: ID): ID | null {
+//   const item = a.items[id],
+//     loc = locate(a, id);
+//   if (!item || !loc) return null;
+//   const clone = structuredClone(item) as Item;
+//   clone.id = uid(item.kind === "block" ? "b" : "q");
+//   if (clone.kind === "block") clone.compositionItemId = undefined;
+//   if (clone.kind === "question") {
+//     clone.serverQuestionId = undefined;
+//     clone.compositionItemId = undefined;
+//     clone.serverQuestionSnapshot = undefined;
+//   }
+//   if (clone.kind === "question" && "options" in clone.content)
+//     clone.content.options.forEach((o) => (o.id = uid("o")));
+//   if (clone.kind === "question" && clone.content.type === "CLOZE") {
+//     clone.content.segments.forEach((s) => (s.id = uid("seg")));
+//     clone.content.blanks.forEach((b) => (b.id = uid("bl")));
+//   }
+//   if (clone.kind === "question" && clone.content.type === "MATCHING") {
+//     const answerIds = new Map<ID, ID>();
+//     clone.content.answers.forEach((answer) => {
+//       const old = answer.id;
+//       const next = uid("ma");
+//       answerIds.set(old, next);
+//       answer.id = next;
+//     });
+//     clone.content.items.forEach((match) => {
+//       match.id = uid("mi");
+//       match.correctAnswerId = match.correctAnswerId
+//         ? (answerIds.get(match.correctAnswerId) ?? null)
+//         : null;
+//     });
+//   }
+//   a.items[clone.id] = clone;
+//   if (clone.kind === "block") {
+//     clone.memberIds = [];
+//     for (const m of (item as BlockItem).memberIds) {
+//       const q = structuredClone(a.items[m]) as QuestionItem;
+//       q.id = uid("q");
+//       q.serverQuestionId = undefined;
+//       q.compositionItemId = undefined;
+//       q.serverQuestionSnapshot = undefined;
+//       q.config.groupId = clone.id;
+//       a.items[q.id] = q;
+//       clone.memberIds.push(q.id);
+//     }
+//   }
+//   if (clone.kind === "question") clone.config.groupId = loc.groupId;
+//   container(a, loc).splice(loc.index + 1, 0, clone.id);
+//   return clone.id;
+// }
+
 export function duplicateItem(a: Assignment, id: ID): ID | null {
-  const item = a.items[id],
-    loc = locate(a, id);
+  const item = a.items[id];
+  const loc = locate(a, id);
   if (!item || !loc) return null;
   const clone = structuredClone(item) as Item;
   clone.id = uid(item.kind === "block" ? "b" : "q");
-  if (clone.kind === "block") clone.compositionItemId = undefined;
-  if (clone.kind === "question") {
-    clone.serverQuestionId = undefined;
-    clone.compositionItemId = undefined;
-    clone.serverQuestionSnapshot = undefined;
-  }
   if (clone.kind === "question" && "options" in clone.content)
     clone.content.options.forEach((o) => (o.id = uid("o")));
-  if (clone.kind === "question" && clone.content.type === "CLOZE") {
-    clone.content.segments.forEach((s) => (s.id = uid("seg")));
+  if (clone.kind === "question" && clone.content.type === "MULTI_TEXT_INPUT")
     clone.content.blanks.forEach((b) => (b.id = uid("bl")));
-  }
-  if (clone.kind === "question" && clone.content.type === "MATCHING") {
-    const answerIds = new Map<ID, ID>();
-    clone.content.answers.forEach((answer) => {
-      const old = answer.id;
-      const next = uid("ma");
-      answerIds.set(old, next);
-      answer.id = next;
-    });
-    clone.content.items.forEach((match) => {
-      match.id = uid("mi");
-      match.correctAnswerId = match.correctAnswerId
-        ? (answerIds.get(match.correctAnswerId) ?? null)
-        : null;
-    });
-  }
   a.items[clone.id] = clone;
   if (clone.kind === "block") {
+    const entryMap = new Map<ID, ID>();
+    if (clone.block.type === "POOL")
+      clone.block.entries.forEach((e) => {
+        const n = uid("e");
+        entryMap.set(e.id, n);
+        e.id = n;
+      });
     clone.memberIds = [];
     for (const m of (item as BlockItem).memberIds) {
       const q = structuredClone(a.items[m]) as QuestionItem;
       q.id = uid("q");
-      q.serverQuestionId = undefined;
-      q.compositionItemId = undefined;
-      q.serverQuestionSnapshot = undefined;
       q.config.groupId = clone.id;
+      if (q.content.type === "MATCHING" && q.content.poolId === id) {
+        q.content.poolId = clone.id;
+        q.content.correctEntryId = entryMap.get(q.content.correctEntryId ?? "") ?? null;
+      }
       a.items[q.id] = q;
       clone.memberIds.push(q.id);
     }
@@ -210,6 +267,7 @@ export function duplicateItem(a: Assignment, id: ID): ID | null {
   container(a, loc).splice(loc.index + 1, 0, clone.id);
   return clone.id;
 }
+
 export function newSection(): Section {
   return {
     id: uid("s"),
@@ -222,158 +280,57 @@ export function newSection(): Section {
 }
 export function createItem(tool: ToolKey): Item {
   const id = uid(isBlockTool(tool) ? "b" : "q");
-  const config = {
-    points: 1,
-    required: true,
-    gradingMode: "AUTO" as const,
-    isExample: false,
-    groupId: null,
-  };
-  const opt = (text: string, isCorrect = false) => ({
-    id: uid("o"),
-    text,
-    isCorrect,
-  });
+  const config = { points: 1, required: true, gradingMode: "AUTO" as const, isExample: false, groupId: null };
+  // Clean drafts: structure only — never pre-mark a correct answer or invent academic content.
+  const opt = (text = "") => ({ id: uid("o"), text, isCorrect: false });
   switch (tool) {
     case "SINGLE_CHOICE":
-      return {
-        id,
-        kind: "question",
-        config,
-        content: {
-          type: "SINGLE_CHOICE",
-          prompt: "",
-          display: "list",
-          options: [
-            opt("Option A"),
-            opt("Option B"),
-            opt("Option C"),
-            opt("Option D"),
-          ],
-        },
-      };
+      return { id, kind: "question", config, content: { type: "SINGLE_CHOICE", prompt: "", display: "list", options: [opt(), opt(), opt(), opt()] } };
     case "TRUE_FALSE":
-      return {
-        id,
-        kind: "question",
-        config,
-        content: { type: "TRUE_FALSE", prompt: "", answer: null },
-      };
+      return { id, kind: "question", config, content: { type: "SINGLE_CHOICE", prompt: "", display: "list", options: [opt("True"), opt("False")] } };
     case "MULTIPLE_CHOICE":
-      return {
-        id,
-        kind: "question",
-        config,
-        content: {
-          type: "MULTIPLE_CHOICE",
-          prompt: "",
-          options: [
-            opt("Option A"),
-            opt("Option B"),
-            opt("Option C"),
-            opt("Option D"),
-          ],
-        },
-      };
+      return { id, kind: "question", config, content: { type: "MULTIPLE_CHOICE", prompt: "", options: [opt(), opt(), opt(), opt()] } };
     case "TEXT_INPUT":
-      return {
-        id,
-        kind: "question",
-        config,
-        content: {
-          type: "TEXT_INPUT",
-          prompt: "",
-          acceptedAnswers: [""],
-          caseSensitive: false,
-        },
-      };
+      return { id, kind: "question", config, content: { type: "TEXT_INPUT", prompt: "", acceptedAnswers: [""], caseSensitive: false } };
     case "MULTI_BLANKS":
       return {
         id,
         kind: "question",
-        config: { ...config, points: 2 },
-        content: {
-          type: "CLOZE",
-          prompt: "",
-          caseSensitive: false,
-          segments: [{ id: uid("seg"), text: "" }],
-          blanks: [],
-        },
-      };
-    case "MATCHING":
-      return {
-        id,
-        kind: "question",
         config,
         content: {
-          type: "MATCHING",
-          prompt: "",
-          items: [],
-          answers: [],
-          shuffleAnswers: true,
+          type: "CLOZE",
+          prompt: "{{1}}",
+          caseSensitive: false,
+          segments: [{ id: uid("seg"), text: "" }, { id: uid("seg"), text: "" }],
+          blanks: [{ id: uid("bl"), key: "blank-1", acceptedAnswers: [""] }],
         },
       };
+    // case "MATCHING":
+    //   return { id, kind: "question", config, content: { type: "MATCHING", prompt: "",  items: [],answers: [],shuffleAnswers: true,} };
+    case "MATCHING":
+      return { id, kind: "question", config, content: { type: "MATCHING", prompt: "", poolId: null, correctEntryId: null } };  
     case "INSTRUCTIONS":
-      return {
-        id,
-        kind: "block",
-        memberIds: [],
-        block: {
-          type: "INSTRUCTIONS",
-          text: "Read the instructions carefully.",
-        },
-      };
+      return { id, kind: "block", memberIds: [], block: { type: "INSTRUCTIONS", text: "" } };
     case "PASSAGE":
-      return {
-        id,
-        kind: "block",
-        memberIds: [],
-        block: {
-          type: "PASSAGE",
-          title: "New passage",
-          text: "Type the passage here. Use {{1}} for blanks.",
-        },
-      };
+      return { id, kind: "block", memberIds: [], block: { type: "PASSAGE", title: "", text: "" } };
     case "MEDIA":
-      return {
-        id,
-        kind: "block",
-        memberIds: [],
-        block: { type: "MEDIA", url: "", alt: "", caption: "" },
-      };
+      return { id, kind: "block", memberIds: [], block: { type: "MEDIA", url: "", alt: "", caption: "" } };
     case "POOL":
-      return {
-        id,
-        kind: "block",
-        memberIds: [],
-        block: { type: "POOL", title: "Answer pool", entries: [] },
-      };
+      return { id, kind: "block", memberIds: [], block: { type: "POOL", title: "", entries: [{ id: uid("e"), text: "" }, { id: uid("e"), text: "" }] } };
     case "SECTION":
       throw new Error("Section is not an item");
   }
 }
-export function targetFromSelection(
-  a: Assignment,
-  sel: Selection,
-  isBlock: boolean,
-): InsertTarget | null {
+  
+export function targetFromSelection(a: Assignment, sel: Selection, isBlock: boolean): InsertTarget | null {
   if (sel?.kind === "item") {
-    const loc = locate(a, sel.id),
-      it = a.items[sel.id];
+    const loc = locate(a, sel.id);
+    const it = a.items[sel.id];
     if (loc && it) {
-      if (it.kind === "block" && !isBlock)
-        return {
-          sectionId: loc.sectionId,
-          groupId: it.id,
-          index: it.memberIds.length,
-        };
+      if (it.kind === "block" && !isBlock) return { sectionId: loc.sectionId, groupId: it.id, index: it.memberIds.length };
       if (loc.groupId && isBlock) {
         const s = getSection(a, loc.sectionId)!;
-        return {
-          sectionId: loc.sectionId,
-          groupId: null,
-          index: s.itemIds.indexOf(loc.groupId) + 1,
-        };
+        return { sectionId: loc.sectionId, groupId: null, index: s.itemIds.indexOf(loc.groupId) + 1 };
       }
       return { ...loc, index: loc.index + 1 };
     }
@@ -383,9 +340,7 @@ export function targetFromSelection(
     if (s) return { sectionId: s.id, groupId: null, index: s.itemIds.length };
   }
   const last = a.sections[a.sections.length - 1];
-  return last
-    ? { sectionId: last.id, groupId: null, index: last.itemIds.length }
-    : null;
+  return last ? { sectionId: last.id, groupId: null, index: last.itemIds.length } : null;
 }
 export interface OrderedEntry {
   id: ID;
@@ -422,6 +377,54 @@ export function computeNumbering(a: Assignment) {
 }
 export function blankTokens(text: string): string[] {
   return [...text.matchAll(/\{\{(.+?)\}\}/g)].map((m) => m[1]);
+}
+
+/** Split the authored Cloze prompt around its blank markers. */
+export function clozeSegmentsFromPrompt(prompt: string): string[] {
+  const segments: string[] = [];
+  const marker = /\{\{(.+?)\}\}/g;
+  let lastIndex = 0;
+  for (const match of prompt.matchAll(marker)) {
+    const index = match.index ?? lastIndex;
+    segments.push(prompt.slice(lastIndex, index));
+    lastIndex = index + match[0].length;
+  }
+  segments.push(prompt.slice(lastIndex));
+  return segments;
+}
+
+/** Keep Cloze segments and answer sets derived from the canonical prompt. */
+export function syncClozeContent(content: ClozeContent): ClozeContent {
+  const tokens = blankTokens(content.prompt);
+  const segmentTexts = clozeSegmentsFromPrompt(content.prompt);
+  const numericKeyCounts = new Map<string, number>();
+  for (const token of tokens) {
+    if (/^\d+$/.test(token.trim())) {
+      const key = `blank-${Number(token.trim())}`;
+      numericKeyCounts.set(key, (numericKeyCounts.get(key) ?? 0) + 1);
+    }
+  }
+  const keys = tokens.map((token, index) => {
+    const trimmed = token.trim();
+    const key = `blank-${Number(trimmed)}`;
+    return /^\d+$/.test(trimmed) && numericKeyCounts.get(key) === 1 ? key : `blank-${index + 1}`;
+  });
+  const byKey = new Map(content.blanks.map((blank) => [blank.key, blank]));
+  return {
+    ...content,
+    segments: segmentTexts.map((text, index) => ({
+      id: content.segments[index]?.id ?? uid("seg"),
+      text,
+    })),
+    blanks: keys.map((key, index) => {
+      const previous = byKey.get(key) ?? content.blanks[index];
+      return {
+        id: previous?.id ?? uid("bl"),
+        key,
+        acceptedAnswers: previous ? [...previous.acceptedAnswers] : [""],
+      };
+    }),
+  };
 }
 export function blankNumbers(text: string): number[] {
   return blankTokens(text).map((t, i) =>

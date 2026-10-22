@@ -1,4 +1,4 @@
-package e_learning.server.question.dto;
+package e_learning.server.question.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;

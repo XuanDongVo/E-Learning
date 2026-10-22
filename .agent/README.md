@@ -61,3 +61,10 @@ At the end of a task, update PROGRESS.md with what was changed and what was not 
 
 
 Assignment score contract: each scored question defaults to 1 point and can be customized per Assignment item. Assignment is automatically graded on submit/timeout; there is no manual grading workflow. `show_score_after_submit` (default TRUE) controls immediate score display; `show_answers_after_submit` independently controls answer/explanation visibility. Composition order comes from persisted section/item/member positions, never question_id order except for legacy backfill.
+
+## Teacher Content UI plan
+
+- UI blueprint: [Question Bank & Question Management](./ui/QUESTION_BANK_QUESTION_MANAGEMENT_BLUEPRINT.md)
+- Phased execution plan: [Question Bank UI phases](./plans/QUESTION_BANK_UI_PHASE_PLAN.md)
+
+These documents cover Content Explorer, Topic/Question Bank management, Question list and preview. Question Editor refactoring is explicitly deferred.

@@ -45,8 +45,8 @@ public class AssignmentItem {
     @Column(name = "possible_points", nullable = false, precision = 8, scale = 2)
     private BigDecimal possiblePoints = BigDecimal.ZERO;
 
-    @Column(name = "is_required", nullable = false)
-    private boolean required = true;
+//    @Column(name = "is_required", nullable = false)
+//    private boolean required = true;
 
     @Column(name = "is_example", nullable = false)
     private boolean example;

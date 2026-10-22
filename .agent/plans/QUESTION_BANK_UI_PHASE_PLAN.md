@@ -1,0 +1,207 @@
+# Question Bank UI — Phased Implementation Plan
+
+**Status:** In progress; UI-1 and UI-2 have partial code slices, neither phase is fully verified.  
+**Branch:** `refactor/teacher-content-ui-routing`  
+**Companion blueprint:** [Teacher Content UI Blueprint](../ui/QUESTION_BANK_QUESTION_MANAGEMENT_BLUEPRINT.md)
+
+## Rules for execution
+
+- One phase at a time; each phase is a reviewable vertical slice.
+- Before coding, read root `AGENTS.md`, `.agent/PROGRESS.md`, UI guidelines, frontend architecture, API contract, domain question model and current components/services.
+- Preserve current domain and endpoint contracts. No speculative API or schema changes.
+- Do not redesign or refactor Question Editor in these phases.
+- After each phase: inspect diff, run available lint/typecheck/build/tests, update this plan and `.agent/PROGRESS.md` with exact results. If validation cannot run, state that plainly.
+
+## Phase UI-1 — Content Explorer hierarchy
+
+**Goal:** Make Grade → Unit → Section → Topic navigation predictable and robust.
+
+**Scope**
+- Audit and refine the existing Content Overview split-pane/hierarchy.
+- Ensure grade/unit selection cannot become stale.
+- Make section expansion and topic navigation explicit.
+- Add/verify loading, empty, error and retry states.
+- Keep query fetching scoped and lazy; no Question list in Explorer.
+
+**Likely files**
+- `client-e-learning/src/components/features/teacher/content/content-overview.tsx`
+- Existing content hierarchy components and service/query keys only as needed.
+
+**Exit criteria**
+- Selection remains valid after Grade changes.
+- No unrelated hierarchy requests on expansion.
+- Topic navigation and browser navigation behave consistently.
+- UI states and responsive layout are covered.
+- Validation outcome recorded.
+
+## Phase UI-2 — Question Bank Manager
+
+**Status:** In progress (partial slice committed; validation outstanding).
+
+**Goal:** Align Topic detail with the bank lifecycle and server data.
+
+**Scope**
+- Review Topic detail bank list/create/edit/status/archive interactions.
+- Display bank status and server-owned total/ready counts distinctly.
+- Improve loading/error/empty states and mutation feedback.
+- Add Include archived only after exposing and verifying the existing backend option through the service.
+- Preserve current Topic and Bank route contracts.
+
+**Likely files**
+- `client-e-learning/src/components/features/teacher/content/topic-detail.tsx`
+- `client-e-learning/src/services/content/content.questionBank.service.ts`
+- `client-e-learning/src/types/content.ts` only if a contract-alignment change is required.
+
+**Exit criteria**
+- [x] Include-archived toggle is wired to the confirmed `includeArchived` API parameter.
+- [x] Topic/bank-list load errors have retry UI and are distinct from empty results.
+- [ ] Complete lifecycle interactions and mutation invalidation audit.
+- [ ] Verify frontend lint/typecheck/build and browser behavior.
+- Bank lifecycle actions match confirmed API contracts.
+- Errors do not masquerade as empty results.
+- Query invalidation works after create/update/archive/status changes.
+- No global bank search or invented endpoints.
+- Validation outcome recorded.
+
+## Phase UI-3 — Question Manager filters and pagination
+
+**Status:** Partial implementation committed; lint/typecheck/build and browser verification outstanding.
+
+**Goal:** Make Question lists fully use the existing server list contract.
+
+**Scope**
+- [x] Add All / Complete / Incomplete filter wired to `isComplete` in both request params and React Query key.
+- [x] Verify UI question type values include the current server enum values (`SINGLE_CHOICE`, `MULTIPLE_CHOICE`, `TRUE_FALSE`, `FILL_IN_BLANK`, `TYPE_ANSWER`, `MATCHING`, `CLOZE`) and difficulty values (`EASY`, `MEDIUM`, `HARD`).
+- Ensure search/filter changes reset page and debounce works.
+- Preserve server-side pagination and selection behavior.
+- Keep bulk delete; do not add single delete or drag-reorder.
+- [x] Disable the import entry point and label it coming soon until the mock-only import workflow is backed by a real server API.
+- Preserve existing preview/edit navigation; do not change editor internals.
+
+**Likely files**
+- `client-e-learning/src/components/features/teacher/content/question-bank-detail.tsx`
+- `client-e-learning/src/services/content/content.question.service.ts` only if the existing contract needs a narrowly scoped correction.
+- `client-e-learning/src/types/content.ts` or question option definitions only for verified enum alignment.
+
+**Exit criteria**
+- Completeness filter is included in API request and query key.
+- Page resets when search/filter changes.
+- Pagination metadata and total are server-driven.
+- Destructive action is guarded and errors are visible.
+- Validation outcome recorded.
+
+## Phase UI-4 — Navigation, preview and consistency audit
+
+**Status:** Partial implementation committed; route-state persistence and validation remain outstanding.
+
+**Goal:** Verify the teacher journey end-to-end without expanding into editor refactoring.
+
+**Scope**
+- [x] Add Question Bank breadcrumbs using loaded Unit → Section → Topic metadata, with links back to those parent views.
+- [x] Make the question preview a labeled modal dialog, constrain it to the viewport with internal scrolling, and support Escape to close.
+- [x] Display readable labels for question types in both the list and preview while retaining server enum values as filter values.
+- [ ] Ensure preview closes back to the same bank/list state and add focus management (focus trap/restore) if the existing dialog primitives support it.
+- Verify route IDs are stable across refresh and Back/Forward where current router supports it.
+- [ ] Audit shared tokens/components, full keyboard navigation and responsive behavior.
+- Confirm current server type values are displayed accurately.
+- Run regression review to confirm Question Editor was not changed.
+
+**Exit criteria**
+- [ ] Content Explorer → Topic → Bank → preview/edit navigation is coherent across refresh and Back/Forward.
+- [ ] No lost filters/page on return where route design can preserve them.
+- No unsupported action is presented as API-backed.
+- Validation outcome and residual gaps recorded.
+
+## Phase UI-5 — Separate Question Editor plan (not part of this delivery)
+
+This is a future planning gate, not authorization to modify the editor now. Create a separate editor blueprint before touching autosave, incremental save, composition, draft state or editor components. Review backend request/response contracts and the existing refactor plan first.
+
+## Dependencies and explicit exclusions
+
+- No backend migration is expected for UI-1 through UI-4.
+- If an API mismatch is discovered, stop and document it; do not silently expand the phase into backend work.
+- Question Editor, Assignment Builder, student runtime, Question Engine, Activity/Attempt flows and global search are out of scope.
+- UI implementation completion must not be confused with successful production validation.
+
+## Runtime issue to verify — Question Bank collection endpoint
+
+The source contract matches: `GET /v1/content/question-banks?topicId=<topicId>` maps to `QuestionBankController.list(@RequestParam Long topicId, @RequestParam(defaultValue = "false") boolean includeArchived)`. If runtime still reports `NoResourceFoundException` for `/v1/content/question-banks`, verify the running backend build/branch, active process and startup logs for controller registration; repository source alone cannot confirm a live route. The UI now surfaces the server error. Runtime verification remains outstanding.
+
+## Latest continuation — UI-1 / UI-2 and route diagnostics (2026-10-20)
+
+- UI-1 now clears expanded Sections when switching Grade or Unit so expansion state cannot leak into another hierarchy context.
+- UI-2 Question Bank detail now invalidates both bank detail and Topic bank-list query prefixes after update/status/archive and surfaces mutation success/failure via toast.
+- Added temporary `RequestMappingHandlerMapping=TRACE` logging in backend `application.properties` to diagnose why the running app does not register `QuestionBankController`.
+- Endpoint source path is consistent across frontend and controller. The user-provided log shows authenticated JWT/ROLE_TEACHER then `NoResourceFoundException`; verify controller registration at startup and confirm the running server uses this branch/build. Do not change API paths or security rules without new evidence.
+- Runtime validation, Maven tests, frontend lint/typecheck/build and browser checks remain outstanding.
+
+
+### UI-3 implementation slice (2026-10-20)
+
+- Added All / Complete / Incomplete filter to Question Manager. The selected state is included in `QUERY_KEYS.contentQuestions` and sent as `isComplete=true|false` using the existing service contract.
+- Completeness changes reset pagination to page 1. Empty results now say no questions match the filters; list errors show the API error and Retry instead of appearing as an empty bank.
+- Normalized `totalPages` to at least 1 for safe pagination rendering. Verified the visible question-type filters against the current server `QuestionType` enum and retained all seven values; difficulty values remain EASY/MEDIUM/HARD.
+- Commits: `05ec0f08` (filter, request/key, list error state), `6fb6ac2b` (retain all server enum filter values).
+- Validation not run in this GitHub-only editing session: frontend lint, tests, typecheck, build and browser checks remain outstanding.
+
+- Follow-up: disabled the mock-only Import toolbar action and labeled it “Import (coming soon)” because its current screen uses fabricated validation rows and timers, not a confirmed server workflow (commit `8f2b6046`).
+
+
+### UI-4 implementation slice (2026-10-20)
+
+- Question Bank detail now loads parent Topic → Section → Unit metadata and renders navigable breadcrumbs. Breadcrumb links use existing `onNavigate` route contracts; no new routes or API endpoints were introduced.
+- Question preview now has dialog semantics (`role=dialog`, `aria-modal`, accessible title), a viewport-bounded scrollable panel, and Escape-to-close behavior.
+- Question type names are mapped to readable labels in the Question list and preview; filter values remain the existing server enum strings.
+- Commits: `3d94f7dc` (breadcrumbs and preview accessibility), `c576c211` (readable question type labels).
+- Remaining: browser-test direct refresh and Back/Forward, verify parent breadcrumbs under loading/error conditions, ensure filter/page restoration after editor navigation, audit responsive and keyboard/focus behavior, run lint/typecheck/build/tests, and verify Question Editor source remains unchanged.
+- No tests, lint, typecheck or build were run in this GitHub-only editing session.
+
+## Approved Global Question Bank plan (2026-10-20)
+
+**Owner-approved decisions**
+- Navigation: `Question Banks` is a child of the `Content` sidebar group, alongside `Content Explorer`; it is not a separate top-level area.
+- Search scope for v1: Question Bank name and description only. Do not implement cross-bank question-text search.
+- Archived visibility: default list excludes ARCHIVED (DRAFT and PUBLISHED remain visible); a deliberate Include archived toggle reveals archived banks.
+- Question Editor is explicitly out of scope and must remain unmodified.
+
+**Route and UI**
+- Add the global list route at `/teacher/content/question-banks`; retain the existing `/teacher/content/question-banks/{bankId}` detail route and current Topic-scoped bank list.
+- Sidebar Content becomes an expandable group with Content Explorer (`/teacher/content`) and Question Banks (`/teacher/content/question-banks`).
+- Global list provides dependent Grade → Unit → Section → Topic filters, server-side name/description search, Include archived, server pagination, and a row/card for each bank with hierarchy path, status, totalQuestions and readyQuestions.
+- URL query parameters are the source of truth for global list filters and pagination; changing a parent filter clears dependent child selections and resets page to 1.
+- Screen states: loading, retryable error, no banks at all, no matches for current filters, and list success. Creating a new bank from this global screen is deferred: bank creation requires a concrete Topic and already exists on Topic detail.
+
+**Backend contract prerequisite**
+- Existing `GET /v1/content/question-banks?topicId=...` remains unchanged for Topic detail.
+- Add `GET /v1/content/question-banks/browse` with optional `gradeId`, `unitId`, `sectionId`, `topicId`, `search`, `includeArchived` (default false), `page` (1-based default 1), and `size` (default 20).
+- Response uses the existing `PageResponse` envelope around a global-bank DTO containing bank id/name/description/status/displayOrder/createdAt/updatedAt, topic id/name, section id/name, unit id/code/name, grade id/name, totalQuestions and readyQuestions.
+- Filtering, search and pagination must execute in the database, not by fetching every Topic's banks and filtering in the browser. Avoid per-row count-query amplification; use a bounded/projection/count strategy for the current page.
+- Archived toggle includes ARCHIVED as well as DRAFT/PUBLISHED; default excludes ARCHIVED.
+- No schema migration is expected. Add focused repository/service/controller tests where existing test infrastructure permits.
+
+**Execution order**
+1. Implement and test the paginated backend browse query/DTO/endpoint, preserving the existing Topic-scoped API.
+2. Add the typed frontend service and query key for global browsing; wire dependent dropdown options through existing Grade/Unit/Section/Topic list APIs.
+3. Add the global screen and route; parse/write filters and pagination in the URL; reuse project design tokens and current visual components.
+4. Add the nested Content navigation and vi/en labels; ensure active-state behavior for the global route and existing content routes.
+5. Run relevant backend/frontend checks where executable, inspect the final diff to confirm Question Editor is unchanged, and record exact validation results.
+
+**Acceptance criteria**
+- Global screen can be opened directly, refreshed and navigated with Back/Forward without losing URL-backed filter context.
+- Parent/child dropdowns remain consistent and changing a parent clears invalid descendant filters.
+- Name/description search, hierarchy filters, includeArchived and server pagination all map to the existing/new confirmed contract.
+- Counts and hierarchy metadata are server-provided; no fake data, global cross-question search, or N+1-per-row count amplification.
+- Existing Topic detail and bank detail routes remain operational; Question Editor source/payload/navigation behavior remains untouched.
+- Do not mark done unless the build/test outcomes are recorded.
+
+### Global Question Bank implementation slice (2026-10-20)
+
+- Implemented the owner-approved global route at `/teacher/content/question-banks`, retaining the existing `/[bankId]` detail route and Topic-scoped list endpoint.
+- Added `GET /v1/content/question-banks/browse` with optional Grade/Unit/Section/Topic filters, case-insensitive search across bank name/description only, `includeArchived=false` by default, and 1-based server pagination (default size 20, capped at 100).
+- Added a global response DTO with hierarchy metadata and total/ready question counts. The current page uses a batched grouped count query rather than per-bank count queries.
+- Added typed frontend browse service/query key and URL-backed filter/page state. Parent filter changes clear dependent child filters; search submits bank-name/description only; Archived is opt-in.
+- Added a nested Content sidebar group with Content Explorer and Question Banks, plus VI/EN labels for these navigation entries.
+- Question Editor source was not intentionally edited; it remains a required regression check.
+- Commits for this slice include: `98dcfffd` (approved plan), `c848c001`/`73e40f54` (repository/count query), `b05de5aa`/`4ba5ece6` (browse service/controller), `efe6e3ff`/`0e88d279`/`e52b28e7` (frontend types/service/query key), `983a5f9b`/`c8330fbd` (global list/route), `858f3868`/`55f53292` (navigation/labels).
+- Validation status: not run in a local checkout in this GitHub-only editing session. Maven tests, frontend lint, Vitest, typecheck/build and browser navigation/filter checks remain outstanding. Do not consider the slice fully verified until those checks pass.
+- Backend compatibility correction during browse implementation: ready-question repository methods referenced `questionComplete` as if it were a field on `ContentQuestion`, while completeness belongs to the related `Question.complete`. Replaced those derived methods with explicit JPQL joins so the existing ready-question count/list operations and the new aggregate query use the actual model. This was required to make the bank browse backend consistent with the current entity mapping.

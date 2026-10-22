@@ -1,4 +1,4 @@
-package e_learning.server.question.dto;
+package e_learning.server.question.dto.response;
 
 import e_learning.server.question.enums.Difficulty;
 import e_learning.server.question.enums.QuestionType;

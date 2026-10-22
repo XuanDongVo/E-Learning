@@ -81,13 +81,13 @@ class QuestionEngineCharacterizationTest {
     void fillInBlankPreservesLegacyMarkerAndAcceptedAlternativeSemantics() {
         QuestionSpec spec = new FillInBlankSpec(
                 new QuestionSpec.QuestionCommon("The capital is ____.", Difficulty.EASY, null, null, List.of()),
-                List.of("Paris", "City of Paris"));
+                List.of("Paris", "City of Paris"), MatchingMode.CASE_INSENSITIVE_TRIM);
 
         assertEquals(DefinitionValidation.Status.READY, engine.validateDefinition(spec).status());
         ValidatedAnswer alternative = engine.parseAndValidate(spec, new RawAnswer(" city of paris ")).answer().orElseThrow();
         assertEquals(1, engine.grade(spec, alternative).scoreFraction().intValue());
 
-        QuestionSpec missingMarker = new FillInBlankSpec(common, List.of("Paris"));
+        QuestionSpec missingMarker = new FillInBlankSpec(common, List.of("Paris"), MatchingMode.CASE_INSENSITIVE_TRIM);
         assertEquals(DefinitionValidation.Status.INVALID, engine.validateDefinition(missingMarker).status());
     }
 
@@ -115,7 +115,7 @@ class QuestionEngineCharacterizationTest {
     void definitionValidationDistinguishesIncompleteFromInvalid() {
         QuestionSpec incomplete = new SingleChoiceSpec(common,
                 List.of(new QuestionSpec.Choice("A", "Alpha"), new QuestionSpec.Choice("B", "Beta")), null);
-        QuestionSpec invalid = new FillInBlankSpec(common, List.of("answer"));
+        QuestionSpec invalid = new FillInBlankSpec(common, List.of("answer"), MatchingMode.CASE_INSENSITIVE_TRIM);
 
         assertEquals(DefinitionValidation.Status.INCOMPLETE, engine.validateDefinition(incomplete).status());
         assertEquals(DefinitionValidation.Status.INVALID, engine.validateDefinition(invalid).status());

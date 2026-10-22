@@ -1,4 +1,4 @@
-package e_learning.server.question.dto;
+package e_learning.server.question.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,9 +9,8 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class QuestionMediaResponse {
+public class QuestionAnswerResponse {
     private Long id;
-    private Long mediaId;
-    private String mediaType;
-    private String url;
+    private String rawValue;
+    private String normalizedValue;
 }

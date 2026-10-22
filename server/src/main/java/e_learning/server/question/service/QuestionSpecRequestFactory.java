@@ -41,20 +41,18 @@ public class QuestionSpecRequestFactory {
 
     private MatchingSpec matching(QuestionSpec.QuestionCommon common, QuestionDefinitionRequest definition) {
         MatchingDefinitionRequest d = definition == null ? null : definition.getMatching();
-        if (d == null) {
-            throw new IllegalArgumentException("Matching definition is required");
-        }
-
-        return new MatchingSpec(common, d.getPoolId(), d.getCorrectEntryId());
+        return new MatchingSpec(
+                common,
+                d == null ? null : d.getPoolId(),
+                d == null ? null : d.getCorrectEntryId()
+        );
     }
 
     private ClozeSpec cloze(QuestionSpec.QuestionCommon common, QuestionDefinitionRequest definition) {
         ClozeDefinitionRequest d = definition == null ? null : definition.getCloze();
 
         if (d == null) {
-            throw new IllegalArgumentException(
-                    "Cloze definition is required"
-            );
+            return new ClozeSpec(common, List.of(), List.of(), false);
         }
 
         List<ClozeSpec.Segment> segments =
@@ -75,12 +73,12 @@ public class QuestionSpecRequestFactory {
                         : d.getBlanks().stream()
                         .filter(Objects::nonNull)
                         .map(blank -> new ClozeSpec.Blank(
-                                blank.getKey(),
+                                blank.getKey() == null ? "" : blank.getKey(),
                                 blank.getAcceptedAnswers() == null
                                         ? List.of()
-                                        : List.copyOf(
-                                        blank.getAcceptedAnswers()
-                                )
+                                        : blank.getAcceptedAnswers().stream()
+                                                .filter(Objects::nonNull)
+                                                .toList()
                         ))
                         .toList();
 

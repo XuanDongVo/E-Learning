@@ -232,7 +232,8 @@ public class AssignmentCompositionService {
      *              điểm > 0 (trừ khi là example thì điểm = 0).
      *  - Block nội dung (PASSAGE / POOL / INSTRUCTIONS): không có questionId, bắt buộc có blockPayload,
      *              điểm = 0 và không phải example.
-     *  - Chỉ PASSAGE / POOL mới có con; con luôn là QUESTION (v1 chưa cho block lồng block).
+     *  - Mọi content block (INSTRUCTIONS / PASSAGE / MEDIA / POOL) có thể chia sẻ nội dung với các QUESTION con;
+     *    v1 không cho phép lồng content block bên trong content block khác.
      *
      * @param itemById              item hiện có trong DB, tra theo ID (khi request gửi id)
      * @param reusableQuestionItems item QUESTION cũ chưa được request nhắc tới bằng ID, tra theo questionId;
@@ -266,8 +267,8 @@ public class AssignmentCompositionService {
             validateBlockPayload(type, request.blockPayload());
         }
         List<CompositionItemRequest> children = request.children() == null ? List.of() : request.children();
-        if (!children.isEmpty() && ("QUESTION".equals(type) || "INSTRUCTIONS".equals(type))) {
-            throw invalid("Only PASSAGE and POOL blocks may contain child items.");
+        if (!children.isEmpty() && "QUESTION".equals(type)) {
+            throw invalid("Question items cannot contain child items; attach questions to a content block.");
         }
         requireContiguousPositions(children.stream().map(CompositionItemRequest::position).toList(), "child item");
 

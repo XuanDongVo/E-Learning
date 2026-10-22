@@ -2,6 +2,7 @@ import { request } from "@/services/api.service";
 import { getAssignment, updateAssignment } from "@/services/assignment.service";
 import { assignmentQuestionService } from "@/services/assignment/assignment.question.service";
 import { persistBuilderQuestions } from "@/services/assignment/assignment-question-persistence.service";
+import * as ops from "@/components/features/teacher/assignments/builder/ops";
 import type {
   Assignment as ApiAssignment,
   AssignmentQuestion,
@@ -126,29 +127,40 @@ function mapQuestion(
       const definition = q.definition && "cloze" in q.definition
         ? q.definition.cloze
         : undefined;
-      const blanks = (definition?.blanks ?? []).map((blank, index) => ({
+      const savedBlanks = (definition?.blanks ?? []).map((blank, index) => ({
         id: `blank-${row.questionId}-${blank.key || index + 1}`,
         key: blank.key || `blank-${index + 1}`,
         acceptedAnswers: [...(blank.acceptedAnswers ?? [])],
       }));
-      const segments = (definition?.segments ?? []).map((segment, index) => ({
-        id: `segment-${row.questionId}-${index + 1}`,
-        text: segment.text ?? "",
-      }));
-      const reconstructedPrompt = segments.length
-        ? segments.reduce(
-            (text, segment, index) =>
-              text + segment.text + (index < blanks.length ? `{{${index + 1}}}` : ""),
-            "",
-          )
+      const savedSegments = (definition?.segments ?? []).map((segment) => segment.text ?? "");
+      const promptHasMarkers = ops.blankTokens(prompt).length > 0;
+      const hasUsefulSegments = savedSegments.some((text) => text.length > 0);
+      const canonicalPrompt = !promptHasMarkers && hasUsefulSegments
+        ? savedSegments.map((text, index) => {
+            const keyNumber = savedBlanks[index]?.key.match(/^blank-(\d+)$/)?.[1] ?? String(index + 1);
+            return text + (index < savedBlanks.length ? `{{${keyNumber}}}` : "");
+          }).join("")
         : prompt;
+      const segmentTexts = ops.clozeSegmentsFromPrompt(canonicalPrompt);
+      const tokenKeys = ops.blankTokens(canonicalPrompt).map((token, index) =>
+        /^\d+$/.test(token.trim()) ? `blank-${Number(token.trim())}` : `blank-${index + 1}`,
+      );
+      const blanks = tokenKeys.map((key, index) => {
+        const blank = savedBlanks.find((candidate) => candidate.key === key) ?? savedBlanks[index];
+        return {
+          id: blank?.id ?? `blank-${row.questionId}-${index + 1}`,
+          key,
+          acceptedAnswers: [...(blank?.acceptedAnswers ?? [""])],
+        };
+      });
       content = {
         ...common,
         type: "CLOZE",
-        prompt: reconstructedPrompt,
-        segments: segments.length
-          ? segments
-          : [{ id: `segment-${row.questionId}-1`, text: prompt }],
+        prompt: canonicalPrompt,
+        segments: segmentTexts.map((text, index) => ({
+          id: `segment-${row.questionId}-${index + 1}`,
+          text,
+        })),
         blanks,
         caseSensitive:
           definition?.caseSensitive ??
@@ -160,27 +172,11 @@ function mapQuestion(
       const definition = q.definition && "matching" in q.definition
         ? q.definition.matching
         : undefined;
-      const matchingAnswers = (definition?.answerPool ?? []).map((text, index) => ({
-        id: `ans-${row.questionId}-${index + 1}`,
-        key: `answer-${index + 1}`,
-        text,
-      }));
       content = {
         ...common,
         type: "MATCHING",
-        items: (definition?.items ?? []).map((matchItem, index) => ({
-          id: `item-${row.questionId}-${matchItem.key || index + 1}`,
-          key: matchItem.key || `item-${index + 1}`,
-          prompt: matchItem.prompt,
-          correctAnswerId:
-            matchingAnswers.find(
-              (answer) => answer.text === definition?.expectedPairs?.[matchItem.key],
-            )?.id ?? null,
-        })),
-        answers: matchingAnswers,
-        shuffleAnswers: definition?.shuffleAnswers ?? true,
-        poolId: null,
-        correctEntryId: null,
+        poolId: definition?.poolId ?? null,
+        correctEntryId: definition?.correctEntryId ?? null,
       };
       break;
     }
@@ -218,6 +214,9 @@ function mapQuestion(
 
 function blockFromApi(item: ApiItem): BlockItem {
   const p = item.blockPayload ?? {};
+  const logicalId = item.itemType === "POOL" && typeof p.poolKey === "string" && p.poolKey.trim()
+    ? p.poolKey
+    : asId("b", item.id);
   let block: BlockItem["block"];
   if (item.itemType === "PASSAGE")
     block = {
@@ -246,7 +245,7 @@ function blockFromApi(item: ApiItem): BlockItem {
     };
   } else block = { type: "INSTRUCTIONS", text: String(p.text ?? "") };
   return {
-    id: asId("b", item.id),
+    id: logicalId,
     kind: "block",
     compositionItemId: item.id,
     block,
@@ -286,14 +285,14 @@ function mapAssignment(
           if (!row) continue;
           const q = mapQuestion(row, child);
           q.config.groupId = block.id;
-          if (block.block.type === "POOL" && q.content.type === "MATCHING")
+          if (block.block.type === "POOL" && q.content.type === "MATCHING" && !q.content.poolId)
             q.content.poolId = block.id;
           items[q.id] = q;
         }
         if (block.block.type === "POOL") {
           for (const memberId of block.memberIds) {
             const q = items[memberId];
-            if (q?.kind === "question" && q.content.type === "MATCHING")
+            if (q?.kind === "question" && q.content.type === "MATCHING" && !q.content.poolId)
               q.content.poolId = block.id;
           }
         }
@@ -342,7 +341,7 @@ function mapAssignment(
   };
 }
 
-function serializeBlock(block: BlockItem["block"]): {
+function serializeBlock(block: BlockItem["block"], logicalId: string): {
   itemType: string;
   blockPayload: Record<string, unknown>;
 } {
@@ -368,6 +367,7 @@ function serializeBlock(block: BlockItem["block"]): {
         itemType: "POOL",
         blockPayload: {
           title: block.title,
+          poolKey: logicalId,
           entries: block.entries.map((e) => ({ id: e.id, text: e.text })),
         },
       };
@@ -400,7 +400,7 @@ function serializeItem(
 ): WriteItem {
   if (item.kind === "question")
     return serializeQuestion(item, position, numberId(item.id, "item"));
-  const b = serializeBlock(item.block);
+  const b = serializeBlock(item.block, item.id);
   const id = item.compositionItemId ?? numberId(item.id, "b");
   const children = item.memberIds
     .map((memberId) => allItems[memberId])

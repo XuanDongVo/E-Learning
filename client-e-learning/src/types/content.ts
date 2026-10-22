@@ -1,6 +1,10 @@
 import type { ReactNode } from "react";
 import type { ColorTone } from "./theme";
-import type { QuestionDifficulty, QuestionType } from "./question";
+import type {
+  QuestionDifficulty,
+  QuestionMatchingMode,
+  QuestionType,
+} from "./question";
 export type {
   DraftQuestion,
   QuestionMediaDraft,
@@ -118,6 +122,20 @@ export interface QuestionMediaResponse {
   url: string;
 }
 
+export type QuestionDefinition =
+  | {
+      matching: { poolId: string | null; correctEntryId: string | null };
+      cloze?: never;
+    }
+  | {
+      cloze: {
+        caseSensitive?: boolean;
+        segments: { text: string }[];
+        blanks: { key: string; acceptedAnswers: string[] }[];
+      };
+      matching?: never;
+    };
+
 export interface QuestionResponse {
   id: number;
   questionBankId: number;
@@ -128,7 +146,8 @@ export interface QuestionResponse {
   hint?: string;
   complete: boolean;
   is_complete?: boolean;
-  matchingMode?: string;
+  matchingMode?: QuestionMatchingMode;
+  definition?: QuestionDefinition;
   options: QuestionOptionResponse[];
   answers: QuestionAnswerResponse[];
   media: QuestionMediaResponse[];
@@ -177,6 +196,8 @@ export interface CreateQuestionRequest {
   options?: QuestionOptionRequest[];
   answers?: QuestionAnswerRequest[];
   mediaIds?: number[];
+  matchingMode?: QuestionMatchingMode;
+  definition?: QuestionDefinition;
 }
 
 export interface UpdateQuestionRequest {
@@ -188,6 +209,8 @@ export interface UpdateQuestionRequest {
   options?: QuestionOptionRequest[];
   answers?: QuestionAnswerRequest[];
   mediaIds?: number[];
+  matchingMode?: QuestionMatchingMode;
+  definition?: QuestionDefinition;
 }
 
 export interface CreateUnitRequest {

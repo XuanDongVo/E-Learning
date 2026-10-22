@@ -43,8 +43,8 @@ public class QuestionSpecMapper {
                     new SingleChoiceSpec(common, choices(question), correctKeys(question).stream().findFirst().orElse(null));
             case MULTIPLE_CHOICE -> new MultipleChoiceSpec(common, choices(question), correctKeys(question));
             case TRUE_FALSE ->
-                    new TrueFalseSpec(common, answerValue(question).map(v -> "TRUE".equalsIgnoreCase(v)).orElse(null));
-            case FILL_IN_BLANK -> new FillInBlankSpec(common, answerValues(question));
+                    new TrueFalseSpec(common, answerValue(question).map("TRUE"::equalsIgnoreCase).orElse(null));
+            case FILL_IN_BLANK -> new FillInBlankSpec(common, answerValues(question), matchingMode(question));
             case TYPE_ANSWER -> new TypeAnswerSpec(common, answerValues(question), matchingMode(question));
             case MATCHING -> matchingSpec(common, question);
             case CLOZE -> clozeSpec(common, question);

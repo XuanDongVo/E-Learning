@@ -29,6 +29,7 @@ function toPayload(item: QuestionItem): CreateAssignmentQuestionRequest {
     return {
       ...common,
       type: content.type,
+      matchingMode: content.caseSensitive ? "CASE_SENSITIVE_TRIM" : "CASE_INSENSITIVE_TRIM",
       options: content.options.map((option) => ({
         content: option.text.trim(),
         isCorrect: option.isCorrect,

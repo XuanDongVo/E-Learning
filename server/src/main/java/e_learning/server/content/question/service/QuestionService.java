@@ -161,6 +161,7 @@ public class QuestionService {
                 .hint(content.getHint())
                 .complete(content.isComplete())
                 .matchingMode(content.getMatchingMode())
+                .definition(content.getDefinition())
                 .options(content.getOptions())
                 .answers(content.getAnswers())
                 .media(content.getMedia())

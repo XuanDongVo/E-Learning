@@ -32,8 +32,8 @@ public class QuestionSpecRequestFactory {
             case MULTIPLE_CHOICE -> new MultipleChoiceSpec(common, choices, correctKeys(request));
             case TRUE_FALSE ->
                     new TrueFalseSpec(common, answerValues.stream().findFirst().filter(v -> "TRUE".equalsIgnoreCase(v) || "FALSE".equalsIgnoreCase(v)).map(v -> "TRUE".equalsIgnoreCase(v)).orElse(null));
-            case FILL_IN_BLANK -> new FillInBlankSpec(common, answerValues);
-            case TYPE_ANSWER -> new TypeAnswerSpec(common, answerValues, MatchingMode.CASE_INSENSITIVE_TRIM);
+            case FILL_IN_BLANK -> new FillInBlankSpec(common, answerValues, matchingMode(request));
+            case TYPE_ANSWER -> new TypeAnswerSpec(common, answerValues, matchingMode(request));
             case MATCHING -> matching(common, request.getDefinition());
             case CLOZE -> cloze(common, request.getDefinition());
         };
@@ -94,4 +94,10 @@ public class QuestionSpecRequestFactory {
         if (r.getOptions() == null) return java.util.Set.of();
         return java.util.stream.IntStream.range(0, r.getOptions().size()).filter(i -> r.getOptions().get(i).isCorrect()).mapToObj(i -> String.valueOf((char) ('A' + i))).collect(Collectors.toUnmodifiableSet());
     }
+
+       private MatchingMode matchingMode(QuestionWriteRequest request) {
+             return request.getMatchingMode() == null
+                               ? MatchingMode.CASE_INSENSITIVE_TRIM
+                              : request.getMatchingMode();
+            }
 }

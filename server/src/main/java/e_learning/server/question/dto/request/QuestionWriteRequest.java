@@ -1,5 +1,6 @@
 package e_learning.server.question.dto.request;
 
+import e_learning.server.question.engine.types.text.MatchingMode;
 import e_learning.server.question.enums.Difficulty;
 import e_learning.server.question.enums.QuestionType;
 import jakarta.validation.constraints.NotBlank;
@@ -26,6 +27,7 @@ public class QuestionWriteRequest {
     private List<QuestionOptionRequest> options;
     private List<QuestionAnswerRequest> answers;
     private List<Long> mediaIds;
+    private MatchingMode matchingMode;
     /** Required for MATCHING/CLOZE; absent definitions produce incomplete drafts. */
     private QuestionDefinitionRequest definition;
 }

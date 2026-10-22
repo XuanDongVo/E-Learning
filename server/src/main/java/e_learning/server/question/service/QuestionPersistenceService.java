@@ -9,6 +9,7 @@ import e_learning.server.question.dto.request.QuestionAnswerRequest;
 import e_learning.server.question.dto.request.QuestionOptionRequest;
 import e_learning.server.question.dto.request.QuestionWriteRequest;
 import e_learning.server.question.engine.core.QuestionEngine;
+import e_learning.server.question.engine.types.text.MatchingMode;
 import e_learning.server.question.entity.Question;
 import e_learning.server.question.entity.QuestionAnswer;
 import e_learning.server.question.entity.QuestionMedia;
@@ -54,7 +55,7 @@ public class QuestionPersistenceService {
                     .explanation(StringUtils.hasText(request.getExplanation()) ? request.getExplanation().trim() : null)
                     .hint(StringUtils.hasText(request.getHint()) ? request.getHint().trim() : null)
                     .definition(serializeDefinition(request))
-                    .complete(complete).matchingMode("CASE_INSENSITIVE_TRIM").contentRevision(1L).build();
+                    .complete(complete).matchingMode(matchingModeForStorage(request)).contentRevision(1L).build();
             Question saved = questionRepository.save(question);
             createChildEntities(saved, request);
             questions.add(saved);
@@ -71,6 +72,7 @@ public class QuestionPersistenceService {
         question.setExplanation(StringUtils.hasText(request.getExplanation()) ? request.getExplanation().trim() : null);
         question.setHint(StringUtils.hasText(request.getHint()) ? request.getHint().trim() : null);
         question.setDefinition(serializeDefinition(request));
+        question.setMatchingMode(matchingModeForStorage(request));
         question.setComplete(questionEngine.validateDefinition(questionSpecRequestFactory.toSpec(request)).isReady());
         question.setContentRevision(question.getContentRevision() + 1);
         updateChildEntities(question, request);
@@ -86,8 +88,20 @@ public class QuestionPersistenceService {
         releaseUnusedMedia(mediaIds);
     }
 
+    private String matchingModeForStorage(QuestionWriteRequest request) {
+        if (request.getType() == QuestionType.TYPE_ANSWER
+                || request.getType() == QuestionType.FILL_IN_BLANK) {
+            String name = (request.getMatchingMode() == null
+                    ? MatchingMode.CASE_INSENSITIVE_TRIM
+                    : request.getMatchingMode()).name();
+            return name;
+        }
+        return MatchingMode.CASE_INSENSITIVE_TRIM.name();
+    }
+
     private String serializeDefinition(QuestionWriteRequest request) {
-        if (request.getDefinition() == null || (request.getType() != QuestionType.MATCHING && request.getType() != QuestionType.CLOZE)) return null;
+        if (request.getDefinition() == null || (request.getType() != QuestionType.MATCHING && request.getType() != QuestionType.CLOZE))
+            return null;
         try {
             return objectMapper.writeValueAsString(request.getDefinition());
         } catch (Exception e) {
@@ -140,7 +154,13 @@ public class QuestionPersistenceService {
 
     private QuestionAnswer buildAnswer(Question question, QuestionAnswerRequest request, QuestionType type) {
         String raw = normalizeAnswer(request.getRawValue(), type);
-        return QuestionAnswer.builder().question(question).rawValue(raw).normalizedValue(raw.toLowerCase(Locale.ROOT)).build();
+
+        String normalized = raw.toLowerCase(Locale.ROOT);
+        if (((type == QuestionType.TYPE_ANSWER) || (type == QuestionType.FILL_IN_BLANK))
+                && MatchingMode.CASE_SENSITIVE_TRIM.name().equals(question.getMatchingMode())) {
+            normalized = raw;
+        }
+        return QuestionAnswer.builder().question(question).rawValue(raw).normalizedValue(normalized).build();
     }
 
     private String normalizeAnswer(String rawValue, QuestionType type) {
@@ -152,7 +172,9 @@ public class QuestionPersistenceService {
         return raw;
     }
 
-    private String toOptionKey(int index) { return String.valueOf((char) ('A' + index)); }
+    private String toOptionKey(int index) {
+        return String.valueOf((char) ('A' + index));
+    }
 
     private void releaseUnusedMedia(Set<Long> mediaIds) {
         for (Long mediaId : mediaIds) {

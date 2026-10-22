@@ -35,12 +35,28 @@ import type {
 } from "@/types/assignment-builder";
 import { createBlankQuestions, useIssues, useNumbering } from "./Canvas";
 
-function Field({ label, children, hint, error }: { label: string; children: ReactNode; hint?: string; error?: string | null }) {
+function Field({
+  label,
+  children,
+  hint,
+  error,
+}: {
+  label: string;
+  children: ReactNode;
+  hint?: string;
+  error?: string | null;
+}) {
   return (
     <div className="space-y-1.5">
-      <Label className="text-xs font-medium text-muted-foreground">{label}</Label>
+      <Label className="text-xs font-medium text-muted-foreground">
+        {label}
+      </Label>
       {children}
-      {error ? <p className="text-xs text-destructive">{error}</p> : hint ? <p className="text-xs text-muted-foreground">{hint}</p> : null}
+      {error ? (
+        <p className="text-xs text-destructive">{error}</p>
+      ) : hint ? (
+        <p className="text-xs text-muted-foreground">{hint}</p>
+      ) : null}
     </div>
   );
 }
@@ -65,8 +81,20 @@ function IssueList({ id }: { id: ID }) {
   return (
     <div className="space-y-1 border-b px-4 py-3">
       {issues.map((i) => (
-        <div key={i.key} className={cn("flex items-start gap-2 text-xs", i.level === "error" ? "text-destructive" : "text-warning-foreground")}>
-          {i.level === "error" ? <AlertCircle className="mt-px h-3.5 w-3.5 shrink-0" /> : <AlertTriangle className="mt-px h-3.5 w-3.5 shrink-0 text-warning" />}
+        <div
+          key={i.key}
+          className={cn(
+            "flex items-start gap-2 text-xs",
+            i.level === "error"
+              ? "text-destructive"
+              : "text-warning-foreground",
+          )}
+        >
+          {i.level === "error" ? (
+            <AlertCircle className="mt-px h-3.5 w-3.5 shrink-0" />
+          ) : (
+            <AlertTriangle className="mt-px h-3.5 w-3.5 shrink-0 text-warning" />
+          )}
           {i.message}
         </div>
       ))}
@@ -670,7 +698,8 @@ function MatchingEditor({ q }: { q: QuestionItem }) {
 
 function QuestionEditor({ q }: { q: QuestionItem }) {
   const a = useBuilder((s) => s.assignment);
-  const { duplicate, requestDeleteItem, mutate, select } = useBuilder.getState();
+  const { duplicate, requestDeleteItem, mutate, select } =
+    useBuilder.getState();
   const { numbers, total } = useNumbering();
   const c = q.content;
   const needsClozeSync =
@@ -678,52 +707,186 @@ function QuestionEditor({ q }: { q: QuestionItem }) {
     (ops.blankTokens(c.prompt).length !== c.blanks.length ||
       (c.type === "CLOZE" &&
         (c.segments.length !== ops.clozeSegmentsFromPrompt(c.prompt).length ||
-          c.segments.some((segment, index) =>
-            segment.text !== ops.clozeSegmentsFromPrompt(c.prompt)[index],
+          c.segments.some(
+            (segment, index) =>
+              segment.text !== ops.clozeSegmentsFromPrompt(c.prompt)[index],
           ))));
-  const group = q.config.groupId ? (a.items[q.config.groupId] as BlockItem | undefined) : undefined;
-  const blocks = ops.docOrder(a).map((e) => a.items[e.id]).filter((x): x is BlockItem => x?.kind === "block");
+  const group = q.config.groupId
+    ? (a.items[q.config.groupId] as BlockItem | undefined)
+    : undefined;
+  const blocks = ops
+    .docOrder(a)
+    .map((e) => a.items[e.id])
+    .filter((x): x is BlockItem => x?.kind === "block");
   const questionSectionId = ops.locate(a, q.id)?.sectionId;
-  const pools = blocks.filter((b) =>
-    b.block.type === "POOL" && ops.locate(a, b.id)?.sectionId === questionSectionId,
+  const pools = blocks.filter(
+    (b) =>
+      b.block.type === "POOL" &&
+      ops.locate(a, b.id)?.sectionId === questionSectionId,
   );
 
   return (
     <>
       <div className="flex items-center justify-between gap-2 border-b px-4 py-3">
         <div className="min-w-0">
-          <div className="truncate text-sm font-semibold">{q.config.isExample ? "Example item" : `Câu ${numbers.get(q.id)} / ${total}`}</div>
-          <div className="text-xs text-muted-foreground">{ops.TYPE_LABEL[c.type]}</div>
+          <div className="truncate text-sm font-semibold">
+            {q.config.isExample
+              ? "Example item"
+              : `Câu ${numbers.get(q.id)} / ${total}`}
+          </div>
+          <div className="text-xs text-muted-foreground">
+            {ops.TYPE_LABEL[c.type]}
+          </div>
         </div>
         <div className="flex shrink-0 gap-1">
-          <Button size="icon" variant="ghost" className="h-8 w-8" aria-label="Duplicate" onClick={() => duplicate(q.id)}><Copy className="h-4 w-4" /></Button>
-          <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive" aria-label="Delete" onClick={() => requestDeleteItem(q.id)}><Trash2 className="h-4 w-4" /></Button>
+          <Button
+            size="icon"
+            variant="ghost"
+            className="h-8 w-8"
+            aria-label="Duplicate"
+            onClick={() => duplicate(q.id)}
+          >
+            <Copy className="h-4 w-4" />
+          </Button>
+          <Button
+            size="icon"
+            variant="ghost"
+            className="h-8 w-8 text-destructive"
+            aria-label="Delete"
+            onClick={() => requestDeleteItem(q.id)}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
         </div>
       </div>
       <IssueList id={q.id} />
       <Group title="Content">
-        <Field label="Prompt" hint={MARKUP_HINT} error={!c.prompt.trim() && !c.blankRef && !("options" in c) ? "Prompt is required" : null}>
-          <Textarea rows={3} value={c.prompt} onChange={(e) => updateQ(q.id, (x) => (x.content.prompt = e.target.value))} placeholder={c.blankRef ? "Optional — the blank is in the passage" : "Type the question…"} />
+        <Field
+          label="Prompt"
+          hint={MARKUP_HINT}
+          error={
+            !c.prompt.trim() && !c.blankRef && !("options" in c)
+              ? "Prompt is required"
+              : null
+          }
+        >
+          <Textarea
+            rows={3}
+            value={c.prompt}
+            onChange={(e) =>
+              updateQ(q.id, (x) => (x.content.prompt = e.target.value))
+            }
+            placeholder={
+              c.blankRef
+                ? "Optional — the blank is in the passage"
+                : "Type the question…"
+            }
+          />
         </Field>
 
         {(c.type === "SINGLE_CHOICE" || c.type === "MULTIPLE_CHOICE") && (
-          <Field label={c.type === "SINGLE_CHOICE" ? "Options (select the correct one)" : "Options (tick all correct)"} error={c.options.length < 2 ? "At least 2 options" : !c.options.some((o) => o.isCorrect) ? "Mark the correct answer" : null}>
+          <Field
+            label={
+              c.type === "SINGLE_CHOICE"
+                ? "Options (select the correct one)"
+                : "Options (tick all correct)"
+            }
+            error={
+              c.options.length < 2
+                ? "At least 2 options"
+                : !c.options.some((o) => o.isCorrect)
+                  ? "Mark the correct answer"
+                  : null
+            }
+          >
             <div className="space-y-1.5">
               {c.options.map((o, i) => (
                 <div key={o.id} className="flex items-center gap-1.5">
                   {c.type === "SINGLE_CHOICE" ? (
-                    <input type="radio" name={`correct-${q.id}`} aria-label={`Mark ${ops.letter(i)} correct`} checked={o.isCorrect} className="h-4 w-4 shrink-0 accent-success" onChange={() => updateQ(q.id, (x) => "options" in x.content && x.content.options.forEach((y) => (y.isCorrect = y.id === o.id)))} />
+                    <input
+                      type="radio"
+                      name={`correct-${q.id}`}
+                      aria-label={`Mark ${ops.letter(i)} correct`}
+                      checked={o.isCorrect}
+                      className="h-4 w-4 shrink-0 accent-success"
+                      onChange={() =>
+                        updateQ(
+                          q.id,
+                          (x) =>
+                            "options" in x.content &&
+                            x.content.options.forEach(
+                              (y) => (y.isCorrect = y.id === o.id),
+                            ),
+                        )
+                      }
+                    />
                   ) : (
-                    <Checkbox aria-label={`Mark ${ops.letter(i)} correct`} checked={o.isCorrect} onCheckedChange={(v) => updateQ(q.id, (x) => "options" in x.content && (x.content.options[i].isCorrect = !!v))} />
+                    <Checkbox
+                      aria-label={`Mark ${ops.letter(i)} correct`}
+                      checked={o.isCorrect}
+                      onCheckedChange={(v) =>
+                        updateQ(
+                          q.id,
+                          (x) =>
+                            "options" in x.content &&
+                            (x.content.options[i].isCorrect = !!v),
+                        )
+                      }
+                    />
                   )}
-                  <span className="w-4 shrink-0 text-xs text-muted-foreground">{ops.letter(i)}</span>
-                  <Input className={cn("h-8", !o.text.trim() && "border-destructive")} value={o.text} onChange={(e) => updateQ(q.id, (x) => "options" in x.content && (x.content.options[i].text = e.target.value))} />
-                  <Button size="icon" variant="ghost" className="h-8 w-8 shrink-0" aria-label="Remove option" onClick={() => updateQ(q.id, (x) => "options" in x.content && x.content.options.splice(i, 1))}>
+                  <span className="w-4 shrink-0 text-xs text-muted-foreground">
+                    {ops.letter(i)}
+                  </span>
+                  <Input
+                    className={cn(
+                      "h-8",
+                      !o.text.trim() && "border-destructive",
+                    )}
+                    value={o.text}
+                    onChange={(e) =>
+                      updateQ(
+                        q.id,
+                        (x) =>
+                          "options" in x.content &&
+                          (x.content.options[i].text = e.target.value),
+                      )
+                    }
+                  />
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-8 w-8 shrink-0"
+                    aria-label="Remove option"
+                    onClick={() =>
+                      updateQ(
+                        q.id,
+                        (x) =>
+                          "options" in x.content &&
+                          x.content.options.splice(i, 1),
+                      )
+                    }
+                  >
                     <X className="h-3.5 w-3.5" />
                   </Button>
                 </div>
               ))}
-              <Button variant="ghost" size="sm" className="h-7 text-xs text-primary" onClick={() => updateQ(q.id, (x) => "options" in x.content && x.content.options.push({ id: ops.uid("o"), text: `Option ${ops.letter(x.content.options.length)}`, isCorrect: false }))}>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 text-xs text-primary"
+                onClick={() =>
+                  updateQ(
+                    q.id,
+                    (x) =>
+                      "options" in x.content &&
+                      x.content.options.push({
+                        id: ops.uid("o"),
+                        text: `Option ${ops.letter(x.content.options.length)}`,
+                        isCorrect: false,
+                      }),
+                  )
+                }
+              >
                 <Plus className="h-3.5 w-3.5" /> Add option
               </Button>
             </div>
@@ -731,8 +894,20 @@ function QuestionEditor({ q }: { q: QuestionItem }) {
         )}
         {c.type === "SINGLE_CHOICE" && (
           <Field label="Student control">
-            <Select value={c.display} onValueChange={(v) => updateQ(q.id, (x) => x.content.type === "SINGLE_CHOICE" && (x.content.display = v as "list" | "dropdown"))}>
-              <SelectTrigger className="h-8"><SelectValue /></SelectTrigger>
+            <Select
+              value={c.display}
+              onValueChange={(v) =>
+                updateQ(
+                  q.id,
+                  (x) =>
+                    x.content.type === "SINGLE_CHOICE" &&
+                    (x.content.display = v as "list" | "dropdown"),
+                )
+              }
+            >
+              <SelectTrigger className="h-8">
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="list">Radio buttons</SelectItem>
                 <SelectItem value="dropdown">Dropdown</SelectItem>
@@ -743,69 +918,142 @@ function QuestionEditor({ q }: { q: QuestionItem }) {
 
         {c.type === "TEXT_INPUT" && (
           <>
-            <Field label="Accepted answers" error={q.config.gradingMode === "AUTO" && !c.acceptedAnswers.some((x) => x.trim()) ? "Add at least one accepted answer" : null}>
-              <ListEditor values={c.acceptedAnswers} placeholder="Accepted answer" addLabel="Add alternative" onChange={(v) => updateQ(q.id, (x) => x.content.type === "TEXT_INPUT" && (x.content.acceptedAnswers = v))} />
+            <Field
+              label="Accepted answers"
+              error={
+                q.config.gradingMode === "AUTO" &&
+                !c.acceptedAnswers.some((x) => x.trim())
+                  ? "Add at least one accepted answer"
+                  : null
+              }
+            >
+              <ListEditor
+                values={c.acceptedAnswers}
+                placeholder="Accepted answer"
+                addLabel="Add alternative"
+                onChange={(v) =>
+                  updateQ(
+                    q.id,
+                    (x) =>
+                      x.content.type === "TEXT_INPUT" &&
+                      (x.content.acceptedAnswers = v),
+                  )
+                }
+              />
             </Field>
             <div className="grid grid-cols-2 gap-2">
               <Field label="Prefix (optional)">
-                <Input className="h-8" placeholder="→ What subject" value={c.prefix ?? ""} onChange={(e) => updateQ(q.id, (x) => x.content.type === "TEXT_INPUT" && (x.content.prefix = e.target.value))} />
+                <Input
+                  className="h-8"
+                  placeholder="→ What subject"
+                  value={c.prefix ?? ""}
+                  onChange={(e) =>
+                    updateQ(
+                      q.id,
+                      (x) =>
+                        x.content.type === "TEXT_INPUT" &&
+                        (x.content.prefix = e.target.value),
+                    )
+                  }
+                />
               </Field>
               <Field label="Visible cue (optional)">
-                <Input className="h-8" placeholder="(not listen)" value={c.cue ?? ""} onChange={(e) => updateQ(q.id, (x) => x.content.type === "TEXT_INPUT" && (x.content.cue = e.target.value))} />
+                <Input
+                  className="h-8"
+                  placeholder="(not listen)"
+                  value={c.cue ?? ""}
+                  onChange={(e) =>
+                    updateQ(
+                      q.id,
+                      (x) =>
+                        x.content.type === "TEXT_INPUT" &&
+                        (x.content.cue = e.target.value),
+                    )
+                  }
+                />
               </Field>
             </div>
             <label className="flex items-center justify-between text-sm">
               Case sensitive
-              <Switch checked={c.caseSensitive} onCheckedChange={(v) => updateQ(q.id, (x) => x.content.type === "TEXT_INPUT" && (x.content.caseSensitive = v))} />
+              <Switch
+                checked={c.caseSensitive}
+                onCheckedChange={(v) =>
+                  updateQ(
+                    q.id,
+                    (x) =>
+                      x.content.type === "TEXT_INPUT" &&
+                      (x.content.caseSensitive = v),
+                  )
+                }
+              />
             </label>
           </>
         )}
 
         {(c.type === "MULTI_TEXT_INPUT" || c.type === "CLOZE") && (
           <>
+            {needsClozeSync && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() =>
+                  updateQ(q.id, (x) => {
+                    if (x.content.type === "CLOZE") {
+                      const synced = ops.syncClozeContent(x.content);
+                      x.content.segments = synced.segments;
+                      x.content.blanks = synced.blanks;
+                    } else if (x.content.type === "MULTI_TEXT_INPUT") {
+                      const count = ops.blankTokens(x.content.prompt).length;
+                      while (x.content.blanks.length < count)
+                        x.content.blanks.push({
+                          id: ops.uid("bl"),
+                          acceptedAnswers: [""],
+                        });
+                      x.content.blanks.length = count;
+                    }
+                  })
+                }
+              >
+                Sync answer sets with {ops.blankTokens(c.prompt).length} blanks
+              </Button>
+            )}
+
             {c.blanks.map((b, i) => (
               <Field key={b.id} label={`Blank ${i + 1} — accepted answers`}>
                 <ListEditor
                   values={b.acceptedAnswers}
                   placeholder="Answer"
                   addLabel="Add alternative"
-                  onChange={(values) => updateQ(q.id, (x) => {
-                    if (x.content.type === "CLOZE") {
-                      if (x.content.blanks[i]) x.content.blanks[i].acceptedAnswers = values;
-                    } else if (x.content.type === "MULTI_TEXT_INPUT" && x.content.blanks[i]) {
-                      x.content.blanks[i].acceptedAnswers = values;
-                    }
-                  })}
+                  onChange={(values) =>
+                    updateQ(q.id, (x) => {
+                      if (x.content.type === "CLOZE") {
+                        if (x.content.blanks[i])
+                          x.content.blanks[i].acceptedAnswers = values;
+                      } else if (
+                        x.content.type === "MULTI_TEXT_INPUT" &&
+                        x.content.blanks[i]
+                      ) {
+                        x.content.blanks[i].acceptedAnswers = values;
+                      }
+                    })
+                  }
                 />
               </Field>
             ))}
-            {needsClozeSync && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => updateQ(q.id, (x) => {
-                  if (x.content.type === "CLOZE") {
-                    const synced = ops.syncClozeContent(x.content);
-                    x.content.segments = synced.segments;
-                    x.content.blanks = synced.blanks;
-                  } else if (x.content.type === "MULTI_TEXT_INPUT") {
-                    const count = ops.blankTokens(x.content.prompt).length;
-                    while (x.content.blanks.length < count) x.content.blanks.push({ id: ops.uid("bl"), acceptedAnswers: [""] });
-                    x.content.blanks.length = count;
-                  }
-                })}
-              >
-                Sync answer sets with {ops.blankTokens(c.prompt).length} blanks in prompt
-              </Button>
-            )}
+
             <label className="flex items-center justify-between text-sm">
               Case sensitive
               <Switch
                 checked={c.caseSensitive}
-                onCheckedChange={(value) => updateQ(q.id, (x) => {
-                  if (x.content.type === "CLOZE" || x.content.type === "MULTI_TEXT_INPUT")
-                    x.content.caseSensitive = value;
-                })}
+                onCheckedChange={(value) =>
+                  updateQ(q.id, (x) => {
+                    if (
+                      x.content.type === "CLOZE" ||
+                      x.content.type === "MULTI_TEXT_INPUT"
+                    )
+                      x.content.caseSensitive = value;
+                  })
+                }
               />
             </label>
           </>
@@ -813,50 +1061,146 @@ function QuestionEditor({ q }: { q: QuestionItem }) {
 
         {c.type === "MATCHING" && (
           <>
-            <Field label="Answer pool" error={!c.poolId || !pools.some((pool) => pool.id === c.poolId) ? "Choose an answer pool in this section" : null}>
-              <Select value={c.poolId && pools.some((pool) => pool.id === c.poolId) ? c.poolId : ""} onValueChange={(v) => updateQ(q.id, (x) => x.content.type === "MATCHING" && ((x.content.poolId = v), (x.content.correctEntryId = null)))}>
-                <SelectTrigger className="h-8"><SelectValue placeholder={pools.length ? "Select pool" : "No pools — add one first"} /></SelectTrigger>
+            <Field
+              label="Answer pool"
+              error={
+                !c.poolId || !pools.some((pool) => pool.id === c.poolId)
+                  ? "Choose an answer pool in this section"
+                  : null
+              }
+            >
+              <Select
+                value={
+                  c.poolId && pools.some((pool) => pool.id === c.poolId)
+                    ? c.poolId
+                    : ""
+                }
+                onValueChange={(v) =>
+                  updateQ(
+                    q.id,
+                    (x) =>
+                      x.content.type === "MATCHING" &&
+                      ((x.content.poolId = v),
+                      (x.content.correctEntryId = null)),
+                  )
+                }
+              >
+                <SelectTrigger className="h-8">
+                  <SelectValue
+                    placeholder={
+                      pools.length ? "Select pool" : "No pools — add one first"
+                    }
+                  />
+                </SelectTrigger>
                 <SelectContent>
-                  {pools.map((p) => <SelectItem key={p.id} value={p.id}>{ops.blockLabel(p)}</SelectItem>)}
+                  {pools.map((p) => (
+                    <SelectItem key={p.id} value={p.id}>
+                      {ops.blockLabel(p)}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </Field>
-            {c.poolId && pools.some((pool) => pool.id === c.poolId) && a.items[c.poolId]?.kind === "block" && (a.items[c.poolId] as BlockItem).block.type === "POOL" && (
-              <Field label="Correct letter" error={!c.correctEntryId ? "Pick the correct letter" : null}>
-                <div className="flex flex-wrap gap-1">
-                  {((a.items[c.poolId] as BlockItem).block as { entries: { id: string; text: string }[] }).entries.map((e, i) => (
-                    <button key={e.id} title={e.text} onClick={() => updateQ(q.id, (x) => x.content.type === "MATCHING" && (x.content.correctEntryId = e.id))} className={cn("h-8 w-8 rounded border text-sm font-semibold", c.correctEntryId === e.id ? "border-success bg-success text-success-foreground" : "hover:bg-muted")}>
-                      {ops.letter(i)}
-                    </button>
-                  ))}
-                </div>
-              </Field>
-            )}
+            {c.poolId &&
+              pools.some((pool) => pool.id === c.poolId) &&
+              a.items[c.poolId]?.kind === "block" &&
+              (a.items[c.poolId] as BlockItem).block.type === "POOL" && (
+                <Field
+                  label="Correct letter"
+                  error={!c.correctEntryId ? "Pick the correct letter" : null}
+                >
+                  <div className="flex flex-wrap gap-1">
+                    {(
+                      (a.items[c.poolId] as BlockItem).block as {
+                        entries: { id: string; text: string }[];
+                      }
+                    ).entries.map((e, i) => (
+                      <button
+                        key={e.id}
+                        title={e.text}
+                        onClick={() =>
+                          updateQ(
+                            q.id,
+                            (x) =>
+                              x.content.type === "MATCHING" &&
+                              (x.content.correctEntryId = e.id),
+                          )
+                        }
+                        className={cn(
+                          "h-8 w-8 rounded border text-sm font-semibold",
+                          c.correctEntryId === e.id
+                            ? "border-success bg-success text-success-foreground"
+                            : "hover:bg-muted",
+                        )}
+                      >
+                        {ops.letter(i)}
+                      </button>
+                    ))}
+                  </div>
+                </Field>
+              )}
           </>
         )}
       </Group>
 
       <Group title="Scoring">
         <div className="grid grid-cols-2 gap-2">
-          <Field label="Points" error={!q.config.isExample && !(q.config.points > 0) ? "Must be > 0" : null}>
-            <Input type="number" step="0.25" min={0} className="h-8" disabled={q.config.isExample} value={Number.isFinite(q.config.points) ? q.config.points : ""} onChange={(e) => updateQ(q.id, (x) => (x.config.points = e.target.value === "" ? NaN : Number(e.target.value)))} />
+          <Field
+            label="Points"
+            error={
+              !q.config.isExample && !(q.config.points > 0)
+                ? "Must be > 0"
+                : null
+            }
+          >
+            <Input
+              type="number"
+              step="0.25"
+              min={0}
+              className="h-8"
+              disabled={q.config.isExample}
+              value={Number.isFinite(q.config.points) ? q.config.points : ""}
+              onChange={(e) =>
+                updateQ(
+                  q.id,
+                  (x) =>
+                    (x.config.points =
+                      e.target.value === "" ? NaN : Number(e.target.value)),
+                )
+              }
+            />
           </Field>
         </div>
         <label className="flex items-center justify-between text-sm">
           Required
-          <Switch checked={q.config.required} onCheckedChange={(v) => updateQ(q.id, (x) => (x.config.required = v))} />
+          <Switch
+            checked={q.config.required}
+            onCheckedChange={(v) =>
+              updateQ(q.id, (x) => (x.config.required = v))
+            }
+          />
         </label>
         <label className="flex items-center justify-between text-sm">
           <span>
             Example item
-            <span className="block text-xs text-muted-foreground">Shown with its answer, not numbered or scored</span>
+            <span className="block text-xs text-muted-foreground">
+              Shown with its answer, not numbered or scored
+            </span>
           </span>
-          <Switch checked={q.config.isExample} onCheckedChange={(v) => updateQ(q.id, (x) => (x.config.isExample = v))} />
+          <Switch
+            checked={q.config.isExample}
+            onCheckedChange={(v) =>
+              updateQ(q.id, (x) => (x.config.isExample = v))
+            }
+          />
         </label>
       </Group>
 
       <Group title="Shared content">
-        <Field label="Belongs to" hint="Attach this question to a passage, pool, image or instructions block.">
+        <Field
+          label="Belongs to"
+          hint="Attach this question to a passage, pool, image or instructions block."
+        >
           <Select
             value={group ? group.id : "none"}
             onValueChange={(v) =>
@@ -864,57 +1208,98 @@ function QuestionEditor({ q }: { q: QuestionItem }) {
                 if (v === "none") {
                   const loc = ops.locate(d, q.id)!;
                   const s = ops.getSection(d, loc.sectionId)!;
-                  const gi = loc.groupId ? s.itemIds.indexOf(loc.groupId) + 1 : s.itemIds.length;
-                  ops.moveTo(d, q.id, { sectionId: s.id, groupId: null, index: gi });
+                  const gi = loc.groupId
+                    ? s.itemIds.indexOf(loc.groupId) + 1
+                    : s.itemIds.length;
+                  ops.moveTo(d, q.id, {
+                    sectionId: s.id,
+                    groupId: null,
+                    index: gi,
+                  });
                 } else {
                   const b = d.items[v] as BlockItem;
-                  ops.moveTo(d, q.id, { sectionId: ops.locate(d, v)!.sectionId, groupId: v, index: b.memberIds.length });
+                  ops.moveTo(d, q.id, {
+                    sectionId: ops.locate(d, v)!.sectionId,
+                    groupId: v,
+                    index: b.memberIds.length,
+                  });
                 }
               })
             }
           >
-            <SelectTrigger className="h-8"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="h-8">
+              <SelectValue />
+            </SelectTrigger>
             <SelectContent>
               <SelectItem value="none">Standalone (no group)</SelectItem>
-              {blocks.map((b) => <SelectItem key={b.id} value={b.id}>{ops.TYPE_LABEL[b.block.type]}: {ops.blockLabel(b)}</SelectItem>)}
+              {blocks.map((b) => (
+                <SelectItem key={b.id} value={b.id}>
+                  {ops.TYPE_LABEL[b.block.type]}: {ops.blockLabel(b)}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </Field>
         {group?.block.type === "PASSAGE" && (
           <Field label="Answers passage blank">
-            <Select value={c.blankRef ? String(c.blankRef) : "none"} onValueChange={(v) => updateQ(q.id, (x) => (x.content.blankRef = v === "none" ? null : Number(v)))}>
-              <SelectTrigger className="h-8"><SelectValue /></SelectTrigger>
+            <Select
+              value={c.blankRef ? String(c.blankRef) : "none"}
+              onValueChange={(v) =>
+                updateQ(
+                  q.id,
+                  (x) => (x.content.blankRef = v === "none" ? null : Number(v)),
+                )
+              }
+            >
+              <SelectTrigger className="h-8">
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="none">Not linked to a blank</SelectItem>
-                {ops.blankNumbers(group.block.text).map((n) => <SelectItem key={n} value={String(n)}>Blank ({n})</SelectItem>)}
+                {ops.blankNumbers(group.block.text).map((n) => (
+                  <SelectItem key={n} value={String(n)}>
+                    Blank ({n})
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </Field>
         )}
         {group && (
-      <Button
-        variant="ghost"
-        size="sm"
-        className="h-auto p-1 text-xs border-none bg-transparent text-muted-foreground hover:bg-white hover:text-primary hover:underline underline-offset-2"
-        onClick={() => select({ kind: "item", id: group.id })}
-      >
-        Edit the shared block →
-      </Button>
-    )}
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-auto p-1 text-xs border-none bg-transparent text-muted-foreground hover:bg-white hover:text-primary hover:underline underline-offset-2"
+            onClick={() => select({ kind: "item", id: group.id })}
+          >
+            Edit the shared block →
+          </Button>
+        )}
       </Group>
 
       <Group title="Feedback (hidden from students)">
         <Field label="Explanation">
-          <Textarea rows={2} value={c.explanation ?? ""} onChange={(e) => updateQ(q.id, (x) => (x.content.explanation = e.target.value))} />
+          <Textarea
+            rows={2}
+            value={c.explanation ?? ""}
+            onChange={(e) =>
+              updateQ(q.id, (x) => (x.content.explanation = e.target.value))
+            }
+          />
         </Field>
         <Field label="Hint">
-          <Input className="h-8" value={c.hint ?? ""} onChange={(e) => updateQ(q.id, (x) => (x.content.hint = e.target.value))} />
+          <Input
+            className="h-8"
+            value={c.hint ?? ""}
+            onChange={(e) =>
+              updateQ(q.id, (x) => (x.content.hint = e.target.value))
+            }
+          />
         </Field>
       </Group>
     </>
   );
 }
-
 
 function BlockEditor({ b }: { b: BlockItem }) {
   const a = useBuilder((s) => s.assignment);

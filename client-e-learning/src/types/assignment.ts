@@ -1,5 +1,5 @@
 import { SkillType } from "./unit";
-import type { QuestionDifficulty, QuestionType } from "./question";
+import type { QuestionDifficulty, QuestionType, QuestionMatchingMode } from "./question";
 export type AssignmentManagementStatus = "DRAFT" | "PUBLISHED" | "ARCHIVED";
 export type AssignmentTargetRequest = | { type: "GRADE" } | { type: "CLASS"; classId: number };
 export interface AssignmentTarget { type: "GRADE" | "CLASS"; classId?: number; className?: string; }
@@ -11,11 +11,11 @@ export interface AssignmentQuestionMedia { id: number; mediaId: number; mediaTyp
 export interface MatchingDefinition { poolId: string | null; correctEntryId: string | null; }
 export interface ClozeDefinition { segments: { text: string }[]; blanks: { key: string; acceptedAnswers: string[] }[]; caseSensitive?: boolean; }
 export type AssignmentQuestionDefinition = { matching: MatchingDefinition; cloze?: never } | { cloze: ClozeDefinition; matching?: never };
-export interface AssignmentQuestionContent { id: number; type: QuestionType; difficulty: QuestionDifficulty; content: string; explanation?: string; hint?: string; complete: boolean; is_complete?: boolean; matchingMode?: string; definition?: AssignmentQuestionDefinition; options: AssignmentQuestionOption[]; answers: AssignmentQuestionAnswer[]; media: AssignmentQuestionMedia[]; createdAt?: string; updatedAt?: string; }
+export interface AssignmentQuestionContent { id: number; type: QuestionType; difficulty: QuestionDifficulty; content: string; explanation?: string; hint?: string; complete: boolean; is_complete?: boolean; matchingMode?: QuestionMatchingMode; definition?: AssignmentQuestionDefinition; options: AssignmentQuestionOption[]; answers: AssignmentQuestionAnswer[]; media: AssignmentQuestionMedia[]; createdAt?: string; updatedAt?: string; }
 export interface AssignmentQuestion { questionId: number; assignmentId: number; question: AssignmentQuestionContent; }
 export interface CreateAssignmentQuestionOptionRequest { content: string; isCorrect: boolean; }
 export interface CreateAssignmentQuestionAnswerRequest { rawValue: string; }
-export interface CreateAssignmentQuestionRequest { type: QuestionType; difficulty?: QuestionDifficulty; content: string; explanation?: string; hint?: string; options?: CreateAssignmentQuestionOptionRequest[]; answers?: CreateAssignmentQuestionAnswerRequest[]; mediaIds?: number[]; definition?: AssignmentQuestionDefinition; }
+export interface CreateAssignmentQuestionRequest { type: QuestionType; difficulty?: QuestionDifficulty; content: string; explanation?: string; hint?: string; matchingMode?: QuestionMatchingMode; options?: CreateAssignmentQuestionOptionRequest[]; answers?: CreateAssignmentQuestionAnswerRequest[]; mediaIds?: number[]; definition?: AssignmentQuestionDefinition; }
 export type UpdateAssignmentQuestionRequest = CreateAssignmentQuestionRequest;
 export interface BulkDeleteAssignmentQuestionsRequest { ids: number[]; }
 export type AssignmentStatus = "todo" | "completed" | "late";

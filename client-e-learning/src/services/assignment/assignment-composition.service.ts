@@ -162,9 +162,7 @@ function mapQuestion(
           text,
         })),
         blanks,
-        caseSensitive:
-          definition?.caseSensitive ??
-          q.matchingMode === "CASE_SENSITIVE_TRIM",
+       caseSensitive: definition?.caseSensitive ?? false,
       };
       break;
     }

@@ -10,6 +10,13 @@ import java.util.Map;
 public class QuestionDefinitionRequest {
     private Matching matching;
     private Cloze cloze;
+    private TextInput textInput;
+
+    @Data
+    public static class TextInput {
+        private String prefix;
+        private String cue;
+    }
 
     @Data
     public static class Matching {

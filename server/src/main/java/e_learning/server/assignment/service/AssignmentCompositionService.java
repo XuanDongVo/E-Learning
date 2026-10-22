@@ -301,7 +301,6 @@ public class AssignmentCompositionService {
         item.setItemType(type);
         item.setQuestionId(request.questionId());
         item.setPossiblePoints(request.possiblePoints());
-        item.setRequired(request.required());
         item.setExample(request.example());
         item.setBlockPayload(request.blockPayload());
         AssignmentItem saved = itemRepository.save(item);
@@ -401,7 +400,7 @@ public class AssignmentCompositionService {
                 .sorted(Comparator.comparing(AssignmentItem::getPosition).thenComparing(AssignmentItem::getId))
                 .map(child -> toItemResponse(child, childrenByParent)).toList();
         return new CompositionItemResponse(item.getId(), item.getPosition(), item.getItemType(), item.getQuestionId(),
-                item.getPossiblePoints(), item.isRequired(), item.isExample(), item.getBlockPayload(), children);
+                item.getPossiblePoints(), item.isExample(), item.getBlockPayload(), children);
     }
 
     private Assignment findAssignment(Long id) {

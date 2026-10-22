@@ -11,4 +11,12 @@ public class QuestionDefinitionRequest {
 
     @Valid
     private ClozeDefinitionRequest cloze;
+
+    private TextInput textInput;
+
+    @Data
+    public static class TextInput {
+        private String prefix;
+        private String cue;
+    }
 }

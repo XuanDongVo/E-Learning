@@ -10,7 +10,11 @@ export interface AssignmentQuestionAnswer { id: number; rawValue: string; normal
 export interface AssignmentQuestionMedia { id: number; mediaId: number; mediaType: string; url: string; }
 export interface MatchingDefinition { poolId: string | null; correctEntryId: string | null; }
 export interface ClozeDefinition { segments: { text: string }[]; blanks: { key: string; acceptedAnswers: string[] }[]; caseSensitive?: boolean; }
-export type AssignmentQuestionDefinition = { matching: MatchingDefinition; cloze?: never } | { cloze: ClozeDefinition; matching?: never };
+export interface TextInputDefinition {
+  prefix?: string | null;
+  cue?: string | null;
+}
+export type AssignmentQuestionDefinition = { matching: MatchingDefinition; cloze?: never;  } | { cloze: ClozeDefinition; matching?: never;  } | { matching?: never; cloze?: never; textInput?: TextInputDefinition };
 export interface AssignmentQuestionContent { id: number; type: QuestionType; difficulty: QuestionDifficulty; content: string; explanation?: string; hint?: string; complete: boolean; is_complete?: boolean; matchingMode?: QuestionMatchingMode; definition?: AssignmentQuestionDefinition; options: AssignmentQuestionOption[]; answers: AssignmentQuestionAnswer[]; media: AssignmentQuestionMedia[]; createdAt?: string; updatedAt?: string; }
 export interface AssignmentQuestion { questionId: number; assignmentId: number; question: AssignmentQuestionContent; }
 export interface CreateAssignmentQuestionOptionRequest { content: string; isCorrect: boolean; }

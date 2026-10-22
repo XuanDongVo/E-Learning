@@ -13,7 +13,6 @@ public record CompositionItemRequest(
         @NotBlank String itemType,
         Long questionId,
         @NotNull @DecimalMin("0.00") BigDecimal possiblePoints,
-        boolean required,
         boolean example,
         Map<String, Object> blockPayload,
         @Valid List<CompositionItemRequest> children

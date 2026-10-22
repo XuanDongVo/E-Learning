@@ -48,7 +48,6 @@ type WriteItem = {
   itemType: string;
   questionId: number | null;
   possiblePoints: number;
-  required: boolean;
   example: boolean;
   blockPayload: Record<string, unknown> | null;
   children: WriteItem[];
@@ -119,8 +118,8 @@ function mapQuestion(
         type: "TEXT_INPUT",
         acceptedAnswers: answers,
         caseSensitive: q.matchingMode === "CASE_SENSITIVE_TRIM",
-        prefix: "",
-        cue: "",
+        prefix: q.definition?.textInput?.prefix?.trim() || "",
+        cue: q.definition?.textInput?.cue?.trim() || "",
       };
       break;
     case "CLOZE": {
@@ -383,7 +382,6 @@ function serializeQuestion(
     itemType: "QUESTION",
     questionId: q.serverQuestionId ?? numberId(q.id, "q"),
     possiblePoints: q.config.isExample ? 0 : q.config.points,
-    required: q.config.required,
     example: q.config.isExample,
     blockPayload: null,
     children: [],
@@ -410,7 +408,6 @@ function serializeItem(
     itemType: b.itemType,
     questionId: null,
     possiblePoints: 0,
-    required: true,
     example: false,
     blockPayload: b.blockPayload,
     children,

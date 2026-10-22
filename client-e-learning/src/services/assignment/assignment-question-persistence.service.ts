@@ -51,6 +51,12 @@ function toPayload(item: QuestionItem): CreateAssignmentQuestionRequest {
         .map((answer) => answer.trim())
         .filter(Boolean)
         .map((rawValue) => ({ rawValue })),
+        definition: {
+          textInput: {
+            prefix: content.prefix?.trim() || null,
+            cue: content.cue?.trim() || null,
+          },
+        },
     };
   }
   if (content.type === "MATCHING") {

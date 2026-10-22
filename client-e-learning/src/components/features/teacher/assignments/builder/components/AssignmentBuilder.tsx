@@ -166,23 +166,6 @@ export function AssignmentBuilder({ id }: { id?: string }) {
   return (
     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={onDragStart} onDragEnd={onDragEnd}>
       <div className="flex h-screen flex-col overflow-hidden bg-white text-slate-900">
-        <Header />
-        {mode !== "preview" && (
-          <div className="shrink-0 border-b border-slate-200 bg-white px-4 py-3 sm:px-6">
-            <div className="mx-auto flex max-w-7xl flex-col gap-2 text-sm sm:flex-row sm:items-start sm:justify-between">
-              <div>
-                <p className="font-semibold text-slate-800">Quick guide · Build an assignment</p>
-                <p className="mt-1 text-slate-600">
-                  1. Add a question or content from the left panel. 2. Select an item to edit its settings on the right.
-                  3. Drag items to reorder them. 4. Use Student Preview to check the student experience, then Save Draft.
-                </p>
-              </div>
-              <p className="shrink-0 rounded-md border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs text-slate-600">
-                Tip: click a question to select it · Ctrl/Cmd + S to save
-              </p>
-            </div>
-          </div>
-        )}
         {mode === "preview" ? (
           <div className="min-h-0 flex-1"><StudentPreview /></div>
         ) : (

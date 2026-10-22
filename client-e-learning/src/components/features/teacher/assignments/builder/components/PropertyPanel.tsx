@@ -1171,15 +1171,7 @@ function QuestionEditor({ q }: { q: QuestionItem }) {
             />
           </Field>
         </div>
-        <label className="flex items-center justify-between text-sm">
-          Required
-          <Switch
-            checked={q.config.required}
-            onCheckedChange={(v) =>
-              updateQ(q.id, (x) => (x.config.required = v))
-            }
-          />
-        </label>
+
         <label className="flex items-center justify-between text-sm">
           <span>
             Example item

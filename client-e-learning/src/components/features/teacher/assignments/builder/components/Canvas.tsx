@@ -228,7 +228,47 @@ function InlineEditor({ q }: { q: QuestionItem }) {
         </div>
       )}
       {c.type === "TEXT_INPUT" && (
-        <input className={input} placeholder="Đáp án chấp nhận, cách nhau bằng dấu /" value={c.acceptedAnswers.join(" / ")} onChange={(e) => edit((x) => { if (x.type === "TEXT_INPUT") x.acceptedAnswers = e.target.value.split("/").map((s) => s.trim()); })} />
+        <div className="space-y-2">
+          <input
+            className={input}
+            placeholder="Đáp án chấp nhận, cách nhau bằng dấu /"
+            value={c.acceptedAnswers.join(" / ")}
+            onChange={(e) =>
+              edit((x) => {
+                if (x.type === "TEXT_INPUT")
+                  x.acceptedAnswers = e.target.value.split("/").map((s) => s.trim());
+              })
+            }
+          />
+          <div className="grid gap-2 sm:grid-cols-2">
+            <label className="space-y-1 text-xs text-muted-foreground">
+              Prefix (optional)
+              <Input
+                className={input}
+                placeholder="Ví dụ: un"
+                value={c.prefix ?? ""}
+                onChange={(e) =>
+                  edit((x) => {
+                    if (x.type === "TEXT_INPUT") x.prefix = e.target.value;
+                  })
+                }
+              />
+            </label>
+            <label className="space-y-1 text-xs text-muted-foreground">
+              Visible cue (optional)
+              <Input
+                className={input}
+                placeholder="Ví dụ: Complete the word"
+                value={c.cue ?? ""}
+                onChange={(e) =>
+                  edit((x) => {
+                    if (x.type === "TEXT_INPUT") x.cue = e.target.value;
+                  })
+                }
+              />
+            </label>
+          </div>
+        </div>
       )}
       {c.type === "CLOZE" && (
         <div className="space-y-2 rounded border bg-muted/20 p-2">

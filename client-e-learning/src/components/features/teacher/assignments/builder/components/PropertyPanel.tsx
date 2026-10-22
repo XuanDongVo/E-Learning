@@ -232,10 +232,10 @@ function ClozeEditor({ q }: { q: QuestionItem }) {
 }
 
 function MatchingEditor({ q }: { q: QuestionItem }) {
+  const a = useBuilder((s) => s.assignment);
   if (q.content.type !== "MATCHING") return null;
 
   const c = q.content;
-  const a = useBuilder((s) => s.assignment);
 
   // Chỉ cho phép chọn Answer Pool thuộc cùng Section.
   const questionLocation = ops.locate(a, q.id);

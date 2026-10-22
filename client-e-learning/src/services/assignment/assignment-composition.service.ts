@@ -113,13 +113,16 @@ function mapQuestion(
     }
     case "TYPE_ANSWER":
     case "FILL_IN_BLANK":
+       const textInput = q.definition && "textInput" in q.definition
+        ? q.definition.textInput
+        : undefined;
       content = {
         ...common,
         type: "TEXT_INPUT",
         acceptedAnswers: answers,
         caseSensitive: q.matchingMode === "CASE_SENSITIVE_TRIM",
-        prefix: q.definition?.textInput?.prefix?.trim() || "",
-        cue: q.definition?.textInput?.cue?.trim() || "",
+        prefix: textInput?.prefix ?? "",
+        cue: textInput?.cue ?? "",
       };
       break;
     case "CLOZE": {

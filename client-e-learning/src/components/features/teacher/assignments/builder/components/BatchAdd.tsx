@@ -9,7 +9,7 @@ import type { InsertTarget, ToolKey } from "@/types/assignment-builder";
 import { TOOLS } from "./Toolbox";
 
 /** Pick one question type and insert multiple empty drafts at the selected location. */
-export function BatchAdd({ target, label = "Add questions", variant = "outline" }: { target?: InsertTarget | null; label?: string; variant?: "outline" | "ghost" | "default" }) {
+export function BatchAdd({ target, label = "Add questions", variant = "outline" }: { target?: InsertTarget | null; label?: string; variant?: "outline" | "ghost" | "default" | "primary" }) {
   const addTool = useBuilder((s) => s.addTool);
   const qTools = TOOLS.filter((t) => isQuestionTool(t.key));
   const [open, setOpen] = useState(false);

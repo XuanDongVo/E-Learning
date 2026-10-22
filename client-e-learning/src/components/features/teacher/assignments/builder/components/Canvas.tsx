@@ -493,7 +493,7 @@ export function Canvas() {
   const empty = Object.keys(a.items).length === 0;
   return (
     <div className="px-4 py-6 sm:px-8" onClick={() => select(null)}>
-      <article className="mx-auto max-w-[820px] rounded-lg border border-slate-200 bg-white font-serif shadow-sm">
+      <article className="mx-auto max-w-[820px] rounded-lg border border-ink bg-white font-serif shadow-sm">
         <header className="border-b px-8 py-6 sm:px-12">
           <div className="font-sans text-xs font-medium uppercase tracking-wider text-muted-foreground">English · Grade {a.grade}</div>
           <h2 className="mt-1 text-2xl font-bold">{a.title || "Untitled assignment"}</h2>

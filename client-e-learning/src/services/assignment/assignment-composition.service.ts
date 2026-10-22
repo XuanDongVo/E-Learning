@@ -112,16 +112,20 @@ function mapQuestion(
       break;
     }
     case "TYPE_ANSWER":
-    case "FILL_IN_BLANK":
+    case "FILL_IN_BLANK": {
+      const textInput = q.definition && "textInput" in q.definition
+        ? q.definition.textInput
+        : undefined;
       content = {
         ...common,
         type: "TEXT_INPUT",
         acceptedAnswers: answers,
         caseSensitive: q.matchingMode === "CASE_SENSITIVE_TRIM",
-        prefix: "",
-        cue: "",
+        prefix: textInput?.prefix ?? "",
+        cue: textInput?.cue ?? "",
       };
       break;
+    }
     case "CLOZE": {
       const definition = q.definition && "cloze" in q.definition
         ? q.definition.cloze

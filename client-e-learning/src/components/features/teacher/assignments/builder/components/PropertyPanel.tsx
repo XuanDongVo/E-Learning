@@ -673,9 +673,20 @@ function QuestionEditor({ q }: { q: QuestionItem }) {
   const { duplicate, requestDeleteItem, mutate, select } = useBuilder.getState();
   const { numbers, total } = useNumbering();
   const c = q.content;
+  const needsClozeSync =
+    (c.type === "CLOZE" || c.type === "MULTI_TEXT_INPUT") &&
+    (ops.blankTokens(c.prompt).length !== c.blanks.length ||
+      (c.type === "CLOZE" &&
+        (c.segments.length !== ops.clozeSegmentsFromPrompt(c.prompt).length ||
+          c.segments.some((segment, index) =>
+            segment.text !== ops.clozeSegmentsFromPrompt(c.prompt)[index],
+          ))));
   const group = q.config.groupId ? (a.items[q.config.groupId] as BlockItem | undefined) : undefined;
   const blocks = ops.docOrder(a).map((e) => a.items[e.id]).filter((x): x is BlockItem => x?.kind === "block");
-  const pools = blocks.filter((b) => b.block.type === "POOL");
+  const questionSectionId = ops.locate(a, q.id)?.sectionId;
+  const pools = blocks.filter((b) =>
+    b.block.type === "POOL" && ops.locate(a, b.id)?.sectionId === questionSectionId,
+  );
 
   return (
     <>
@@ -750,47 +761,67 @@ function QuestionEditor({ q }: { q: QuestionItem }) {
           </>
         )}
 
-        {c.type === "MULTI_TEXT_INPUT" && (
+        {(c.type === "MULTI_TEXT_INPUT" || c.type === "CLOZE") && (
           <>
             {c.blanks.map((b, i) => (
               <Field key={b.id} label={`Blank ${i + 1} — accepted answers`}>
-                <ListEditor values={b.acceptedAnswers} placeholder="Answer" addLabel="Add alternative" onChange={(v) => updateQ(q.id, (x) => x.content.type === "MULTI_TEXT_INPUT" && (x.content.blanks[i].acceptedAnswers = v))} />
+                <ListEditor
+                  values={b.acceptedAnswers}
+                  placeholder="Answer"
+                  addLabel="Add alternative"
+                  onChange={(values) => updateQ(q.id, (x) => {
+                    if (x.content.type === "CLOZE") {
+                      if (x.content.blanks[i]) x.content.blanks[i].acceptedAnswers = values;
+                    } else if (x.content.type === "MULTI_TEXT_INPUT" && x.content.blanks[i]) {
+                      x.content.blanks[i].acceptedAnswers = values;
+                    }
+                  })}
+                />
               </Field>
             ))}
-            {ops.blankTokens(c.prompt).length !== c.blanks.length && (
+            {needsClozeSync && (
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() =>
-                  updateQ(q.id, (x) => {
-                    if (x.content.type !== "MULTI_TEXT_INPUT") return;
-                    const n = ops.blankTokens(x.content.prompt).length;
-                    while (x.content.blanks.length < n) x.content.blanks.push({ id: ops.uid("bl"), acceptedAnswers: [""] });
-                    x.content.blanks.length = n;
-                  })
-                }
+                onClick={() => updateQ(q.id, (x) => {
+                  if (x.content.type === "CLOZE") {
+                    const synced = ops.syncClozeContent(x.content);
+                    x.content.segments = synced.segments;
+                    x.content.blanks = synced.blanks;
+                  } else if (x.content.type === "MULTI_TEXT_INPUT") {
+                    const count = ops.blankTokens(x.content.prompt).length;
+                    while (x.content.blanks.length < count) x.content.blanks.push({ id: ops.uid("bl"), acceptedAnswers: [""] });
+                    x.content.blanks.length = count;
+                  }
+                })}
               >
                 Sync answer sets with {ops.blankTokens(c.prompt).length} blanks in prompt
               </Button>
             )}
             <label className="flex items-center justify-between text-sm">
               Case sensitive
-              <Switch checked={c.caseSensitive} onCheckedChange={(v) => updateQ(q.id, (x) => x.content.type === "MULTI_TEXT_INPUT" && (x.content.caseSensitive = v))} />
+              <Switch
+                checked={c.caseSensitive}
+                onCheckedChange={(value) => updateQ(q.id, (x) => {
+                  if (x.content.type === "CLOZE" || x.content.type === "MULTI_TEXT_INPUT")
+                    x.content.caseSensitive = value;
+                })}
+              />
             </label>
           </>
         )}
 
         {c.type === "MATCHING" && (
           <>
-            <Field label="Answer pool" error={!c.poolId || !a.items[c.poolId] ? "Choose an answer pool" : null}>
-              <Select value={c.poolId && a.items[c.poolId] ? c.poolId : ""} onValueChange={(v) => updateQ(q.id, (x) => x.content.type === "MATCHING" && ((x.content.poolId = v), (x.content.correctEntryId = null)))}>
+            <Field label="Answer pool" error={!c.poolId || !pools.some((pool) => pool.id === c.poolId) ? "Choose an answer pool in this section" : null}>
+              <Select value={c.poolId && pools.some((pool) => pool.id === c.poolId) ? c.poolId : ""} onValueChange={(v) => updateQ(q.id, (x) => x.content.type === "MATCHING" && ((x.content.poolId = v), (x.content.correctEntryId = null)))}>
                 <SelectTrigger className="h-8"><SelectValue placeholder={pools.length ? "Select pool" : "No pools — add one first"} /></SelectTrigger>
                 <SelectContent>
                   {pools.map((p) => <SelectItem key={p.id} value={p.id}>{ops.blockLabel(p)}</SelectItem>)}
                 </SelectContent>
               </Select>
             </Field>
-            {c.poolId && a.items[c.poolId]?.kind === "block" && (a.items[c.poolId] as BlockItem).block.type === "POOL" && (
+            {c.poolId && pools.some((pool) => pool.id === c.poolId) && a.items[c.poolId]?.kind === "block" && (a.items[c.poolId] as BlockItem).block.type === "POOL" && (
               <Field label="Correct letter" error={!c.correctEntryId ? "Pick the correct letter" : null}>
                 <div className="flex flex-wrap gap-1">
                   {((a.items[c.poolId] as BlockItem).block as { entries: { id: string; text: string }[] }).entries.map((e, i) => (

@@ -48,6 +48,7 @@ public class QuestionPersistenceService {
         if (requests == null || requests.isEmpty()) throw new AppException(ErrorCode.EMPTY_QUESTION);
         List<Question> questions = new ArrayList<>();
         for (QuestionWriteRequest request : requests) {
+            normalizeMatchingMode(request);
             boolean complete = questionEngine.validateDefinition(questionSpecRequestFactory.toSpec(request)).isReady();
             Question question = Question.builder().type(request.getType())
                     .difficulty(request.getDifficulty() != null ? request.getDifficulty() : Difficulty.EASY)
@@ -66,6 +67,7 @@ public class QuestionPersistenceService {
     @Transactional
     public Question updateQuestion(Long questionId, QuestionWriteRequest request) {
         Question question = questionRepository.findById(questionId).orElseThrow(() -> new AppException(ErrorCode.QUESTION_NOT_FOUND));
+        normalizeMatchingMode(request);
         question.setType(request.getType());
         question.setDifficulty(request.getDifficulty() != null ? request.getDifficulty() : question.getDifficulty());
         question.setContent(request.getContent().trim());
@@ -88,15 +90,19 @@ public class QuestionPersistenceService {
         releaseUnusedMedia(mediaIds);
     }
 
-    private String matchingModeForStorage(QuestionWriteRequest request) {
+    private void normalizeMatchingMode(QuestionWriteRequest request) {
         if (request.getType() == QuestionType.TYPE_ANSWER
                 || request.getType() == QuestionType.FILL_IN_BLANK) {
-            String name = (request.getMatchingMode() == null
-                    ? MatchingMode.CASE_INSENSITIVE_TRIM
-                    : request.getMatchingMode()).name();
-            return name;
+            if (request.getMatchingMode() == null) {
+                request.setMatchingMode(MatchingMode.CASE_INSENSITIVE_TRIM);
+            }
+        } else {
+            request.setMatchingMode(MatchingMode.CASE_INSENSITIVE_TRIM);
         }
-        return MatchingMode.CASE_INSENSITIVE_TRIM.name();
+    }
+
+    private String matchingModeForStorage(QuestionWriteRequest request) {
+        return request.getMatchingMode().name();
     }
 
     private String serializeDefinition(QuestionWriteRequest request) {

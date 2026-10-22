@@ -56,7 +56,7 @@ public class QuestionPersistenceService {
                     .explanation(StringUtils.hasText(request.getExplanation()) ? request.getExplanation().trim() : null)
                     .hint(StringUtils.hasText(request.getHint()) ? request.getHint().trim() : null)
                     .definition(serializeDefinition(request))
-                    .complete(complete).matchingMode(matchingModeForStorage(request)).contentRevision(1L).build();
+                    .complete(complete).matchingMode(request.getMatchingMode().name()).contentRevision(1L).build();
             Question saved = questionRepository.save(question);
             createChildEntities(saved, request);
             questions.add(saved);
@@ -74,7 +74,7 @@ public class QuestionPersistenceService {
         question.setExplanation(StringUtils.hasText(request.getExplanation()) ? request.getExplanation().trim() : null);
         question.setHint(StringUtils.hasText(request.getHint()) ? request.getHint().trim() : null);
         question.setDefinition(serializeDefinition(request));
-        question.setMatchingMode(matchingModeForStorage(request));
+        question.setMatchingMode(request.getMatchingMode().name());
         question.setComplete(questionEngine.validateDefinition(questionSpecRequestFactory.toSpec(request)).isReady());
         question.setContentRevision(question.getContentRevision() + 1);
         updateChildEntities(question, request);
@@ -99,10 +99,6 @@ public class QuestionPersistenceService {
         } else {
             request.setMatchingMode(MatchingMode.CASE_INSENSITIVE_TRIM);
         }
-    }
-
-    private String matchingModeForStorage(QuestionWriteRequest request) {
-        return request.getMatchingMode().name();
     }
 
     private String serializeDefinition(QuestionWriteRequest request) {

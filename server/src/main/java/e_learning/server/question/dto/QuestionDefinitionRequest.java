@@ -23,6 +23,7 @@ public class QuestionDefinitionRequest {
         private List<Item> items;
         private List<String> answerPool;
         private Map<String, String> expectedPairs;
+        private Boolean shuffleAnswers;
 
         @Data
         public static class Item {

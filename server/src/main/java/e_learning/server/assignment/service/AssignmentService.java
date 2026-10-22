@@ -99,9 +99,46 @@ public class AssignmentService {
 
     public AssignmentResponse updateStatus(Long id, AssignmentStatus status) {
         Assignment assignment = find(id);
-        assignment.setStatus(status);
+        AssignmentStatus current = assignment.getStatus();
+        AssignmentStatus next = status;
+
+        // State machine: chỉ cho phép các transition hợp lệ
+        boolean allowed = (current == AssignmentStatus.DRAFT && (next == AssignmentStatus.PUBLISHED || next == AssignmentStatus.ARCHIVED))
+                || (current == AssignmentStatus.PUBLISHED && next == AssignmentStatus.ARCHIVED)
+                || (current == AssignmentStatus.ARCHIVED && next == AssignmentStatus.DRAFT);
+        if (!allowed) {
+            throw new AppException(ErrorCode.ASSIGNMENT_STATUS_TRANSITION_INVALID);
+        }
+
+        if (next == AssignmentStatus.PUBLISHED) {
+            validateReadyForPublish(assignment);
+        }
+
+        assignment.setStatus(next);
         Assignment saved = assignmentRepository.save(assignment);
         return AssignmentResponse.from(saved, (int) assignmentQuestionRepository.countByAssignmentId(saved.getId()));
+    }
+
+    /**
+     * Kiểm tra điều kiện để publish một Assignment:
+     * 1. Phải có ít nhất 1 câu hỏi.
+     * 2. Tất cả câu hỏi phải hoàn chỉnh (complete = true) — không được có câu nào chưa xong.
+     * 3. dueAt phải trong tương lai (assignment chưa hết hạn).
+     */
+    private void validateReadyForPublish(Assignment assignment) {
+        long total = assignmentQuestionRepository.countByAssignmentId(assignment.getId());
+        if (total == 0) {
+            throw new AppException(ErrorCode.ASSIGNMENT_NOT_READY);
+        }
+
+        long complete = assignmentQuestionRepository.countByAssignmentIdAndQuestionCompleteTrue(assignment.getId());
+        if (complete != total) {
+            throw new AppException(ErrorCode.ASSIGNMENT_NOT_READY);
+        }
+
+        if (!assignment.getDueAt().isAfter(LocalDateTime.now())) {
+            throw new AppException(ErrorCode.ASSIGNMENT_NOT_READY);
+        }
     }
 
 

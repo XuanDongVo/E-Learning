@@ -331,6 +331,8 @@ function mapAssignment(
   };
   return {
     id: String(api.id),
+    serverId: api.id,
+    status: api.status,
     title: api.name,
     grade: Math.min(8, Math.max(6, api.gradeLevel)) as 6 | 7 | 8,
     instructions: api.description ?? "",

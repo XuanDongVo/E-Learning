@@ -51,6 +51,8 @@ public enum ErrorCode {
     ASSIGNMENT_TIME_LIMIT_INVALID(HttpStatus.BAD_REQUEST, "ASSIGNMENT_TIME_LIMIT_INVALID", "The assignment time limit is invalid"),
     ASSIGNMENT_QUESTION_LIMIT_EXCEEDED(HttpStatus.BAD_REQUEST, "ASSIGNMENT_QUESTION_LIMIT_EXCEEDED", "An assignment cannot contain more than 100 questions"),
     ASSIGNMENT_QUESTIONS_LOCKED(HttpStatus.CONFLICT, "ASSIGNMENT_QUESTIONS_LOCKED", "Assignment questions cannot be changed in the current assignment state"),
+    ASSIGNMENT_NOT_READY(HttpStatus.CONFLICT, "ASSIGNMENT_NOT_READY", "The assignment is not ready to be published"),
+    ASSIGNMENT_STATUS_TRANSITION_INVALID(HttpStatus.BAD_REQUEST, "ASSIGNMENT_STATUS_TRANSITION_INVALID", "The requested status transition is not allowed"),
 
     ACTIVITY_SESSION_NOT_FOUND(HttpStatus.NOT_FOUND, "ACTIVITY_SESSION_NOT_FOUND", "Activity session was not found"),
     ACTIVITY_SESSION_INVALID_MODE(HttpStatus.BAD_REQUEST, "ACTIVITY_SESSION_INVALID_MODE", "The selected activity mode is not available"),

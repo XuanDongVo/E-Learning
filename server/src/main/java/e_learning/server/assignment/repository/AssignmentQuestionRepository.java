@@ -13,6 +13,9 @@ public interface AssignmentQuestionRepository extends JpaRepository<AssignmentQu
 
     long countByAssignmentId(Long assignmentId);
 
+    /** Số câu hỏi đã hoàn chỉnh (complete = true) trong assignment. */
+    long countByAssignmentIdAndQuestionCompleteTrue(Long assignmentId);
+
     Optional<AssignmentQuestion> findByAssignmentIdAndQuestionId(Long assignmentId, Long questionId);
 
     List<AssignmentQuestion> findAllByAssignmentIdAndQuestionIdIn(

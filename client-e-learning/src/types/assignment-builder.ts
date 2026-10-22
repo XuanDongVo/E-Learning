@@ -10,9 +10,28 @@ export interface TrueFalseContent extends BaseQuestion { type: "TRUE_FALSE"; ans
 export interface TextInputContent extends BaseQuestion { type: "TEXT_INPUT"; acceptedAnswers: string[]; caseSensitive: boolean; prefix?: string; cue?: string; }
 export interface ClozeBlank { id: ID; key: string; acceptedAnswers: string[]; }
 export interface ClozeContent extends BaseQuestion { type: "CLOZE"; segments: { id: ID; text: string }[]; blanks: ClozeBlank[]; caseSensitive: boolean; }
-export interface MatchingItem { id: ID; key: string; prompt: string; correctAnswerId: ID | null; }
-export interface MatchingAnswer { id: ID; key: string; text: string; }
-export interface MatchingContent extends BaseQuestion { type: "MATCHING"; items: MatchingItem[]; answers: MatchingAnswer[]; shuffleAnswers: boolean; poolId?: ID | null; correctEntryId?: ID | null; }
+// export interface MatchingItem { id: ID; key: string; prompt: string; correctAnswerId: ID | null; }
+// export interface MatchingAnswer { id: ID; key: string; text: string; }
+// export interface MatchingContent extends BaseQuestion { type: "MATCHING"; items: MatchingItem[]; answers: MatchingAnswer[]; shuffleAnswers: boolean; poolId?: ID | null; correctEntryId?: ID | null; }
+export interface MatchingItem {
+  id: ID;
+  key: string;
+  prompt: string;
+  correctAnswerId: ID | null;
+}
+
+export interface MatchingAnswer {
+  id: ID;
+  key: string;
+  text: string;
+}
+
+export interface MatchingContent extends BaseQuestion {
+  type: "MATCHING";
+  poolId: ID | null;
+  correctEntryId: ID | null;
+}
+
 /** @deprecated Use ClozeContent. */
 export interface MultiTextContent extends BaseQuestion { type: "MULTI_TEXT_INPUT"; blanks: { id: ID; acceptedAnswers: string[] }[]; caseSensitive: boolean; }
 export type QuestionContent = SingleChoiceContent | MultipleChoiceContent | TrueFalseContent | TextInputContent | ClozeContent | MatchingContent | MultiTextContent;

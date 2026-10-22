@@ -1,7 +1,7 @@
 package e_learning.server.question.service;
 
-import e_learning.server.question.dto.QuestionAnswerRequest;
-import e_learning.server.question.dto.QuestionOptionRequest;
+import e_learning.server.question.dto.request.QuestionAnswerRequest;
+import e_learning.server.question.dto.request.QuestionOptionRequest;
 import e_learning.server.question.enums.QuestionType;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;

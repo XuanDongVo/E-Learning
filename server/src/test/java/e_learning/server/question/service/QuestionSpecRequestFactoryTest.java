@@ -1,7 +1,7 @@
 package e_learning.server.question.service;
 
-import e_learning.server.question.dto.QuestionAnswerRequest;
-import e_learning.server.question.dto.QuestionWriteRequest;
+import e_learning.server.question.dto.request.QuestionAnswerRequest;
+import e_learning.server.question.dto.request.QuestionWriteRequest;
 import e_learning.server.question.engine.core.QuestionEngine;
 import e_learning.server.question.engine.result.DefinitionValidation;
 import e_learning.server.question.engine.types.truefalse.TrueFalseSpec;

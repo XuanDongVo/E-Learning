@@ -37,43 +37,69 @@ export function useIssues() {
   return useMemo(() => validate(a), [a]);
 }
 
+// export function createBlankQuestions(blockId: ID) {
+//   const state = useBuilder.getState();
+//   const assignment = state.assignment;
+//   const block = assignment.items[blockId];
+//   if (!block || block.kind !== "block" || block.block.type !== "PASSAGE") return;
+//   const taken = new Set(block.memberIds.map((memberId) => {
+//     const item = assignment.items[memberId];
+//     return item?.kind === "question" ? item.content.blankRef : null;
+//   }));
+//   const location = ops.locate(assignment, blockId);
+//   if (!location) {
+//     toast.error("Could not find the passage in Composition.");
+//     return;
+//   }
+//   const tokens = ops.blankTokens(block.block.text);
+//   const created: ID[] = [];
+//   ops.blankNumbers(block.block.text).forEach((number, index) => {
+//     if (taken.has(number)) return;
+//     const raw = tokens[index] ?? "";
+//     const answers = /^\d+$/.test(raw.trim()) ? [""] : raw.split("|").map((value) => value.trim()).filter(Boolean);
+//     const question = ops.createItem("TEXT_INPUT");
+//     if (question.kind !== "question" || question.content.type !== "TEXT_INPUT") return;
+//     question.content.prompt = `Answer blank (${number}) in the passage`;
+//     question.content.acceptedAnswers = answers.length ? answers : [""];
+//     question.content.blankRef = number;
+//     created.push(question.id);
+//     state.mutate((draft) => {
+//       draft.items[question.id] = question;
+//       ops.place(draft, question.id, { sectionId: location.sectionId, groupId: blockId, index: block.memberIds.length + index });
+//     });
+//   });
+//   if (!created.length) {
+//     toast("Every blank already has a question");
+//     return;
+//   }
+//   state.select({ kind: "item", id: created[0] });
+// }
+
 export function createBlankQuestions(blockId: ID) {
-  const state = useBuilder.getState();
-  const assignment = state.assignment;
-  const block = assignment.items[blockId];
-  if (!block || block.kind !== "block" || block.block.type !== "PASSAGE") return;
-  const taken = new Set(block.memberIds.map((memberId) => {
-    const item = assignment.items[memberId];
-    return item?.kind === "question" ? item.content.blankRef : null;
-  }));
-  const location = ops.locate(assignment, blockId);
-  if (!location) {
-    toast.error("Could not find the passage in Composition.");
-    return;
-  }
-  const tokens = ops.blankTokens(block.block.text);
-  const created: ID[] = [];
-  ops.blankNumbers(block.block.text).forEach((number, index) => {
-    if (taken.has(number)) return;
-    const raw = tokens[index] ?? "";
-    const answers = /^\d+$/.test(raw.trim()) ? [""] : raw.split("|").map((value) => value.trim()).filter(Boolean);
-    const question = ops.createItem("TEXT_INPUT");
-    if (question.kind !== "question" || question.content.type !== "TEXT_INPUT") return;
-    question.content.prompt = `Answer blank (${number}) in the passage`;
-    question.content.acceptedAnswers = answers.length ? answers : [""];
-    question.content.blankRef = number;
-    created.push(question.id);
-    state.mutate((draft) => {
-      draft.items[question.id] = question;
-      ops.place(draft, question.id, { sectionId: location.sectionId, groupId: blockId, index: block.memberIds.length + index });
+  const st = useBuilder.getState();
+  let created = 0;
+  st.mutate((d) => {
+    const b = d.items[blockId] as BlockItem;
+    if (b.block.type !== "PASSAGE") return;
+    const taken = new Set(b.memberIds.map((m) => (d.items[m] as QuestionItem).content.blankRef));
+    const tokens = ops.blankTokens(b.block.text);
+    ops.blankNumbers(b.block.text).forEach((n, i) => {
+      if (taken.has(n)) return;
+      const raw = tokens[i];
+      const answers = /^\d+$/.test(raw.trim()) ? [""] : raw.split("|").map((x) => x.trim());
+      const q = ops.createItem("TEXT_INPUT") as QuestionItem;
+      if (q.content.type === "TEXT_INPUT") q.content.acceptedAnswers = answers;
+      q.content.blankRef = n;
+      d.items[q.id] = q;
+      ops.place(d, q.id, { sectionId: ops.locate(d, blockId)!.sectionId, groupId: blockId, index: b.memberIds.length });
+      created++;
     });
+    // keep members ordered by blank number
+    b.memberIds.sort((x, y) => ((d.items[x] as QuestionItem).content.blankRef ?? 999) - ((d.items[y] as QuestionItem).content.blankRef ?? 999));
   });
-  if (!created.length) {
-    toast("Every blank already has a question");
-    return;
-  }
-  state.select({ kind: "item", id: created[0] });
+  toast(created ? `Created ${created} question(s) for blanks` : "Every blank already has a question");
 }
+
 
 function AddMenuItems({ onPick }: { onPick: (t: ToolKey) => void }) {
   return (
@@ -275,12 +301,95 @@ function InlineEditor({ q }: { q: QuestionItem }) {
   );
 }
 
+
 function QuestionBody({ q }: { q: QuestionItem }) {
-  const selected = useBuilder((s) => s.selection?.kind === "item" && s.selection.id === q.id);
-  if (selected && ["SINGLE_CHOICE", "MULTIPLE_CHOICE", "TRUE_FALSE", "TEXT_INPUT", "CLOZE", "MATCHING"].includes(q.content.type)) return <InlineEditor q={q} />;
+  const selected = useBuilder(
+    (s) =>
+      s.selection?.kind === "item" &&
+      s.selection.id === q.id,
+  );
+
+  // if (
+  //   selected &&
+  //   [
+  //     "SINGLE_CHOICE",
+  //     "MULTIPLE_CHOICE",
+  //     "TRUE_FALSE",
+  //     "TEXT_INPUT",
+  //     "CLOZE",
+  //   ].includes(q.content.type)
+  // ) {
+  //   return <InlineEditor q={q} />;
+  // }
+
   return <QuestionView q={q} />;
 }
 
+
+
+// function QuestionView({ q }: { q: QuestionItem }) {
+//   const { numbers, total } = useNumbering();
+//   const a = useBuilder((s) => s.assignment);
+//   const c = q.content;
+//   const num = numbers.get(q.id);
+//   const answerBlank = (n: number, _raw: string, i: number) => {
+//     if (c.type === "MULTI_TEXT_INPUT")
+//       return <span className="mx-0.5 rounded bg-success/10 px-1.5 font-sans text-sm text-success">{c.blanks[i]?.acceptedAnswers[0] || `(${n})`}</span>;
+//     if (c.type === "TEXT_INPUT")
+//       return <span className="mx-0.5 rounded bg-success/10 px-1.5 font-sans text-sm text-success">{c.acceptedAnswers[0] || "____"}</span>;
+//     return <span className="mx-0.5 inline-block w-16 border-b border-foreground/60" />;
+//   };
+//   const pool = c.type === "MATCHING" && c.poolId ? (a.items[c.poolId] as BlockItem | undefined) : undefined;
+//   const entryIdx = pool?.block.type === "POOL" ? pool.block.entries.findIndex((e) => e.id === (c as { correctEntryId: string | null }).correctEntryId) : -1;
+//   return (
+//     <div className="space-y-2">
+//       <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+//         <span className="shrink-0 font-sans text-xs font-semibold text-primary">
+//           {q.config.isExample ? "Example" : `Câu ${num} / ${total}`}
+//           {c.blankRef ? ` · Blank (${c.blankRef})` : ""}
+//         </span>
+//         <span className="font-sans text-[11px] text-muted-foreground">
+//           {ops.TYPE_LABEL[c.type]} · {q.config.isExample ? "unscored" : `${q.config.points} pt`}
+//           {/* {q.config.gradingMode} */}
+//         </span>
+//       </div>
+//       {c.prompt ? (
+//         <div className="text-[15px] leading-relaxed">
+//           <RichText text={c.prompt} renderBlank={answerBlank} />
+//         </div>
+//       ) : !c.blankRef && !("options" in c) ? (
+//         <div className="text-sm italic text-destructive">Empty prompt</div>
+//       ) : null}
+//       {(c.type === "SINGLE_CHOICE" || c.type === "MULTIPLE_CHOICE") && (
+//         <div className={cn("grid gap-x-6 gap-y-1", c.options.length > 2 && "sm:grid-cols-4")}>
+//           {c.options.map((o, i) => (
+//             <div key={o.id} className={cn("flex items-center gap-1.5 text-[15px]", o.isCorrect && "font-medium text-success")}>
+//               <span className="font-sans text-xs text-muted-foreground">{ops.letter(i)}.</span>
+//               <RichText text={o.text || "—"} />
+//               {o.isCorrect && <Check className="h-3.5 w-3.5" />}
+//             </div>
+//           ))}
+//         </div>
+//       )}
+//       {c.type === "TEXT_INPUT" && (
+//         <div className="flex flex-wrap items-center gap-2 font-sans text-sm">
+//           {c.prefix && <span className="text-foreground">{c.prefix}</span>}
+//           {!c.prompt.includes("{{") && <span className="min-w-40 flex-1 border-b border-dashed border-muted-foreground/50 pb-0.5 text-success">{c.acceptedAnswers.filter(Boolean).join(" / ") || <span className="text-destructive">no accepted answer</span>}</span>}
+//           {c.cue && <span className="text-muted-foreground">{c.cue}</span>}
+//         </div>
+//       )}
+//       {c.type === "MATCHING" && (
+//         <div className="font-sans text-sm">
+//           {entryIdx >= 0 ? (
+//             <span className="rounded bg-success/10 px-2 py-0.5 font-medium text-success">→ {ops.letter(entryIdx)}</span>
+//           ) : (
+//             <span className="text-destructive">No letter selected</span>
+//           )}
+//         </div>
+//       )}
+//     </div>
+//   );
+// }
 
 function QuestionView({ q }: { q: QuestionItem }) {
   const { numbers, total } = useNumbering();
@@ -302,10 +411,6 @@ function QuestionView({ q }: { q: QuestionItem }) {
         <span className="shrink-0 font-sans text-xs font-semibold text-primary">
           {q.config.isExample ? "Example" : `Câu ${num} / ${total}`}
           {c.blankRef ? ` · Blank (${c.blankRef})` : ""}
-        </span>
-        <span className="font-sans text-[11px] text-muted-foreground">
-          {ops.TYPE_LABEL[c.type]} · {q.config.isExample ? "unscored" : `${q.config.points} pt`}
-          {/* {q.config.gradingMode} */}
         </span>
       </div>
       {c.prompt ? (

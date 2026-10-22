@@ -22,7 +22,8 @@ public final class MatchingHandler extends AbstractQuestionTypeHandler {
 
         MatchingSpec q = (MatchingSpec) spec;
 
-        if (q.poolId().isBlank() || q.correctEntryId().isBlank()) {
+        if (q.poolId() == null || q.poolId().isBlank() ||
+                q.correctEntryId() == null || q.correctEntryId().isBlank()) {
             return DefinitionValidation.incomplete("matching.pool.required");
         }
 
@@ -47,6 +48,9 @@ public final class MatchingHandler extends AbstractQuestionTypeHandler {
         }
 
         MatchingSpec q = (MatchingSpec) spec;
+        if (q.poolId() == null || q.correctEntryId() == null) {
+            return AnswerParseResult.invalid("question.matching.definition.incomplete");
+        }
 
         // Chỉ xác nhận định dạng và tạo câu trả lời đã chuẩn hóa.
         // Kiểm tra entryId có thuộc Pool của q.poolId() hay không

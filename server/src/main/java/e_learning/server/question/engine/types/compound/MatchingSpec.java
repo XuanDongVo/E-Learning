@@ -11,15 +11,8 @@ public record MatchingSpec(QuestionSpec.QuestionCommon common, String poolId,
     public MatchingSpec {
         common = Objects.requireNonNull(common);
 
-        poolId = Objects.requireNonNull(poolId).trim();
-        if (poolId.isEmpty()) {
-            throw new IllegalArgumentException("poolId must not be blank");
-        }
-
-        correctEntryId = Objects.requireNonNull(correctEntryId).trim();
-        if (correctEntryId.isEmpty()) {
-            throw new IllegalArgumentException("correctEntryId must not be blank");
-        }
+        poolId = poolId == null || poolId.isBlank() ? null : poolId.trim();
+        correctEntryId = correctEntryId == null || correctEntryId.isBlank() ? null : correctEntryId.trim();
     }
 
     @Override

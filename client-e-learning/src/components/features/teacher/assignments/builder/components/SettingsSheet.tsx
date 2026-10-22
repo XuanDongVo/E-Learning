@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { gradeService } from "@/services/grade.service";
 import { Checkbox } from "@/components/ui/checkbox";
 import { classService } from "@/services/class.service";
 import { Input } from "@/components/ui/input";
@@ -13,6 +14,7 @@ import type { AssignmentSettings, ShowAnswers } from "@/types/assignment-builder
 export function SettingsSheet() {
   const open = useBuilder((s) => s.settingsOpen);
   const classes = useQuery({ queryKey: ["classes"], queryFn: classService.list });
+  const grades = useQuery({ queryKey: ["grades"], queryFn: gradeService.list, enabled: open });
   const a = useBuilder((s) => s.assignment);
   const { set, mutate } = useBuilder.getState();
   const st = a.settings;
@@ -34,12 +36,27 @@ export function SettingsSheet() {
           </div>
           <div className="space-y-1.5">
             <Label>Grade</Label>
-            <Select value={String(a.grade)} onValueChange={(v) => mutate((d) => (d.grade = Number(v) as 6 | 7 | 8))}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
+            <Select
+              value={String(a.grade)}
+              onValueChange={(v) => mutate((d) => (d.grade = Number(v)))}
+              disabled={grades.isLoading || grades.isError || !(grades.data?.data?.length)}
+            >
+              <SelectTrigger><SelectValue placeholder={grades.isLoading ? "Loading grades…" : "Select grade"} /></SelectTrigger>
               <SelectContent>
-                {[6, 7, 8].map((g) => <SelectItem key={g} value={String(g)}>Grade {g}</SelectItem>)}
+                {[...(grades.data?.data ?? [])]
+                  .filter((grade) => grade.status !== "INACTIVE")
+                  .sort((left, right) => left.displayOrder - right.displayOrder)
+                  .map((grade) => (
+                    <SelectItem key={grade.id} value={String(Number(grade.code))}>
+                      {grade.name}
+                    </SelectItem>
+                  ))}
               </SelectContent>
             </Select>
+            {grades.isLoading && <p className="text-xs text-muted-foreground">Loading grades…</p>}
+            {grades.isError && <p className="text-xs text-destructive">Could not load grades. Please retry.</p>}
+            {!grades.isLoading && !grades.isError && !(grades.data?.data ?? []).some((grade) => grade.status !== "INACTIVE") &&
+              <p className="text-xs text-destructive">No active grades are available.</p>}
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="set-ins">Instructions for students</Label>
@@ -50,16 +67,71 @@ export function SettingsSheet() {
             <Input id="set-time" type="number" min={1} placeholder="No limit" value={st.timeLimitMin ?? ""} onChange={(e) => upd({ timeLimitMin: e.target.value === "" ? null : Number(e.target.value) })} />
             {timeError ? <p className="text-xs text-destructive">{timeError}</p> : <p className="text-xs text-muted-foreground">Leave empty for no limit. There are no per-question timers.</p>}
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label htmlFor="set-start">Start</Label>
-              <Input id="set-start" type="datetime-local" value={st.startAt} onChange={(e) => upd({ startAt: e.target.value })} />
+          <div className="space-y-4">
+            <div className="space-y-2 rounded-md border p-3">
+              <div>
+                <Label>Begin</Label>
+                <p className="text-xs text-muted-foreground">Choose when students can start.</p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  className="rounded-md border px-3 py-1.5 text-sm hover:bg-accent"
+                  onClick={() => {
+                    const now = new Date();
+                    now.setSeconds(0, 0);
+                    upd({ startAt: new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16) });
+                  }}
+                >Start now</button>
+                <button
+                  type="button"
+                  className="rounded-md border px-3 py-1.5 text-sm hover:bg-accent"
+                  onClick={() => {
+                    if (!st.startAt) {
+                      const now = new Date();
+                      now.setSeconds(0, 0);
+                      upd({ startAt: new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16) });
+                    }
+                  }}
+                >Schedule</button>
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="set-start">Start date and time</Label>
+                <Input id="set-start" type="datetime-local" value={st.startAt} onChange={(e) => upd({ startAt: e.target.value })} />
+              </div>
             </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="set-due">Due</Label>
-              <Input id="set-due" type="datetime-local" value={st.dueAt} aria-invalid={!!dateError} onChange={(e) => upd({ dueAt: e.target.value })} />
+
+            <div className="space-y-2 rounded-md border p-3">
+              <div>
+                <Label>Due date</Label>
+                <p className="text-xs text-muted-foreground">Use a quick option or choose an exact date and time.</p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {([
+                  ["today", "Today"],
+                  ["tomorrow", "Tomorrow"],
+                  ["week", "In 7 days"],
+                ] as const).map(([preset, label]) => (
+                  <button
+                    key={preset}
+                    type="button"
+                    className="rounded-md border px-3 py-1.5 text-sm hover:bg-accent"
+                    onClick={() => {
+                      const due = new Date();
+                      due.setHours(23, 59, 0, 0);
+                      if (preset === "tomorrow") due.setDate(due.getDate() + 1);
+                      if (preset === "week") due.setDate(due.getDate() + 7);
+                      upd({ dueAt: new Date(due.getTime() - due.getTimezoneOffset() * 60000).toISOString().slice(0, 16) });
+                    }}
+                  >{label}</button>
+                ))}
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="set-due">Due date and time</Label>
+                <Input id="set-due" type="datetime-local" value={st.dueAt} aria-invalid={!!dateError} onChange={(e) => upd({ dueAt: e.target.value })} />
+              </div>
             </div>
-            {dateError && <p className="col-span-2 text-xs text-destructive">{dateError}</p>}
+            {dateError && <p className="text-xs text-destructive">{dateError}</p>}
           </div>
           <div className="space-y-1.5">
             <Label>Target classes</Label>

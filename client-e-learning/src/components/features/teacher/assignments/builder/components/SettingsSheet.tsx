@@ -38,7 +38,7 @@ export function SettingsSheet() {
             <Label>Grade</Label>
             <Select
               value={String(a.grade)}
-              onValueChange={(v) => mutate((d) => (d.grade = Number(v)))}
+              onValueChange={(v) => mutate((d) => (d.grade = Number(v) as 6 | 7 | 8))}
               disabled={grades.isLoading || grades.isError || !(grades.data?.data?.length)}
             >
               <SelectTrigger><SelectValue placeholder={grades.isLoading ? "Loading grades…" : "Select grade"} /></SelectTrigger>
@@ -87,13 +87,12 @@ export function SettingsSheet() {
                   type="button"
                   className="rounded-md border px-3 py-1.5 text-sm hover:bg-accent"
                   onClick={() => {
-                    if (!st.startAt) {
-                      const now = new Date();
-                      now.setSeconds(0, 0);
-                      upd({ startAt: new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16) });
-                    }
+                    const start = new Date();
+                    start.setDate(start.getDate() + 1);
+                    start.setHours(8, 0, 0, 0);
+                    upd({ startAt: new Date(start.getTime() - start.getTimezoneOffset() * 60000).toISOString().slice(0, 16) });
                   }}
-                >Schedule</button>
+                >Tomorrow, 8:00 AM</button>
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="set-start">Start date and time</Label>

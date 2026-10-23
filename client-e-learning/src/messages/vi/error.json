@@ -1,0 +1,16 @@
+{
+  "errors": {
+    "generic": "Đã xảy ra lỗi. Vui lòng thử lại.",
+    "invalidRequest": "Yêu cầu không hợp lệ.",
+    "authentication": "Thông tin đăng nhập không hợp lệ hoặc phiên đăng nhập đã hết hạn.",
+    "forbidden": "Bạn không có quyền thực hiện thao tác này.",
+    "validation": "Dữ liệu chưa hợp lệ. Vui lòng kiểm tra lại.",
+    "notFound": "Không tìm thấy dữ liệu được yêu cầu.",
+    "userNotFound": "Không tìm thấy người dùng.",
+    "classNotFound": "Không tìm thấy lớp học.",
+    "emailAlreadyExists": "Email này đã được sử dụng.",
+    "conflict": "Thao tác không thể thực hiện do dữ liệu hiện tại bị trùng hoặc đang ở trạng thái không phù hợp.",
+    "notReady": "Nội dung chưa sẵn sàng để thực hiện thao tác này.",
+    "server": "Đã xảy ra lỗi hệ thống. Vui lòng thử lại sau."
+  }
+}

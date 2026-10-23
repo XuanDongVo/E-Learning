@@ -31,22 +31,13 @@ export class AppError extends Error {
 
 export function toAppError(error: unknown): AppError {
   if (error instanceof AppError) return error;
-  if (error instanceof Error) {
-    return new AppError({
-      code: "UNKNOWN_ERROR",
-      message: error.message,
-      source: "unknown",
-      cause: error,
-    });
+  const message = error instanceof Error ? error.message : typeof error === "string" ? error : "Request failed";
+  const legacyMatch = message.match(/^\[([A-Z0-9_]+)\]\s*(.*)$/);
+  if (legacyMatch) {
+    return new AppError({ code: legacyMatch[1], message, source: "unknown", cause: error });
   }
-  return new AppError({
-    code: "UNKNOWN_ERROR",
-    message: "Request failed",
-    source: "unknown",
-    cause: error,
-  });
+  return new AppError({ code: "UNKNOWN_ERROR", message, source: "unknown", cause: error });
 }
-
 export function appErrorMessageKey(code: string): string {
   if (["UNAUTHORIZED", "AUTHENTICATION_FAILED", "INVALID_TOKEN"].includes(code)) return "authentication";
   if (["FORBIDDEN", "STUDENT_NOT_IN_ACTIVE_CLASS", "ACTIVITY_SESSION_NOT_ACCESSIBLE"].includes(code)) return "forbidden";
@@ -66,6 +57,7 @@ export function getAppErrorMessage(
   translate: (key: string) => string,
 ): string {
   const normalized = toAppError(error);
+  if (normalized.code === "UNKNOWN_ERROR") return normalized.message;
   try {
     return translate(Object.prototype.hasOwnProperty.call(errorCodeMessageKeys, normalized.code)
       ? errorCodeMessageKeys[normalized.code]

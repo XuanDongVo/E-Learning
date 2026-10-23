@@ -6,68 +6,92 @@ export interface AppErrorPayload {
   details?: unknown;
 }
 
+interface AppErrorOptions {
+  code: string;
+  message: string;
+  status?: number;
+  details?: unknown;
+  source: AppErrorSource;
+  cause?: unknown;
+}
+
+const DEFAULT_ERROR_MESSAGE = "Request failed";
+const LEGACY_CODE_PATTERN = /^\[([A-Z0-9_]+)\]\s*(.*)$/;
+
 export class AppError extends Error {
   readonly code: string;
-  readonly status: number | undefined;
+  readonly status?: number;
   readonly details: unknown;
   readonly source: AppErrorSource;
 
-  constructor(args: {
-    code: string;
-    message: string;
-    status?: number;
-    details?: unknown;
-    source: AppErrorSource;
-    cause?: unknown;
-  }) {
-    super(args.message, { cause: args.cause });
+  constructor(options: AppErrorOptions) {
+    super(options.message, { cause: options.cause });
     this.name = "AppError";
-    this.code = args.code;
-    this.status = args.status;
-    this.details = args.details;
-    this.source = args.source;
+    this.code = options.code;
+    this.status = options.status;
+    this.details = options.details;
+    this.source = options.source;
   }
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function nonEmptyString(value: unknown): string | undefined {
+  return typeof value === "string" && value.trim().length > 0
+    ? value.trim()
+    : undefined;
+}
+
+/** Normalize unknown and legacy errors at the UI boundary. */
 export function toAppError(error: unknown): AppError {
   if (error instanceof AppError) return error;
-  const message = error instanceof Error ? error.message : typeof error === "string" ? error : "Request failed";
-  const legacyMatch = message.match(/^\[([A-Z0-9_]+)\]\s*(.*)$/);
-  if (legacyMatch) {
-    return new AppError({ code: legacyMatch[1], message, source: "unknown", cause: error });
+
+  if (isRecord(error)) {
+    const code = nonEmptyString(error.code);
+    const message = nonEmptyString(error.message);
+    const status = typeof error.status === "number" ? error.status : undefined;
+
+    if (code || message) {
+      return new AppError({
+        code: code ?? "UNKNOWN_ERROR",
+        message: message ?? DEFAULT_ERROR_MESSAGE,
+        status,
+        details: error.details,
+        source: "api",
+        cause: error,
+      });
+    }
   }
-  return new AppError({ code: "UNKNOWN_ERROR", message, source: "unknown", cause: error });
-}
-export function appErrorMessageKey(code: string): string {
-  if (["UNAUTHORIZED", "AUTHENTICATION_FAILED", "INVALID_TOKEN"].includes(code)) return "authentication";
-  if (["FORBIDDEN", "STUDENT_NOT_IN_ACTIVE_CLASS", "ACTIVITY_SESSION_NOT_ACCESSIBLE"].includes(code)) return "forbidden";
-  if (code === "VALIDATION_FAILED" || code === "INVALID_REQUEST" || code.includes("INVALID") || code.includes("REQUIRED") || code.includes("EXCEEDED") || code.includes("OUTSIDE") || code.includes("EMPTY") || code.includes("UNSUPPORTED") || code.includes("DETECTION_FAILED") || code.startsWith("MEDIA_FILE_") || code.startsWith("MEDIA_TYPE_") || code.startsWith("MEDIA_CONTENT_") || code === "QUESTION_NOT_IN_BANK") return "validation";
-  if (code.endsWith("_NOT_FOUND")) return "notFound";
-  if (code.endsWith("_ALREADY_EXISTS") || code.endsWith("_LOCKED") || code.endsWith("_NOT_READY") || code.endsWith("_IN_USE") || code.endsWith("_EXHAUSTED") || code.endsWith("_UNAVAILABLE") || code === "STUDENT_ALREADY_IN_CLASS" || code === "MEDIA_NOT_READY" || code === "ACTIVITY_SESSION_NOT_ACTIVE") return "conflict";
-  if (code.startsWith("HTTP_") || code === "INTERNAL_ERROR" || code === "UNKNOWN_ERROR") return "server";
-  return "generic";
+
+  const message = error instanceof Error
+    ? error.message
+    : nonEmptyString(error) ?? DEFAULT_ERROR_MESSAGE;
+  const legacyMatch = LEGACY_CODE_PATTERN.exec(message);
+
+  if (legacyMatch) {
+    return new AppError({
+      code: legacyMatch[1],
+      message,
+      source: "unknown",
+      cause: error,
+    });
+  }
+
+  return new AppError({
+    code: "UNKNOWN_ERROR",
+    message,
+    source: error instanceof TypeError ? "network" : "unknown",
+    cause: error,
+  });
 }
 
 /**
- * Prefer localized code-based messages. Preserve the server message as a
- * fallback for legacy/unmapped codes while the UI migrates incrementally.
+ * Explicit exceptions are listed first; naming conventions provide a stable
+ * fallback for codes that have not yet received a dedicated translation key.
  */
-export function getAppErrorMessage(
-  error: unknown,
-  translate: (key: string) => string,
-): string {
-  const normalized = toAppError(error);
-  if (normalized.code === "UNKNOWN_ERROR") return normalized.message;
-  try {
-    return translate(Object.prototype.hasOwnProperty.call(errorCodeMessageKeys, normalized.code)
-      ? errorCodeMessageKeys[normalized.code]
-      : appErrorMessageKey(normalized.code));
-  } catch {
-    return normalized.message;
-  }
-}
-
-const errorCodeMessageKeys: Record<string, string> = {
+const explicitMessageKeys: Readonly<Record<string, string>> = {
   INVALID_REQUEST: "invalidRequest",
   INTERNAL_ERROR: "server",
   UNAUTHORIZED: "authentication",
@@ -78,14 +102,6 @@ const errorCodeMessageKeys: Record<string, string> = {
   USER_NOT_FOUND: "userNotFound",
   STUDENT_NOT_FOUND: "userNotFound",
   CLASS_NOT_FOUND: "classNotFound",
-  GRADE_NOT_FOUND: "notFound",
-  UNIT_NOT_FOUND: "notFound",
-  SECTION_NOT_FOUND: "notFound",
-  TOPIC_NOT_FOUND: "notFound",
-  QUESTION_BANK_NOT_FOUND: "notFound",
-  QUESTION_NOT_FOUND: "notFound",
-  ACTIVITY_NOT_FOUND: "notFound",
-  ASSIGNMENT_NOT_FOUND: "notFound",
   EMAIL_ALREADY_EXISTS: "emailAlreadyExists",
   CLASS_ALREADY_EXISTS: "conflict",
   STUDENT_ALREADY_IN_CLASS: "conflict",
@@ -93,4 +109,58 @@ const errorCodeMessageKeys: Record<string, string> = {
   ASSIGNMENT_NOT_READY: "notReady",
   ASSIGNMENT_TIME_LIMIT_INVALID: "validation",
   ACTIVITY_SESSION_ANSWER_INVALID: "validation",
+  STUDENT_NOT_IN_ACTIVE_CLASS: "forbidden",
+  ACTIVITY_SESSION_NOT_ACCESSIBLE: "forbidden",
+  ACTIVITY_SESSION_NOT_ACTIVE: "conflict",
+  MEDIA_NOT_READY: "conflict",
 };
+
+function inferMessageKey(code: string): string {
+  if (code.startsWith("HTTP_") || code === "UNKNOWN_ERROR") return "server";
+  if (code.endsWith("_NOT_FOUND")) return "notFound";
+  if (
+    code.includes("INVALID") ||
+    code.includes("REQUIRED") ||
+    code.includes("EXCEEDED") ||
+    code.includes("OUTSIDE") ||
+    code.includes("EMPTY") ||
+    code.includes("UNSUPPORTED") ||
+    code.includes("DETECTION_FAILED") ||
+    code.startsWith("MEDIA_FILE_") ||
+    code.startsWith("MEDIA_TYPE_") ||
+    code.startsWith("MEDIA_CONTENT_") ||
+    code === "QUESTION_NOT_IN_BANK"
+  ) return "validation";
+  if (
+    code.endsWith("_ALREADY_EXISTS") ||
+    code.endsWith("_LOCKED") ||
+    code.endsWith("_NOT_READY") ||
+    code.endsWith("_IN_USE") ||
+    code.endsWith("_EXHAUSTED") ||
+    code.endsWith("_UNAVAILABLE")
+  ) return "conflict";
+  return "generic";
+}
+
+export function appErrorMessageKey(code: string): string {
+  return explicitMessageKeys[code] ?? inferMessageKey(code);
+}
+
+/**
+ * Prefer localized, code-based copy. Preserve the original message when the
+ * error is unknown or the translation key is unavailable.
+ */
+export function getAppErrorMessage(
+  error: unknown,
+  translate: (key: string) => string,
+): string {
+  const normalized = toAppError(error);
+  if (normalized.code === "UNKNOWN_ERROR") return normalized.message;
+
+  try {
+    const translated = translate(appErrorMessageKey(normalized.code));
+    return translated || normalized.message;
+  } catch {
+    return normalized.message;
+  }
+}

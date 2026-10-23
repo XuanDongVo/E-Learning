@@ -52,7 +52,7 @@ export function appErrorMessageKey(code: string): string {
   if (["FORBIDDEN", "STUDENT_NOT_IN_ACTIVE_CLASS", "ACTIVITY_SESSION_NOT_ACCESSIBLE"].includes(code)) return "forbidden";
   if (code === "VALIDATION_FAILED" || code.endsWith("_INVALID") || code.endsWith("_REQUIRED") || code === "INVALID_REQUEST") return "validation";
   if (code.endsWith("_NOT_FOUND")) return "notFound";
-  if (code.endsWith("_ALREADY_EXISTS") || code.endsWith("_LOCKED") || code.endsWith("_NOT_READY") || code.endsWith("_IN_USE")) return "conflict";
+  if (code.endsWith("_ALREADY_EXISTS") || code.endsWith("_LOCKED") || code.endsWith("_NOT_READY") || code.endsWith("_IN_USE") || code.endsWith("_EXHAUSTED") || code === "STUDENT_ALREADY_IN_CLASS" || code === "MEDIA_NOT_READY") return "conflict";
   if (code.startsWith("HTTP_") || code === "INTERNAL_ERROR" || code === "UNKNOWN_ERROR") return "server";
   return "generic";
 }
@@ -67,7 +67,7 @@ export function getAppErrorMessage(
 ): string {
   const normalized = toAppError(error);
   try {
-    return translate(normalized.code in errorCodeMessageKeys
+    return translate(Object.prototype.hasOwnProperty.call(errorCodeMessageKeys, normalized.code)
       ? errorCodeMessageKeys[normalized.code]
       : appErrorMessageKey(normalized.code));
   } catch {

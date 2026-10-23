@@ -1,6 +1,8 @@
 "use client";
 import type { StudentFormProps } from "@/types/student";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
+import { getAppErrorMessage } from "@/lib/errors/app-error";
 import { useQuery } from "@tanstack/react-query";
 import { classService } from "@/services/class.service";
 import { studentService } from "@/services/student.service";
@@ -18,6 +20,7 @@ const emptyGuardian: StudentGuardianRequest = {
   primary: true,
 };
 export function StudentForm({ onSuccess, onCancel }: StudentFormProps) {
+  const tErrors = useTranslations("errors");
   const { data: classesData } = useQuery({
     queryKey: ["classes"],
     queryFn: classService.list,
@@ -42,7 +45,7 @@ export function StudentForm({ onSuccess, onCancel }: StudentFormProps) {
       await studentService.create(form);
       onSuccess();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to create student");
+      setError(getAppErrorMessage(err, tErrors as (key: string) => string));
     } finally {
       setSaving(false);
     }

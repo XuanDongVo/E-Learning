@@ -8,6 +8,8 @@ import {
   X,
 } from "lucide-react";
 import type { ReactNode } from "react";
+import { useTranslations } from "next-intl";
+import { getAppErrorMessage } from "@/lib/errors/app-error";
 import { toast } from "sonner";
 import { contentService } from "@/services/content.service";
 import { Button } from "@/components/ui/button";
@@ -1294,6 +1296,7 @@ function QuestionEditor({ q }: { q: QuestionItem }) {
 }
 
 function BlockEditor({ b }: { b: BlockItem }) {
+  const tErrors = useTranslations("errors");
   const a = useBuilder((s) => s.assignment);
   const { duplicate, requestDeleteItem, select, addTool, ask } =
     useBuilder.getState();
@@ -1419,9 +1422,7 @@ function BlockEditor({ b }: { b: BlockItem }) {
                     toast.success("Image uploaded.");
                   } catch (error) {
                     toast.error(
-                      error instanceof Error
-                        ? error.message
-                        : "Image upload failed.",
+                      getAppErrorMessage(error, tErrors as (key: string) => string),
                     );
                   }
                 }}

@@ -1,6 +1,8 @@
 "use client";
 
 import Image from "next/image";
+import { useTranslations } from "next-intl";
+import { getAppErrorMessage } from "@/lib/errors/app-error";
 import { useRouter } from "@/i18n/navigation";
 import {
   ArrowLeft,
@@ -81,6 +83,7 @@ export function PracticeRunner({
   unitId: number;
   activityId: number;
 }) {
+  const tErrors = useTranslations("errors");
   const router = useRouter();
   const unitHref = `/student/units/${unitId}`;
   const [mode, setMode] = useState<ActivitySessionMode>();
@@ -225,7 +228,7 @@ export function PracticeRunner({
     !!question && !!hintText && hintOpenFor === question.id && !locked;
   const hintError =
     hintMutation.isError && hintMutation.variables?.questionId === question?.id
-      ? hintMutation.error.message
+      ? getAppErrorMessage(hintMutation.error, tErrors as (key: string) => string)
       : undefined;
   const nextOpen =
     questions.find((q, i) => i > index && !q.resolved) ??
@@ -420,7 +423,7 @@ export function PracticeRunner({
         unitId={unitId}
         options={sessionOptions}
         loading={options.isLoading}
-        loadError={options.isError ? options.error.message : undefined}
+        loadError={options.isError ? getAppErrorMessage(options.error, tErrors as (key: string) => string) : undefined}
         onReload={() => options.refetch()}
         mode={effectiveMode}
         onModeChange={setMode}
@@ -428,7 +431,7 @@ export function PracticeRunner({
         onStrategyChange={setStrategy}
         starting={start.isPending}
         slow={startSlow}
-        startError={start.isError ? start.error.message : undefined}
+        startError={start.isError ? getAppErrorMessage(start.error, tErrors as (key: string) => string) : undefined}
         onStart={() => start.mutate()}
       />
     );
@@ -706,7 +709,7 @@ export function PracticeRunner({
                         role="alert"
                         className="mt-4 text-sm font-bold text-practice-bad"
                       >
-                        {answerMutation.error.message} Đáp án của bạn vẫn được
+                        {getAppErrorMessage(answerMutation.error, tErrors as (key: string) => string)} Đáp án của bạn vẫn được
                         giữ, hãy bấm Kiểm tra để thử lại.
                       </p>
                     )}
@@ -715,7 +718,7 @@ export function PracticeRunner({
                         role="alert"
                         className="mt-4 text-sm font-bold text-practice-bad"
                       >
-                        {finish.error.message}
+                        {getAppErrorMessage(finish.error, tErrors as (key: string) => string)}
                       </p>
                     )}
                     {feedback && (

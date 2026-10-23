@@ -3,11 +3,14 @@
 import { Link } from "@/i18n/navigation";
 import { ArrowRight, Clock3, Gamepad2, Sparkles } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslations } from "next-intl";
+import { getAppErrorMessage } from "@/lib/errors/app-error";
 import { studentActivityService } from "@/services/student/student-activity.service";
 import type { Activity } from "@/types/student/activity";
 import { ACTIVITY_DIFFICULTY_LABELS } from "@/types/activity";
 
 export function ActivityHub({ unitId }: { unitId?: number }) {
+  const tErrors = useTranslations("errors");
   const activities = useQuery({
     queryKey: ["student-activities", unitId],
     queryFn: () => studentActivityService.list(unitId!),
@@ -56,7 +59,7 @@ export function ActivityHub({ unitId }: { unitId?: number }) {
               role="alert"
               className="mt-5 border border-destructive/20 bg-danger-light p-5 text-body-sm text-danger-text"
             >
-              {activities.error.message}
+              {getAppErrorMessage(activities.error, tErrors as (key: string) => string)}
             </div>
           )}
           {unitId &&

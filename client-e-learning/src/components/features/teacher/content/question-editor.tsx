@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
+import { getAppErrorMessage } from "@/lib/errors/app-error";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   CheckCircle2,
@@ -124,6 +126,7 @@ function QuestionEditorForm({
   bankName?: string;
   onNavigate: (view: ContentView, id?: number, bankName?: string) => void;
 }) {
+  const tErrors = useTranslations("errors");
   const client = useQueryClient();
   const [isSaving, setIsSaving] = useState(false);
   const [draft, setDraft] = useState(() =>
@@ -180,7 +183,7 @@ function QuestionEditorForm({
       }, NAVIGATE_AFTER_SAVE_MS);
     } catch (err: unknown) {
       toast.error("Could not save changes", {
-        description: err instanceof Error ? err.message : "Please try again.",
+        description: getAppErrorMessage(err, tErrors as (key: string) => string),
       });
       setIsSaving(false);
     }

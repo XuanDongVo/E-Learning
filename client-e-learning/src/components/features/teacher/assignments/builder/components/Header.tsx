@@ -16,6 +16,8 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
+import { getAppErrorMessage } from "@/lib/errors/app-error";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -124,6 +126,7 @@ export function StatusBadge() {
 
 // ─── Header ───────────────────────────────────────────────────────────────────
 export function Header() {
+  const tErrors = useTranslations("errors");
   const router = useRouter();
   const a = useBuilder((s) => s.assignment);
   const mode = useBuilder((s) => s.mode);
@@ -192,7 +195,7 @@ export function Header() {
         toast.success(labels[next] ?? `Status → ${next}`);
       }
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Failed to update status.");
+      toast.error(getAppErrorMessage(e, tErrors as (key: string) => string));
     } finally {
       setStatusLoading(false);
     }

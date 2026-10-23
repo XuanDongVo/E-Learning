@@ -12,11 +12,14 @@ import {
   Mail,
 } from "lucide-react";
 import { useAuth } from "@/components/auth/auth-provider";
+import { useTranslations } from "next-intl";
+import { getAppErrorMessage } from "@/lib/errors/app-error";
 
 export default function LoginPage() {
   const router = useRouter();
   const locale = useLocale();
   const { login } = useAuth();
+  const tErrors = useTranslations("errors");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -35,11 +38,7 @@ export default function LoginPage() {
         : null;
       router.replace(safeNext ?? (user.role === "TEACHER" ? "/teacher" : "/"), { locale });
     } catch (submissionError) {
-      setError(
-        submissionError instanceof Error
-          ? submissionError.message
-          : "Unable to sign in",
-      );
+      setError(getAppErrorMessage(submissionError, tErrors as (key: string) => string));
     } finally {
       setIsSubmitting(false);
     }

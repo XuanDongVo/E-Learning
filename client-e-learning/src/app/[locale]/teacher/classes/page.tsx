@@ -1,6 +1,8 @@
 "use client";
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
+import { getAppErrorMessage } from "@/lib/errors/app-error";
 import { classService } from "@/services/class.service";
 import { gradeService } from "@/services/grade.service";
 import type { Class } from "@/types/class";
@@ -13,6 +15,7 @@ import { CreateClassDialog } from "@/components/features/teacher/classes/create-
 const emptyForm = { name: "", gradeId: "", academicYear: "2026 - 2027" };
 
 export default function ClassesPage() {
+  const tErrors = useTranslations("errors");
   const [classes, setClasses] = useState<Class[]>([]);
   const [grades, setGrades] = useState<Grade[]>([]);
   const [query, setQuery] = useState("");
@@ -43,9 +46,7 @@ export default function ClassesPage() {
       } catch (loadError) {
         if (active)
           setError(
-            loadError instanceof Error
-              ? loadError.message
-              : "Unable to load classes and grades",
+            getAppErrorMessage(loadError, tErrors as (key: string) => string),
           );
       } finally {
         if (active) setIsLoading(false);
@@ -74,9 +75,7 @@ export default function ClassesPage() {
       setError(null);
     } catch (loadError) {
       setError(
-        loadError instanceof Error
-          ? loadError.message
-          : "Unable to load classes",
+        getAppErrorMessage(loadError, tErrors as (key: string) => string),
       );
     } finally {
       setIsLoading(false);
@@ -130,7 +129,7 @@ export default function ClassesPage() {
       setError(null);
     } catch (saveError) {
       setError(
-        saveError instanceof Error ? saveError.message : "Unable to save class",
+        getAppErrorMessage(saveError, tErrors as (key: string) => string),
       );
     } finally {
       setIsSaving(false);
@@ -148,9 +147,7 @@ export default function ClassesPage() {
       );
     } catch (archiveError) {
       setError(
-        archiveError instanceof Error
-          ? archiveError.message
-          : "Unable to archive class",
+        getAppErrorMessage(archiveError, tErrors as (key: string) => string),
       );
     }
   };

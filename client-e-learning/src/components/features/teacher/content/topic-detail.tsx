@@ -2,6 +2,8 @@
 
 import { Link } from "@/i18n/navigation";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
+import { getAppErrorMessage } from "@/lib/errors/app-error";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowRight, FileQuestion, Plus, Tags, X, Activity as ActivityIcon } from "lucide-react";
 import { contentService } from "@/services/content.service";
@@ -27,6 +29,7 @@ export function TopicDetail({
   onNavigate: (view: ContentView, id?: number) => void;
 }) {
   const client = useQueryClient();
+  const tErrors = useTranslations("errors");
   const [editOpen, setEditOpen] = useState(false);
   const [createBankOpen, setCreateBankOpen] = useState(false);
   const [bankName, setBankName] = useState("");
@@ -222,9 +225,7 @@ export function TopicDetail({
 
               {createBank.isError && (
                 <p role="alert" className="rounded-md border border-rose-200 bg-rose-50 p-3 text-xs text-rose-700">
-                  {createBank.error instanceof Error
-                    ? createBank.error.message
-                    : "Could not create question bank. Please try again."}
+                  {getAppErrorMessage(createBank.error, tErrors as (key: string) => string)}
                 </p>
               )}
 
@@ -289,9 +290,7 @@ export function TopicDetail({
           <div role="alert" className="p-6 text-center text-sm text-rose-700">
             <p>Could not load question banks.</p>
             <p className="mt-1 break-words text-xs text-rose-600">
-              {questionBanks.error instanceof Error
-                ? questionBanks.error.message
-                : "The request failed. Check the API server and try again."}
+              {getAppErrorMessage(questionBanks.error, tErrors as (key: string) => string)}
             </p>
             <button type="button" onClick={() => void questionBanks.refetch()} className="mt-2 rounded-md border border-rose-200 px-3 py-1.5 font-semibold hover:bg-rose-50">
               Retry

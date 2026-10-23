@@ -1,6 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
+import { getAppErrorMessage } from "@/lib/errors/app-error";
 import { useQuery } from "@tanstack/react-query";
 import {
   AlertTriangle,
@@ -22,6 +24,7 @@ const emptyForm = {
 };
 
 export default function TeacherGradesPage() {
+  const tErrors = useTranslations("errors");
   const gradesQuery = useQuery({
     queryKey: ["teacher-grades-all"],
     queryFn: async () => (await gradeService.listAll()).data ?? [],
@@ -79,9 +82,7 @@ export default function TeacherGradesPage() {
       await gradesQuery.refetch();
     } catch (submitError) {
       setError(
-        submitError instanceof Error
-          ? submitError.message
-          : "Unable to save grade",
+        getAppErrorMessage(submitError, tErrors as (key: string) => string),
       );
     } finally {
       setIsSaving(false);
@@ -105,9 +106,7 @@ export default function TeacherGradesPage() {
       setError(null);
     } catch (deactivateError) {
       setError(
-        deactivateError instanceof Error
-          ? deactivateError.message
-          : "Unable to deactivate grade",
+        getAppErrorMessage(deactivateError, tErrors as (key: string) => string),
       );
     }
   };
@@ -119,9 +118,7 @@ export default function TeacherGradesPage() {
       setError(null);
     } catch (activateError) {
       setError(
-        activateError instanceof Error
-          ? activateError.message
-          : "Unable to activate grade",
+        getAppErrorMessage(activateError, tErrors as (key: string) => string),
       );
     }
   };
@@ -140,7 +137,7 @@ export default function TeacherGradesPage() {
       }
     } catch (deleteError) {
       setError(
-        deleteError instanceof Error ? deleteError.message : "Unable to delete grade",
+        getAppErrorMessage(deleteError, tErrors as (key: string) => string),
       );
     }
   };

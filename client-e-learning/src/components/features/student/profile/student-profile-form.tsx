@@ -3,6 +3,8 @@
 import type { Gender, StudentGuardianRequest } from "@/types/student";
 import type { StudentProfile } from "@/types/student/profile";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
+import { getAppErrorMessage } from "@/lib/errors/app-error";
 import { useQuery } from "@tanstack/react-query";
 import { studentProfileService } from "@/services/student/student-profile.service";
 
@@ -13,6 +15,7 @@ function StudentProfileFormFields({
   profile: StudentProfile;
   refetch: () => Promise<unknown>;
 }) {
+  const tErrors = useTranslations("errors");
   const [fullName, setFullName] = useState(profile.fullName);
   const [phone, setPhone] = useState(profile.phone || "");
   const [dateOfBirth, setDateOfBirth] = useState(profile.dateOfBirth || "");
@@ -54,7 +57,7 @@ function StudentProfileFormFields({
       await refetch();
       setMessage("Profile updated.");
     } catch (err) {
-      setMessage(err instanceof Error ? err.message : "Unable to update profile");
+      setMessage(getAppErrorMessage(err, tErrors as (key: string) => string));
     } finally {
       setSaving(false);
     }

@@ -5,6 +5,8 @@ import { useRouter } from "@/i18n/navigation";
 import { useSearchParams } from "next/navigation";
 import { AlertTriangle, ArrowLeft, Check, Info, Search } from "lucide-react";
 import { useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
+import { getAppErrorMessage } from "@/lib/errors/app-error";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { activityService } from "@/services/activity.service";
@@ -140,6 +142,7 @@ function ActivityEditorForm({
   initialActivity?: ActivityDetail;
 }) {
   const router = useRouter();
+  const tErrors = useTranslations("errors");
   const params = useSearchParams();
   const qc = useQueryClient();
   const requestedUnitId = Number(params.get("unitId") || 0);
@@ -356,7 +359,7 @@ function ActivityEditorForm({
       router.push(`/teacher/activities/${r.data.id}`);
     },
     onError: (e) =>
-      toast.error(e instanceof Error ? e.message : "Could not save activity"),
+      toast.error(getAppErrorMessage(e, tErrors as (key: string) => string)),
   });
 
   const toggleBank = (source: ActivitySourceOption) =>

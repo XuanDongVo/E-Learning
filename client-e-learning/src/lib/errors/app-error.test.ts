@@ -34,6 +34,9 @@ describe("AppError", () => {
     expect(appErrorMessageKey("CLASS_NOT_FOUND")).toBe("notFound");
     expect(appErrorMessageKey("ASSIGNMENT_NOT_READY")).toBe("conflict");
     expect(appErrorMessageKey("HTTP_502")).toBe("server");
+    expect(appErrorMessageKey("ACTIVITY_SESSION_INVALID_MODE")).toBe("validation");
+    expect(appErrorMessageKey("MEDIA_FILE_TOO_LARGE")).toBe("validation");
+    expect(appErrorMessageKey("ACTIVITY_SESSION_RETRY_EXHAUSTED")).toBe("conflict");
   });
 
   it("uses code-based localized copy when available", () => {

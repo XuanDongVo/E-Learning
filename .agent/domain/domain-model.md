@@ -1,7 +1,9 @@
 # Domain Model
 
 ## Core
-User, Class, ClassMember, Grade, Unit, ClassUnit, Section, Topic, QuestionBank, Question, Activity, ActivityBank, ActivitySession, ActivitySessionQuestion, Assignment, AssignmentTarget, AssignmentQuestion, AssignmentComposition, AssignmentCompositionSection, AssignmentCompositionItem, AssessmentAttempt, AssessmentAttemptQuestion, Answer, AttemptPartGrade, XPTransaction.
+User, Class, ClassMember, Grade, Unit, ClassUnit, Section, Topic, QuestionBank, Question, Activity, ActivityBank, ActivitySession, ActivitySessionQuestion, Assignment, AssignmentQuestion, AssignmentComposition, AssignmentCompositionSection, AssignmentCompositionItem, AssessmentAttempt, AssessmentAttemptQuestion, Answer, AttemptPartGrade, XPTransaction.
+
+Assignment stores one Grade relation and a concrete `class_ids` recipient snapshot; `AssignmentTarget` is not a current entity.
 GameTemplate is deferred.
 
 ## Content

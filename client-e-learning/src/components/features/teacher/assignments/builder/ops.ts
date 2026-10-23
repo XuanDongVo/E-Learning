@@ -17,7 +17,7 @@ export function createEmptyAssignment(): Assignment {
     grade: 6,
     instructions: "",
     settings: {
-      timeLimitMin: null,
+      timeLimitMinutes: 60,
       startAt: "",
       dueAt: "",
       classIds: [],

@@ -157,7 +157,7 @@ export function buildStudentView(a: Assignment): StudentAssignment {
     title: a.title,
     grade: a.grade,
     instructions: a.instructions,
-    timeLimitMin: a.settings.timeLimitMin,
+    timeLimitMin: a.settings.timeLimitMinutes,
     totalQuestions: total,
     totalPoints: points,
     sections,

@@ -7,6 +7,7 @@ import { BookOpen, CheckCircle2, Clock3, FileSpreadsheet, Plus, Search, Upload, 
 import { toast } from "sonner";
 
 import { classService } from "@/services/class.service";
+import { gradeService } from "@/services/grade.service";
 import {
   createAssignment,
   listAssignments,
@@ -19,13 +20,15 @@ import { SummaryCard } from "@/components/features/teacher/assignments/main/Summ
 import { TeacherAssignmentGuide } from "@/components/features/teacher/assignments/main/TeacherAssignmentGuide";
 
 const initialForm: CreateAssignmentRequest = {
-  gradeLevel: 6,
-  academicYear: "2026 - 2027",
+  gradeId: 0,
+  academicYear: "",
   name: "",
   description: "",
+  startAt: "",
   dueAt: "",
   showAnswersAfterSubmit: true,
-  targets: [],
+  timeLimitMinutes: 60,
+  classIds: [],
 };
 
 export default function TeacherAssignmentsPage() {
@@ -46,6 +49,10 @@ export default function TeacherAssignmentsPage() {
   const classes = useQuery({
     queryKey: ["classes"],
     queryFn: classService.list,
+  });
+  const grades = useQuery({
+    queryKey: ["grades"],
+    queryFn: gradeService.list,
   });
   const create = useMutation({
     mutationFn: createAssignment,
@@ -163,6 +170,7 @@ export default function TeacherAssignmentsPage() {
         open={wizardOpen}
         form={form}
         classes={classes.data?.data ?? []}
+        grades={grades.data?.data ?? []}
         mode="create"
         isPending={create.isPending}
         onClose={() => setWizardOpen(false)}

@@ -10,7 +10,9 @@ Phase 5 introduces formal Assignments independent from Activities. The Assignmen
 
 ## Decision
 
-- Assignment stores grade_level and academic_year for target resolution.
+- Assignment stores a `grade_id` foreign key, `academic_year`, and a `class_ids` JSONB recipient snapshot.
+- `class_ids` is validated server-side: it must be non-empty, unique, teacher-scoped, and every class must belong to the selected Grade and academic year.
+- The frontend may use Grade selection to select matching classes, but Grade is not itself a persisted recipient target.
 - Students may start after due_at; the submission is labeled Late without a score penalty.
 - time_limit_seconds is per Assignment Attempt and is independent of due_at.
 - Assignment questions are owned by the Assignment and do not reference Activity or QuestionBank.

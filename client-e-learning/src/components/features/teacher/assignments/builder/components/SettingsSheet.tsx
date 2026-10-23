@@ -15,13 +15,13 @@ export function SettingsSheet() {
   const open = useBuilder((s) => s.settingsOpen);
   const classes = useQuery({ queryKey: ["classes"], queryFn: classService.list });
   const grades = useQuery({ queryKey: ["grades"], queryFn: gradeService.list, enabled: open });
-  console.log("SettingsSheet render", { open, classes, grades });
   const a = useBuilder((s) => s.assignment);
+  console.log("assignment settings",a);
   const { set, mutate } = useBuilder.getState();
   const st = a.settings;
   const upd = (p: Partial<AssignmentSettings>) => mutate((d) => Object.assign(d.settings, p));
   const dateError = st.startAt && st.dueAt && st.dueAt <= st.startAt ? "Due date must be after the start date" : null;
-  const timeError = st.timeLimitMin != null && (st.timeLimitMin <= 0 || !Number.isFinite(st.timeLimitMin)) ? "Time limit must be a positive number" : null;
+  const timeError = st.timeLimitMinutes != null && (st.timeLimitMinutes <= 0 || !Number.isFinite(st.timeLimitMinutes)) ? "Time limit must be a positive number" : null;
   return (
     <Sheet open={open} onOpenChange={(o) => set({ settingsOpen: o })}>
       <SheetContent className="w-full overflow-y-auto sm:max-w-md">
@@ -65,7 +65,7 @@ export function SettingsSheet() {
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="set-time">Time limit for the whole attempt (minutes)</Label>
-            <Input id="set-time" type="number" min={1} placeholder="No limit" value={st.timeLimitMin ?? ""} onChange={(e) => upd({ timeLimitMin: e.target.value === "" ? null : Number(e.target.value) })} />
+            <Input id="set-time" type="number" min={1} placeholder="No limit" value={st.timeLimitMinutes } onChange={(e) => upd({ timeLimitMinutes: Number(e.target.value) })} />
             {timeError ? <p className="text-xs text-destructive">{timeError}</p> : <p className="text-xs text-muted-foreground">Leave empty for no limit. There are no per-question timers.</p>}
           </div>
           <div className="space-y-4">
@@ -144,7 +144,7 @@ export function SettingsSheet() {
                 </label>
               ))}
             </div>
-            {classes.isLoading ? <p className="text-xs text-muted-foreground">Loading classes…</p> : st.classIds.length === 0 && <p className="text-xs text-warning-foreground">No class selected; this Assignment targets the whole grade when saved.</p>}
+            {classes.isLoading ? <p className="text-xs text-muted-foreground">Loading classes…</p> : st.classIds.length === 0 && <p className="text-xs text-warning-foreground">Select at least one class before saving this Assignment.</p>}
             {classes.isError && <p className="text-xs text-destructive">Could not load classes. Check your connection and retry.</p>}
           </div>
           <div className="space-y-1.5">

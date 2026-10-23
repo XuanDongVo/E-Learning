@@ -1,8 +1,8 @@
 -- Grade 6 all-question-types + shared-content integration seed.
--- Target: PostgreSQL after Flyway V38.
+-- Target: PostgreSQL after Flyway V40.
 -- Run manually in a disposable/test database with psql:
 --   psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f server/src/test/resources/db/seed/grade6_all_question_types_assignment.sql
--- Idempotent by (grade_level, academic_year, name). This REPLACES the seed-owned content of this named assignment.
+-- Idempotent by (grade_id, academic_year, name). This REPLACES the seed-owned content of this named assignment.
 -- The generated classroom image is a placeholder assetId; replace it with an uploaded media asset before student-facing use.
 -- Current schema limitation notes are at the end of this file.
 
@@ -11,15 +11,20 @@ BEGIN;
 CREATE TEMP TABLE seed_assignment ON COMMIT DROP AS
 WITH upserted AS (
     INSERT INTO assignments
-        (grade_level, academic_year, name, description, status, start_at, due_at,
+        (grade_id, class_ids, academic_year, name, description, status, start_at, due_at,
          time_limit_seconds, show_answers_after_submit, show_score_after_submit,
          show_points_per_question, created_at, updated_at)
-    VALUES
-        (6, '2026-2027', 'Mid-term Vocabulary Check — All Question Types',
+    SELECT
+        g.id,
+        (SELECT jsonb_agg(c.id ORDER BY c.id) FROM classes c
+         WHERE c.grade_id = g.id AND c.academic_year = '2026-2027' AND c.status = 'ACTIVE'),
+        '2026-2027', 'Mid-term Vocabulary Check — All Question Types',
          'Grade 6 integration seed covering all seven question types and shared Assignment content blocks.',
          'DRAFT', NULL, TIMESTAMP '2027-01-31 23:59:00',
-         2700, TRUE, TRUE, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-    ON CONFLICT (grade_level, academic_year, name)
+         2700, TRUE, TRUE, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+    FROM grades g
+    WHERE g.display_order = 6
+    ON CONFLICT (grade_id, academic_year, name)
     DO UPDATE SET
         description = EXCLUDED.description,
         status = 'DRAFT',
@@ -52,11 +57,16 @@ USING seed_old_question_ids old
 WHERE q.id = old.question_id
   AND NOT EXISTS (SELECT 1 FROM content_questions cq WHERE cq.question_id = q.id);
 
-DELETE FROM assignment_targets
-WHERE assignment_id = (SELECT id FROM seed_assignment);
-
-INSERT INTO assignment_targets (assignment_id, target_type, class_id)
-SELECT id, 'GRADE', NULL FROM seed_assignment;
+UPDATE assignments
+SET class_ids = (
+    SELECT jsonb_agg(c.id ORDER BY c.id)
+    FROM classes c
+    JOIN assignments a ON a.grade_id = c.grade_id
+    WHERE a.id = (SELECT id FROM seed_assignment)
+      AND c.academic_year = a.academic_year
+      AND c.status = 'ACTIVE'
+)
+WHERE id = (SELECT id FROM seed_assignment);
 
 CREATE TEMP TABLE seed_question_data (
     seed_key TEXT PRIMARY KEY,
@@ -458,19 +468,21 @@ $check$;
 COMMIT;
 
 -- Verify after running:
-SELECT a.id, a.grade_level, a.academic_year, a.name, a.status, COUNT(aq.question_id) AS question_count
+SELECT a.id, a.grade_id, a.academic_year, a.name, a.status, COUNT(aq.question_id) AS question_count
 FROM assignments a
 LEFT JOIN assignment_questions aq ON aq.assignment_id = a.id
-WHERE a.grade_level = 6
+JOIN grades g ON g.id = a.grade_id
+WHERE g.display_order = 6
   AND a.academic_year = '2026-2027'
   AND a.name = 'Mid-term Vocabulary Check — All Question Types'
-GROUP BY a.id, a.grade_level, a.academic_year, a.name, a.status;
+GROUP BY a.id, a.grade_id, a.academic_year, a.name, a.status;
 
 SELECT q.type, COUNT(*) AS count
 FROM assignment_questions aq
 JOIN assignments a ON a.id = aq.assignment_id
 JOIN questions q ON q.id = aq.question_id
-WHERE a.grade_level = 6
+JOIN grades g ON g.id = a.grade_id
+WHERE g.display_order = 6
   AND a.academic_year = '2026-2027'
   AND a.name = 'Mid-term Vocabulary Check — All Question Types'
 GROUP BY q.type

@@ -19,6 +19,7 @@ Migrated in this slice:
 - Login form: API errors display localized text by code.
 - Teacher Content — Topic detail: question-bank create/load error messages use the shared resolver.
 - Teacher Content — Question Bank detail: update/archive/save/load-question errors use the shared resolver.
+- Teacher Content — Question Editor and question authoring: save-question, bulk-save, and media-upload errors use the shared resolver.
 
 Not yet migrated:
 - Other teacher content screens and shared toast/error presentation.

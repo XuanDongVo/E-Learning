@@ -38,7 +38,7 @@ export default function LoginPage() {
         : null;
       router.replace(safeNext ?? (user.role === "TEACHER" ? "/teacher" : "/"), { locale });
     } catch (submissionError) {
-      setError(getAppErrorMessage(submissionError, (key) => tErrors(key)));
+      setError(getAppErrorMessage(submissionError, tErrors as (key: string) => string));
     } finally {
       setIsSubmitting(false);
     }

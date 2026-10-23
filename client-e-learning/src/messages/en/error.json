@@ -1,0 +1,16 @@
+{
+  "errors": {
+    "generic": "Something went wrong. Please try again.",
+    "invalidRequest": "The request is invalid.",
+    "authentication": "Your credentials are invalid or your session has expired.",
+    "forbidden": "You do not have permission to perform this action.",
+    "validation": "Some information is invalid. Please check and try again.",
+    "notFound": "The requested resource could not be found.",
+    "userNotFound": "The user could not be found.",
+    "classNotFound": "The class could not be found.",
+    "emailAlreadyExists": "This email address is already in use.",
+    "conflict": "This action conflicts with existing data or the resource's current state.",
+    "notReady": "This resource is not ready for this action.",
+    "server": "A server error occurred. Please try again later."
+  }
+}

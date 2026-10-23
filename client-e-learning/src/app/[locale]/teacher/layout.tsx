@@ -18,7 +18,7 @@ import {
   X,
   type LucideIcon,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 
 import { AuthGuard } from "@/components/auth/auth-guard";
@@ -66,10 +66,6 @@ function TeacherSidebar({
   );
   const explorerActive =
     pathname.startsWith("/teacher/content") && !questionBanksActive;
-
-  useEffect(() => {
-    if (pathname.startsWith("/teacher/content")) setContentExpanded(true);
-  }, [pathname]);
 
   return (
     <>

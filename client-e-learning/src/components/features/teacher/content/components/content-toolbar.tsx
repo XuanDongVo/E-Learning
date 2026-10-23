@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { Plus } from "lucide-react";
 import type { ContentToolbarProps } from "@/types/content";
 

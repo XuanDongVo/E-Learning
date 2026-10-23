@@ -81,7 +81,7 @@ class AssignmentServicePublishReadinessTest {
         when(targetClass.getId()).thenReturn(20L);
         when(targetClass.getGrade()).thenReturn(grade);
         when(targetClass.getAcademicYear()).thenReturn("2026-2027");
-        when(classRepository.findAllById(anySet())).thenReturn(List.of(targetClass));
+        when(classRepository.findAllById(List.of(20L))).thenReturn(List.of(targetClass));
 
         question = mock(Question.class);
         when(question.isComplete()).thenReturn(true);

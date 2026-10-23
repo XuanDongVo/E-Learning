@@ -12,6 +12,8 @@ import {
 } from "@dnd-kit/core";
 import { Loader2, PanelLeft, PanelRight } from "lucide-react";
 import { useRouter } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
+import { getAppErrorMessage } from "@/lib/errors/app-error";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -95,6 +97,7 @@ function LeftPanel() {
 }
 
 export function AssignmentBuilder({ id }: { id?: string }) {
+  const tErrors = useTranslations("errors");
   const router = useRouter();
   const loaded = useBuilder((s) => s.loaded);
   const loadError = useBuilder((s) => s.loadError);
@@ -187,7 +190,7 @@ export function AssignmentBuilder({ id }: { id?: string }) {
           <h1 className="text-lg font-semibold">
             Could not open Assignment Builder
           </h1>
-          <p className="text-sm text-muted-foreground">{loadError}</p>
+          <p className="text-sm text-muted-foreground">{getAppErrorMessage(loadError, tErrors as (key: string) => string)}</p>
           <div className="flex gap-2">
             <Button onClick={() => void loadAssignment(id)}>Retry</Button>
             <Button

@@ -3,6 +3,7 @@
 import { createContext, useContext, useMemo } from "react";
 import { useLocale as useIntlLocale, useTranslations } from "next-intl";
 import { usePathname, useRouter } from "@/i18n/navigation";
+import { useSearchParams } from "next/navigation";
 
 export type Locale = "vi" | "en";
 
@@ -31,6 +32,7 @@ const LocaleContext = createContext<LocaleContextValue | null>(null);
 export function LocaleProvider({ children }: { children: React.ReactNode }) {
   const locale = useIntlLocale() as Locale;
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const router = useRouter();
   const tMessages = useTranslations();
 
@@ -39,12 +41,13 @@ export function LocaleProvider({ children }: { children: React.ReactNode }) {
       locale,
       setLocale: (nextLocale) => {
         if (nextLocale !== locale) {
-          router.replace(pathname, { locale: nextLocale });
+          const query = searchParams.toString();
+          router.replace(query ? `${pathname}?${query}` : pathname, { locale: nextLocale });
         }
       },
       t: (key) => tMessages(key),
     }),
-    [locale, pathname, router, tMessages],
+    [locale, pathname, router, searchParams, tMessages],
   );
 
   return <LocaleContext.Provider value={value}>{children}</LocaleContext.Provider>;

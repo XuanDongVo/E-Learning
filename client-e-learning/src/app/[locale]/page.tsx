@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { ArrowRight, BookOpen, GraduationCap, ShieldCheck, Sparkles } from "lucide-react";
 
 const audiences = [

@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
+import { getAppErrorMessage } from "@/lib/errors/app-error";
 import { AlertTriangle, CheckCircle2, Eye, Loader2, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 
@@ -41,6 +43,7 @@ export function QuestionComposer({
   onSaveSuccess,
   successDescription,
 }: QuestionComposerProps) {
+  const tErrors = useTranslations("errors");
   const [questions, setQuestions] = useState<DraftQuestion[]>(() => {
     if (typeof window !== "undefined") {
       try {
@@ -228,7 +231,7 @@ export function QuestionComposer({
     } catch (error: unknown) {
       toast.error("Could not save questions", {
         description:
-          error instanceof Error ? error.message : "Please try again.",
+          getAppErrorMessage(error, tErrors as (key: string) => string),
       });
     } finally {
       setIsSaving(false);

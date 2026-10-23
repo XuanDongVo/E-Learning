@@ -1,0 +1,13 @@
+{
+  "contentDescription": "Grade → Unit → Section → Topic → Question bank.",
+  "createUnit": "Create Unit",
+  "units": "Unit list",
+  "unitCount": "units",
+  "sectionsAndTopics": "Sections and topics in this unit",
+  "selectUnit": "Select a Unit to view sections and topics",
+  "noUnits": "No units in this grade yet.",
+  "noTopics": "No topics in this section yet.",
+  "questionBanks": "banks",
+  "questions": "questions",
+  "search": "Search units..."
+}

@@ -2,7 +2,7 @@
 
 **Audit date:** 2026-10-23  
 **Branch:** `refactor/teacher-content-ui-routing`  
-**Branch HEAD audited:** `7bb5bb43bde786431c85ba0ca1d0c350cad684f4`  
+**Application-code audit baseline:** `7bb5bb43bde786431c85ba0ca1d0c350cad684f4` (the application code was not fully re-audited after this baseline; later commits in this branch were documentation changes).  
 **Purpose:** canonical implementation truth for AI agents. This file records what is actually present in the branch; accepted ADRs remain the source of product decisions, while this file is the source of current implementation status.
 
 ## 1. Authority model

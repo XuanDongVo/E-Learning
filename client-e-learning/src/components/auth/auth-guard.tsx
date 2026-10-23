@@ -19,7 +19,9 @@ export function AuthGuard({
   useEffect(() => {
     if (isLoading) return;
     if (!user) {
-      router.replace(`/login?next=${encodeURIComponent(pathname)}`);
+      const currentSearch = typeof window === "undefined" ? "" : window.location.search;
+      const returnTo = `${pathname}${currentSearch}`;
+      router.replace(`/login?next=${encodeURIComponent(returnTo)}`);
       return;
     }
     if (requiredRole && user.role !== requiredRole) {

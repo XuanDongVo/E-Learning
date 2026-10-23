@@ -2,6 +2,7 @@ package e_learning.server.assignment.service;
 
 import e_learning.server.assignment.dto.*;
 import e_learning.server.assignment.entity.Assignment;
+import e_learning.server.assignment.entity.AssignmentQuestion;
 import e_learning.server.assignment.enums.AssignmentStatus;
 import e_learning.server.assignment.repository.AssignmentRepository;
 import e_learning.server.assignment.repository.AssignmentQuestionRepository;
@@ -22,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @Service

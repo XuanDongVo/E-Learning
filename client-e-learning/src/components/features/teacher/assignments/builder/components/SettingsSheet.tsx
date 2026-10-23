@@ -15,6 +15,7 @@ export function SettingsSheet() {
   const open = useBuilder((s) => s.settingsOpen);
   const classes = useQuery({ queryKey: ["classes"], queryFn: classService.list });
   const grades = useQuery({ queryKey: ["grades"], queryFn: gradeService.list, enabled: open });
+  console.log("SettingsSheet render", { open, classes, grades });
   const a = useBuilder((s) => s.assignment);
   const { set, mutate } = useBuilder.getState();
   const st = a.settings;

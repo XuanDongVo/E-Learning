@@ -86,7 +86,7 @@ export default function TeacherAssignmentsPage() {
   };
 
   return (
-    <div className="mx-auto max-w-[1180px] space-y-5">
+    <div className="mx-auto space-y-5">
       <header className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
         <div>
           <p className="text-body-sm font-bold text-primary">Assignments &amp; Grading</p>

@@ -15,6 +15,7 @@ Status labels:
 | File | Status | Decision |
 |---|---|---|
 | `00-INDEX.md` | CANONICAL | Required reading order and naming/lifecycle policy |
+| `AUDIT_INVENTORY.md` | CANONICAL AUDIT REGISTER | File-by-file status, cleanup decisions and remaining audit work |
 | `README.md` | CANONICAL ENTRY | Short entry point; links to index and states authority rules |
 | `CURRENT_STATE.md` | CANONICAL | Current implementation facts and gaps; refresh after code audits |
 | `PROGRESS.md` | CANONICAL LOG | Current work and verification only; not a product specification |

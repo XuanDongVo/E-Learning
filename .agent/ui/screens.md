@@ -1,34 +1,33 @@
-# Screens and routes
+# Screens and Routes
 
-## Teacher
-- /teacher: dashboard, currently mock.
-- /teacher/classes: real.
-- /teacher/students: real.
-- /teacher/content: real Unit -> Section -> Topic -> QuestionBank -> Question flow.
-- /teacher/activities: real core CRUD/readiness; preview contract tracked.
-- /teacher/assignments: real core CRUD/question authoring; no reorder UI.
+**Purpose:** concise screen inventory only. Detailed interaction requirements belong in the relevant UI blueprint; implementation state belongs in `.agent/CURRENT_STATE.md`.
 
-Activity editor:
-- Unit scope.
-- Draft can save incomplete.
-- Try Hard time label = seconds per question.
-- Practice = no timer, immediate feedback, one retry, optional hint.
-- Practice = no timer, immediate feedback, one retry, optional hint.
-- Selection strategies are configured options; concrete selection is stored on ActivitySession.
-- No GameTemplate control.
-- Preview is a real action once endpoint implementation is complete.
+## Teacher routes
 
-Assignment editor:
-- Whole-attempt time limit.
-- Show answers after submit.
-- No position/reorder controls.
-- Questions displayed in server order.
+- `/teacher`: dashboard; metrics must not be fabricated and some areas remain mock/future work.
+- `/teacher/classes`: class management.
+- `/teacher/students`: student management.
+- `/teacher/content`: Content Explorer and hierarchy.
+- `/teacher/content/units/:unitId`: Unit workspace.
+- `/teacher/content/sections/:sectionId`: Section workspace.
+- `/teacher/content/topics/:topicId`: Topic and Question Bank management.
+- `/teacher/content/question-banks`: global Question Bank list under Content.
+- `/teacher/content/question-banks/:bankId`: Question Bank detail / Question Manager.
+- `/teacher/content/questions/:questionId`: Question Editor; bank/source context may be supplied through query parameters.
+- `/teacher/activities`: Activity authoring and readiness.
+- `/teacher/assignments`: Assignment list and authoring entry point; canonical Builder route and redirects must be checked in the current router.
 
-Question Editor: optional Hint, max 500 chars.
-Topic Editor: no formula/reference sheet field currently.
+## Student routes
 
-## Student
-/student dashboard is mock; /student/units, /student/assignments, /student/progress are placeholders.
-Phase 7 adds an ActivitySession runner/result/review first; the AssessmentAttempt runner is a separate later scope.
+Student dashboard, units, assignments and progress have historically contained mock/placeholder areas. Do not label them fully implemented without a current source and browser audit. ActivitySession runner/result/review is separate from the not-yet-implemented formal AssessmentAttempt runner.
 
-All runtime controls must be touch-friendly and keyboard accessible.
+## Cross-screen contracts
+
+- Activity belongs to Unit; Draft may be incomplete; publish requires server READY validation.
+- Practice has no timer, one retry and optional Question hint. Try Hard time limit is per question.
+- Multiple Activity strategies require a start-time choice; ActivitySession stores the concrete strategy.
+- Assignment time limit applies to the whole attempt. `show_score_after_submit` and `show_answers_after_submit` are independent settings.
+- AssignmentQuestion has no product-order position. Composition section/item/member positions define order; no ordering behavior should be described as "server order" unless verified against the Composition API.
+- GameTemplate and Topic formula/reference sheet remain deferred.
+
+Use `ui/QUESTION_BANK_QUESTION_MANAGEMENT_BLUEPRINT.md` for Content UI behavior and `ui/UI_ARCHITECTURE_GUIDELINES.md` for shared design/accessibility rules.

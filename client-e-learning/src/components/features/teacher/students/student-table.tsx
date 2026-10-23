@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { MoreVertical, Users } from "lucide-react";
 import { createPortal } from "react-dom";
 import { useState } from "react";

@@ -69,3 +69,12 @@ A code/doc change is not considered verified merely because GitHub accepts the c
 3. Close remaining Content UI routing/bank validation gaps.
 4. If Phase 7B is resumed, implement AssessmentAttempt only after the current ActivitySession/Question Engine gates are explicitly validated.
 5. Keep `.agent/CURRENT_STATE.md` synchronized after every substantive implementation change.
+
+
+## .agent documentation refactor (2026-10-23)
+
+- Added `.agent/00-INDEX.md` with numbered reading order and file lifecycle/naming policy.
+- Added `.agent/AUDIT_INVENTORY.md` with file-by-file classification and cleanup decisions.
+- Rebased README, Question Engine/Composition architecture, Phase 7 and Phase 5 specs, domain model, screens inventory and relevant status notes.
+- Removed three redundant/stale files: `plans/QUESTION_ENGINE_REFACTOR_STATUS.md`, `plans/assignment-grade-and-recipients-refactor.md`, and `ui/HYBRID_QUESTION_LIST_BLUEPRINT.md`.
+- This was a documentation-only change. No application code, database migrations, builds, tests or browser checks were run. Remaining file-by-file source verification is still open; do not treat this documentation pass as proof that every contract matches code.

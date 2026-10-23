@@ -3,7 +3,7 @@
 Spring Boot, Java 21, Spring Data JPA, Flyway, PostgreSQL, Spring Security/JWT.
 
 ## Feature layout
-activity, assignment, assessment-attempt, content, question, classes, grades, user, auth, common.
+Current implemented feature areas include activity, assignment, content, question, classes, grades, user, auth and common. An `assessment-attempt` feature package is a target for Phase 7B and must not be assumed to exist until verified in the current tree.
 
 ## Rules
 - Controllers use services, not another feature's repositories.

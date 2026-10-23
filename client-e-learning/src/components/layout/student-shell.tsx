@@ -1,6 +1,6 @@
 "use client";
 
-import { usePathname } from "next/navigation";
+import { usePathname } from "@/i18n/navigation";
 import { StudentSidebar } from "@/components/layout/student-sidebar";
 import { StudentBottomNav } from "@/components/layout/student-bottom-nav";
 import { StudentHeader } from "@/components/layout/student-header";

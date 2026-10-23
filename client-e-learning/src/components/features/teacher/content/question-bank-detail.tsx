@@ -237,7 +237,7 @@ export function QuestionBankDetail({
       toast.success("Question bank status updated");
     },
     onError: (error) => {
-      toast.error(getAppErrorMessage(error, (key) => tErrors(key)));
+      toast.error(getAppErrorMessage(error, tErrors as (key: string) => string));
     },
   });
 
@@ -258,7 +258,7 @@ export function QuestionBankDetail({
       toast.success("Question bank archived");
     },
     onError: (error) => {
-      toast.error(getAppErrorMessage(error, (key) => tErrors(key)));
+      toast.error(getAppErrorMessage(error, tErrors as (key: string) => string));
     },
   });
 
@@ -281,7 +281,7 @@ export function QuestionBankDetail({
       toast.success("Question bank updated");
     },
     onError: (error) => {
-      toast.error(getAppErrorMessage(error, (key) => tErrors(key)));
+      toast.error(getAppErrorMessage(error, tErrors as (key: string) => string));
     },
   });
 
@@ -571,7 +571,7 @@ export function QuestionBankDetail({
             </div>
           ) : questionsQuery.isError ? (
             <div className="rounded-lg border border-rose-200 bg-rose-50/40 p-8 text-center text-sm text-slate-600">
-              <p role="alert">{getAppErrorMessage(questionsQuery.error, (key) => tErrors(key))}</p>
+              <p role="alert">{getAppErrorMessage(questionsQuery.error, tErrors as (key: string) => string)}</p>
               <button
                 type="button"
                 onClick={() => questionsQuery.refetch()}

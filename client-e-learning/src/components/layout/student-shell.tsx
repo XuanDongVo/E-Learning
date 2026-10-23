@@ -7,7 +7,7 @@ import { StudentHeader } from "@/components/layout/student-header";
 
 export function StudentShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const immersiveActivity = /^\/student\/activities\/[^/]+/.test(pathname);
+  const immersiveActivity = /^\/student\/units\/[^/]+\/activities\/[^/]+$/.test(pathname);
 
   if (immersiveActivity) {
     return (

@@ -15,6 +15,7 @@ interface AppErrorOptions {
   cause?: unknown;
 }
 
+const DEFAULT_ERROR_CODE = "UNKNOWN_ERROR";
 const DEFAULT_ERROR_MESSAGE = "Request failed";
 const LEGACY_CODE_PATTERN = /^\[([A-Z0-9_]+)\]\s*(.*)$/;
 
@@ -55,7 +56,7 @@ export function toAppError(error: unknown): AppError {
 
     if (code || message) {
       return new AppError({
-        code: code ?? "UNKNOWN_ERROR",
+        code: code ?? DEFAULT_ERROR_CODE,
         message: message ?? DEFAULT_ERROR_MESSAGE,
         status,
         details: error.details,
@@ -80,7 +81,7 @@ export function toAppError(error: unknown): AppError {
   }
 
   return new AppError({
-    code: "UNKNOWN_ERROR",
+    code: DEFAULT_ERROR_CODE,
     message,
     source: "unknown",
     cause: error,
@@ -88,77 +89,17 @@ export function toAppError(error: unknown): AppError {
 }
 
 /**
- * Explicit exceptions are listed first; naming conventions provide a stable
- * fallback for codes that have not yet received a dedicated translation key.
- */
-const explicitMessageKeys: Readonly<Record<string, string>> = {
-  INVALID_REQUEST: "invalidRequest",
-  INTERNAL_ERROR: "server",
-  UNAUTHORIZED: "authentication",
-  AUTHENTICATION_FAILED: "authentication",
-  INVALID_TOKEN: "authentication",
-  FORBIDDEN: "forbidden",
-  VALIDATION_FAILED: "validation",
-  USER_NOT_FOUND: "userNotFound",
-  STUDENT_NOT_FOUND: "userNotFound",
-  CLASS_NOT_FOUND: "classNotFound",
-  EMAIL_ALREADY_EXISTS: "emailAlreadyExists",
-  CLASS_ALREADY_EXISTS: "conflict",
-  STUDENT_ALREADY_IN_CLASS: "conflict",
-  ACTIVITY_NOT_READY: "notReady",
-  ASSIGNMENT_NOT_READY: "notReady",
-  ASSIGNMENT_TIME_LIMIT_INVALID: "validation",
-  ACTIVITY_SESSION_ANSWER_INVALID: "validation",
-  STUDENT_NOT_IN_ACTIVE_CLASS: "forbidden",
-  ACTIVITY_SESSION_NOT_ACCESSIBLE: "forbidden",
-  ACTIVITY_SESSION_NOT_ACTIVE: "conflict",
-  MEDIA_NOT_READY: "conflict",
-};
-
-function inferMessageKey(code: string): string {
-  if (code.startsWith("HTTP_") || code === "UNKNOWN_ERROR") return "server";
-  if (code.endsWith("_NOT_FOUND")) return "notFound";
-  if (
-    code.includes("INVALID") ||
-    code.includes("REQUIRED") ||
-    code.includes("EXCEEDED") ||
-    code.includes("OUTSIDE") ||
-    code.includes("EMPTY") ||
-    code.includes("UNSUPPORTED") ||
-    code.includes("DETECTION_FAILED") ||
-    code.startsWith("MEDIA_FILE_") ||
-    code.startsWith("MEDIA_TYPE_") ||
-    code.startsWith("MEDIA_CONTENT_") ||
-    code === "QUESTION_NOT_IN_BANK"
-  ) return "validation";
-  if (
-    code.endsWith("_ALREADY_EXISTS") ||
-    code.endsWith("_LOCKED") ||
-    code.endsWith("_NOT_READY") ||
-    code.endsWith("_IN_USE") ||
-    code.endsWith("_EXHAUSTED") ||
-    code.endsWith("_UNAVAILABLE")
-  ) return "conflict";
-  return "generic";
-}
-
-export function appErrorMessageKey(code: string): string {
-  return explicitMessageKeys[code] ?? inferMessageKey(code);
-}
-
-/**
- * Prefer localized, code-based copy. Preserve the original message when the
- * error is unknown or the translation key is unavailable.
+ * Resolve the backend error code directly against the error translation
+ * namespace. Business-specific code mapping does not belong in this layer.
  */
 export function getAppErrorMessage(
   error: unknown,
   translate: (key: string) => string,
 ): string {
   const normalized = toAppError(error);
-  if (normalized.code === "UNKNOWN_ERROR") return normalized.message;
 
   try {
-    const translated = translate(appErrorMessageKey(normalized.code));
+    const translated = translate(`errors.${normalized.code}`);
     return translated || normalized.message;
   } catch {
     return normalized.message;

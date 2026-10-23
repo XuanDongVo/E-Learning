@@ -41,6 +41,7 @@ export function QuestionBankDetail({
   onNavigate: (view: ContentView, id?: number, bankName?: string) => void;
 }) {
   const client = useQueryClient();
+  const tErrors = useTranslations("errors");
   const searchParams = useSearchParams();
   const source = searchParams.get("source") === "global" ? "global" : "content";
 
@@ -234,7 +235,7 @@ export function QuestionBankDetail({
       toast.success("Question bank status updated");
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : "Could not update question bank status");
+      toast.error(getAppErrorMessage(error, (key) => tErrors(key)));
     },
   });
 
@@ -255,7 +256,7 @@ export function QuestionBankDetail({
       toast.success("Question bank archived");
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : "Could not archive question bank");
+      toast.error(getAppErrorMessage(error, (key) => tErrors(key)));
     },
   });
 
@@ -278,7 +279,7 @@ export function QuestionBankDetail({
       toast.success("Question bank updated");
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : "Could not save question bank");
+      toast.error(getAppErrorMessage(error, (key) => tErrors(key)));
     },
   });
 
@@ -568,7 +569,7 @@ export function QuestionBankDetail({
             </div>
           ) : questionsQuery.isError ? (
             <div className="rounded-lg border border-rose-200 bg-rose-50/40 p-8 text-center text-sm text-slate-600">
-              <p role="alert">{questionsQuery.error instanceof Error ? questionsQuery.error.message : "Could not load questions."}</p>
+              <p role="alert">{getAppErrorMessage(questionsQuery.error, (key) => tErrors(key))}</p>
               <button
                 type="button"
                 onClick={() => questionsQuery.refetch()}

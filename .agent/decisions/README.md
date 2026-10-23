@@ -26,7 +26,10 @@ An accepted ADR overrides lower-level documents. Never delete an ADR; supersede 
 | 0020 | Activity lifecycle transitions | Accepted |
 | 0021 | Separate ActivitySession from AssessmentAttempt | Accepted |
 | 0022 | Activity Practice interaction and one retry | Accepted |
-| 0023 | Question Engine architecture | Accepted; D7/D8 refined by 0025 for Assignment grading |
+| 0023 | Question Engine architecture | Accepted; D7/D8 refined by 0025/0026 |
+| 0024 | Assignment Composition | Accepted; defines canonical ordered Composition and supersedes ADR 0018 product ordering |
+| 0025 | Assignment grading lock and Activity updates | Accepted; Assignment lock after first attempt starts; Activity changes apply to future sessions |
+| 0026 | Assignment automatic scoring and score visibility | Accepted; automatic scoring, default/custom points, independent score and answer visibility |
 | 0024 | Assignment Composition is an ordered product document | Accepted |
 | 0025 | Assignment lock after first attempt; Activity updates apply to future sessions | Accepted; scoring superseded by 0026 |
 | 0026 | Assignment automatic scoring and score visibility | Accepted |

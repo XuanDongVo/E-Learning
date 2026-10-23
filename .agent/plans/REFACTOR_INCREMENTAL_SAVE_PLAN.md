@@ -1,7 +1,7 @@
 # Refactor & Incremental Save Plan
 
-Status: **PLANNED — implementation must follow this document**
-Branch: `fix/assignment-p0-question-composer-main`
+Status: **ACTIVE PLAN — PARTIALLY IMPLEMENTED; VERIFICATION GATES OPEN**
+Original implementation branch: `fix/assignment-p0-question-composer-main` (historical; always inspect current branch HEAD before acting).
 Scope: Assignment Builder authoring, autosave, Question Engine persistence, Assignment Composition persistence, and removal of `AssignmentQuestionComposerDialog`.
 
 ## 1. Objective

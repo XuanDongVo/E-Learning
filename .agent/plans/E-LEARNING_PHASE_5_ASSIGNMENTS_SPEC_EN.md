@@ -1,6 +1,6 @@
 # E-Learning — Phase 5: Assignments
 Status: ACTIVE CANONICAL SPEC — Composition/scoring amended by ADR 0024/0026
-Last revised: 2026-10-12
+Last revised: 2026-10-23
 
 Assignment is formal teacher-assigned work with target, schedule, one attempt and an official automatically calculated score. It is independent from Activity and owns its question copies.
 
@@ -9,7 +9,8 @@ Fields include grade_id, academic_year, class_ids, name, description, status, st
 - time_limit_seconds is the whole-attempt timer.
 - show_score_after_submit defaults TRUE and controls whether the automatically calculated score is displayed immediately after submission.
 - show_answers_after_submit defaults TRUE and independently controls correct-answer/explanation visibility.
-- Targets are CLASS or GRADE, never mixed. Late submissions are accepted and labeled Late without penalty. Completion = submitted.
+- Current recipient model is one `grade_id` plus a server-validated concrete `class_ids` snapshot. Grade selection in the UI is a convenience; `AssignmentTarget`/`AssignmentTargetType` are not current runtime entities. Late submissions are accepted and labeled Late without penalty. Completion = submitted.
+- This file defines the intended product contract. The formal AssessmentAttempt runtime, attempt lock enforcement, timeout submission and persisted scoring are not implemented yet; do not describe them as shipped.
 
 ## Composition
 The Assignment Builder demo is the product prototype. Canonical model: .agent/architecture/assignment-composition-v1.md.

@@ -1,67 +1,77 @@
-# Spec status: docs vs implementation
+# Spec Status — Current Contract vs Implementation
 
-Audit date: 2026-10-12
-This update changes documentation only; code/test status is not claimed as fixed.
+**Audit date:** 2026-10-23  
+**Branch:** `refactor/teacher-content-ui-routing`  
+**Canonical implementation state:** `.agent/CURRENT_STATE.md`
 
-| ID | Contract | Current state | Status |
+This file is a drift register, not a historical audit. Accepted ADRs define intended product behavior; this table records whether the current branch actually implements or verifies each contract.
+
+| ID | Contract | Current implementation | Status |
 |---|---|---|---|
-| D-01 | Activity Unit-scoped | Code uses unit_id | Fixed |
-| D-02 | No current GameTemplate dependency | Activity code has no GameTemplate | Fixed |
-| D-03 | Draft may be incomplete | Draft create/update accepts zero sources; readiness remains the publish gate | Fixed |
-| D-04 | Activity preview | `POST /v1/activities/{id}/preview` returns readiness and deterministic ready-question samples without creating an Attempt | Fixed |
-| D-05 | Try Hard per-question timer | ActivitySession stores and enforces per-question deadlines with network grace | Implemented in Scope A
-| D-06 | Multi-strategy student choice + ActivitySession storage | ActivitySession start validates and stores concrete mode/strategy | Implemented in Scope A
-| D-07 | AssignmentQuestion no position; Composition ordering | Entity has no position; Composition section/item/member positions define product order; question_id ASC is legacy backfill only | Contract accepted; implementation pending |
-| D-08 | show_answers_after_submit | V26 schema/entity contract exists; Phase 7 must enforce answer/explanation reveal independently from score display | Implementation pending |
-| D-09 | Activity lifecycle | Service enforces the accepted transition matrix | Fixed |
-| D-10 | Formula/reference sheet deferred | No current requirement | Fixed |
-| D-11 | Optional Question hint | Persisted and ActivitySession Practice hint endpoint records usage | Implemented in Scope A
-| D-12 | Fake metrics | Dashboard no longer presents fabricated counts; real analytics remains future work | Fixed |
+| D-01 | Activity is Unit-scoped | Activity uses Unit ownership | Implemented |
+| D-02 | GameTemplate is not a current dependency | No current GameTemplate dependency | Implemented |
+| D-03 | Draft Activity may be incomplete | Draft/readiness distinction exists; publish readiness is the gate | Implemented |
+| D-04 | Activity preview is non-mutating | Preview endpoint exists | Implemented; runtime verification still required |
+| D-05 | Try Hard timer is per question | ActivitySession stores/enforces per-question deadlines | Implemented; tests not fully reverified |
+| D-06 | Multiple strategies require start-time choice | ActivitySession stores concrete strategy | Implemented |
+| D-07 | AssignmentQuestion has no order; Composition owns order | Composition sections/items use persisted positions; AssignmentQuestion remains position-free | Implemented |
+| D-08 | Answer reveal is independent from score visibility | `show_answers_after_submit` and `show_score_after_submit` exist | Configuration implemented; AssessmentAttempt runtime not implemented |
+| D-09 | Activity lifecycle is server-enforced | Activity service enforces transition rules | Implemented |
+| D-10 | Topic formula/reference sheet deferred | No active implementation requirement | Implemented as deferral |
+| D-11 | Question hint is optional | Hint exists and Activity Practice hint endpoint uses it | Implemented; full authoring round-trip still requires verification |
+| D-12 | No fabricated dashboard metrics | Dashboard work uses real/future data boundary | Implemented baseline |
 
-## Required tests
-Activity distribution/readiness/lifecycle; Assignment deterministic order; answer visibility; Question hint optionality; Phase 7 timer and strategy persistence.
+## Question Engine
 
-
-## Question Engine / Question data audit (documentation update 2026-10-12)
-
-| ID | Contract / finding | Current state | Status |
+| ID | Contract | Current implementation | Status |
 |---|---|---|---|
-| Q-01 | Five current Question types | Enum and schema support SINGLE_CHOICE, MULTIPLE_CHOICE, TRUE_FALSE, FILL_IN_BLANK, TYPE_ANSWER | Implemented baseline |
-| Q-02 | Type semantics centralized in Question Engine | Validator, persistence and Activity runtime contain distributed type-specific branches | Architecture accepted by ADR 0023; implementation pending |
-| Q-03 | Student vs teacher projection separation | Teacher mapping includes correctness/accepted-answer data; student payload must remain restricted | Security boundary; audit each endpoint |
-| Q-04 | Explicit option order | No question_options.display_order in audited schema | Gap; migration not approved |
-| Q-05 | Full immutable Activity question snapshot | ActivitySessionQuestion references mutable Question data and freezes selected IDs/order only | Gap; ADR 0023 D4 pending |
-| Q-06 | FILL_IN_BLANK per-part model | No blank key/index in question_answers | Not a multi-blank Cloze implementation |
-| Q-07 | Hint end-to-end round trip | Older Question edit/mapping path showed hint omissions | Verify/fix per endpoint; not claimed fixed here |
-| Q-08 | Question Engine tests | No dedicated handler/contract tests found | Required before refactor |
+| Q-01 | Canonical question semantics | Question Engine contains seven types: SINGLE_CHOICE, MULTIPLE_CHOICE, TRUE_FALSE, FILL_IN_BLANK, TYPE_ANSWER, MATCHING, CLOZE | Implemented structurally |
+| Q-02 | Type behavior centralized | Handlers/registry exist, but ActivitySessionService still contains semantic branches | Partially implemented |
+| Q-03 | Teacher/student projection separation | Teacher-oriented mappings exist; student leakage boundary requires endpoint-wide verification | Partially implemented; verification required |
+| Q-04 | Explicit option order | V31/schema and API `displayOrder` support exist | Implemented |
+| Q-05 | Durable Activity snapshots | V32 snapshot fields/payload exist and runtime reads snapshot for active question | Implemented structurally; immutability/rollout verification required |
+| Q-06 | FILL_IN_BLANK remains distinct from multi-blank CLOZE | Separate types/specs exist | Implemented structurally |
+| Q-07 | Hint round-trip across all authoring paths | Shared mapping exists, but endpoint-wide parity is not fully verified | Verification gap |
+| Q-08 | Handler/contract tests | Focused tests exist | Implemented; full integration test gate remains |
 
-This commit only synchronizes documentation. No application code or Flyway migration has changed, and no tests/builds were run.
+## Assignment Composition / Phase 7B
 
-
-## Assignment Composition / Phase 7B audit (2026-10-12)
-
-| ID | Contract | Current state | Status |
+| ID | Contract | Current implementation | Status |
 |---|---|---|---|
-| A-01 | Demo is product prototype | Builder has sections/items/blocks/groups/points/preview; persistence is localStorage/seed | Product contract accepted; production integration pending |
-| A-02 | Ordered Assignment Composition | Composition section/item/member positions define canonical order; question_id ASC is legacy backfill only | Contract accepted by ADR 0024; implementation pending |
-| A-03 | Weighted scoring | Demo has per-item points; backend scoring contract not implemented | Gap; ADR 0023 D8 accepted |
-| A-04 | Assignment scoring | ADR 0026 requires automatic scoring; remove AUTO/MANUAL and manual review. Default 1 point per scored question, teacher-customizable | Accepted contract; implementation pending |
-| A-05 | Assignment part analytics | Intent requires most-missed questions; normalized distribution not implemented | Gap; ADR 0023 D7 accepted |
-| A-06 | Readiness invariant | Assignment status transition does not enforce readiness as required | Scope B gate |
-| A-07 | Edit locking | AssessmentAttempt absent; current edit guard only checks ARCHIVED | Scope B gate |
-| A-08 | AssessmentAttempt | Not implemented | Scope B pending |
-| A-09 | Question Engine | Distributed type branches; no canonical handlers/registry | Accepted target; implementation pending |
-| A-10 | Immutable Activity snapshot | Session rows reference mutable Question | Gap; accepted D4 |
+| A-01 | Builder is product authoring baseline, not disposable mock | Builder persists through Assignment/Question/Composition APIs; localStorage repository removed | Implemented baseline |
+| A-02 | Ordered Composition is canonical order | Sections/items have persisted positions; legacy backfill uses question_id ASC | Implemented |
+| A-03 | Weighted Assignment points live on Composition | Per-item possiblePoints/required/isExample exist and readiness validates score denominator | Authoring/readiness implemented; attempt scoring not implemented |
+| A-04 | Assignment scoring is automatic; no manual/AUTO-MANUAL workflow | No AssessmentAttempt runtime exists yet | Not implemented |
+| A-05 | Per-part persisted analytics | No AssessmentAttempt result persistence yet | Not implemented |
+| A-06 | Publish readiness is a server invariant | `AssignmentService.updateStatus` validates metadata, targets, schedule, timer, questions, Composition and positive scored points | Implemented |
+| A-07 | Hard lock after first attempt | No AssessmentAttempt exists | Not implemented |
+| A-08 | AssessmentAttempt separate aggregate | No AssessmentAttempt implementation exists | Not implemented |
+| A-09 | Question Engine used as canonical Assignment/runtime semantic engine | Engine exists but formal Assignment runtime does not | Partial |
+| A-10 | Activity snapshots are immutable historical runtime data | Snapshot payload exists, but live Question FK remains and rollout/integration proof is incomplete | Partial |
+| A-11 | `show_score_after_submit` default TRUE | Assignment entity contains boolean default TRUE | Implemented as configuration |
+| A-12 | Compound part-point allocation | Target contract exists; complete MATCHING/CLOZE Composition round-trip is not verified | Partial |
+| A-13 | Automatic Assignment grading on submit/timeout | AssessmentAttempt not implemented | Not implemented |
 
-No application code or Flyway migration changed in this documentation update. No tests/builds were run.
+## Current migration baseline
 
+The current branch contains migrations through **V42**. Older documents that say V30/V31/V32/V33 is the current baseline are historical and must not be used for migration numbering.
 
-## Assignment score-display decision (ADR 0026)
+## Current UI routing contract
 
-| ID | Contract | Current state | Status |
-|---|---|---|---|
-| A-11 | show_score_after_submit | New Assignment-level boolean, default TRUE; server always calculates score but may hide it from immediate student response | Accepted; migration/API/UI implementation pending |
-| A-12 | Compound part points | Equal split by default for CLOZE/MATCHING; teacher may adjust while part sum equals question total | Accepted; implementation pending |
-| A-13 | Auto grading | Server grades Assignment on submit/timeout from immutable snapshot; no manual grading workflow | Accepted; implementation pending |
+The teacher Content namespace is currently:
 
-This audit file distinguishes accepted contracts from implemented code. No application code or Flyway migration changed in this documentation update.
+```text
+/teacher/content
+/teacher/content/units/:unitId
+/teacher/content/sections/:sectionId
+/teacher/content/topics/:topicId
+/teacher/content/question-banks
+/teacher/content/question-banks/:bankId
+/teacher/content/questions/:questionId
+```
+
+Global Question Banks is nested under the Content navigation group. Do not document `/teacher/question-banks` or `/teacher/questions` as current routes.
+
+## Verification rule
+
+An implementation status is not a test result. If a test, build, Flyway validation, browser check or runtime check was not executed against the relevant current commit, record it as **not verified**, not as passed.

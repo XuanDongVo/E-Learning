@@ -1,10 +1,10 @@
 # Assignment Composition v1
 
-**Trạng thái:** Mô hình sản phẩm được chấp nhận; implementation còn thiếu các phần nêu trong audit ngày 2026-10-21. Nhánh kiểm toán: `refactor/teacher-content-ui-routing`.  
+**Trạng thái:** Mô hình sản phẩm được chấp nhận. Composition schema/API and Builder persistence are present; formal AssessmentAttempt runtime, scoring persistence and end-to-end verification remain incomplete. **Last implementation baseline recorded:** 2026-10-23 on `refactor/teacher-content-ui-routing`.  
 **Authority:** ADR 0024 defines product Composition. ADR 0026 defines automatic Assignment scoring. AssignmentQuestion remains position-free.
 
 ## 1. Product model
-The Assignment Builder at `/teacher/assignments/demo` is the canonical authoring UI. Ordered sections/items, drag/drop, grouping, passage/instruction/image/pool blocks, per-item points/required/example flags, validation and Student Preview are product requirements. The frontend has been wired to backend Assignment/Question/Composition APIs and the localStorage repository removed; build and end-to-end verification are still outstanding.
+The Assignment Builder at `/teacher/assignments/demo` is the canonical authoring UI. Ordered sections/items, drag/drop, grouping, passage/instruction/image/pool blocks, per-item points/required/example flags, validation and Student Preview are product requirements. The frontend is wired to backend Assignment/Question/Composition APIs and the localStorage repository has been removed. Do not treat this as a claim that the current HEAD has passed build or end-to-end verification.
 
 ## 2. Separate semantic and composition models
 QuestionSpec is the canonical union shared by Question Bank, Assignment, Activity and runtime: SINGLE_CHOICE, MULTIPLE_CHOICE, TRUE_FALSE, FILL_IN_BLANK, TYPE_ANSWER, MATCHING, CLOZE. FILL_IN_BLANK retains current single-answer-position/accepted-alternative semantics; CLOZE is multi-blank; MATCHING is compound. Map demo TEXT_INPUT to TYPE_ANSWER; passage/multi-text blanks to CLOZE; pool/matching rows to MATCHING; TRUE_FALSE has its own discriminant. Do not maintain a third demo-only semantic union.

@@ -1,3 +1,5 @@
+> **Status note (2026-10-23):** This document mixes implemented endpoint inventory with accepted target contracts. Sections explicitly marked “target contract, not yet implemented” are not callable API documentation. Verify all endpoint claims against current controllers before client implementation. Formal AssessmentAttempt runtime endpoints are not implemented.
+
 # API Contract
 
 ## Auth

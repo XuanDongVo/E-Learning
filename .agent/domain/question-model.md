@@ -1,8 +1,10 @@
 # Question Model and Runtime Snapshot Contract
 
-## Implemented baseline observed on 2026-10-12
+## Historical schema observations and current rebaseline (2026-10-23)
 
-Question types currently present: SINGLE_CHOICE, MULTIPLE_CHOICE, TRUE_FALSE, FILL_IN_BLANK and TYPE_ANSWER.
+This file contains both historical observations and current contract notes. The original schema observation was from 2026-10-12 and must not be treated as current without verification. Current branch documentation records Flyway through V42; re-check actual migrations and entities before schema work.
+
+The Question Engine package currently has specs/handlers for SINGLE_CHOICE, MULTIPLE_CHOICE, TRUE_FALSE, FILL_IN_BLANK, TYPE_ANSWER, MATCHING and CLOZE. This is not proof that all seven types have complete persistence and authoring/runtime support.
 
 Current persistence concepts:
 - questions: shared question metadata, type, difficulty, optional hint, completeness flag and legacy matchingMode string.

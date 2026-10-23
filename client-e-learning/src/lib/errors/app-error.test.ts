@@ -49,4 +49,9 @@ describe("AppError", () => {
     const translate = (key: string) => key === "classNotFound" ? "Không tìm thấy lớp học." : key;
     expect(getAppErrorMessage(error, translate)).toBe("Không tìm thấy lớp học.");
   });
+  it("recovers stable codes from legacy formatted error strings", () => {
+    const error = toAppError("[CLASS_NOT_FOUND] Class not found");
+    expect(error.code).toBe("CLASS_NOT_FOUND");
+    expect(getAppErrorMessage(error, (key) => key)).toBe("classNotFound");
+  });
 });

@@ -15,6 +15,7 @@ function StudentProfileFormFields({
   profile: StudentProfile;
   refetch: () => Promise<unknown>;
 }) {
+  const tErrors = useTranslations("errors");
   const [fullName, setFullName] = useState(profile.fullName);
   const [phone, setPhone] = useState(profile.phone || "");
   const [dateOfBirth, setDateOfBirth] = useState(profile.dateOfBirth || "");
@@ -171,7 +172,6 @@ function StudentProfileFormFields({
 }
 
 export function StudentProfileForm() {
-  const tErrors = useTranslations("errors");
   const q = useQuery({
     queryKey: ["student-profile"],
     queryFn: studentProfileService.get,

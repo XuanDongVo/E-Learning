@@ -1,8 +1,8 @@
 # Question Engine Architecture v1
 
 **Status: ACCEPTED — core spec/handler/factory code exists; end-to-end persistence, runtime and snapshot guarantees remain to be verified.**  
-**Audit branch:** feature/phase-7-assigment  
-**Migration baseline observed:** V30  
+**Implementation audit branch:** refactor/teacher-content-ui-routing  
+**Migration baseline last recorded:** V42 (recheck migrations before the next schema change)  
 **Scope:** Question definition, validation, answer parsing, grading, persistence mapping, runtime snapshots, Assignment/Activity integration and frontend authoring.
 
 > This document records the accepted target architecture after a code-and-ADR audit. D1–D8 were accepted on 2026-10-12; ADR 0026 clarifies that Assignment submissions are automatically graded and adds independent score visibility. Implementation plan: `.agent/plans/PHASE_7B_IMPLEMENTATION_MIGRATION_PLAN.md`. A fresh migration audit is still required. Existing accepted product ADRs remain authoritative.
@@ -18,7 +18,7 @@
 
 ## 2. Findings from the current repository
 
-The current question types are SINGLE_CHOICE, MULTIPLE_CHOICE, TRUE_FALSE, FILL_IN_BLANK and TYPE_ANSWER.
+The Question Engine package currently contains seven types: SINGLE_CHOICE, MULTIPLE_CHOICE, TRUE_FALSE, FILL_IN_BLANK, TYPE_ANSWER, MATCHING and CLOZE. Presence of specs/handlers does not prove every type is supported end-to-end by persistence, authoring and runtime.
 
 The current domain uses Question, QuestionOption, QuestionAnswer and QuestionMedia. QuestionContentValidator and QuestionPersistenceService branch on type. ActivitySessionService contains answer-checking and correct-answer reveal branches. QuestionResponseMapper creates a teacher-oriented response with correctness/accepted-answer data.
 
@@ -26,7 +26,7 @@ ActivitySessionQuestion currently stores a live Question reference, runtime orde
 
 Question Bank and Assignment authoring each transform the shared form draft into API payloads. The shared UI component does not yet make the data contracts single-source-of-truth. Option order is not persisted explicitly in question_options; QuestionAnswer has no per-blank key/index. Consequently the current FILL_IN_BLANK implementation must not be assumed to support a general multi-blank Cloze structure.
 
-Migrations V1–V30 exist in this branch. V21 created the shared Question core and type constraint; V23 removed Assignment question position/topic fields; V27 added hint; V28 created ActivitySession tables; V30 added Activity difficulty.
+The current branch documentation records migrations through V42. Historical migration details above V30 must be checked against the current migration directory before planning new schema work; never assume a prior audit's next-version number is current.
 
 ## 3. Target domain contracts
 

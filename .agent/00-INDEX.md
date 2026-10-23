@@ -73,9 +73,13 @@ When sources disagree, apply this order:
 - Teacher content routes are under `/teacher/content/...`.
 - Current implementation and remaining gaps are recorded in `CURRENT_STATE.md`; do not infer them from old plans.
 
-## 6. Completion criteria for this documentation refactor
+## 6. Audit inventory
 
-- Every file under `.agent` has a declared role and status.
+See [AUDIT_INVENTORY.md](./AUDIT_INVENTORY.md) for the file-by-file classification, duplicate candidates and cleanup decisions. Update that inventory whenever files are added, renamed or removed.
+
+## 7. Completion criteria for this documentation refactor
+
+- Every file under `.agent` has a declared role and status in `AUDIT_INVENTORY.md`.
 - Duplicate or completed one-off plans are removed after preserving any unique current facts.
 - Active docs no longer state old branch names, old migration baselines, or already-implemented work as pending.
 - Internal links resolve after any renames.

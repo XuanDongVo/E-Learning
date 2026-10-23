@@ -164,7 +164,7 @@ class AssignmentServicePublishReadinessTest {
 
     @Test
     void rejectsPublishWhenOwnedQuestionIsMissingFromComposition() {
-        when(itemRepository.findAllByAssignmentIdOrderBySectionIdAscParentItemIdAscPositionAscIdAsc)
+        when(itemRepository.findAllByAssignmentIdOrderBySectionIdAscParentItemIdAscPositionAscIdAsc(10L))
                 .thenReturn(List.of());
 
         AppException error = assertThrows(

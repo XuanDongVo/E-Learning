@@ -2,7 +2,7 @@
 
 ## Status
 
-Implemented on `refactor/teacher-content-ui-routing` as a focused routing/navigation slice.
+Partial implementation recorded on `refactor/teacher-content-ui-routing`; the acceptance checklist remains unchecked, so route/breadcrumb behavior is NOT fully verified.
 
 ## Goal
 

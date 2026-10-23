@@ -82,7 +82,7 @@ export function toAppError(error: unknown): AppError {
   return new AppError({
     code: "UNKNOWN_ERROR",
     message,
-    source: error instanceof TypeError ? "network" : "unknown",
+    source: "unknown",
     cause: error,
   });
 }

@@ -38,4 +38,4 @@ Not yet migrated:
 
 ## Validation status
 
-These commits were written to the branch through GitHub. A new CI result for the latest head is not yet confirmed. Do not mark P2/P3 complete until frontend lint, Vitest, build and backend tests run on the current head and pass.
+GitHub Actions run [#39947805970](https://github.com/XuanDongVo/E-Learning/actions/runs/39947805970) passed on code commit `f585cdbd14b7d000d406edae1888904687da3641`: frontend lint, Vitest, frontend build, and backend tests all passed. The audit-document update itself is documentation-only; confirm the PR's latest status before merging.

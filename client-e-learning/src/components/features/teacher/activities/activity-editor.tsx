@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AlertTriangle, ArrowLeft, Check, Info, Search } from "lucide-react";
 import { useMemo, useState } from "react";

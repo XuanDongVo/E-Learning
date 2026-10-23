@@ -1,0 +1,13 @@
+{
+  "contentDescription": "Khối lớp → Unit → Section → Topic → Ngân hàng câu hỏi.",
+  "createUnit": "Tạo Unit",
+  "units": "Danh sách Unit",
+  "unitCount": "unit",
+  "sectionsAndTopics": "Section và Topic trong unit",
+  "selectUnit": "Chọn một Unit để xem Section và Topic",
+  "noUnits": "Chưa có Unit trong khối này.",
+  "noTopics": "Chưa có Topic trong Section này.",
+  "questionBanks": "ngân hàng",
+  "questions": "câu hỏi",
+  "search": "Tìm Unit..."
+}

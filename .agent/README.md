@@ -1,70 +1,44 @@
 # AI-Native Project Knowledge Base
 
-Entry point: AGENTS.md.
+**Start here:** [00 — Knowledge Base Index](./00-INDEX.md).
 
-## Canonical structure
+## Required reading sequence
 
-Required Phase 7B plan: `.agent/plans/PHASE_7B_IMPLEMENTATION_MIGRATION_PLAN.md`
+1. `00-INDEX.md` — reading order, authority, naming and lifecycle policy.
+2. `CURRENT_STATE.md` — actual implementation state and known gaps.
+3. `PROGRESS.md` — latest work and verification record.
+4. Product intent and open owner questions.
+5. Accepted ADRs, in numerical order; read the ADR index first.
+6. Domain and architecture contracts relevant to the task.
+7. `plans/PHASES.md` and the active phase specification.
+8. One active task plan, if one exists.
+9. Relevant UI blueprint and Definition of Done checklist.
 
-.agent/
-├── README.md
-├── PROGRESS.md
-├── intent/
-├── decisions/
-├── domain/
-├── architecture/
-│   ├── question-engine-v1.md (accepted target architecture; see ADR 0023)
-│   └── assignment-composition-v1.md (accepted product model; see ADR 0024)
-├── plans/
-├── design/
-├── ui/
-└── checklists/
+## Authority rules
 
-Every path referenced by AGENTS.md or another normative document must exist on this branch.
-
-## Authority
-
-1. Accepted ADRs.
-2. Accepted product intent and explicit owner decisions.
-3. Active phase specification.
-4. Domain and architecture contracts.
-5. UI guidance.
-6. PROGRESS.md for implementation state only.
-7. Code for what is currently implemented.
-
-When an ADR changes a previous rule, create a later ADR and remove the old executable requirement from active specs. Historical ADRs remain for traceability.
+- Accepted ADRs record approved product decisions. An accepted decision is not proof of implementation.
+- Code and migrations are the final evidence of what exists.
+- `CURRENT_STATE.md` records implementation status; correct it after inspecting code when it is stale.
+- `PROGRESS.md` records work and validation evidence; it must not redefine product rules.
+- Dated audits and superseded plans are historical evidence, not active instructions.
+- When a decision changes, add a later ADR; do not rewrite history or renumber existing ADRs.
+- Never claim build/test/browser validation passed unless it was run against the exact commit being reported.
 
 ## Current canonical decisions
 
-Question Engine v1 is accepted by ADR 0023 (D1–D8); implementation is not yet delivered. Assignment Composition is accepted by ADR 0024 and `.agent/architecture/assignment-composition-v1.md`.
+- Activity belongs to Unit; Activity and Assignment are independent.
+- Activity may offer Practice (backend `LEARNING`), Try Hard, or both. If multiple selection strategies are configured, the student chooses at start and the concrete strategy is stored on ActivitySession.
+- Practice has no timer, one retry and an optional teacher-authored Question hint. Try Hard timing is per question.
+- Draft Activities may be incomplete; publishing requires server-side READY validation.
+- GameTemplate and Topic formula/reference sheets are deferred.
+- AssignmentQuestion is an ownership association without product-order position. Composition section/item/member positions define Assignment order; `question_id ASC` is only the legacy backfill order.
+- Assignment time limit applies to the whole formal attempt.
+- `show_score_after_submit` and `show_answers_after_submit` are independent settings. Assignment scoring/attempt runtime must not be described as implemented until verified in code.
+- Question Engine architecture is accepted and structurally implemented, but end-to-end persistence, runtime, snapshot and authoring parity are incomplete.
+- Current Teacher Content routes are under `/teacher/content/...`.
 
-- Activity belongs to Unit, not Topic.
-- Activity and Assignment are independent.
-- Activity can offer Learning, Try Hard or both; when both are available, the student chooses the concrete mode at start.
-- Activity can expose multiple question-selection strategies. When multiple are configured, the student chooses one at start; the selected strategy is stored on ActivitySession.
-- Try Hard time_limit_seconds is per question, not per Activity run. Practice has no timer.
-- Assignment owns AssignmentQuestion records. AssignmentQuestion has no position field; canonical order belongs to Composition sections/items/members per ADR 0024. Legacy records are backfilled in question_id ascending order.
-- Assignment has one attempt. Assignment time_limit_seconds applies to the whole attempt.
-- Assignment answer visibility after submit is controlled by show_answers_after_submit, default true. There is no Release Answers workflow.
-- Activity lifecycle: DRAFT -> PUBLISHED only when READY; DRAFT -> ARCHIVED; PUBLISHED -> ARCHIVED; ARCHIVED -> DRAFT. ARCHIVED cannot go directly to PUBLISHED.
-- GameTemplate is deferred. It is a presentation concern and is not a current Activity dependency, entity or API.
-- Learning Mode is shown as Practice in student UI: no timer, one retry and optional teacher-authored Question hint. The shared Topic formula/reference sheet is intentionally deferred; do not add it to the current implementation contract.
-- Question Bank and Assignment share canonical QuestionSpec semantics but retain independent ownership/runtime. Student views must not expose correctness/accepted/normalized answers before permitted reveal. Assignment Composition is a separate ordered model.
+## Phase 7B gate
 
-## Required Phase 7B planning input
+Before implementing formal Assignment attempts, read `plans/PHASE_7B_IMPLEMENTATION_MIGRATION_PLAN.md`, ADR 0023–0026, `architecture/question-engine-v1.md`, `architecture/assignment-composition-v1.md`, and the current Phase 7 spec. Verify Scope A and re-audit the current maximum Flyway migration first.
 
-Before writing Phase 7B code, read `.agent/plans/PHASE_7B_IMPLEMENTATION_MIGRATION_PLAN.md` together with ADR 0023–0026, `.agent/architecture/question-engine-v1.md`, `.agent/architecture/assignment-composition-v1.md` and the active Phase 7 spec. ADR 0023 is Accepted, ADR 0025 governs Assignment lock/Activity update semantics, and ADR 0026 governs automatic Assignment scoring and score visibility. Assignment locks after its first attempt starts and must be cloned to change; Activity edits remain allowed and apply to future sessions while existing sessions retain their snapshot.
-
-Start by reading PROGRESS.md and the task-relevant ADR/spec/domain files.
-Before coding, resolve contradictions top-down through ADRs and active specs.
-At the end of a task, update PROGRESS.md with what was changed and what was not verified.
-
-
-Assignment score contract: each scored question defaults to 1 point and can be customized per Assignment item. Assignment is automatically graded on submit/timeout; there is no manual grading workflow. `show_score_after_submit` (default TRUE) controls immediate score display; `show_answers_after_submit` independently controls answer/explanation visibility. Composition order comes from persisted section/item/member positions, never question_id order except for legacy backfill.
-
-## Teacher Content UI plan
-
-- UI blueprint: [Question Bank & Question Management](./ui/QUESTION_BANK_QUESTION_MANAGEMENT_BLUEPRINT.md)
-- Phased execution plan: [Question Bank UI phases](./plans/QUESTION_BANK_UI_PHASE_PLAN.md)
-
-These documents cover Content Explorer, Topic/Question Bank management, Question list and preview. Question Editor refactoring is explicitly deferred.
+At the end of each substantial task, update `PROGRESS.md` with changed files, exact verification results, and what remains unverified.

@@ -83,6 +83,7 @@ export function PracticeRunner({
   unitId: number;
   activityId: number;
 }) {
+  const tErrors = useTranslations("errors");
   const router = useRouter();
   const unitHref = `/student/units/${unitId}`;
   const [mode, setMode] = useState<ActivitySessionMode>();

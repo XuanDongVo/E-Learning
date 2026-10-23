@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
+import { getAppErrorMessage } from "@/lib/errors/app-error";
 import { Download, Upload, X } from "lucide-react";
 import { toast } from "sonner";
 
@@ -15,6 +17,7 @@ export function AssignmentImportDialog({
   open,
   onClose,
 }: Props) {
+  const tErrors = useTranslations("errors");
   const [isDownloading, setIsDownloading] =
     useState(false);
 
@@ -30,9 +33,7 @@ export function AssignmentImportDialog({
       toast.success("Template downloaded.");
     } catch (error) {
       toast.error(
-        error instanceof Error
-          ? error.message
-          : "Could not download the template.",
+        getAppErrorMessage(error, tErrors as (key: string) => string),
       );
     } finally {
       setIsDownloading(false);

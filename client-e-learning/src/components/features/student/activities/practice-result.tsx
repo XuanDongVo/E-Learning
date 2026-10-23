@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { Check, Lightbulb, RotateCcw, Target, Timer, Trophy, X, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { ActivitySession } from "@/types/activity-session";

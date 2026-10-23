@@ -1,6 +1,7 @@
 package e_learning.server.activitysession.snapshot;
 
 import e_learning.server.activitysession.entity.ActivityQuestionSnapshot;
+import e_learning.server.question.engine.exception.QuestionEngineException;
 import e_learning.server.question.entity.Question;
 import e_learning.server.question.repository.QuestionAnswerRepository;
 import e_learning.server.question.repository.QuestionOptionRepository;
@@ -23,30 +24,27 @@ public class ActivityQuestionSnapshotAssembler {
         var options = optionRepository.findByQuestionId(question.getId()).stream()
                 .map(o -> new ActivityQuestionSnapshot.Option(o.getOptionKey(), o.getContent(), o.isCorrect())).toList();
         var answers = answerRepository.findByQuestionId(question.getId()).stream().map(a -> a.getRawValue()).toList();
-        var snapshot = new ActivityQuestionSnapshot(SNAPSHOT_SCHEMA_VERSION, question.getContentRevision(),
-                question.getType(), spec.content(), question.getExplanation(), question.getHint(),
-                question.getMatchingMode(), options, answers, null);
+        var snapshot = new ActivityQuestionSnapshot(SNAPSHOT_SCHEMA_VERSION, question.getContentRevision(), question.getType(),
+                spec.content(), question.getExplanation(), question.getHint(), question.getMatchingMode(), options, answers, null);
         try {
             return new ActivityQuestionSnapshot(snapshot.schemaVersion(), snapshot.contentRevision(), snapshot.type(),
-                    snapshot.content(), snapshot.explanation(), snapshot.hint(), snapshot.matchingMode(),
-                    snapshot.options(), snapshot.answers(), objectMapper.writeValueAsString(snapshot.withoutPayload()));
+                    snapshot.content(), snapshot.explanation(), snapshot.hint(), snapshot.matchingMode(), snapshot.options(),
+                    snapshot.answers(), objectMapper.writeValueAsString(snapshot.withoutPayload()));
         } catch (Exception e) {
-            throw new IllegalStateException("Unable to serialize activity question snapshot", e);
+            throw new QuestionEngineException("Unable to serialize activity question snapshot", e);
         }
     }
 
     public ActivityQuestionSnapshot read(e_learning.server.activitysession.entity.ActivitySessionQuestion item) {
-        if (item.getSnapshotPayload() == null || item.getSnapshotSchemaVersion() == null
-                || item.getSnapshotContentRevision() == null) {
-            throw new IllegalStateException("Activity session question has no immutable snapshot");
+        if (item.getSnapshotPayload() == null || item.getSnapshotSchemaVersion() == null || item.getSnapshotContentRevision() == null) {
+            throw new QuestionEngineException("Activity session question has no immutable snapshot");
         }
         try {
             ActivityQuestionSnapshot value = objectMapper.readValue(item.getSnapshotPayload(), ActivityQuestionSnapshot.class);
-            return new ActivityQuestionSnapshot(item.getSnapshotSchemaVersion(), item.getSnapshotContentRevision(),
-                    value.type(), value.content(), value.explanation(), value.hint(), value.matchingMode(),
-                    value.options(), value.answers(), item.getSnapshotPayload());
+            return new ActivityQuestionSnapshot(item.getSnapshotSchemaVersion(), item.getSnapshotContentRevision(), value.type(),
+                    value.content(), value.explanation(), value.hint(), value.matchingMode(), value.options(), value.answers(), item.getSnapshotPayload());
         } catch (Exception e) {
-            throw new IllegalStateException("Unable to read activity question snapshot", e);
+            throw new QuestionEngineException("Unable to read activity question snapshot", e);
         }
     }
 }

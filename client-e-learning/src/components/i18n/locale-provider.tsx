@@ -1,69 +1,20 @@
 "use client";
 
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useContext, useMemo } from "react";
+import { useLocale as useIntlLocale, useTranslations } from "next-intl";
+import { usePathname, useRouter } from "@/i18n/navigation";
 
 export type Locale = "vi" | "en";
 
-const translations = {
-  vi: {
-    language: "Ngôn ngữ",
-    vietnamese: "Tiếng Việt",
-    english: "English",
-    content: "Nội dung",
-    contentExplorer: "Content Explorer",
-    questionBanksNav: "Question Banks",
-    contentDescription: "Khối lớp → Unit → Section → Topic → Ngân hàng câu hỏi.",
-    createUnit: "Tạo Unit",
-    units: "Danh sách Unit",
-    unitCount: "unit",
-    sectionsAndTopics: "Section và Topic trong unit",
-    selectUnit: "Chọn một Unit để xem Section và Topic",
-    noUnits: "Chưa có Unit trong khối này.",
-    noTopics: "Chưa có Topic trong Section này.",
-    questionBanks: "ngân hàng",
-    questions: "câu hỏi",
-    search: "Tìm Unit...",
-    loading: "Đang tải...",
-    retry: "Thử lại",
-    overview: "Tổng quan",
-    classes: "Lớp học",
-    students: "Học sinh",
-    activities: "Hoạt động",
-    assignments: "Bài tập",
-    analytics: "Phân tích",
-    searchGlobal: "Tìm lớp học, unit, học sinh...",
-  },
-  en: {
-    language: "Language",
-    vietnamese: "Vietnamese",
-    english: "English",
-    content: "Content",
-    contentExplorer: "Content Explorer",
-    questionBanksNav: "Question Banks",
-    contentDescription: "Grade → Unit → Section → Topic → Question bank.",
-    createUnit: "Create Unit",
-    units: "Unit list",
-    unitCount: "units",
-    sectionsAndTopics: "Sections and topics in this unit",
-    selectUnit: "Select a Unit to view sections and topics",
-    noUnits: "No units in this grade yet.",
-    noTopics: "No topics in this section yet.",
-    questionBanks: "banks",
-    questions: "questions",
-    search: "Search units...",
-    loading: "Loading...",
-    retry: "Retry",
-    overview: "Overview",
-    classes: "Classes",
-    students: "Students",
-    activities: "Activities",
-    assignments: "Assignments",
-    analytics: "Analytics",
-    searchGlobal: "Search classes, units, students...",
-  },
-} as const;
+const translationKeys = [
+  "language", "vietnamese", "english", "content", "contentExplorer",
+  "questionBanksNav", "contentDescription", "createUnit", "units", "unitCount",
+  "sectionsAndTopics", "selectUnit", "noUnits", "noTopics", "questionBanks",
+  "questions", "search", "loading", "retry", "overview", "classes", "students",
+  "activities", "assignments", "analytics", "searchGlobal",
+] as const;
 
-type TranslationKey = keyof typeof translations.vi;
+type TranslationKey = (typeof translationKeys)[number];
 
 interface LocaleContextValue {
   locale: Locale;
@@ -73,24 +24,27 @@ interface LocaleContextValue {
 
 const LocaleContext = createContext<LocaleContextValue | null>(null);
 
+/**
+ * Compatibility adapter for existing teacher content components.
+ * The URL/next-intl locale is the source of truth; no localStorage state.
+ */
 export function LocaleProvider({ children }: { children: React.ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>("vi");
+  const locale = useIntlLocale() as Locale;
+  const pathname = usePathname();
+  const router = useRouter();
+  const tMessages = useTranslations();
 
-  useEffect(() => {
-    const saved = window.localStorage.getItem("teacher-locale");
-    if (saved === "vi" || saved === "en") {
-      requestAnimationFrame(() => setLocaleState(saved));
-    }
-  }, []);
-
-  const setLocale = (nextLocale: Locale) => {
-    setLocaleState(nextLocale);
-    window.localStorage.setItem("teacher-locale", nextLocale);
-  };
-
-  const value = useMemo(
-    () => ({ locale, setLocale, t: (key: TranslationKey) => translations[locale][key] }),
-    [locale],
+  const value = useMemo<LocaleContextValue>(
+    () => ({
+      locale,
+      setLocale: (nextLocale) => {
+        if (nextLocale !== locale) {
+          router.replace(pathname, { locale: nextLocale });
+        }
+      },
+      t: (key) => tMessages(key),
+    }),
+    [locale, pathname, router, tMessages],
   );
 
   return <LocaleContext.Provider value={value}>{children}</LocaleContext.Provider>;

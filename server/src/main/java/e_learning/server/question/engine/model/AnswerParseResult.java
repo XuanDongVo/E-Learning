@@ -1,5 +1,7 @@
 package e_learning.server.question.engine.model;
 
+import e_learning.server.question.engine.exception.QuestionEngineException;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -8,7 +10,7 @@ public record AnswerParseResult(Optional<ValidatedAnswer> answer, List<String> e
         answer = answer == null ? Optional.empty() : answer;
         errors = List.copyOf(errors == null ? List.of() : errors);
         if (answer.isPresent() == !errors.isEmpty())
-            throw new IllegalArgumentException("A parse result must contain either an answer or errors");
+            throw new QuestionEngineException("A parse result must contain either an answer or errors");
     }
 
     public static AnswerParseResult valid(ValidatedAnswer answer) {

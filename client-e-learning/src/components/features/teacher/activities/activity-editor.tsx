@@ -1,7 +1,8 @@
 "use client";
 
 import { Link } from "@/i18n/navigation";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
+import { useSearchParams } from "next/navigation";
 import { AlertTriangle, ArrowLeft, Check, Info, Search } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";

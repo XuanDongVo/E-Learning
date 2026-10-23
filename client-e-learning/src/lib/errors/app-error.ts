@@ -50,9 +50,9 @@ export function toAppError(error: unknown): AppError {
 export function appErrorMessageKey(code: string): string {
   if (["UNAUTHORIZED", "AUTHENTICATION_FAILED", "INVALID_TOKEN"].includes(code)) return "authentication";
   if (["FORBIDDEN", "STUDENT_NOT_IN_ACTIVE_CLASS", "ACTIVITY_SESSION_NOT_ACCESSIBLE"].includes(code)) return "forbidden";
-  if (code === "VALIDATION_FAILED" || code.endsWith("_INVALID") || code.endsWith("_REQUIRED") || code === "INVALID_REQUEST") return "validation";
+  if (code === "VALIDATION_FAILED" || code === "INVALID_REQUEST" || code.includes("INVALID") || code.includes("REQUIRED") || code.includes("EXCEEDED") || code.includes("OUTSIDE") || code.includes("EMPTY") || code.includes("UNSUPPORTED") || code.includes("DETECTION_FAILED") || code === "QUESTION_NOT_IN_BANK") return "validation";
   if (code.endsWith("_NOT_FOUND")) return "notFound";
-  if (code.endsWith("_ALREADY_EXISTS") || code.endsWith("_LOCKED") || code.endsWith("_NOT_READY") || code.endsWith("_IN_USE") || code.endsWith("_EXHAUSTED") || code === "STUDENT_ALREADY_IN_CLASS" || code === "MEDIA_NOT_READY") return "conflict";
+  if (code.endsWith("_ALREADY_EXISTS") || code.endsWith("_LOCKED") || code.endsWith("_NOT_READY") || code.endsWith("_IN_USE") || code.endsWith("_EXHAUSTED") || code.endsWith("_UNAVAILABLE") || code === "STUDENT_ALREADY_IN_CLASS" || code === "MEDIA_NOT_READY" || code === "ACTIVITY_SESSION_NOT_ACTIVE") return "conflict";
   if (code.startsWith("HTTP_") || code === "INTERNAL_ERROR" || code === "UNKNOWN_ERROR") return "server";
   return "generic";
 }

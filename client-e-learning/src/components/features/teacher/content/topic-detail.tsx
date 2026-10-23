@@ -225,7 +225,7 @@ export function TopicDetail({
 
               {createBank.isError && (
                 <p role="alert" className="rounded-md border border-rose-200 bg-rose-50 p-3 text-xs text-rose-700">
-                  {getAppErrorMessage(createBank.error, (key) => tErrors(key))}
+                  {getAppErrorMessage(createBank.error, tErrors as (key: string) => string)}
                 </p>
               )}
 
@@ -290,7 +290,7 @@ export function TopicDetail({
           <div role="alert" className="p-6 text-center text-sm text-rose-700">
             <p>Could not load question banks.</p>
             <p className="mt-1 break-words text-xs text-rose-600">
-              {getAppErrorMessage(questionBanks.error, (key) => tErrors(key))}
+              {getAppErrorMessage(questionBanks.error, tErrors as (key: string) => string)}
             </p>
             <button type="button" onClick={() => void questionBanks.refetch()} className="mt-2 rounded-md border border-rose-200 px-3 py-1.5 font-semibold hover:bg-rose-50">
               Retry

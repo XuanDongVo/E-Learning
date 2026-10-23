@@ -44,6 +44,21 @@ The enum is the source of truth for application-level status/code/message. Each 
 
 The table groups every current enum value by domain. For exact per-code message text, consult `server/src/main/java/e_learning/server/common/exception/ErrorCode.java`; avoid duplicating message text in API consumers.
 
+## 2a. Where errors are raised (usage hotspots confirmed on this branch)
+
+| Domain | Confirmed usage locations / patterns |
+|---|---|
+| Authentication and token handling | `server/src/main/java/e_learning/server/auth/AuthService.java` raises `USER_NOT_FOUND` and `INVALID_TOKEN`; `auth/security/JwtTokenService.java` maps JWT parsing/validation failures to `INVALID_TOKEN`; `user/service/UserDetailServiceCustomize.java` also raises `USER_NOT_FOUND`. |
+| Classes and grades | `server/src/main/java/e_learning/server/classes/service/ClassService.java` uses `CLASS_ALREADY_EXISTS`, `CLASS_NOT_FOUND`, `GRADE_NOT_FOUND`, and `USER_NOT_FOUND`; `grades/service/GradeService.java` uses `GRADE_ALREADY_EXISTS`. |
+| Content hierarchy | `content/unit/service/UnitService.java` uses `GRADE_NOT_FOUND` and `UNIT_CODE_ALREADY_EXISTS`; `content/section/service/SectionService.java` uses `UNIT_NOT_FOUND` and `SECTION_ALREADY_EXISTS`; `content/topic/service/TopicService.java` uses `SECTION_NOT_FOUND` and `TOPIC_ALREADY_EXISTS`; `content/unit/service/StudentUnitService.java` uses `UNIT_NOT_FOUND` for both absent and inaccessible/unpublished units to avoid disclosing inaccessible content. |
+| Media and question authoring | `content/media/service/MediaService.java` uses `QUESTION_NOT_FOUND` and `MEDIA_ALREADY_IN_USE`; media upload validation is mapped through the media-specific codes and `MaxUploadSizeExceededException` handler. |
+| Student management | `student/service/StudentManagementService.java` uses `EMAIL_ALREADY_EXISTS` and `STUDENT_ALREADY_IN_CLASS`; membership/resource checks also use student/class-specific codes. |
+| Activities and assignments | Activity service/session and assignment service packages use the corresponding `ACTIVITY_*`, `ACTIVITY_SESSION_*`, and `ASSIGNMENT_*` families. Confirm exact throw sites with code search before changing any individual code or status; the enum is not proof that every code is currently emitted. |
+| Question Engine | `question/engine/**` throws `QuestionEngineException` for invariant failures (examples include `QuestionEngine.java`, `PartGrade.java`, `GradeResult.java`, `QuestionTypeHandlerRegistry.java`); `GlobalExceptionHandler` intentionally maps these to generic `INTERNAL_ERROR` / 500. |
+| Request validation | Bean validation annotations and service-level validation have different paths. `MethodArgumentNotValidException` and `ConstraintViolationException` currently collapse to `VALIDATION_FAILED` / 400 without field-level details. |
+
+This table records verified representative call sites, not an exhaustive list of every throw statement. The exhaustive public vocabulary remains `ErrorCode.java`; no status/code should be changed based on a partial call-site search.
+
 ## 3. Exception mapping and observed gaps
 
 | Exception/source | Current handler | Current behavior / concern |

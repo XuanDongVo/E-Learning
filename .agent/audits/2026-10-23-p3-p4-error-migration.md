@@ -36,4 +36,4 @@ Not yet migrated:
 
 ## Validation status
 
-GitHub Actions run [#39947805970](https://github.com/XuanDongVo/E-Learning/actions/runs/39947805970) passed on code commit `f585cdbd14b7d000d406edae1888904687da3641`: frontend lint, Vitest, frontend build, and backend tests all passed. Further domain migration commits were added after that run; their CI result must pass before merging.
+GitHub Actions run [#39948980025](https://github.com/XuanDongVo/E-Learning/actions/runs/39948980025) passed on code commit `7597e39e39f23140f9422e741f7a9efecd2583d1`: frontend lint, Vitest, frontend build, and backend tests all passed.

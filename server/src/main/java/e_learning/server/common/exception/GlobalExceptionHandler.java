@@ -16,7 +16,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<Void>> handleAppException(AppException exception) {
         ErrorCode errorCode = exception.getErrorCode();
         return ResponseEntity.status(errorCode.status())
-                .body(ApiResponse.failure(errorCode.code(), errorCode.message()));
+                .body(ApiResponse.failure(errorCode.code(), exception.getMessage()));
     }
 
     @ExceptionHandler({MethodArgumentNotValidException.class, ConstraintViolationException.class})

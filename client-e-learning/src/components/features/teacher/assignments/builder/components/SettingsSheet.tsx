@@ -48,9 +48,8 @@ export function SettingsSheet() {
       ? "Due date must be after the start date"
       : null;
   const timeError =
-    st.timeLimitMinutes != null &&
-    (st.timeLimitMinutes <= 0 || !Number.isFinite(st.timeLimitMinutes))
-      ? "Time limit must be a positive number"
+    !Number.isInteger(st.timeLimitMinutes) || st.timeLimitMinutes <= 1
+      ? "Time limit must be a whole number greater than 1 minute"
       : null;
   return (
     <Sheet open={open} onOpenChange={(o) => set({ settingsOpen: o })}>
@@ -140,16 +139,14 @@ export function SettingsSheet() {
             <Input
               id="set-time"
               type="number"
-              min={1}
+              min={2}
               step={1}
-              placeholder="No limit"
-              value={st.timeLimitMinutes ?? ""}
+              placeholder="At least 2 minutes"
+              value={st.timeLimitMinutes}
+              aria-invalid={!!timeError}
               onChange={(e) => {
                 const value = e.target.value;
-
-                upd({
-                  timeLimitMinutes: value === "" ? Number(1) : Number(value),
-                });
+                upd({ timeLimitMinutes: value === "" ? 0 : Number(value) });
               }}
             />
 
@@ -157,7 +154,7 @@ export function SettingsSheet() {
               <p className="text-xs text-destructive">{timeError}</p>
             ) : (
               <p className="text-xs text-muted-foreground">
-                Leave empty for no limit. There are no per-question timers.
+                Enter a whole number greater than 1. The timer applies to the whole attempt, not each question.
               </p>
             )}
           </div>

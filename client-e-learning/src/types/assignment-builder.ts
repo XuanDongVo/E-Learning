@@ -128,7 +128,7 @@ export interface Section {
 }
 export type ShowAnswers = "off" | "after_submission" | "after_due";
 export interface AssignmentSettings {
-  timeLimitMinutes: number ;
+  timeLimitMinutes: number;
   startAt: string;
   dueAt: string;
   classIds: string[];

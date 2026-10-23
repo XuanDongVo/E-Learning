@@ -12,7 +12,7 @@ public record CreateAssignmentRequest(
         @Size(max = 2000) String description,
         @NotNull LocalDateTime startAt,
         @NotNull LocalDateTime dueAt,
-        @NotNull @Positive Integer timeLimitMinutes,
+        @NotNull @Min(2) Integer timeLimitMinutes,
         Boolean showAnswersAfterSubmit,
         @NotEmpty List<@NotNull @Positive Long> classIds
 ) {

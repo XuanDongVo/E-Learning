@@ -495,7 +495,7 @@ export async function saveBuilderAssignment(
     description: withQuestions.instructions,
     startAt,
     dueAt,
-    timeLimitMinutes: Math.round(withQuestions.settings.timeLimitMinutes),
+    timeLimitMinutes: withQuestions.settings.timeLimitMinutes,
     showAnswersAfterSubmit: withQuestions.settings.showAnswers !== "off",
     classIds: Array.from(targetIds),
   });

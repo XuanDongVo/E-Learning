@@ -1,14 +1,16 @@
 # Phase 7 — ActivitySession, Question Engine and AssessmentAttempt
 
-**Status (2026-10-12):** Scope A exists in code and needs configured validation. Question Engine and Assignment Composition contracts are accepted. Scope B implementation is not started. This is the active plan; do not restore the old polymorphic Attempt model/routes.
+**Status (last rebaselined 2026-10-23):** ActivitySession Scope A is implemented but not fully verified; Question Engine and Assignment Composition exist structurally/authoring-side but end-to-end integration remains incomplete; formal AssessmentAttempt runtime is not implemented. This is an active contract/specification, not evidence that its requirements have shipped. This is the active plan; do not restore the old polymorphic Attempt model/routes.
 
 **Authority:** ADR 0012, 0015, 0021, 0022, 0023, 0024 and 0025; .agent/architecture/api-contract.md; .agent/architecture/question-engine-v1.md; .agent/architecture/assignment-composition-v1.md; .agent/plans/PHASE_7B_IMPLEMENTATION_MIGRATION_PLAN.md.
 
 ## Scope A — ActivitySession
+
+**Implementation status:** baseline exists; full snapshot immutability, answer-leakage, runtime parity and regression gates remain open. See `.agent/CURRENT_STATE.md` and `.agent/PROGRESS.md` for the latest implementation audit.
 - ActivitySession remains separate from AssessmentAttempt. Status: IN_PROGRESS, COMPLETED, GAME_OVER, ABANDONED.
 - Store student/activity, concrete mode/strategy, timestamps and aggregate counts/score/lives.
 - Do not persist detailed Activity answer/part history.
-- Before full snapshots are enforced, abandon legacy IN_PROGRESS sessions; never reconstruct historical content from mutable Questions.
+- Legacy-session rollout/compatibility must be explicitly verified before enforcing snapshot-only reads; never silently reconstruct historical content from mutable Questions.
 - Activity edits are allowed while sessions exist. A current ActivitySession uses the immutable snapshot captured at start; a session started after the Activity/content update uses the latest saved revision/configuration.
 - Start validates published state, readiness and own-grade access; resolve mode/strategy and persist them.
 - Select full question set/order in one transaction and persist a full immutable QuestionSnapshot for every selected question. Use snapshots for display, grading, hint and reveal.
@@ -21,6 +23,9 @@
 Run server/client tests in a configured environment; verify leakage, retry/hint/timer/lives/abandonment and snapshot behavior. Scope B cannot begin until this gate is recorded as passed.
 
 ## Scope B — Assignment Composition and AssessmentAttempt
+
+**Implementation status:** Composition authoring/schema/API baseline exists. The formal AssessmentAttempt lifecycle, answer autosave, timeout submit, persisted grading results and attempt-backed analytics are not implemented. Do not mark Scope B complete based on Builder persistence alone.
+
 
 ### B1. Product Composition
 The Assignment Builder demo is the product prototype, not disposable. Production preserves ordered sections/items, drag/drop, instruction/passage/image/pool blocks, grouped questions, per-item points (default 1)/required/example flags, validation and Student Preview. Assignment grading is automatic; no manual grading selector/workflow. localStorage/seed is prototype-only.

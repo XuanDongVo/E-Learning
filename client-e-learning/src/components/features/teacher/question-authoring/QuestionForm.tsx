@@ -1,6 +1,8 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { useTranslations } from "next-intl";
+import { getAppErrorMessage } from "@/lib/errors/app-error";
 import {
   ChevronDown,
   CheckCircle2,
@@ -55,6 +57,7 @@ export function QuestionForm({
   onChange: (patch: Partial<DraftQuestion>) => void;
   onUploadMedia: QuestionMediaUploadHandler;
 }) {
+  const tErrors = useTranslations("errors");
   const [pendingTypeChange, setPendingTypeChange] = useState<QuestionType | null>(null);
   // Per-kind upload state — only disables that specific attach button
   const [uploadingKind, setUploadingKind] = useState<"image" | "audio" | null>(null);
@@ -171,11 +174,7 @@ export function QuestionForm({
         media: [...question.media.filter((m) => m.kind !== kind), newMedia],
       });
     } catch (err: unknown) {
-      alert(
-        err instanceof Error
-          ? err.message
-          : "Failed to upload media. Please try again.",
-      );
+      alert(getAppErrorMessage(err, tErrors as (key: string) => string));
     } finally {
       setUploadingKind(null);
       event.target.value = "";

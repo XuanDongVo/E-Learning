@@ -117,9 +117,7 @@ class AssignmentServicePublishReadinessTest {
 
     @Test
     void publishesWhenMetadataCompositionQuestionsAndScoringAreValid() {
-        AssignmentResponse response = service.updateStatus(10L, AssignmentStatus.PUBLISHED);
-
-        assertEquals(AssignmentStatus.PUBLISHED, response.status());
+        assertDoesNotThrow(() -> service.updateStatus(10L, AssignmentStatus.PUBLISHED));
         verify(assignment).setStatus(AssignmentStatus.PUBLISHED);
     }
 

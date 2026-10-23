@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import { QueryProvider } from "@/lib/query-provider";
 import { AuthProvider } from "@/components/auth/auth-provider";
-import "./globals.css";
 import { Toaster } from "@/components/layout/toast";
 import { getMessages, setRequestLocale } from "next-intl/server";
-import { notFound } from "next/dist/client/components/navigation";
 import { routing } from "@/i18n/routing";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
+import "../globals.css";
 
 export const metadata: Metadata = {
   title: "LearnUp - English Learning Platform",
@@ -30,15 +30,15 @@ export default async function RootLayout({
   const messages = await getMessages();
 
   return (
-    <NextIntlClientProvider messages={messages}>
-      <html className="h-full antialiased">
-        <body className="min-h-full flex flex-col bg-[#F8FAFC]">
+    <html lang={locale} className="h-full antialiased">
+      <body className="min-h-full flex flex-col bg-[#F8FAFC]">
+        <NextIntlClientProvider messages={messages}>
           <QueryProvider>
             <AuthProvider>{children}</AuthProvider>
           </QueryProvider>
           <Toaster />
-        </body>
-      </html>
-    </NextIntlClientProvider>
+        </NextIntlClientProvider>
+      </body>
+    </html>
   );
 }

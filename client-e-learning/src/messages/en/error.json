@@ -1,16 +1,26 @@
 {
   "errors": {
-    "generic": "Something went wrong. Please try again.",
-    "invalidRequest": "The request is invalid.",
-    "authentication": "Your credentials are invalid or your session has expired.",
-    "forbidden": "You do not have permission to perform this action.",
-    "validation": "Some information is invalid. Please check and try again.",
-    "notFound": "The requested resource could not be found.",
-    "userNotFound": "The user could not be found.",
-    "classNotFound": "The class could not be found.",
-    "emailAlreadyExists": "This email address is already in use.",
-    "conflict": "This action conflicts with existing data or the resource's current state.",
-    "notReady": "This resource is not ready for this action.",
-    "server": "A server error occurred. Please try again later."
+    "INVALID_REQUEST": "The request is invalid.",
+    "INTERNAL_ERROR": "A server error occurred. Please try again later.",
+    "UNAUTHORIZED": "Your credentials are invalid or your session has expired.",
+    "AUTHENTICATION_FAILED": "Your credentials are invalid or your session has expired.",
+    "INVALID_TOKEN": "Your credentials are invalid or your session has expired.",
+    "FORBIDDEN": "You do not have permission to perform this action.",
+    "VALIDATION_FAILED": "Some information is invalid. Please check and try again.",
+    "USER_NOT_FOUND": "The user could not be found.",
+    "STUDENT_NOT_FOUND": "The user could not be found.",
+    "CLASS_NOT_FOUND": "The class could not be found.",
+    "EMAIL_ALREADY_EXISTS": "This email address is already in use.",
+    "CLASS_ALREADY_EXISTS": "This action conflicts with existing data or the resource's current state.",
+    "STUDENT_ALREADY_IN_CLASS": "This action conflicts with existing data or the resource's current state.",
+    "ACTIVITY_NOT_READY": "This resource is not ready for this action.",
+    "ASSIGNMENT_NOT_READY": "This resource is not ready for this action.",
+    "ASSIGNMENT_TIME_LIMIT_INVALID": "Some information is invalid. Please check and try again.",
+    "ACTIVITY_SESSION_ANSWER_INVALID": "Some information is invalid. Please check and try again.",
+    "STUDENT_NOT_IN_ACTIVE_CLASS": "You do not have permission to perform this action.",
+    "ACTIVITY_SESSION_NOT_ACCESSIBLE": "You do not have permission to perform this action.",
+    "ACTIVITY_SESSION_NOT_ACTIVE": "This action conflicts with existing data or the resource's current state.",
+    "MEDIA_NOT_READY": "This action conflicts with existing data or the resource's current state.",
+    "UNKNOWN_ERROR": "Something went wrong. Please try again."
   }
 }

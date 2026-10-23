@@ -17,7 +17,7 @@ GameTemplate is deferred and is not a dependency.
 
 ## Phase 5 — Assignments
 Canonical spec: E-LEARNING_PHASE_5_ASSIGNMENTS_SPEC_EN.md.
-Include independent Assignment, owned AssignmentQuestions, CLASS/GRADE targets, schedule, whole-attempt time limit, show_score_after_submit and show_answers_after_submit.
+Include independent Assignment, owned AssignmentQuestions, one Grade relation, explicit class recipient snapshots, schedule, whole-attempt time limit, show_score_after_submit and show_answers_after_submit.
 Assignment order is stored on ordered Composition sections/items/members; AssignmentQuestion remains position-free. Excel import remains deferred.
 
 ## Phase 6 — Student Management

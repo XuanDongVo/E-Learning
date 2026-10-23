@@ -5,7 +5,7 @@ Last revised: 2026-10-12
 Assignment is formal teacher-assigned work with target, schedule, one attempt and an official automatically calculated score. It is independent from Activity and owns its question copies.
 
 ## Assignment
-Fields include grade_level, academic_year, name, description, status, start_at, due_at, time_limit_seconds, show_score_after_submit and show_answers_after_submit.
+Fields include grade_id, academic_year, class_ids, name, description, status, start_at, due_at, time_limit_seconds, show_score_after_submit and show_answers_after_submit. `class_ids` is a server-validated JSONB snapshot of one or more concrete class recipients; selecting a whole Grade is a frontend convenience and is not persisted as a target.
 - time_limit_seconds is the whole-attempt timer.
 - show_score_after_submit defaults TRUE and controls whether the automatically calculated score is displayed immediately after submission.
 - show_answers_after_submit defaults TRUE and independently controls correct-answer/explanation visibility.

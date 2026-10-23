@@ -2,22 +2,23 @@ package e_learning.server.assignment.service;
 
 import e_learning.server.assignment.dto.*;
 import e_learning.server.assignment.entity.Assignment;
-import e_learning.server.assignment.entity.AssignmentTarget;
 import e_learning.server.assignment.enums.AssignmentStatus;
-import e_learning.server.assignment.enums.AssignmentTargetType;
 import e_learning.server.assignment.repository.AssignmentRepository;
 import e_learning.server.assignment.repository.AssignmentQuestionRepository;
 import e_learning.server.classes.entity.ClassEntity;
 import e_learning.server.classes.repository.ClassRepository;
 import e_learning.server.common.exception.AppException;
 import e_learning.server.common.exception.ErrorCode;
+import e_learning.server.grades.entity.Grade;
+import e_learning.server.grades.repository.GradeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -26,6 +27,7 @@ public class AssignmentService {
     private final AssignmentRepository assignmentRepository;
     private final AssignmentQuestionRepository assignmentQuestionRepository;
     private final ClassRepository classRepository;
+    private final GradeRepository gradeRepository;
 
     @Transactional(readOnly = true)
     public List<AssignmentResponse> list() {
@@ -41,22 +43,25 @@ public class AssignmentService {
 
     public AssignmentResponse create(CreateAssignmentRequest request, Long teacherId) {
         String name = request.name().trim();
-        if (assignmentRepository.existsByGradeLevelAndAcademicYearAndNameIgnoreCase(
-                request.gradeLevel(), request.academicYear().trim(), name)) {
+        String academicYear = request.academicYear().trim();
+        Grade grade = resolveGrade(request.gradeId());
+        List<Long> classIds = validateClassIds(request.classIds(), grade, academicYear, teacherId);
+        if (assignmentRepository.existsByGrade_IdAndAcademicYearAndNameIgnoreCase(
+                grade.getId(), academicYear, name)) {
             throw new AppException(ErrorCode.ASSIGNMENT_INVALID_CONFIGURATION);
         }
-        validateSchedule(request.startAt(), request.dueAt(), request.timeLimitSeconds());
+        validateSchedule(request.startAt(), request.dueAt(), request.timeLimitMinutes());
 
         Assignment assignment = new Assignment();
-        assignment.setGradeLevel(request.gradeLevel());
-        assignment.setAcademicYear(request.academicYear().trim());
+        assignment.setGrade(grade);
+        assignment.setAcademicYear(academicYear);
+        assignment.setClassIds(classIds);
         assignment.setName(name);
         assignment.setDescription(trimToNull(request.description()));
         assignment.setStartAt(request.startAt());
         assignment.setDueAt(request.dueAt());
-        assignment.setTimeLimitSeconds(request.timeLimitSeconds());
+        assignment.setTimeLimitMinutes(request.timeLimitMinutes());
         assignment.setShowAnswersAfterSubmit(request.showAnswersAfterSubmit() == null || request.showAnswersAfterSubmit());
-        assignment.replaceTargets(resolveTargets(request.targets(), request.gradeLevel(), request.academicYear(), teacherId));
         return AssignmentResponse.from(assignmentRepository.save(assignment), 0);
     }
 
@@ -65,34 +70,35 @@ public class AssignmentService {
 
         String name = request.name().trim();
         String academicYear = request.academicYear().trim();
+        Grade grade = resolveGrade(request.gradeId());
+        List<Long> classIds = validateClassIds(request.classIds(), grade, academicYear, teacherId);
 
         boolean changedIdentity =
-                !assignment.getName().equalsIgnoreCase(name)
+                        !assignment.getName().equalsIgnoreCase(name)
                         || !assignment.getAcademicYear().equalsIgnoreCase(academicYear)
-                        || !assignment.getGradeLevel().equals(request.gradeLevel());
+                        || !assignment.getGrade().getId().equals(grade.getId());
 
         if (changedIdentity
-                && assignmentRepository.existsByGradeLevelAndAcademicYearAndNameIgnoreCase(
-                request.gradeLevel(),
-                academicYear,
-                name
+                        && assignmentRepository.existsByGrade_IdAndAcademicYearAndNameIgnoreCase(
+                        grade.getId(),
+                        academicYear,
+                        name
         )) {
             throw new AppException(ErrorCode.ASSIGNMENT_INVALID_CONFIGURATION);
         }
 
-        validateSchedule(request.startAt(), request.dueAt(), request.timeLimitSeconds());
+        validateSchedule(request.startAt(), request.dueAt(), request.timeLimitMinutes());
 
-        assignment.setGradeLevel(request.gradeLevel());
+        assignment.setGrade(grade);
         assignment.setAcademicYear(academicYear);
+        assignment.setClassIds(classIds);
         assignment.setName(name);
         assignment.setDescription(trimToNull(request.description()));
         assignment.setStartAt(request.startAt());
         assignment.setDueAt(request.dueAt());
-        assignment.setTimeLimitSeconds(request.timeLimitSeconds());
+        assignment.setTimeLimitMinutes(request.timeLimitMinutes());
         assignment.setShowAnswersAfterSubmit(request.showAnswersAfterSubmit() == null || request.showAnswersAfterSubmit());
 
-        // Update targets
-        assignment.replaceTargets(resolveTargets(request.targets(), request.gradeLevel(), request.academicYear(), teacherId));
         Assignment saved = assignmentRepository.save(assignment);
         return AssignmentResponse.from(saved, (int) assignmentQuestionRepository.countByAssignmentId(saved.getId()));
     }
@@ -142,34 +148,43 @@ public class AssignmentService {
     }
 
 
-    private List<AssignmentTarget> resolveTargets(
-            List<AssignmentTargetRequest> requests,
-            Integer gradeLevel,
+    private Grade resolveGrade(Long gradeId) {
+        if (gradeId == null) {
+            throw new AppException(ErrorCode.GRADE_NOT_FOUND);
+        }
+        return gradeRepository.findById(gradeId)
+                .orElseThrow(() -> new AppException(ErrorCode.GRADE_NOT_FOUND));
+    }
+
+    private List<Long> validateClassIds(
+            List<Long> classIds,
+            Grade grade,
             String academicYear,
             Long teacherId
     ) {
-        if (requests == null || requests.isEmpty()) throw new AppException(ErrorCode.ASSIGNMENT_TARGET_REQUIRED);
-        boolean hasGrade = requests.stream().anyMatch(target -> target.type() == AssignmentTargetType.GRADE);
-        if (hasGrade && requests.size() > 1) throw new AppException(ErrorCode.ASSIGNMENT_TARGET_INVALID);
-
-        List<AssignmentTarget> targets = new ArrayList<>();
-        for (AssignmentTargetRequest request : requests) {
-            AssignmentTarget target = new AssignmentTarget();
-            target.setTargetType(request.type());
-            if (request.type() == AssignmentTargetType.CLASS) {
-                if (request.classId() == null) throw new AppException(ErrorCode.ASSIGNMENT_TARGET_INVALID);
-                ClassEntity classEntity = classRepository.findById(request.classId())
-                        .filter(item -> item.getTeacher().getId().equals(teacherId))
-                        .orElseThrow(() -> new AppException(ErrorCode.ASSIGNMENT_TARGET_INVALID));
-                if (!classEntity.getGrade().getDisplayOrder().equals(gradeLevel)
-                        || !classEntity.getAcademicYear().equals(academicYear)) {
-                    throw new AppException(ErrorCode.ASSIGNMENT_TARGET_INVALID);
-                }
-                target.setClassEntity(classEntity);
-            }
-            targets.add(target);
+        if (classIds == null || classIds.isEmpty()) {
+            throw new AppException(ErrorCode.ASSIGNMENT_TARGET_REQUIRED);
         }
-        return targets;
+        if (classIds.stream().anyMatch(id -> id == null)) {
+            throw new AppException(ErrorCode.ASSIGNMENT_TARGET_INVALID);
+        }
+        Set<Long> uniqueIds = new HashSet<>(classIds);
+        if (uniqueIds.size() != classIds.size()) {
+            throw new AppException(ErrorCode.ASSIGNMENT_TARGET_INVALID);
+        }
+
+        List<ClassEntity> classes = classRepository.findAllById(uniqueIds);
+        if (classes.size() != uniqueIds.size()) {
+            throw new AppException(ErrorCode.ASSIGNMENT_TARGET_INVALID);
+        }
+        for (ClassEntity classEntity : classes) {
+            if (!classEntity.getTeacher().getId().equals(teacherId)
+                    || !classEntity.getGrade().getId().equals(grade.getId())
+                    || !classEntity.getAcademicYear().trim().equals(academicYear)) {
+                throw new AppException(ErrorCode.ASSIGNMENT_TARGET_INVALID);
+            }
+        }
+        return List.copyOf(classIds);
     }
 
     private Assignment find(Long id) {

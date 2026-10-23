@@ -25,12 +25,28 @@ import { toast } from "sonner";
 import { AuthGuard } from "@/components/auth/auth-guard";
 import { LocaleProvider, useLocale } from "@/components/i18n/locale-provider";
 
-const navigation: { key: "overview" | "classes" | "students" | "activities" | "assignments" | "analytics"; href: string; icon: LucideIcon; badge?: string }[] = [
+const navigation: {
+  key:
+    | "overview"
+    | "classes"
+    | "students"
+    | "activities"
+    | "assignments"
+    | "analytics";
+  href: string;
+  icon: LucideIcon;
+  badge?: string;
+}[] = [
   { key: "overview", href: "/teacher", icon: LayoutDashboard },
   { key: "classes", href: "/teacher/classes", icon: Users },
   { key: "students", href: "/teacher/students", icon: Users },
   { key: "activities", href: "/teacher/activities", icon: ClipboardList },
-  { key: "assignments", href: "/teacher/assignments", icon: ClipboardList, badge: "8" },
+  {
+    key: "assignments",
+    href: "/teacher/assignments",
+    icon: ClipboardList,
+    badge: "8",
+  },
   { key: "analytics", href: "/teacher/reports", icon: BarChart3 },
 ];
 
@@ -43,9 +59,14 @@ function TeacherSidebar({
 }) {
   const pathname = usePathname();
   const { t } = useLocale();
-  const [contentExpanded, setContentExpanded] = useState(pathname.startsWith("/teacher/content"));
-  const questionBanksActive = pathname.startsWith("/teacher/content/question-banks");
-  const explorerActive = pathname.startsWith("/teacher/content") && !questionBanksActive;
+  const [contentExpanded, setContentExpanded] = useState(
+    pathname.startsWith("/teacher/content"),
+  );
+  const questionBanksActive = pathname.startsWith(
+    "/teacher/content/question-banks",
+  );
+  const explorerActive =
+    pathname.startsWith("/teacher/content") && !questionBanksActive;
 
   useEffect(() => {
     if (pathname.startsWith("/teacher/content")) setContentExpanded(true);
@@ -86,14 +107,18 @@ function TeacherSidebar({
           </button>
         </div>
 
-        <nav className="flex-1 space-y-1.5 px-3 py-4" aria-label="Điều hướng giáo viên">
+        <nav
+          className="flex-1 space-y-1.5 px-3 py-4"
+          aria-label="Điều hướng giáo viên"
+        >
           <p className="px-2 pb-1.5 text-[0.625rem] font-bold uppercase tracking-wider text-muted-foreground/80">
             Không gian giáo viên
           </p>
           {navigation.map(({ key, href, icon: Icon }) => {
-            const active = href === "/teacher"
-              ? pathname === href
-              : pathname.startsWith(href);
+            const active =
+              href === "/teacher"
+                ? pathname === href
+                : pathname.startsWith(href);
             return (
               <Link
                 key={href}
@@ -123,7 +148,11 @@ function TeacherSidebar({
             >
               <BookOpen className="size-[1.05rem]" />
               <span className="flex-1 text-left">{t("content")}</span>
-              {contentExpanded ? <ChevronDown className="size-4" /> : <ChevronRight className="size-4" />}
+              {contentExpanded ? (
+                <ChevronDown className="size-4" />
+              ) : (
+                <ChevronRight className="size-4" />
+              )}
             </button>
             {contentExpanded && (
               <div className="ml-5 space-y-1 border-l-2 border-border pl-3 pt-1">
@@ -169,7 +198,9 @@ function TeacherSidebar({
               MA
             </div>
             <div className="min-w-0">
-              <p className="truncate text-[0.75rem] font-extrabold">Cô Mai Anh</p>
+              <p className="truncate text-[0.75rem] font-extrabold">
+                Cô Mai Anh
+              </p>
               <p className="truncate text-[0.625rem] font-semibold text-muted-foreground">
                 Giáo viên tiếng Anh
               </p>
@@ -181,49 +212,68 @@ function TeacherSidebar({
   );
 }
 
-export default function TeacherLayout({ children }: { children: React.ReactNode }) {
+export default function TeacherLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const pathname = usePathname();
+
+  const isAssignmentEditor =
+    /^\/teacher\/assignments\/[^/]+$/.test(pathname) ||
+    pathname === "/teacher/assignments/new";
 
   return (
     <AuthGuard requiredRole="TEACHER">
       <LocaleProvider>
-      <div className="min-h-screen bg-background-app text-foreground font-sans">
-        <TeacherSidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-        <div className="min-h-screen lg:pl-60">
-          <header className="sticky top-0 z-20 flex h-[4.1rem] items-center gap-3 border-b-2 border-border bg-card/95 px-4 backdrop-blur sm:px-6">
-            <button
-              className="grid size-9 place-items-center rounded-lg border border-border bg-card text-muted-foreground shadow-pop-sm lg:hidden"
-              aria-label="Mở menu"
-              onClick={() => setSidebarOpen(true)}
-            >
-              <Menu className="size-4" />
-            </button>
-            <div className="relative hidden w-full max-w-md sm:block">
-              <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-              <input
-                className="h-10 w-full rounded-xl border-2 border-border bg-card pl-9 pr-3 text-[0.8125rem] font-medium outline-none placeholder:text-muted-foreground shadow-pop-sm transition focus:border-primary focus:ring-2 focus:ring-primary/20"
-                placeholder="Tìm lớp học, unit, học sinh..."
-                aria-label="Tìm kiếm"
-              />
-            </div>
-            <div className="ml-auto flex items-center gap-2.5">
-              <LocaleToggle />
-              <button className="grid size-9 place-items-center rounded-xl border border-border bg-card text-muted-foreground shadow-pop-sm hover:bg-muted" aria-label="Trợ giúp">
-                <CircleHelp className="size-4" />
-              </button>
+        <div className="min-h-screen bg-background-app text-foreground font-sans">
+          <TeacherSidebar
+            open={sidebarOpen}
+            onClose={() => setSidebarOpen(false)}
+          />
+          <div className="min-h-screen lg:pl-60">
+           {!isAssignmentEditor && (
+             <header className="sticky top-0 z-20 flex h-[4.1rem] items-center gap-3 border-b-2 border-border bg-card/95 px-4 backdrop-blur sm:px-6">
               <button
-                className="relative grid size-9 place-items-center rounded-xl border border-border bg-card text-muted-foreground shadow-pop-sm hover:bg-muted"
-                aria-label="Thông báo"
-                onClick={() => toast.success("Bạn không có thông báo mới")}
+                className="grid size-9 place-items-center rounded-lg border border-border bg-card text-muted-foreground shadow-pop-sm lg:hidden"
+                aria-label="Mở menu"
+                onClick={() => setSidebarOpen(true)}
               >
-                <Bell className="size-4" />
-                <span className="absolute right-2 top-2 size-2 rounded-full bg-primary" />
+                <Menu className="size-4" />
               </button>
-            </div>
-          </header>
-          <main className="mx-auto w-full max-w-[1500px] p-4 sm:p-6">{children}</main>
+              <div className="relative hidden w-full max-w-md sm:block">
+                <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                <input
+                  className="h-10 w-full rounded-xl border-2 border-border bg-card pl-9 pr-3 text-[0.8125rem] font-medium outline-none placeholder:text-muted-foreground shadow-pop-sm transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+                  placeholder="Tìm lớp học, unit, học sinh..."
+                  aria-label="Tìm kiếm"
+                />
+              </div>
+              <div className="ml-auto flex items-center gap-2.5">
+                <LocaleToggle />
+                <button
+                  className="grid size-9 place-items-center rounded-xl border border-border bg-card text-muted-foreground shadow-pop-sm hover:bg-muted"
+                  aria-label="Trợ giúp"
+                >
+                  <CircleHelp className="size-4" />
+                </button>
+                <button
+                  className="relative grid size-9 place-items-center rounded-xl border border-border bg-card text-muted-foreground shadow-pop-sm hover:bg-muted"
+                  aria-label="Thông báo"
+                  onClick={() => toast.success("Bạn không có thông báo mới")}
+                >
+                  <Bell className="size-4" />
+                  <span className="absolute right-2 top-2 size-2 rounded-full bg-primary" />
+                </button>
+              </div>
+            </header>
+           )}
+            <main className="mx-auto w-full max-w-[1500px] p-4 sm:p-6">
+              {children}
+            </main>
+          </div>
         </div>
-      </div>
       </LocaleProvider>
     </AuthGuard>
   );
@@ -232,7 +282,10 @@ export default function TeacherLayout({ children }: { children: React.ReactNode 
 function LocaleToggle() {
   const { locale, setLocale, t } = useLocale();
   return (
-    <div className="flex h-9 items-center rounded-lg border border-border bg-card p-0.5" aria-label={t("language")}>
+    <div
+      className="flex h-9 items-center rounded-lg border border-border bg-card p-0.5"
+      aria-label={t("language")}
+    >
       <button
         type="button"
         onClick={() => setLocale("vi")}

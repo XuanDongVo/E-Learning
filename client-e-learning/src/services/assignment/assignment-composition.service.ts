@@ -113,9 +113,10 @@ function mapQuestion(
     }
     case "TYPE_ANSWER":
     case "FILL_IN_BLANK":
-       const textInput = q.definition && "textInput" in q.definition
-        ? q.definition.textInput
-        : undefined;
+      const textInput =
+        q.definition && "textInput" in q.definition
+          ? q.definition.textInput
+          : undefined;
       content = {
         ...common,
         type: "TEXT_INPUT",
@@ -126,29 +127,45 @@ function mapQuestion(
       };
       break;
     case "CLOZE": {
-      const definition = q.definition && "cloze" in q.definition
-        ? q.definition.cloze
-        : undefined;
+      const definition =
+        q.definition && "cloze" in q.definition
+          ? q.definition.cloze
+          : undefined;
       const savedBlanks = (definition?.blanks ?? []).map((blank, index) => ({
         id: `blank-${row.questionId}-${blank.key || index + 1}`,
         key: blank.key || `blank-${index + 1}`,
         acceptedAnswers: [...(blank.acceptedAnswers ?? [])],
       }));
-      const savedSegments = (definition?.segments ?? []).map((segment) => segment.text ?? "");
+      const savedSegments = (definition?.segments ?? []).map(
+        (segment) => segment.text ?? "",
+      );
       const promptHasMarkers = ops.blankTokens(prompt).length > 0;
       const hasUsefulSegments = savedSegments.some((text) => text.length > 0);
-      const canonicalPrompt = !promptHasMarkers && hasUsefulSegments
-        ? savedSegments.map((text, index) => {
-            const keyNumber = savedBlanks[index]?.key.match(/^blank-(\d+)$/)?.[1] ?? String(index + 1);
-            return text + (index < savedBlanks.length ? `{{${keyNumber}}}` : "");
-          }).join("")
-        : prompt;
+      const canonicalPrompt =
+        !promptHasMarkers && hasUsefulSegments
+          ? savedSegments
+              .map((text, index) => {
+                const keyNumber =
+                  savedBlanks[index]?.key.match(/^blank-(\d+)$/)?.[1] ??
+                  String(index + 1);
+                return (
+                  text + (index < savedBlanks.length ? `{{${keyNumber}}}` : "")
+                );
+              })
+              .join("")
+          : prompt;
       const segmentTexts = ops.clozeSegmentsFromPrompt(canonicalPrompt);
-      const tokenKeys = ops.blankTokens(canonicalPrompt).map((token, index) =>
-        /^\d+$/.test(token.trim()) ? `blank-${Number(token.trim())}` : `blank-${index + 1}`,
-      );
+      const tokenKeys = ops
+        .blankTokens(canonicalPrompt)
+        .map((token, index) =>
+          /^\d+$/.test(token.trim())
+            ? `blank-${Number(token.trim())}`
+            : `blank-${index + 1}`,
+        );
       const blanks = tokenKeys.map((key, index) => {
-        const blank = savedBlanks.find((candidate) => candidate.key === key) ?? savedBlanks[index];
+        const blank =
+          savedBlanks.find((candidate) => candidate.key === key) ??
+          savedBlanks[index];
         return {
           id: blank?.id ?? `blank-${row.questionId}-${index + 1}`,
           key,
@@ -164,14 +181,15 @@ function mapQuestion(
           text,
         })),
         blanks,
-       caseSensitive: definition?.caseSensitive ?? false,
+        caseSensitive: definition?.caseSensitive ?? false,
       };
       break;
     }
     case "MATCHING": {
-      const definition = q.definition && "matching" in q.definition
-        ? q.definition.matching
-        : undefined;
+      const definition =
+        q.definition && "matching" in q.definition
+          ? q.definition.matching
+          : undefined;
       content = {
         ...common,
         type: "MATCHING",
@@ -214,9 +232,12 @@ function mapQuestion(
 
 function blockFromApi(item: ApiItem): BlockItem {
   const p = item.blockPayload ?? {};
-  const logicalId = item.itemType === "POOL" && typeof p.poolKey === "string" && p.poolKey.trim()
-    ? p.poolKey
-    : asId("b", item.id);
+  const logicalId =
+    item.itemType === "POOL" &&
+    typeof p.poolKey === "string" &&
+    p.poolKey.trim()
+      ? p.poolKey
+      : asId("b", item.id);
   let block: BlockItem["block"];
   if (item.itemType === "PASSAGE")
     block = {
@@ -285,14 +306,22 @@ function mapAssignment(
           if (!row) continue;
           const q = mapQuestion(row, child);
           q.config.groupId = block.id;
-          if (block.block.type === "POOL" && q.content.type === "MATCHING" && !q.content.poolId)
+          if (
+            block.block.type === "POOL" &&
+            q.content.type === "MATCHING" &&
+            !q.content.poolId
+          )
             q.content.poolId = block.id;
           items[q.id] = q;
         }
         if (block.block.type === "POOL") {
           for (const memberId of block.memberIds) {
             const q = items[memberId];
-            if (q?.kind === "question" && q.content.type === "MATCHING" && !q.content.poolId)
+            if (
+              q?.kind === "question" &&
+              q.content.type === "MATCHING" &&
+              !q.content.poolId
+            )
               q.content.poolId = block.id;
           }
         }
@@ -314,14 +343,10 @@ function mapAssignment(
   // Detached questions must not be resurrected into Composition on reload.
 
   const settings = {
-    timeLimitMin: api.timeLimitSeconds
-      ? Math.ceil(api.timeLimitSeconds / 60)
-      : null,
+    timeLimitMinutes: api.timeLimitMinutes ?? null,
     startAt: api.startAt ?? "",
     dueAt: api.dueAt ?? "",
-    classIds: api.targets
-      .filter((t) => t.type === "CLASS" && t.classId != null)
-      .map((t) => String(t.classId)),
+    classIds: api.classIds.map(String),
     showAnswers: api.showAnswersAfterSubmit
       ? ("after_submission" as const)
       : ("off" as const),
@@ -334,7 +359,7 @@ function mapAssignment(
     serverId: api.id,
     status: api.status,
     title: api.name,
-    grade: Math.min(8, Math.max(6, api.gradeLevel)) as 6 | 7 | 8,
+    grade: Math.min(8, Math.max(6, api.grade.displayOrder)) as 6 | 7 | 8,
     instructions: api.description ?? "",
     settings,
     sections,
@@ -343,7 +368,10 @@ function mapAssignment(
   };
 }
 
-function serializeBlock(block: BlockItem["block"], logicalId: string): {
+function serializeBlock(
+  block: BlockItem["block"],
+  logicalId: string,
+): {
   itemType: string;
   blockPayload: Record<string, unknown>;
 } {
@@ -435,7 +463,6 @@ export async function loadBuilderAssignment(
     request<ApiComposition>(`/v1/assignments/${numericId}/composition`),
     assignmentQuestionService.list(numericId),
   ]);
-  console.log("loadBuilderAssignment", { assignment, composition, questions });
   if (!assignment.data || !composition.data)
     throw new Error("Assignment data is incomplete.");
   return mapAssignment(assignment.data, composition.data, questions.data ?? []);
@@ -462,68 +489,59 @@ export async function saveBuilderAssignment(
   const dueAt = a.settings.dueAt || current.dueAt;
   const startAt = a.settings.startAt || current.startAt;
   await updateAssignment(id, {
-    gradeLevel: withQuestions.grade,
+    gradeId: current.grade.id,
     academicYear: current.academicYear,
     name: withQuestions.title.trim() || current.name,
     description: withQuestions.instructions,
-    startAt: startAt || undefined,
+    startAt,
     dueAt,
-    timeLimitSeconds:
-      withQuestions.settings.timeLimitMin == null
-        ? undefined
-        : Math.round(withQuestions.settings.timeLimitMin * 60),
+    timeLimitMinutes: Math.round(withQuestions.settings.timeLimitMinutes),
     showAnswersAfterSubmit: withQuestions.settings.showAnswers !== "off",
-    targets: [
-      ...Array.from(targetIds).map((classId) => ({
-        type: "CLASS" as const,
-        classId,
-      })),
-      ...(current.targets.some((target) => target.type === "GRADE")
-        ? [{ type: "GRADE" as const }]
-        : []),
-    ],
+    classIds: Array.from(targetIds),
   });
 
-  const sections: WriteSection[] = withQuestions.sections.map((section, sectionIndex) => ({
-    id: numberId(section.id, "s"),
-    position: sectionIndex + 1,
-    title: section.title.trim() || `Section ${sectionIndex + 1}`,
-    instructions: section.instructions.trim() || "",
-    titleVi: section.titleVi.trim() || `Section ${sectionIndex + 1}`,
-    instructionsVi: section.instructionsVi || "",
-    items: section.itemIds.map((itemId, itemIndex) => {
-      const item = withQuestions.items[itemId];
-      if (!item)
-        throw new Error(`Composition contains missing item ${itemId}.`);
-      if (item.kind === "question") {
-        const q = serializeQuestion(
+  const sections: WriteSection[] = withQuestions.sections.map(
+    (section, sectionIndex) => ({
+      id: numberId(section.id, "s"),
+      position: sectionIndex + 1,
+      title: section.title.trim() || `Section ${sectionIndex + 1}`,
+      instructions: section.instructions.trim() || "",
+      titleVi: section.titleVi.trim() || `Section ${sectionIndex + 1}`,
+      instructionsVi: section.instructionsVi || "",
+      items: section.itemIds.map((itemId, itemIndex) => {
+        const item = withQuestions.items[itemId];
+        if (!item)
+          throw new Error(`Composition contains missing item ${itemId}.`);
+        if (item.kind === "question") {
+          const q = serializeQuestion(
+            item,
+            itemIndex + 1,
+            numberId(item.id, "item"),
+          );
+          return q;
+        }
+        const serialized = serializeItem(
           item,
           itemIndex + 1,
-          numberId(item.id, "item"),
+          section.id,
+          withQuestions.items,
         );
-        return q;
-      }
-      const serialized = serializeItem(
-        item,
-        itemIndex + 1,
-        section.id,
-        withQuestions.items,
-      );
-      serialized.children = item.memberIds.map((memberId, childIndex) => {
-        const child = withQuestions.items[memberId];
-        if (!child || child.kind !== "question")
-          throw new Error(
-            "Only question items may be nested inside a shared block.",
+        serialized.children = item.memberIds.map((memberId, childIndex) => {
+          const child = withQuestions.items[memberId];
+          if (!child || child.kind !== "question")
+            throw new Error(
+              "Only question items may be nested inside a shared block.",
+            );
+          return serializeQuestion(
+            child,
+            childIndex + 1,
+            numberId(child.id, "item"),
           );
-        return serializeQuestion(
-          child,
-          childIndex + 1,
-          numberId(child.id, "item"),
-        );
-      });
-      return serialized;
+        });
+        return serialized;
+      }),
     }),
-  }));
+  );
   const compositionResponse = await request<ApiComposition>(
     `/v1/assignments/${id}/composition`,
     {

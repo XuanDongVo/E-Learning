@@ -502,7 +502,7 @@ export function Canvas() {
             <div><dt className="inline">Questions: </dt><dd className="inline font-semibold text-foreground">{total}</dd></div>
             <div><dt className="inline">Total points: </dt><dd className="inline font-semibold text-foreground">{Math.round(points * 100) / 100}</dd></div>
             <div><dt className="inline">Sections: </dt><dd className="inline font-semibold text-foreground">{a.sections.length}</dd></div>
-            {a.settings.timeLimitMin ? <div><dt className="inline">Time: </dt><dd className="inline font-semibold text-foreground">{a.settings.timeLimitMin} min</dd></div> : null}
+            {a.settings.timeLimitMinutes ? <div><dt className="inline">Time: </dt><dd className="inline font-semibold text-foreground">{a.settings.timeLimitMinutes} min</dd></div> : null}
           </dl>
         </header>
         <div className="space-y-8 px-6 py-6 sm:px-10">

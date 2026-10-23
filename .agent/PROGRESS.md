@@ -6,6 +6,7 @@ Branch: feature/phase-7-assigment
 Audited application baseline before documentation changes: c2a98fd9101d7b6613e5c2af6090eff8d189715e
 
 ## Current stage
+- Assignment recipient refactor: V40 and runtime code now use a Grade foreign key plus explicit class ID snapshots. Legacy Grade targets migrate to all active matching classes; backend and frontend validation/type-checking still require configured backend test execution.
 - Phase 6 Student Management: DONE.
 - Phase 7 Scope A ActivitySession: present in code; configured validation run still required.
 - Phase 7 Scope B Assignment Composition: V33–V34 schema and initial read/write API are implemented; Builder is wired to backend APIs and legacy authoring routes redirect to the Builder. End-to-end, migration, test and build verification remain outstanding. AssessmentAttempt implementation is not claimed complete.

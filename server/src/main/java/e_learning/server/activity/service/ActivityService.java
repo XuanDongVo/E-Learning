@@ -18,6 +18,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -71,7 +73,7 @@ public class ActivityService {
                 .lives(request.lives())
                 .build();
 
-        replaceBanks(activity, request.banks());
+        createBanks(activity, request.banks());
         return mapResponse(activityRepository.save(activity));
     }
 
@@ -99,8 +101,8 @@ public class ActivityService {
         activity.setTimeLimitSeconds(request.timeLimitSeconds());
         activity.setLives(request.lives());
 
-        replaceBanks(activity, request.banks());
-        return mapResponse(activityRepository.save(activity));
+        updateBanks(activity, request.banks());
+            return mapResponse(activityRepository.save(activity));
     }
 
     public ActivityResponse updateStatus(Long id, UpdateActivityStatusRequest request) {
@@ -185,7 +187,7 @@ public class ActivityService {
     }
 
     /** Replaces all ActivityBank children with the requested source configuration. */
-    private void replaceBanks(Activity activity, List<ActivityBankRequest> requests) {
+    private void createBanks(Activity activity, List<ActivityBankRequest> requests) {
         activity.getBanks().clear();
         Set<Long> unique = new HashSet<>();
 
@@ -204,6 +206,51 @@ public class ActivityService {
                     .fixedCount(request.fixedCount())
                     .build());
         }
+    }
+
+    private void updateBanks(
+            Activity activity,
+            List<ActivityBankRequest> requests
+    ) {
+        Map<Long, ActivityBank> existingBanks = activity.getBanks().stream()
+                .collect(Collectors.toMap(
+                        bank -> bank.getQuestionBank().getId(),
+                        Function.identity()
+                ));
+
+        Set<Long> requestBankIds = new HashSet<>();
+
+        for (ActivityBankRequest request : requests) {
+            Long bankId = request.questionBankId();
+
+            if (!requestBankIds.add(bankId)) {
+                throw new AppException(ErrorCode.ACTIVITY_INVALID_CONFIGURATION);
+            }
+
+            ActivityBank existing = existingBanks.get(bankId);
+
+            if (existing != null) {
+                existing.setDisplayOrder(request.displayOrder());
+                existing.setPercentage(request.percentage());
+                existing.setFixedCount(request.fixedCount());
+            } else {
+                QuestionBank bank = questionBankRepository.findById(bankId)
+                        .orElseThrow(() ->
+                                new AppException(ErrorCode.QUESTION_BANK_NOT_FOUND));
+
+                activity.getBanks().add(ActivityBank.builder()
+                        .activity(activity)
+                        .questionBank(bank)
+                        .displayOrder(request.displayOrder())
+                        .percentage(request.percentage())
+                        .fixedCount(request.fixedCount())
+                        .build());
+            }
+        }
+
+        activity.getBanks().removeIf(
+                bank -> !requestBankIds.contains(bank.getQuestionBank().getId())
+        );
     }
 
     private ActivityResponse mapResponse(Activity activity) {

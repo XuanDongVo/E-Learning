@@ -1,10 +1,9 @@
 import { SkillType } from "./unit";
 import type { QuestionDifficulty, QuestionType, QuestionMatchingMode } from "./question";
 export type AssignmentManagementStatus = "DRAFT" | "PUBLISHED" | "ARCHIVED";
-export type AssignmentTargetRequest = | { type: "GRADE" } | { type: "CLASS"; classId: number };
-export interface AssignmentTarget { type: "GRADE" | "CLASS"; classId?: number; className?: string; }
-export interface Assignment { id: number; gradeLevel: number; academicYear: string; name: string; description?: string; status: AssignmentManagementStatus; startAt?: string; dueAt: string; timeLimitSeconds?: number; showAnswersAfterSubmit: boolean; questionCount: number; targets: AssignmentTarget[]; }
-export interface CreateAssignmentRequest { gradeLevel: number; academicYear: string; name: string; description?: string; startAt?: string; dueAt: string; timeLimitSeconds?: number; showAnswersAfterSubmit?: boolean; targets: AssignmentTargetRequest[]; }
+export interface AssignmentGradeSummary { id: number; code: string; name: string; displayOrder: number; }
+export interface Assignment { id: number; grade: AssignmentGradeSummary; academicYear: string; name: string; description?: string; status: AssignmentManagementStatus; startAt: string; dueAt: string; timeLimitMinutes: number; showAnswersAfterSubmit: boolean; questionCount: number; classIds: number[]; }
+export interface CreateAssignmentRequest { gradeId: number; academicYear: string; name: string; description?: string; startAt: string; dueAt: string; timeLimitMinutes: number; showAnswersAfterSubmit?: boolean; classIds: number[]; }
 export interface AssignmentQuestionOption { id: number; content: string; isCorrect: boolean; }
 export interface AssignmentQuestionAnswer { id: number; rawValue: string; normalizedValue?: string; }
 export interface AssignmentQuestionMedia { id: number; mediaId: number; mediaType: string; url: string; }

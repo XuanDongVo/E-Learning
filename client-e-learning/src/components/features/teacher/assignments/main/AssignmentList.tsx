@@ -7,7 +7,7 @@ type Assignment = {
   id: number;
   name: string;
   status: "DRAFT" | "PUBLISHED" | "ARCHIVED";
-  gradeLevel: number;
+  grade: { name: string; displayOrder: number };
   questionCount: number;
   dueAt: string;
 };
@@ -63,13 +63,13 @@ export function AssignmentList({
             </p>
 
             <p className="mt-1 text-body-sm text-muted-foreground">
-              Grade {assignment.gradeLevel} ·{" "}
+              {assignment.grade.name} ·{" "}
               {assignment.questionCount} questions
             </p>
           </div>
 
           <span className="text-body-sm font-semibold">
-            Grade {assignment.gradeLevel}
+            {assignment.grade.name}
           </span>
 
           <span className="text-body-sm text-muted-foreground">

@@ -8,5 +8,5 @@ import java.util.List;
 
 public interface AssignmentRepository extends JpaRepository<Assignment, Long> {
     List<Assignment> findAllByStatusNotOrderByDueAtAscIdAsc(AssignmentStatus status);
-    boolean existsByGradeLevelAndAcademicYearAndNameIgnoreCase(Integer gradeLevel, String academicYear, String name);
+    boolean existsByGrade_IdAndAcademicYearAndNameIgnoreCase(Long gradeId, String academicYear, String name);
 }

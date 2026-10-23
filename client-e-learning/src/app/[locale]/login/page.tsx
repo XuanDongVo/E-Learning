@@ -29,8 +29,11 @@ export default function LoginPage() {
     setIsSubmitting(true);
     try {
       const user = await login({ email, password });
-      const next = new URLSearchParams(window.location.search).get("next");
-      router.replace(next || (user.role === "TEACHER" ? "/teacher" : "/"), { locale });
+      const requestedNext = new URLSearchParams(window.location.search).get("next");
+      const safeNext = requestedNext && requestedNext.startsWith("/") && !requestedNext.startsWith("//") && !requestedNext.includes("\\")
+        ? requestedNext
+        : null;
+      router.replace(safeNext ?? (user.role === "TEACHER" ? "/teacher" : "/"), { locale });
     } catch (submissionError) {
       setError(
         submissionError instanceof Error

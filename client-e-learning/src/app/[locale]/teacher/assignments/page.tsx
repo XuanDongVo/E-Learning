@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { BookOpen, CheckCircle2, Clock3, FileSpreadsheet, Plus, Search, Upload, Users } from "lucide-react";
 import { toast } from "sonner";

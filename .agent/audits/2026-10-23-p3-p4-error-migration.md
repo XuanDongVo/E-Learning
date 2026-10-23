@@ -16,16 +16,14 @@ Branch: `refactor/teacher-content-ui-routing`
 Order remains: Common/Errors/Auth → Teacher Content → Classes/Students → Assignments/Activities → Student runtime.
 
 Migrated in this slice:
-- Login form: API errors display localized text by code.
-- Teacher Content — Topic detail: question-bank create/load error messages use the shared resolver.
-- Teacher Content — Question Bank detail: update/archive/save/load-question errors use the shared resolver.
-- Teacher Content — Question Editor and question authoring: save-question, bulk-save, and media-upload errors use the shared resolver.
+- Auth: login form API errors display localized text by code.
+- Teacher Content: Topic detail, Question Bank detail, Question Editor, Question Composer and Question Form error displays use the shared resolver.
+- Classes/Students: class and grade management errors, student creation and student profile update errors use the shared resolver.
+- Assignments/Activities: assignment creation/import, builder status changes, media upload in the assignment builder, and activity save errors use the shared resolver. Legacy builder load-error strings can recover a stable code from the existing `[CODE] message` format.
+- Student runtime: unit loading, activity hub, practice hint/start/answer/finish errors use the shared resolver.
 
 Not yet migrated:
-- Other teacher content screens and shared toast/error presentation.
-- Classes/Students.
-- Assignments/Activities.
-- Student runtime.
+- Remaining raw errors in less-common screens and generic shared error boundaries/toast utilities; continue repository-wide scan.
 - Existing `LocaleProvider` compatibility adapter; it must only be removed after a repository-wide consumer scan and tests.
 
 ## Server S1/S2 contract work
@@ -38,4 +36,4 @@ Not yet migrated:
 
 ## Validation status
 
-GitHub Actions run [#39947805970](https://github.com/XuanDongVo/E-Learning/actions/runs/39947805970) passed on code commit `f585cdbd14b7d000d406edae1888904687da3641`: frontend lint, Vitest, frontend build, and backend tests all passed. The audit-document update itself is documentation-only; confirm the PR's latest status before merging.
+GitHub Actions run [#39947805970](https://github.com/XuanDongVo/E-Learning/actions/runs/39947805970) passed on code commit `f585cdbd14b7d000d406edae1888904687da3641`: frontend lint, Vitest, frontend build, and backend tests all passed. Further domain migration commits were added after that run; their CI result must pass before merging.

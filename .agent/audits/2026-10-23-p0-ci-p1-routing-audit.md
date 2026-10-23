@@ -8,7 +8,8 @@ Branch: `refactor/teacher-content-ui-routing`
 - Removed the teacher content sidebar state update from an effect. Expansion now follows the current content route by default and can still be manually toggled.
 - Replaced the internal class breadcrumb anchor with the locale-aware navigation `Link`.
 - Removed the search-draft synchronization effect from the global question-bank browser. The draft is derived from the current URL query until the user edits it.
-- Fixed the backend publish-readiness test's Mockito stub to call `findAllByAssignmentIdOrderBySectionIdAscParentItemIdAscPositionAscIdAsc(10L)` with its required argument.
+- Fixed the backend publish-readiness test's Mockito stubs to match the exact `List<Long>` recipient lookup and call `findAllByAssignmentIdOrderBySectionIdAscParentItemIdAscPositionAscIdAsc(10L)` with its required argument.
+- Added `V39_1__seed_demo_classes_for_assignment_migration.sql` to seed only the demo classes needed to migrate the existing grade-target demo assignments in V40. This avoids inventing classes in application logic and keeps the migration's recipient validation intact.
 
 ## P1 — Routing changes made
 
@@ -21,8 +22,7 @@ Branch: `refactor/teacher-content-ui-routing`
 ## Validation status
 
 - Code changes are committed to this branch.
-- The previously observed GitHub Actions run failed on the old head `8219ea7819f3fdeb645a2b1437e0d89cec246d1d`. That result does not validate the fixes above.
-- Frontend lint, frontend tests/build, and backend tests still require a new CI run against the current branch head. No green result is claimed here.
+- CI has been rerun through draft PR #26 after the latest changes. The latest run is in progress; its final conclusion must be checked before calling P0 complete.
 
 ## Remaining routing audit checks
 

@@ -90,7 +90,6 @@ export function QuestionEditor({
   bankName?: string;
   onNavigate: (view: ContentView, id?: number, bankName?: string) => void;
 }) {
-  const tErrors = useTranslations("errors");
   const questionQuery = useQuery({
     queryKey: QUERY_KEYS.contentQuestion(questionId!),
     queryFn: async () => (await contentService.getQuestion(questionId!)).data,
@@ -127,6 +126,7 @@ function QuestionEditorForm({
   bankName?: string;
   onNavigate: (view: ContentView, id?: number, bankName?: string) => void;
 }) {
+  const tErrors = useTranslations("errors");
   const client = useQueryClient();
   const [isSaving, setIsSaving] = useState(false);
   const [draft, setDraft] = useState(() =>

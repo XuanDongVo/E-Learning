@@ -126,7 +126,7 @@ Status labels:
 - [x] Rewrote README as the entry point and corrected stale Question Engine implementation claims.
 - [x] Updated Question Engine and Assignment Composition architecture status/baseline wording.
 - [x] Rebased Phase 7 spec on the current implementation distinction.
-- [ ] Remove completed/duplicated plans listed above after confirming no remaining unique active tasks depend on them.
-- [ ] Review every remaining domain/API/frontend/UI file against current code and update internal links.
+- [x] Removed completed/duplicated files: `plans/QUESTION_ENGINE_REFACTOR_STATUS.md`, `plans/assignment-grade-and-recipients-refactor.md`, and `ui/HYBRID_QUESTION_LIST_BLUEPRINT.md`. Their durable implementation gaps/contracts are retained in CURRENT_STATE, the active architecture, or the canonical UI blueprint.
+- [ ] Complete source-by-source verification of remaining domain/API/frontend/UI contracts against current code and update any additional drift found.
 - [ ] Renumber file names only where a stable sequence has real meaning. Keep ADR IDs and dated audit names stable; never invent dates or renumber history.
 - [ ] Recheck this inventory against the final tree and remove completed checklist items only after the corresponding work is done.

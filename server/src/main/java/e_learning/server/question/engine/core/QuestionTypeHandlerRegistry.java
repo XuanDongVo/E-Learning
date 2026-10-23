@@ -1,5 +1,6 @@
 package e_learning.server.question.engine.core;
 
+import e_learning.server.question.engine.exception.QuestionEngineException;
 import e_learning.server.question.engine.types.choice.MultipleChoiceHandler;
 import e_learning.server.question.engine.types.choice.SingleChoiceHandler;
 import e_learning.server.question.engine.types.compound.ClozeHandler;
@@ -18,10 +19,10 @@ public final class QuestionTypeHandlerRegistry {
         EnumMap<QuestionType, QuestionTypeHandler> map = new EnumMap<>(QuestionType.class);
         for (QuestionTypeHandler handler : handlers) {
             if (map.put(handler.type(), handler) != null)
-                throw new IllegalArgumentException("Duplicate handler: " + handler.type());
+                throw new QuestionEngineException("Duplicate handler: " + handler.type());
         }
         if (map.size() != QuestionType.values().length)
-            throw new IllegalArgumentException("Missing question type handler");
+            throw new QuestionEngineException("Missing question type handler");
         this.handlers = Map.copyOf(map);
     }
 
@@ -31,6 +32,7 @@ public final class QuestionTypeHandlerRegistry {
     }
 
     public QuestionTypeHandler get(QuestionType type) {
-        return Optional.ofNullable(handlers.get(type)).orElseThrow(() -> new IllegalArgumentException("Unsupported question type: " + type));
+        return Optional.ofNullable(handlers.get(type))
+                .orElseThrow(() -> new QuestionEngineException("Unsupported question type: " + type));
     }
 }

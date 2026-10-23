@@ -1,7 +1,8 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useLocale } from "next-intl";
+import { useRouter } from "@/i18n/navigation";
 import {
   ArrowRight,
   BookOpen,
@@ -14,6 +15,7 @@ import { useAuth } from "@/components/auth/auth-provider";
 
 export default function LoginPage() {
   const router = useRouter();
+  const locale = useLocale();
   const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -28,7 +30,7 @@ export default function LoginPage() {
     try {
       const user = await login({ email, password });
       const next = new URLSearchParams(window.location.search).get("next");
-      router.replace(next || (user.role === "TEACHER" ? "/teacher" : "/"));
+      router.replace(next || (user.role === "TEACHER" ? "/teacher" : "/"), { locale });
     } catch (submissionError) {
       setError(
         submissionError instanceof Error

@@ -3,6 +3,7 @@ package e_learning.server.question.service;
 import e_learning.server.question.dto.request.ClozeDefinitionRequest;
 import e_learning.server.question.dto.request.MatchingDefinitionRequest;
 import e_learning.server.question.dto.request.QuestionDefinitionRequest;
+import e_learning.server.question.engine.exception.QuestionEngineException;
 import e_learning.server.question.engine.model.QuestionSpec;
 import e_learning.server.question.engine.types.choice.MultipleChoiceSpec;
 import e_learning.server.question.engine.types.choice.SingleChoiceSpec;
@@ -39,11 +40,9 @@ public class QuestionSpecMapper {
                         .map(m -> m.getMedia() == null ? null : m.getMedia().getPublicId())
                         .filter(Objects::nonNull).toList());
         return switch (question.getType()) {
-            case SINGLE_CHOICE ->
-                    new SingleChoiceSpec(common, choices(question), correctKeys(question).stream().findFirst().orElse(null));
+            case SINGLE_CHOICE -> new SingleChoiceSpec(common, choices(question), correctKeys(question).stream().findFirst().orElse(null));
             case MULTIPLE_CHOICE -> new MultipleChoiceSpec(common, choices(question), correctKeys(question));
-            case TRUE_FALSE ->
-                    new TrueFalseSpec(common, answerValue(question).map("TRUE"::equalsIgnoreCase).orElse(null));
+            case TRUE_FALSE -> new TrueFalseSpec(common, answerValue(question).map("TRUE"::equalsIgnoreCase).orElse(null));
             case FILL_IN_BLANK -> new FillInBlankSpec(common, answerValues(question), matchingMode(question));
             case TYPE_ANSWER -> new TypeAnswerSpec(common, answerValues(question), matchingMode(question));
             case MATCHING -> matchingSpec(common, question);
@@ -54,57 +53,37 @@ public class QuestionSpecMapper {
     private MatchingSpec matchingSpec(QuestionSpec.QuestionCommon common, Question question) {
         QuestionDefinitionRequest definition = readDefinition(question);
         MatchingDefinitionRequest matching = definition == null ? null : definition.getMatching();
-        return new MatchingSpec(
-                common,
-                matching == null ? null : matching.getPoolId(),
-                matching == null ? null : matching.getCorrectEntryId()
-        );
+        return new MatchingSpec(common, matching == null ? null : matching.getPoolId(),
+                matching == null ? null : matching.getCorrectEntryId());
     }
 
     private ClozeSpec clozeSpec(QuestionSpec.QuestionCommon common, Question question) {
         QuestionDefinitionRequest definition = readDefinition(question);
         ClozeDefinitionRequest cloze = definition == null ? null : definition.getCloze();
-        if (cloze == null) {
-            return new ClozeSpec(common, List.of(), List.of(), false);
-        }
-
-        List<ClozeSpec.Segment> segments = cloze.getSegments() == null
-                ? List.of()
-                : cloze.getSegments().stream()
-                    .filter(Objects::nonNull)
-                    .map(segment -> new ClozeSpec.Segment(segment.getText() == null ? "" : segment.getText()))
-                    .toList();
-
+        if (cloze == null) return new ClozeSpec(common, List.of(), List.of(), false);
+        List<ClozeSpec.Segment> segments = cloze.getSegments() == null ? List.of() : cloze.getSegments().stream()
+                .filter(Objects::nonNull).map(segment -> new ClozeSpec.Segment(segment.getText() == null ? "" : segment.getText())).toList();
         List<ClozeSpec.Blank> blanks = new ArrayList<>();
         if (cloze.getBlanks() != null) {
             for (int index = 0; index < cloze.getBlanks().size(); index++) {
                 ClozeDefinitionRequest.Blank blank = cloze.getBlanks().get(index);
                 if (blank == null) continue;
-                String key = blank.getKey() == null || blank.getKey().isBlank()
-                        ? "blank-" + (index + 1)
-                        : blank.getKey();
-                List<String> acceptedAnswers = blank.getAcceptedAnswers() == null
-                        ? List.of()
-                        : blank.getAcceptedAnswers().stream().filter(Objects::nonNull).toList();
+                String key = blank.getKey() == null || blank.getKey().isBlank() ? "blank-" + (index + 1) : blank.getKey();
+                List<String> acceptedAnswers = blank.getAcceptedAnswers() == null ? List.of() : blank.getAcceptedAnswers().stream()
+                        .filter(Objects::nonNull).toList();
                 blanks.add(new ClozeSpec.Blank(key, acceptedAnswers));
             }
         }
-
         return new ClozeSpec(common, segments, blanks, Boolean.TRUE.equals(cloze.getCaseSensitive()));
     }
 
     private QuestionDefinitionRequest readDefinition(Question question) {
         String json = question.getDefinition();
-        if (json == null || json.isBlank()) {
-            return null;
-        }
+        if (json == null || json.isBlank()) return null;
         try {
             return objectMapper.readValue(json, QuestionDefinitionRequest.class);
         } catch (Exception ex) {
-            throw new IllegalStateException(
-                    "Unable to deserialize saved definition for question " + question.getId(),
-                    ex
-            );
+            throw new QuestionEngineException("Unable to deserialize saved question definition", ex);
         }
     }
 
@@ -115,7 +94,8 @@ public class QuestionSpecMapper {
 
     private java.util.Set<String> correctKeys(Question q) {
         return options.findByQuestionId(q.getId()).stream().filter(e_learning.server.question.entity.QuestionOption::isCorrect)
-                .map(e_learning.server.question.entity.QuestionOption::getOptionKey).collect(java.util.stream.Collectors.toUnmodifiableSet());
+                .map(e_learning.server.question.entity.QuestionOption::getOptionKey)
+                .collect(java.util.stream.Collectors.toUnmodifiableSet());
     }
 
     private List<String> answerValues(Question q) {

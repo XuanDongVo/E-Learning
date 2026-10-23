@@ -51,7 +51,7 @@ public class Assignment {
     @Column(name = "due_at", nullable = false)
     private LocalDateTime dueAt;
 
-    @Column(name = "time_limit_minutes")
+    @Column(name = "time_limit_minutes", nullable = false)
     private Integer timeLimitMinutes;
 
     @Column(name = "show_answers_after_submit", nullable = false)

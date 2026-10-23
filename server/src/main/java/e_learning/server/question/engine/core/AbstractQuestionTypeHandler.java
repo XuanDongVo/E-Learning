@@ -1,5 +1,6 @@
 package e_learning.server.question.engine.core;
 
+import e_learning.server.question.engine.exception.QuestionEngineException;
 import e_learning.server.question.engine.model.QuestionSpec;
 import e_learning.server.question.engine.result.*;
 import e_learning.server.question.engine.types.text.MatchingMode;
@@ -9,7 +10,7 @@ import java.util.Locale;
 
 public abstract class AbstractQuestionTypeHandler implements QuestionTypeHandler {
     protected void requireType(QuestionSpec spec) {
-        if (spec == null || spec.type() != type()) throw new IllegalArgumentException("Unexpected question type");
+        if (spec == null || spec.type() != type()) throw new QuestionEngineException("Unexpected question type");
     }
 
     protected DefinitionValidation common(QuestionSpec spec) {

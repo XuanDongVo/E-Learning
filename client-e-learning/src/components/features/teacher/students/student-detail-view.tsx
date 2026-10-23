@@ -1,6 +1,6 @@
 "use client";
 import type { StudentDetailViewProps } from "@/types/student";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { studentService } from "@/services/student.service";
 export function StudentDetailView({studentId}:StudentDetailViewProps){

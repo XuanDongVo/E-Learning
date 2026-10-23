@@ -1,8 +1,8 @@
 "use client";
 
-import Link from "next/link";
-import { useEffect, useMemo, useState, type FormEvent } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { Link, usePathname, useRouter } from "@/i18n/navigation";
+import { useMemo, useState, type FormEvent } from "react";
+import { useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { Search, RotateCcw, ChevronLeft, ChevronRight, LibraryBig } from "lucide-react";
 
@@ -32,9 +32,8 @@ export function GlobalQuestionBankList() {
   const includeArchived = searchParams.get("includeArchived") === "true";
   const page = Math.max(1, numericParam(searchParams.get("page")) ?? 1);
   const size = 20;
-  const [searchDraft, setSearchDraft] = useState(search);
-
-  useEffect(() => setSearchDraft(search), [search]);
+  const [searchDraftState, setSearchDraftState] = useState({ source: search, value: search });
+  const searchDraft = searchDraftState.source === search ? searchDraftState.value : search;
 
   const filters: GlobalQuestionBankFilters = useMemo(
     () => ({ gradeId, unitId, sectionId, topicId, search, includeArchived, page, size }),
@@ -80,7 +79,6 @@ export function GlobalQuestionBankList() {
   };
 
   const resetFilters = () => {
-    setSearchDraft("");
     router.push(pathname);
   };
 
@@ -116,7 +114,7 @@ export function GlobalQuestionBankList() {
             <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
             <input
               value={searchDraft}
-              onChange={(event) => setSearchDraft(event.target.value)}
+              onChange={(event) => setSearchDraftState({ source: search, value: event.target.value })}
               placeholder="Search bank name or description..."
               aria-label="Search bank name or description"
               className="h-10 w-full rounded-lg border border-input bg-background pl-9 pr-3 text-sm outline-none focus:ring-2 focus:ring-ring/30"

@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { Clock3, Flame, Heart, Lightbulb, Play, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { StudentActivity } from "@/types/student-unit";

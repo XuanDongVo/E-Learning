@@ -1,6 +1,7 @@
 "use client";
 
 import type { ClassStudentsViewProps } from "@/types/student";
+import { Link } from "@/i18n/navigation";
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { classService } from "@/services/class.service";
@@ -92,12 +93,12 @@ export function ClassStudentsView({ classId }: ClassStudentsViewProps) {
   return (
     <div className="space-y-6">
       <div>
-        <a
+        <Link
           href="/teacher/classes"
           className="text-body-sm font-bold text-primary"
         >
           ← Classes
-        </a>
+        </Link>
         <h1 className="mt-2 text-ui-3xl font-extrabold">
           {className || "Class"} students
         </h1>

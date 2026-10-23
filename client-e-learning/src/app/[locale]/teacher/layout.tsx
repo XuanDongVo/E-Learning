@@ -18,7 +18,7 @@ import {
   X,
   type LucideIcon,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 
 import { AuthGuard } from "@/components/auth/auth-guard";
@@ -58,18 +58,13 @@ function TeacherSidebar({
 }) {
   const pathname = usePathname();
   const { t } = useLocale();
-  const [contentExpanded, setContentExpanded] = useState(
-    pathname.startsWith("/teacher/content"),
-  );
+  const [contentExpandedOverride, setContentExpandedOverride] = useState<boolean | null>(null);
+  const contentExpanded = contentExpandedOverride ?? pathname.startsWith("/teacher/content");
   const questionBanksActive = pathname.startsWith(
     "/teacher/content/question-banks",
   );
   const explorerActive =
     pathname.startsWith("/teacher/content") && !questionBanksActive;
-
-  useEffect(() => {
-    if (pathname.startsWith("/teacher/content")) setContentExpanded(true);
-  }, [pathname]);
 
   return (
     <>
@@ -138,7 +133,7 @@ function TeacherSidebar({
             <button
               type="button"
               aria-expanded={contentExpanded}
-              onClick={() => setContentExpanded((expanded) => !expanded)}
+              onClick={() => setContentExpandedOverride(!contentExpanded)}
               className={`flex h-10 w-full items-center gap-3 rounded-xl px-3 text-[0.8125rem] font-bold transition-all ${
                 explorerActive || questionBanksActive
                   ? "border border-border bg-card text-primary shadow-pop-sm"

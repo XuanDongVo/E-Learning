@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { ArrowRight, Clock3, Gamepad2, Sparkles } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { studentActivityService } from "@/services/student/student-activity.service";

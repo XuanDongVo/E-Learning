@@ -11,6 +11,7 @@ import {
   type DragStartEvent,
 } from "@dnd-kit/core";
 import { Loader2, PanelLeft, PanelRight } from "lucide-react";
+import { useRouter } from "@/i18n/navigation";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -94,6 +95,7 @@ function LeftPanel() {
 }
 
 export function AssignmentBuilder({ id }: { id?: string }) {
+  const router = useRouter();
   const loaded = useBuilder((s) => s.loaded);
   const loadError = useBuilder((s) => s.loadError);
   const mode = useBuilder((s) => s.mode);
@@ -190,7 +192,7 @@ export function AssignmentBuilder({ id }: { id?: string }) {
             <Button onClick={() => void loadAssignment(id)}>Retry</Button>
             <Button
               variant="outline"
-              onClick={() => window.location.assign("/teacher/assignments")}
+              onClick={() => router.replace("/teacher/assignments")}
             >
               Back to assignments
             </Button>

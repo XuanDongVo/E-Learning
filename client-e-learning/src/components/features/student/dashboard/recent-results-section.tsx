@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { ArrowRight, BookMarked } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { RecentResult } from "@/types";

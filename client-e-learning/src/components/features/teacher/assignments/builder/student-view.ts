@@ -53,7 +53,7 @@ export interface StudentAssignment {
   title: string;
   grade: number;
   instructions: string;
-  timeLimitMin: number | null;
+  timeLimitMinutes: number | null;
   totalQuestions: number;
   totalPoints: number;
   sections: SSection[];
@@ -157,7 +157,7 @@ export function buildStudentView(a: Assignment): StudentAssignment {
     title: a.title,
     grade: a.grade,
     instructions: a.instructions,
-    timeLimitMin: a.settings.timeLimitMinutes,
+    timeLimitMinutes: a.settings.timeLimitMinutes,
     totalQuestions: total,
     totalPoints: points,
     sections,

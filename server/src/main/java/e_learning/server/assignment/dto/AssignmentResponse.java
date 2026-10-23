@@ -16,7 +16,7 @@ public record AssignmentResponse(
         AssignmentStatus status,
         LocalDateTime startAt,
         LocalDateTime dueAt,
-        Integer timeLimitSeconds,
+        Integer timeLimitMinutes,
         boolean showAnswersAfterSubmit,
         int questionCount,
         List<Long> classIds

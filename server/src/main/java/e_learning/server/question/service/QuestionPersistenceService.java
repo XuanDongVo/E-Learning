@@ -102,9 +102,7 @@ public class QuestionPersistenceService {
     }
 
     private String serializeDefinition(QuestionWriteRequest request) {
-        if (request.getDefinition() == null) {
-            return null;
-        }
+        if (request.getDefinition() == null) return null;
 
         QuestionType type = request.getType();
         boolean supportsDefinition = type == QuestionType.MATCHING
@@ -112,14 +110,12 @@ public class QuestionPersistenceService {
                 || type == QuestionType.TYPE_ANSWER
                 || type == QuestionType.FILL_IN_BLANK;
 
-        if (!supportsDefinition) {
-            return null;
-        }
+        if (!supportsDefinition) return null;
 
         try {
             return objectMapper.writeValueAsString(request.getDefinition());
         } catch (Exception e) {
-            throw new IllegalArgumentException("Invalid question definition", e);
+            throw new AppException(ErrorCode.QUESTION_DEFINITION_INVALID);
         }
     }
 
@@ -168,9 +164,8 @@ public class QuestionPersistenceService {
 
     private QuestionAnswer buildAnswer(Question question, QuestionAnswerRequest request, QuestionType type) {
         String raw = normalizeAnswer(request.getRawValue(), type);
-
         String normalized = raw.toLowerCase(Locale.ROOT);
-        if (((type == QuestionType.TYPE_ANSWER) || (type == QuestionType.FILL_IN_BLANK))
+        if ((type == QuestionType.TYPE_ANSWER || type == QuestionType.FILL_IN_BLANK)
                 && MatchingMode.CASE_SENSITIVE_TRIM.name().equals(question.getMatchingMode())) {
             normalized = raw;
         }

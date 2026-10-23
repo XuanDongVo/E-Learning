@@ -1,6 +1,8 @@
 package e_learning.server.common.exception;
 
 import e_learning.server.common.response.ApiResponse;
+import e_learning.server.question.engine.exception.QuestionEngineException;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -11,7 +13,6 @@ import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
-
     @ExceptionHandler(AppException.class)
     public ResponseEntity<ApiResponse<Void>> handleAppException(AppException exception) {
         ErrorCode errorCode = exception.getErrorCode();
@@ -21,25 +22,36 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler({MethodArgumentNotValidException.class, ConstraintViolationException.class})
     public ResponseEntity<ApiResponse<Void>> handleValidationException(Exception exception) {
-        return ResponseEntity.badRequest()
-                .body(ApiResponse.failure(ErrorCode.INVALID_REQUEST.code(), "Validation failed"));
+        return failure(ErrorCode.VALIDATION_FAILED);
     }
 
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ApiResponse<Void>> handleBadCredentials() {
-        return ResponseEntity.status(ErrorCode.UNAUTHORIZED.status())
-                .body(ApiResponse.failure(ErrorCode.UNAUTHORIZED.code(), "Invalid email or password"));
+        return failure(ErrorCode.AUTHENTICATION_FAILED);
     }
 
     @ExceptionHandler(MaxUploadSizeExceededException.class)
     public ResponseEntity<ApiResponse<Void>> handleMaxUploadSizeExceeded() {
-        return ResponseEntity.badRequest()
-                .body(ApiResponse.failure(ErrorCode.INVALID_REQUEST.code(), "The uploaded file must be 5 MB or smaller"));
+        return failure(ErrorCode.MEDIA_FILE_TOO_LARGE);
+    }
+
+    @ExceptionHandler(EntityNotFoundException.class)
+    public ResponseEntity<ApiResponse<Void>> handleEntityNotFound() {
+        return failure(ErrorCode.INTERNAL_ERROR);
+    }
+
+    @ExceptionHandler({InternalServiceException.class, QuestionEngineException.class})
+    public ResponseEntity<ApiResponse<Void>> handleInternalFailure(RuntimeException exception) {
+        return failure(ErrorCode.INTERNAL_ERROR);
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Void>> handleUnexpectedException() {
-        return ResponseEntity.status(ErrorCode.INTERNAL_ERROR.status())
-                .body(ApiResponse.failure(ErrorCode.INTERNAL_ERROR.code(), ErrorCode.INTERNAL_ERROR.message()));
+        return failure(ErrorCode.INTERNAL_ERROR);
+    }
+
+    private ResponseEntity<ApiResponse<Void>> failure(ErrorCode errorCode) {
+        return ResponseEntity.status(errorCode.status())
+                .body(ApiResponse.failure(errorCode.code(), errorCode.message()));
     }
 }

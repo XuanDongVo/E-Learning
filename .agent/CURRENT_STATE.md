@@ -1,7 +1,7 @@
 # Current Implementation State
 
 **Audit date:** 2026-10-23  
-**Branch:** `refactor/teacher-content-ui-routing`  
+**Branch:** `feature/student-assignment-attempt`  
 **Application-code audit baseline:** `7bb5bb43bde786431c85ba0ca1d0c350cad684f4` (the application code was not fully re-audited after this baseline; later commits in this branch were documentation changes).  
 **Purpose:** canonical implementation truth for AI agents. This file records what is actually present in the branch; accepted ADRs remain the source of product decisions, while this file is the source of current implementation status.
 
@@ -22,9 +22,9 @@ A document must not claim that a target architecture is implemented merely becau
 
 - Frontend: Next.js + React + TypeScript + Tailwind CSS.
 - Backend: Spring Boot + Java 21 + JPA + Flyway + PostgreSQL.
-- Current highest Flyway migration on this branch: **V42**.
+- Source branch baseline documented Flyway through V42; this feature branch adds V43 for AssessmentAttempt runtime schema. Validate Flyway and database state before applying.
 - Applied migrations must never be edited; future schema changes start at the next unused version after a fresh migration-directory audit.
-- Current branch has no `assessment-attempt` backend feature package and no `AssessmentAttempt` runtime implementation.
+- `assessmentattempt` backend package now contains initial enums, JPA entities, repositories, DTOs and a service skeleton. Runtime behavior is not implemented.
 
 ## 3. Phase status
 
@@ -58,12 +58,12 @@ A document must not claim that a target architecture is implemented merely becau
 
 ### Not implemented / not verified
 
-- No `AssessmentAttempt` entity/service/controller/repository exists yet.
-- No official one-attempt-per-student Assignment runtime exists yet.
-- No immutable Assignment attempt snapshot exists yet.
-- No autosaved student Assignment answers or idempotent submit flow exists yet.
-- No server-side automatic Assignment score calculation on submit/timeout exists yet.
-- No persisted Assignment per-part grade/normalized-submission analytics exists yet.
+- Initial `AssessmentAttempt` entities/repositories and a service skeleton exist; no controller or runtime orchestration is implemented yet.
+- No official one-attempt-per-student runtime behavior exists yet; the new schema adds a unique (assignment_id, student_id) constraint.
+- Snapshot storage schema/entity exists, but immutable snapshot assembly and completeness are not implemented.
+- Answer storage schema/entity exists, but autosave, idempotency and submit flow are not implemented.
+- Part-result schema/entity exists, but automatic scoring and timeout processing are not implemented.
+- Per-part result and normalized-value storage fields exist; persistence behavior and analytics are not implemented.
 - The accepted hard-lock-after-first-attempt policy cannot be runtime-enforced until AssessmentAttempt exists.
 - `show_score_after_submit` is modeled/configured, but the runtime that calculates and conditionally exposes the score is not implemented.
 

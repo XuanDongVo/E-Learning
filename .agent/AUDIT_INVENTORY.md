@@ -1,7 +1,7 @@
 # .agent Audit Inventory and Cleanup Decisions
 
 **Audit date:** 2026-10-23  
-**Branch:** `refactor/teacher-content-ui-routing`  
+**Branch:** `feature/student-assignment-attempt`  
 **Purpose:** inventory each documentation file, identify the canonical source, and prevent old plans from being interpreted as current instructions.
 
 Status labels:
@@ -91,7 +91,7 @@ Status labels:
 | `plans/E-LEARNING_PHASE_5_ASSIGNMENTS_SPEC_EN.md` | CANONICAL SPEC, REVIEW REQUIRED | Distinguish desired scoring/attempt behavior from implemented runtime |
 | `plans/E-LEARNING_PHASE_6_STUDENT_MANAGEMENT.md` | HISTORICAL / COMPLETED | Mark explicitly complete; do not use as an active implementation plan |
 | `plans/E-LEARNING_PHASE_7_ATTEMPTS_SPEC.md` | ACTIVE SPEC | Rebased 2026-10-23; Scope A verification gaps and missing Scope B runtime stated explicitly |
-| `plans/08-STUDENT_ASSIGNMENT_ATTEMPT_SPEC.md` | ACTIVE SPECIFICATION | Vietnamese business contract for Student Assignment Attempt: rules, ERD, use cases, risks and acceptance criteria; review before migration/code skeleton |
+| `plans/08-STUDENT_ASSIGNMENT_ATTEMPT_SPEC.md` | ACTIVE SPECIFICATION | Vietnamese business contract for Student Assignment Attempt: rules, ERD, use cases, risks and acceptance criteria; initial V43 schema and backend skeleton now added |
 | `plans/PHASE_7B_IMPLEMENTATION_MIGRATION_PLAN.md` | ACTIVE PLAN | Required gate before formal AssessmentAttempt implementation |
 | `plans/QUESTION_BANK_UI_PHASE_PLAN.md` | ACTIVE / PARTIAL | Current UI plan; do not call phases complete until checks are recorded |
 | `plans/REFACTOR_INCREMENTAL_SAVE_PLAN.md` | ACTIVE ONLY IF WORK REMAINS | Confirm actual completion state and avoid concurrent/duplicated editor refactor plans |

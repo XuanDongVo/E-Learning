@@ -1,6 +1,6 @@
 # .agent Audit Inventory and Cleanup Decisions
 
-**Audit date:** 2026-10-23  
+**Audit date:** 2026-10-25  
 **Branch:** `feature/student-assignment-attempt`  
 **Purpose:** inventory each documentation file, identify the canonical source, and prevent old plans from being interpreted as current instructions.
 
@@ -9,6 +9,10 @@ Status labels:
 - **ACTIVE / PARTIAL** — current work plan; execution or verification remains.
 - **HISTORICAL** — retain as traceability, not an instruction to execute.
 - **MERGE / DELETE** — duplicated, superseded, or completed one-off content whose durable facts are represented elsewhere.
+
+## Current audit register
+
+| `audits/2026-10-25-question-engine-current-code-audit.md` | CURRENT SOURCE AUDIT (verification-limited) | Current Question Engine/Composition/ActivitySession findings; no build/test execution claimed |
 
 ## Root
 

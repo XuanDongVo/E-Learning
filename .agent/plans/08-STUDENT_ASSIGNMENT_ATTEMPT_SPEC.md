@@ -1,291 +1,310 @@
-# 08 — Student Assignment Attempt: Nghiệp vụ, ERD và Use Cases
+# 08 — Student Assignment Attempt: Nghiệp vụ, Schema và Teacher Analytics
 
-**Trạng thái:** ACTIVE SPECIFICATION — chốt hợp đồng nghiệp vụ trước migration/code skeleton  
-**Nhánh:** feature/student-assignment-attempt  
-**Nhánh gốc:** refactor/teacher-content-ui-routing  
-**Phạm vi:** Phase 7B — runtime làm Assignment chính thức của Student  
-**Tài liệu liên quan:** CURRENT_STATE.md, plans/PHASES.md, plans/E-LEARNING_PHASE_7_ATTEMPTS_SPEC.md, plans/PHASE_7B_IMPLEMENTATION_MIGRATION_PLAN.md, ADR 0021–0026, architecture/assignment-composition-v1.md
+**Trạng thái:** ACTIVE SPECIFICATION — schema/runtime contract đã được chốt để triển khai  
+**Nhánh:** `feature/student-assignment-attempt`  
+**Nhánh gốc:** `refactor/teacher-content-ui-routing`  
+**Phạm vi:** Phase 7B — Student làm Assignment chính thức
 
-> Tài liệu mô tả nghiệp vụ đích, không khẳng định chức năng đã được triển khai. Assignment Composition đã có ở phía authoring; AssessmentAttempt runtime chưa có. Code và migration thực tế vẫn là căn cứ cuối cùng để xác định hiện trạng.
+> V43 chưa được chạy trên server/database ở thời điểm chốt spec, vì vậy migration V43 được phép chỉnh trực tiếp thay vì tạo V44. Code runtime chưa được coi là hoàn thiện chỉ vì schema đã tồn tại.
 
-## 1. Mục đích
+## 1. Mục tiêu
 
-Xây dựng luồng Student làm Assignment chính thức: bắt đầu bài; chỉ có một Attempt chính thức cho mỗi Student + Assignment; có thể resume khi rời trang hoặc mất kết nối; chỉ một tab/thiết bị được quyền ghi tại một thời điểm; autosave; đồng hồ toàn bài do server quản lý; submit/timeout chốt và chấm tự động; lưu tổng điểm và kết quả từng phần; dùng snapshot bất biến để dữ liệu nguồn thay đổi không làm thay đổi Attempt cũ.
+`AssessmentAttempt` là runtime chính thức cho Student làm Assignment. Một Attempt phải có đủ dữ liệu để Student tiếp tục làm bài, submit/timeout và chấm bài độc lập với Assignment authoring hiện tại.
 
-## 2. Phạm vi
+Attempt đồng thời phải lưu đủ dữ liệu lịch sử để Teacher có thể phân tích kết quả theo Student và Class.
 
-### Trong phạm vi
-- Start/resume Attempt, snapshot Composition và Question cần cho hiển thị/chấm.
-- Autosave câu trả lời, submit idempotent và auto-submit khi timeout.
-- Quyền ghi độc quyền cho một màn hình, heartbeat tối giản và takeover khi session cũ stale.
-- Server-authoritative whole-attempt timer.
-- Chấm tự động bằng Question Engine; lưu tổng điểm, điểm từng phần và trạng thái từng phần.
-- Kiểm tra quyền truy cập, lịch, target/grade/class membership ở backend.
-- Khóa chỉnh sửa Assignment sau khi Attempt đầu tiên bắt đầu; clone để thay đổi.
+Nguyên tắc:
+- Một Student chỉ thuộc **một ACTIVE class** tại một thời điểm.
+- Một `(assignment_id, student_id)` chỉ có một Attempt chính thức.
+- Whole-attempt timer; không lưu thời gian từng câu.
+- Snapshot bất biến cho composition/settings/question.
+- Autosave chống stale overwrite bằng `revision`.
+- Một active screen/session có quyền ghi tại một thời điểm.
+- Lightweight event log: `TAB_HIDDEN`, `FULLSCREEN_EXIT`, `SESSION_TAKEOVER`.
+- Event không phải bằng chứng gian lận.
+- XP, badge, ranking, manual grading và advanced analytics ngoài MVP.
 
-### Ngoài phạm vi
-- Không tạo bảng AttemptSession riêng.
-- Không xây hệ thống quản lý thiết bị, lịch sử session, dashboard session hoặc audit session chuyên sâu.
-- Không thêm Redis chỉ để làm session lock.
-- Không lưu thời gian làm từng câu hỏi.
-- Không có XP, badge, ranking, chấm thủ công, báo cáo giáo viên hoặc analytics nâng cao trong bước này.
-- Không tạo Attempt runtime đa hình dùng chung cho ActivitySession. ActivitySession và AssessmentAttempt là hai aggregate riêng.
+## 2. Business rules
 
-## 3. Actor và thuật ngữ
+### BR-01 — Student chỉ có một ACTIVE class
 
-- **Student:** người được phép làm Assignment.
-- **Teacher:** người tạo/chỉnh sửa Assignment; sau Attempt đầu tiên phải clone nếu muốn thay đổi hợp đồng bài làm.
-- **Assignment:** cấu hình bài do Teacher soạn, gồm Composition, câu hỏi, thời gian, lịch và cài đặt kết quả.
-- **AssessmentAttempt:** lần làm bài chính thức duy nhất của một Student cho một Assignment.
-- **AttemptQuestion:** một Question trong snapshot của Attempt, theo thứ tự được giao.
-- **AttemptAnswer:** câu trả lời đã lưu cho AttemptQuestion.
-- **AttemptPartResult:** kết quả chấm của từng phần trong một Question.
-- **Active screen/session:** mã định danh tối giản của tab làm bài, dùng để kiểm soát quyền ghi; không phải aggregate riêng.
+Hệ thống quy định một Student có tối đa một ACTIVE class membership tại một thời điểm. Khi Student bắt đầu Assignment, backend xác định ACTIVE class và snapshot vào Attempt.
 
-## 4. Business rules
+Attempt lưu:
+- `class_id_at_start`
+- `class_name_at_start`
 
-### BR-01 — Một Attempt chính thức
-Một cặp assignment_id + student_id chỉ có tối đa một AssessmentAttempt. Bảo vệ bằng unique constraint ở database, không chỉ kiểm tra trong service.
+`class_id_at_start` dùng cho query/report; `class_name_at_start` là historical snapshot. Không cho client tự quyết định class attribution và không cần Attempt ↔ nhiều Class.
 
-### BR-02 — Resume thay vì tạo mới
-- Chưa có Attempt và Assignment đủ điều kiện: tạo Attempt.
-- Đã có Attempt IN_PROGRESS và chưa hết giờ: trả cùng Attempt để tiếp tục.
-- Attempt SUBMITTED hoặc TIMED_OUT: không tạo Attempt mới, không cho sửa/nộp lại.
-- Nếu Attempt IN_PROGRESS đã quá deadline, backend xử lý timeout/auto-submit trước khi trả dữ liệu tiếp tục.
+### BR-02 — Một Attempt chính thức
+
+Unique constraint `(assignment_id, student_id)` bảo đảm một Student không có nhiều Attempt chính thức.
+
+- Chưa có Attempt → tạo.
+- `IN_PROGRESS` → resume.
+- `SUBMITTED`/`TIMED_OUT` → không tạo mới.
+- Nếu quá deadline → timeout trước khi trả runtime.
 
 ### BR-03 — Lifecycle
-Trạng thái chính thức: IN_PROGRESS, SUBMITTED, TIMED_OUT. Nộp trễ là metadata is_late, không phải lifecycle state. Không có trạng thái chờ giáo viên chấm.
 
-### BR-04 — Chỉ một màn hình có quyền ghi
-- Màn hình đầu tiên được backend cấp quyền giữ quyền điều khiển.
-- Tab/thiết bị khác nhận cảnh báo; không được autosave hoặc submit.
-- Không tự động takeover chỉ vì tab mới được mở.
-- Mọi write request phải kiểm tra active session ở backend; khóa UI không đủ.
-- Khi session cũ stale, session mới có thể takeover cùng Attempt. Sau takeover, mọi write từ session cũ bị từ chối.
-- Attempt đã kết thúc thì không session nào được sửa câu trả lời.
+`IN_PROGRESS → SUBMITTED` hoặc `IN_PROGRESS → TIMED_OUT`.
 
-### BR-05 — Heartbeat tối giản
-Heartbeat chỉ cho biết màn hình giữ quyền còn hoạt động; không điều khiển timer, điểm hoặc submit. Giá trị khởi điểm để thử nghiệm: heartbeat mỗi khoảng 30 giây, session stale sau khoảng 90 giây không có heartbeat. Đây là ngưỡng kỹ thuật có thể tinh chỉnh, không phải quy tắc nghiệp vụ cố định. Backend phải xử lý takeover và write một cách an toàn trước race condition. MVP không cần bảng lịch sử session.
+`is_late` là metadata của due policy, không phải lifecycle state.
 
-### BR-06 — Đồng hồ toàn bài
-- Time limit áp dụng cho toàn Attempt, không phải từng câu.
-- Started time và deadline do server quyết định.
-- Refresh, đóng tab hoặc mất mạng không dừng đồng hồ.
-- Backend kiểm tra timeout trên các thao tác liên quan và có cơ chế server xử lý khi Student không gửi request tiếp theo.
-- Timeout chốt câu trả lời đã lưu, chấm tự động và đặt trạng thái TIMED_OUT.
-- Không dựa vào JavaScript timer để quyết định kết quả cuối cùng.
+### BR-04 — Single writer session
 
-### BR-07 — Autosave
-- Chỉ chấp nhận khi Attempt IN_PROGRESS, chưa timeout và session có quyền ghi.
-- Retry mạng không được tạo dữ liệu trùng hoặc ghi đè câu trả lời mới hơn.
-- Lỗi lưu phải được trả rõ ràng; UI chỉ hiển thị saved sau xác nhận thành công từ backend.
-- Chỉ câu trả lời backend đã xác nhận lưu mới được bảo đảm có mặt khi submit/timeout.
-- Xử lý race giữa autosave, submit, timeout và takeover bằng transaction/locking hoặc cơ chế concurrency phù hợp.
+`active_session_id` kiểm soát tab/device được phép ghi.
 
-### BR-08 — Submit idempotent
-Submit kiểm tra trạng thái và active session. Lần submit hợp lệ đầu tiên chốt câu trả lời, chấm bài, lưu kết quả và kết thúc Attempt. Retry trả về kết quả đã chốt, không tạo lượt chấm mới.
+- Tab đầu tiên được cấp quyền.
+- Tab khác không autosave/submit khi session cũ vẫn active.
+- Session stale có thể bị takeover.
+- Sau takeover, session cũ mất quyền ghi.
+- Không tạo `AttemptSession` table trong MVP.
 
-### BR-09 — Snapshot bất biến
-Khi bắt đầu Attempt, lưu snapshot đủ để hiển thị và chấm độc lập với dữ liệu nguồn về sau, tối thiểu gồm:
-- Thứ tự section/item/question và nhóm câu hỏi liên quan.
-- QuestionSpec/payload cần hiển thị.
-- Answer key/accepted values và hợp đồng normalization/grading được lưu nội bộ.
+Heartbeat chỉ phục vụ session ownership, không quyết định timer hay điểm.
+
+### BR-05 — Whole-attempt timer
+
+- `time_limit_seconds` áp dụng cho toàn Attempt.
+- `started_at`/`deadline_at` do server quyết định.
+- Refresh/đóng tab/mất mạng không dừng timer.
+- Backend là nguồn sự thật cuối cùng.
+- Không lưu time spent theo Question.
+- `deadline_at` là runtime timer deadline, khác `assignments.due_at` là Assignment due policy.
+
+### BR-06 — Autosave và revision
+
+Mỗi AttemptQuestion có tối đa một Answer hiện hành. `revision` là revision logic của answer payload. Backend phải kiểm tra revision/concurrency và không cho request stale overwrite answer mới hơn.
+
+Revision không thay thế transaction/locking hoặc active-session check.
+
+### BR-07 — Snapshot bất biến
+
+Khi Attempt bắt đầu, snapshot đủ để dựng lại runtime Assignment, gồm:
+- Composition, Sections và thứ tự.
+- Instructions, Passage, Answer Pool, Media.
+- Question references và thứ tự.
+- Question payload cần render/chấm.
 - Points, required/example flags.
-- Snapshot schema version và normalizer/grading contract version.
-- Media/block payload cần dựng lại nội dung Student đã thấy.
-- Time limit và các cài đặt score/answer visibility liên quan.
+- Score/answer visibility settings.
+- Time limit runtime.
+- Snapshot schema/version.
+- Normalizer/grading contract version cần cho grading.
 
-Không trả answer key, accepted answers hoặc explanation bị hạn chế cho Student trước thời điểm được phép reveal. Tách snapshot nội bộ khỏi DTO trả Student.
+`document_snapshot` là snapshot của toàn composition/document. `question_snapshot` là canonical snapshot của từng Question. Hai lớp snapshot có mục đích khác nhau.
 
-### BR-10 — Chấm điểm
-- Chấm tự động qua Question Engine; không có chấm thủ công.
-- Chấm từ snapshot, không lấy đáp án live hiện tại.
-- PartStatus: CORRECT, PARTIALLY_CORRECT, INCORRECT, UNANSWERED.
-- Lưu earned_points, possible_points, part_key ổn định và version liên quan.
-- Example items không tính vào mẫu số điểm chính thức.
-- Không lưu thời gian theo từng câu hỏi.
+### BR-08 — Score/answer visibility
 
-### BR-11 — Score visibility và answer visibility độc lập
-show_score_after_submit quyết định có hiển thị điểm; show_answers_after_submit quyết định có hiển thị đáp án/giải thích. Backend phải enforce riêng từng setting. Có dữ liệu chấm nội bộ không có nghĩa là được trả dữ liệu đó cho Student.
+`show_score_after_submit` và `show_answers_after_submit` là hai policy độc lập. Backend không trả restricted answer key/accepted answers/explanation trước thời điểm được phép reveal.
 
-### BR-12 — Nộp trễ
-Nếu chính sách hiện hành cho phép nộp trễ, vẫn chấp nhận bài và đánh dấu is_late=true, không tự trừ điểm vì nộp trễ. Không nhầm due date với time limit của Attempt đã bắt đầu.
+### BR-09 — Auto grading
 
-### BR-13 — Khóa Assignment sau Attempt đầu tiên
-Sau Attempt đầu tiên, backend từ chối thay đổi ảnh hưởng hợp đồng bài làm: Composition/thứ tự, Question content/membership, points/required/example flags, target, schedule/time limit và review settings. Teacher clone Assignment để thay đổi. Đóng/ngừng nhận lượt mới không được làm biến đổi snapshot cũ.
+- Grading qua Question Engine.
+- Grading từ snapshot, không lấy Question authoring live.
+- Tổng điểm lưu trên Attempt; chi tiết part trên AttemptPartResult.
+- Part status: `CORRECT`, `PARTIALLY_CORRECT`, `INCORRECT`, `UNANSWERED`.
+- Example items không làm tăng denominator chính thức.
+- `normalizer_version` và `grading_version` ghi contract dùng để tính kết quả.
+- Không manual grading trong MVP.
 
-### BR-14 — Phân quyền
-Mọi thao tác start/resume/read/save/submit/result phải xác thực Student và kiểm tra Assignment target, grade/class membership, publish state, schedule và due policy ở backend. Không tin student_id, điểm, thời gian hay quyền ghi do client tự khai báo.
+### BR-10 — Attempt events
 
-## 5. ERD tối thiểu
+Event log được giữ nhẹ để Teacher biết Student đã rời màn hình hoặc session có takeover.
 
-Assignment
-- Authoring hiện có: Assignment → AssignmentSection → AssignmentItem → Question/Content Block.
-- Runtime: Assignment → AssessmentAttempt → AttemptQuestion → AttemptAnswer.
-- Runtime grading: AttemptQuestion → AttemptPartResult.
+Event types V1:
+- `TAB_HIDDEN` — browser báo tab/window không còn visible.
+- `FULLSCREEN_EXIT` — Student rời fullscreen nếu runtime đang yêu cầu fullscreen.
+- `SESSION_TAKEOVER` — server ghi nhận session mới takeover session cũ.
 
-### 5.1 AssessmentAttempt
-Trường mục tiêu, cần đối chiếu convention hiện có trước migration:
-- id, assignment_id, student_id, status
-- started_at, submitted_at, timed_out_at
-- time_limit_seconds, deadline_at
-- total_possible_points, total_earned_points, percentage_score
-- is_late
-- active_session_id, last_activity_at
-- snapshot_version, created_at, updated_at
+Event không phải anti-cheat proof. `TAB_HIDDEN`/`FULLSCREEN_EXIT` là browser/client signals và không tự chứng minh nguyên nhân hay hành vi gian lận.
 
-Ràng buộc bắt buộc: unique (assignment_id, student_id). Không tạo AttemptSession table trong MVP.
+Không lưu mouse movement, click history, IP/device fingerprint hoặc audit session chuyên sâu.
 
-### 5.2 AttemptQuestion
-- id, attempt_id
-- assignment_item_id (nullable nếu không thể bảo đảm tham chiếu ổn định sau snapshot)
-- question_id (tham chiếu nguồn tùy chọn để truy vết; không phải nguồn runtime)
-- position
-- question_snapshot (JSONB hoặc kiểu tương đương theo convention hiện có)
-- possible_points, is_required, is_example
-- snapshot_version và timestamps
+Teacher có thể hiển thị:
 
-position ở đây là thứ tự snapshot runtime, không phải thêm position vào AssignmentQuestion. Thứ tự authoring vẫn do Composition quản lý.
+```text
+Student A
+- Rời màn hình: 2 lần
+- Thoát fullscreen: 1 lần
+- Session takeover: 0 lần
+```
 
-### 5.3 AttemptAnswer
-- id, attempt_question_id
-- answer_payload (JSON)
-- normalized_value (nullable, dữ liệu nội bộ nếu cần)
-- saved_at và timestamps
+MVP không cần counter denormalized trong `assessment_attempts`; có thể count event theo Attempt. Chỉ thêm counter/aggregation khi scale thực tế yêu cầu.
 
-Một AttemptQuestion có tối đa một answer hiện hành trong MVP. CLOZE/MATCHING có thể lưu nhiều phần trả lời trong payload; không cần tạo một row riêng cho từng blank nếu Question Engine contract hiện tại hỗ trợ.
+## 3. Schema
 
-### 5.4 AttemptPartResult
-- id, attempt_question_id, part_key
-- status, earned_points, possible_points
-- snapshot_version, normalizer_version
+### 3.1 `assessment_attempts`
+
+Core:
+- `id`, `assignment_id`, `student_id`
+- `class_id_at_start`, `class_name_at_start`
+- `status`
+- `started_at`, `submitted_at`, `timed_out_at`
+- `time_limit_seconds`, `deadline_at`
+- `total_possible_points`, `total_earned_points`, `percentage_score`
+- `is_late`
+- `active_session_id`, `last_activity_at`
+- `document_snapshot JSONB`, `settings_snapshot JSONB`
+- `snapshot_version`, timestamps
+
+Indexes:
+- `(student_id, status)`
+- `(assignment_id, status)`
+- `(class_id_at_start, status)`
+- partial `(deadline_at) WHERE status = 'IN_PROGRESS'`
+
+Constraint: unique `(assignment_id, student_id)`.
+
+### 3.2 `assessment_attempt_questions`
+
+- `attempt_id`, `assignment_item_id`, `question_id`
+- `section_key`, `section_title`
+- `position`
+- `question_snapshot JSONB`
+- `possible_points`, `is_required`, `is_example`
+- `snapshot_version`, timestamps
+
+Indexes: `(attempt_id, position)` and `(question_id)`.
+
+`position` chỉ là runtime snapshot order, không thay đổi authoring Composition. `section_key`/`section_title` giữ context lịch sử cho Teacher analytics.
+
+### 3.3 `assessment_attempt_answers`
+
+- `attempt_question_id`
+- `answer_payload JSONB`
+- `normalized_value JSONB`
+- `revision`
+- `saved_at`, timestamps
+
+Unique `(attempt_question_id)`.
+
+### 3.4 `assessment_attempt_part_results`
+
+- `attempt_question_id`, `part_key`
+- `status`, `earned_points`, `possible_points`
+- `snapshot_version`
+- `normalizer_version`, `grading_version`
 - timestamps
 
-Unique constraint phù hợp, tối thiểu (attempt_question_id, part_key), để retry không nhân đôi kết quả. Tổng điểm lưu trên AssessmentAttempt; chi tiết nằm ở AttemptPartResult. MVP không cần bảng AttemptResult riêng.
+Unique `(attempt_question_id, part_key)`.
+
+### 3.5 `assessment_attempt_events`
+
+- `id`, `attempt_id`, `event_type`
+- `occurred_at`, `active_session_id`
+- `metadata JSONB`
+
+Allowed types: `TAB_HIDDEN`, `FULLSCREEN_EXIT`, `SESSION_TAKEOVER`.
+
+Indexes:
+- `(attempt_id, occurred_at)`
+- `(event_type, occurred_at)`
+
+## 4. Teacher Analytics requirements
+
+Schema phải hỗ trợ Teacher phân tích ngay cả khi Analytics UI chưa triển khai.
+
+### 4.1 Assignment-level
+
+Có thể tính: số Student được giao, started, completed, in-progress, timeout, late; average/min/max score; score distribution; completion rate.
+
+### 4.2 Class-level
+
+Nhờ `class_id_at_start`, Teacher có thể group Attempt theo Class. Class attribution là snapshot tại thời điểm Attempt bắt đầu; Student chuyển lớp sau đó không làm thay đổi lịch sử Attempt.
+
+### 4.3 Student-level
+
+Teacher có thể xem status, score, started/submitted/timed-out time, late flag và số event `TAB_HIDDEN`, `FULLSCREEN_EXIT`, `SESSION_TAKEOVER`.
+
+### 4.4 Question-level
+
+Dữ liệu AttemptQuestion/PartResult hỗ trợ accuracy theo Question/part, earned/possible points, partial correctness và phân tích answer payload/normalized value khi phù hợp.
+
+Không triển khai advanced question-quality warnings ở bước này.
+
+## 5. Ngoài scope
+
+- XP/badge/ranking.
+- Per-question timing.
+- Manual grading.
+- AttemptSession table.
+- Device/session audit chuyên sâu.
+- Redis chỉ để lock session.
+- Advanced teacher analytics.
+- Question-quality warnings.
+- Teacher report UI từ dữ liệu thật trong bước schema/runtime này.
+
+Schema vẫn phải bảo toàn khả năng triển khai basic Teacher Analytics sau khi runtime ổn định.
 
 ## 6. Use cases
 
-### UC-01 — Bắt đầu Assignment lần đầu
-**Actor:** Student.  
-**Điều kiện:** đăng nhập; Assignment published, trong thời gian cho phép và Student thuộc target hợp lệ.
+### UC-01 — Start
 1. Student mở Assignment.
-2. Backend kiểm tra quyền và điều kiện start.
-3. Backend tìm Attempt theo Assignment + Student.
-4. Nếu chưa có, tạo Attempt IN_PROGRESS, snapshot dữ liệu và cấp active session.
-5. Trả nội dung làm bài không chứa answer key bị hạn chế.
-6. UI hiển thị bài và thời gian còn lại theo deadline server.
-**Kết quả:** chỉ một Attempt chính thức được tạo.
+2. Backend xác thực quyền/target.
+3. Backend xác định ACTIVE class duy nhất.
+4. Nếu chưa có Attempt, tạo Attempt và snapshot class/composition/settings/questions.
+5. Cấp `active_session_id`.
+6. Trả runtime DTO không chứa restricted answer data.
 
-### UC-02 — Quay lại Attempt đang làm
+### UC-02 — Resume
 1. Student mở lại Assignment.
-2. Backend kiểm tra quyền và deadline.
-3. Nếu chưa hết giờ, trả cùng Attempt và answer đã lưu.
-4. Nếu session cũ vẫn active, không cấp quyền ghi cho tab mới; hiển thị cảnh báo.
-5. Nếu session cũ stale, cho takeover an toàn và vô hiệu hóa quyền ghi của session cũ.
-6. Tiếp tục từ dữ liệu đã lưu và deadline ban đầu.
-**Kết quả:** resume cùng Attempt, không tạo mới.
+2. Backend tìm `(assignment_id, student_id)`.
+3. `IN_PROGRESS` và chưa timeout → resume.
+4. Session cũ active → warning/read-only.
+5. Session stale → takeover an toàn.
 
-### UC-03 — Mở tab/thiết bị thứ hai
-1. Session A được cấp quyền ghi.
-2. Session B yêu cầu mở cùng Attempt.
-3. Nếu A còn active, B chỉ được xem trạng thái cần thiết, không được ghi.
-4. Nếu A stale, B có thể takeover.
-5. Sau takeover, write từ A bị từ chối.
-**Kết quả:** chỉ một session được quyền ghi tại một thời điểm.
+### UC-03 — Autosave
+1. Student gửi answer + revision + active session.
+2. Backend kiểm tra state/deadline/session/revision.
+3. Hợp lệ → lưu.
+4. Stale → không overwrite.
+5. UI chỉ báo Saved sau server confirmation.
 
-### UC-04 — Autosave
-1. Student thay đổi câu trả lời.
-2. UI gửi payload cùng Attempt ID và session ID.
-3. Backend kiểm tra ownership, trạng thái, deadline và active session.
-4. Backend lưu theo quy tắc idempotency/concurrency.
-5. UI chỉ hiển thị saved sau response thành công.
-**Nhánh lỗi:** session mất quyền, Attempt kết thúc hoặc mạng lỗi thì không được báo saved nhầm.
+### UC-04 — Submit/timeout
+1. Kiểm tra state/session/deadline.
+2. Chốt answer đã server-confirmed.
+3. Grade từ snapshot.
+4. Lưu AttemptPartResult.
+5. Tính tổng điểm.
+6. Đổi status `SUBMITTED` hoặc `TIMED_OUT`.
+7. Retry không tạo Attempt mới và không tạo duplicate grading result.
 
-### UC-05 — Submit chủ động
-1. Student yêu cầu submit.
-2. Backend kiểm tra active session và trạng thái.
-3. Backend chốt answer đã lưu, tự chấm từ snapshot, lưu part results/tổng điểm.
-4. Đặt SUBMITTED, submitted_at và is_late nếu phù hợp.
-5. Retry trả kết quả đã chốt.
-6. UI chỉ hiển thị điểm/đáp án được phép.
+### UC-05 — Runtime events
+Client có thể gửi `TAB_HIDDEN`/`FULLSCREEN_EXIT`. Server ghi event gắn với Attempt/session.
 
-### UC-06 — Timeout
-1. Deadline server đến.
-2. Request hoặc cơ chế xử lý timeout phát hiện Attempt hết hạn.
-3. Backend chặn autosave mới, chốt answer đã lưu và chấm.
-4. Đặt TIMED_OUT và timed_out_at.
-5. UI hiển thị đã hết giờ cùng kết quả được phép xem.
-Timeout phải do server quyết định kể cả khi Student không còn tương tác; cơ chế cụ thể cần phù hợp hạ tầng hiện có.
+Server tự ghi `SESSION_TAKEOVER` khi takeover xảy ra.
 
-### UC-07 — Teacher sửa Assignment sau Attempt đầu tiên
-1. Teacher gửi thay đổi ảnh hưởng hợp đồng bài làm.
-2. Backend kiểm tra đã có Attempt chưa.
-3. Nếu có, từ chối thay đổi.
-4. Teacher clone Assignment và chỉnh sửa bản clone.
-5. Attempt cũ tiếp tục dùng snapshot cũ.
+Event không thay đổi score và không tự động đánh dấu gian lận.
 
-### UC-08 — Mở Attempt đã kết thúc
-1. Student mở Assignment có Attempt SUBMITTED hoặc TIMED_OUT.
-2. Backend không tạo Attempt mới và không cho sửa/nộp lại.
-3. Trả trạng thái kết thúc và dữ liệu kết quả được phép xem theo visibility settings.
+## 7. Implementation order
 
-## 7. Vấn đề và hướng giải quyết
+1. Finalize V43 schema.
+2. Align JPA entities/repositories.
+3. Implement start/resume + class attribution.
+4. Implement immutable composition/question snapshot.
+5. Implement active session + heartbeat/takeover.
+6. Implement autosave + revision/concurrency.
+7. Implement submit/timeout + grading.
+8. Implement runtime event recording.
+9. Implement Student result visibility.
+10. Sau runtime ổn định mới xây Teacher Analytics UI.
 
-| ID | Vấn đề/rủi ro | Hướng giải quyết |
-|---|---|---|
-| P0-01 | Có thể tạo nhiều Attempt | Unique constraint + start/resume idempotent |
-| P0-02 | Mất câu trả lời khi refresh/mất mạng | Autosave có xác nhận backend |
-| P0-03 | Hai tab ghi đè nhau | active_session_id và kiểm tra backend ở mọi write |
-| P0-04 | Session mất kết nối giữ lock mãi | Heartbeat + stale threshold + takeover |
-| P0-05 | Session cũ ghi sau takeover | Từ chối mọi write từ session không còn active |
-| P0-06 | Client lách timer | Deadline server và xử lý timeout server-side |
-| P0-07 | Submit/timeout bị gọi lặp | Submit idempotent, transaction/concurrency guard, unique part result |
-| P0-08 | Sửa Question làm đổi bài cũ | Snapshot bất biến, hard lock và clone |
-| P0-09 | Lộ đáp án trước thời điểm cho phép | DTO tách biệt và backend enforce visibility |
-| P0-10 | Tổng điểm lệch kết quả từng phần | Grading từ snapshot, lưu part results và aggregate nhất quán |
-| P0-11 | Autosave/submit/timeout chạy đua | Transaction/locking hoặc optimistic versioning; định nghĩa rõ thao tác nào thắng |
-| P0-12 | Truy cập Assignment không thuộc Student | Enforce target, membership, publish/schedule ở mọi endpoint |
-| P1-01 | Tạo migration trùng schema hiện có | Audit migrations/entities trước khi chọn version |
-| P1-02 | Question Engine chưa đủ parity mọi type | Kiểm tra snapshot/normalization/grading cho từng type trước khi publish |
-| P1-03 | UI báo saved khi chưa lưu | Chỉ xác nhận saved theo response thành công |
-| P1-04 | Phình scope | Hoãn XP, badge, analytics nâng cao và per-question timing |
+## 8. Definition of Done — schema foundation
 
-## 8. Trình tự sau khi review spec
+- V43 có class attribution snapshot.
+- V43 có full document/settings snapshot.
+- AttemptQuestion có section context.
+- AttemptQuestion có question lookup index.
+- Answer có revision.
+- PartResult có normalizer + grading version.
+- Attempt có deadline partial index.
+- Event table có 3 event types nhẹ.
+- JPA entities khớp migration.
+- Teacher analytics có thể group theo assignment/class/student từ runtime data.
+- Không yêu cầu nhiều class cho một Student.
+- Không có per-question timing.
+- Không có XP/badge/ranking.
 
-1. **Audit trước migration:** kiểm tra migration directory, entity/repository/schema và convention ID/timestamps. CURRENT_STATE hiện ghi V42 nhưng phải xác minh lại ngay trước migration. Không sửa migration đã áp dụng.
-2. **Migration:** tạo schema cho AssessmentAttempt, AttemptQuestion, AttemptAnswer, AttemptPartResult và các constraint/index/FK.
-3. **Code skeleton:** entity, repository, DTO, service/controller và error contract theo package convention thực tế.
-4. **Core runtime:** start/resume, active-session permission, autosave, submit, timeout, grading.
-5. **Security/concurrency tests:** multi-tab/device, stale takeover, write cũ sau takeover, autosave-vs-submit-vs-timeout, retry idempotency và access control.
-6. **Student UI:** làm bài, resume, trạng thái autosave, cảnh báo session khác, đồng hồ và kết quả theo visibility.
-7. **Verification:** chạy test/backend/frontend/build/browser checks; ghi commit SHA và kết quả thực tế trong PROGRESS.md.
+## 9. Trạng thái triển khai
 
-Trước Scope B implementation, xử lý gate xác minh Scope A/Question Engine trong plans/PHASE_7B_IMPLEMENTATION_MIGRATION_PLAN.md. Không đánh dấu gate đã pass nếu chưa chạy kiểm tra.
-
-## 9. Acceptance criteria
-
-- [ ] Không thể tạo hơn một Attempt kể cả hai request start đồng thời.
-- [ ] Resume không reset deadline hoặc answer đã lưu.
-- [ ] Attempt SUBMITTED/TIMED_OUT không thể sửa hoặc tạo Attempt mới.
-- [ ] Chỉ active session hiện tại được autosave/submit.
-- [ ] Session khác bị chặn khi active session còn hoạt động; stale takeover an toàn.
-- [ ] Session cũ không thể ghi sau takeover.
-- [ ] Autosave retry không tạo dữ liệu trùng hoặc làm mất câu trả lời mới hơn.
-- [ ] Timeout do server quyết định và tự chốt kể cả khi Student không tương tác.
-- [ ] Submit retry không chấm/lưu kết quả lần hai.
-- [ ] Snapshot runtime không đổi khi dữ liệu nguồn thay đổi.
-- [ ] Tổng điểm khớp tổng điểm phần; example không tính vào mẫu số.
-- [ ] Score visibility và answer visibility được enforce riêng ở backend.
-- [ ] Assignment bị khóa sau Attempt đầu tiên; clone tạo dữ liệu độc lập.
-- [ ] Mọi endpoint kiểm tra quyền truy cập.
-- [ ] Tests/build/browser validation được chạy và ghi theo commit cụ thể.
-
-## 10. Điểm cần chốt khi review
-
-1. Tên/kiểu khóa ngoại Student và Assignment phải theo entity hiện có.
-2. assignment_item_id và question_id trong snapshot là traceability tùy chọn; snapshot payload mới là nguồn runtime.
-3. Cơ chế timeout server-side phải phù hợp hạ tầng hiện có; không thêm scheduler/infra mới nếu giải pháp đơn giản đáp ứng yêu cầu.
-4. Heartbeat/stale threshold 30s/90s là giá trị khởi đầu, cần test thực tế và có thể tinh chỉnh.
-5. Xác minh Question Engine tạo snapshot, chuẩn hóa và chấm đầy đủ cho mọi type được publish trước khi mở runtime cho tất cả type.
-
-**Quy tắc hoàn thành:** spec không đồng nghĩa implementation. Migration/code skeleton là bước tiếp theo sau khi nội dung nghiệp vụ được rà soát; trạng thái test chỉ được cập nhật khi thực sự chạy trên commit cụ thể.
+Schema/entity skeleton là **design foundation**, chưa phải runtime hoàn chỉnh. `AssessmentAttemptService` vẫn cần triển khai business rules, concurrency, snapshot building, grading, timeout và DTO security theo specification này.

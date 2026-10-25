@@ -38,6 +38,9 @@ public class AssessmentAttemptAnswer {
     @Column(name = "normalized_value", columnDefinition = "jsonb")
     private Object normalizedValue;
 
+    @Column(nullable = false)
+    private long revision;
+
     @Column(name = "saved_at", nullable = false)
     private LocalDateTime savedAt;
 

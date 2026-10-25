@@ -20,7 +20,10 @@ import java.util.Map;
                 name = "uq_attempt_question_position",
                 columnNames = {"attempt_id", "position"}
         ),
-        indexes = @Index(name = "ix_assessment_attempt_questions_attempt", columnList = "attempt_id,position")
+        indexes = {
+                @Index(name = "ix_assessment_attempt_questions_attempt", columnList = "attempt_id,position"),
+                @Index(name = "ix_assessment_attempt_questions_question", columnList = "question_id")
+        }
 )
 @Getter
 @Setter
@@ -41,6 +44,12 @@ public class AssessmentAttemptQuestion {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "question_id")
     private Question sourceQuestion;
+
+    @Column(name = "section_key", length = 200)
+    private String sectionKey;
+
+    @Column(name = "section_title", length = 255)
+    private String sectionTitle;
 
     @Column(nullable = false)
     private Integer position;

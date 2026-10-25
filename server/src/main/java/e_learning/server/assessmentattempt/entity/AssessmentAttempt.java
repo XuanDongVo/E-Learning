@@ -7,9 +7,12 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.UUID;
 
 @Entity
@@ -21,7 +24,8 @@ import java.util.UUID;
         ),
         indexes = {
                 @Index(name = "ix_assessment_attempt_student_status", columnList = "student_id,status"),
-                @Index(name = "ix_assessment_attempt_assignment_status", columnList = "assignment_id,status")
+                @Index(name = "ix_assessment_attempt_assignment_status", columnList = "assignment_id,status"),
+                @Index(name = "ix_assessment_attempt_class_status", columnList = "class_id_at_start,status")
         }
 )
 @Getter
@@ -39,6 +43,12 @@ public class AssessmentAttempt {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "student_id", nullable = false)
     private User student;
+
+    @Column(name = "class_id_at_start", nullable = false)
+    private Long classIdAtStart;
+
+    @Column(name = "class_name_at_start", nullable = false, length = 100)
+    private String classNameAtStart;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
@@ -77,14 +87,16 @@ public class AssessmentAttempt {
     @Column(name = "last_activity_at")
     private LocalDateTime lastActivityAt;
 
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "document_snapshot", columnDefinition = "jsonb", nullable = false)
+    private Map<String, Object> documentSnapshot;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "settings_snapshot", columnDefinition = "jsonb", nullable = false)
+    private Map<String, Object> settingsSnapshot;
+
     @Column(name = "snapshot_version", nullable = false)
     private Integer snapshotVersion = 1;
-
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
-
-    @Column(name = "updated_at", nullable = false)
-    private LocalDateTime updatedAt;
 
     @PrePersist
     void onCreate() {
@@ -92,6 +104,12 @@ public class AssessmentAttempt {
         createdAt = now;
         updatedAt = now;
     }
+
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at", nullable = false)
+    private LocalDateTime updatedAt;
 
     @PreUpdate
     void onUpdate() {

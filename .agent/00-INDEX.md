@@ -1,7 +1,7 @@
 # .agent Knowledge Base Index
 
 **Index version:** 1.0  
-**Last structural audit:** 2026-10-23  
+**Last structural/source audit:** 2026-10-25  
 **Branch baseline:** `feature/student-assignment-attempt`  
 **Rule:** this index describes the documentation lifecycle; it does not replace the code as evidence of implementation.
 
@@ -68,7 +68,8 @@ When sources disagree, apply this order:
 
 - Branch: `refactor/teacher-content-ui-routing`.
 - New AssessmentAttempt migration V43 is added on `feature/student-assignment-attempt`; verify Flyway validation and actual database state before applying it or allocating any later version.
-- Question Engine exists structurally with seven question-type handlers/specs; integration and end-to-end parity remain incomplete.
+- Question Engine has seven handlers/specs and factory/mapper branches. ActivitySession still uses legacy grading branches; MATCHING POOL references are not resolved/validated; CLOZE cardinality validation is present. End-to-end parity remains unverified.
+- Latest source audit: `.agent/audits/2026-10-25-question-engine-current-code-audit.md`.
 - Assignment Composition authoring/API persistence exists. V43 and initial `AssessmentAttempt` entity/repository/service skeleton are added; runtime behavior is not implemented or verified.
 - ActivitySession exists, but snapshot-only semantics and complete leakage/immutability verification remain open.
 - Teacher content routes are under `/teacher/content/...`.

@@ -49,6 +49,9 @@ public class AssessmentAttemptPartResult {
     @Column(name = "normalizer_version", length = 100)
     private String normalizerVersion;
 
+    @Column(name = "grading_version", length = 100)
+    private String gradingVersion;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 

@@ -20,6 +20,7 @@ The numbered sequence below is the required reading order for an AI agent. The s
 | 06 | `.agent/architecture/` | Backend/frontend boundaries, API and architectural contracts | Active architecture, reconciled with ADRs and code |
 | 07 | `.agent/plans/PHASES.md`, then the active phase spec | Scope and phase sequencing | Active execution scope |
 | 08 | Task-specific plans under `.agent/plans/` | Concrete implementation plan for a current task | Active only when explicitly marked active |
+| 08 (active plan) | `.agent/plans/08-STUDENT_ASSIGNMENT_ATTEMPT_SPEC.md` | Vietnamese business rules, ERD, use cases, risks and acceptance criteria for Student Assignment Attempt; review before migration/code skeleton | Active specification; not proof of implementation |
 | 09 | `.agent/ui/` | Screen, route, interaction and accessibility contracts | UI contract; never overrides API/domain rules |
 | 10 | `.agent/checklists/definition-of-done.md` | Verification gate | Process requirement |
 | 11 | `.agent/audits/` | Dated evidence of prior code audits and migrations | Historical evidence; not current state unless revalidated |

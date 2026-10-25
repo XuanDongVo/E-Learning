@@ -1,7 +1,7 @@
 # Project Progress
 
 **Current audit baseline:** 2026-10-23  
-**Branch:** `refactor/teacher-content-ui-routing`  
+**Branch:** `feature/student-assignment-attempt`  
 **Canonical implementation state:** `.agent/CURRENT_STATE.md`
 
 ## Current stage
@@ -31,7 +31,7 @@
 
 ## Current database baseline
 
-The current branch contains Flyway migrations through **V42**. Never edit applied migrations. Re-audit the directory immediately before adding another migration and choose the next unused version.
+The source baseline documented Flyway through V42. This feature branch adds V43 for AssessmentAttempt runtime schema; run Flyway validation and confirm migration ordering/database state before applying. Never edit applied migrations.
 
 ## Current UI route contract
 
@@ -71,7 +71,7 @@ A code/doc change is not considered verified merely because GitHub accepts the c
 5. Keep `.agent/CURRENT_STATE.md` synchronized after every substantive implementation change.
 
 
-## .agent documentation refactor (2026-10-23)
+## Phase 7B AssessmentAttempt schema and skeleton (2026-10-25)\n\n- Added `V43__create_assessment_attempt_runtime.sql` with four runtime tables: `assessment_attempts`, `assessment_attempt_questions`, `assessment_attempt_answers`, and `assessment_attempt_part_results`.\n- Added status enums, JPA entities, repositories, request/summary DTOs, and `AssessmentAttemptService` skeleton under `server/src/main/java/e_learning/server/assessmentattempt/`.\n- Added package README documenting what is deliberately not implemented yet.\n- One attempt per Assignment/student is guarded by a database unique constraint. Composition order remains on `assignment_items`; runtime snapshot order is stored separately. ActivitySession remains a separate aggregate.\n- **Not implemented:** start/resume snapshot assembly, authorization/target validation, active-session heartbeat/takeover, autosave concurrency/idempotency, timeout processing, Question Engine grading integration, submit/review endpoints, Assignment hard lock and Student UI.\n- **Verification:** no backend tests, Flyway validation, compilation or frontend/browser checks were run in this connector change. Do not apply V43 to a database until Flyway validation is run against the target environment.\n\n## .agent documentation refactor (2026-10-23)
 
 - Added `.agent/00-INDEX.md` with numbered reading order and file lifecycle/naming policy.
 - Added `.agent/AUDIT_INVENTORY.md` with file-by-file classification and cleanup decisions.

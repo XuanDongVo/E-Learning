@@ -1,8 +1,8 @@
 # Current Implementation State
 
-**Audit date:** 2026-10-23  
+**Audit date:** 2026-10-25  
 **Branch:** `feature/student-assignment-attempt`  
-**Application-code audit baseline:** `7bb5bb43bde786431c85ba0ca1d0c350cad684f4` (the application code was not fully re-audited after this baseline; later commits in this branch were documentation changes).  
+**Scope:** source inspection of Question Engine, Assignment Composition mapping, and ActivitySession runtime. This is not a build/test run.  
 **Purpose:** canonical implementation truth for AI agents. This file records what is actually present in the branch; accepted ADRs remain the source of product decisions, while this file is the source of current implementation status.
 
 ## 1. Authority model
@@ -83,20 +83,34 @@ A document must not claim that a target architecture is implemented merely becau
 ### Remaining boundary
 
 - `ActivitySessionQuestion` still retains a live `Question` relation alongside snapshot fields.
-- `ActivitySessionService` still contains type-specific answer checking/reveal branches instead of delegating all semantic operations to the canonical Question Engine.
+- `ActivitySessionService` still contains legacy type-specific answer-checking/reveal branches; the inspected runtime path does not use canonical engine parsing/grading for all seven types.
 - Full snapshot completeness, migration/legacy-session rollout and end-to-end leakage/runtime verification are not yet proven by a recorded current CI/browser run.
 
 ## 6. Question Engine implementation truth
 
-The current server contains a real Question Engine package, not merely a proposal. It includes:
+### Confirmed present in code
 
-- `QuestionSpec`, `RawAnswer`, `ValidatedAnswer`, `AnswerParseResult` and `GradeResult` domain models.
-- Handler/registry infrastructure.
-- Handlers/specs for SINGLE_CHOICE, MULTIPLE_CHOICE, TRUE_FALSE, FILL_IN_BLANK, TYPE_ANSWER, MATCHING and CLOZE.
-- Focused engine/compound tests and request-factory tests.
-- Question persistence/spec mapping classes remain in the feature layer.
+- `QuestionEngine` exposes `validateDefinition`, `parseAndValidate` and `grade`, delegating through `QuestionTypeHandlerRegistry`.
+- Registry registers all seven types: `SINGLE_CHOICE`, `MULTIPLE_CHOICE`, `TRUE_FALSE`, `FILL_IN_BLANK`, `TYPE_ANSWER`, `MATCHING` and `CLOZE`; it rejects duplicate/missing registrations.
+- `QuestionSpecRequestFactory` and `QuestionSpecMapper` have branches for all seven types. `QuestionPersistenceService` stores MATCHING/CLOZE definitions as JSON in `Question.definition` and computes completeness using engine definition validation.
+- `ClozeHandler` checks nonempty segments/blanks, `segments.size() == blanks.size() + 1`, unique nonblank blank keys, and nonempty accepted answers. Older audit wording that says cardinality is not checked is stale.
+- `MatchingSpec` is `MatchingSpec(common, poolId, correctEntryId)`. `MatchingHandler` checks these references are present but does not resolve the pool or prove the entry belongs to it.
 
-The implementation is **partial**, not complete D1–D8 integration. Activity and Assignment feature services still contain semantic branches and the full persistence/round-trip/authoring/runtime contract for MATCHING/CLOZE is not yet verified end-to-end.
+### Confirmed integration gaps
+
+- `ActivitySessionService.isCorrect` and `correctAnswer` still contain legacy type-specific branches for MULTIPLE_CHOICE and SINGLE_CHOICE plus a generic fallback using `snapshot.answers()`. The inspected runtime path does not delegate every response to `QuestionEngine.parseAndValidate` and `QuestionEngine.grade`.
+- `ActivityQuestionSnapshotAssembler` builds snapshots through `QuestionSpecMapper` and option/answer repositories, but runtime checks the snapshot with legacy logic. End-to-end agreement between snapshot, normalization and engine grading is not demonstrated.
+- Builder serializes MATCHING as `definition.matching { poolId, correctEntryId }` and CLOZE as segments/blanks. DTO and persistence support exists, but does not prove Composition POOL references are resolved or frozen into a runtime snapshot.
+- `AssignmentCompositionService` requires nonempty POOL entries and nonempty text per entry; it does not enforce stable unique entry IDs or cross-check Question references against the POOL.
+- Frontend CLOZE mapping reconstructs prompt markers from saved segments/blanks when needed. Full save → reload → edit → save → preview/runtime grading parity remains unverified.
+
+### Test and verification status
+
+- Focused tests exist for generic engine behavior and selected request-factory cases. Inspected tests do not establish a full authoring → persistence → composition resolution → snapshot → student response → grade → result persistence flow.
+- GitHub search did not surface dedicated `MatchingHandlerTest`, `ClozeHandlerTest`, snapshot integration tests or `AssessmentAttemptServiceTest`. Search absence is a warning, not proof no equivalent test exists under another name.
+- No backend tests, frontend lint/typecheck/build, Flyway validation, browser E2E or current-HEAD CI run was executed during this audit.
+
+**Classification:** core engine and handlers exist; integration is partial. MATCHING has a confirmed unresolved cross-resource identity/validation gap. CLOZE structural validation is present, but full authoring/runtime parity is unverified. Do not label Question Engine end-to-end complete.
 
 ## 7. Question/content UI implementation truth
 
@@ -131,7 +145,7 @@ The current Question Bank UI work includes Explorer retry states, Topic bank lif
 
 ## 10. Verification rule
 
-As of this audit, the branch has no recorded combined CI status on the audited HEAD. Therefore documentation must not say the current HEAD is fully verified. A future validation run must record the exact commit, workflow/run, backend tests, frontend lint/tests/typecheck/build and any browser/runtime checks.
+No backend/frontend/browser/Flyway verification was run during the 2026-10-25 source audit. Do not describe this branch as verified until test evidence is tied to an exact HEAD. A future validation run must record the exact commit, workflow/run, backend tests, frontend lint/tests/typecheck/build and any browser/runtime checks.
 
 ## 11. Immediate next documentation-driven gates
 

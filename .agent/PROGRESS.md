@@ -1,6 +1,6 @@
 # Project Progress
 
-**Current audit baseline:** 2026-10-23  
+**Current source audit:** 2026-10-25  
 **Branch:** `feature/student-assignment-attempt`  
 **Canonical implementation state:** `.agent/CURRENT_STATE.md`
 
@@ -9,7 +9,7 @@
 - Phase 6 Student Management: **DONE**.
 - Phase 7 Scope A ActivitySession: **IMPLEMENTED, NOT FULLY VERIFIED**. ActivitySession supports mode/strategy selection, abandonment of the previous open run, Practice retry/hint behavior, Try Hard per-question timing/lives, and persisted snapshot payload metadata.
 - Phase 7 Scope B Assignment Composition: **AUTHORING BASELINE IMPLEMENTED**. Composition schema/API, deterministic legacy backfill, Builder API persistence, ordered sections/items, assignment-specific points/required/example flags and score/answer display settings exist. AssessmentAttempt runtime is not implemented.
-- Question Engine: **STRUCTURALLY IMPLEMENTED, INTEGRATION INCOMPLETE**. Canonical specs/results, registry and seven handler/spec types exist; feature services still contain semantic branches and full persistence/runtime/authoring parity is not verified.
+- Question Engine: **CORE IMPLEMENTED, END-TO-END INTEGRATION INCOMPLETE**. Seven handlers/specs and factory/mapper branches exist. ActivitySession still uses legacy type-specific answer/reveal logic. MATCHING references are not resolved/validated against Composition POOL. CLOZE structural validation exists; round-trip/runtime parity is unverified.
 - Teacher Content UI routing/bank work: **IMPLEMENTED IN SLICES, NOT FULLY VERIFIED**. Canonical routes remain under `/teacher/content/...`; global Question Banks is nested under Content.
 - Server error contract: business throws use stable `AppException(ErrorCode.X)` vocabulary. Frontend AppError resolves `errors.<backendCode>` directly. ErrorCode/i18n parity remains an audit gate.
 
@@ -52,15 +52,16 @@ Keep Question Bank and Question Editor under `/teacher/content/...` unless a new
 1. AssessmentAttempt entity/service/controller/repository, attempt snapshot, autosave, timeout, automatic Assignment scoring and persisted per-part results are not implemented.
 2. Assignment hard-lock after first attempt cannot be runtime-enforced until AssessmentAttempt exists.
 3. ActivitySessionQuestion still has a live Question relation alongside snapshot fields; snapshot rollout/legacy-session handling requires verification.
-4. ActivitySessionService still contains type-specific answer checking/reveal branches.
-5. MATCHING/CLOZE are present in Question Engine and DTO/factory code but are not end-to-end verified as complete production authoring/runtime types.
-6. Full Question persistence round-trip, student leakage and snapshot immutability tests remain incomplete.
+4. ActivitySessionService still has legacy type-specific answer checking/reveal logic rather than canonical engine grading for all seven types.
+5. MATCHING has a confirmed gap: `MatchingSpec` contains `poolId/correctEntryId`, but no pool resolver or entry-membership validation is applied. Composition POOL validation does not enforce stable unique entry IDs or validate question references.
+6. CLOZE handler validates segment/blank cardinality, unique nonblank keys and accepted answers. Older statements saying cardinality is not validated are stale; frontend save/reload/runtime parity remains unverified.
+7. Full persistence round-trip, student answer-key leakage, snapshot immutability and end-to-end grading tests remain unverified.
 7. Teacher Content UI slices still require browser regression and final lint/typecheck/build/test verification where not already recorded on the current HEAD.
 8. ErrorCode-to-i18n parity must be checked against the full current server ErrorCode enum.
 
 ## Verification policy
 
-A code/doc change is not considered verified merely because GitHub accepts the commit. Record exact CI/test/build/browser results against the exact commit. The audited branch HEAD currently has no recorded combined CI status.
+A code/doc change is not considered verified merely because GitHub accepts the commit. Record exact CI/test/build/browser results against the exact commit. No backend/frontend/browser/Flyway verification was run during the 2026-10-25 source audit. Do not describe this branch as verified until test evidence is tied to an exact HEAD.
 
 ## Next gates
 

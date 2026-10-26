@@ -1,13 +1,18 @@
 package e_learning.server.assessmentattempt.dto;
 
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 import java.util.Map;
 
 /**
- * Client answer input only. Scores, normalized values, status and timing are server-owned.
+ * Incremental answer write contract. The server owns grading, normalized values and timing.
  */
 public record SaveAttemptAnswerRequest(
-        @NotNull Map<String, Object> answerPayload
+        @NotNull Long attemptQuestionId,
+        @NotNull Map<String, Object> answerPayload,
+        @NotNull Long expectedRevision,
+        @NotBlank String activeSessionId,
+        @NotBlank String requestId
 ) {
 }

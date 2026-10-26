@@ -105,6 +105,26 @@
       "startFailedDescription": "Endpoint máy chủ có thể chưa được triển khai. Giao diện không giả lập hay tự tạo bài làm ở phía trình duyệt.",
       "introLoadFailed": "Chưa tải được thông tin bài tập. Bạn vẫn có thể thử bắt đầu/tiếp tục; máy chủ phải tự xác thực quyền truy cập.",
       "retryIntro": "Tải lại thông tin"
+    },
+    "paper": {
+      "questionFallback": "Câu hỏi",
+      "answer": "Câu trả lời",
+      "true": "Đúng",
+      "false": "Sai",
+      "blank": "Ô trống {index}",
+      "sectionFallback": "Phần {index}",
+      "unsupportedType": "Loại câu hỏi này chưa được trình bày trong giao diện làm bài hiện tại.",
+      "matchingPoolMissing": "Không tìm thấy nhóm đáp án dùng chung của câu hỏi này.",
+      "types": {
+        "SINGLE_CHOICE": "Chọn một đáp án",
+        "MULTIPLE_CHOICE": "Chọn nhiều đáp án",
+        "TRUE_FALSE": "Đúng / sai",
+        "FILL_IN_BLANK": "Điền vào chỗ trống",
+        "TYPE_ANSWER": "Tự nhập đáp án",
+        "MATCHING": "Nối đáp án",
+        "CLOZE": "Điền từ vào đoạn văn",
+        "UNKNOWN": "Câu hỏi"
+      }
     }
   }
 }

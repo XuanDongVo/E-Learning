@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import {
@@ -97,6 +97,18 @@ export function StudentAssignmentAttemptPage({ assignmentId }: { assignmentId: s
       setPhase("ERROR");
     }
   }, [lockState, parsedAssignmentId, user, validAssignmentId]);
+
+  useEffect(() => {
+    if (!hasLocalChanges || phase !== "ACTIVE") return;
+
+    const warnBeforeLeaving = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = "";
+    };
+
+    window.addEventListener("beforeunload", warnBeforeLeaving);
+    return () => window.removeEventListener("beforeunload", warnBeforeLeaving);
+  }, [hasLocalChanges, phase]);
 
   const changeAnswer = useCallback((
     attemptQuestionId: number,
@@ -312,10 +324,10 @@ function StatusPanel({
   description,
   action,
 }: {
-  icon: React.ReactNode;
+  icon: ReactNode;
   title: string;
   description?: string;
-  action?: React.ReactNode;
+  action?: ReactNode;
 }) {
   const t = useTranslations("student.assignmentAttempt");
   return (

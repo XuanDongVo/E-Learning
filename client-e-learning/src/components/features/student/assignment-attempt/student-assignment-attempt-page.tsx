@@ -372,9 +372,26 @@ export function StudentAssignmentAttemptPage({ assignmentId }: { assignmentId: s
         <div role="alert" className="flex items-start gap-3 rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-950">
           <CircleAlert className="mt-0.5 h-5 w-5 shrink-0" />
           <div>
-            <p className="font-bold">{failureCode === "ASSESSMENT_ATTEMPT_SESSION_LOST" ? t("session.credentialLostTitle") : t("errors.startFailedTitle")}</p>
-            <p className="mt-1">{failureCode === "ASSESSMENT_ATTEMPT_SESSION_LOST" ? t("session.credentialLostDescription") : t("errors.startFailedDescription")}</p>
+            <p className="font-bold">
+              {failureCode === "ASSESSMENT_ATTEMPT_SESSION_CONFLICT"
+                ? t("session.conflictTitle")
+                : failureCode === "ASSESSMENT_ATTEMPT_SESSION_LOST"
+                  ? t("session.credentialLostTitle")
+                  : t("errors.startFailedTitle")}
+            </p>
+            <p className="mt-1">
+              {failureCode === "ASSESSMENT_ATTEMPT_SESSION_CONFLICT"
+                ? t("session.conflictDescription")
+                : failureCode === "ASSESSMENT_ATTEMPT_SESSION_LOST"
+                  ? t("session.credentialLostDescription")
+                  : t("errors.startFailedDescription")}
+            </p>
             {failureCode && <p className="mt-2 font-mono text-xs opacity-75">{failureCode}</p>}
+            {(failureCode === "ASSESSMENT_ATTEMPT_SESSION_CONFLICT" || failureCode === "ASSESSMENT_ATTEMPT_SESSION_LOST") && (
+              <Link href="/student/assignments" className="mt-3 inline-flex font-semibold underline">
+                {t("backToAssignments")}
+              </Link>
+            )}
           </div>
         </div>
       )}
@@ -388,7 +405,7 @@ export function StudentAssignmentAttemptPage({ assignmentId }: { assignmentId: s
         </ul>
         <Button
           className="w-full sm:w-auto"
-          disabled={lockState !== "OWNED" || phase === "STARTING" || Boolean(introQuery.data?.availabilityCode)}
+          disabled={lockState !== "OWNED" || phase === "STARTING" || Boolean(introQuery.data?.availabilityCode) || failureCode === "ASSESSMENT_ATTEMPT_SESSION_CONFLICT" || failureCode === "ASSESSMENT_ATTEMPT_SESSION_LOST"}
           onClick={() => void startOrResume()}
         >
           {phase === "STARTING" && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}

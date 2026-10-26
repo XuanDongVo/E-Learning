@@ -83,7 +83,8 @@
     "draft": {
       "warningTitle": "Your answers are not saved yet",
       "warningDescription": "Do not refresh or close this page if you need to keep these edits. Incremental autosave will be connected in Sprint 2.",
-      "sprint2Note": "Sprint 1 preview — autosave is not connected"
+      "sprint2Note": "Sprint 1 preview — autosave is not connected",
+      "confirmLeave": "Leave this page? Any answer changes made in this Sprint 1 preview will be lost."
     },
     "states": {
       "checkingAuth": "Checking your account…",

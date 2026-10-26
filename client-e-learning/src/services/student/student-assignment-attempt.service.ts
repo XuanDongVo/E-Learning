@@ -1,5 +1,6 @@
 import { request } from "@/services/api.service";
 import type {
+  AttemptIntroResponse,
   AttemptResultResponse,
   AttemptRuntimeResponse,
   CreateAttemptEventRequest,
@@ -18,6 +19,9 @@ import type {
  * There is intentionally no heartbeat or claim/takeover endpoint in the MVP.
  */
 export const studentAssignmentAttemptService = {
+  intro: (assignmentId: number) =>
+    request<AttemptIntroResponse>(`/v1/assignments/${assignmentId}/assessment-attempt/intro`),
+
   startOrResume: (assignmentId: number, body: StartOrResumeAttemptRequest) =>
     request<AttemptRuntimeResponse>(`/v1/assignments/${assignmentId}/assessment-attempt`, {
       method: "POST",

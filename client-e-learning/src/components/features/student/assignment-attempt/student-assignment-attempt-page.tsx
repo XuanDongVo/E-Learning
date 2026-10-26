@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import { useLocale, useTranslations } from "next-intl";
+import { useQuery } from "@tanstack/react-query";
 import { Link, useRouter } from "@/i18n/navigation";
 import {
   ArrowLeft,
@@ -22,6 +23,7 @@ import { useAttemptBrowserLock } from "./hooks/use-attempt-browser-lock";
 import { StudentPaper } from "./student-paper";
 import type {
   AttemptAnswerPayload,
+  AttemptIntroResponse,
   AttemptRuntimeResponse,
 } from "@/types/student/assignment-attempt";
 
@@ -51,6 +53,16 @@ export function StudentAssignmentAttemptPage({ assignmentId }: { assignmentId: s
     ? `assessment-attempt:${user.id}:assignment:${parsedAssignmentId}`
     : null;
   const lockState = useAttemptBrowserLock(lockName);
+  const introQuery = useQuery<AttemptIntroResponse>({
+    queryKey: ["student", "assignment-attempt-intro", user?.id, parsedAssignmentId],
+    enabled: user?.role === "STUDENT" && validAssignmentId && lockState === "OWNED",
+    retry: false,
+    queryFn: async () => {
+      const response = await studentAssignmentAttemptService.intro(parsedAssignmentId);
+      if (!response.data) throw new Error("ASSESSMENT_ATTEMPT_INTRO_EMPTY_RESPONSE");
+      return response.data;
+    },
+  });
 
   const [phase, setPhase] = useState<PagePhase>("INTRO");
   const [runtime, setRuntime] = useState<AttemptRuntimeResponse | null>(null);
@@ -58,14 +70,25 @@ export function StudentAssignmentAttemptPage({ assignmentId }: { assignmentId: s
   const [hasLocalChanges, setHasLocalChanges] = useState(false);
   const [failureCode, setFailureCode] = useState<string | null>(null);
 
-  const formattedDueAt = useMemo(() => {
-    if (!runtime?.deadlineAt) return null;
-    const dueAt = new Date(runtime.deadlineAt);
+  const formattedAssignmentDueAt = useMemo(() => {
+    const value = introQuery.data?.dueAt;
+    if (!value) return null;
+    const dueAt = new Date(value);
     if (Number.isNaN(dueAt.getTime())) return null;
     return new Intl.DateTimeFormat(locale, {
       dateStyle: "medium",
       timeStyle: "short",
     }).format(dueAt);
+  }, [introQuery.data?.dueAt, locale]);
+
+  const formattedAttemptDeadline = useMemo(() => {
+    if (!runtime?.deadlineAt) return null;
+    const deadline = new Date(runtime.deadlineAt);
+    if (Number.isNaN(deadline.getTime())) return null;
+    return new Intl.DateTimeFormat(locale, {
+      dateStyle: "medium",
+      timeStyle: "short",
+    }).format(deadline);
   }, [locale, runtime?.deadlineAt]);
 
   const startOrResume = useCallback(async () => {
@@ -214,12 +237,23 @@ export function StudentAssignmentAttemptPage({ assignmentId }: { assignmentId: s
               {t("player.progress", { answered: answeredCount, total: questionCount })}
             </p>
           </div>
-          <div className="rounded-xl border border-border-color bg-card-bg px-4 py-3 text-sm">
-            <div className="flex items-center gap-2 font-semibold text-neutral-dark">
-              <CalendarClock className="h-4 w-4 text-primary" />
-              {t("intro.dueAt")}
+          <div className="space-y-2">
+            <div className="rounded-xl border border-border-color bg-card-bg px-4 py-3 text-sm">
+              <div className="flex items-center gap-2 font-semibold text-neutral-dark">
+                <CalendarClock className="h-4 w-4 text-primary" />
+                {t("intro.dueAt")}
+              </div>
+              <p className="mt-1 text-neutral-muted">{formattedAssignmentDueAt ?? t("intro.noDueDate")}</p>
             </div>
-            <p className="mt-1 text-neutral-muted">{formattedDueAt ?? t("intro.noDueDate")}</p>
+            {formattedAttemptDeadline && (
+              <div className="rounded-xl border border-primary/20 bg-primary-light/40 px-4 py-3 text-sm">
+                <div className="flex items-center gap-2 font-semibold text-neutral-dark">
+                  <Clock3 className="h-4 w-4 text-primary" />
+                  {t("player.attemptDeadline")}
+                </div>
+                <p className="mt-1 text-neutral-muted">{formattedAttemptDeadline}</p>
+              </div>
+            )}
           </div>
         </header>
 
@@ -271,9 +305,17 @@ export function StudentAssignmentAttemptPage({ assignmentId }: { assignmentId: s
         </div>
         <p className="text-xs font-bold uppercase tracking-wider text-primary">{t("intro.eyebrow")}</p>
         <h1 className="text-2xl font-extrabold tracking-tight text-neutral-dark sm:text-3xl">
-          {runtime?.assignmentTitle ?? t("intro.titleWithId", { id: parsedAssignmentId })}
+          {introQuery.data?.assignmentTitle ?? runtime?.assignmentTitle ?? t("intro.titleWithId", { id: parsedAssignmentId })}
         </h1>
         <p className="max-w-2xl text-sm leading-6 text-neutral-muted">{t("intro.description")}</p>
+        {introQuery.data?.gradeName && (
+          <p className="text-sm font-semibold text-neutral-muted">{t("intro.gradeValue", { grade: introQuery.data.gradeName })}</p>
+        )}
+        {introQuery.data && (
+          <p className="text-sm text-neutral-muted">
+            {t("intro.questionCount", { count: introQuery.data.questionCount })}
+          </p>
+        )}
       </header>
 
       <section className="grid gap-3 rounded-2xl border border-border-color bg-card-bg p-5 sm:grid-cols-2">
@@ -282,9 +324,11 @@ export function StudentAssignmentAttemptPage({ assignmentId }: { assignmentId: s
           <div>
             <p className="text-xs font-semibold uppercase tracking-wide text-neutral-muted">{t("intro.timeLimit")}</p>
             <p className="mt-1 font-bold text-neutral-dark">
-              {runtime?.timeLimitSeconds
-                ? t("intro.timeLimitValue", { minutes: Math.ceil(runtime.timeLimitSeconds / 60) })
-                : t("intro.noTimeLimit")}
+              {(introQuery.data?.timeLimitSeconds ?? runtime?.timeLimitSeconds) !== undefined
+                ? ((introQuery.data?.timeLimitSeconds ?? runtime?.timeLimitSeconds) || 0) > 0
+                  ? t("intro.timeLimitValue", { minutes: Math.ceil((introQuery.data?.timeLimitSeconds ?? runtime?.timeLimitSeconds ?? 0) / 60) })
+                  : t("intro.noTimeLimit")
+                : t("intro.metadataUnavailable")}
             </p>
           </div>
         </div>
@@ -292,12 +336,21 @@ export function StudentAssignmentAttemptPage({ assignmentId }: { assignmentId: s
           <CalendarClock className="mt-0.5 h-5 w-5 text-primary" />
           <div>
             <p className="text-xs font-semibold uppercase tracking-wide text-neutral-muted">{t("intro.dueAt")}</p>
-            <p className="mt-1 font-bold text-neutral-dark">{formattedDueAt ?? t("intro.noDueDate")}</p>
+            <p className="mt-1 font-bold text-neutral-dark">{formattedAssignmentDueAt ?? t("intro.metadataUnavailable")}</p>
           </div>
         </div>
       </section>
 
-      {phase === "ERROR" && (
+      {introQuery.isError && (
+        <div role="status" className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950">
+          <p>{t("errors.introLoadFailed")}</p>
+          <Button variant="outline" size="sm" onClick={() => void introQuery.refetch()} disabled={introQuery.isFetching}>
+            {introQuery.isFetching ? t("states.starting") : t("errors.retryIntro")}
+          </Button>
+        </div>
+      )}
+
+            {phase === "ERROR" && (
         <div role="alert" className="flex items-start gap-3 rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-950">
           <CircleAlert className="mt-0.5 h-5 w-5 shrink-0" />
           <div>

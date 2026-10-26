@@ -43,8 +43,6 @@
       "conflictTitle": "Bài làm đang được mở ở nơi khác",
       "conflictDescription": "Một phiên đang hoạt động khác hiện đang giữ quyền làm bài này.",
       "retry": "Thử lại",
-      "reclaim": "Nhận lại phiên",
-      "stale": "Phiên trước có vẻ đã không còn hoạt động.",
       "lockUnsupportedTitle": "Trình duyệt này chưa hỗ trợ mở bài an toàn",
       "lockUnsupportedDescription": "Bài làm cần cơ chế khóa tab. Hãy sử dụng trình duyệt hiện đại, đã cập nhật và kết nối bảo mật.",
       "lockErrorTitle": "Không thể giữ quyền sử dụng tab",

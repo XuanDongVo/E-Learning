@@ -137,3 +137,18 @@ Evidence reviewed:
 - No GitHub Actions run is associated with the branch HEAD after the current session-contract edits. No current-HEAD backend compilation/tests, frontend tests/build, Flyway validation, or browser/E2E run has been observed.
 
 Therefore do not mark Gate A passed or claim Sprint 1 runtime is ready. First execute Gate A against the exact latest HEAD and address any failures. Contract-only changes already completed are preparatory and do not constitute a runtime feature.
+
+
+## Sprint 1 scaffold update — 2026-10-26
+
+**Status: frontend scaffold added; backend signatures added; no end-to-end runtime verification.**
+
+- Added dynamic Student route `/student/assignments/:assignmentId`.
+- Added safe pre-start Intro contract and Intro UI. The base Student assignments list remains a placeholder.
+- Added Web Locks fail-fast single-tab coordination and an IndexedDB stable UUID credential store.
+- Added Student Paper rendering for composition blocks plus the supported question types exposed by the current snapshot contract; added English/Vietnamese translations.
+- Added server `AttemptIntroResponse`, controller shells and service method signatures `getIntro` / `startOrResume`. The methods intentionally throw `UnsupportedOperationException`; all backend business logic remains for the owner to implement.
+- Sprint 1 answers remain local only. The UI warns before leaving, but refresh/close still loses answer edits. Incremental autosave/outbox belongs to Sprint 2.
+- No backend compilation, FE lint/typecheck/build, automated tests, or browser tests were run on the current HEAD.
+
+**Explicit review risk to revisit when the owner shares the implementation:** map each frontend `answerPayload` shape to the canonical Question Engine `RawAnswer` shape for each question type; ensure snapshot assembly uses a student-safe DTO rather than serializing grading specs including correct keys/accepted answers.

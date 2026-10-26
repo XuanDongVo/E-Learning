@@ -1,5 +1,7 @@
 package e_learning.server.assessmentattempt.service;
 
+import e_learning.server.assessmentattempt.dto.request.StartOrResumeAttemptRequest;
+import e_learning.server.assessmentattempt.dto.response.AttemptRuntimeResponse;
 import e_learning.server.assessmentattempt.repository.AssessmentAttemptAnswerRepository;
 import e_learning.server.assessmentattempt.repository.AssessmentAttemptPartResultRepository;
 import e_learning.server.assessmentattempt.repository.AssessmentAttemptQuestionRepository;
@@ -29,6 +31,25 @@ public class AssessmentAttemptService {
     private final AssignmentRepository assignmentRepository;
     private final AssignmentItemRepository assignmentItemRepository;
     private final UserRepository userRepository;
+
+    /**
+     * Sprint 1 method stub only. Product logic is intentionally left for the owner to implement.
+     *
+     * TODO(owner):
+     * - authenticate/authorize the Student and validate Assignment visibility, target and schedule;
+     * - enforce one official Attempt per Assignment/Student under concurrent first-start requests;
+     * - validate the stable client-generated session credential without silently replacing it;
+     * - resolve the Student's single ACTIVE class on the server;
+     * - build an immutable Composition/settings/Question snapshot;
+     * - return a student-safe DTO that cannot expose answer keys or grading internals.
+     */
+    public AttemptRuntimeResponse startOrResume(
+            Long assignmentId,
+            Long studentId,
+            StartOrResumeAttemptRequest request
+    ) {
+        throw new UnsupportedOperationException("Sprint 1 startOrResume logic is pending owner implementation");
+    }
 
     // Next implementation slice:
     // 1. startOrResume: validate assignment visibility/target/schedule, create one immutable snapshot.

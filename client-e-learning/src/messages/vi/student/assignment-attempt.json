@@ -1,1 +1,105 @@
-{"assignmentAttempt":{"intro":{"title":"Lần làm bài","grade":"Khối","questions":"câu hỏi","timeLimit":"Thời gian làm bài","noTimeLimit":"Không giới hạn thời gian","dueAt":"Hạn nộp","overdue":"Đã quá hạn","resume":"Tiếp tục làm bài","start":"Bắt đầu làm bài","savedAnswersRestored":"Các câu trả lời đã lưu được khôi phục."},"header":{"progress":"Tiến độ","submit":"Nộp bài"},"timer":{"remaining":"Thời gian còn lại","noLimit":"Không giới hạn thời gian","timeUp":"Đã hết thời gian"},"save":{"saved":"Đã lưu","saving":"Đang lưu...","pending":"Đang chờ lưu","failed":"Lưu thất bại","retry":"Thử lại","unsyncedCount":"{count} thay đổi chưa đồng bộ"},"session":{"conflictTitle":"Bài làm đang được mở ở nơi khác","conflictDescription":"Một phiên đang hoạt động khác hiện đang giữ quyền làm bài này.","retry":"Thử lại","reclaim":"Nhận lại phiên","stale":"Phiên trước có vẻ đã không còn hoạt động."},"visibility":{"tabHidden":"Bạn đã rời khỏi tab làm bài.","fullscreenExit":"Bạn đã thoát chế độ toàn màn hình.","continue":"Tiếp tục làm bài"},"submit":{"title":"Nộp bài?","confirm":"Nộp bài","unanswered":"{count} câu hỏi chưa trả lời","pendingSaves":"{count} thay đổi vẫn đang được lưu","failedSaves":"{count} thay đổi chưa lưu được","waitForSave":"Chờ lưu xong","cancel":"Hủy"},"result":{"title":"Kết quả bài làm","submitted":"Đã nộp","timedOut":"Hết thời gian","score":"Điểm","scoreHidden":"Điểm của bạn hiện chưa được hiển thị.","answersShown":"Đáp án đã được hiển thị.","answersHidden":"Đáp án đang được ẩn.","late":"Nộp bài trễ"}}}
+{
+  "assignmentAttempt": {
+    "intro": {
+      "title": "Lần làm bài",
+      "grade": "Khối",
+      "questions": "câu hỏi",
+      "timeLimit": "Thời gian làm bài",
+      "noTimeLimit": "Không giới hạn thời gian",
+      "dueAt": "Hạn nộp",
+      "overdue": "Đã quá hạn",
+      "resume": "Tiếp tục làm bài",
+      "start": "Bắt đầu làm bài",
+      "savedAnswersRestored": "Các câu trả lời đã lưu được khôi phục.",
+      "eyebrow": "Bài tập dành cho học sinh",
+      "description": "Bắt đầu bài tập hoặc tiếp tục lần làm bài đã gắn với tài khoản của bạn. Hệ thống sử dụng đề đã lưu của giáo viên và thời hạn do máy chủ quyết định.",
+      "titleWithId": "Bài tập #{id}",
+      "beforeStartTitle": "Trước khi bắt đầu",
+      "ruleOneAttempt": "Bài tập chỉ có một lần làm chính thức. Mở lại sẽ tiếp tục đúng lần làm bài đó.",
+      "ruleDeadline": "Thời hạn do máy chủ quyết định và vẫn tiếp tục chạy khi đóng trình duyệt.",
+      "ruleDraft": "Trong bản Sprint 1 này, câu trả lời chỉ nằm trong trang hiện tại; tính năng tự lưu chưa được kết nối.",
+      "startOrResume": "Bắt đầu / tiếp tục làm bài",
+      "noDueDate": "Chưa có thông tin",
+      "timeLimitValue": "{minutes} phút"
+    },
+    "header": {
+      "progress": "Tiến độ",
+      "submit": "Nộp bài"
+    },
+    "timer": {
+      "remaining": "Thời gian còn lại",
+      "noLimit": "Không giới hạn thời gian",
+      "timeUp": "Đã hết thời gian"
+    },
+    "save": {
+      "saved": "Đã lưu",
+      "saving": "Đang lưu...",
+      "pending": "Đang chờ lưu",
+      "failed": "Lưu thất bại",
+      "retry": "Thử lại",
+      "unsyncedCount": "{count} thay đổi chưa đồng bộ"
+    },
+    "session": {
+      "conflictTitle": "Bài làm đang được mở ở nơi khác",
+      "conflictDescription": "Một phiên đang hoạt động khác hiện đang giữ quyền làm bài này.",
+      "retry": "Thử lại",
+      "reclaim": "Nhận lại phiên",
+      "stale": "Phiên trước có vẻ đã không còn hoạt động.",
+      "lockUnsupportedTitle": "Trình duyệt này chưa hỗ trợ mở bài an toàn",
+      "lockUnsupportedDescription": "Bài làm cần cơ chế khóa tab. Hãy sử dụng trình duyệt hiện đại, đã cập nhật và kết nối bảo mật.",
+      "lockErrorTitle": "Không thể giữ quyền sử dụng tab",
+      "lockErrorDescription": "Hãy đóng các tab bài làm trùng lặp rồi tải lại trang.",
+      "credentialLostTitle": "Không thể khôi phục phiên làm bài",
+      "credentialLostDescription": "Không tìm thấy mã phiên đã lưu. Bản xem trước này sẽ không tự tạo mã phiên thay thế."
+    },
+    "visibility": {
+      "tabHidden": "Bạn đã rời khỏi tab làm bài.",
+      "fullscreenExit": "Bạn đã thoát chế độ toàn màn hình.",
+      "continue": "Tiếp tục làm bài"
+    },
+    "submit": {
+      "title": "Nộp bài?",
+      "confirm": "Nộp bài",
+      "unanswered": "{count} câu hỏi chưa trả lời",
+      "pendingSaves": "{count} thay đổi vẫn đang được lưu",
+      "failedSaves": "{count} thay đổi chưa lưu được",
+      "waitForSave": "Chờ lưu xong",
+      "cancel": "Hủy"
+    },
+    "result": {
+      "title": "Kết quả bài làm",
+      "submitted": "Đã nộp",
+      "timedOut": "Hết thời gian",
+      "score": "Điểm",
+      "scoreHidden": "Điểm của bạn hiện chưa được hiển thị.",
+      "answersShown": "Đáp án đã được hiển thị.",
+      "answersHidden": "Đáp án đang được ẩn.",
+      "late": "Nộp bài trễ"
+    },
+    "backToAssignments": "Quay lại danh sách bài tập",
+    "backToDashboard": "Quay lại trang chủ",
+    "player": {
+      "eyebrow": "Đang làm bài",
+      "progress": "Đã trả lời {answered}/{total} câu"
+    },
+    "draft": {
+      "warningTitle": "Câu trả lời chưa được lưu",
+      "warningDescription": "Đừng tải lại hoặc đóng trang nếu cần giữ các thay đổi này. Tự lưu từng phần sẽ được kết nối ở Sprint 2.",
+      "sprint2Note": "Bản xem trước Sprint 1 — chưa kết nối tự lưu"
+    },
+    "states": {
+      "checkingAuth": "Đang kiểm tra tài khoản…",
+      "checkingSession": "Đang kiểm tra quyền sử dụng tab này…",
+      "timedOut": "Lần làm bài đã hết thời gian",
+      "alreadySubmitted": "Lần làm bài này đã kết thúc",
+      "resultSprint4": "Màn hình kết quả sẽ được kết nối trong Sprint 4.",
+      "starting": "Đang mở bài làm…"
+    },
+    "errors": {
+      "invalidAssignment": "Đường dẫn này chứa mã bài tập không hợp lệ.",
+      "studentOnly": "Chỉ học sinh đã đăng nhập mới có thể mở lần làm bài này.",
+      "startFailedTitle": "Không thể mở bài làm",
+      "startFailedDescription": "Endpoint máy chủ có thể chưa được triển khai. Giao diện không giả lập hay tự tạo bài làm ở phía trình duyệt."
+    }
+  }
+}

@@ -37,7 +37,7 @@
 ### Backend completed
 
 - Added AssessmentAttempt-specific stable error codes to `ErrorCode.java`.
-- Added runtime DTOs for safe runtime projection, question projection, incremental answer save, session claim/heartbeat, submit, result and visibility-aware result questions.
+- Added runtime DTOs for safe runtime projection, question projection, incremental answer save, submit, result and visibility-aware result questions. Session claim/heartbeat DTOs were removed when ADR 0027 simplified the MVP policy to a stable credential without lease/takeover.
 - Expanded `SaveAttemptAnswerRequest` with `attemptQuestionId`, `expectedRevision`, `activeSessionId` and `requestId`.
 - Added `AssessmentAttemptSnapshotContract` with snapshot version 1 and stable top-level document/settings keys.
 - Restricted runtime DTO comments/contracts explicitly state that active student payloads must not expose answer keys, accepted answers, grading internals or hidden normalized values.

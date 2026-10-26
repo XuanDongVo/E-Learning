@@ -54,6 +54,19 @@ export interface StudentQuestionSnapshot {
   blankKeys: string[];
 }
 
+/** Student-safe pre-start metadata; does not expose target class IDs or authoring data. */
+export interface AttemptIntroResponse {
+  assignmentId: number;
+  assignmentTitle: string;
+  gradeName: string;
+  questionCount: number;
+  dueAt: string;
+  timeLimitSeconds: number;
+  attemptStatus: AssessmentAttemptStatus | null;
+  late: boolean;
+  availabilityCode: string | null;
+}
+
 export interface AttemptSummaryResponse {
   id: number;
   assignmentId: number;

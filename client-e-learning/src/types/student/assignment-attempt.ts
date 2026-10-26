@@ -43,6 +43,17 @@ export interface AttemptRuntimeQuestion {
   answerRevision: number;
 }
 
+export interface StudentQuestionSnapshot {
+  type: string;
+  prompt: string;
+  choices: { key: string; text: string }[];
+  media: { url: string; alt: string; kind: string }[];
+  items: { key: string; text: string }[];
+  answerPool: { key: string; text: string }[];
+  segments: { text: string; blankKey?: string }[];
+  blankKeys: string[];
+}
+
 export interface AttemptSummaryResponse {
   id: number;
   assignmentId: number;

@@ -44,8 +44,8 @@
       "unsyncedCount": "{count} unsynced changes"
     },
     "session": {
-      "conflictTitle": "This assignment is open elsewhere",
-      "conflictDescription": "Another active session currently owns this attempt.",
+      "conflictTitle": "This assignment is being worked on in another screen. Please return to the screen where you are working.",
+      "conflictDescription": "Another active tab currently holds the right to work on this assignment.",
       "retry": "Retry",
       "lockUnsupportedTitle": "This browser cannot safely open the assignment",
       "lockUnsupportedDescription": "This attempt requires browser tab locking. Open it in a supported, up-to-date browser using a secure connection.",

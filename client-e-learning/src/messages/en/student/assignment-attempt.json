@@ -20,7 +20,10 @@
       "ruleDraft": "For this Sprint 1 preview, answer edits are kept in this page only; autosave is not connected yet.",
       "startOrResume": "Start / resume assignment",
       "noDueDate": "Not provided",
-      "timeLimitValue": "{minutes} minutes"
+      "timeLimitValue": "{minutes} minutes",
+      "metadataUnavailable": "Unavailable",
+      "gradeValue": "Grade: {grade}",
+      "questionCount": "{count} questions"
     },
     "header": {
       "progress": "Progress",
@@ -78,7 +81,8 @@
     "backToDashboard": "Back to dashboard",
     "player": {
       "eyebrow": "Assignment in progress",
-      "progress": "Answered {answered} of {total} questions"
+      "progress": "Answered {answered} of {total} questions",
+      "attemptDeadline": "Attempt deadline"
     },
     "draft": {
       "warningTitle": "Your answers are not saved yet",
@@ -98,7 +102,9 @@
       "invalidAssignment": "The assignment ID in this link is invalid.",
       "studentOnly": "Only a signed-in student can open this assignment attempt.",
       "startFailedTitle": "The attempt could not be opened",
-      "startFailedDescription": "The server endpoint may not be implemented yet. No practice attempt has been mocked or created locally."
+      "startFailedDescription": "The server endpoint may not be implemented yet. No practice attempt has been mocked or created locally.",
+      "introLoadFailed": "Assignment details could not be loaded. You can still try Start / Resume; the server must validate access.",
+      "retryIntro": "Retry details"
     }
   }
 }

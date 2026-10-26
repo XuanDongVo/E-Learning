@@ -5,7 +5,9 @@ This package is the formal Assignment runtime and is deliberately separate from 
 ## Created in this slice
 - V43 schema for AssessmentAttempt, ordered immutable attempt question snapshots, one current answer per question, and per-part results.
 - JPA entities and repositories.
-- Request/summary DTO starting points.
+- Request DTOs are grouped under `dto/request/`.
+- Response DTOs are grouped under `dto/response/`.
+- Keep request and response contracts separate and narrowly scoped.
 - Service dependency skeleton.
 
 ## Not implemented in this slice

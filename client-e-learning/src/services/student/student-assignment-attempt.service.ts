@@ -1,8 +1,8 @@
 import { request } from "@/services/api.service";
-import type { AttemptResultResponse, AttemptRuntimeSnapshot, CreateAttemptEventRequest, OpenAttemptResponse, SaveAttemptAnswerRequest, SaveAttemptAnswerResponse, AttemptSessionResponse, SubmitAttemptRequest, AttemptSummaryResponse } from "../types/assessmentAttempt.types";
+import type { AttemptResultResponse, AttemptRuntimeSnapshot, CreateAttemptEventRequest, OpenAttemptResponse, SaveAttemptAnswerRequest, SaveAttemptAnswerResponse, AttemptSessionResponse, SubmitAttemptRequest, AttemptSummaryResponse } from "@/types/student/assignment-attempt";
 
 /** Contract-only HTTP boundary. Runtime endpoints are not implemented in Sprint 0. */
-export const assessmentAttemptApi = {
+export const studentAssignmentAttemptService = {
   open: (attemptId:number) => request<OpenAttemptResponse>(`/v1/assessment-attempts/${attemptId}`),
   start: (assignmentId:number) => request<OpenAttemptResponse>(`/v1/assignments/${assignmentId}/assessment-attempt`, {method:"POST"}),
   saveAnswer: (attemptId:number, body:SaveAttemptAnswerRequest) => request<SaveAttemptAnswerResponse>(`/v1/assessment-attempts/${attemptId}/answers`, {method:"PUT",body:JSON.stringify(body)}),
@@ -12,5 +12,5 @@ export const assessmentAttemptApi = {
   result: (attemptId:number) => request<AttemptResultResponse>(`/v1/assessment-attempts/${attemptId}/result`),
   event: (attemptId:number, body:CreateAttemptEventRequest) => request<AttemptSummaryResponse>(`/v1/assessment-attempts/${attemptId}/events`, {method:"POST",body:JSON.stringify(body)})
 };
-export type AssessmentAttemptApi = typeof assessmentAttemptApi;
+export type StudentAssignmentAttemptService = typeof studentAssignmentAttemptService;
 export type { AttemptRuntimeSnapshot };

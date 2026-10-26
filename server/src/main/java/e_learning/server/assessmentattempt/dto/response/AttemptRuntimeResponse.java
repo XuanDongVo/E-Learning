@@ -1,4 +1,4 @@
-package e_learning.server.assessmentattempt.dto;
+package e_learning.server.assessmentattempt.dto.response;
 
 import e_learning.server.assessmentattempt.enums.AssessmentAttemptStatus;
 import java.time.LocalDateTime;

@@ -1,4 +1,4 @@
-package e_learning.server.assessmentattempt.dto;
+package e_learning.server.assessmentattempt.dto.response;
 
 import java.time.LocalDateTime;
 import java.util.UUID;

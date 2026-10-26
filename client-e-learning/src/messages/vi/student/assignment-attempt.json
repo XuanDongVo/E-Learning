@@ -20,7 +20,10 @@
       "ruleDraft": "Trong bản Sprint 1 này, câu trả lời chỉ nằm trong trang hiện tại; tính năng tự lưu chưa được kết nối.",
       "startOrResume": "Bắt đầu / tiếp tục làm bài",
       "noDueDate": "Chưa có thông tin",
-      "timeLimitValue": "{minutes} phút"
+      "timeLimitValue": "{minutes} phút",
+      "metadataUnavailable": "Chưa có thông tin",
+      "gradeValue": "Khối: {grade}",
+      "questionCount": "{count} câu hỏi"
     },
     "header": {
       "progress": "Tiến độ",
@@ -78,7 +81,8 @@
     "backToDashboard": "Quay lại trang chủ",
     "player": {
       "eyebrow": "Đang làm bài",
-      "progress": "Đã trả lời {answered}/{total} câu"
+      "progress": "Đã trả lời {answered}/{total} câu",
+      "attemptDeadline": "Thời điểm kết thúc lần làm bài"
     },
     "draft": {
       "warningTitle": "Câu trả lời chưa được lưu",
@@ -98,7 +102,9 @@
       "invalidAssignment": "Đường dẫn này chứa mã bài tập không hợp lệ.",
       "studentOnly": "Chỉ học sinh đã đăng nhập mới có thể mở lần làm bài này.",
       "startFailedTitle": "Không thể mở bài làm",
-      "startFailedDescription": "Endpoint máy chủ có thể chưa được triển khai. Giao diện không giả lập hay tự tạo bài làm ở phía trình duyệt."
+      "startFailedDescription": "Endpoint máy chủ có thể chưa được triển khai. Giao diện không giả lập hay tự tạo bài làm ở phía trình duyệt.",
+      "introLoadFailed": "Chưa tải được thông tin bài tập. Bạn vẫn có thể thử bắt đầu/tiếp tục; máy chủ phải tự xác thực quyền truy cập.",
+      "retryIntro": "Tải lại thông tin"
     }
   }
 }

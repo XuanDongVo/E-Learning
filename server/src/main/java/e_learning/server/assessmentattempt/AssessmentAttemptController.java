@@ -1,6 +1,7 @@
 package e_learning.server.assessmentattempt;
 
 import e_learning.server.assessmentattempt.dto.request.StartOrResumeAttemptRequest;
+import e_learning.server.assessmentattempt.dto.response.AttemptIntroResponse;
 import e_learning.server.assessmentattempt.dto.response.AttemptRuntimeResponse;
 import e_learning.server.assessmentattempt.service.AssessmentAttemptService;
 import e_learning.server.common.response.ApiResponse;
@@ -27,6 +28,17 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class AssessmentAttemptController {
     private final AssessmentAttemptService attemptService;
+
+    @org.springframework.web.bind.annotation.GetMapping("/{assignmentId}/assessment-attempt/intro")
+    public ResponseEntity<ApiResponse<AttemptIntroResponse>> getIntro(
+            @PathVariable Long assignmentId,
+            @AuthenticationPrincipal Jwt jwt
+    ) {
+        Long studentId = Long.valueOf(jwt.getSubject());
+        return ResponseEntity.ok(ApiResponse.success(
+                attemptService.getIntro(assignmentId, studentId)
+        ));
+    }
 
     @PostMapping("/{assignmentId}/assessment-attempt")
     public ResponseEntity<ApiResponse<AttemptRuntimeResponse>> startOrResume(

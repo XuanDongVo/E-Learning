@@ -105,6 +105,26 @@
       "startFailedDescription": "The server endpoint may not be implemented yet. No practice attempt has been mocked or created locally.",
       "introLoadFailed": "Assignment details could not be loaded. You can still try Start / Resume; the server must validate access.",
       "retryIntro": "Retry details"
+    },
+    "paper": {
+      "questionFallback": "Question",
+      "answer": "Answer",
+      "true": "True",
+      "false": "False",
+      "blank": "Blank {index}",
+      "sectionFallback": "Section {index}",
+      "unsupportedType": "This question type is not supported by the current Student Paper renderer yet.",
+      "matchingPoolMissing": "The shared answer pool for this question could not be found.",
+      "types": {
+        "SINGLE_CHOICE": "Single choice",
+        "MULTIPLE_CHOICE": "Multiple choice",
+        "TRUE_FALSE": "True / false",
+        "FILL_IN_BLANK": "Fill in the blank",
+        "TYPE_ANSWER": "Type answer",
+        "MATCHING": "Matching",
+        "CLOZE": "Cloze",
+        "UNKNOWN": "Question"
+      }
     }
   }
 }

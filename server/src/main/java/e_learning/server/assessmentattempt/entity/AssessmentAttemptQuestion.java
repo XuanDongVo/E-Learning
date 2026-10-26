@@ -62,7 +62,7 @@ public class AssessmentAttemptQuestion {
     private BigDecimal possiblePoints = BigDecimal.ZERO;
 
     @Column(name = "is_required", nullable = false)
-    private boolean required = true;
+    private boolean required = false;
 
     @Column(name = "is_example", nullable = false)
     private boolean example;

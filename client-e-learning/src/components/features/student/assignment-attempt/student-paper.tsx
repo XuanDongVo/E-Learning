@@ -384,7 +384,9 @@ function renderItem(
   if (item.itemType === "QUESTION" && typeof item.id === "number") {
     const question = questionsByItemId.get(item.id);
     if (!question) return null;
-    const questionPoolId = asString((asRecord(question.questionSnapshot) ?? {}).poolId);
+    const questionSnapshot = asRecord(question.questionSnapshot) ?? {};
+    const nestedSpec = asRecord(questionSnapshot.spec ?? questionSnapshot.definition ?? questionSnapshot.questionSpec) ?? {};
+    const questionPoolId = asString(questionSnapshot.poolId ?? nestedSpec.poolId);
     return <QuestionCard key={`${keyPrefix}-q-${question.attemptQuestionId}`} question={question} answer={answers[question.attemptQuestionId]} poolOptions={poolsById.get(questionPoolId) ?? []} onAnswerChange={(answer) => onAnswerChange(question.attemptQuestionId, answer)} />;
   }
 

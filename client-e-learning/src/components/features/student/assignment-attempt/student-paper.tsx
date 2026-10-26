@@ -79,12 +79,12 @@ function snapshotSections(document: JsonRecord): CompositionSectionSnapshot[] {
 
 function safeQuestionSnapshot(question: AttemptRuntimeQuestion): StudentQuestionSnapshot {
   const value = asRecord(question.questionSnapshot) ?? {};
-  // The server must project this DTO without correct keys, accepted answers,
-  // explanations restricted by policy, or grading metadata. This client deliberately
-  // reads only renderable fields and never displays arbitrary snapshot JSON.
+  const common = asRecord(value.common) ?? {};
+  // Canonical QuestionSpec snapshots serialize prompt content under common.content.
+  // The server must remove correct keys/accepted answers before this projection is returned.
   return {
     type: asString(value.type).toUpperCase(),
-    prompt: asString(value.prompt ?? value.content ?? value.text),
+    prompt: asString(value.prompt ?? value.content ?? value.text ?? common.content),
     choices: asArray<unknown>(value.choices ?? value.options)
       .map(asRecord)
       .filter((choice): choice is JsonRecord => choice !== null)

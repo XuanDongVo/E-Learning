@@ -26,13 +26,10 @@ public enum ErrorCode {
 
     UNIT_NOT_FOUND(HttpStatus.NOT_FOUND, "UNIT_NOT_FOUND", "Unit not found"),
     UNIT_CODE_ALREADY_EXISTS(HttpStatus.CONFLICT, "UNIT_CODE_ALREADY_EXISTS", "A unit with this code already exists for this grade"),
-
     SECTION_NOT_FOUND(HttpStatus.NOT_FOUND, "SECTION_NOT_FOUND", "Section not found"),
     SECTION_ALREADY_EXISTS(HttpStatus.CONFLICT, "SECTION_ALREADY_EXISTS", "A section with this name already exists in this unit"),
-
     TOPIC_NOT_FOUND(HttpStatus.NOT_FOUND, "TOPIC_NOT_FOUND", "Topic not found"),
     TOPIC_ALREADY_EXISTS(HttpStatus.CONFLICT, "TOPIC_ALREADY_EXISTS", "A topic with this name already exists in this section"),
-
     QUESTION_BANK_NOT_FOUND(HttpStatus.NOT_FOUND, "QUESTION_BANK_NOT_FOUND", "Question bank not found"),
     QUESTION_BANK_ALREADY_EXISTS(HttpStatus.CONFLICT, "QUESTION_BANK_ALREADY_EXISTS", "A question bank with this name already exists in this topic"),
     QUESTION_NOT_FOUND(HttpStatus.NOT_FOUND, "QUESTION_NOT_FOUND", "Question not found"),
@@ -78,7 +75,21 @@ public enum ErrorCode {
     ACTIVITY_SESSION_ANSWER_INVALID(HttpStatus.BAD_REQUEST, "ACTIVITY_SESSION_ANSWER_INVALID", "The answer is invalid for this question"),
     ACTIVITY_SESSION_RETRY_EXHAUSTED(HttpStatus.CONFLICT, "ACTIVITY_SESSION_RETRY_EXHAUSTED", "No retry is available for this question"),
     ACTIVITY_SESSION_HINT_UNAVAILABLE(HttpStatus.CONFLICT, "ACTIVITY_SESSION_HINT_UNAVAILABLE", "A hint is not available for this question"),
-    ACTIVITY_SESSION_NOT_READY(HttpStatus.CONFLICT, "ACTIVITY_SESSION_NOT_READY", "The activity is not ready");
+    ACTIVITY_SESSION_NOT_READY(HttpStatus.CONFLICT, "ACTIVITY_SESSION_NOT_READY", "The activity is not ready"),
+
+    ASSESSMENT_ATTEMPT_NOT_FOUND(HttpStatus.NOT_FOUND, "ASSESSMENT_ATTEMPT_NOT_FOUND", "The assessment attempt was not found"),
+    ASSESSMENT_ATTEMPT_ACCESS_DENIED(HttpStatus.FORBIDDEN, "ASSESSMENT_ATTEMPT_ACCESS_DENIED", "The student cannot access this assessment attempt"),
+    ASSESSMENT_ATTEMPT_SESSION_CONFLICT(HttpStatus.CONFLICT, "ASSESSMENT_ATTEMPT_SESSION_CONFLICT", "This assessment attempt is being used by another active session"),
+    ASSESSMENT_ATTEMPT_SESSION_LOST(HttpStatus.CONFLICT, "ASSESSMENT_ATTEMPT_SESSION_LOST", "The active session is no longer valid"),
+    ASSESSMENT_ATTEMPT_TIME_UP(HttpStatus.CONFLICT, "ASSESSMENT_ATTEMPT_TIME_UP", "The assessment attempt time has expired"),
+    ASSESSMENT_ATTEMPT_ALREADY_SUBMITTED(HttpStatus.CONFLICT, "ASSESSMENT_ATTEMPT_ALREADY_SUBMITTED", "The assessment attempt has already been submitted"),
+    ASSESSMENT_ATTEMPT_ALREADY_TIMED_OUT(HttpStatus.CONFLICT, "ASSESSMENT_ATTEMPT_ALREADY_TIMED_OUT", "The assessment attempt has already timed out"),
+    ASSESSMENT_ATTEMPT_FINALIZING(HttpStatus.CONFLICT, "ASSESSMENT_ATTEMPT_FINALIZING", "The assessment attempt is being finalized"),
+    ASSESSMENT_ATTEMPT_VERSION_CONFLICT(HttpStatus.CONFLICT, "ASSESSMENT_ATTEMPT_VERSION_CONFLICT", "The answer has changed since it was last loaded"),
+    ASSESSMENT_ATTEMPT_INVALID_ANSWER(HttpStatus.BAD_REQUEST, "ASSESSMENT_ATTEMPT_INVALID_ANSWER", "The answer is invalid for this question"),
+    ASSESSMENT_ATTEMPT_SAVE_FAILED(HttpStatus.CONFLICT, "ASSESSMENT_ATTEMPT_SAVE_FAILED", "The answer could not be saved"),
+    ASSESSMENT_ATTEMPT_INVALID_STATE(HttpStatus.CONFLICT, "ASSESSMENT_ATTEMPT_INVALID_STATE", "The assessment attempt is not in a writable state"),
+    ASSESSMENT_ATTEMPT_REQUEST_REPLAY(HttpStatus.CONFLICT, "ASSESSMENT_ATTEMPT_REQUEST_REPLAY", "The request has already been processed");
 
     private final HttpStatus status;
     private final String code;
@@ -90,15 +101,7 @@ public enum ErrorCode {
         message = m;
     }
 
-    public HttpStatus status() {
-        return status;
-    }
-
-    public String code() {
-        return code;
-    }
-
-    public String message() {
-        return message;
-    }
+    public HttpStatus status() { return status; }
+    public String code() { return code; }
+    public String message() { return message; }
 }

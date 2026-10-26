@@ -316,6 +316,64 @@ Target semantics:
 
 **Không trả `active_session_id` trong bất kỳ generic runtime response nào.** Credential do client tạo, lưu bền vững trước request đầu tiên và gửi trong start/resume hoặc mutation request; server chỉ lưu và đối chiếu credential.
 
+### Student Paper / snapshot projection contract
+
+The server may persist the full canonical grading snapshot internally, but `AttemptRuntimeResponse` must carry a separate **student-safe projection**. Do not serialize a raw `QuestionSpec` directly into the public DTO.
+
+Canonical UI composition tree for Sprint 1:
+
+```json
+{
+  "version": 1,
+  "sections": [
+    {
+      "id": 12,
+      "position": 1,
+      "title": "Section title",
+      "instructions": "Optional instructions",
+      "titleVi": "Tiêu đề phần",
+      "instructionsVi": "Hướng dẫn",
+      "items": [
+        {
+          "id": 31,
+          "position": 1,
+          "itemType": "PASSAGE",
+          "blockPayload": { "title": "Reading", "text": "..." },
+          "children": []
+        },
+        {
+          "id": 32,
+          "position": 2,
+          "itemType": "QUESTION",
+          "questionId": 9,
+          "children": []
+        }
+      ]
+    }
+  ]
+}
+```
+
+- Preserve persisted Composition order, parent/child relationships, bilingual section labels and block payloads. The student paper renders from `document.sections[].items[].children`; it resolves Question cards by `assignmentItemId` against `AttemptRuntimeResponse.questions`.
+- Each public `questionSnapshot` needs a stable `type`, renderable prompt/content, student-visible choice keys/text, media URLs/alt text when needed, and only the structural fields needed for Matching/Cloze. Omit `correctKey`, `correctKeys`, `expected`, `acceptedAnswers`, `correctEntryId`, hidden explanations and grading/normalizer metadata from the active runtime DTO.
+- For Matching, expose only the safe pool reference/choice data needed to select a pool entry. Resolve and validate pool-entry membership on the server when saving/grading; the UI must not be treated as validation.
+- `answerPayload` is the student's current saved answer only. It must not be confused with the internal grading snapshot.
+
+### Answer payload → Question Engine adapter contract (owner implementation)
+
+The frontend stores a UI-shaped JSON object. Question Engine handlers expect canonical `RawAnswer.value` types; the runtime service must normalize the public payload at the domain boundary before calling the handler. Based on the current handler signatures:
+
+| Question type | Frontend answer payload | Canonical `RawAnswer.value` expected by current handler |
+|---|---|---|
+| `SINGLE_CHOICE` | `{ "selectedKey": "A" }` | String choice key |
+| `TRUE_FALSE` | `{ "selectedKey": "TRUE" }` or `"FALSE"` | String `TRUE` / `FALSE` |
+| `MULTIPLE_CHOICE` | `{ "selectedKeys": ["A", "C"] }` | List of string choice keys |
+| `FILL_IN_BLANK`, `TYPE_ANSWER` | `{ "value": "answer" }` | String |
+| `MATCHING` (current `MatchingSpec(poolId, correctEntryId)`) | `{ "selectedKey": "entry-id" }` | String pool-entry ID |
+| `CLOZE` | `{ "values": { "blank-key": "answer" } }` | Map of blank key to string |
+
+This mapping is a contract, not implemented server logic. Validate exact payload shape, key membership and missing/extra keys server-side. The present Question Engine `MatchingHandler` models one selected pool entry per spec; if a snapshot instead exposes multiple prompts and a `pairs` object, do not silently grade it as that single-entry spec—either reject unsupported structure or agree and implement a canonical compound Matching contract before enabling it.
+
 ### Answer save
 
 ```text

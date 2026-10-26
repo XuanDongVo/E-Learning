@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { Link } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import {
   ArrowLeft,
   BookOpenCheck,
@@ -34,6 +34,7 @@ function isPositiveInteger(value: number): boolean {
 export function StudentAssignmentAttemptPage({ assignmentId }: { assignmentId: string }) {
   const t = useTranslations("student.assignmentAttempt");
   const locale = useLocale();
+  const router = useRouter();
   const { user, isLoading: isAuthLoading } = useAuth();
   const parsedAssignmentId = Number(assignmentId);
   const validAssignmentId = isPositiveInteger(parsedAssignmentId);
@@ -109,6 +110,11 @@ export function StudentAssignmentAttemptPage({ assignmentId }: { assignmentId: s
     window.addEventListener("beforeunload", warnBeforeLeaving);
     return () => window.removeEventListener("beforeunload", warnBeforeLeaving);
   }, [hasLocalChanges, phase]);
+
+  const leavePlayer = useCallback(() => {
+    if (hasLocalChanges && !window.confirm(t("draft.confirmLeave"))) return;
+    router.push("/student/assignments");
+  }, [hasLocalChanges, router, t]);
 
   const changeAnswer = useCallback((
     attemptQuestionId: number,
@@ -226,10 +232,10 @@ export function StudentAssignmentAttemptPage({ assignmentId }: { assignmentId: s
         <StudentPaper runtime={runtime} answers={answers} onAnswerChange={changeAnswer} />
 
         <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-border-color pt-4">
-          <Link href="/student/assignments" className="inline-flex items-center gap-2 text-sm font-semibold text-neutral-muted hover:text-neutral-dark">
+          <Button variant="ghost" onClick={leavePlayer} className="gap-2">
             <ArrowLeft className="h-4 w-4" />
             {t("backToAssignments")}
-          </Link>
+          </Button>
           <span className="text-xs text-neutral-muted">{t("draft.sprint2Note")}</span>
         </footer>
       </main>

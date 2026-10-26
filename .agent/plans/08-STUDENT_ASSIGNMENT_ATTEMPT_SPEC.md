@@ -2,10 +2,8 @@
 
 **Trạng thái:** ACTIVE SPECIFICATION — schema/runtime contract đã được chốt để triển khai  
 **Nhánh:** `feature/student-assignment-attempt`  
-**Nhánh gốc:** `refactor/teacher-content-ui-routing`  
 **Phạm vi:** Phase 7B — Student làm Assignment chính thức
-
-> V43 chưa được chạy trên server/database ở thời điểm chốt spec, vì vậy migration V43 được phép chỉnh trực tiếp thay vì tạo V44. Code runtime chưa được coi là hoàn thiện chỉ vì schema đã tồn tại.
+**Session policy:** ADR 0027 — Single Active Tab with Resumable AssessmentAttempt
 
 ## 1. Mục tiêu
 
@@ -19,8 +17,12 @@ Nguyên tắc:
 - Whole-attempt timer; không lưu thời gian từng câu.
 - Snapshot bất biến cho composition/settings/question.
 - Autosave chống stale overwrite bằng `revision`.
-- Một active screen/session có quyền ghi tại một thời điểm.
-- Lightweight event log: `TAB_HIDDEN`, `FULLSCREEN_EXIT`, `SESSION_TAKEOVER`.
+- Một active browser tab có quyền thao tác tại một thời điểm.
+- Tab khác bị từ chối ngay; không queue, không chờ và không tự takeover.
+- Phiên logic được khôi phục sau refresh/đóng trình duyệt thông thường bằng credential bền vững.
+- Browser-level exclusivity dùng Web Locks API; backend vẫn là authority cho mọi mutation.
+- **Không dùng heartbeat/stale timeout để cấp quyền hoặc takeover trong MVP.**
+- Lightweight event log: `TAB_HIDDEN`, `FULLSCREEN_EXIT`; `SESSION_TAKEOVER` không được phát sinh bởi runtime MVP.
 - Event không phải bằng chứng gian lận.
 - XP, badge, ranking, manual grading và advanced analytics ngoài MVP.
 
@@ -51,17 +53,20 @@ Unique constraint `(assignment_id, student_id)` bảo đảm một Student khôn
 
 `is_late` là metadata của due policy, không phải lifecycle state.
 
-### BR-04 — Single writer session
+### BR-04 — Single active tab / session
 
-`active_session_id` kiểm soát tab/device được phép ghi.
+`active_session_id` là stable logical session credential của Attempt. Nó không phải lease có thời hạn.
 
-- Tab đầu tiên được cấp quyền.
-- Tab khác không autosave/submit khi session cũ vẫn active.
-- Session stale có thể bị takeover.
-- Sau takeover, session cũ mất quyền ghi.
+- Tab đầu tiên được cấp credential và giữ Web Lock độc quyền cho Attempt.
+- Tab khác thử vào cùng Attempt phải nhận `SESSION_CONFLICT` ngay; không chờ lock, không autosave/submit và không được thay credential.
+- Refresh/đóng tab/đóng trình duyệt giải phóng browser lock; mở lại trong cùng browser profile có thể lấy credential từ IndexedDB và resume chính Attempt cũ.
+- Network loss không làm mất logical session và không cấp quyền cho tab khác.
+- Backend kiểm tra authenticated Student + Attempt ownership + matching session credential + state + deadline trên mọi mutation.
 - Không tạo `AttemptSession` table trong MVP.
+- Không automatic takeover khi inactivity.
+- Nếu credential/site data bị xóa hoặc không còn khả dụng, không cấp credential mới một cách âm thầm; trả trạng thái recovery-required/session-lost. Quy trình recovery riêng chỉ được thêm khi có owner decision mới.
 
-Heartbeat chỉ phục vụ session ownership, không quyết định timer hay điểm.
+**Heartbeat không thuộc MVP session ownership.** Không định nghĩa heartbeat cadence hoặc stale threshold. `last_activity_at` chỉ cập nhật khi có runtime operation được server chấp nhận, ví dụ start/resume, answer save hoặc submit.
 
 ### BR-05 — Whole-attempt timer
 
@@ -109,27 +114,17 @@ Khi Attempt bắt đầu, snapshot đủ để dựng lại runtime Assignment, 
 
 ### BR-10 — Attempt events
 
-Event log được giữ nhẹ để Teacher biết Student đã rời màn hình hoặc session có takeover.
+Event log được giữ nhẹ để Teacher biết Student đã rời màn hình.
 
 Event types V1:
 - `TAB_HIDDEN` — browser báo tab/window không còn visible.
 - `FULLSCREEN_EXIT` — Student rời fullscreen nếu runtime đang yêu cầu fullscreen.
-- `SESSION_TAKEOVER` — server ghi nhận session mới takeover session cũ.
+
+`SESSION_TAKEOVER` không thuộc runtime MVP vì policy không có automatic takeover. V43 có thể vẫn chấp nhận giá trị này ở database; không sửa migration đã áp dụng chỉ để loại bỏ giá trị legacy.
 
 Event không phải anti-cheat proof. `TAB_HIDDEN`/`FULLSCREEN_EXIT` là browser/client signals và không tự chứng minh nguyên nhân hay hành vi gian lận.
 
 Không lưu mouse movement, click history, IP/device fingerprint hoặc audit session chuyên sâu.
-
-Teacher có thể hiển thị:
-
-```text
-Student A
-- Rời màn hình: 2 lần
-- Thoát fullscreen: 1 lần
-- Session takeover: 0 lần
-```
-
-MVP không cần counter denormalized trong `assessment_attempts`; có thể count event theo Attempt. Chỉ thêm counter/aggregation khi scale thực tế yêu cầu.
 
 ## 3. Schema
 
@@ -194,7 +189,7 @@ Unique `(attempt_question_id, part_key)`.
 - `occurred_at`, `active_session_id`
 - `metadata JSONB`
 
-Allowed types: `TAB_HIDDEN`, `FULLSCREEN_EXIT`, `SESSION_TAKEOVER`.
+Allowed runtime types: `TAB_HIDDEN`, `FULLSCREEN_EXIT`. `SESSION_TAKEOVER` remains a legacy-compatible database value only; MVP runtime does not emit it.
 
 Indexes:
 - `(attempt_id, occurred_at)`
@@ -214,7 +209,7 @@ Nhờ `class_id_at_start`, Teacher có thể group Attempt theo Class. Class att
 
 ### 4.3 Student-level
 
-Teacher có thể xem status, score, started/submitted/timed-out time, late flag và số event `TAB_HIDDEN`, `FULLSCREEN_EXIT`, `SESSION_TAKEOVER`.
+Teacher có thể xem status, score, started/submitted/timed-out time, late flag và số event `TAB_HIDDEN`, `FULLSCREEN_EXIT`.
 
 ### 4.4 Question-level
 
@@ -230,6 +225,7 @@ Không triển khai advanced question-quality warnings ở bước này.
 - AttemptSession table.
 - Device/session audit chuyên sâu.
 - Redis chỉ để lock session.
+- Heartbeat/stale-session takeover.
 - Advanced teacher analytics.
 - Question-quality warnings.
 - Teacher report UI từ dữ liệu thật trong bước schema/runtime này.
@@ -240,21 +236,23 @@ Schema vẫn phải bảo toàn khả năng triển khai basic Teacher Analytics
 
 ### UC-01 — Start
 1. Student mở Assignment.
-2. Backend xác thực quyền/target.
-3. Backend xác định ACTIVE class duy nhất.
-4. Nếu chưa có Attempt, tạo Attempt và snapshot class/composition/settings/questions.
-5. Cấp `active_session_id`.
-6. Trả runtime DTO không chứa restricted answer data.
+2. Frontend thử lấy Web Lock độc quyền cho Attempt/Assignment với `ifAvailable`; nếu lock không có, hiển thị `SESSION_CONFLICT` ngay và không gửi mutation request.
+3. Nếu lấy được lock, frontend đọc session credential bền vững từ IndexedDB nếu có.
+4. Backend xác thực quyền/target và xác định ACTIVE class duy nhất.
+5. Nếu chưa có Attempt, backend tạo Attempt, snapshot class/composition/settings/questions và đăng ký credential của tab đầu tiên.
+6. Nếu đã có `IN_PROGRESS`, backend chỉ resume khi credential khớp; không tự thay credential.
+7. Trả runtime DTO không chứa restricted answer data.
 
 ### UC-02 — Resume
 1. Student mở lại Assignment.
-2. Backend tìm `(assignment_id, student_id)`.
-3. `IN_PROGRESS` và chưa timeout → resume.
-4. Session cũ active → warning/read-only.
-5. Session stale → takeover an toàn.
+2. Frontend lấy Web Lock độc quyền trước khi resume.
+3. Backend tìm `(assignment_id, student_id)`.
+4. `IN_PROGRESS` và chưa timeout → resume với credential hợp lệ.
+5. Nếu credential/site data không còn → `SESSION_LOST` / recovery-required; không silent takeover.
+6. Tab khác không có lock → `SESSION_CONFLICT` ngay.
 
 ### UC-03 — Autosave
-1. Student gửi answer + revision + active session.
+1. Student gửi answer + revision + active session credential.
 2. Backend kiểm tra state/deadline/session/revision.
 3. Hợp lệ → lưu.
 4. Stale → không overwrite.
@@ -272,7 +270,7 @@ Schema vẫn phải bảo toàn khả năng triển khai basic Teacher Analytics
 ### UC-05 — Runtime events
 Client có thể gửi `TAB_HIDDEN`/`FULLSCREEN_EXIT`. Server ghi event gắn với Attempt/session.
 
-Server tự ghi `SESSION_TAKEOVER` khi takeover xảy ra.
+Không có server-generated `SESSION_TAKEOVER` trong MVP vì không có automatic takeover.
 
 Event không thay đổi score và không tự động đánh dấu gian lận.
 
@@ -282,10 +280,10 @@ Event không thay đổi score và không tự động đánh dấu gian lận.
 2. Align JPA entities/repositories.
 3. Implement start/resume + class attribution.
 4. Implement immutable composition/question snapshot.
-5. Implement active session + heartbeat/takeover.
-6. Implement autosave + revision/concurrency.
+5. Implement single-active-tab policy: Web Locks + stable credential persistence + server session verification.
+6. Implement autosave + revision/concurrency + reconnect/durable draft recovery.
 7. Implement submit/timeout + grading.
-8. Implement runtime event recording.
+8. Implement runtime visibility event recording.
 9. Implement Student result visibility.
 10. Sau runtime ổn định mới xây Teacher Analytics UI.
 
@@ -298,12 +296,13 @@ Event không thay đổi score và không tự động đánh dấu gian lận.
 - Answer có revision.
 - PartResult có normalizer + grading version.
 - Attempt có deadline partial index.
-- Event table có 3 event types nhẹ.
+- Event table có lightweight visibility events.
 - JPA entities khớp migration.
 - Teacher analytics có thể group theo assignment/class/student từ runtime data.
 - Không yêu cầu nhiều class cho một Student.
 - Không có per-question timing.
 - Không có XP/badge/ranking.
+- Không có heartbeat/stale takeover trong MVP.
 
 ## 9. Trạng thái triển khai
 

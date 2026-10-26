@@ -118,7 +118,7 @@ The next implementation must not introduce heartbeat/stale takeover merely becau
 
 ## 13. Sprint 1 — initial contract alignment (2026-10-26)
 
-**Status: contract kickoff in progress; full runtime implementation is BLOCKED pending Gate A validation.**
+**Status: Sprint 1 frontend scaffold + server method shells added; backend business logic and end-to-end runtime remain unimplemented/unverified.**
 
 Completed contract changes on this branch:
 - Added accepted ADR 0027 for Single Active Tab with Resumable AssessmentAttempt.
@@ -128,14 +128,14 @@ Completed contract changes on this branch:
 - Removed stale heartbeat/takeover wording from active Sprint 1/3 blueprint sections.
 
 Still not implemented:
-- Student authorization/Assignment target and schedule validation in a runtime controller/service.
+- Student authorization/Assignment target and schedule validation in the runtime service.
 - Stable credential registration and verification in the backend.
 - Active-class lookup and class snapshot.
 - Immutable Composition/settings/question snapshot builder and answer-safe runtime projection.
-- Student Attempt page/Intro/Player and Web Lock + IndexedDB implementation.
-- Backend test coverage and runtime endpoints.
+- Backend business logic in `getIntro` and `startOrResume`; both service methods intentionally throw `UnsupportedOperationException` for owner implementation.
+- Start/resume integration, answer autosave, timer, submit/result logic, and end-to-end tests.
 
-Verification: these are source/contract changes only. Backend compilation, frontend typecheck/build, tests, Flyway validation and browser/E2E checks were not run for this slice. The latest available CI run is stale and failed; source-level corrections are not a substitute for rerunning Gate A on the exact current HEAD.
+Verification: these are source/contract changes only. Backend compilation, frontend typecheck/build, tests, Flyway validation and browser/E2E checks were not run for this slice. The latest available CI evidence reviewed previously was on an older commit and failed; source-level changes are not a substitute for rerunning Gate A on the exact current HEAD.
 
 
 ## 14. Sprint 1 readiness decision — 2026-10-26
@@ -143,3 +143,32 @@ Verification: these are source/contract changes only. Backend compilation, front
 - **Contract/preparation work:** may proceed; the heartbeat/claim mismatch and credential leakage from the generic runtime DTO have been corrected.
 - **Full runtime implementation:** not GO until Gate A in .agent/plans/PHASE_7B_IMPLEMENTATION_MIGRATION_PLAN.md is passed against the exact current HEAD. The latest available CI run at review time was on an older SHA and failed; no current-HEAD run was found.
 - Required next gate: backend test/compile + Flyway validation, frontend tests/typecheck/build, and verification of existing ActivitySession/Question Engine/snapshot security before building Start/Resume runtime on top.
+
+
+## 15. Sprint 1 scaffold update — 2026-10-26
+
+**Scope delivered by assistant: frontend scaffolding + server signatures only. Server business logic is intentionally owner-owned.**
+
+Frontend source added:
+- Route: `/student/assignments/:assignmentId`.
+- Student-safe Intro API contract: `GET /v1/assignments/:assignmentId/assessment-attempt/intro`.
+- Start/Resume API contract: `POST /v1/assignments/:assignmentId/assessment-attempt`.
+- Web Locks exclusive tab lock with `ifAvailable: true`, fail-fast conflict and unsupported-browser states.
+- IndexedDB stable UUID credential store; client persists before the first request.
+- Student Paper for composition blocks and common question types; bilingual section/block labels.
+- Local-only answer draft warning and unsaved-navigation guard. No save endpoint is called in Sprint 1.
+
+Backend source added:
+- `AttemptIntroResponse` safe DTO.
+- `getIntro(assignmentId, studentId)` and `startOrResume(assignmentId, studentId, request)` service method stubs.
+- Controller method shells that extract the JWT subject and delegate.
+- Both service methods intentionally throw `UnsupportedOperationException`; the assistant has not implemented backend business logic.
+
+Not yet done:
+- Actual assignment/target/schedule/role authorization, ACTIVE class attribution, Attempt creation concurrency, credential comparison, snapshot builder, restricted-answer projection.
+- Autosave, server timer enforcement, submit/grading/results, Student assignment list integration.
+- Build/test/browser/E2E verification on the current HEAD. The page is a scaffold, not a working runtime until the owner implements the stubs.
+
+Important integration risk for the later code review:
+- Current Question Engine handlers consume type-specific `RawAnswer` values (e.g. single choice and Matching expect a string; Multiple Choice expects a collection; Cloze has structured parts), while the frontend stores structured `answerPayload` objects such as `{ selectedKey }`, `{ selectedKeys }`, `{ value }`, `{ pairs }`, and `{ values }`. The backend implementation must define and test an explicit adapter from persisted JSON payload to canonical `RawAnswer` for every question type. Do not grade directly from a UI-shaped JSON object without normalization.
+- The student runtime projection must omit correct keys, accepted answers, explanation/grading internals where restricted; a raw serialized `QuestionSpec` must not be returned to the client without a dedicated safe projection.

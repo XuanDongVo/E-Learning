@@ -2,7 +2,7 @@
 
 **Audit date:** 2026-10-26  
 **Branch:** `feature/student-assignment-attempt`  
-**Scope:** current source state after Sprint 0 contract implementation. This file records implementation truth; no runtime/build/browser verification was executed by this change.
+**Scope:** current source state after Sprint 0 contract implementation and session-policy rebaseline. This file records implementation truth; no runtime/build/browser verification was executed by these documentation changes.
 
 ## 1. Authority model
 
@@ -18,7 +18,7 @@
 - Frontend: Next.js + React + TypeScript + Tailwind CSS.
 - Backend: Spring Boot + Java 21 + JPA + Flyway + PostgreSQL.
 - V43 AssessmentAttempt schema was reported applied by the project owner; V43 must remain immutable.
-- `assessmentattempt` backend package now contains V43 entities/repositories plus Sprint 0 contract DTOs and snapshot contract. Runtime orchestration/controllers are still not implemented.
+- `assessmentattempt` backend package contains V43 entities/repositories plus Sprint 0 contract DTOs and snapshot contract. Runtime orchestration/controllers are still not implemented.
 
 ## 3. Phase status
 
@@ -36,32 +36,16 @@
 
 ### Backend completed
 
-- Added AssessmentAttempt-specific stable error codes to `ErrorCode.java`:
-  - `ASSESSMENT_ATTEMPT_NOT_FOUND`
-  - `ASSESSMENT_ATTEMPT_ACCESS_DENIED`
-  - `ASSESSMENT_ATTEMPT_SESSION_CONFLICT`
-  - `ASSESSMENT_ATTEMPT_SESSION_LOST`
-  - `ASSESSMENT_ATTEMPT_TIME_UP`
-  - `ASSESSMENT_ATTEMPT_ALREADY_SUBMITTED`
-  - `ASSESSMENT_ATTEMPT_ALREADY_TIMED_OUT`
-  - `ASSESSMENT_ATTEMPT_FINALIZING`
-  - `ASSESSMENT_ATTEMPT_VERSION_CONFLICT`
-  - `ASSESSMENT_ATTEMPT_INVALID_ANSWER`
-  - `ASSESSMENT_ATTEMPT_SAVE_FAILED`
-  - `ASSESSMENT_ATTEMPT_INVALID_STATE`
-  - `ASSESSMENT_ATTEMPT_REQUEST_REPLAY`
+- Added AssessmentAttempt-specific stable error codes to `ErrorCode.java`.
 - Added runtime DTOs for safe runtime projection, question projection, incremental answer save, session claim/heartbeat, submit, result and visibility-aware result questions.
-- Expanded `SaveAttemptAnswerRequest` to include `attemptQuestionId`, `expectedRevision`, `activeSessionId` and `requestId`.
+- Expanded `SaveAttemptAnswerRequest` with `attemptQuestionId`, `expectedRevision`, `activeSessionId` and `requestId`.
 - Added `AssessmentAttemptSnapshotContract` with snapshot version 1 and stable top-level document/settings keys.
 - Restricted runtime DTO comments/contracts explicitly state that active student payloads must not expose answer keys, accepted answers, grading internals or hidden normalized values.
 
 ### Frontend completed
 
-- Added `assessmentAttempt.types.ts` containing runtime DTOs, answer payload, save/session/result contracts, error-code union and player states.
-- Added `assessmentAttemptApi.ts` as the dedicated HTTP boundary. It is contract-only; no runtime endpoints are claimed to exist yet.
-- Added `assessmentAttemptStateMachine.ts` with explicit player states: `LOADING`, `INTRO`, `STARTING`, `ACTIVE`, `SAVING`, `SESSION_CONFLICT`, `SUBMITTING`, `FINALIZING`, `TIME_UP`, `RESULT`, `ERROR`.
-- Added `student/assignment-attempt.json` for both `en` and `vi` and registered the namespace in `client-e-learning/src/i18n/request.ts`.
-- Extended both English and Vietnamese `error.json` catalogs with the new AssessmentAttempt backend codes.
+- Added `assessmentAttempt.types.ts`, API boundary, state machine and English/Vietnamese i18n.
+- TypeScript runtime types were aligned with the flat Java runtime DTO contract; `required` is not part of the student runtime question contract because all questions are skippable.
 
 ### Sprint 0 intentionally NOT implemented
 
@@ -70,45 +54,63 @@
 - No snapshot assembly.
 - No active-class authorization implementation for Assignment Attempt.
 - No autosave persistence/idempotency implementation.
-- No session heartbeat/takeover implementation.
+- No session runtime implementation.
 - No grading/submit/timeout implementation.
 - No student Attempt UI screen yet.
 - No timer/autosave/submit/result components yet.
 
-## 5. Assignment implementation truth
+## 5. Session ownership — accepted design, not yet implemented
+
+ADR 0027 is now the authoritative Phase 7B session policy.
+
+- One active browser tab may operate an Attempt.
+- Same-browser coordination uses Web Locks API with an exclusive lock and `ifAvailable: true`; a second tab fails fast instead of waiting.
+- A stable logical session credential is persisted for recovery so refresh, browser close/reopen and network interruption can resume the same Attempt when the credential remains available.
+- Backend validates the credential on every mutation and never silently replaces it for a second tab/device.
+- No heartbeat cadence, stale threshold or automatic takeover exists in the MVP design.
+- `TAB_HIDDEN` and `FULLSCREEN_EXIT` remain lightweight events; `SESSION_TAKEOVER` is not emitted by the MVP runtime even though V43 can accept the legacy value.
+- If site data/credential is cleared or unavailable, the runtime returns session-lost/recovery-required rather than silently creating a new session.
+
+This is a design decision only. Web Lock integration, durable credential handling and backend verification are not implemented yet.
+
+## 6. Assignment implementation truth
 
 Implemented authoring remains unchanged: Composition owns order, AssignmentQuestion has no product-order position, whole-attempt time limit, target snapshots, independent score/answer visibility, server publish readiness and V40–V42 assignment fixes.
 
 Not implemented: official runtime start/resume, immutable snapshot assembly, autosave, grading, timeout, result visibility enforcement and hard lock after first attempt.
 
-## 6. Question Engine implementation truth
+## 7. Question Engine implementation truth
 
 Question Engine and all seven handlers exist structurally. ActivitySession still has legacy grading/reveal branches; MATCHING cross-resource pool identity validation and complete authoring→snapshot→runtime grading verification remain open. Do not label the Question Engine end-to-end complete.
 
-## 7. Error contract / localization truth
+## 8. Error contract / localization truth
 
 - Backend business errors use `AppException(ErrorCode.X)` and `GlobalExceptionHandler` exposes stable codes.
 - `ErrorCode.java` is authoritative.
 - Frontend `AppError` resolves `errors.<backendCode>`.
 - Error-code/i18n parity is mandatory whenever `ErrorCode` changes.
-- Sprint 0 added English/Vietnamese AssessmentAttempt translations in both the dedicated `student/assignment-attempt` namespace and the legacy `errors` catalog.
 
-## 8. Routing / UI truth
+## 9. Routing / UI truth
 
 Canonical teacher content routes remain under `/teacher/content/...`. Student Assignment Attempt UI has a contract ownership target under `features/student/assignment-attempt`; no route was added in Sprint 0.
 
-## 9. Verification rule
+## 10. Verification rule
 
-Sprint 0 was implemented through source writes only. No backend tests, frontend lint/typecheck/build, Flyway validation, browser E2E or current-HEAD CI run was executed as part of this change. Do not call Sprint 0 runtime-verified until those checks run.
+Documentation and contract changes are not runtime verification. No backend tests, frontend lint/typecheck/build, Flyway validation, browser E2E or current-HEAD CI run was executed by this rebaseline. Do not call the runtime verified until exact test/build/browser evidence exists for the current HEAD.
 
-## 10. Next gate
+## 11. Next gate
 
-Sprint 1 starts only after this contract is accepted: implement open/start/resume, active-class server authorization, immutable Assignment Composition/settings/question snapshots, restricted-answer-safe runtime projection, initial session claim, and the Student Attempt page shell.
+Sprint 1 starts with:
+1. implement start/resume and active-class server authorization;
+2. build immutable Assignment Composition/settings/question snapshots and restricted-answer-safe projection;
+3. implement stable session credential registration/verification and Student Attempt page shell;
+4. integrate single-active-tab Web Lock coordination before allowing the active player to write.
 
+The next implementation must not introduce heartbeat/stale takeover merely because older contract DTOs or reference code contain those concepts.
 
-## 11. Sprint 1 execution update — 2026-10-26
+## 12. Session-policy rebaseline — 2026-10-26
 
-- Aligned `client-e-learning/src/types/student/assignment-attempt.ts` with the existing Java `AttemptRuntimeResponse` and `AttemptRuntimeQuestionResponse` flat DTO contract. The TypeScript question contract no longer contains `required`; all questions are skippable.
-- Updated `client-e-learning/src/services/student/student-assignment-attempt.service.ts` to export/use the canonical `AttemptRuntimeResponse` type instead of the previous incompatible nested `AttemptRuntimeSnapshot` shape.
-- These are contract-alignment changes only. Backend open/start/resume, snapshot assembly, active-class authorization, initial session ownership, controller endpoints and Student UI are **still not implemented**. Do not call Sprint 1 complete or end-to-end functional.
-- No build, typecheck, backend compilation, tests, Flyway validation or browser checks were executed by this connector change. The project owner previously reported Flyway and FE build succeeded before this commit; that does not verify the current HEAD.
+- Added ADR 0027: `Single Active Tab with Resumable AssessmentAttempt`.
+- Updated active Student Attempt specification and UI/runtime blueprint to remove heartbeat/stale takeover from MVP ownership semantics.
+- The existing V43 `active_session_id` remains useful as the stable logical credential; it is not a time-based lease.
+- `last_activity_at` may be maintained from accepted runtime operations, but it is not used to transfer ownership.

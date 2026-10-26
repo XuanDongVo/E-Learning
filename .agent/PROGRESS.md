@@ -102,3 +102,24 @@ A code/doc change is not considered verified merely because GitHub accepts the c
 - Kept `active_session_id` as the stable logical credential; it is not a time-based lease.
 - Kept `last_activity_at` only as an activity timestamp from accepted operations; it does not transfer ownership.
 - This is documentation/design work only; runtime behavior remains unimplemented.
+
+
+## Sprint 1 kickoff — 2026-10-26
+
+**Status: IN PROGRESS — contract alignment only; runtime is not yet functional.**
+
+Completed:
+- Added ADR 0027 and reconciled the active spec/blueprint around single-active-tab recovery.
+- Added backend `StartOrResumeAttemptRequest(UUID activeSessionId)`.
+- Removed `activeSessionId` from generic `AttemptRuntimeResponse` so the session credential is not returned to readers.
+- Aligned TypeScript runtime DTO with the safer response contract.
+- Replaced FE `start` + `open` + heartbeat/claim-session calls with a single `startOrResume` contract. The endpoint is still a contract target; no controller/service implementation exists yet.
+
+Next Sprint 1 work:
+1. Implement authenticated start-or-resume and validate published/open assignment target and schedule.
+2. Resolve the Student's ACTIVE class on the server and snapshot class attribution.
+3. Build immutable Composition/settings/question snapshots and a student-safe runtime projection.
+4. Add Student Attempt route, Intro/Player shell and Web Locks + IndexedDB credential lifecycle.
+5. Add tests for creation idempotency, credential mismatch, answer-key leakage and snapshot shape.
+
+Verification: no compilation, typecheck/build, automated tests, Flyway validation or browser checks were run for this kickoff.

@@ -123,3 +123,17 @@ Next Sprint 1 work:
 5. Add tests for creation idempotency, credential mismatch, answer-key leakage and snapshot shape.
 
 Verification: no compilation, typecheck/build, automated tests, Flyway validation or browser checks were run for this kickoff.
+
+
+## Sprint 1 readiness gate — 2026-10-26
+
+**Decision: preparation/contract alignment may proceed; full runtime implementation is not yet GO.**
+
+The active .agent/plans/PHASE_7B_IMPLEMENTATION_MIGRATION_PLAN.md requires Gate A before implementing AssessmentAttempt runtime: backend tests and Flyway validation, frontend lint/tests/typecheck/build, plus the specified ActivitySession/Question Engine/snapshot/leakage checks.
+
+Evidence reviewed:
+- The latest available GitHub Actions run at review time was Assignment P0 checks run https://github.com/XuanDongVo/E-Learning/actions/runs/40269647673, on older commit 884b7a184c6ccea59bb93c029c2ec71e3641b7a0. It failed backend compilation on an obsolete AttemptResult DTO reference and failed frontend error-code translation parity.
+- On the current source, the obsolete root DTO path is no longer present, the result DTO imports the current AttemptPartStatus, and a source-level key comparison found all 79 server ErrorCodes plus UNKNOWN_ERROR (80 keys total) in both en/error.json and vi/error.json. This is inspection only, not a test run.
+- No GitHub Actions run is associated with the branch HEAD after the current session-contract edits. No current-HEAD backend compilation/tests, frontend tests/build, Flyway validation, or browser/E2E run has been observed.
+
+Therefore do not mark Gate A passed or claim Sprint 1 runtime is ready. First execute Gate A against the exact latest HEAD and address any failures. Contract-only changes already completed are preparatory and do not constitute a runtime feature.

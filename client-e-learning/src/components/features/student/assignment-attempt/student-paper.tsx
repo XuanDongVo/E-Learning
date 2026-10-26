@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { Fragment, useMemo } from "react";
 import type {
   AttemptAnswerPayload,
   AttemptRuntimeQuestion,
@@ -272,13 +272,35 @@ function QuestionCard({
 
       {type === "CLOZE" && snapshot.blankKeys.length > 0 && (
         <div className="space-y-3">
-          {snapshot.blankKeys.map((key, index) => {
-            const current = typeof values[key] === "string" ? String(values[key]) : "";
-            return <label key={key} className="grid gap-2 sm:grid-cols-[120px_1fr] sm:items-center">
-              <span className="text-sm font-semibold text-neutral-muted">Blank {index + 1}</span>
-              <input value={current} onChange={(event) => onAnswerChange({ values: { ...values, [key]: event.target.value } })} className="h-11 rounded-xl border border-border-color bg-white px-3 text-body text-neutral-dark" aria-label={`Blank ${index + 1}`} />
-            </label>;
-          })}
+          {snapshot.segments.some((segment) => Boolean(segment.blankKey)) ? (
+            <p className="whitespace-pre-wrap text-base leading-8 text-neutral-dark">
+              {snapshot.segments.map((segment, index) => (
+                <Fragment key={`segment-${index}`}>
+                  <span>{segment.text}</span>
+                  {segment.blankKey && (() => {
+                    const key = segment.blankKey;
+                    const current = typeof values[key] === "string" ? String(values[key]) : "";
+                    return (
+                      <input
+                        value={current}
+                        onChange={(event) => onAnswerChange({ values: { ...values, [key]: event.target.value } })}
+                        className="mx-1 inline-block h-10 w-28 rounded-lg border border-border-color bg-white px-2 text-body text-neutral-dark align-baseline focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                        aria-label={`Blank ${snapshot.blankKeys.indexOf(key) + 1}`}
+                      />
+                    );
+                  })()}
+                </Fragment>
+              ))}
+            </p>
+          ) : (
+            snapshot.blankKeys.map((key, index) => {
+              const current = typeof values[key] === "string" ? String(values[key]) : "";
+              return <label key={key} className="grid gap-2 sm:grid-cols-[120px_1fr] sm:items-center">
+                <span className="text-sm font-semibold text-neutral-muted">Blank {index + 1}</span>
+                <input value={current} onChange={(event) => onAnswerChange({ values: { ...values, [key]: event.target.value } })} className="h-11 rounded-xl border border-border-color bg-white px-3 text-body text-neutral-dark" aria-label={`Blank ${index + 1}`} />
+              </label>;
+            })
+          )}
         </div>
       )}
 

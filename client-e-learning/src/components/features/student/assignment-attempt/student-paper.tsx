@@ -1,7 +1,7 @@
 "use client";
 
 import { Fragment, useMemo } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import type {
   AttemptAnswerPayload,
   AttemptRuntimeQuestion,
@@ -24,7 +24,9 @@ interface CompositionSectionSnapshot {
   id?: number | string;
   position?: number;
   title?: string;
+  titleVi?: string;
   instructions?: string;
+  instructionsVi?: string;
   items?: CompositionItemSnapshot[];
 }
 
@@ -58,15 +60,17 @@ function snapshotItem(value: unknown): CompositionItemSnapshot | null {
   };
 }
 
-function snapshotSections(document: JsonRecord): CompositionSectionSnapshot[] {
+function snapshotSections(document: JsonRecord, locale: string): CompositionSectionSnapshot[] {
   return asArray<unknown>(document.sections)
     .map(asRecord)
     .filter((section): section is JsonRecord => section !== null)
     .map((section) => ({
       id: typeof section.id === "string" || typeof section.id === "number" ? section.id : undefined,
       position: typeof section.position === "number" ? section.position : 0,
-      title: asString(section.title),
-      instructions: asString(section.instructions),
+      title: asString(locale === "vi" ? section.titleVi ?? section.title : section.title),
+      titleVi: asString(section.titleVi),
+      instructions: asString(locale === "vi" ? section.instructionsVi ?? section.instructions : section.instructions),
+      instructionsVi: asString(section.instructionsVi),
       items: asArray<unknown>(section.items)
         .map(snapshotItem)
         .filter((item): item is CompositionItemSnapshot => item !== null),
@@ -138,18 +142,18 @@ function safeQuestionSnapshot(question: AttemptRuntimeQuestion): StudentQuestion
   };
 }
 
-function BlockView({ item }: { item: CompositionItemSnapshot }) {
+function BlockView({ item, locale }: { item: CompositionItemSnapshot; locale: string }) {
   const payload = item.blockPayload ?? {};
   const type = (item.itemType ?? "").toUpperCase();
 
   if (type === "INSTRUCTIONS") {
-    const text = asString(payload.text ?? payload.instructions);
+    const text = asString(locale === "vi" ? payload.textVi ?? payload.instructionsVi ?? payload.text ?? payload.instructions : payload.text ?? payload.instructions);
     return text ? <div className="rounded-xl border border-sky-200 bg-sky-50 p-4 text-sm leading-6 text-sky-950">{text}</div> : null;
   }
 
   if (type === "PASSAGE") {
-    const title = asString(payload.title);
-    const text = asString(payload.text ?? payload.content);
+    const title = asString(locale === "vi" ? payload.titleVi ?? payload.title : payload.title);
+    const text = asString(locale === "vi" ? payload.textVi ?? payload.text ?? payload.content : payload.text ?? payload.content);
     return (
       <article className="space-y-2 rounded-2xl border border-border-color bg-background-app p-5">
         {title && <h3 className="font-bold text-neutral-dark">{title}</h3>}
@@ -161,7 +165,7 @@ function BlockView({ item }: { item: CompositionItemSnapshot }) {
   if (type === "MEDIA") {
     const url = asString(payload.url);
     const alt = asString(payload.alt);
-    const caption = asString(payload.caption);
+    const caption = asString(locale === "vi" ? payload.captionVi ?? payload.caption : payload.caption);
     if (!url) return null;
     const isAudio = /audio/i.test(asString(payload.kind ?? payload.mediaType)) || /\.(mp3|wav|ogg|m4a)(\?|$)/i.test(url);
     return (
@@ -183,7 +187,7 @@ function BlockView({ item }: { item: CompositionItemSnapshot }) {
     if (!entries.length) return null;
     return (
       <aside className="rounded-xl border border-violet-200 bg-violet-50 p-4">
-        {asString(payload.title) && <h4 className="mb-2 font-bold text-violet-950">{asString(payload.title)}</h4>}
+        {asString(locale === "vi" ? payload.titleVi ?? payload.title : payload.title) && <h4 className="mb-2 font-bold text-violet-950">{asString(locale === "vi" ? payload.titleVi ?? payload.title : payload.title)}</h4>}
         <ul className="flex flex-wrap gap-2">{entries.map((entry, index) => <li key={index} className="rounded-lg bg-white px-3 py-1.5 text-sm text-violet-950">{entry}</li>)}</ul>
       </aside>
     );
@@ -375,6 +379,7 @@ function renderItem(
   answers: Record<number, AttemptAnswerPayload>,
   onAnswerChange: (questionId: number, answer: AttemptAnswerPayload) => void,
   keyPrefix: string,
+  locale: string,
 ) {
   if (item.itemType === "QUESTION" && typeof item.id === "number") {
     const question = questionsByItemId.get(item.id);
@@ -383,8 +388,8 @@ function renderItem(
     return <QuestionCard key={`${keyPrefix}-q-${question.attemptQuestionId}`} question={question} answer={answers[question.attemptQuestionId]} poolOptions={poolsById.get(questionPoolId) ?? []} onAnswerChange={(answer) => onAnswerChange(question.attemptQuestionId, answer)} />;
   }
 
-  const block = <BlockView item={item} key={`${keyPrefix}-block-${String(item.id ?? item.position)}`} />;
-  const children = (item.children ?? []).slice().sort((a, b) => (a.position ?? 0) - (b.position ?? 0)).map((child, index) => renderItem(child, questionsByItemId, poolsById, answers, onAnswerChange, `${keyPrefix}-child-${index}`));
+  const block = <BlockView item={item} locale={locale} key={`${keyPrefix}-block-${String(item.id ?? item.position)}`} />;
+  const children = (item.children ?? []).slice().sort((a, b) => (a.position ?? 0) - (b.position ?? 0)).map((child, index) => renderItem(child, questionsByItemId, poolsById, answers, onAnswerChange, `${keyPrefix}-child-${index}`, locale));
   return <div key={`${keyPrefix}-item-${String(item.id ?? item.position)}`} className="space-y-3">{block}{children}</div>;
 }
 
@@ -397,8 +402,10 @@ export function StudentPaper({
   answers: Record<number, AttemptAnswerPayload>;
   onAnswerChange: (attemptQuestionId: number, answer: AttemptAnswerPayload) => void;
 }) {
+  const locale = useLocale();
+  const t = useTranslations("student.assignmentAttempt.paper");
   const document = asRecord(runtime.document) ?? {};
-  const sections = snapshotSections(document);
+  const sections = snapshotSections(document, locale);
   const questionsByItemId = new Map<number, AttemptRuntimeQuestion>();
   const poolsById = new Map<string, PoolOption[]>();
   runtime.questions.forEach((question) => {
@@ -416,7 +423,7 @@ export function StudentPaper({
               {section.instructions && <p className="text-sm leading-6 text-neutral-muted">{section.instructions}</p>}
             </header>
             {(section.items ?? []).slice().sort((a, b) => (a.position ?? 0) - (b.position ?? 0)).map((item, index) =>
-              renderItem(item, questionsByItemId, poolsById, answers, onAnswerChange, `section-${sectionIndex}-${index}`),
+              renderItem(item, questionsByItemId, poolsById, answers, onAnswerChange, `section-${sectionIndex}-${index}`, locale),
             )}
           </section>
         ))}

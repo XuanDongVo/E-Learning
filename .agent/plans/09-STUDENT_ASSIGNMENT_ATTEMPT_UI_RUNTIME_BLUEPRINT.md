@@ -316,6 +316,12 @@ Target semantics:
 
 **Không trả `active_session_id` trong bất kỳ generic runtime response nào.** Credential do client tạo, lưu bền vững trước request đầu tiên và gửi trong start/resume hoặc mutation request; server chỉ lưu và đối chiếu credential.
 
+### Intro availability semantics
+
+- `AttemptIntroResponse.availabilityCode == null` means the server currently permits Start/Resume under its authoritative policy; `attemptStatus` can still be `IN_PROGRESS`.
+- A non-null `availabilityCode` means the server is not allowing the current Start/Resume action; the client disables the CTA and displays a generic localized unavailable message. The client must not infer availability from `dueAt`, Assignment status or class membership on its own.
+- The POST start/resume method must revalidate all rules; Intro is display metadata, not an authorization token.
+
 ### Student Paper / snapshot projection contract
 
 The server may persist the full canonical grading snapshot internally, but `AttemptRuntimeResponse` must carry a separate **student-safe projection**. Do not serialize a raw `QuestionSpec` directly into the public DTO.

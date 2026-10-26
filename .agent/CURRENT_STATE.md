@@ -118,7 +118,7 @@ The next implementation must not introduce heartbeat/stale takeover merely becau
 
 ## 13. Sprint 1 — initial contract alignment (2026-10-26)
 
-**Status: IN PROGRESS; runtime implementation is not yet complete.**
+**Status: contract kickoff in progress; full runtime implementation is BLOCKED pending Gate A validation.**
 
 Completed contract changes on this branch:
 - Added accepted ADR 0027 for Single Active Tab with Resumable AssessmentAttempt.
@@ -135,4 +135,11 @@ Still not implemented:
 - Student Attempt page/Intro/Player and Web Lock + IndexedDB implementation.
 - Backend test coverage and runtime endpoints.
 
-Verification: these are source/contract changes only. Backend compilation, frontend typecheck/build, tests, Flyway validation and browser/E2E checks were not run for this slice.
+Verification: these are source/contract changes only. Backend compilation, frontend typecheck/build, tests, Flyway validation and browser/E2E checks were not run for this slice. The latest available CI run is stale and failed; source-level corrections are not a substitute for rerunning Gate A on the exact current HEAD.
+
+
+## 14. Sprint 1 readiness decision — 2026-10-26
+
+- **Contract/preparation work:** may proceed; the heartbeat/claim mismatch and credential leakage from the generic runtime DTO have been corrected.
+- **Full runtime implementation:** not GO until Gate A in .agent/plans/PHASE_7B_IMPLEMENTATION_MIGRATION_PLAN.md is passed against the exact current HEAD. The latest available CI run at review time was on an older SHA and failed; no current-HEAD run was found.
+- Required next gate: backend test/compile + Flyway validation, frontend tests/typecheck/build, and verification of existing ActivitySession/Question Engine/snapshot security before building Start/Resume runtime on top.

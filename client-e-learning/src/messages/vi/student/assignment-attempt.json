@@ -1,0 +1,57 @@
+{
+  "assignmentAttempt": {
+    "intro": {
+      "title": "Lần làm bài",
+      "grade": "Khối",
+      "questions": "câu hỏi",
+      "timeLimit": "Thời gian làm bài",
+      "noTimeLimit": "Không giới hạn thời gian",
+      "dueAt": "Hạn nộp",
+      "overdue": "Đã quá hạn",
+      "resume": "Tiếp tục làm bài",
+      "start": "Bắt đầu làm bài",
+      "savedAnswersRestored": "Các câu trả lời đã lưu được khôi phục."
+    },
+    "header": { "progress": "Tiến độ", "submit": "Nộp bài" },
+    "timer": { "remaining": "Thời gian còn lại", "noLimit": "Không giới hạn thời gian", "timeUp": "Đã hết thời gian" },
+    "save": {
+      "saved": "Đã lưu",
+      "saving": "Đang lưu...",
+      "pending": "Đang chờ lưu",
+      "failed": "Lưu thất bại",
+      "retry": "Thử lại",
+      "unsyncedCount": "{count} thay đổi chưa đồng bộ"
+    },
+    "session": {
+      "conflictTitle": "Bài làm đang được mở ở nơi khác",
+      "conflictDescription": "Một phiên đang hoạt động khác hiện đang giữ quyền làm bài này.",
+      "retry": "Thử lại",
+      "reclaim": "Nhận lại phiên",
+      "stale": "Phiên trước có vẻ đã không còn hoạt động."
+    },
+    "visibility": {
+      "tabHidden": "Bạn đã rời khỏi tab làm bài.",
+      "fullscreenExit": "Bạn đã thoát chế độ toàn màn hình.",
+      "continue": "Tiếp tục làm bài"
+    },
+    "submit": {
+      "title": "Nộp bài?",
+      "confirm": "Nộp bài",
+      "unanswered": "{count} câu hỏi chưa trả lời",
+      "pendingSaves": "{count} thay đổi vẫn đang được lưu",
+      "failedSaves": "{count} thay đổi chưa lưu được",
+      "waitForSave": "Chờ lưu xong",
+      "cancel": "Hủy"
+    },
+    "result": {
+      "title": "Kết quả bài làm",
+      "submitted": "Đã nộp",
+      "timedOut": "Hết thời gian",
+      "score": "Điểm",
+      "scoreHidden": "Điểm của bạn hiện chưa được hiển thị.",
+      "answersShown": "Đáp án đã được hiển thị.",
+      "answersHidden": "Đáp án đang được ẩn.",
+      "late": "Nộp bài trễ"
+    }
+  }
+}

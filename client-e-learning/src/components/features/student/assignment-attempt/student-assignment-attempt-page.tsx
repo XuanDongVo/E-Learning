@@ -353,6 +353,12 @@ export function StudentAssignmentAttemptPage({ assignmentId }: { assignmentId: s
         </div>
       </section>
 
+      {introQuery.data?.availabilityCode && (
+        <div role="alert" className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950">
+          {t("intro.unavailable")}
+        </div>
+      )}
+
       {introQuery.isError && (
         <div role="status" className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950">
           <p>{t("errors.introLoadFailed")}</p>
@@ -382,7 +388,7 @@ export function StudentAssignmentAttemptPage({ assignmentId }: { assignmentId: s
         </ul>
         <Button
           className="w-full sm:w-auto"
-          disabled={lockState !== "OWNED" || phase === "STARTING"}
+          disabled={lockState !== "OWNED" || phase === "STARTING" || Boolean(introQuery.data?.availabilityCode)}
           onClick={() => void startOrResume()}
         >
           {phase === "STARTING" && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}

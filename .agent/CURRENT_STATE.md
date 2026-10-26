@@ -61,7 +61,7 @@
 - Added `assessmentAttemptApi.ts` as the dedicated HTTP boundary. It is contract-only; no runtime endpoints are claimed to exist yet.
 - Added `assessmentAttemptStateMachine.ts` with explicit player states: `LOADING`, `INTRO`, `STARTING`, `ACTIVE`, `SAVING`, `SESSION_CONFLICT`, `SUBMITTING`, `FINALIZING`, `TIME_UP`, `RESULT`, `ERROR`.
 - Added `student/assignment-attempt.json` for both `en` and `vi` and registered the namespace in `client-e-learning/src/i18n/request.ts`.
-- Existing `error.json` English vocabulary was extended with the new AssessmentAttempt backend codes.
+- Extended both English and Vietnamese `error.json` catalogs with the new AssessmentAttempt backend codes.
 
 ### Sprint 0 intentionally NOT implemented
 
@@ -91,7 +91,7 @@ Question Engine and all seven handlers exist structurally. ActivitySession still
 - `ErrorCode.java` is authoritative.
 - Frontend `AppError` resolves `errors.<backendCode>`.
 - Error-code/i18n parity is mandatory whenever `ErrorCode` changes.
-- Sprint 0 added English AssessmentAttempt translations and the dedicated English/Vietnamese `student/assignment-attempt` namespace. The Vietnamese legacy `error.json` update could not be safely applied because GitHub rejected the provided content SHA; it remains a follow-up parity item.
+- Sprint 0 added English/Vietnamese AssessmentAttempt translations in both the dedicated `student/assignment-attempt` namespace and the legacy `errors` catalog.
 
 ## 8. Routing / UI truth
 

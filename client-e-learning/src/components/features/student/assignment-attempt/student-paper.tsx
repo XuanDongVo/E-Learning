@@ -75,15 +75,16 @@ function snapshotSections(document: JsonRecord): CompositionSectionSnapshot[] {
 }
 function safeQuestionSnapshot(question: AttemptRuntimeQuestion): StudentQuestionSnapshot {
   const value = asRecord(question.questionSnapshot) ?? {};
-  const common = asRecord(value.common) ?? {};
-  const segments = asArray<unknown>(value.segments)
+  const spec = asRecord(value.spec ?? value.definition ?? value.questionSpec) ?? value;
+  const common = asRecord(spec.common ?? value.common) ?? {};
+  const segments = asArray<unknown>(spec.segments)
     .map(asRecord)
     .filter((segment): segment is JsonRecord => segment !== null)
     .map((segment) => ({
       text: asString(segment.text),
       blankKey: typeof segment.blankKey === "string" ? segment.blankKey : undefined,
     }));
-  const blankKeys = asArray<unknown>(value.blanks)
+  const blankKeys = asArray<unknown>(spec.blanks)
     .map(asRecord)
     .filter((blank): blank is JsonRecord => blank !== null)
     .map((blank) => asString(blank.key))
@@ -102,10 +103,10 @@ function safeQuestionSnapshot(question: AttemptRuntimeQuestion): StudentQuestion
   // Canonical QuestionSpec snapshots serialize prompt content under common.content.
   // The server must remove correct keys/accepted answers before this projection is returned.
   return {
-    type: asString(value.type ?? asRecord(value.spec)?.type).toUpperCase(),
-    poolId: asString(value.poolId ?? asRecord(value.spec)?.poolId),
-    prompt: asString(value.prompt ?? value.content ?? value.text ?? common.content),
-    choices: asArray<unknown>(value.choices ?? value.options)
+    type: asString(spec.type ?? value.type).toUpperCase(),
+    poolId: asString(spec.poolId ?? value.poolId),
+    prompt: asString(spec.prompt ?? spec.content ?? spec.text ?? value.prompt ?? value.content ?? common.content),
+    choices: asArray<unknown>(spec.choices ?? spec.options)
       .map(asRecord)
       .filter((choice): choice is JsonRecord => choice !== null)
       .map((choice) => ({
@@ -113,7 +114,7 @@ function safeQuestionSnapshot(question: AttemptRuntimeQuestion): StudentQuestion
         text: asString(choice.text ?? choice.content ?? choice.label),
       }))
       .filter((choice) => choice.key !== "" && choice.text !== ""),
-    media: asArray<unknown>(value.media)
+    media: asArray<unknown>(spec.media ?? value.media)
       .map(asRecord)
       .filter((media): media is JsonRecord => media !== null)
       .map((media) => ({
@@ -122,12 +123,12 @@ function safeQuestionSnapshot(question: AttemptRuntimeQuestion): StudentQuestion
         kind: asString(media.kind ?? media.mediaType).toLowerCase(),
       }))
       .filter((media) => media.url !== ""),
-    items: asArray<unknown>(value.items)
+    items: asArray<unknown>(spec.items)
       .map(asRecord)
       .filter((item): item is JsonRecord => item !== null)
       .map((item) => ({ key: asString(item.key ?? item.itemKey), text: asString(item.content ?? item.prompt) }))
       .filter((item) => item.key !== "" && item.text !== ""),
-    answerPool: asArray<unknown>(value.answerPool)
+    answerPool: asArray<unknown>(spec.answerPool ?? spec.answer_pool)
       .map(asRecord)
       .filter((item): item is JsonRecord => item !== null)
       .map((item) => ({ key: asString(item.key ?? item.id), text: asString(item.content ?? item.text) }))
@@ -206,6 +207,15 @@ function QuestionCard({
   const snapshot = useMemo(() => safeQuestionSnapshot(question), [question]);
   const type = snapshot.type;
   const matchingPool = snapshot.answerPool.length > 0 ? snapshot.answerPool : poolOptions;
+  const typeLabels: Record<string, string> = {
+    SINGLE_CHOICE: t("types.SINGLE_CHOICE"),
+    MULTIPLE_CHOICE: t("types.MULTIPLE_CHOICE"),
+    TRUE_FALSE: t("types.TRUE_FALSE"),
+    FILL_IN_BLANK: t("types.FILL_IN_BLANK"),
+    TYPE_ANSWER: t("types.TYPE_ANSWER"),
+    MATCHING: t("types.MATCHING"),
+    CLOZE: t("types.CLOZE"),
+  };
   const selectedKey = typeof answer?.selectedKey === "string" ? answer.selectedKey : "";
   const selectedKeys = Array.isArray(answer?.selectedKeys) ? answer.selectedKeys.filter((value): value is string => typeof value === "string") : [];
   const value = typeof answer?.value === "string" ? answer.value : "";
@@ -219,7 +229,7 @@ function QuestionCard({
           {question.position + 1}. {snapshot.prompt || t("questionFallback")}
         </h3>
         <span className="rounded-full bg-background-app px-3 py-1 text-xs font-semibold text-neutral-muted">
-          {type.replaceAll("_", " ")}
+          {typeLabels[type] ?? t("types.UNKNOWN")}
         </span>
       </header>
 
@@ -256,7 +266,7 @@ function QuestionCard({
       )}
 
       {(type === "FILL_IN_BLANK" || type === "TYPE_ANSWER") && (
-        <input value={value} onChange={(event) => onAnswerChange({ value: event.target.value })} className="h-11 w-full rounded-xl border border-border-color bg-white px-3 text-body text-neutral-dark outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" aria-label={snapshot.prompt || "Answer"} />
+        <input value={value} onChange={(event) => onAnswerChange({ value: event.target.value })} className="h-11 w-full rounded-xl border border-border-color bg-white px-3 text-body text-neutral-dark outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" aria-label={snapshot.prompt || t("answer")} />
       )}
 
       {type === "MATCHING" && snapshot.items.length > 0 && (
@@ -307,7 +317,7 @@ function QuestionCard({
                         value={current}
                         onChange={(event) => onAnswerChange({ values: { ...values, [key]: event.target.value } })}
                         className="mx-1 inline-block h-10 w-28 rounded-lg border border-border-color bg-white px-2 text-body text-neutral-dark align-baseline focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-                        aria-label={`Blank ${snapshot.blankKeys.indexOf(key) + 1}`}
+                        aria-label={t("blank", { index: snapshot.blankKeys.indexOf(key) + 1 })}
                       />
                     );
                   })()}
@@ -402,7 +412,7 @@ export function StudentPaper({
         {sections.map((section, sectionIndex) => (
           <section key={String(section.id ?? sectionIndex)} className="space-y-4">
             <header className="space-y-1">
-              <h2 className="text-lg font-extrabold text-neutral-dark">{section.title || `Section ${sectionIndex + 1}`}</h2>
+              <h2 className="text-lg font-extrabold text-neutral-dark">{section.title || t("sectionFallback", { index: sectionIndex + 1 })}</h2>
               {section.instructions && <p className="text-sm leading-6 text-neutral-muted">{section.instructions}</p>}
             </header>
             {(section.items ?? []).slice().sort((a, b) => (a.position ?? 0) - (b.position ?? 0)).map((item, index) =>

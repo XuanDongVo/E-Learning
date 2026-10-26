@@ -2,9 +2,9 @@
 
 **Trạng thái:** APPROVED PLAN — sẵn sàng triển khai theo Sprint
 **Nhánh:** `feature/student-assignment-attempt`
-**Nhánh gốc:** `refactor/teacher-content-ui-routing`
 **Phase:** 7B — Student làm Assignment chính thức
 **Reference UI:** `XuanDongVo/assignment-studio`
+**Session policy:** ADR 0027 — Single Active Tab with Resumable AssessmentAttempt
 
 ## 1. Mục tiêu
 
@@ -42,8 +42,13 @@ Student UI
 - Whole-attempt timer; không lưu per-question timing.
 - Server quyết định `deadline_at`; client chỉ hiển thị countdown.
 - Autosave theo Question, revision-protected, server-confirmed.
-- `active_session_id` là single-writer control.
-- `TAB_HIDDEN`, `FULLSCREEN_EXIT`, `SESSION_TAKEOVER` chỉ là lightweight visibility/session events, không phải bằng chứng gian lận.
+- **Một active browser tab có quyền thao tác tại một thời điểm.**
+- Tab khác nhận `SESSION_CONFLICT` ngay; không queue, không chờ và không tự takeover.
+- Web Locks API là same-browser coordination mechanism; dùng exclusive lock với `ifAvailable` để tránh hàng đợi.
+- Stable logical session credential được lưu bền vững để refresh/đóng trình duyệt rồi mở lại có thể resume Attempt cũ.
+- Backend xác minh credential trên mọi mutation; browser lock không phải security boundary.
+- **Heartbeat, stale-session detection và automatic takeover không thuộc MVP.**
+- `TAB_HIDDEN` và `FULLSCREEN_EXIT` chỉ là lightweight visibility events, không phải bằng chứng gian lận.
 - `show_score_after_submit` và `show_answers_after_submit` độc lập và backend-enforced.
 - Auto-grade từ snapshot; không manual grading MVP.
 - XP/badge/ranking và advanced analytics không nằm trong runtime này.
@@ -56,7 +61,7 @@ Student UI
 | `assignment-studio` | Vai trò/reference | E-Learning target | API/entity | Sprint |
 |---|---|---|---|---|
 | `src/attempts/components/ExamPlayer.tsx` | Main orchestration: intro, active, timer, save, submit, result | `AssignmentAttemptPage.tsx` + `AssignmentAttemptPlayer.tsx` | `AssessmentAttempt` | S1–S4 |
-| `src/attempts/player.ts` | Client runtime/state machine, autosave, heartbeat, retry | `useAssignmentAttempt.ts` + `useAttemptAutosave.ts` + `useAttemptSession.ts` | Attempt runtime DTO, Answer revision, session | S1–S4 |
+| `src/attempts/player.ts` | Client runtime/state machine, autosave, retry | `useAssignmentAttempt.ts` + `useAttemptAutosave.ts` + `useAttemptSession.ts` | Attempt runtime DTO, Answer revision, session | S1–S4 |
 | `src/attempts/components/StudentPaper` | Student paper/question rendering | `StudentPaper` / existing Question Engine rendering layer | `question_snapshot`, composition snapshot | S1 |
 | `src/attempts/components/ResultView.tsx` | Post-submit result presentation | `AssignmentAttemptResult.tsx` | result DTO + visibility policy | S4 |
 | `src/attempts/components/TestTools.tsx` | Prototype/test utilities | **Do not port to production runtime** | — | — |
@@ -66,7 +71,7 @@ Student UI
 | `useRemaining()` pattern | Server-clock countdown | `useAttemptTimer.ts` | `serverNow`, `deadlineAt` | S3 |
 | `useLeaveGuard()` pattern | Visibility/fullscreen UX | `useAttemptVisibility.ts` | AttemptEvent | S5 |
 | `SyncBadge` | Saved/saving/pending/failed UX | `AssignmentAttemptSaveStatus.tsx` | Answer revision response | S2 |
-| `Elsewhere` | Single-writer conflict screen | `AssignmentAttemptSessionConflict.tsx` | `active_session_id` / session claim | S3 |
+| `Elsewhere` | Single-writer conflict screen | `AssignmentAttemptSessionConflict.tsx` | session credential / Web Lock state | S1/S3 |
 | Submit dialog/unsynced flow | Flush then submit | `AssignmentAttemptSubmitDialog.tsx` | save + submit endpoints | S4 |
 
 ### Những phần KHÔNG copy
@@ -76,9 +81,10 @@ Student UI
 3. Client-only timer authority.
 4. Client-only session ownership.
 5. `localStorage/sessionStorage/BroadcastChannel` như nguồn sự thật nghiệp vụ.
-6. Hard-coded Vietnamese strings.
+6. Heartbeat/stale takeover pattern của reference.
+7. Hard-coded Vietnamese strings.
 
-Browser APIs chỉ được dùng để cải thiện UX; server vẫn là authority.
+Browser APIs chỉ được dùng để cải thiện UX/coordination; server vẫn là authority.
 
 ---
 
@@ -114,13 +120,13 @@ AssignmentAttemptPage
 **API:**
 - open/read runtime entry
 - start/create-or-resume
-- claim active session
 
 **Rules:**
 - `IN_PROGRESS` → Resume.
 - `SUBMITTED`/`TIMED_OUT` → Result.
 - quá due → vẫn theo backend due policy; `is_late` được server tính.
 - client không tự chọn class.
+- trước khi start/resume, frontend thử Web Lock với `ifAvailable`; nếu không lấy được lock thì hiển thị conflict ngay và không gửi mutation.
 
 ---
 
@@ -148,20 +154,23 @@ AssignmentAttemptPlayer
 - server answer version
 - save state
 - session ownership
+- Web Lock ownership
 - server clock offset
 - deadline
 - submit/finalizing state
+- durable unsynced draft queue when offline
 
 **API:**
 - save answer
-- heartbeat
-- refresh runtime
-- session claim/takeover
+- refresh/resume runtime
+- submit
+- visibility event
 
 **Rules:**
 - `Saved` chỉ hiện sau server confirmation.
 - stale revision không được overwrite server answer.
 - session conflict → read-only/conflict UI.
+- mất mạng không tạo session mới; giữ credential và retry synchronization.
 - deadline → stop editing và để server finalize.
 
 ---
@@ -170,15 +179,19 @@ AssignmentAttemptPlayer
 
 **Component:** `AssignmentAttemptSessionConflict`
 
-**Trigger:** `SESSION_CONFLICT` / active writer khác.
+**Trigger:** `SESSION_CONFLICT` hoặc Web Lock unavailable.
+
+**UI message intent:** bài đang được thao tác trên một màn hình khác; Student quay lại màn hình đang làm bài.
 
 **Actions:**
 - Return to Student list.
-- Retry/claim khi session cũ stale.
+- Retry opening later after returning to the original tab.
 
 **Không:**
 - tự ghi đè session khác.
-- tự xóa attempt.
+- tự xóa Attempt.
+- chờ trong lock queue.
+- tự claim/takeover session.
 
 ---
 
@@ -280,10 +293,13 @@ Nếu Question Engine hiện tại đã có renderer canonical ở vị trí kh�
 
 ## 5. Backend contract cần chốt trước FE implementation
 
-### Runtime open/start
+### Runtime open/start/resume
 
 ```text
-GET/POST assignment attempt runtime
+startOrResume(
+  assignmentId,
+  sessionCredential
+)
 ```
 
 Target semantics:
@@ -292,9 +308,12 @@ Target semantics:
 - find/create official Attempt
 - determine ACTIVE class
 - create/load immutable snapshots
-- claim session
+- register session credential only for a newly created Attempt
+- verify existing credential on resume
 - return server clock
 - omit restricted answer data
+
+**Không trả `active_session_id` trong generic runtime response cho mọi reader.** Credential chỉ xuất hiện trong start/resume response khi cần thiết cho client đã được cấp quyền.
 
 ### Answer save
 
@@ -315,12 +334,24 @@ Response tối thiểu:
 - normalized value nếu policy cho phép client nhận
 - conflict/error code
 
-### Heartbeat/session
+### Session
+
+Không có heartbeat hoặc stale takeover endpoint trong MVP.
+
+Client coordination:
 
 ```text
-heartbeat(attemptId, activeSessionId)
-claim/reclaim(attemptId, activeSessionId)
+navigator.locks.request(
+  `assessment-attempt:<studentId>:<assignmentId>`,
+  { ifAvailable: true },
+  ...activeAttemptLifetime...
+)
 ```
+
+Server coordination:
+- verify stable session credential on every mutation;
+- never replace credential because a second tab/device asks for access;
+- no automatic takeover based on inactivity.
 
 ### Submit
 
@@ -355,8 +386,7 @@ Allowed client events:
 - `TAB_HIDDEN`
 - `FULLSCREEN_EXIT`
 
-Server-generated:
-- `SESSION_TAKEOVER`
+No server-generated `SESSION_TAKEOVER` in MVP.
 
 ---
 
@@ -412,8 +442,7 @@ assignmentAttempt
 │   ├── conflictTitle
 │   ├── conflictDescription
 │   ├── retry
-│   ├── reclaim
-│   └── stale
+│   └── lost
 ├── visibility
 │   ├── tabHidden
 │   ├── fullscreenExit
@@ -486,7 +515,7 @@ All translations must exist for every supported locale before a screen is consid
 - [ ] Determine ACTIVE class server-side.
 - [ ] Build immutable composition/settings/question snapshots.
 - [ ] Return runtime projection without restricted answers.
-- [ ] Implement initial session claim.
+- [ ] Implement initial stable session credential registration/verification.
 
 **Frontend**
 - [ ] `AssignmentAttemptPage`.
@@ -496,10 +525,12 @@ All translations must exist for every supported locale before a screen is consid
 - [ ] Render Passage/Pool/Media/Instructions from snapshot.
 - [ ] Implement question input state locally.
 - [ ] Implement i18n from first commit.
+- [ ] Acquire Web Lock before start/resume and fail fast on conflict.
+- [ ] Persist session credential in IndexedDB after it is issued.
 
 **Parallel:** yes. FE can use contract fixtures while BE is being implemented.
 
-**Exit:** Student can open, start/resume and render the exact snapshot composition.
+**Exit:** Student can open, start/resume and render the exact snapshot composition; second tab cannot enter the active runtime.
 
 ---
 
@@ -518,6 +549,7 @@ All translations must exist for every supported locale before a screen is consid
 - [ ] Per-question debounce.
 - [ ] `Saved/Saving/Pending/Failed` status.
 - [ ] Retry failed saves.
+- [ ] Durable unsynced draft queue for network interruption.
 - [ ] Flush pending saves before submit.
 - [ ] Never show `Saved` before server confirmation.
 
@@ -525,24 +557,24 @@ All translations must exist for every supported locale before a screen is consid
 
 ---
 
-### Sprint 3 — Timer + Session Ownership
+### Sprint 3 — Timer + Single Active Tab Recovery
 
 **Backend**
 - [ ] Server deadline enforcement.
-- [ ] Heartbeat.
-- [ ] Session stale detection.
-- [ ] Safe takeover.
-- [ ] `SESSION_TAKEOVER` event.
+- [ ] Stable session credential validation.
+- [ ] Reject second tab/device without replacing active credential.
+- [ ] Session-lost/recovery-required response when credential is unavailable.
+- [ ] No heartbeat, stale threshold or automatic takeover in MVP.
 
 **Frontend**
 - [ ] `useAttemptTimer` using server clock offset.
 - [ ] Timer badge/warning states.
-- [ ] `useAttemptSession`.
+- [ ] `useAttemptSession` around Web Lock + IndexedDB credential.
 - [ ] `AssignmentAttemptSessionConflict`.
-- [ ] Read-only behavior after session loss.
-- [ ] Optional browser BroadcastChannel only as UX optimization.
+- [ ] Read-only behavior after session conflict/loss.
+- [ ] Reconnect and browser-reopen recovery.
 
-**Exit:** timer survives refresh/offline period; only current session can write.
+**Exit:** only the active browser tab can write; refresh/network/browser restart can resume when the logical session credential remains available; another tab never silently takes over.
 
 ---
 
@@ -573,7 +605,7 @@ All translations must exist for every supported locale before a screen is consid
 **Backend**
 - [ ] Event endpoint.
 - [ ] Persist `TAB_HIDDEN`, `FULLSCREEN_EXIT`.
-- [ ] Persist server `SESSION_TAKEOVER`.
+- [ ] Do not emit `SESSION_TAKEOVER` under the MVP policy.
 - [ ] Ensure events do not modify score/status.
 
 **Frontend**
@@ -593,7 +625,9 @@ All translations must exist for every supported locale before a screen is consid
 - [ ] stale revision tests.
 - [ ] duplicate submit tests.
 - [ ] timeout boundary tests.
-- [ ] session takeover tests.
+- [ ] same-browser multi-tab conflict tests.
+- [ ] browser restart/recovery tests.
+- [ ] missing/cleared session credential tests.
 - [ ] DTO leakage/security tests.
 
 **Frontend**
@@ -627,7 +661,7 @@ Start/Snapshot          Intro/Paper
                  |
                  v
           Backend/FE S3
-          Timer/Session
+          Timer/Single Tab
                  |
                  v
           Backend/FE S4
@@ -659,17 +693,20 @@ Start/Snapshot          Intro/Paper
 - Start creates/resumes exactly one official Attempt.
 - Class attribution is server-side.
 - Runtime snapshot is stable.
+- Only one browser tab obtains the active Attempt lock.
 
 ### Answer
 - Every supported Question type renders through canonical Question Engine.
 - Passage/Pool/Media references resolve from snapshot.
 - Answer edits remain local until autosave confirmation.
 - No stale request overwrites newer answer.
+- Mutation requires the valid stable session credential.
 
 ### Resume
 - Refresh restores server-confirmed answers.
 - Timer continues from server deadline.
-- Previous session conflict is handled safely.
+- Browser restart can resume when the credential remains available.
+- A second tab does not take over the Attempt.
 
 ### Submit
 - Pending saves are flushed before submit where possible.
@@ -700,14 +737,16 @@ Student Assignment Attempt MVP is complete only when:
 3. StudentPaper/QuestionRenderer renders the snapshot composition.
 4. Incremental autosave is revision-safe and server-confirmed.
 5. Timer is server-authoritative.
-6. Single-writer session is enforced.
-7. Submit/timeout/grading/result are idempotent and secure.
-8. Score/answer visibility policies are backend-enforced.
-9. Lightweight runtime events are stored.
-10. All runtime UI is multilingual.
-11. No second Question Engine is introduced.
-12. No per-question timing, XP/badge/ranking, manual grading or advanced analytics are introduced.
+6. Single-active-tab policy is enforced by browser coordination plus server credential validation.
+7. Refresh/network/browser restart recovery works when the logical credential remains available.
+8. Submit/timeout/grading/result are idempotent and secure.
+9. Score/answer visibility policies are backend-enforced.
+10. Lightweight runtime events are stored.
+11. All runtime UI is multilingual.
+12. No second Question Engine is introduced.
+13. No per-question timing, XP/badge/ranking, manual grading or advanced analytics are introduced.
+14. No heartbeat/stale-session takeover is required for MVP.
 
 ## 11. Reference source notes
 
-The reference `assignment-studio` shows the main student orchestration in `src/attempts/components/ExamPlayer.tsx`; its `player.ts` contains client-side phase, autosave, heartbeat, retry and submit coordination. These are reference patterns only. The production implementation must adapt them to E-Learning's `AssessmentAttempt` V43 contract and keep server authority for state, timer, session, grading and visibility.
+The reference `assignment-studio` shows the main student orchestration in `src/attempts/components/ExamPlayer.tsx`; its `player.ts` contains client-side phase, autosave, retry and submit coordination. Its heartbeat/session behavior is **not** adopted for E-Learning MVP. The production implementation must adapt the useful UX/state patterns to E-Learning's `AssessmentAttempt` V43 contract and keep server authority for state, timer, session, grading and visibility.

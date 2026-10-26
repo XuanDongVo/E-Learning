@@ -1,1 +1,105 @@
-{"assignmentAttempt":{"intro":{"title":"Assignment attempt","grade":"Grade","questions":"questions","timeLimit":"Time limit","noTimeLimit":"No time limit","dueAt":"Due","overdue":"Overdue","resume":"Resume","start":"Start assignment","savedAnswersRestored":"Your saved answers have been restored."},"header":{"progress":"Progress","submit":"Submit"},"timer":{"remaining":"Time remaining","noLimit":"No time limit","timeUp":"Time is up"},"save":{"saved":"Saved","saving":"Saving...","pending":"Changes pending","failed":"Save failed","retry":"Retry","unsyncedCount":"{count} unsynced changes"},"session":{"conflictTitle":"This assignment is open elsewhere","conflictDescription":"Another active session currently owns this attempt.","retry":"Retry","reclaim":"Reclaim session","stale":"The previous session appears to be inactive."},"visibility":{"tabHidden":"You left the assignment tab.","fullscreenExit":"You exited fullscreen.","continue":"Continue assignment"},"submit":{"title":"Submit assignment?","confirm":"Submit","unanswered":"{count} unanswered questions","pendingSaves":"{count} changes are still being saved","failedSaves":"{count} changes could not be saved","waitForSave":"Wait for saves to finish","cancel":"Cancel"},"result":{"title":"Assignment result","submitted":"Submitted","timedOut":"Timed out","score":"Score","scoreHidden":"Your score is not available yet.","answersShown":"Answers are available.","answersHidden":"Answers are hidden.","late":"Submitted late"}}}
+{
+  "assignmentAttempt": {
+    "intro": {
+      "title": "Assignment attempt",
+      "grade": "Grade",
+      "questions": "questions",
+      "timeLimit": "Time limit",
+      "noTimeLimit": "No time limit",
+      "dueAt": "Due",
+      "overdue": "Overdue",
+      "resume": "Resume",
+      "start": "Start assignment",
+      "savedAnswersRestored": "Your saved answers have been restored.",
+      "eyebrow": "Student assignment",
+      "description": "Start this assignment or resume the attempt already linked to your account. Your teacher's saved paper and the server deadline are used for the attempt.",
+      "titleWithId": "Assignment #{id}",
+      "beforeStartTitle": "Before you start",
+      "ruleOneAttempt": "This assignment has one official attempt. Reopening it resumes the same attempt.",
+      "ruleDeadline": "The deadline is controlled by the server and continues while the browser is closed.",
+      "ruleDraft": "For this Sprint 1 preview, answer edits are kept in this page only; autosave is not connected yet.",
+      "startOrResume": "Start / resume assignment",
+      "noDueDate": "Not provided",
+      "timeLimitValue": "{minutes} minutes"
+    },
+    "header": {
+      "progress": "Progress",
+      "submit": "Submit"
+    },
+    "timer": {
+      "remaining": "Time remaining",
+      "noLimit": "No time limit",
+      "timeUp": "Time is up"
+    },
+    "save": {
+      "saved": "Saved",
+      "saving": "Saving...",
+      "pending": "Changes pending",
+      "failed": "Save failed",
+      "retry": "Retry",
+      "unsyncedCount": "{count} unsynced changes"
+    },
+    "session": {
+      "conflictTitle": "This assignment is open elsewhere",
+      "conflictDescription": "Another active session currently owns this attempt.",
+      "retry": "Retry",
+      "reclaim": "Reclaim session",
+      "stale": "The previous session appears to be inactive.",
+      "lockUnsupportedTitle": "This browser cannot safely open the assignment",
+      "lockUnsupportedDescription": "This attempt requires browser tab locking. Open it in a supported, up-to-date browser using a secure connection.",
+      "lockErrorTitle": "Could not reserve this browser tab",
+      "lockErrorDescription": "Close any duplicate attempt tabs and reload this page.",
+      "credentialLostTitle": "Your attempt session could not be restored",
+      "credentialLostDescription": "The saved session credential is missing. This preview will not create a replacement session automatically."
+    },
+    "visibility": {
+      "tabHidden": "You left the assignment tab.",
+      "fullscreenExit": "You exited fullscreen.",
+      "continue": "Continue assignment"
+    },
+    "submit": {
+      "title": "Submit assignment?",
+      "confirm": "Submit",
+      "unanswered": "{count} unanswered questions",
+      "pendingSaves": "{count} changes are still being saved",
+      "failedSaves": "{count} changes could not be saved",
+      "waitForSave": "Wait for saves to finish",
+      "cancel": "Cancel"
+    },
+    "result": {
+      "title": "Assignment result",
+      "submitted": "Submitted",
+      "timedOut": "Timed out",
+      "score": "Score",
+      "scoreHidden": "Your score is not available yet.",
+      "answersShown": "Answers are available.",
+      "answersHidden": "Answers are hidden.",
+      "late": "Submitted late"
+    },
+    "backToAssignments": "Back to assignments",
+    "backToDashboard": "Back to dashboard",
+    "player": {
+      "eyebrow": "Assignment in progress",
+      "progress": "Answered {answered} of {total} questions"
+    },
+    "draft": {
+      "warningTitle": "Your answers are not saved yet",
+      "warningDescription": "Do not refresh or close this page if you need to keep these edits. Incremental autosave will be connected in Sprint 2.",
+      "sprint2Note": "Sprint 1 preview — autosave is not connected"
+    },
+    "states": {
+      "checkingAuth": "Checking your account…",
+      "checkingSession": "Checking active tab permission…",
+      "timedOut": "This attempt has timed out",
+      "alreadySubmitted": "This assignment attempt is already finished",
+      "resultSprint4": "The result screen will be connected in Sprint 4.",
+      "starting": "Opening attempt…"
+    },
+    "errors": {
+      "invalidAssignment": "The assignment ID in this link is invalid.",
+      "studentOnly": "Only a signed-in student can open this assignment attempt.",
+      "startFailedTitle": "The attempt could not be opened",
+      "startFailedDescription": "The server endpoint may not be implemented yet. No practice attempt has been mocked or created locally."
+    }
+  }
+}

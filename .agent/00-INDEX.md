@@ -66,7 +66,7 @@ When sources disagree, apply this order:
 
 ## 5. Current high-priority facts
 
-- Branch: `refactor/teacher-content-ui-routing`.
+- Current task branch: `feature/student-assignment-attempt`; `refactor/teacher-content-ui-routing` is the parent/base branch for the Assignment Attempt work.
 - New AssessmentAttempt migration V43 is added on `feature/student-assignment-attempt`; verify Flyway validation and actual database state before applying it or allocating any later version.
 - Question Engine has seven handlers/specs and factory/mapper branches. ActivitySession still uses legacy grading branches; MATCHING POOL references are not resolved/validated; CLOZE cardinality validation is present. End-to-end parity remains unverified.
 - Latest source audit: `.agent/audits/2026-10-25-question-engine-current-code-audit.md`.

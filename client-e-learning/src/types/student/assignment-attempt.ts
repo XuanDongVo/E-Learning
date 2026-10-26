@@ -54,8 +54,6 @@ export interface AttemptSummaryResponse {
   late: boolean;
 }
 
-export interface OpenAttemptResponse extends AttemptRuntimeResponse {}
-
 /** Generate once and persist in IndexedDB before the first start-or-resume request. */
 export interface StartOrResumeAttemptRequest { activeSessionId: string; }
 export interface SaveAttemptAnswerRequest {

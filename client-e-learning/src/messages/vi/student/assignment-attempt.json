@@ -23,7 +23,8 @@
       "timeLimitValue": "{minutes} phút",
       "metadataUnavailable": "Chưa có thông tin",
       "gradeValue": "Khối: {grade}",
-      "questionCount": "{count} câu hỏi"
+      "questionCount": "{count} câu hỏi",
+      "unavailable": "Bài tập hiện chưa thể bắt đầu hoặc tiếp tục. Hãy kiểm tra thông tin bài tập hoặc liên hệ giáo viên."
     },
     "header": {
       "progress": "Tiến độ",

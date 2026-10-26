@@ -81,7 +81,7 @@ Student UI
 3. Client-only timer authority.
 4. Client-only session ownership.
 5. `localStorage/sessionStorage/BroadcastChannel` như nguồn sự thật nghiệp vụ.
-6. Heartbeat/stale takeover pattern của reference.
+6. Heartbeat/stale takeover pattern của reference (explicitly not adopted).
 7. Hard-coded Vietnamese strings.
 
 Browser APIs chỉ được dùng để cải thiện UX/coordination; server vẫn là authority.
@@ -118,8 +118,8 @@ AssignmentAttemptPage
 - session state
 
 **API:**
-- open/read runtime entry
-- start/create-or-resume
+- load assignment metadata for the intro from the existing Student assignment-list/detail API
+- start/create-or-resume with the IndexedDB session credential
 
 **Rules:**
 - `IN_PROGRESS` → Resume.
@@ -313,7 +313,7 @@ Target semantics:
 - return server clock
 - omit restricted answer data
 
-**Không trả `active_session_id` trong generic runtime response cho mọi reader.** Credential chỉ xuất hiện trong start/resume response khi cần thiết cho client đã được cấp quyền.
+**Không trả `active_session_id` trong bất kỳ generic runtime response nào.** Credential do client tạo, lưu bền vững trước request đầu tiên và gửi trong start/resume hoặc mutation request; server chỉ lưu và đối chiếu credential.
 
 ### Answer save
 
@@ -526,7 +526,7 @@ All translations must exist for every supported locale before a screen is consid
 - [ ] Implement question input state locally.
 - [ ] Implement i18n from first commit.
 - [ ] Acquire Web Lock before start/resume and fail fast on conflict.
-- [ ] Persist session credential in IndexedDB after it is issued.
+- [ ] Generate a UUID credential and persist it in IndexedDB before the first start/resume request.
 
 **Parallel:** yes. FE can use contract fixtures while BE is being implemented.
 

@@ -92,7 +92,7 @@ Browser APIs chỉ được dùng để cải thiện UX/coordination; server v�
 
 ### A. Intro / Start
 
-**Route:** `/student/assignment-attempts/:attemptId` hoặc route runtime canonical đã có trong frontend routing; không tạo route authoring mới.
+**Route hiện tại:** `/student/assignments/:assignmentId` (`client-e-learning/src/app/[locale]/student/assignments/[assignmentId]/page.tsx`). Đây là official Assignment entry route, không phải route dùng `attemptId` vì Attempt chỉ có sau lần Start đầu tiên.
 
 **Component:**
 
@@ -118,8 +118,8 @@ AssignmentAttemptPage
 - session state
 
 **API:**
-- load assignment metadata for the intro from the existing Student assignment-list/detail API
-- start/create-or-resume with the IndexedDB session credential
+- `GET /v1/assignments/:assignmentId/assessment-attempt/intro` → safe `AttemptIntroResponse` (title, grade, question count, Assignment dueAt, time limit, existing Attempt status)
+- `POST /v1/assignments/:assignmentId/assessment-attempt` → start/resume with the stable credential already persisted in IndexedDB
 
 **Rules:**
 - `IN_PROGRESS` → Resume.
@@ -293,13 +293,14 @@ Nếu Question Engine hiện tại đã có renderer canonical ở vị trí kh�
 
 ## 5. Backend contract cần chốt trước FE implementation
 
-### Runtime open/start/resume
+### Runtime intro + start/resume
 
 ```text
-startOrResume(
-  assignmentId,
-  sessionCredential
-)
+GET  /v1/assignments/:assignmentId/assessment-attempt/intro
+POST /v1/assignments/:assignmentId/assessment-attempt
+
+getIntro(assignmentId, studentId)
+startOrResume(assignmentId, studentId, StartOrResumeAttemptRequest)
 ```
 
 Target semantics:
@@ -510,27 +511,24 @@ All translations must exist for every supported locale before a screen is consid
 
 ### Sprint 1 — Start / Resume + Student Paper
 
-**Backend**
-- [ ] Implement open/start/resume.
-- [ ] Determine ACTIVE class server-side.
-- [ ] Build immutable composition/settings/question snapshots.
-- [ ] Return runtime projection without restricted answers.
-- [ ] Implement initial stable session credential registration/verification.
+**Backend — controller/contract scaffolding created; business logic intentionally left to owner**
+- [x] Define safe `AttemptIntroResponse` and `StartOrResumeAttemptRequest` DTOs.
+- [x] Add controller method shells for intro and start/resume.
+- [x] Add service method shells `getIntro` and `startOrResume`; they intentionally throw `UnsupportedOperationException` until owner implementation.
+- [ ] Owner implements Student/Assignment authorization, scheduling/target rules, ACTIVE-class attribution, one-attempt concurrency, stable credential verification, immutable snapshot assembly and answer-safe projection.
 
-**Frontend**
-- [ ] `AssignmentAttemptPage`.
-- [ ] `AssignmentAttemptIntro`.
-- [ ] `AssignmentAttemptPlayer` shell.
-- [ ] Integrate existing StudentPaper/QuestionRenderer.
-- [ ] Render Passage/Pool/Media/Instructions from snapshot.
-- [ ] Implement question input state locally.
-- [ ] Implement i18n from first commit.
-- [ ] Acquire Web Lock before start/resume and fail fast on conflict.
-- [ ] Generate a UUID credential and persist it in IndexedDB before the first start/resume request.
+**Frontend — scaffold implemented, runtime not verified**
+- [x] Dynamic route `/student/assignments/:assignmentId` and Intro/Player shell.
+- [x] Intro metadata API contract; Intro remains usable with fallback ID when the backend stub is not implemented.
+- [x] Web Lock with `ifAvailable: true`; conflict/unsupported-browser states.
+- [x] IndexedDB stable UUID credential persisted before the start/resume request.
+- [x] Student Paper renderers for common choices, text answers, Matching/Cloze, plus composition block renderers for Instructions/Passage/Pool/Media.
+- [x] English/Vietnamese strings and warning when the Sprint 1 local draft is not saved.
+- [ ] Connect against owner-implemented server methods, run frontend lint/test/typecheck/build and browser checks; verify the real snapshot shape against Student Paper.
 
-**Parallel:** yes. FE can use contract fixtures while BE is being implemented.
+**Scope boundary:** no answer autosave in Sprint 1; answer edits are page-local and the UI explicitly warns that refresh/close loses them. Autosave/outbox is Sprint 2. Server business logic is deliberately not implemented by the assistant at this stage.
 
-**Exit:** Student can open, start/resume and render the exact snapshot composition; second tab cannot enter the active runtime.
+**Exit:** not achieved until the owner-implemented server contract is integrated and Start/Resume/snapshot + second-tab behavior is tested end-to-end.
 
 ---
 

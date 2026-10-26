@@ -17,8 +17,9 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * Phase 7B runtime orchestration entry point.
  *
- * This is intentionally a skeleton: do not expose start/save/submit endpoints until
- * snapshot assembly and all supported Question Engine handlers are verified end-to-end.
+ * Sprint 1 contains contract method stubs only. The controller shells exist for FE contract
+ * alignment, but this service is intentionally non-functional until the owner implements
+ * business rules. Do not treat these endpoints as usable runtime while the methods throw.
  * Implement each write path transactionally with attempt locking and active-session checks.
  */
 @Service

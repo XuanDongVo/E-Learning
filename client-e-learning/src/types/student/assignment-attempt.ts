@@ -17,7 +17,6 @@ export interface AttemptRuntimeResponse {
   classIdAtStart: number;
   classNameAtStart: string;
   late: boolean;
-  activeSessionId: string | null;
   snapshotVersion: number;
   document: Record<string, unknown>;
   settings: {
@@ -56,6 +55,9 @@ export interface AttemptSummaryResponse {
 }
 
 export interface OpenAttemptResponse extends AttemptRuntimeResponse {}
+
+/** Generate once and persist in IndexedDB before the first start-or-resume request. */
+export interface StartOrResumeAttemptRequest { activeSessionId: string; }
 export interface SaveAttemptAnswerRequest {
   attemptQuestionId: number;
   answerPayload: AttemptAnswerPayload;
@@ -68,12 +70,6 @@ export interface SaveAttemptAnswerResponse {
   revision: number;
   savedAt: string;
   serverNow: string;
-}
-export interface AttemptSessionResponse {
-  attemptId: number;
-  activeSessionId: string;
-  serverNow: string;
-  deadlineAt: string;
 }
 export interface SubmitAttemptRequest { activeSessionId: string; requestId: string; }
 export interface AttemptResultQuestion {

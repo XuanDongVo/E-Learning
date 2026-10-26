@@ -83,7 +83,8 @@
     "draft": {
       "warningTitle": "Câu trả lời chưa được lưu",
       "warningDescription": "Đừng tải lại hoặc đóng trang nếu cần giữ các thay đổi này. Tự lưu từng phần sẽ được kết nối ở Sprint 2.",
-      "sprint2Note": "Bản xem trước Sprint 1 — chưa kết nối tự lưu"
+      "sprint2Note": "Bản xem trước Sprint 1 — chưa kết nối tự lưu",
+      "confirmLeave": "Rời trang này? Các câu trả lời đã thay đổi trong bản xem trước Sprint 1 sẽ bị mất."
     },
     "states": {
       "checkingAuth": "Đang kiểm tra tài khoản…",

@@ -114,3 +114,25 @@ The next implementation must not introduce heartbeat/stale takeover merely becau
 - Updated active Student Attempt specification and UI/runtime blueprint to remove heartbeat/stale takeover from MVP ownership semantics.
 - The existing V43 `active_session_id` remains useful as the stable logical credential; it is not a time-based lease.
 - `last_activity_at` may be maintained from accepted runtime operations, but it is not used to transfer ownership.
+
+
+## 13. Sprint 1 — initial contract alignment (2026-10-26)
+
+**Status: IN PROGRESS; runtime implementation is not yet complete.**
+
+Completed contract changes on this branch:
+- Added accepted ADR 0027 for Single Active Tab with Resumable AssessmentAttempt.
+- Added `StartOrResumeAttemptRequest`; the client generates/persists the UUID credential before the first request.
+- Removed `activeSessionId` from the generic Java `AttemptRuntimeResponse` and corresponding TypeScript runtime DTO. The credential must never be echoed in a runtime response.
+- Changed the frontend service contract to one `startOrResume(assignmentId, { activeSessionId })` POST; removed frontend heartbeat and claim-session calls.
+- Removed stale heartbeat/takeover wording from active Sprint 1/3 blueprint sections.
+
+Still not implemented:
+- Student authorization/Assignment target and schedule validation in a runtime controller/service.
+- Stable credential registration and verification in the backend.
+- Active-class lookup and class snapshot.
+- Immutable Composition/settings/question snapshot builder and answer-safe runtime projection.
+- Student Attempt page/Intro/Player and Web Lock + IndexedDB implementation.
+- Backend test coverage and runtime endpoints.
+
+Verification: these are source/contract changes only. Backend compilation, frontend typecheck/build, tests, Flyway validation and browser/E2E checks were not run for this slice.

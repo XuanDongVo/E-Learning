@@ -292,6 +292,18 @@ export function StudentAssignmentAttemptPage({ assignmentId }: { assignmentId: s
     );
   }
 
+  if (phase === "INTRO" && (introQuery.data?.attemptStatus === "SUBMITTED" || introQuery.data?.attemptStatus === "TIMED_OUT")) {
+    const timedOut = introQuery.data.attemptStatus === "TIMED_OUT";
+    return (
+      <StatusPanel
+        icon={timedOut ? <Clock3 className="h-6 w-6" /> : <BookOpenCheck className="h-6 w-6" />}
+        title={timedOut ? t("states.timedOut") : t("states.alreadySubmitted")}
+        description={t("states.resultSprint4")}
+        action={<Link href="/student/assignments"><Button>{t("backToAssignments")}</Button></Link>}
+      />
+    );
+  }
+
   return (
     <main className="mx-auto max-w-3xl space-y-6 p-4 sm:p-6">
       <Link href="/student/assignments" className="inline-flex items-center gap-2 text-sm font-semibold text-neutral-muted hover:text-neutral-dark">
@@ -350,7 +362,7 @@ export function StudentAssignmentAttemptPage({ assignmentId }: { assignmentId: s
         </div>
       )}
 
-            {phase === "ERROR" && (
+      {phase === "ERROR" && (
         <div role="alert" className="flex items-start gap-3 rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-950">
           <CircleAlert className="mt-0.5 h-5 w-5 shrink-0" />
           <div>
@@ -374,7 +386,7 @@ export function StudentAssignmentAttemptPage({ assignmentId }: { assignmentId: s
           onClick={() => void startOrResume()}
         >
           {phase === "STARTING" && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
-          {phase === "STARTING" ? t("states.starting") : t("intro.startOrResume")}
+          {phase === "STARTING" ? t("states.starting") : introQuery.data?.attemptStatus === "IN_PROGRESS" ? t("intro.resume") : t("intro.start")}
         </Button>
       </div>
     </main>

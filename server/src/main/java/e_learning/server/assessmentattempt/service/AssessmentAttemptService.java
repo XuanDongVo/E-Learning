@@ -1,6 +1,7 @@
 package e_learning.server.assessmentattempt.service;
 
 import e_learning.server.assessmentattempt.dto.request.StartOrResumeAttemptRequest;
+import e_learning.server.assessmentattempt.dto.response.AttemptIntroResponse;
 import e_learning.server.assessmentattempt.dto.response.AttemptRuntimeResponse;
 import e_learning.server.assessmentattempt.repository.AssessmentAttemptAnswerRepository;
 import e_learning.server.assessmentattempt.repository.AssessmentAttemptPartResultRepository;
@@ -31,6 +32,18 @@ public class AssessmentAttemptService {
     private final AssignmentRepository assignmentRepository;
     private final AssignmentItemRepository assignmentItemRepository;
     private final UserRepository userRepository;
+
+    /**
+     * Sprint 1 method stub only. Read-only metadata for the pre-start screen.
+     *
+     * TODO(owner): validate the authenticated Student can access this Assignment and
+     * return only safe display metadata plus the existing Attempt status. Never return
+     * target class IDs, source answer keys, grading snapshots or authoring-only fields.
+     */
+    @Transactional(readOnly = true)
+    public AttemptIntroResponse getIntro(Long assignmentId, Long studentId) {
+        throw new UnsupportedOperationException("Sprint 1 getIntro logic is pending owner implementation");
+    }
 
     /**
      * Sprint 1 method stub only. Product logic is intentionally left for the owner to implement.

@@ -23,7 +23,8 @@
       "timeLimitValue": "{minutes} minutes",
       "metadataUnavailable": "Unavailable",
       "gradeValue": "Grade: {grade}",
-      "questionCount": "{count} questions"
+      "questionCount": "{count} questions",
+      "unavailable": "This assignment is not currently available to start or resume. Check the assignment details or contact your teacher."
     },
     "header": {
       "progress": "Progress",

@@ -43,8 +43,6 @@
       "conflictTitle": "This assignment is open elsewhere",
       "conflictDescription": "Another active session currently owns this attempt.",
       "retry": "Retry",
-      "reclaim": "Reclaim session",
-      "stale": "The previous session appears to be inactive.",
       "lockUnsupportedTitle": "This browser cannot safely open the assignment",
       "lockUnsupportedDescription": "This attempt requires browser tab locking. Open it in a supported, up-to-date browser using a secure connection.",
       "lockErrorTitle": "Could not reserve this browser tab",

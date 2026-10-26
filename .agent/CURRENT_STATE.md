@@ -104,3 +104,11 @@ Sprint 0 was implemented through source writes only. No backend tests, frontend 
 ## 10. Next gate
 
 Sprint 1 starts only after this contract is accepted: implement open/start/resume, active-class server authorization, immutable Assignment Composition/settings/question snapshots, restricted-answer-safe runtime projection, initial session claim, and the Student Attempt page shell.
+
+
+## 11. Sprint 1 execution update — 2026-10-26
+
+- Aligned `client-e-learning/src/types/student/assignment-attempt.ts` with the existing Java `AttemptRuntimeResponse` and `AttemptRuntimeQuestionResponse` flat DTO contract. The TypeScript question contract no longer contains `required`; all questions are skippable.
+- Updated `client-e-learning/src/services/student/student-assignment-attempt.service.ts` to export/use the canonical `AttemptRuntimeResponse` type instead of the previous incompatible nested `AttemptRuntimeSnapshot` shape.
+- These are contract-alignment changes only. Backend open/start/resume, snapshot assembly, active-class authorization, initial session ownership, controller endpoints and Student UI are **still not implemented**. Do not call Sprint 1 complete or end-to-end functional.
+- No build, typecheck, backend compilation, tests, Flyway validation or browser checks were executed by this connector change. The project owner previously reported Flyway and FE build succeeded before this commit; that does not verify the current HEAD.

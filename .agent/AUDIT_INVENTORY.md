@@ -62,6 +62,7 @@ Status labels:
 | `decisions/0024-assignment-composition.md` | ACCEPTED ADR | Preserve; authoritative Composition decision |
 | `decisions/0025-assignment-grading-locking-and-activity-updates.md` | ACCEPTED ADR | Preserve; reflect in active contracts |
 | `decisions/0026-assignment-automatic-scoring-and-score-visibility.md` | ACCEPTED ADR | Preserve; reflect in active contracts |
+| `decisions/0027-single-active-tab-resumable-assessment-attempt.md` | ACCEPTED ADR | Single active tab, stable credential, no heartbeat-driven takeover in MVP |
 | `decisions/README.md` | CANONICAL INDEX | Check supersession and current-state notes; no ADR renumbering |
 
 ## Domain

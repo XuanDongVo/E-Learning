@@ -41,8 +41,24 @@ function asArray<T = unknown>(value: unknown): T[] {
   return Array.isArray(value) ? (value as T[]) : [];
 }
 
+function snapshotItem(value: unknown): CompositionItemSnapshot | null {
+  const item = asRecord(value);
+  if (!item) return null;
+
+  return {
+    id: typeof item.id === "string" || typeof item.id === "number" ? item.id : undefined,
+    position: typeof item.position === "number" ? item.position : 0,
+    itemType: asString(item.itemType ?? item.type).toUpperCase(),
+    questionId: typeof item.questionId === "number" ? item.questionId : null,
+    blockPayload: asRecord(item.blockPayload ?? item.payload),
+    children: asArray<unknown>(item.children)
+      .map(snapshotItem)
+      .filter((child): child is CompositionItemSnapshot => child !== null),
+  };
+}
+
 function snapshotSections(document: JsonRecord): CompositionSectionSnapshot[] {
-  const sections = asArray<unknown>(document.sections)
+  return asArray<unknown>(document.sections)
     .map(asRecord)
     .filter((section): section is JsonRecord => section !== null)
     .map((section) => ({
@@ -51,35 +67,37 @@ function snapshotSections(document: JsonRecord): CompositionSectionSnapshot[] {
       title: asString(section.title),
       instructions: asString(section.instructions),
       items: asArray<unknown>(section.items)
-        .map(asRecord)
-        .filter((item): item is JsonRecord => item !== null)
-        .map((item) => ({
-          id: typeof item.id === "string" || typeof item.id === "number" ? item.id : undefined,
-          position: typeof item.position === "number" ? item.position : 0,
-          itemType: asString(item.itemType ?? item.type).toUpperCase(),
-          questionId: typeof item.questionId === "number" ? item.questionId : null,
-          blockPayload: asRecord(item.blockPayload ?? item.payload),
-          children: asArray<unknown>(item.children)
-            .map(asRecord)
-            .filter((child): child is JsonRecord => child !== null)
-            .map((child) => ({
-              id: typeof child.id === "string" || typeof child.id === "number" ? child.id : undefined,
-              position: typeof child.position === "number" ? child.position : 0,
-              itemType: asString(child.itemType ?? child.type).toUpperCase(),
-              questionId: typeof child.questionId === "number" ? child.questionId : null,
-              blockPayload: asRecord(child.blockPayload ?? child.payload),
-              children: [],
-            })),
-        })),
+        .map(snapshotItem)
+        .filter((item): item is CompositionItemSnapshot => item !== null),
     }))
     .sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
-
-  return sections;
 }
-
 function safeQuestionSnapshot(question: AttemptRuntimeQuestion): StudentQuestionSnapshot {
   const value = asRecord(question.questionSnapshot) ?? {};
   const common = asRecord(value.common) ?? {};
+  const segments = asArray<unknown>(value.segments)
+    .map(asRecord)
+    .filter((segment): segment is JsonRecord => segment !== null)
+    .map((segment) => ({
+      text: asString(segment.text),
+      blankKey: typeof segment.blankKey === "string" ? segment.blankKey : undefined,
+    }));
+  const blankKeys = asArray<unknown>(value.blanks)
+    .map(asRecord)
+    .filter((blank): blank is JsonRecord => blank !== null)
+    .map((blank) => asString(blank.key))
+    .filter(Boolean);
+
+  // Canonical ClozeSpec stores N+1 segments and N blanks without an explicit
+  // blankKey on each segment. Attach those keys in order for inline rendering.
+  const orderedSegments = segments.map((segment, index) => ({
+    ...segment,
+    blankKey: segment.blankKey
+      ?? (segments.length === blankKeys.length + 1 && index < blankKeys.length
+        ? blankKeys[index]
+        : undefined),
+  }));
+
   // Canonical QuestionSpec snapshots serialize prompt content under common.content.
   // The server must remove correct keys/accepted answers before this projection is returned.
   return {
@@ -105,25 +123,15 @@ function safeQuestionSnapshot(question: AttemptRuntimeQuestion): StudentQuestion
     items: asArray<unknown>(value.items)
       .map(asRecord)
       .filter((item): item is JsonRecord => item !== null)
-      .map((item) => ({ key: asString(item.key), text: asString(item.content ?? item.prompt) }))
+      .map((item) => ({ key: asString(item.key ?? item.itemKey), text: asString(item.content ?? item.prompt) }))
       .filter((item) => item.key !== "" && item.text !== ""),
     answerPool: asArray<unknown>(value.answerPool)
       .map(asRecord)
       .filter((item): item is JsonRecord => item !== null)
-      .map((item) => ({ key: asString(item.key), text: asString(item.content ?? item.text) }))
+      .map((item) => ({ key: asString(item.key ?? item.id), text: asString(item.content ?? item.text) }))
       .filter((item) => item.key !== "" && item.text !== ""),
-    segments: asArray<unknown>(value.segments)
-      .map(asRecord)
-      .filter((segment): segment is JsonRecord => segment !== null)
-      .map((segment) => ({
-        text: asString(segment.text),
-        blankKey: typeof segment.blankKey === "string" ? segment.blankKey : undefined,
-      })),
-    blankKeys: asArray<unknown>(value.blanks)
-      .map(asRecord)
-      .filter((blank): blank is JsonRecord => blank !== null)
-      .map((blank) => asString(blank.key))
-      .filter(Boolean),
+    segments: orderedSegments,
+    blankKeys,
   };
 }
 

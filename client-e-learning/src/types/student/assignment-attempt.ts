@@ -45,6 +45,7 @@ export interface AttemptRuntimeQuestion {
 
 export interface StudentQuestionSnapshot {
   type: string;
+  poolId?: string;
   prompt: string;
   choices: { key: string; text: string }[];
   media: { url: string; alt: string; kind: string }[];

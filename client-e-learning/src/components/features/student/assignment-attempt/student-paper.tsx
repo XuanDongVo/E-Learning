@@ -1,6 +1,7 @@
 "use client";
 
 import { Fragment, useMemo } from "react";
+import { useTranslations } from "next-intl";
 import type {
   AttemptAnswerPayload,
   AttemptRuntimeQuestion,
@@ -101,7 +102,8 @@ function safeQuestionSnapshot(question: AttemptRuntimeQuestion): StudentQuestion
   // Canonical QuestionSpec snapshots serialize prompt content under common.content.
   // The server must remove correct keys/accepted answers before this projection is returned.
   return {
-    type: asString(value.type).toUpperCase(),
+    type: asString(value.type ?? asRecord(value.spec)?.type).toUpperCase(),
+    poolId: asString(value.poolId ?? asRecord(value.spec)?.poolId),
     prompt: asString(value.prompt ?? value.content ?? value.text ?? common.content),
     choices: asArray<unknown>(value.choices ?? value.options)
       .map(asRecord)
@@ -192,14 +194,18 @@ function BlockView({ item }: { item: CompositionItemSnapshot }) {
 function QuestionCard({
   question,
   answer,
+  poolOptions,
   onAnswerChange,
 }: {
   question: AttemptRuntimeQuestion;
   answer: AttemptAnswerPayload | undefined;
+  poolOptions: { key: string; text: string }[];
   onAnswerChange: (answer: AttemptAnswerPayload) => void;
 }) {
+  const t = useTranslations("student.assignmentAttempt.paper");
   const snapshot = useMemo(() => safeQuestionSnapshot(question), [question]);
   const type = snapshot.type;
+  const matchingPool = snapshot.answerPool.length > 0 ? snapshot.answerPool : poolOptions;
   const selectedKey = typeof answer?.selectedKey === "string" ? answer.selectedKey : "";
   const selectedKeys = Array.isArray(answer?.selectedKeys) ? answer.selectedKeys.filter((value): value is string => typeof value === "string") : [];
   const value = typeof answer?.value === "string" ? answer.value : "";
@@ -210,7 +216,7 @@ function QuestionCard({
     <article className="space-y-4 rounded-2xl border border-border-color bg-card-bg p-5" aria-labelledby={`question-${question.attemptQuestionId}`}>
       <header className="flex flex-wrap items-center justify-between gap-2">
         <h3 id={`question-${question.attemptQuestionId}`} className="font-extrabold text-neutral-dark">
-          {question.position + 1}. {snapshot.prompt || "Question"}
+          {question.position + 1}. {snapshot.prompt || t("questionFallback")}
         </h3>
         <span className="rounded-full bg-background-app px-3 py-1 text-xs font-semibold text-neutral-muted">
           {type.replaceAll("_", " ")}
@@ -228,7 +234,7 @@ function QuestionCard({
       {(type === "SINGLE_CHOICE" || type === "TRUE_FALSE") && (
         <fieldset className="space-y-2">
           <legend className="sr-only">{snapshot.prompt}</legend>
-          {(snapshot.choices.length ? snapshot.choices : [{ key: "TRUE", text: "True" }, { key: "FALSE", text: "False" }]).map((choice) => (
+          {(snapshot.choices.length ? snapshot.choices : [{ key: "TRUE", text: t("true") }, { key: "FALSE", text: t("false") }]).map((choice) => (
             <label key={choice.key} className={`flex cursor-pointer items-center gap-3 rounded-xl border p-3 transition ${selectedKey === choice.key ? "border-primary bg-primary-light" : "border-border-color hover:bg-background-app"}`}>
               <input type="radio" name={`attempt-${question.attemptQuestionId}`} checked={selectedKey === choice.key} onChange={() => onAnswerChange({ selectedKey: choice.key })} />
               <span>{choice.text}</span>
@@ -262,12 +268,28 @@ function QuestionCard({
                 <span className="text-sm font-medium text-neutral-dark">{item.text}</span>
                 <select value={picked} onChange={(event) => onAnswerChange({ pairs: { ...pairs, [item.key]: event.target.value } })} className="h-11 rounded-xl border border-border-color bg-white px-3 text-body text-neutral-dark">
                   <option value="">—</option>
-                  {snapshot.answerPool.map((option) => <option key={option.key} value={option.key}>{option.text}</option>)}
+                  {matchingPool.map((option) => <option key={option.key} value={option.key}>{option.text}</option>)}
                 </select>
               </label>
             );
           })}
         </div>
+      )}
+
+      {type === "MATCHING" && snapshot.items.length === 0 && matchingPool.length > 0 && (
+        <fieldset className="space-y-2">
+          <legend className="sr-only">{snapshot.prompt}</legend>
+          {matchingPool.map((option) => (
+            <label key={option.key} className={`flex cursor-pointer items-center gap-3 rounded-xl border p-3 transition ${selectedKey === option.key ? "border-primary bg-primary-light" : "border-border-color hover:bg-background-app"}`}>
+              <input type="radio" name={`attempt-${question.attemptQuestionId}`} checked={selectedKey === option.key} onChange={() => onAnswerChange({ selectedKey: option.key })} />
+              <span>{option.text}</span>
+            </label>
+          ))}
+        </fieldset>
+      )}
+
+      {type === "MATCHING" && snapshot.items.length === 0 && matchingPool.length === 0 && (
+        <p className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">{t("matchingPoolMissing")}</p>
       )}
 
       {type === "CLOZE" && snapshot.blankKeys.length > 0 && (
@@ -296,7 +318,7 @@ function QuestionCard({
             snapshot.blankKeys.map((key, index) => {
               const current = typeof values[key] === "string" ? String(values[key]) : "";
               return <label key={key} className="grid gap-2 sm:grid-cols-[120px_1fr] sm:items-center">
-                <span className="text-sm font-semibold text-neutral-muted">Blank {index + 1}</span>
+                <span className="text-sm font-semibold text-neutral-muted">{t("blank", { index: index + 1 })}</span>
                 <input value={current} onChange={(event) => onAnswerChange({ values: { ...values, [key]: event.target.value } })} className="h-11 rounded-xl border border-border-color bg-white px-3 text-body text-neutral-dark" aria-label={`Blank ${index + 1}`} />
               </label>;
             })
@@ -305,15 +327,41 @@ function QuestionCard({
       )}
 
       {!["SINGLE_CHOICE", "TRUE_FALSE", "MULTIPLE_CHOICE", "FILL_IN_BLANK", "TYPE_ANSWER", "MATCHING", "CLOZE"].includes(type) && (
-        <p className="text-sm text-amber-800">This question type is not supported by the current Student Paper renderer yet.</p>
+        <p className="text-sm text-amber-800">{t("unsupportedType")}</p>
       )}
     </article>
   );
 }
 
+type PoolOption = { key: string; text: string };
+
+function collectPoolOptions(
+  item: CompositionItemSnapshot,
+  poolsById: Map<string, PoolOption[]>,
+): void {
+  if (item.itemType === "POOL" && item.blockPayload) {
+    const payload = item.blockPayload;
+    const entries = asArray<unknown>(payload.entries)
+      .map(asRecord)
+      .filter((entry): entry is JsonRecord => entry !== null)
+      .map((entry) => ({ key: asString(entry.id), text: asString(entry.text) }))
+      .filter((entry) => entry.key !== "" && entry.text !== "");
+    const aliases = new Set<string>();
+    if (typeof item.id === "number" || typeof item.id === "string") {
+      aliases.add(String(item.id));
+      aliases.add(`b-${item.id}`);
+    }
+    const logicalKey = asString(payload.poolKey);
+    if (logicalKey) aliases.add(logicalKey);
+    aliases.forEach((key) => poolsById.set(key, entries));
+  }
+  (item.children ?? []).forEach((child) => collectPoolOptions(child, poolsById));
+}
+
 function renderItem(
   item: CompositionItemSnapshot,
   questionsByItemId: Map<number, AttemptRuntimeQuestion>,
+  poolsById: Map<string, PoolOption[]>,
   answers: Record<number, AttemptAnswerPayload>,
   onAnswerChange: (questionId: number, answer: AttemptAnswerPayload) => void,
   keyPrefix: string,
@@ -321,11 +369,12 @@ function renderItem(
   if (item.itemType === "QUESTION" && typeof item.id === "number") {
     const question = questionsByItemId.get(item.id);
     if (!question) return null;
-    return <QuestionCard key={`${keyPrefix}-q-${question.attemptQuestionId}`} question={question} answer={answers[question.attemptQuestionId]} onAnswerChange={(answer) => onAnswerChange(question.attemptQuestionId, answer)} />;
+    const questionPoolId = asString((asRecord(question.questionSnapshot) ?? {}).poolId);
+    return <QuestionCard key={`${keyPrefix}-q-${question.attemptQuestionId}`} question={question} answer={answers[question.attemptQuestionId]} poolOptions={poolsById.get(questionPoolId) ?? []} onAnswerChange={(answer) => onAnswerChange(question.attemptQuestionId, answer)} />;
   }
 
   const block = <BlockView item={item} key={`${keyPrefix}-block-${String(item.id ?? item.position)}`} />;
-  const children = (item.children ?? []).slice().sort((a, b) => (a.position ?? 0) - (b.position ?? 0)).map((child, index) => renderItem(child, questionsByItemId, answers, onAnswerChange, `${keyPrefix}-child-${index}`));
+  const children = (item.children ?? []).slice().sort((a, b) => (a.position ?? 0) - (b.position ?? 0)).map((child, index) => renderItem(child, questionsByItemId, poolsById, answers, onAnswerChange, `${keyPrefix}-child-${index}`));
   return <div key={`${keyPrefix}-item-${String(item.id ?? item.position)}`} className="space-y-3">{block}{children}</div>;
 }
 
@@ -341,9 +390,11 @@ export function StudentPaper({
   const document = asRecord(runtime.document) ?? {};
   const sections = snapshotSections(document);
   const questionsByItemId = new Map<number, AttemptRuntimeQuestion>();
+  const poolsById = new Map<string, PoolOption[]>();
   runtime.questions.forEach((question) => {
     if (question.assignmentItemId !== null) questionsByItemId.set(question.assignmentItemId, question);
   });
+  sections.forEach((section) => (section.items ?? []).forEach((item) => collectPoolOptions(item, poolsById)));
 
   if (sections.length > 0) {
     return (
@@ -355,7 +406,7 @@ export function StudentPaper({
               {section.instructions && <p className="text-sm leading-6 text-neutral-muted">{section.instructions}</p>}
             </header>
             {(section.items ?? []).slice().sort((a, b) => (a.position ?? 0) - (b.position ?? 0)).map((item, index) =>
-              renderItem(item, questionsByItemId, answers, onAnswerChange, `section-${sectionIndex}-${index}`),
+              renderItem(item, questionsByItemId, poolsById, answers, onAnswerChange, `section-${sectionIndex}-${index}`),
             )}
           </section>
         ))}
@@ -366,7 +417,7 @@ export function StudentPaper({
   return (
     <div className="space-y-4">
       {runtime.questions.slice().sort((a, b) => a.position - b.position).map((question) => (
-        <QuestionCard key={question.attemptQuestionId} question={question} answer={answers[question.attemptQuestionId]} onAnswerChange={(answer) => onAnswerChange(question.attemptQuestionId, answer)} />
+        <QuestionCard key={question.attemptQuestionId} question={question} answer={answers[question.attemptQuestionId]} poolOptions={[]} onAnswerChange={(answer) => onAnswerChange(question.attemptQuestionId, answer)} />
       ))}
     </div>
   );

@@ -172,3 +172,14 @@ Not yet done:
 Important integration risk for the later code review:
 - Current Question Engine handlers consume type-specific `RawAnswer` values (e.g. single choice and Matching expect a string; Multiple Choice expects a collection; Cloze has structured parts), while the frontend stores structured `answerPayload` objects such as `{ selectedKey }`, `{ selectedKeys }`, `{ value }`, `{ pairs }`, and `{ values }`. The backend implementation must define and test an explicit adapter from persisted JSON payload to canonical `RawAnswer` for every question type. Do not grade directly from a UI-shaped JSON object without normalization.
 - The student runtime projection must omit correct keys, accepted answers, explanation/grading internals where restricted; a raw serialized `QuestionSpec` must not be returned to the client without a dedicated safe projection.
+
+
+## Sprint 1 implementation update — 2026-10-27
+
+- V43 was already applied and remains unchanged. V45 renames assessment_attempts.time_limit_seconds to time_limit_minutes and converts legacy stored seconds to minutes.
+- AssessmentAttempt entity and runtime response now use minutes. deadline_at is calculated once as started_at + time_limit_minutes and is preserved on resume.
+- getIntro validates active Student, active class and class target; its question count comes from Composition QUESTION items rather than the legacy AssignmentQuestion count.
+- startOrResume uses get-or-create without an Assignment-wide lock. A separate transactional creation service builds the snapshot. The unique constraint uq_assessment_attempt_assignment_student arbitrates concurrent creation; only a conflict on that named constraint is re-read and recovered.
+- The snapshot contains ordered Composition, settings, question render specs and separate grading data. The runtime projection returns only the student portion of each question snapshot.
+- Timeout auto-submit/finalization, answer autosave/revision/idempotency, Question Engine grading, result visibility and Assignment authoring hard-lock remain incomplete. Matching/POOL resolution and all question-type projections require integration tests.
+- No current-HEAD compilation, automated tests, Flyway validation, frontend build or browser/E2E verification has been run.

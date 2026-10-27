@@ -575,11 +575,11 @@ All translations must exist for every supported locale before a screen is consid
 
 ### Sprint 1 — Start / Resume + Student Paper
 
-**Backend — controller/contract scaffolding created; business logic intentionally left to owner**
+**Backend — initial start/resume implementation added; verification remains**
 - [x] Define safe `AttemptIntroResponse` and `StartOrResumeAttemptRequest` DTOs.
 - [x] Add controller method shells for intro and start/resume.
-- [x] Add service method shells `getIntro` and `startOrResume`; they intentionally throw `UnsupportedOperationException` until owner implementation.
-- [ ] Owner implements Student/Assignment authorization, scheduling/target rules, ACTIVE-class attribution, one-attempt concurrency, stable credential verification, immutable snapshot assembly and answer-safe projection.
+- [x] Implement `getIntro`/`startOrResume`, active Student/class target validation, transactional snapshot creation and unique-constraint race recovery.
+- [ ] Verify the implemented authorization/snapshot/projection with backend tests and complete Question Engine/POOL integration.
 
 **Frontend — scaffold implemented, runtime not verified**
 - [x] Dynamic route `/student/assignments/:assignmentId` and Intro/Player shell.
@@ -590,7 +590,7 @@ All translations must exist for every supported locale before a screen is consid
 - [x] English/Vietnamese strings and warning when the Sprint 1 local draft is not saved.
 - [ ] Connect against owner-implemented server methods, run frontend lint/test/typecheck/build and browser checks; verify the real snapshot shape against Student Paper.
 
-**Scope boundary:** no answer autosave in Sprint 1; answer edits are page-local and the UI explicitly warns that refresh/close loses them. Autosave/outbox is Sprint 2. Server business logic is deliberately not implemented by the assistant at this stage.
+**Scope boundary:** no answer autosave in Sprint 1; answer edits are page-local and the UI explicitly warns that refresh/close loses them. Autosave/outbox is Sprint 2. Autosave and finalization are deliberately outside the current start/resume slice.
 
 **Exit:** not achieved until the owner-implemented server contract is integrated and Start/Resume/snapshot + second-tab behavior is tested end-to-end.
 
@@ -740,7 +740,7 @@ Start/Snapshot          Intro/Paper
 ### Parallelization rule
 
 - Sprint 0 must be shared and stable first.
-- Sprint 1 FE/BE may run fully in parallel using fixtures.
+- Sprint 1 FE/BE may run in parallel using fixtures.
 - Sprint 2 FE/BE may run in parallel once save contract is frozen.
 - Sprint 3 depends on session/timer contract, but UI and backend can still develop in parallel.
 - Sprint 4 should be integrated end-to-end before Sprint 5.

@@ -152,3 +152,14 @@ Therefore do not mark Gate A passed or claim Sprint 1 runtime is ready. First ex
 - No backend compilation, FE lint/typecheck/build, automated tests, or browser tests were run on the current HEAD.
 
 **Explicit review risk to revisit when the owner shares the implementation:** map each frontend `answerPayload` shape to the canonical Question Engine `RawAnswer` shape for each question type; ensure snapshot assembly uses a student-safe DTO rather than serializing grading specs including correct keys/accepted answers.
+
+
+## Sprint 1 implementation — 2026-10-27
+
+- Added V45 because V43 was already applied; V43/V44 remain untouched. V45 renames the Attempt duration column to minutes and converts stored seconds to minutes.
+- Implemented active Student/class/target validation for getIntro and startOrResume.
+- Implemented Composition-based question counting and a separate transactional Attempt creator with server-generated deadline and immutable start snapshot.
+- Implemented get-or-create via the existing unique constraint, without an Assignment-wide pessimistic lock. Concurrent create losers re-read the winning Attempt and must present the same stable credential.
+- Implemented runtime projection that excludes the persisted grading portion of question snapshots.
+- Remaining: autosave/revision/idempotency, submit, timeout auto-submit/finalization, grading/results, Assignment hard-lock, and integration verification of Matching/POOL and every question type.
+- Verification: no backend compilation/tests, Flyway validation, FE lint/typecheck/build or browser/E2E tests have been run against this change.

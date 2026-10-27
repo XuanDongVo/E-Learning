@@ -8,7 +8,7 @@
 
 - Phase 6 Student Management: **DONE**.
 - Phase 7 Scope A ActivitySession: **IMPLEMENTED, NOT FULLY VERIFIED**. ActivitySession supports mode/strategy selection, abandonment of the previous open run, Practice retry/hint behavior, Try Hard per-question timing/lives, and persisted snapshot payload metadata.
-- Phase 7 Scope B Assignment Composition: **AUTHORING BASELINE IMPLEMENTED**. Composition schema/API, deterministic legacy backfill, Builder API persistence, ordered sections/items, assignment-specific points/required/example flags and score/answer display settings exist. AssessmentAttempt start/resume and initial snapshot are partially implemented; autosave, timeout finalization and scoring remain incomplete.
+- Phase 7 Scope B Assignment Composition: **AUTHORING BASELINE IMPLEMENTED**. Composition schema/API, deterministic legacy backfill, Builder API persistence, ordered sections/items, assignment-specific points/required/example flags and score/answer display settings exist. AssessmentAttempt start/resume and initial snapshot are partially implemented; autosave is now implemented, while timeout finalization and scoring remain incomplete.
 - Question Engine: **CORE IMPLEMENTED, END-TO-END INTEGRATION INCOMPLETE**. Seven handlers/specs and factory/mapper branches exist. ActivitySession still uses legacy type-specific answer/reveal logic. MATCHING references are not resolved/validated against Composition POOL. CLOZE structural validation exists; round-trip/runtime parity is unverified.
 - Teacher Content UI routing/bank work: **IMPLEMENTED IN SLICES, NOT FULLY VERIFIED**. Canonical routes remain under `/teacher/content/...`; global Question Banks is nested under Content.
 - Server error contract: business throws use stable `AppException(ErrorCode.X)` vocabulary. Frontend AppError resolves `errors.<backendCode>` directly. ErrorCode/i18n parity remains an audit gate.
@@ -45,7 +45,7 @@ This policy supersedes the older heartbeat/stale-takeover wording in the Student
 
 ## Current database baseline
 
-The source baseline documented Flyway through V42. This feature branch adds V43 for AssessmentAttempt runtime schema; run Flyway validation and confirm migration ordering/database state before applying. Never edit applied migrations.
+The source baseline documented Flyway through V42. This feature branch adds V43 for AssessmentAttempt runtime schema; V45 renames the attempt time-limit column to minutes and V46 adds answer mutation idempotency. Applied migrations are not edited. Run Flyway validation and confirm migration ordering/database state before applying.
 
 ## Current UI route contract
 
@@ -63,103 +63,43 @@ Keep Question Bank and Question Editor under `/teacher/content/...` unless a new
 
 ## Known implementation gaps
 
-1. Initial start/resume and snapshot code exists. Autosave, timeout finalization, automatic Assignment scoring and persisted per-part result generation remain incomplete.
-2. Assignment hard-lock after first attempt cannot be runtime-enforced until AssessmentAttempt exists.
-3. ActivitySessionQuestion still has a live Question relation alongside snapshot fields; snapshot rollout/legacy-session handling requires verification.
-4. ActivitySessionService still has legacy type-specific answer checking/reveal logic rather than canonical engine grading for all seven types.
-5. MATCHING has a confirmed gap: `MatchingSpec` contains `poolId/correctEntryId`, but no pool resolver or entry-membership validation is applied. Composition POOL validation does not enforce stable unique entry IDs or validate question references.
-6. CLOZE handler validates segment/blank cardinality, unique nonblank keys and accepted answers. Frontend save/reload/runtime parity remains unverified.
-7. Full persistence round-trip, student answer-key leakage, snapshot immutability and end-to-end grading tests remain unverified.
-8. Teacher Content UI slices still require browser regression and final lint/typecheck/build/test verification where not already recorded on the current HEAD.
-9. ErrorCode-to-i18n parity must be checked against the full current server ErrorCode enum.
-10. Web Lock/IndexedDB session behavior exists in slices but has not been verified end-to-end in a browser.
+1. AssessmentAttempt start/resume and snapshot projection exist; timeout finalization, automatic Assignment scoring, persisted per-part result generation, submit/result endpoints and Assignment hard-lock remain incomplete.
+2. Answer autosave is implemented with `AssessmentAttemptAnswer.revision` as JPA `@Version`; `PESSIMISTIC_WRITE` is no longer used by the answer flow and the unused `findByIdForUpdate` repository method was removed.
+3. Answer autosave uses `(attempt_id, request_id)` idempotency with canonical SHA-256 payload hashing and replays an already-processed request with the stored revision.
+4. `expectedRevision` is checked before update; concurrent updates are still protected by `@Version`. Race conditions between autosave/submit/timeout/refresh are intentionally tolerated by the current MVP scope.
+5. The autosave service currently performs only the immutable-snapshot boundary check; type-specific answer structural validation must be delegated to/integrated with the Question Engine before calling autosave fully runtime-ready.
+6. MATCHING has a confirmed gap: `MatchingSpec` contains `poolId/correctEntryId`, but no pool resolver or entry-membership validation is applied. Composition POOL validation does not enforce stable unique entry IDs or validate question references.
+7. CLOZE handler validates segment/blank cardinality, unique nonblank keys and accepted answers. Frontend save/reload/runtime parity remains unverified.
+8. Full persistence round-trip, student answer-key leakage, snapshot immutability and end-to-end grading tests remain unverified.
+9. Teacher Content UI slices still require browser regression and final lint/typecheck/build/test verification where not already recorded on the current HEAD.
+10. ErrorCode-to-i18n parity must be checked against the full current server ErrorCode enum.
+11. Web Lock/IndexedDB session behavior exists in slices but has not been verified end-to-end in a browser.
 
-## Verification policy
+## AssessmentAttempt answer autosave implementation — 2026-10-27
 
-A code/doc change is not considered verified merely because GitHub accepts the commit. Record exact CI/test/build/browser results against the exact commit. No backend/frontend/browser/Flyway verification was run during the 2026-10-26 session-policy rebaseline. Do not describe this branch as verified until test evidence is tied to an exact HEAD.
+Implemented on `feature/student-assignment-attempt`:
 
-## Next gates
+- Added `AssessmentAttemptAnswerMutationRepository.findByAttemptIdAndRequestId(...)`.
+- Added `AssessmentAttemptQuestionRepository.findByIdAndAttemptId(...)` so a question cannot be saved through another attempt ID.
+- Implemented `AssessmentAttemptAnswerService.saveAnswer(...)` end-to-end at the transaction/service boundary.
+- Enforced attempt ownership, active-session credential, writable state and deadline checks.
+- Added canonical payload hashing (SHA-256) for idempotency and request replay detection.
+- Added `expectedRevision` precondition and `@Version` optimistic locking handling.
+- Persisted answer + mutation in the same transaction and updated `lastActivityAt`.
+- Kept answer-save response free of grading/correctness data.
+- Updated `AssessmentAttemptAnswer.savedAt` on updates.
+- Removed the unused pessimistic `findByIdForUpdate` repository method; answer saving now uses optimistic locking only.
 
-1. Verify start/resume and active-class authorization with tests.
-2. Build immutable Composition/settings/question snapshots and restricted-answer-safe runtime projection.
-3. Implement answer autosave/revision/idempotency and per-Attempt concurrency.
-4. Implement frontend Web Lock + IndexedDB recovery before allowing active player writes.
-5. Validate the Question Engine/Composition Matching-Pool boundary before claiming all question types are runtime-ready.
-6. Keep `.agent/CURRENT_STATE.md` synchronized after every substantive implementation change.
+**Entity/schema review:** `AssessmentAttemptAnswer.revision` already matches V43 `BIGINT NOT NULL DEFAULT 0`, so no migration is needed just for adding `@Version`. `AssessmentAttemptAnswerMutation` matches V46's `(attempt_id, request_id)` unique key and `result_revision`. `AssessmentAttempt` remains intentionally unversioned; `active_session_id` remains the session credential. `snapshot_version` fields are snapshot-format versions, not JPA concurrency versions.
 
-## Phase 7B AssessmentAttempt schema and skeleton
+**Verification:** implementation was inspected against the current branch source, but no backend compilation/tests, Flyway validation, FE lint/typecheck/build or browser/E2E tests were run against the resulting HEAD. Do not mark this slice verified until CI/local test evidence is tied to the exact commit.
 
-- Added V43 AssessmentAttempt runtime schema with attempt, question, answer and part-result persistence plus session/event metadata.
-- Added JPA entities, repositories, request/response DTOs, snapshot contract and service skeleton.
-- One attempt per Assignment/student is guarded by a database unique constraint. Composition order remains on `assignment_items`; runtime snapshot order is stored separately. ActivitySession remains a separate aggregate.
-- **Not implemented:** start/resume snapshot assembly, authorization/target validation, single-active-tab session credential runtime, autosave concurrency/idempotency, timeout processing, Question Engine grading integration, submit/review endpoints, Assignment hard lock and Student UI.
-- **Verification:** no backend tests, Flyway validation, compilation or frontend/browser checks were run in this connector change. The project owner previously reported Flyway and FE build success, but that is not verification of this current HEAD.
+## Next implementation gates
 
-## Session-policy rebaseline — 2026-10-26
-
-- Added ADR 0027 for Single Active Tab with Resumable AssessmentAttempt.
-- Updated active Student Attempt specification and UI/runtime blueprint to remove heartbeat/stale takeover from MVP ownership semantics.
-- Kept `active_session_id` as the stable logical credential; it is not a time-based lease.
-- Kept `last_activity_at` only as an activity timestamp from accepted operations; it does not transfer ownership.
-- This is documentation/design work only; runtime behavior remains unimplemented.
-
-
-## Sprint 1 kickoff — 2026-10-26
-
-**Status: IN PROGRESS — contract alignment only; runtime is not yet functional.**
-
-Completed:
-- Added ADR 0027 and reconciled the active spec/blueprint around single-active-tab recovery.
-- Added backend `StartOrResumeAttemptRequest(UUID activeSessionId)`.
-- Removed `activeSessionId` from generic `AttemptRuntimeResponse` so the session credential is not returned to readers.
-- Aligned TypeScript runtime DTO with the safer response contract.
-- Replaced FE `start` + `open` + heartbeat/claim-session calls with a single `startOrResume` contract. The endpoint is still a contract target; no controller/service implementation exists yet.
-
-Next Sprint 1 work:
-1. Implement authenticated start-or-resume and validate published/open assignment target and schedule.
-2. Resolve the Student's ACTIVE class on the server and snapshot class attribution.
-3. Build immutable Composition/settings/question snapshots and a student-safe runtime projection.
-4. Add Student Attempt route, Intro/Player shell and Web Locks + IndexedDB credential lifecycle.
-5. Add tests for creation idempotency, credential mismatch, answer-key leakage and snapshot shape.
-
-Verification: no compilation, typecheck/build, automated tests, Flyway validation or browser checks were run for this kickoff.
-
-
-## Sprint 1 readiness gate — 2026-10-26
-
-**Decision: preparation/contract alignment may proceed; full runtime implementation is not yet GO.**
-
-The active .agent/plans/PHASE_7B_IMPLEMENTATION_MIGRATION_PLAN.md requires Gate A before implementing AssessmentAttempt runtime: backend tests and Flyway validation, frontend lint/tests/typecheck/build, plus the specified ActivitySession/Question Engine/snapshot/leakage checks.
-
-Evidence reviewed:
-- The latest available GitHub Actions run at review time was Assignment P0 checks run https://github.com/XuanDongVo/E-Learning/actions/runs/40269647673, on older commit 884b7a184c6ccea59bb93c029c2ec71e3641b7a0. It failed backend compilation on an obsolete AttemptResult DTO reference and failed frontend error-code translation parity.
-- On the current source, the obsolete root DTO path is no longer present, the result DTO imports the current AttemptPartStatus, and a source-level key comparison found all 79 server ErrorCodes plus UNKNOWN_ERROR (80 keys total) in both en/error.json and vi/error.json. This is inspection only, not a test run.
-- No GitHub Actions run is associated with the branch HEAD after the current session-contract edits. No current-HEAD backend compilation/tests, frontend tests/build, Flyway validation, or browser/E2E run has been observed.
-
-Therefore do not mark Gate A passed or claim Sprint 1 runtime is ready. First execute Gate A against the exact latest HEAD and address any failures. Contract-only changes already completed are preparatory and do not constitute a runtime feature.
-
-
-## Sprint 1 scaffold update — 2026-10-26
-
-**Status: frontend scaffold added; backend signatures added; no end-to-end runtime verification.**
-
-- Added dynamic Student route `/student/assignments/:assignmentId`.
-- Added safe pre-start Intro contract and Intro UI. The base Student assignments list remains a placeholder.
-- Added Web Locks fail-fast single-tab coordination and an IndexedDB stable UUID credential store.
-- Added Student Paper rendering for composition blocks plus the supported question types exposed by the current snapshot contract; added English/Vietnamese translations.
-- Added server `AttemptIntroResponse`, controller shells and service method signatures `getIntro` / `startOrResume`. The methods intentionally throw `UnsupportedOperationException`; all backend business logic remains for the owner to implement.
-- Sprint 1 answers remain local only. The UI warns before leaving, but refresh/close still loses answer edits. Incremental autosave/outbox belongs to Sprint 2.
-- No backend compilation, FE lint/typecheck/build, automated tests, or browser tests were run on the current HEAD.
-
-**Explicit review risk to revisit when the owner shares the implementation:** map each frontend `answerPayload` shape to the canonical Question Engine `RawAnswer` shape for each question type; ensure snapshot assembly uses a student-safe DTO rather than serializing grading specs including correct keys/accepted answers.
-
-
-## Sprint 1 implementation — 2026-10-27
-
-- Added V45 because V43 was already applied; V43/V44 remain untouched. V45 renames the Attempt duration column to minutes and converts stored seconds to minutes.
-- Implemented active Student/class/target validation for getIntro and startOrResume.
-- Implemented Composition-based question counting and a separate transactional Attempt creator with server-generated deadline and immutable start snapshot.
-- Implemented get-or-create via the existing unique constraint, without an Assignment-wide pessimistic lock. Concurrent create losers re-read the winning Attempt and must present the same stable credential.
-- Implemented runtime projection that excludes the persisted grading portion of question snapshots.
-- Remaining: autosave/revision/idempotency, submit, timeout auto-submit/finalization, grading/results, Assignment hard-lock, and integration verification of Matching/POOL and every question type.
-- Verification: no backend compilation/tests, Flyway validation, FE lint/typecheck/build or browser/E2E tests have been run against this change.
+1. Integrate real Question Engine answer validation/normalization into autosave for all supported question types.
+2. Implement submit: final answer persistence, grading, attempt totals/status, result projections and idempotent submit.
+3. Implement timeout auto-submit/finalization using the same final-save/grading path.
+4. Implement result/review access according to `show_score_after_submit` and `show_answers_after_submit`.
+5. Enforce Assignment hard-lock after the first attempt exists.
+6. Add focused autosave concurrency/idempotency tests, then full integration tests and Flyway verification.
+7. Run exact-HEAD backend/frontend/browser verification and record evidence here.

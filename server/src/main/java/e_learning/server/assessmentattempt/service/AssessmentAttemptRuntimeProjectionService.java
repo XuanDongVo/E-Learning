@@ -47,8 +47,33 @@ public class AssessmentAttemptRuntimeProjectionService {
     public Optional<AttemptRuntimeResponse> findForStartOrResume(Long assignmentId, Long studentId, UUID sessionId) {
         Assignment assignment = assignmentRepository.findById(assignmentId)
                 .orElseThrow(() -> new AppException(ErrorCode.ASSIGNMENT_NOT_FOUND));
-        validatePublished(assignment);
         requireActiveStudent(studentId);
+
+        Optional<AssessmentAttempt> existing = attemptRepository.findByAssignmentIdAndStudentId(assignmentId, studentId);
+        if (existing.isPresent()) {
+            AssessmentAttempt attempt = existing.get();
+            if (attempt.getStatus() == AssessmentAttemptStatus.SUBMITTED) {
+                throw new AppException(ErrorCode.ASSESSMENT_ATTEMPT_ALREADY_SUBMITTED);
+            }
+            if (attempt.getStatus() == AssessmentAttemptStatus.TIMED_OUT) {
+                throw new AppException(ErrorCode.ASSESSMENT_ATTEMPT_ALREADY_TIMED_OUT);
+            }
+            if (attempt.getActiveSessionId() == null) {
+                throw new AppException(ErrorCode.ASSESSMENT_ATTEMPT_SESSION_LOST);
+            }
+            if (!attempt.getActiveSessionId().equals(sessionId)) {
+                throw new AppException(ErrorCode.ASSESSMENT_ATTEMPT_SESSION_CONFLICT);
+            }
+            if (!LocalDateTime.now().isBefore(attempt.getDeadlineAt())) {
+                // Timeout finalization/auto-submit is a later slice. Never extend the deadline on resume.
+                throw new AppException(ErrorCode.ASSESSMENT_ATTEMPT_TIME_UP);
+            }
+            // Existing Attempts use their immutable class/content snapshot. A later class transfer or
+            // operationally archiving the Assignment must not silently rewrite historical attribution.
+            return Optional.of(toResponse(attempt, assignment));
+        }
+
+        validatePublished(assignment);
         ClassMember membership = classMemberRepository.findActiveMembershipByUserId(studentId)
                 .orElseThrow(() -> new AppException(ErrorCode.STUDENT_NOT_IN_ACTIVE_CLASS));
         if (membership.getClassEntity().getStatus() != ClassStatus.ACTIVE) {
@@ -59,28 +84,7 @@ public class AssessmentAttemptRuntimeProjectionService {
                 assignment.getClassIds().stream().noneMatch(id -> Objects.equals(id, classId))) {
             throw new AppException(ErrorCode.ASSIGNMENT_TARGET_INVALID);
         }
-
-        Optional<AssessmentAttempt> existing = attemptRepository.findByAssignmentIdAndStudentId(assignmentId, studentId);
-        if (existing.isEmpty()) return Optional.empty();
-
-        AssessmentAttempt attempt = existing.get();
-        if (attempt.getStatus() == AssessmentAttemptStatus.SUBMITTED) {
-            throw new AppException(ErrorCode.ASSESSMENT_ATTEMPT_ALREADY_SUBMITTED);
-        }
-        if (attempt.getStatus() == AssessmentAttemptStatus.TIMED_OUT) {
-            throw new AppException(ErrorCode.ASSESSMENT_ATTEMPT_ALREADY_TIMED_OUT);
-        }
-        if (attempt.getActiveSessionId() == null) {
-            throw new AppException(ErrorCode.ASSESSMENT_ATTEMPT_SESSION_LOST);
-        }
-        if (!attempt.getActiveSessionId().equals(sessionId)) {
-            throw new AppException(ErrorCode.ASSESSMENT_ATTEMPT_SESSION_CONFLICT);
-        }
-        if (!LocalDateTime.now().isBefore(attempt.getDeadlineAt())) {
-            // Timeout finalization/auto-submit is a later slice. Never extend the deadline on resume.
-            throw new AppException(ErrorCode.ASSESSMENT_ATTEMPT_TIME_UP);
-        }
-        return Optional.of(toResponse(attempt, assignment));
+        return Optional.empty();
     }
 
     @Transactional(readOnly = true)
@@ -94,14 +98,19 @@ public class AssessmentAttemptRuntimeProjectionService {
 
     private AttemptRuntimeResponse toResponse(AssessmentAttempt attempt, Assignment assignment) {
         LocalDateTime now = LocalDateTime.now();
+        Object titleValue = attempt.getDocumentSnapshot().get("assignmentTitle");
+        String title = titleValue instanceof String text ? text : assignment.getName();
+        Object dueAtValue = attempt.getSettingsSnapshot().get("due_at");
+        LocalDateTime dueAt = dueAtValue instanceof String text
+                ? LocalDateTime.parse(text) : assignment.getDueAt();
         List<AttemptRuntimeQuestionResponse> questions =
                 questionRepository.findAllByAttemptIdOrderByPositionAsc(attempt.getId())
                         .stream().map(this::toQuestionResponse).toList();
         boolean late = attempt.getStatus() == AssessmentAttemptStatus.IN_PROGRESS
-                ? !now.isBefore(assignment.getDueAt()) : attempt.isLate();
+                ? !now.isBefore(dueAt) : attempt.isLate();
 
         return new AttemptRuntimeResponse(
-                attempt.getId(), assignment.getId(), assignment.getName(), attempt.getStatus(),
+                attempt.getId(), assignment.getId(), title, attempt.getStatus(),
                 attempt.getStartedAt(), attempt.getDeadlineAt(), now, attempt.getTimeLimitMinutes(),
                 attempt.getClassIdAtStart(), attempt.getClassNameAtStart(), late,
                 attempt.getSnapshotVersion(), attempt.getDocumentSnapshot(), attempt.getSettingsSnapshot(), questions);

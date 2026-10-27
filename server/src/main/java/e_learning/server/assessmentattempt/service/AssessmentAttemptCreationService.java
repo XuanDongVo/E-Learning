@@ -196,6 +196,8 @@ public class AssessmentAttemptCreationService {
         Map<String, Object> result = new LinkedHashMap<>();
         result.put(AssessmentAttemptSnapshotContract.DOCUMENT_VERSION, AssessmentAttemptSnapshotContract.CURRENT_VERSION);
         result.put("assignmentId", assignment.getId());
+        result.put("assignmentTitle", assignment.getName());
+        result.put("gradeName", assignment.getGrade().getName());
         result.put("compositionSchemaVersion", assignment.getCompositionSchemaVersion());
         result.put(AssessmentAttemptSnapshotContract.DOCUMENT_SECTIONS, sectionRows);
         result.put(AssessmentAttemptSnapshotContract.DOCUMENT_BLOCKS, blocks);

@@ -1,7 +1,5 @@
 package e_learning.server.assessmentattempt.service;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import e_learning.server.assessmentattempt.AssessmentAttemptSnapshotContract;
 import e_learning.server.assessmentattempt.entity.AssessmentAttempt;
 import e_learning.server.assessmentattempt.entity.AssessmentAttemptQuestion;
@@ -30,6 +28,8 @@ import e_learning.server.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -53,9 +53,8 @@ public class AssessmentAttemptCreationService {
     private final ObjectMapper objectMapper;
 
     @Transactional
-    public Long createAttempt(Long assignmentId, Long studentId, UUID activeSessionId) {
-        Assignment assignment = assignmentRepository.findById(assignmentId)
-                .orElseThrow(() -> new AppException(ErrorCode.ASSIGNMENT_NOT_FOUND));
+    public Long createAttempt(Assignment assignment, Long studentId, UUID activeSessionId) {
+
         if (assignment.getStatus() != AssignmentStatus.PUBLISHED) {
             throw new AppException(ErrorCode.ASSIGNMENT_NOT_READY);
         }
@@ -81,8 +80,8 @@ public class AssessmentAttemptCreationService {
             throw new AppException(ErrorCode.ASSIGNMENT_TARGET_INVALID);
         }
 
-        List<AssignmentSection> sections = sectionRepository.findAllByAssignmentIdOrderByPositionAscIdAsc(assignmentId);
-        List<AssignmentItem> items = itemRepository.findAllByAssignmentIdOrderBySectionIdAscParentItemIdAscPositionAscIdAsc(assignmentId);
+        List<AssignmentSection> sections = sectionRepository.findAllByAssignmentIdOrderByPositionAscIdAsc(assignment.getId());
+        List<AssignmentItem> items = itemRepository.findAllByAssignmentIdOrderBySectionIdAscParentItemIdAscPositionAscIdAsc(assignment.getId());
         List<AssignmentItem> questions = orderedQuestions(sections, items);
         if (sections.isEmpty() || questions.isEmpty()) throw new AppException(ErrorCode.ASSIGNMENT_NOT_READY);
 
@@ -93,7 +92,7 @@ public class AssessmentAttemptCreationService {
             if (questionId == null || !seenQuestionIds.add(questionId)) {
                 throw new AppException(ErrorCode.ASSIGNMENT_COMPOSITION_INVALID);
             }
-            if (assignmentQuestionRepository.findByAssignmentIdAndQuestionId(assignmentId, questionId).isEmpty()) {
+            if (assignmentQuestionRepository.findByAssignmentIdAndQuestionId(assignment.getId(), questionId).isEmpty()) {
                 throw new AppException(ErrorCode.ASSIGNMENT_COMPOSITION_INVALID);
             }
             Question question = questionRepository.findById(questionId)

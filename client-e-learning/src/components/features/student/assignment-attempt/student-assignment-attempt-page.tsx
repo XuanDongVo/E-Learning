@@ -336,9 +336,9 @@ export function StudentAssignmentAttemptPage({ assignmentId }: { assignmentId: s
           <div>
             <p className="text-xs font-semibold uppercase tracking-wide text-neutral-muted">{t("intro.timeLimit")}</p>
             <p className="mt-1 font-bold text-neutral-dark">
-              {(introQuery.data?.timeLimitSeconds ?? runtime?.timeLimitSeconds) !== undefined
-                ? ((introQuery.data?.timeLimitSeconds ?? runtime?.timeLimitSeconds) || 0) > 0
-                  ? t("intro.timeLimitValue", { minutes: Math.ceil((introQuery.data?.timeLimitSeconds ?? runtime?.timeLimitSeconds ?? 0) / 60) })
+              {(introQuery.data?.timeLimitMinutes ?? runtime?.timeLimitMinutes) !== undefined
+                ? ((introQuery.data?.timeLimitMinutes ?? runtime?.timeLimitMinutes) || 0) > 0
+                  ? t("intro.timeLimitValue", { minutes: Math.ceil((introQuery.data?.timeLimitMinutes ?? runtime?.timeLimitMinutes ?? 0) / 60) })
                   : t("intro.noTimeLimit")
                 : t("intro.metadataUnavailable")}
             </p>
@@ -353,11 +353,6 @@ export function StudentAssignmentAttemptPage({ assignmentId }: { assignmentId: s
         </div>
       </section>
 
-      {introQuery.data?.availabilityCode && (
-        <div role="alert" className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950">
-          {t("intro.unavailable")}
-        </div>
-      )}
 
       {introQuery.isError && (
         <div role="status" className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950">
@@ -405,7 +400,7 @@ export function StudentAssignmentAttemptPage({ assignmentId }: { assignmentId: s
         </ul>
         <Button
           className="w-full sm:w-auto"
-          disabled={lockState !== "OWNED" || phase === "STARTING" || Boolean(introQuery.data?.availabilityCode) || failureCode === "ASSESSMENT_ATTEMPT_SESSION_CONFLICT" || failureCode === "ASSESSMENT_ATTEMPT_SESSION_LOST"}
+          disabled={lockState !== "OWNED" || phase === "STARTING" || failureCode === "ASSESSMENT_ATTEMPT_SESSION_CONFLICT" || failureCode === "ASSESSMENT_ATTEMPT_SESSION_LOST"}
           onClick={() => void startOrResume()}
         >
           {phase === "STARTING" && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}

@@ -78,18 +78,21 @@ public class AssessmentAttemptService {
             throw new AppException(ErrorCode.INVALID_REQUEST);
         }
 
+        Assignment assignment = assignmentRepository.findById(assignmentId)
+                .orElseThrow(() -> new AppException(ErrorCode.ASSIGNMENT_NOT_FOUND));
+
         Optional<AttemptRuntimeResponse> existing = runtimeProjectionService.findForStartOrResume(
-                assignmentId, studentId, request.activeSessionId());
+                assignment, studentId, request.activeSessionId());
         if (existing.isPresent()) return existing.get();
 
         try {
-            Long attemptId = creationService.createAttempt(assignmentId, studentId, request.activeSessionId());
+            Long attemptId = creationService.createAttempt(assignment, studentId, request.activeSessionId());
             return runtimeProjectionService.getRuntime(attemptId);
         } catch (DataIntegrityViolationException exception) {
             if (!isAttemptUniqueConflict(exception)) throw exception;
 
             Optional<AttemptRuntimeResponse> winner = runtimeProjectionService.findForStartOrResume(
-                    assignmentId, studentId, request.activeSessionId());
+                    assignment, studentId, request.activeSessionId());
             if (winner.isPresent()) return winner.get();
             throw exception;
         }

@@ -44,12 +44,11 @@ public class AssessmentAttemptRuntimeProjectionService {
     private final ClassMemberRepository classMemberRepository;
 
     @Transactional(readOnly = true)
-    public Optional<AttemptRuntimeResponse> findForStartOrResume(Long assignmentId, Long studentId, UUID sessionId) {
-        Assignment assignment = assignmentRepository.findById(assignmentId)
-                .orElseThrow(() -> new AppException(ErrorCode.ASSIGNMENT_NOT_FOUND));
+    public Optional<AttemptRuntimeResponse> findForStartOrResume(Assignment assignment, Long studentId, UUID sessionId) {
+
         requireActiveStudent(studentId);
 
-        Optional<AssessmentAttempt> existing = attemptRepository.findByAssignmentIdAndStudentId(assignmentId, studentId);
+        Optional<AssessmentAttempt> existing = attemptRepository.findByAssignmentIdAndStudentId(assignment.getId(), studentId);
         if (existing.isPresent()) {
             AssessmentAttempt attempt = existing.get();
             if (attempt.getStatus() == AssessmentAttemptStatus.SUBMITTED) {

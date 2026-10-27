@@ -1,6 +1,6 @@
 # Project Progress
 
-**Current source audit:** 2026-10-26  
+**Current source audit:** 2026-10-27  
 **Branch:** `feature/student-assignment-attempt`  
 **Canonical implementation state:** `.agent/CURRENT_STATE.md`
 
@@ -8,7 +8,7 @@
 
 - Phase 6 Student Management: **DONE**.
 - Phase 7 Scope A ActivitySession: **IMPLEMENTED, NOT FULLY VERIFIED**. ActivitySession supports mode/strategy selection, abandonment of the previous open run, Practice retry/hint behavior, Try Hard per-question timing/lives, and persisted snapshot payload metadata.
-- Phase 7 Scope B Assignment Composition: **AUTHORING BASELINE IMPLEMENTED**. Composition schema/API, deterministic legacy backfill, Builder API persistence, ordered sections/items, assignment-specific points/required/example flags and score/answer display settings exist. AssessmentAttempt runtime is not implemented.
+- Phase 7 Scope B Assignment Composition: **AUTHORING BASELINE IMPLEMENTED**. Composition schema/API, deterministic legacy backfill, Builder API persistence, ordered sections/items, assignment-specific points/required/example flags and score/answer display settings exist. AssessmentAttempt start/resume and initial snapshot are partially implemented; autosave, timeout finalization and scoring remain incomplete.
 - Question Engine: **CORE IMPLEMENTED, END-TO-END INTEGRATION INCOMPLETE**. Seven handlers/specs and factory/mapper branches exist. ActivitySession still uses legacy type-specific answer/reveal logic. MATCHING references are not resolved/validated against Composition POOL. CLOZE structural validation exists; round-trip/runtime parity is unverified.
 - Teacher Content UI routing/bank work: **IMPLEMENTED IN SLICES, NOT FULLY VERIFIED**. Canonical routes remain under `/teacher/content/...`; global Question Banks is nested under Content.
 - Server error contract: business throws use stable `AppException(ErrorCode.X)` vocabulary. Frontend AppError resolves `errors.<backendCode>` directly. ErrorCode/i18n parity remains an audit gate.
@@ -22,7 +22,7 @@
 - Practice has no timer, one retry and optional hint. Try Hard timer is per question.
 - AssignmentQuestion has no product-order `position`; Composition section/item/member positions are canonical order. `question_id ASC` is only deterministic legacy backfill order.
 - Assignment time limit is a whole-attempt setting.
-- `show_answers_after_submit` and `show_score_after_submit` are independent booleans; score calculation is not yet implemented because AssessmentAttempt is not implemented.
+- `show_answers_after_submit` and `show_score_after_submit` are independent booleans; score calculation is not yet implemented because submit/grading are still pending.
 - Assignment publishing readiness is server-enforced in `AssignmentService.updateStatus`.
 - Assignment recipient model is Grade + explicit class ID snapshots; do not document the old recipient polymorphism as current.
 - Topic formula/reference sheet and GameTemplate are deferred.
@@ -63,7 +63,7 @@ Keep Question Bank and Question Editor under `/teacher/content/...` unless a new
 
 ## Known implementation gaps
 
-1. AssessmentAttempt entity/service/controller/repository, attempt snapshot, autosave, timeout, automatic Assignment scoring and persisted per-part results are not implemented.
+1. Initial start/resume and snapshot code exists. Autosave, timeout finalization, automatic Assignment scoring and persisted per-part result generation remain incomplete.
 2. Assignment hard-lock after first attempt cannot be runtime-enforced until AssessmentAttempt exists.
 3. ActivitySessionQuestion still has a live Question relation alongside snapshot fields; snapshot rollout/legacy-session handling requires verification.
 4. ActivitySessionService still has legacy type-specific answer checking/reveal logic rather than canonical engine grading for all seven types.
@@ -72,7 +72,7 @@ Keep Question Bank and Question Editor under `/teacher/content/...` unless a new
 7. Full persistence round-trip, student answer-key leakage, snapshot immutability and end-to-end grading tests remain unverified.
 8. Teacher Content UI slices still require browser regression and final lint/typecheck/build/test verification where not already recorded on the current HEAD.
 9. ErrorCode-to-i18n parity must be checked against the full current server ErrorCode enum.
-10. Web Lock/IndexedDB session recovery is design-only; no frontend/backend implementation or browser verification exists yet.
+10. Web Lock/IndexedDB session behavior exists in slices but has not been verified end-to-end in a browser.
 
 ## Verification policy
 
@@ -80,9 +80,9 @@ A code/doc change is not considered verified merely because GitHub accepts the c
 
 ## Next gates
 
-1. Implement Sprint 1 start/resume and active-class authorization.
+1. Verify start/resume and active-class authorization with tests.
 2. Build immutable Composition/settings/question snapshots and restricted-answer-safe runtime projection.
-3. Implement stable session credential registration/verification.
+3. Implement answer autosave/revision/idempotency and per-Attempt concurrency.
 4. Implement frontend Web Lock + IndexedDB recovery before allowing active player writes.
 5. Validate the Question Engine/Composition Matching-Pool boundary before claiming all question types are runtime-ready.
 6. Keep `.agent/CURRENT_STATE.md` synchronized after every substantive implementation change.

@@ -1,6 +1,6 @@
 # Current Implementation State
 
-**Audit date:** 2026-10-26  
+**Audit date:** 2026-10-27  
 **Branch:** `feature/student-assignment-attempt`  
 **Scope:** current source state after Sprint 0 contract implementation and session-policy rebaseline. This file records implementation truth; no runtime/build/browser verification was executed by these documentation changes.
 
@@ -17,8 +17,8 @@
 
 - Frontend: Next.js + React + TypeScript + Tailwind CSS.
 - Backend: Spring Boot + Java 21 + JPA + Flyway + PostgreSQL.
-- V43 AssessmentAttempt schema was reported applied by the project owner; V43 must remain immutable.
-- `assessmentattempt` backend package contains V43 entities/repositories plus Sprint 0 contract DTOs and snapshot contract. Runtime orchestration/controllers are still not implemented.
+- V43 AssessmentAttempt schema was reported applied by the project owner and remains immutable; V45 migrates the Attempt duration column to minutes.
+- `assessmentattempt` contains V43 entities/repositories, contract DTOs, and a partial getIntro/startOrResume + snapshot implementation. Autosave, submit, timeout finalization and grading remain incomplete.
 
 ## 3. Phase status
 
@@ -27,10 +27,10 @@
 | Phase 0–2 | Foundation, auth/users and classes exist | Implemented baseline |
 | Phase 3 Content | Grade → Unit → Section → Topic → QuestionBank → Question CRUD/preview/completeness/hint | Implemented baseline; semantic Question Engine migration still partial |
 | Phase 4 Activity | Unit-scoped Activity, banks/distribution, modes, strategies, readiness, preview and lifecycle | Implemented baseline |
-| Phase 5 Assignment | Assignment, Grade ownership, class target snapshots, schedule, whole-attempt time limit, answer/score display settings, Composition | Implemented authoring baseline; formal runtime attempt/scoring not implemented |
+| Phase 5 Assignment | Assignment, Grade ownership, class target snapshots, schedule, whole-attempt time limit, answer/score display settings, Composition | Authoring baseline plus initial Attempt start/resume slice; scoring incomplete |
 | Phase 6 Student Management | Student/class/profile management | Done |
 | Phase 7 Scope A | ActivitySession runtime exists | Implemented, but Question Engine integration/verification incomplete |
-| Phase 7 Scope B | Assignment authoring + V43 runtime schema + Sprint 0 contract | **Sprint 0 DONE; runtime S1+ not implemented** |
+| Phase 7 Scope B | Assignment authoring + V43/V45 runtime schema + initial start/resume slice | **Partial; runtime not fully verified** |
 
 ## 4. Sprint 0 — Contract Freeze / Foundation
 
@@ -50,8 +50,8 @@
 ### Sprint 0 intentionally NOT implemented
 
 - No controller endpoints.
-- No `startOrResume` service implementation.
-- No snapshot assembly.
+- No `startOrResume` service implementation at the time of the Sprint 0 baseline.
+- No snapshot assembly at the time of the Sprint 0 baseline.
 - No active-class authorization implementation for Assignment Attempt.
 - No autosave persistence/idempotency implementation.
 - No session runtime implementation.
@@ -77,7 +77,7 @@ This is a design decision only. Web Lock integration, durable credential handlin
 
 Implemented authoring remains unchanged: Composition owns order, AssignmentQuestion has no product-order position, whole-attempt time limit, target snapshots, independent score/answer visibility, server publish readiness and V40–V42 assignment fixes.
 
-Not implemented: official runtime start/resume, immutable snapshot assembly, autosave, grading, timeout, result visibility enforcement and hard lock after first attempt.
+Partially implemented: official runtime start/resume, immutable initial snapshot and safe student projection. Not implemented: autosave, grading, timeout finalization, result visibility enforcement and hard lock after first attempt.
 
 ## 7. Question Engine implementation truth
 
@@ -100,11 +100,12 @@ Documentation and contract changes are not runtime verification. No backend test
 
 ## 11. Next gate
 
-Sprint 1 starts with:
-1. implement start/resume and active-class server authorization;
-2. build immutable Assignment Composition/settings/question snapshots and restricted-answer-safe projection;
-3. implement stable session credential registration/verification and Student Attempt page shell;
-4. integrate single-active-tab Web Lock coordination before allowing the active player to write.
+Next gate:
+1. Run backend compilation/tests and Flyway validation against the current HEAD.
+2. Verify the start/resume snapshot shape, answer-key leakage and Matching/POOL references.
+3. Implement answer autosave/revision/idempotency and per-Attempt concurrency.
+4. Implement submit/timeout finalization and Question Engine grading.
+5. Enforce Assignment authoring hard-lock after first Attempt.
 
 The next implementation must not introduce heartbeat/stale takeover merely because older contract DTOs or reference code contain those concepts.
 
@@ -132,7 +133,7 @@ Still not implemented:
 - Stable credential registration and verification in the backend.
 - Active-class lookup and class snapshot.
 - Immutable Composition/settings/question snapshot builder and answer-safe runtime projection.
-- Backend business logic in `getIntro` and `startOrResume`; both service methods intentionally throw `UnsupportedOperationException` for owner implementation.
+- Backend business logic in `getIntro` and `startOrResume` was added in the 2026-10-27 implementation slice; compilation and runtime behavior are not yet verified.
 - Start/resume integration, answer autosave, timer, submit/result logic, and end-to-end tests.
 
 Verification: these are source/contract changes only. Backend compilation, frontend typecheck/build, tests, Flyway validation and browser/E2E checks were not run for this slice. The latest available CI evidence reviewed previously was on an older commit and failed; source-level changes are not a substitute for rerunning Gate A on the exact current HEAD.
@@ -162,7 +163,7 @@ Backend source added:
 - `AttemptIntroResponse` safe DTO.
 - `getIntro(assignmentId, studentId)` and `startOrResume(assignmentId, studentId, request)` service method stubs.
 - Controller method shells that extract the JWT subject and delegate.
-- Both service methods intentionally throw `UnsupportedOperationException`; the assistant has not implemented backend business logic.
+- The current implementation has initial getIntro/startOrResume logic; compilation and runtime behavior are not yet verified.
 
 Not yet done:
 - Actual assignment/target/schedule/role authorization, ACTIVE class attribution, Attempt creation concurrency, credential comparison, snapshot builder, restricted-answer projection.

@@ -1,18 +1,21 @@
 package e_learning.server.assessmentattempt.dto.request;
 
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PositiveOrZero;
 
 import java.util.Map;
+import java.util.UUID;
 
 /**
- * Incremental answer write contract. The server owns grading, normalized values and timing.
+ * Request contract for saving one answer draft.
+ *
+ * Business validation intentionally does not live in this DTO.
+ * TODO: Implement draft-payload validation in the service/Question Engine boundary.
  */
 public record SaveAttemptAnswerRequest(
-        @NotNull Long attemptQuestionId,
+        @NotNull @PositiveOrZero Long expectedRevision,
+        @NotNull UUID requestId,
         @NotNull Map<String, Object> answerPayload,
-        @NotNull Long expectedRevision,
-        @NotBlank String activeSessionId,
-        @NotBlank String requestId
+        @NotNull UUID activeSessionId
 ) {
 }

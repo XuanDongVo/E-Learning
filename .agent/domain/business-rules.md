@@ -34,18 +34,18 @@
 - AssignmentQuestion has assignment_id and question_id only. No position or topic_id. Product ordering is Composition section/item/member position (ADR 0024).
 - Composition order is authoritative and comes from persisted section/item/member position. question_id ASC is only deterministic legacy backfill/compatibility order.
 - One Attempt per student.
-- Assignment time_limit_seconds is for the whole Attempt.
-- Expiry auto-submits saved answers and marks Timed out.
-- Submission after due_at is Late without score penalty.
+- Assignment time_limit_minutes is the whole-attempt duration, stored in minutes. The server calculates deadline_at = started_at + time_limit_minutes; assignments.due_at is a separate due-policy timestamp.
+- The Attempt deadline keeps running when the browser closes or the student loses network.
+- Expiry must auto-submit server-confirmed answers and mark the Attempt Timed out; timeout finalization is not yet implemented.
+- Submission after due_at is Late without score penalty. A late assignment can still be started.
 - Completion means submitted.
 - show_score_after_submit (default TRUE) independently controls immediate score display. show_answers_after_submit (default TRUE) independently controls correct-answer/explanation reveal. The server always calculates the score on submit/timeout; hiding it affects student display only.
 - Official score is separate from XP.
 
 ## Snapshot
-- ActivitySession freezes the selected Activity question set/order. AssessmentAttempt will snapshot formal Assignment questions and answers separately.
+- ActivitySession freezes the selected Activity question set/order. AssessmentAttempt snapshots formal Assignment questions and answers separately.
 - AttemptQuestion.position is runtime snapshot order, not AssignmentQuestion authoring order.
 - Server is authoritative for correctness and scoring.
-
 
 ## Assignment Composition (ADR 0024)
 - Assignment is an ordered document: sections, items and grouped members have persisted order; AssignmentQuestion has no position.
@@ -57,11 +57,9 @@
 - AssessmentAttempt snapshots ordered composition, QuestionSpecs, scoring flags, media refs and normalization/review provenance.
 - Persist per-part outcomes and normalized submitted values for Assignment analytics; report unanswered separately from incorrect.
 - In-progress student payloads never leak correctness/answer keys/normalized values. After submission, show_score_after_submit controls score display; show_answers_after_submit independently controls answers/explanations.
-- Publishing readiness is server-enforced; once any AssessmentAttempt starts, reject Assignment edits and require cloning to change it. Activity edits remain allowed: existing sessions keep their snapshots and future sessions use the latest saved version.
-
+- Publishing readiness is server-enforced; once any AssessmentAttempt starts, reject Assignment edits and require cloning to change it. This authoring lock is not yet implemented.
 
 ## Assignment score display (ADR 0026)
-- Every submission/timeout is graded server-side from the immutable AssessmentAttempt snapshot.
-- `show_score_after_submit` controls whether students see the calculated score immediately; the score is calculated and persisted either way.
-- `show_answers_after_submit` independently controls whether correct answers and explanations are revealed.
+- Every submission/timeout is intended to be graded server-side from the immutable AssessmentAttempt snapshot.
+- show_score_after_submit controls whether students see the calculated score immediately; show_answers_after_submit independently controls answers/explanations.
 - Composition position, not question ID, determines rendered item order. question_id ASC is only the legacy backfill order.

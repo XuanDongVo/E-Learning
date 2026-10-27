@@ -5,12 +5,12 @@ Last revised: 2026-10-27
 Assignment is formal teacher-assigned work with target, schedule, one attempt and an official automatically calculated score. It is independent from Activity and owns its question copies.
 
 ## Assignment
-Fields include grade_id, academic_year, class_ids, name, description, status, start_at, due_at, time_limit_minutes, show_score_after_submit and show_answers_after_submit. class_ids is a server-validated JSONB snapshot of concrete class recipients.
-- time_limit_minutes is the whole-attempt duration, stored in minutes; deadline_at is calculated from the server start time.
+Fields include grade_id, academic_year, class_ids, name, description, status, start_at, due_at, time_limit_minutes, show_score_after_submit and show_answers_after_submit. `class_ids` is a server-validated JSONB snapshot of one or more concrete class recipients; selecting a whole Grade is a frontend convenience and is not persisted as a target.
+- time_limit_minutes is the whole-attempt duration stored in minutes; deadline_at is calculated from the server start time.
 - show_score_after_submit defaults TRUE and controls whether the automatically calculated score is displayed immediately after submission.
 - show_answers_after_submit defaults TRUE and independently controls correct-answer/explanation visibility.
-- Current recipient model is one grade_id plus a server-validated concrete class_ids snapshot. Late submissions are accepted and labeled Late without penalty. Completion = submitted.
-- The initial Attempt start/resume and snapshot slice exists, but is not yet verified. Autosave, timeout finalization, persisted scoring and authoring hard-lock are not implemented; do not describe the full runtime as shipped.
+- Current recipient model is one `grade_id` plus a server-validated concrete `class_ids` snapshot. Grade selection in the UI is a convenience; `AssignmentTarget`/`AssignmentTargetType` are not current runtime entities. Late submissions are accepted and labeled Late without penalty. Completion = submitted.
+- The initial start/resume and snapshot slice is present but unverified. Autosave, timeout finalization, persisted scoring and the Assignment authoring lock remain incomplete; do not describe the full runtime as shipped.
 
 ## Composition
 The Assignment Builder demo is the product prototype. Canonical model: .agent/architecture/assignment-composition-v1.md.
@@ -23,9 +23,9 @@ The Assignment Builder demo is the product prototype. Canonical model: .agent/ar
 - Passage/CLOZE and pool/MATCHING retain stable grouping and ordered child parts.
 
 ## Automatic scoring and scoring model (ADR 0026)
-- Assignment answers are intended to be automatically graded by server-side Question Engine handlers against immutable AssessmentAttempt snapshots. No manual grading workflow or AUTO/MANUAL selector exists in v1.
+- Assignment answers are automatically graded by server-side Question Engine handlers against the immutable AssessmentAttempt snapshot. No manual grading workflow or AUTO/MANUAL selector exists in v1.
 - earnedPoints = possiblePoints × scoreFraction.
-- For CLOZE/MATCHING, aggregate possible points default to an equal split across independently scored parts; the teacher may customize part allocations, but their sum must equal aggregate question points.
+- For CLOZE/MATCHING, aggregate possible points default to an equal split across independently scored parts; the teacher may customize part allocations, but their sum must equal the aggregate question points.
 - percentageScore = totalEarnedPoints / totalPossibleScoredPoints × 100. Preserve raw points and percentage; round only for display.
 - Examples have zero points and are excluded from score denominator and most-missed statistics.
 - Publish readiness requires valid metadata, complete Questions, target/schedule, valid timer, valid Composition and total possible scored points > 0.
@@ -37,7 +37,7 @@ The Assignment Builder demo is the product prototype. Canonical model: .agent/ar
 - Analytics use persisted AssessmentAttempt results, exclude examples, and respect ownership/target scope.
 
 ## Locking and cloning
-After the first AssessmentAttempt starts, reject authoring changes to the Assignment, including composition/order, question membership/content, points, target/schedule and score/answer display settings. To change the test, clone it into a new Assignment with independent Questions and Composition. The runtime authoring lock remains to be implemented.
+After the first AssessmentAttempt starts, reject all authoring changes to the Assignment, including composition/order, question membership/content, points, target/schedule and score/answer display settings. To change the test, clone it into a new Assignment with independent Questions and Composition. Operational archive/close-to-new-starts may remain possible without mutating historical attempts.
 
 ## Legacy backfill
 Backfill existing Assignments into one default section with items in question_id ascending order; default possiblePoints=1, required=true and isExample=false unless explicit values exist. Set show_score_after_submit=true unless explicit data dictates otherwise. Do not invent historical sections or blocks.

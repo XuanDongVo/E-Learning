@@ -16,24 +16,19 @@ import java.util.Map;
 import java.util.UUID;
 
 @Entity
-@Table(
-        name = "assessment_attempts",
-        uniqueConstraints = @UniqueConstraint(
-                name = "uq_assessment_attempt_assignment_student",
-                columnNames = {"assignment_id", "student_id"}
-        ),
+@Table(name = "assessment_attempts",
+        uniqueConstraints = @UniqueConstraint(name = "uq_assessment_attempt_assignment_student",
+                columnNames = {"assignment_id", "student_id"}),
         indexes = {
                 @Index(name = "ix_assessment_attempt_student_status", columnList = "student_id,status"),
                 @Index(name = "ix_assessment_attempt_assignment_status", columnList = "assignment_id,status"),
                 @Index(name = "ix_assessment_attempt_class_status", columnList = "class_id_at_start,status")
-        }
-)
+        })
 @Getter
 @Setter
 @NoArgsConstructor
 public class AssessmentAttempt {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -63,8 +58,8 @@ public class AssessmentAttempt {
     @Column(name = "timed_out_at")
     private LocalDateTime timedOutAt;
 
-    @Column(name = "time_limit_seconds", nullable = false)
-    private Integer timeLimitSeconds;
+    @Column(name = "time_limit_minutes", nullable = false)
+    private Integer timeLimitMinutes;
 
     @Column(name = "deadline_at", nullable = false)
     private LocalDateTime deadlineAt;
@@ -98,18 +93,18 @@ public class AssessmentAttempt {
     @Column(name = "snapshot_version", nullable = false)
     private Integer snapshotVersion = 1;
 
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at", nullable = false)
+    private LocalDateTime updatedAt;
+
     @PrePersist
     void onCreate() {
         LocalDateTime now = LocalDateTime.now();
         createdAt = now;
         updatedAt = now;
     }
-
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
-
-    @Column(name = "updated_at", nullable = false)
-    private LocalDateTime updatedAt;
 
     @PreUpdate
     void onUpdate() {

@@ -4,6 +4,7 @@ import { Link } from "@/i18n/navigation";
 import { MoreVertical, Users } from "lucide-react";
 import { createPortal } from "react-dom";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import type { StudentTableProps } from "@/types/student";
 
 export function StudentTable({
@@ -21,22 +22,23 @@ export function StudentTable({
   onPageChange,
   onPageSizeChange,
 }: StudentTableProps) {
+  const t = useTranslations("teacher.students");
   const [openMenu, setOpenMenu] = useState<number | null>(null);
   const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
 
   if (isLoading)
     return (
       <div className="rounded-[var(--radius-md)] border border-border-color bg-card-bg p-10 text-center text-neutral-muted">
-        Loading students...
+        {t("loading")}
       </div>
     );
   if (!students.length)
     return (
       <div className="rounded-[var(--radius-md)] border border-dashed border-border-color bg-card-bg p-10 text-center">
         <Users className="mx-auto size-8 text-primary" />
-        <p className="mt-3 font-bold">No students found</p>
+        <p className="mt-3 font-bold">{t("emptyTitle")}</p>
         <p className="mt-1 text-neutral-muted">
-          Adjust your filters or add a student.
+          {t("emptySubtitle")}
         </p>
       </div>
     );
@@ -55,23 +57,23 @@ export function StudentTable({
                 type="checkbox"
                 checked={allSelected}
                 onChange={onToggleAll}
-                aria-label="Select all students"
+                aria-label={t("selectAll")}
               />
             </th>
             <th className="px-4 py-3 text-left text-label font-semibold text-neutral-muted">
-              Student
+              {t("table.student")}
             </th>
             <th className="px-4 py-3 text-left text-label font-semibold text-neutral-muted">
-              Contact information
+              {t("table.contact")}
             </th>
             <th className="px-4 py-3 text-left text-label font-semibold text-neutral-muted">
-              Class and grade
+              {t("table.classAndGrade")}
             </th>
             <th className="px-4 py-3 text-left text-label font-semibold text-neutral-muted">
-              Primary guardian
+              {t("table.guardian")}
             </th>
             <th className="px-4 py-3 text-left text-label font-semibold text-neutral-muted">
-              Status
+              {t("table.status")}
             </th>
             <th className="w-14 px-3 py-4" />
           </tr>
@@ -88,7 +90,7 @@ export function StudentTable({
                     type="checkbox"
                     checked={selectedIds.includes(student.id)}
                     onChange={() => onToggle(student.id)}
-                    aria-label={"Select " + student.fullName}
+                    aria-label={t("selectStudent", { name: student.fullName })}
                   />
                 </td>
                 <td className="px-3 py-4">
@@ -108,7 +110,7 @@ export function StudentTable({
                 </td>
                 <td className="px-3 py-4 text-body-sm text-neutral-muted">
                   <p>{student.email}</p>
-                  <p className="mt-1">{student.phone || "No phone"}</p>
+                  <p className="mt-1">{student.phone || t("table.noPhone")}</p>
                 </td>
                 <td className="px-3 py-4">
                   {activeClass ? (
@@ -120,7 +122,7 @@ export function StudentTable({
                     </div>
                   ) : (
                     <span className="rounded-full bg-warm-soft px-3 py-1 text-body-sm text-primary">
-                      No active class
+                      {t("noActiveClass")}
                     </span>
                   )}
                 </td>
@@ -133,7 +135,7 @@ export function StudentTable({
                       </p>
                     </div>
                   ) : (
-                    <span className="text-neutral-muted">No guardian</span>
+                    <span className="text-neutral-muted">{t("table.noGuardian")}</span>
                   )}
                 </td>
                 <td className="px-3 py-4">
@@ -146,7 +148,7 @@ export function StudentTable({
                           : "bg-neutral-muted")
                       }
                     />
-                    {student.accountStatus === "ACTIVE" ? "Active" : "Locked"}
+                    {student.accountStatus === "ACTIVE" ? t("active") : t("locked")}
                   </span>
                 </td>
                 <td className="relative px-3 py-4">
@@ -190,13 +192,13 @@ export function StudentTable({
                           }}
                           className="block w-full rounded px-3 py-2 text-left text-body-sm hover:bg-background-app"
                         >
-                          View details
+                          {t("table.viewDetails")}
                         </button>
                         <Link
                           href={"/teacher/students/" + student.id + "?edit=1"}
                           className="block rounded px-3 py-2 text-body-sm hover:bg-background-app"
                         >
-                          Edit
+                          {t("table.edit")}
                         </Link>
                         <button
                           type="button"
@@ -207,8 +209,8 @@ export function StudentTable({
                           className="block w-full rounded px-3 py-2 text-left text-body-sm hover:bg-background-app"
                         >
                           {student.accountStatus === "ACTIVE"
-                            ? "Lock account"
-                            : "Activate account"}
+                            ? t("table.lockAccount")
+                            : t("table.activateAccount")}
                         </button>
                       </div>,
                       document.body,
@@ -222,10 +224,10 @@ export function StudentTable({
 
       <div className="flex items-center justify-between gap-1 border-t border-border-color px-5 py-4 text-body-sm">
         <div className="flex items-center gap-3">
-          <b>Total: {totalElements} Students</b>
+          <b>{t("table.totalStudents", { total: totalElements })}</b>
 
           <div className="flex items-center gap-2">
-            <span className="text-xs text-slate-400">Show</span>
+            <span className="text-xs text-slate-400">{t("table.show")}</span>
 
             <select
               value={pageSize}
@@ -241,7 +243,7 @@ export function StudentTable({
               <option value={100}>100</option>
             </select>
 
-            <span className="text-xs text-slate-400">per page</span>
+            <span className="text-xs text-slate-400">{t("table.perPage")}</span>
           </div>
         </div>
 
@@ -252,7 +254,7 @@ export function StudentTable({
             onClick={() => onPageChange(page - 1)}
             className="rounded border border-border-color px-3 py-2 text-neutral-muted disabled:opacity-40"
           >
-            Previous
+            {t("table.previous")}
           </button>
           {Array.from({ length: totalPages }, (_, i) => i + 1).map(
             (pageNum) => (
@@ -277,7 +279,7 @@ export function StudentTable({
             onClick={() => onPageChange(page + 1)}
             className="rounded border border-border-color px-3 py-2 text-neutral-muted disabled:opacity-40"
           >
-            Next
+            {t("table.next")}
           </button>
         </div>
       </div>

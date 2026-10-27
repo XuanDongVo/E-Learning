@@ -24,7 +24,6 @@ import tools.jackson.databind.node.ObjectNode;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -39,6 +38,27 @@ public class AssessmentAttemptAnswerService {
     private final AssessmentAttemptAnswerMutationRepository mutationRepository;
     private final ObjectMapper objectMapper;
 
+    /*
+     * 1. Define transaction boundary and load the AssessmentAttempt.
+     * 2. Verify student ownership, activeSessionId, attempt state and deadline.
+     * 3. Verify attemptQuestionId belongs to the attempt.
+     * 4. Calculate canonical payload hash.
+     * 5. Resolve/replay idempotency using requestId and payload hash.
+     * 6. Load the current AssessmentAttemptAnswer.
+     * 7. Compare expectedRevision with the current answer revision.
+     * 8. Validate answerPayload against the immutable question snapshot.
+     * 9. Persist answer using optimistic locking (@Version).
+     * 10. Persist idempotency mutation atomically.
+     * 11. Update lastActivityAt.
+     * 12. Return SaveAttemptAnswerResponse acknowledgement.
+     *
+     * Concurrency policy:
+     * - No pessimistic lock.
+     * - AssessmentAttemptAnswer.revision uses @Version.
+     * - activeSessionId rejects stale/inactive sessions.
+     * - Race conditions between autosave, submit, timeout and refresh
+     *   are intentionally tolerated by the current product scope.
+     */
     @Transactional
     public SaveAttemptAnswerResponse saveAnswer(Long attemptId, Long attemptQuestionId, Long studentId,
                                                 SaveAttemptAnswerRequest request) {
@@ -143,17 +163,29 @@ public class AssessmentAttemptAnswerService {
     }
 
     private JsonNode canonicalize(JsonNode node) {
-        if (node == null || node.isValueNode() || node.isNull()) return node;
+        if (node == null || node.isValueNode() || node.isNull()) {
+            return node;
+        }
+
         if (node.isArray()) {
             var array = objectMapper.createArrayNode();
+
+            // Preserve array order; answers may depend on the position of each item.
             node.forEach(item -> array.add(canonicalize(item)));
+
             return array;
         }
+
         ObjectNode object = objectMapper.createObjectNode();
-        Iterator<String> names = node.fieldNames();
         java.util.TreeSet<String> sorted = new java.util.TreeSet<>();
-        names.forEachRemaining(sorted::add);
-        for (String name : sorted) object.set(name, canonicalize(node.get(name)));
+
+        // Collect property names and sort them for deterministic JSON output.
+        node.properties().forEach(entry -> sorted.add(entry.getKey()));
+
+        for (String name : sorted) {
+            object.set(name, canonicalize(node.get(name)));
+        }
+
         return object;
     }
 

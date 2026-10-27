@@ -64,14 +64,13 @@ async function loadMessages(locale: "vi" | "en") {
   return {
     ...common.default,
     ...navigation.default,
-    ...teacher.content,
-    ...errors.default,
-    teacher,
-    student,
     common: common.default,
     navigation: navigation.default,
     form: form.default,
     feedback: feedback.default,
+    errors: errors.default,
+    teacher,
+    student,
   };
 }
 

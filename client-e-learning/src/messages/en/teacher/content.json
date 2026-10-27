@@ -1,4 +1,5 @@
 {
+  "content": "Content",
   "contentDescription": "Grade → Unit → Section → Topic → Question bank.",
   "createUnit": "Create Unit",
   "units": "Unit list",
@@ -9,5 +10,69 @@
   "noTopics": "No topics in this section yet.",
   "questionBanks": "banks",
   "questions": "questions",
-  "search": "Search units..."
+  "search": "Search units...",
+  "globalBanks": {
+    "title": "Question Banks",
+    "breadcrumbExplorer": "Content Explorer",
+    "breadcrumbBanks": "Question Banks",
+    "subtitle": "Browse banks across grades, units, sections and topics.",
+    "searchPlaceholder": "Search bank name or description...",
+    "search": "Search",
+    "reset": "Reset",
+    "grade": "Grade",
+    "allGrades": "All grades",
+    "unit": "Unit",
+    "allUnits": "All units",
+    "section": "Section",
+    "allSections": "All sections",
+    "topic": "Topic",
+    "allTopics": "All topics",
+    "includeArchived": "Include archived question banks",
+    "totalBanks": "{count} banks",
+    "empty": "No question banks match the selected filters.",
+    "status": {
+      "draft": "Draft",
+      "published": "Published",
+      "archived": "Archived"
+    },
+    "viewBank": "View details",
+    "page": "Page {page} of {totalPages}",
+    "previous": "Previous",
+    "next": "Next"
+  },
+  "bankDetail": {
+    "label": "Question Bank",
+    "editBank": "Edit bank",
+    "addQuestion": "Add question",
+    "importQuestions": "Import questions",
+    "searchQuestions": "Search questions...",
+    "allTypes": "All types",
+    "allDifficulties": "All difficulties",
+    "allCompleteness": "All completeness",
+    "complete": "Complete",
+    "incomplete": "Incomplete",
+    "emptyQuestions": "No questions in this bank yet.",
+    "totalQuestions": "Total {count} questions"
+  },
+  "unit": {
+    "label": "Unit",
+    "sections": "Sections",
+    "activities": "Activities",
+    "createSection": "Create Section",
+    "noSections": "No sections in this unit yet.",
+    "order": "Order",
+    "manageUnit": "Manage Unit"
+  },
+  "section": {
+    "label": "Section",
+    "topics": "Topics",
+    "createTopic": "Create Topic",
+    "noTopics": "No topics in this section yet."
+  },
+  "topic": {
+    "label": "Topic",
+    "questionBanks": "Question Banks",
+    "createBank": "Create Bank",
+    "noBanks": "No question banks in this topic yet."
+  }
 }

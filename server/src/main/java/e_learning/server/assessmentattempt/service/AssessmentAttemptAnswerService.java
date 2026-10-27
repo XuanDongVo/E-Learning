@@ -14,7 +14,6 @@ import e_learning.server.assessmentattempt.repository.AssessmentAttemptRepositor
 import e_learning.server.common.exception.AppException;
 import e_learning.server.common.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -52,7 +51,7 @@ public class AssessmentAttemptAnswerService {
 
         AssessmentAttemptQuestion attemptQuestion = attemptQuestionRepository
                 .findByIdAndAttemptId(attemptQuestionId, attemptId)
-                .orElseThrow(() -> new AppException(ErrorCode.ASSESSMENT_ATTEMPT_QUESTION_NOT_FOUND));
+                .orElseThrow(() -> new AppException(ErrorCode.ASSESSMENT_ATTEMPT_INVALID_ANSWER));
 
         String payloadHash = calculateCanonicalPayloadHash(attemptId, attemptQuestionId, request.answerPayload());
 
@@ -89,17 +88,7 @@ public class AssessmentAttemptAnswerService {
         mutation.setPayloadHash(payloadHash);
         mutation.setResultRevision(answer.getRevision());
         mutation.setSavedAt(answer.getSavedAt());
-
-        try {
-            mutationRepository.saveAndFlush(mutation);
-        } catch (DataIntegrityViolationException exception) {
-            Optional<AssessmentAttemptAnswerMutation> raced =
-                    mutationRepository.findByAttemptIdAndRequestId(attemptId, request.requestId());
-            if (raced.isPresent() && raced.get().getPayloadHash().equals(payloadHash)) {
-                return responseForOriginalMutation(raced.get());
-            }
-            throw exception;
-        }
+        mutationRepository.saveAndFlush(mutation);
 
         attempt.setLastActivityAt(answer.getSavedAt());
         return SaveAttemptAnswerResponse.map(request.requestId(), attemptQuestionId,

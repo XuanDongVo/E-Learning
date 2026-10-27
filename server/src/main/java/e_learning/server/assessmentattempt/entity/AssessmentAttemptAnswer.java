@@ -38,6 +38,7 @@ public class AssessmentAttemptAnswer {
     @Column(name = "normalized_value", columnDefinition = "jsonb")
     private Object normalizedValue;
 
+    @Version
     @Column(nullable = false)
     private long revision;
 

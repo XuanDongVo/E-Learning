@@ -17,7 +17,8 @@ public interface AssessmentAttemptRepository extends JpaRepository<AssessmentAtt
 
     boolean existsByAssignmentIdAndStatus(Long assignmentId, AssessmentAttemptStatus status);
 
-    @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select a from AssessmentAttempt a where a.id = :attemptId")
     Optional<AssessmentAttempt> findByIdForUpdate(@Param("attemptId") Long attemptId);
+
+    boolean exitsByByAssignmentIdAndUser_Id(Long assignmentId , Long userId);
 }

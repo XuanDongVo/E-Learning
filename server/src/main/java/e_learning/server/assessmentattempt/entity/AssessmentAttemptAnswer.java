@@ -61,6 +61,8 @@ public class AssessmentAttemptAnswer {
 
     @PreUpdate
     void onUpdate() {
-        updatedAt = LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.now();
+        savedAt = now;
+        updatedAt = now;
     }
 }

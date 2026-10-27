@@ -48,8 +48,8 @@ public class Assignment {
     @Column(name = "start_at")
     private LocalDateTime startAt;
 
-    @Column(name = "due_at", nullable = false)
-    private LocalDateTime dueAt;
+        @Column(name = "due_at", nullable = false)
+        private LocalDateTime dueAt;
 
     @Column(name = "time_limit_minutes", nullable = false)
     private Integer timeLimitMinutes;

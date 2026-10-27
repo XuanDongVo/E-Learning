@@ -13,7 +13,7 @@ export interface AttemptRuntimeResponse {
   startedAt: string;
   deadlineAt: string;
   serverNow: string;
-  timeLimitSeconds: number;
+  timeLimitMinutes: number;
   classIdAtStart: number;
   classNameAtStart: string;
   late: boolean;
@@ -62,10 +62,9 @@ export interface AttemptIntroResponse {
   gradeName: string;
   questionCount: number;
   dueAt: string;
-  timeLimitSeconds: number;
+  timeLimitMinutes: number;
   attemptStatus: AssessmentAttemptStatus | null;
   late: boolean;
-  availabilityCode: string | null;
 }
 
 export interface AttemptSummaryResponse {

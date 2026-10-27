@@ -1,6 +1,7 @@
 package e_learning.server.assessmentattempt.dto.response;
 
 import e_learning.server.assessmentattempt.enums.AssessmentAttemptStatus;
+import e_learning.server.assignment.entity.Assignment;
 
 import java.time.LocalDateTime;
 
@@ -12,11 +13,33 @@ public record AttemptIntroResponse(
         Long assignmentId,
         String assignmentTitle,
         String gradeName,
-        Integer questionCount,
+        long questionCount,
         LocalDateTime dueAt,
-        Integer timeLimitSeconds,
+        Integer timeLimitMinutes,
         AssessmentAttemptStatus attemptStatus,
-        boolean late,
-        String availabilityCode
+        /**
+         * True when the assignment is past its due time
+         * and the student has not completed the attempt.
+         */
+        boolean late
 ) {
+
+    public static AttemptIntroResponse map(
+            Assignment assignment,
+            long questionCount,
+            String gradeName,
+            AssessmentAttemptStatus attemptStatus,
+            boolean late
+    ) {
+        return new AttemptIntroResponse(
+                assignment.getId(),
+                assignment.getName(),
+                gradeName,
+                questionCount,
+                assignment.getDueAt(),
+                assignment.getTimeLimitMinutes(),
+                attemptStatus,
+                late
+        );
+    }
 }

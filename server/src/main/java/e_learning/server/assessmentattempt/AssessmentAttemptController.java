@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Objects;
+
 /**
  * Sprint 1 controller shell only.
  *
@@ -35,7 +37,7 @@ public class AssessmentAttemptController {
             @PathVariable Long assignmentId,
             @AuthenticationPrincipal Jwt jwt
     ) {
-        Long studentId = Long.valueOf(jwt.getSubject());
+        Long studentId = Long.valueOf(Objects.requireNonNull(jwt.getSubject()));
         return ResponseEntity.ok(ApiResponse.success(
                 attemptService.getIntro(assignmentId, studentId)
         ));
@@ -47,7 +49,7 @@ public class AssessmentAttemptController {
             @Valid @RequestBody StartOrResumeAttemptRequest request,
             @AuthenticationPrincipal Jwt jwt
     ) {
-        Long studentId = Long.valueOf(jwt.getSubject());
+        Long studentId = Long.valueOf(Objects.requireNonNull(jwt.getSubject()));
         return ResponseEntity.ok(ApiResponse.success(
                 attemptService.startOrResume(assignmentId, studentId, request)
         ));

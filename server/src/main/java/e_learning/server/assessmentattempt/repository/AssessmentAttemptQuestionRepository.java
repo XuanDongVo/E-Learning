@@ -7,4 +7,6 @@ import java.util.List;
 
 public interface AssessmentAttemptQuestionRepository extends JpaRepository<AssessmentAttemptQuestion, Long> {
     List<AssessmentAttemptQuestion> findAllByAttemptIdOrderByPositionAsc(Long attemptId);
+
+
 }

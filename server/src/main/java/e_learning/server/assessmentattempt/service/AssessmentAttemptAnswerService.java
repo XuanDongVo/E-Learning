@@ -1,9 +1,5 @@
 package e_learning.server.assessmentattempt.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import e_learning.server.assessmentattempt.dto.request.SaveAttemptAnswerRequest;
 import e_learning.server.assessmentattempt.dto.response.SaveAttemptAnswerResponse;
 import e_learning.server.assessmentattempt.entity.AssessmentAttempt;
@@ -22,8 +18,10 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.ObjectNode;
 
-import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
@@ -43,12 +41,8 @@ public class AssessmentAttemptAnswerService {
     private final ObjectMapper objectMapper;
 
     @Transactional
-    public SaveAttemptAnswerResponse saveAnswer(
-            Long attemptId,
-            Long attemptQuestionId,
-            Long studentId,
-            SaveAttemptAnswerRequest request
-    ) {
+    public SaveAttemptAnswerResponse saveAnswer(Long attemptId, Long attemptQuestionId, Long studentId,
+                                                SaveAttemptAnswerRequest request) {
         AssessmentAttempt attempt = attemptRepository.findById(attemptId)
                 .orElseThrow(() -> new AppException(ErrorCode.ASSESSMENT_ATTEMPT_NOT_FOUND));
 
@@ -60,15 +54,10 @@ public class AssessmentAttemptAnswerService {
                 .findByIdAndAttemptId(attemptQuestionId, attemptId)
                 .orElseThrow(() -> new AppException(ErrorCode.ASSESSMENT_ATTEMPT_QUESTION_NOT_FOUND));
 
-        String payloadHash = calculateCanonicalPayloadHash(
-                attemptId,
-                attemptQuestionId,
-                request.answerPayload()
-        );
+        String payloadHash = calculateCanonicalPayloadHash(attemptId, attemptQuestionId, request.answerPayload());
 
         Optional<AssessmentAttemptAnswerMutation> existingMutation =
                 mutationRepository.findByAttemptIdAndRequestId(attemptId, request.requestId());
-
         if (existingMutation.isPresent()) {
             AssessmentAttemptAnswerMutation mutation = existingMutation.get();
             if (!mutation.getPayloadHash().equals(payloadHash)) {
@@ -81,13 +70,10 @@ public class AssessmentAttemptAnswerService {
 
         Optional<AssessmentAttemptAnswer> existingAnswer =
                 answerRepository.findByAttemptQuestionId(attemptQuestionId);
-
         validateExpectedRevision(existingAnswer, request.expectedRevision());
 
         AssessmentAttemptAnswer answer = existingAnswer.orElseGet(AssessmentAttemptAnswer::new);
-        if (answer.getId() == null) {
-            answer.setAttemptQuestion(attemptQuestion);
-        }
+        if (answer.getId() == null) answer.setAttemptQuestion(attemptQuestion);
         answer.setAnswerPayload(request.answerPayload());
 
         try {
@@ -116,26 +102,18 @@ public class AssessmentAttemptAnswerService {
         }
 
         attempt.setLastActivityAt(answer.getSavedAt());
-
-        return SaveAttemptAnswerResponse.map(
-                request.requestId(),
-                attemptQuestionId,
-                answer.getRevision(),
-                answer.getSavedAt(),
-                LocalDateTime.now()
-        );
+        return SaveAttemptAnswerResponse.map(request.requestId(), attemptQuestionId,
+                answer.getRevision(), answer.getSavedAt(), LocalDateTime.now());
     }
 
     private void verifyStudentOwnership(AssessmentAttempt attempt, Long studentId) {
-        if (attempt.getStudent() == null
-                || !attempt.getStudent().getId().equals(studentId)) {
+        if (attempt.getStudent() == null || !attempt.getStudent().getId().equals(studentId)) {
             throw new AppException(ErrorCode.ASSESSMENT_ATTEMPT_ACCESS_DENIED);
         }
     }
 
     private void verifyActiveSession(AssessmentAttempt attempt, UUID activeSessionId) {
-        if (attempt.getActiveSessionId() == null
-                || !attempt.getActiveSessionId().equals(activeSessionId)) {
+        if (attempt.getActiveSessionId() == null || !attempt.getActiveSessionId().equals(activeSessionId)) {
             throw new AppException(ErrorCode.ASSESSMENT_ATTEMPT_SESSION_LOST);
         }
     }
@@ -144,56 +122,33 @@ public class AssessmentAttemptAnswerService {
         if (attempt.getStatus() != AssessmentAttemptStatus.IN_PROGRESS) {
             throw new AppException(ErrorCode.ASSESSMENT_ATTEMPT_INVALID_STATE);
         }
-
-        if (attempt.getDeadlineAt() != null
-                && !LocalDateTime.now().isBefore(attempt.getDeadlineAt())) {
+        if (attempt.getDeadlineAt() != null && !LocalDateTime.now().isBefore(attempt.getDeadlineAt())) {
             throw new AppException(ErrorCode.ASSESSMENT_ATTEMPT_TIME_UP);
         }
     }
 
-    private void validateExpectedRevision(
-            Optional<AssessmentAttemptAnswer> existingAnswer,
-            long expectedRevision
-    ) {
-        long currentRevision = existingAnswer
-                .map(AssessmentAttemptAnswer::getRevision)
-                .orElse(0L);
-
+    private void validateExpectedRevision(Optional<AssessmentAttemptAnswer> existingAnswer, long expectedRevision) {
+        long currentRevision = existingAnswer.map(AssessmentAttemptAnswer::getRevision).orElse(0L);
         if (currentRevision != expectedRevision) {
             throw new AppException(ErrorCode.ASSESSMENT_ATTEMPT_VERSION_CONFLICT);
         }
     }
 
-    private void validateAnswerPayload(
-            Map<String, Object> questionSnapshot,
-            Map<String, Object> answerPayload
-    ) {
-        if (answerPayload == null) {
+    private void validateAnswerPayload(Map<String, Object> questionSnapshot, Map<String, Object> answerPayload) {
+        if (answerPayload == null || !(questionSnapshot.get("student") instanceof Map<?, ?>)) {
             throw new AppException(ErrorCode.ASSESSMENT_ATTEMPT_INVALID_ANSWER);
         }
-
-        Object student = questionSnapshot.get("student");
-        if (!(student instanceof Map<?, ?>)) {
-            throw new AppException(ErrorCode.ASSESSMENT_ATTEMPT_INVALID_ANSWER);
-        }
-
-        // Structural/type-specific validation belongs to the Question Engine boundary.
-        // At this layer we only reject malformed/non-student snapshots; grading data is
-        // never accepted as a substitute for the immutable attempt snapshot.
+        // Type-specific structural validation belongs to the Question Engine boundary.
     }
 
-    private String calculateCanonicalPayloadHash(
-            Long attemptId,
-            Long attemptQuestionId,
-            Map<String, Object> answerPayload
-    ) {
+    private String calculateCanonicalPayloadHash(Long attemptId, Long attemptQuestionId, Map<String, Object> answerPayload) {
         try {
             ObjectNode canonical = objectMapper.createObjectNode();
             canonical.put("attemptId", attemptId);
             canonical.put("attemptQuestionId", attemptQuestionId);
             canonical.set("answerPayload", canonicalize(objectMapper.valueToTree(answerPayload)));
             return sha256(objectMapper.writeValueAsBytes(canonical));
-        } catch (JsonProcessingException exception) {
+        } catch (RuntimeException exception) {
             throw new AppException(ErrorCode.ASSESSMENT_ATTEMPT_INVALID_ANSWER);
         }
     }
@@ -224,15 +179,8 @@ public class AssessmentAttemptAnswerService {
         }
     }
 
-    private SaveAttemptAnswerResponse responseForOriginalMutation(
-            AssessmentAttemptAnswerMutation mutation
-    ) {
-        return SaveAttemptAnswerResponse.map(
-                mutation.getRequestId(),
-                mutation.getAttemptQuestion().getId(),
-                mutation.getResultRevision(),
-                mutation.getSavedAt(),
-                LocalDateTime.now()
-        );
+    private SaveAttemptAnswerResponse responseForOriginalMutation(AssessmentAttemptAnswerMutation mutation) {
+        return SaveAttemptAnswerResponse.map(mutation.getRequestId(), mutation.getAttemptQuestion().getId(),
+                mutation.getResultRevision(), mutation.getSavedAt(), LocalDateTime.now());
     }
 }

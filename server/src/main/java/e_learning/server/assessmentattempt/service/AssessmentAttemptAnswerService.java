@@ -24,6 +24,7 @@ import tools.jackson.databind.node.ObjectNode;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -146,8 +147,7 @@ public class AssessmentAttemptAnswerService {
     private void validateAnswerPayload(Map<String, Object> documentSnapshot,
                                        Map<String, Object> questionSnapshot,
                                        Map<String, Object> answerPayload) {
-        if (answerPayload == null || !(questionSnapshot.get("student") instanceof Map<?, ?> studentValue)
-                || !(studentValue instanceof Map<?, ?> student)
+        if (answerPayload == null || !(questionSnapshot.get("student") instanceof Map<?, ?> student)
                 || !(student.get("spec") instanceof Map<?, ?> spec)) {
             throw new AppException(ErrorCode.ASSESSMENT_ATTEMPT_INVALID_ANSWER);
         }
@@ -170,10 +170,10 @@ public class AssessmentAttemptAnswerService {
         }
 
         Object selectedValue = answerPayload.get("selectedKey");
-        if (!(selectedValue instanceof String selectedEntryId)) {
+        if (!(selectedValue instanceof String submittedEntryId)) {
             throw new AppException(ErrorCode.ASSESSMENT_ATTEMPT_INVALID_ANSWER);
         }
-        selectedEntryId = selectedEntryId.trim();
+        String selectedEntryId = submittedEntryId.trim();
 
         // Empty selection represents an unanswered question. It is valid to save a draft.
         if (selectedEntryId.isEmpty()) return;

@@ -367,7 +367,10 @@ public class AssignmentCompositionService {
             String type = item.itemType() == null ? "" : item.itemType().trim().toUpperCase(Locale.ROOT);
             if ("POOL".equals(type) && item.blockPayload() != null) {
                 Object keyValue = item.blockPayload().get("poolKey");
-                if (keyValue instanceof String key && !key.isBlank()) {
+                String key = keyValue instanceof String value && !value.isBlank()
+                        ? value.trim()
+                        : item.id() == null ? null : "b-" + item.id();
+                if (key != null) {
                     if (poolsByKey.putIfAbsent(key, item.blockPayload()) != null) {
                         throw invalid("Answer Pool keys must be unique within a section.");
                     }

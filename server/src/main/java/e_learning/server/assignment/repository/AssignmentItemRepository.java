@@ -11,6 +11,7 @@ import java.util.List;
 public interface AssignmentItemRepository extends JpaRepository<AssignmentItem, Long> {
     List<AssignmentItem> findAllByAssignmentIdOrderBySectionIdAscParentItemIdAscPositionAscIdAsc(Long assignmentId);
     List<AssignmentItem> findAllByAssignmentIdAndSectionIdOrderByPositionAscIdAsc(Long assignmentId, Long sectionId);
+    long countByAssignmentIdAndItemType(Long assignmentId, String itemType);
 
     @Modifying(flushAutomatically = true, clearAutomatically = true)
     @Query("update AssignmentItem i set i.position = i.position + 1000000 where i.assignment.id = :assignmentId")

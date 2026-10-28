@@ -18,11 +18,18 @@ public final class ClozeHandler extends AbstractQuestionTypeHandler {
         return DefinitionValidation.ready();
     }
     public AnswerParseResult parseAndValidate(QuestionSpec spec, RawAnswer raw) {
-        requireType(spec); if (raw == null || !(raw.value() instanceof Map<?, ?> input)) return AnswerParseResult.invalid("answer.cloze.required");
+        requireType(spec);
+        if (raw == null || raw.value() == null) return AnswerParseResult.unansweredResult();
+        if (!(raw.value() instanceof Map<?, ?> input)) return AnswerParseResult.invalid("answer.cloze.invalid");
+        if (input.isEmpty()) return AnswerParseResult.unansweredResult();
         Map<String, String> values = new LinkedHashMap<>();
-        for (var entry : input.entrySet()) { if (!(entry.getKey() instanceof String key) || !(entry.getValue() instanceof String value)) return AnswerParseResult.invalid("answer.cloze.invalid"); values.put(key.trim(), value.trim()); }
+        for (var entry : input.entrySet()) {
+            if (!(entry.getKey() instanceof String key) || !(entry.getValue() instanceof String value)) return AnswerParseResult.invalid("answer.cloze.invalid");
+            values.put(key.trim(), value.trim());
+        }
         Set<String> keys = ((ClozeSpec) spec).blanks().stream().map(ClozeSpec.Blank::key).collect(java.util.stream.Collectors.toSet());
         if (!keys.containsAll(values.keySet())) return AnswerParseResult.invalid("answer.cloze.invalid");
+        if (values.values().stream().allMatch(String::isBlank)) return AnswerParseResult.unansweredResult();
         return AnswerParseResult.valid(new ValidatedAnswer(type(), new ClozeAnswer(values)));
     }
     public GradeResult grade(QuestionSpec spec, ValidatedAnswer answer) {

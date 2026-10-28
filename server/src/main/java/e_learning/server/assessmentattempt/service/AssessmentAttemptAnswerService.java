@@ -85,7 +85,7 @@ public class AssessmentAttemptAnswerService {
             return responseForOriginalMutation(mutation);
         }
 
-        validateAnswerPayload(attemptQuestion.getQuestionSnapshot(), request.answerPayload());
+        validateAnswerPayload(attempt.getDocumentSnapshot(), attemptQuestion.getQuestionSnapshot(), request.answerPayload());
 
         Optional<AssessmentAttemptAnswer> existingAnswer =
                 answerRepository.findByAttemptQuestionId(attemptQuestionId);
@@ -143,11 +143,73 @@ public class AssessmentAttemptAnswerService {
         }
     }
 
-    private void validateAnswerPayload(Map<String, Object> questionSnapshot, Map<String, Object> answerPayload) {
-        if (answerPayload == null || !(questionSnapshot.get("student") instanceof Map<?, ?>)) {
+    private void validateAnswerPayload(Map<String, Object> documentSnapshot,
+                                       Map<String, Object> questionSnapshot,
+                                       Map<String, Object> answerPayload) {
+        if (answerPayload == null || !(questionSnapshot.get("student") instanceof Map<?, ?> studentValue)
+                || !(studentValue instanceof Map<?, ?> student)
+                || !(student.get("spec") instanceof Map<?, ?> spec)) {
             throw new AppException(ErrorCode.ASSESSMENT_ATTEMPT_INVALID_ANSWER);
         }
-        // Type-specific structural validation belongs to the Question Engine boundary.
+
+        // Matching uses a stable Answer Pool entry ID in the student payload. Resolve the pool
+        // from the immutable Attempt document snapshot; never trust a client-supplied pool or entry list.
+        if ("MATCHING".equals(stringValue(spec.get("type")))) {
+            validateMatchingAnswer(documentSnapshot, spec, answerPayload);
+        }
+        // Other question types still need their type-specific Question Engine adapter.
+    }
+
+    private void validateMatchingAnswer(Map<String, Object> documentSnapshot,
+                                        Map<?, ?> spec,
+                                        Map<String, Object> answerPayload) {
+        Object poolIdValue = spec.get("poolId");
+        String poolId = stringValue(poolIdValue);
+        if (poolId.isBlank()) {
+            throw new AppException(ErrorCode.ASSESSMENT_ATTEMPT_INVALID_ANSWER);
+        }
+
+        Object selectedValue = answerPayload.get("selectedKey");
+        if (!(selectedValue instanceof String selectedEntryId)) {
+            throw new AppException(ErrorCode.ASSESSMENT_ATTEMPT_INVALID_ANSWER);
+        }
+        selectedEntryId = selectedEntryId.trim();
+
+        // Empty selection represents an unanswered question. It is valid to save a draft.
+        if (selectedEntryId.isEmpty()) return;
+
+        List<?> blocks = documentSnapshot.get("blocks") instanceof List<?> list ? list : List.of();
+        Map<?, ?> matchedPoolPayload = null;
+        for (Object blockValue : blocks) {
+            if (!(blockValue instanceof Map<?, ?> block) || !"POOL".equals(stringValue(block.get("itemType")))) {
+                continue;
+            }
+            if (!(block.get("payload") instanceof Map<?, ?> payload)) continue;
+
+            String logicalKey = stringValue(payload.get("poolKey"));
+            String itemId = stringValue(block.get("assignmentItemId"));
+            boolean matches = poolId.equals(logicalKey)
+                    || (!itemId.isBlank() && (poolId.equals(itemId) || poolId.equals("b-" + itemId)));
+            if (matches) {
+                matchedPoolPayload = payload;
+                break;
+            }
+        }
+
+        if (matchedPoolPayload == null || !(matchedPoolPayload.get("entries") instanceof List<?> entries)) {
+            throw new AppException(ErrorCode.ASSESSMENT_ATTEMPT_INVALID_ANSWER);
+        }
+
+        boolean entryExists = entries.stream().anyMatch(entry ->
+                entry instanceof Map<?, ?> entryMap
+                        && selectedEntryId.equals(stringValue(entryMap.get("id"))));
+        if (!entryExists) {
+            throw new AppException(ErrorCode.ASSESSMENT_ATTEMPT_INVALID_ANSWER);
+        }
+    }
+
+    private String stringValue(Object value) {
+        return value instanceof String text ? text.trim() : "";
     }
 
     private String calculateCanonicalPayloadHash(Long attemptId, Long attemptQuestionId, Map<String, Object> answerPayload) {

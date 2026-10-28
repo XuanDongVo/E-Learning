@@ -86,7 +86,8 @@ public class AssessmentAttemptAnswerService {
             return responseForOriginalMutation(mutation);
         }
 
-        validateAnswerPayload(attempt.getDocumentSnapshot(), attemptQuestion.getQuestionSnapshot(), request.answerPayload());
+        validateAnswerPayload(attempt.getDocumentSnapshot(), attemptQuestion.getQuestionSnapshot(),
+                attemptQuestion.getSectionKey(), request.answerPayload());
 
         Optional<AssessmentAttemptAnswer> existingAnswer =
                 answerRepository.findByAttemptQuestionId(attemptQuestionId);
@@ -146,6 +147,7 @@ public class AssessmentAttemptAnswerService {
 
     private void validateAnswerPayload(Map<String, Object> documentSnapshot,
                                        Map<String, Object> questionSnapshot,
+                                       String sectionKey,
                                        Map<String, Object> answerPayload) {
         if (answerPayload == null || !(questionSnapshot.get("student") instanceof Map<?, ?> student)
                 || !(student.get("spec") instanceof Map<?, ?> spec)) {
@@ -155,13 +157,14 @@ public class AssessmentAttemptAnswerService {
         // Matching uses a stable Answer Pool entry ID in the student payload. Resolve the pool
         // from the immutable Attempt document snapshot; never trust a client-supplied pool or entry list.
         if ("MATCHING".equals(stringValue(spec.get("type")))) {
-            validateMatchingAnswer(documentSnapshot, spec, answerPayload);
+            validateMatchingAnswer(documentSnapshot, spec, sectionKey, answerPayload);
         }
         // Other question types still need their type-specific Question Engine adapter.
     }
 
     private void validateMatchingAnswer(Map<String, Object> documentSnapshot,
                                         Map<?, ?> spec,
+                                        String sectionKey,
                                         Map<String, Object> answerPayload) {
         Object poolIdValue = spec.get("poolId");
         String poolId = stringValue(poolIdValue);
@@ -184,6 +187,7 @@ public class AssessmentAttemptAnswerService {
             if (!(blockValue instanceof Map<?, ?> block) || !"POOL".equals(stringValue(block.get("itemType")))) {
                 continue;
             }
+            if (sectionKey == null || !sectionKey.equals(String.valueOf(block.get("sectionId")))) continue;
             if (!(block.get("payload") instanceof Map<?, ?> payload)) continue;
 
             String logicalKey = stringValue(payload.get("poolKey"));

@@ -445,11 +445,17 @@ public class AssignmentCompositionService {
                 if (!(entries instanceof List<?> list) || list.isEmpty()) {
                     throw invalid("POOL blocks require a non-empty entries array.");
                 }
+                Set<String> entryIds = new HashSet<>();
                 for (Object entry : list) {
                     if (!(entry instanceof Map<?, ?> map)
+                            || !(map.get("id") instanceof String entryId)
+                            || entryId.isBlank()
                             || !(map.get("text") instanceof String text)
                             || text.isBlank()) {
-                        throw invalid("Every POOL entry requires non-empty text.");
+                        throw invalid("Every POOL entry requires a stable ID and non-empty text.");
+                    }
+                    if (!entryIds.add(entryId.trim())) {
+                        throw invalid("POOL entry IDs must be unique.");
                     }
                 }
             }

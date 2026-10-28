@@ -280,6 +280,7 @@ public class AssessmentAttemptCreationService {
 
         Map<String, Object> grading = new LinkedHashMap<>();
         grading.put("type", question.getType().name());
+        grading.put("difficulty", question.getDifficulty().name());
         grading.put("contentRevision", question.getContentRevision());
         grading.put("matchingMode", question.getMatchingMode());
         grading.put("definition", definition);

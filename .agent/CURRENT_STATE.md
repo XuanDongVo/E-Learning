@@ -202,3 +202,12 @@ Important integration risk for the later code review:
 - Empty `selectedKey` is accepted as an unanswered draft; a non-empty ID must exist in the referenced POOL. The client cannot provide its own pool list to satisfy validation.
 - This closes only the structural pool-membership check for Matching answer drafts. It does **not** implement canonical Question Engine parsing/grading, submit/finalization, or type-specific validation for other question types.
 - Verification: no backend compile, tests, frontend typecheck/build, Flyway validation, or browser/E2E run was performed. No tests were added or modified.
+## 17. Assignment Attempt answer validation — 2026-10-28
+
+- `AssessmentAttemptAnswerService` now injects `QuestionEngine` and adapts persisted answer payloads to `RawAnswer` before saving a draft.
+- The adapter reconstructs `QuestionSpec` from the immutable question snapshot's student spec and grading data, then calls `parseAndValidate`. It never calls `grade` during autosave.
+- `INVALID` payloads are rejected with `ASSESSMENT_ATTEMPT_INVALID_ANSWER`; both `VALID` and `UNANSWERED` are accepted so students can save partial drafts.
+- Payload fields currently mapped by the service: SINGLE_CHOICE/MATCHING → `selectedKey`; MULTIPLE_CHOICE → `selectedKeys`; TRUE_FALSE/FILL_IN_BLANK/TYPE_ANSWER → `value`; CLOZE → `values`.
+- MATCHING additionally validates the selected Answer Pool entry against the immutable document snapshot and the question's section. The Attempt creation snapshot now includes question difficulty for reconstruction; older snapshots without this field use MEDIUM only as the QuestionCommon validation context (difficulty does not affect answer parsing).
+- **Contract risk still open:** older Phase 7 notes describe Matching payloads as `{ pairs }`, while the existing Matching validator and this adapter use `{ selectedKey }` for the current single-prompt/single-correct-entry model. Confirm the actual Student UI request shape before treating Matching end-to-end as complete; do not silently adapt a multi-row `pairs` structure to the current single-answer engine.
+- Verification: source was committed, but no backend compilation/tests, frontend typecheck/build, Flyway validation, or browser/E2E verification was run. No tests were added or modified.

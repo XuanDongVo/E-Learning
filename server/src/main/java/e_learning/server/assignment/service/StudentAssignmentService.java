@@ -24,7 +24,6 @@ import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
-import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -38,8 +37,8 @@ public class StudentAssignmentService {
     private final AssessmentAttemptRepository assessmentAttemptRepository;
 
     /**
-     * Return only published assignments targeted to the student's active class.
-     * Status and search filters are applied before the response is returned.
+     * Return published assignments targeted to the student's active class.
+     * The optional status and q filters are applied to this authorized set.
      */
     public List<StudentAssignmentItemResponse> getMyAssignments(
             Long studentId,
@@ -55,7 +54,12 @@ public class StudentAssignmentService {
 
         Long activeClassId = membership.getClassEntity().getId();
         LocalDateTime now = LocalDateTime.now();
-        StudentAssignmentStatus requestedStatus = StudentAssignmentStatus.fromFilter(statusFilter);
+        StudentAssignmentStatus requestedStatus;
+        try {
+            requestedStatus = StudentAssignmentStatus.fromFilter(statusFilter);
+        } catch (IllegalArgumentException exception) {
+            throw new AppException(ErrorCode.INVALID_REQUEST);
+        }
         String normalizedQuery = normalizeQuery(query);
 
         return assignmentRepository.findAllByStatusOrderByDueAtAscIdAsc(AssignmentStatus.PUBLISHED)
@@ -123,20 +127,17 @@ public class StudentAssignmentService {
             AssessmentAttempt attempt,
             LocalDateTime now
     ) {
-        if (attempt != null) {
-            if (attempt.getStatus() == AssessmentAttemptStatus.SUBMITTED
-                    || attempt.getStatus() == AssessmentAttemptStatus.TIMED_OUT) {
-                return StudentAssignmentStatus.COMPLETED;
-            }
-            if (attempt.getStatus() == AssessmentAttemptStatus.IN_PROGRESS) {
-                return StudentAssignmentStatus.IN_PROGRESS;
-            }
+        if (attempt != null
+                && (attempt.getStatus() == AssessmentAttemptStatus.SUBMITTED
+                || attempt.getStatus() == AssessmentAttemptStatus.TIMED_OUT)) {
+            return StudentAssignmentStatus.COMPLETED;
         }
 
         if (assignment.getDueAt() != null && assignment.getDueAt().isBefore(now)) {
             return StudentAssignmentStatus.LATE;
         }
 
+        // The existing frontend groups an in-progress attempt under "todo".
         return StudentAssignmentStatus.TODO;
     }
 }

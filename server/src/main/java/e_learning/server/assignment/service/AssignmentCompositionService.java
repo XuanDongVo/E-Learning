@@ -186,7 +186,7 @@ public class AssignmentCompositionService {
         Set<Long> ownedQuestionIds = ownedQuestions.stream()
                 .map(AssignmentQuestion::getQuestionId).collect(Collectors.toSet());
 
-        // Matching phải được đặt dưới đúng POOL block và correctEntryId phải tồn tại trong pool đó.
+        // Matching tham chiếu POOL bằng poolKey trong cùng Section; correctEntryId phải tồn tại trong pool đó.
         // Không dựa vào text làm identity: text có thể trùng hoặc được sửa sau này.
         Map<Long, Question> questionsById = ownedQuestions.stream()
                 .collect(Collectors.toMap(AssignmentQuestion::getQuestionId, AssignmentQuestion::getQuestion));

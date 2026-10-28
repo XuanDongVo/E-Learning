@@ -353,82 +353,94 @@ public class AssignmentCompositionService {
             List<CompositionSectionRequest> sections,
             Map<Long, Question> questionsById) {
         for (CompositionSectionRequest section : sections) {
-            if (section.items() == null) continue;
-            for (CompositionItemRequest item : section.items()) {
-                validateMatchingPoolItem(item, null, questionsById);
-            }
+            List<CompositionItemRequest> roots = section.items() == null ? List.of() : section.items();
+            Map<String, Map<String, Object>> poolsByKey = new HashMap<>();
+            collectPoolPayloads(roots, poolsByKey);
+            validateMatchingItems(roots, poolsByKey, questionsById);
         }
     }
 
-    private void validateMatchingPoolItem(
-            CompositionItemRequest item,
-            Map<String, Object> parentPoolPayload,
-            Map<Long, Question> questionsById) {
-        String itemType = item.itemType() == null ? "" : item.itemType().trim().toUpperCase(Locale.ROOT);
-        if ("QUESTION".equals(itemType) && item.questionId() != null) {
-            Question question = questionsById.get(item.questionId());
-            if (question != null && "MATCHING".equals(question.getType().name())) {
-                if (parentPoolPayload == null) {
-                    throw invalid("Matching questions must be attached to an Answer Pool block.");
-                }
-                Object entriesValue = parentPoolPayload.get("entries");
-                if (!(entriesValue instanceof List<?> entries) || entries.isEmpty()) {
-                    throw invalid("Matching questions require a non-empty Answer Pool.");
-                }
-
-                QuestionDefinitionRequest definition;
-                try {
-                    String json = question.getDefinition();
-                    if (json == null || json.isBlank()) {
-                        throw invalid("Matching question definition is missing.");
+    private void collectPoolPayloads(
+            List<CompositionItemRequest> items,
+            Map<String, Map<String, Object>> poolsByKey) {
+        for (CompositionItemRequest item : items) {
+            String type = item.itemType() == null ? "" : item.itemType().trim().toUpperCase(Locale.ROOT);
+            if ("POOL".equals(type) && item.blockPayload() != null) {
+                Object keyValue = item.blockPayload().get("poolKey");
+                if (keyValue instanceof String key && !key.isBlank()) {
+                    if (poolsByKey.putIfAbsent(key, item.blockPayload()) != null) {
+                        throw invalid("Answer Pool keys must be unique within a section.");
                     }
-                    definition = objectMapper.readValue(json, QuestionDefinitionRequest.class);
-                } catch (AppException ex) {
-                    throw ex;
-                } catch (Exception ex) {
-                    throw invalid("Matching question definition is invalid.");
-                }
-
-                var matching = definition.getMatching();
-                if (matching == null || matching.getCorrectEntryId() == null
-                        || matching.getCorrectEntryId().isBlank()) {
-                    throw invalid("Matching question must select a correct Answer Pool entry.");
-                }
-
-                Object poolKeyValue = parentPoolPayload.get("poolKey");
-                if (poolKeyValue instanceof String poolKey && !poolKey.isBlank()
-                        && matching.getPoolId() != null && !matching.getPoolId().isBlank()
-                        && !poolKey.equals(matching.getPoolId())) {
-                    throw invalid("Matching question references a different Answer Pool.");
-                }
-
-                Set<String> entryIds = new HashSet<>();
-                boolean correctEntryExists = false;
-                for (Object entry : entries) {
-                    if (!(entry instanceof Map<?, ?> entryMap)
-                            || !(entryMap.get("id") instanceof String entryId)
-                            || entryId.isBlank()
-                            || !(entryMap.get("text") instanceof String text)
-                            || text.isBlank()) {
-                        throw invalid("Every Answer Pool entry requires a stable ID and non-empty text.");
-                    }
-                    if (!entryIds.add(entryId.trim())) {
-                        throw invalid("Answer Pool entry IDs must be unique.");
-                    }
-                    if (entryId.trim().equals(matching.getCorrectEntryId().trim())) {
-                        correctEntryExists = true;
-                    }
-                }
-                if (!correctEntryExists) {
-                    throw invalid("Matching correctEntryId must identify an entry in its Answer Pool.");
                 }
             }
+            if (item.children() != null) collectPoolPayloads(item.children(), poolsByKey);
         }
+    }
 
-        Map<String, Object> currentPool = "POOL".equals(itemType) ? item.blockPayload() : null;
-        List<CompositionItemRequest> children = item.children() == null ? List.of() : item.children();
-        for (CompositionItemRequest child : children) {
-            validateMatchingPoolItem(child, currentPool, questionsById);
+    private void validateMatchingItems(
+            List<CompositionItemRequest> items,
+            Map<String, Map<String, Object>> poolsByKey,
+            Map<Long, Question> questionsById) {
+        for (CompositionItemRequest item : items) {
+            String type = item.itemType() == null ? "" : item.itemType().trim().toUpperCase(Locale.ROOT);
+            if ("QUESTION".equals(type) && item.questionId() != null) {
+                Question question = questionsById.get(item.questionId());
+                if (question != null && "MATCHING".equals(question.getType().name())) {
+                    QuestionDefinitionRequest definition;
+                    try {
+                        String json = question.getDefinition();
+                        if (json == null || json.isBlank()) {
+                            throw invalid("Matching question definition is missing.");
+                        }
+                        definition = objectMapper.readValue(json, QuestionDefinitionRequest.class);
+                    } catch (AppException ex) {
+                        throw ex;
+                    } catch (Exception ex) {
+                        throw invalid("Matching question definition is invalid.");
+                    }
+
+                    var matching = definition.getMatching();
+                    if (matching == null || matching.getPoolId() == null || matching.getPoolId().isBlank()) {
+                        throw invalid("Matching question must reference an Answer Pool.");
+                    }
+                    if (matching.getCorrectEntryId() == null || matching.getCorrectEntryId().isBlank()) {
+                        throw invalid("Matching question must select a correct Answer Pool entry.");
+                    }
+
+                    Map<String, Object> poolPayload = poolsByKey.get(matching.getPoolId().trim());
+                    if (poolPayload == null) {
+                        throw invalid("Matching question references an Answer Pool that does not exist in this section.");
+                    }
+                    Object entriesValue = poolPayload.get("entries");
+                    if (!(entriesValue instanceof List<?> entries) || entries.isEmpty()) {
+                        throw invalid("Matching questions require a non-empty Answer Pool.");
+                    }
+
+                    Set<String> entryIds = new HashSet<>();
+                    boolean correctEntryExists = false;
+                    for (Object entry : entries) {
+                        if (!(entry instanceof Map<?, ?> entryMap)
+                                || !(entryMap.get("id") instanceof String entryId)
+                                || entryId.isBlank()
+                                || !(entryMap.get("text") instanceof String text)
+                                || text.isBlank()) {
+                            throw invalid("Every Answer Pool entry requires a stable ID and non-empty text.");
+                        }
+                        if (!entryIds.add(entryId.trim())) {
+                            throw invalid("Answer Pool entry IDs must be unique.");
+                        }
+                        if (entryId.trim().equals(matching.getCorrectEntryId().trim())) {
+                            correctEntryExists = true;
+                        }
+                    }
+                    if (!correctEntryExists) {
+                        throw invalid("Matching correctEntryId must identify an entry in its Answer Pool.");
+                    }
+                }
+            }
+            if (item.children() != null) {
+                validateMatchingItems(item.children(), poolsByKey, questionsById);
+            }
         }
     }
 

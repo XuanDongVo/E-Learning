@@ -1,0 +1,459 @@
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
+import { Flame, Sparkles, CheckCircle2, Clock3 } from "lucide-react";
+import { Button, type ButtonProps } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+
+export const PIPO_LINES = [
+  "Small steps count. You've got this!",
+  "A little English, a little progress.",
+  "Your next adventure is one click away.",
+  "I'm rooting for you!",
+  "Take your time. Learning isn't a race.",
+  "New words, new possibilities!",
+  "Mistakes help us learn.",
+  "One activity can make a difference.",
+  "Ready when you are!",
+  "Look how far you've come!",
+  "A fresh start is always welcome.",
+  "Let's make today a learning day!",
+];
+export type PipoMood =
+  | "idle"
+  | "happy"
+  | "cheer"
+  | "oops"
+  | "think"
+  | "sleepy"
+  | "wave"
+  | "celebrate";
+type Speech = { text: string; mood: PipoMood };
+const PipoContext = createContext({
+  speech: { text: "Ready for a little progress?", mood: "wave" } as Speech,
+  enabled: true,
+  toggle: () => {},
+  say: (_text: string, _mood: PipoMood = "happy", _ttlMs = 5000) => {},
+});
+export const usePipo = () => useContext(PipoContext);
+export function PipoProvider({ children }: { children: ReactNode }) {
+  const [enabled, setEnabled] = useState(true);
+  const [speech, setSpeech] = useState<Speech>({
+    text: "Ready for a little progress?",
+    mood: "wave",
+  });
+  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  useEffect(() => {
+    setEnabled(localStorage.getItem("learnup-mascot") !== "off");
+    return () => clearTimeout(timer.current);
+  }, []);
+  const say = useCallback(
+    (text: string, mood: PipoMood = "happy", ttlMs = 5000) => {
+      clearTimeout(timer.current);
+      setSpeech({ text: text.slice(0, 80), mood });
+      timer.current = setTimeout(
+        () => setSpeech((s) => ({ ...s, mood: "idle" })),
+        ttlMs,
+      );
+    },
+    [],
+  );
+  const toggle = () =>
+    setEnabled((e) => {
+      localStorage.setItem("learnup-mascot", e ? "off" : "on");
+      return !e;
+    });
+  return (
+    <PipoContext.Provider value={{ speech, enabled, toggle, say }}>
+      {children}
+    </PipoContext.Provider>
+  );
+}
+export function Pipo({
+  mood,
+  size = 160,
+  stage = 2,
+}: {
+  mood?: PipoMood;
+  size?: number;
+  stage?: 1 | 2 | 3 | 4;
+}) {
+  const { speech, enabled, say } = usePipo();
+  const [blink, setBlink] = useState(false);
+  const [sleepy, setSleepy] = useState(false);
+  const [look, setLook] = useState({ x: 0, y: 0 });
+  const [squish, setSquish] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const pokes = useRef<number[]>([]);
+  useEffect(() => {
+    if (!enabled) return;
+    const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let idle: ReturnType<typeof setTimeout>;
+    let blinkTimer: ReturnType<typeof setTimeout>;
+    let closeTimer: ReturnType<typeof setTimeout>;
+    const schedule = () => {
+      blinkTimer = setTimeout(
+        () => {
+          setBlink(true);
+          closeTimer = setTimeout(() => {
+            setBlink(false);
+            schedule();
+          }, 150);
+        },
+        3000 + Math.random() * 3000,
+      );
+    };
+    schedule();
+    const wake = (e: PointerEvent) => {
+      setSleepy((wasSleepy) => {
+        if (wasSleepy) say("Welcome back! Ready when you are.", "wave");
+        return false;
+      });
+      clearTimeout(idle);
+      idle = setTimeout(() => setSleepy(true), 30000);
+      if (!reduced) {
+        const box = ref.current?.getBoundingClientRect();
+        if (box)
+          setLook({
+            x: Math.max(
+              -3,
+              Math.min(3, (e.clientX - box.x - box.width / 2) / 60),
+            ),
+            y: Math.max(
+              -3,
+              Math.min(3, (e.clientY - box.y - box.height / 2) / 60),
+            ),
+          });
+      }
+    };
+    window.addEventListener("pointermove", wake);
+    window.addEventListener("pointerdown", wake);
+    idle = setTimeout(() => setSleepy(true), 30000);
+    return () => {
+      clearTimeout(idle);
+      clearTimeout(blinkTimer);
+      clearTimeout(closeTimer);
+      window.removeEventListener("pointermove", wake);
+      window.removeEventListener("pointerdown", wake);
+    };
+  }, [enabled, say]);
+  if (!enabled) return null;
+  const actualMood = sleepy ? "sleepy" : (mood ?? speech.mood);
+  const shut = blink || actualMood === "sleepy" || actualMood === "oops";
+  const cheerful = ["happy", "cheer", "celebrate"].includes(actualMood);
+  const poke = () => {
+    pokes.current = [
+      ...pokes.current.filter((t) => Date.now() - t < 2000),
+      Date.now(),
+    ];
+    say(
+      pokes.current.length >= 5
+        ? "Hehe! That tickles!"
+        : (PIPO_LINES[Math.floor(Math.random() * PIPO_LINES.length)] ??
+            "You've got this!"),
+      "happy",
+    );
+    setSquish(true);
+    setTimeout(() => setSquish(false), 180);
+  };
+  return (
+    <div
+      ref={ref}
+      className={cn(
+        "leading-none transition-transform duration-150",
+        squish && "scale-x-[1.06] scale-y-[0.9]",
+        (actualMood === "cheer" || actualMood === "celebrate") && "animate-[pipo-bounce_0.4s_ease-in-out_3]",
+      )}
+    >
+      <Button
+        variant="ghost"
+        className="h-auto w-auto min-h-[44px] min-w-[44px] p-0 bg-transparent hover:bg-transparent"
+        aria-label="Say hello to Pipo"
+        onClick={poke}
+      >
+        <svg
+          aria-hidden="true"
+          width={size}
+          height={size}
+          viewBox="0 0 180 180"
+          fill="none"
+          className="h-auto max-w-full"
+        >
+          <g className={cn(actualMood === "think" && "origin-[90px_38px] rotate-[8deg]")}>
+            <path d="M90 40V20" stroke="var(--foreground)" strokeWidth="2" />
+            <path
+              d="M89 27C67 30 62 9 63 8C85 5 92 15 89 27Z"
+              fill="var(--success)"
+              stroke="var(--foreground)"
+              strokeWidth="2"
+            />
+            {stage >= 2 && (
+              <path
+                d="M92 25C91 5 108 2 120 5C117 21 106 29 92 25Z"
+                fill="var(--success)"
+                stroke="var(--foreground)"
+                strokeWidth="2"
+              />
+            )}
+            {stage >= 3 && (
+              <circle
+                cx="95"
+                cy="9"
+                r="7"
+                fill="var(--pink)"
+                stroke="var(--foreground)"
+                strokeWidth="2"
+              />
+            )}
+            {stage === 4 && (
+              <path
+                d="M64 38L72 26L83 34L97 23L110 34L121 25L126 41"
+                stroke="var(--accent)"
+                strokeWidth="7"
+              />
+            )}
+          </g>
+          <g
+            className={cn(
+              actualMood === "wave" &&
+                "origin-[90px_90px] animate-[pipo-wave_0.5s_ease-in-out_3]",
+            )}
+            stroke="var(--foreground)"
+            strokeWidth="2"
+            fill="var(--primary)"
+          >
+            <path d="M34 98C4 77 3 112 29 119Z" />
+            <path d="M146 96C163 67 179 77 166 108L146 119Z" />
+          </g>
+          <path
+            d="M56 149L52 163Q67 172 77 160L79 149M105 148L104 162Q119 173 130 162L125 148"
+            fill="var(--primary)"
+            stroke="var(--foreground)"
+            strokeWidth="2"
+          />
+          <path
+            d="M89 35C112 35 119 41 137 63C167 100 161 142 135 152C112 165 64 165 42 151C15 136 21 100 41 69C58 46 67 35 89 35Z"
+            fill="var(--primary)"
+            stroke="var(--foreground)"
+            strokeWidth="2.5"
+          />
+          <ellipse cx="90" cy="128" rx="35" ry="24" fill="var(--background)" />
+          <g>
+            {[63, 117].map((x) => (
+              <g key={x}>
+                <ellipse
+                  cx={x}
+                  cy="85"
+                  rx="15"
+                  ry={shut ? 2 : 18}
+                  fill="var(--card)"
+                  stroke="var(--foreground)"
+                  strokeWidth="2"
+                />
+                {!shut && (
+                  <g transform={`translate(${look.x} ${look.y})`}>
+                    <ellipse
+                      cx={x + 2}
+                      cy="87"
+                      rx="7"
+                      ry="10"
+                      fill="var(--foreground)"
+                    />
+                    <circle cx={x + 4} cy="82" r="3" fill="var(--card)" />
+                  </g>
+                )}
+              </g>
+            ))}
+          </g>
+          <ellipse cx="46" cy="106" rx="9" ry="5" fill="var(--pink-soft)" />
+          <ellipse cx="136" cy="106" rx="9" ry="5" fill="var(--pink-soft)" />
+          {actualMood === "think" ? (
+            <circle
+              cx="90"
+              cy="110"
+              r="5"
+              stroke="var(--foreground)"
+              strokeWidth="2"
+            />
+          ) : (
+            <path
+              d={
+                cheerful ? "M78 105Q90 131 103 105Z" : "M80 106Q90 117 101 106"
+              }
+              stroke="var(--foreground)"
+              strokeWidth="2.5"
+              fill={cheerful ? "var(--foreground)" : "none"}
+              strokeLinecap="round"
+            />
+          )}
+          {actualMood === "sleepy" && (
+            <text x="142" y="50" fill="var(--muted-foreground)" fontSize="14">
+              zzz
+            </text>
+          )}
+        </svg>
+      </Button>
+    </div>
+  );
+}
+export function PopButton({
+  className = "",
+  variant = "default",
+  ...props
+}: ButtonProps) {
+  return (
+    <Button
+      variant={variant}
+      className={cn(
+        "h-auto min-h-[44px] rounded-xl font-bold text-xs transition-transform duration-150 active:translate-x-[2px] active:translate-y-[2px]",
+        variant === "default" &&
+          "border-[1.5px] border-foreground bg-primary text-foreground shadow-pop-sm hover:bg-primary-hover active:shadow-none",
+        className,
+      )}
+      {...props}
+    />
+  );
+}
+export function PopCard({
+  children,
+  className = "",
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <article
+      className={cn(
+        "overflow-hidden rounded-2xl border-[1.5px] border-foreground bg-card shadow-pop-sm",
+        className,
+      )}
+    >
+      {children}
+    </article>
+  );
+}
+export function XpChip({ xp }: { xp: number }) {
+  return (
+    <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full bg-accent-soft px-2.5 py-1.5 text-xs font-bold text-foreground">
+      <Sparkles size={15} className="text-accent-foreground" />
+      {xp.toLocaleString()} XP
+    </span>
+  );
+}
+export function StreakChip({
+  days,
+  atRisk = false,
+}: {
+  days: number;
+  atRisk?: boolean;
+}) {
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center gap-1.5 whitespace-nowrap rounded-full bg-primary-soft px-2.5 py-1.5 text-xs font-bold text-foreground",
+        atRisk && "border border-dashed border-primary-hover",
+      )}
+    >
+      <Flame size={15} className="text-primary-hover" />
+      {days === 0
+        ? "Fresh start today!"
+        : `${days} days${atRisk ? " · At risk" : ""}`}
+    </span>
+  );
+}
+export function LevelBadge({ level }: { level: number }) {
+  return (
+    <span className="grid h-[31px] w-[31px] place-items-center rounded-xl bg-accent-soft text-lg font-extrabold text-foreground">
+      {level}
+    </span>
+  );
+}
+export function ProgressBar({
+  value,
+  label,
+}: {
+  value: number;
+  label: string;
+}) {
+  return (
+    <div
+      role="progressbar"
+      aria-label={label}
+      aria-valuenow={value}
+      aria-valuemin={0}
+      aria-valuemax={100}
+      className="h-3 w-full overflow-hidden rounded-full bg-teal-soft"
+    >
+      <div
+        className="h-full rounded-full bg-teal transition-all duration-300"
+        style={{ width: `${Math.min(100, Math.max(0, value))}%` }}
+      />
+    </div>
+  );
+}
+export function ProgressRing({
+  value,
+  children,
+}: {
+  value: number;
+  children: ReactNode;
+}) {
+  return (
+    <span className="relative flex h-[54px] w-[54px] shrink-0 items-center justify-center">
+      <svg className="absolute inset-0 h-full w-full -rotate-90" viewBox="0 0 60 60" aria-hidden="true">
+        <circle cx="30" cy="30" r="25" fill="none" stroke="var(--border)" strokeWidth="4" pathLength="100" />
+        <circle
+          className="transition-all duration-300"
+          cx="30"
+          cy="30"
+          r="25"
+          fill="none"
+          stroke="var(--teal)"
+          strokeWidth="4"
+          strokeLinecap="round"
+          pathLength="100"
+          strokeDasharray={`${Math.min(100, Math.max(0, value))} 100`}
+        />
+      </svg>
+      {children}
+    </span>
+  );
+}
+export function StatusPill({ status }: { status: string }) {
+  const isDone = status === "Submitted";
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2 py-1 text-xs font-semibold",
+        isDone ? "bg-success-soft text-foreground" : "bg-primary-soft text-foreground",
+      )}
+    >
+      {isDone ? (
+        <CheckCircle2 size={13} className="text-success" />
+      ) : (
+        <Clock3 size={13} />
+      )}{" "}
+      {status}
+    </span>
+  );
+}
+export function SectionHeader({
+  title,
+  action,
+}: {
+  title: string;
+  action?: ReactNode;
+}) {
+  return (
+    <div className="mb-4 flex items-center justify-between gap-2.5">
+      <h2 className="text-lg font-bold">{title}</h2>
+      {action}
+    </div>
+  );
+}

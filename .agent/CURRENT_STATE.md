@@ -103,9 +103,9 @@ Documentation and contract changes are not runtime verification. No backend test
 Next gate:
 1. Run backend compilation/tests and Flyway validation against the current HEAD.
 2. Verify the start/resume snapshot shape, answer-key leakage and Matching/POOL references.
-3. Implement answer autosave/revision/idempotency and per-Attempt concurrency.
-4. Implement submit/timeout finalization and Question Engine grading.
-5. Enforce Assignment authoring hard-lock after first Attempt.
+3. Verify the new answer-payload adapter against the actual Student UI contract, especially the documented Matching `{ pairs }` versus current `{ selectedKey }` mismatch; then run backend compilation/tests.
+4. Complete and verify answer autosave/revision/idempotency and per-Attempt concurrency on the current HEAD.
+5. Implement submit/timeout finalization and Question Engine grading, then enforce Assignment authoring hard-lock after first Attempt.
 
 The next implementation must not introduce heartbeat/stale takeover merely because older contract DTOs or reference code contain those concepts.
 
@@ -200,7 +200,7 @@ Important integration risk for the later code review:
 
 - `AssessmentAttemptAnswerService` validates a saved MATCHING draft's `selectedKey` against the Answer Pool entries in the immutable Attempt document snapshot, resolved by the question snapshot's `poolId` and restricted to the question's snapshotted Section.
 - Empty `selectedKey` is accepted as an unanswered draft; a non-empty ID must exist in the referenced POOL. The client cannot provide its own pool list to satisfy validation.
-- This closes only the structural pool-membership check for Matching answer drafts. It does **not** implement canonical Question Engine parsing/grading, submit/finalization, or type-specific validation for other question types.
+- The original pool-membership check was subsequently integrated with Question Engine parsing for all seven types in Section 17. Matching's Student UI payload contract still needs confirmation; submit/finalization and grading remain unimplemented.
 - Verification: no backend compile, tests, frontend typecheck/build, Flyway validation, or browser/E2E run was performed. No tests were added or modified.
 ## 17. Assignment Attempt answer validation — 2026-10-28
 

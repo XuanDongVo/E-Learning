@@ -194,3 +194,11 @@ Important integration risk for the later code review:
 - Builder validation now flags blank/duplicate Answer Pool entry IDs, missing correct entries, and Matching-to-Pool links that cross Sections.
 - Scope limitation: current Matching contract still models one prompt and one `correctEntryId` per question. This change validates the existing single-answer relationship; it does not implement a multi-row Matching matrix, general entry-to-row pairs, `shuffleAnswers`, or the separate Content Sharing reference table.
 - Verification: tests/build/typecheck/browser E2E were not run; no tests were added or modified per owner instruction.
+
+
+## 16. Matching Answer Pool runtime validation — 2026-10-28
+
+- `AssessmentAttemptAnswerService` validates a saved MATCHING draft's `selectedKey` against the Answer Pool entries in the immutable Attempt document snapshot, resolved by the question snapshot's `poolId`.
+- Empty `selectedKey` is accepted as an unanswered draft; a non-empty ID must exist in the referenced POOL. The client cannot provide its own pool list to satisfy validation.
+- This closes only the structural pool-membership check for Matching answer drafts. It does **not** implement canonical Question Engine parsing/grading, submit/finalization, or type-specific validation for other question types.
+- Verification: no backend compile, tests, frontend typecheck/build, Flyway validation, or browser/E2E run was performed. No tests were added or modified.

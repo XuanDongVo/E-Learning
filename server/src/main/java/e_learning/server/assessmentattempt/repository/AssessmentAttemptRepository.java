@@ -13,5 +13,5 @@ public interface AssessmentAttemptRepository extends JpaRepository<AssessmentAtt
 
     boolean existsByAssignmentIdAndStatus(Long assignmentId, AssessmentAttemptStatus status);
 
-    boolean exitsByByAssignmentIdAndUser_Id(Long assignmentId, Long userId);
+    boolean existsByAssignmentIdAndStudentId(Long assignmentId, Long studentId);
 }

@@ -13,6 +13,20 @@ import e_learning.server.assessmentattempt.repository.AssessmentAttemptQuestionR
 import e_learning.server.assessmentattempt.repository.AssessmentAttemptRepository;
 import e_learning.server.common.exception.AppException;
 import e_learning.server.common.exception.ErrorCode;
+import e_learning.server.question.engine.core.QuestionEngine;
+import e_learning.server.question.engine.model.AnswerParseResult;
+import e_learning.server.question.engine.model.QuestionSpec;
+import e_learning.server.question.engine.model.RawAnswer;
+import e_learning.server.question.enums.Difficulty;
+import e_learning.server.question.enums.QuestionType;
+import e_learning.server.question.engine.types.choice.SingleChoiceSpec;
+import e_learning.server.question.engine.types.choice.MultipleChoiceSpec;
+import e_learning.server.question.engine.types.truefalse.TrueFalseSpec;
+import e_learning.server.question.engine.types.text.FillInBlankSpec;
+import e_learning.server.question.engine.types.text.TypeAnswerSpec;
+import e_learning.server.question.engine.types.text.MatchingMode;
+import e_learning.server.question.engine.types.compound.MatchingSpec;
+import e_learning.server.question.engine.types.compound.ClozeSpec;
 import lombok.RequiredArgsConstructor;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
@@ -38,6 +52,7 @@ public class AssessmentAttemptAnswerService {
     private final AssessmentAttemptAnswerRepository answerRepository;
     private final AssessmentAttemptAnswerMutationRepository mutationRepository;
     private final ObjectMapper objectMapper;
+    private final QuestionEngine questionEngine;
 
     /*
      * 1. Define transaction boundary and load the AssessmentAttempt.
@@ -149,67 +164,171 @@ public class AssessmentAttemptAnswerService {
                                        Map<String, Object> questionSnapshot,
                                        String sectionKey,
                                        Map<String, Object> answerPayload) {
-        if (answerPayload == null || !(questionSnapshot.get("student") instanceof Map<?, ?> student)
-                || !(student.get("spec") instanceof Map<?, ?> spec)) {
+        if (answerPayload == null
+                || !(questionSnapshot.get("student") instanceof Map<?, ?> student)
+                || !(student.get("spec") instanceof Map<?, ?> studentSpec)
+                || !(questionSnapshot.get("grading") instanceof Map<?, ?> grading)) {
             throw new AppException(ErrorCode.ASSESSMENT_ATTEMPT_INVALID_ANSWER);
         }
 
-        // Matching uses a stable Answer Pool entry ID in the student payload. Resolve the pool
-        // from the immutable Attempt document snapshot; never trust a client-supplied pool or entry list.
-        if ("MATCHING".equals(stringValue(spec.get("type")))) {
-            validateMatchingAnswer(documentSnapshot, spec, sectionKey, answerPayload);
+        try {
+            QuestionSpec spec = toQuestionSpec(studentSpec, grading);
+            Object value = answerValue(spec.type(), answerPayload);
+            if (spec.type() == QuestionType.MATCHING) {
+                validateMatchingAnswer(documentSnapshot, studentSpec, sectionKey, answerPayload);
+            }
+            AnswerParseResult result = questionEngine.parseAndValidate(spec, new RawAnswer(value));
+            if (result.invalid()) throw new AppException(ErrorCode.ASSESSMENT_ATTEMPT_INVALID_ANSWER);
+            // VALID and UNANSWERED are both valid autosave states. Grading happens on submission.
+        } catch (AppException exception) {
+            throw exception;
+        } catch (RuntimeException exception) {
+            throw new AppException(ErrorCode.ASSESSMENT_ATTEMPT_INVALID_ANSWER);
         }
-        // Other question types still need their type-specific Question Engine adapter.
+    }
+
+    private Object answerValue(QuestionType type, Map<String, Object> payload) {
+        return switch (type) {
+            case SINGLE_CHOICE, MATCHING -> payload.get("selectedKey");
+            case MULTIPLE_CHOICE -> payload.get("selectedKeys");
+            case TRUE_FALSE, FILL_IN_BLANK, TYPE_ANSWER -> payload.get("value");
+            case CLOZE -> payload.get("answers");
+        };
+    }
+
+    private QuestionSpec toQuestionSpec(Map<?, ?> student, Map<?, ?> grading) {
+        String content = rawString(student.get("content"));
+        if (content.isBlank()) content = rawString(student.get("prompt"));
+        QuestionType type = QuestionType.valueOf(stringValue(student.get("type")));
+        Difficulty difficulty = Difficulty.valueOf(stringValue(grading.get("difficulty")));
+        QuestionSpec.QuestionCommon common = new QuestionSpec.QuestionCommon(
+                content, difficulty, nullableString(grading.get("explanation")), null, List.of());
+
+        List<Map<?, ?>> options = mapList(grading.get("options"));
+        List<QuestionSpec.Choice> choices = options.stream()
+                .map(option -> new QuestionSpec.Choice(rawString(option.get("key")), rawString(option.get("text"))))
+                .toList();
+        List<Map<?, ?>> answers = mapList(grading.get("answers"));
+        Map<?, ?> definition = asMap(grading.get("definition"));
+
+        return switch (type) {
+            case SINGLE_CHOICE -> new SingleChoiceSpec(common, choices,
+                    options.stream().filter(option -> Boolean.TRUE.equals(option.get("correct")))
+                            .map(option -> rawString(option.get("key"))).findFirst().orElse(null));
+            case MULTIPLE_CHOICE -> new MultipleChoiceSpec(common, choices,
+                    options.stream().filter(option -> Boolean.TRUE.equals(option.get("correct")))
+                            .map(option -> rawString(option.get("key"))).filter(key -> !key.isBlank())
+                            .collect(java.util.stream.Collectors.toSet()));
+            case TRUE_FALSE -> new TrueFalseSpec(common, booleanAnswer(answers));
+            case FILL_IN_BLANK -> new FillInBlankSpec(common, acceptedAnswers(answers), matchingMode(grading));
+            case TYPE_ANSWER -> new TypeAnswerSpec(common, acceptedAnswers(answers), matchingMode(grading));
+            case MATCHING -> {
+                Map<?, ?> matching = nestedMap(definition, "matching");
+                yield new MatchingSpec(common, rawString(student.get("poolId")),
+                        firstString(matching, "correctEntryId", "correctEntryKey"));
+            }
+            case CLOZE -> {
+                Map<?, ?> cloze = nestedMap(definition, "cloze");
+                List<ClozeSpec.Segment> segments = mapList(student.get("segments")).stream()
+                        .map(segment -> new ClozeSpec.Segment(rawString(segment.get("text")))).toList();
+                List<ClozeSpec.Blank> blanks = mapList(cloze.get("blanks")).stream()
+                        .map(blank -> new ClozeSpec.Blank(rawString(blank.get("key")),
+                                stringList(blank.get("acceptedAnswers")))).toList();
+                yield new ClozeSpec(common, segments, blanks, Boolean.TRUE.equals(student.get("caseSensitive")));
+            }
+        };
+    }
+
+    private MatchingMode matchingMode(Map<?, ?> grading) {
+        String value = stringValue(grading.get("matchingMode"));
+        return value.isBlank() ? MatchingMode.CASE_INSENSITIVE_TRIM : MatchingMode.valueOf(value);
+    }
+
+    private Boolean booleanAnswer(List<Map<?, ?>> answers) {
+        if (answers.isEmpty()) return null;
+        String value = firstString(answers.get(0), "normalizedValue", "rawValue");
+        if ("true".equalsIgnoreCase(value)) return true;
+        if ("false".equalsIgnoreCase(value)) return false;
+        return null;
+    }
+
+    private List<String> acceptedAnswers(List<Map<?, ?>> answers) {
+        return answers.stream().map(answer -> firstString(answer, "normalizedValue", "rawValue"))
+                .filter(value -> !value.isBlank()).toList();
+    }
+
+    private List<?> asList(Object value) {
+        return value instanceof List<?> list ? list : List.of();
+    }
+
+    private List<Map<?, ?>> mapList(Object value) {
+        return asList(value).stream().filter(Map.class::isInstance).map(item -> (Map<?, ?>) item).toList();
+    }
+
+    private List<String> stringList(Object value) {
+        return asList(value).stream().filter(String.class::isInstance).map(String.class::cast).toList();
+    }
+
+    private Map<?, ?> asMap(Object value) {
+        return value instanceof Map<?, ?> map ? map : Map.of();
+    }
+
+    private Map<?, ?> nestedMap(Map<?, ?> parent, String key) {
+        Object value = parent.get(key);
+        return value instanceof Map<?, ?> map ? map : parent;
+    }
+
+    private String firstString(Map<?, ?> map, String firstKey, String secondKey) {
+        String first = stringValue(map.get(firstKey));
+        return first.isBlank() ? stringValue(map.get(secondKey)) : first;
+    }
+
+    private String nullableString(Object value) {
+        return value instanceof String text ? text : null;
+    }
+
+    private String rawString(Object value) {
+        return value instanceof String text ? text : "";
     }
 
     private void validateMatchingAnswer(Map<String, Object> documentSnapshot,
-                                        Map<?, ?> spec,
-                                        String sectionKey,
-                                        Map<String, Object> answerPayload) {
-        Object poolIdValue = spec.get("poolId");
-        String poolId = stringValue(poolIdValue);
-        if (poolId.isBlank()) {
-            throw new AppException(ErrorCode.ASSESSMENT_ATTEMPT_INVALID_ANSWER);
-        }
+                                         Map<?, ?> spec,
+                                         String sectionKey,
+                                         Map<String, Object> answerPayload) {
+        String poolId = stringValue(spec.get("poolId"));
+        if (poolId.isBlank()) throw new AppException(ErrorCode.ASSESSMENT_ATTEMPT_INVALID_ANSWER);
 
         Object selectedValue = answerPayload.get("selectedKey");
-        if (!(selectedValue instanceof String submittedEntryId)) {
+        if (selectedValue != null && !(selectedValue instanceof String)) {
             throw new AppException(ErrorCode.ASSESSMENT_ATTEMPT_INVALID_ANSWER);
         }
-        String selectedEntryId = submittedEntryId.trim();
-
-        // Empty selection represents an unanswered question. It is valid to save a draft.
-        if (selectedEntryId.isEmpty()) return;
+        String selectedEntryId = selectedValue instanceof String value ? value.trim() : "";
 
         List<?> blocks = documentSnapshot.get("blocks") instanceof List<?> list ? list : List.of();
         Map<?, ?> matchedPoolPayload = null;
         for (Object blockValue : blocks) {
-            if (!(blockValue instanceof Map<?, ?> block) || !"POOL".equals(stringValue(block.get("itemType")))) {
-                continue;
-            }
+            if (!(blockValue instanceof Map<?, ?> block) || !"POOL".equals(stringValue(block.get("itemType")))) continue;
             if (sectionKey == null || !sectionKey.equals(String.valueOf(block.get("sectionId")))) continue;
             if (!(block.get("payload") instanceof Map<?, ?> payload)) continue;
-
             String logicalKey = stringValue(payload.get("poolKey"));
             String itemId = stringValue(block.get("assignmentItemId"));
-            boolean matches = poolId.equals(logicalKey)
-                    || (!itemId.isBlank() && (poolId.equals(itemId) || poolId.equals("b-" + itemId)));
-            if (matches) {
+            if (poolId.equals(logicalKey)
+                    || (!itemId.isBlank() && (poolId.equals(itemId) || poolId.equals("b-" + itemId)))) {
                 matchedPoolPayload = payload;
                 break;
             }
         }
-
         if (matchedPoolPayload == null || !(matchedPoolPayload.get("entries") instanceof List<?> entries)) {
             throw new AppException(ErrorCode.ASSESSMENT_ATTEMPT_INVALID_ANSWER);
         }
-
-        boolean entryExists = entries.stream().anyMatch(entry ->
-                entry instanceof Map<?, ?> entryMap
-                        && selectedEntryId.equals(stringValue(entryMap.get("id"))));
-        if (!entryExists) {
+        // An unanswered selection is valid, but its referenced pool must still exist in the snapshot.
+        if (selectedEntryId.isEmpty()) return;
+        if (selectedValue instanceof String value && !value.equals(value.trim())) {
             throw new AppException(ErrorCode.ASSESSMENT_ATTEMPT_INVALID_ANSWER);
         }
+        boolean entryExists = entries.stream().anyMatch(entry ->
+                entry instanceof Map<?, ?> entryMap && selectedEntryId.equals(stringValue(entryMap.get("id"))));
+        if (!entryExists) throw new AppException(ErrorCode.ASSESSMENT_ATTEMPT_INVALID_ANSWER);
     }
 
     private String stringValue(Object value) {

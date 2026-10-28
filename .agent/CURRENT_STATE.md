@@ -81,7 +81,7 @@ Partially implemented: official runtime start/resume, immutable initial snapshot
 
 ## 7. Question Engine implementation truth
 
-Question Engine and all seven handlers exist structurally. ActivitySession still has legacy grading/reveal branches; MATCHING cross-resource pool identity validation and complete authoring→snapshot→runtime grading verification remain open. Do not label the Question Engine end-to-end complete.
+Question Engine and all seven handlers exist structurally. `AnswerParseResult` now distinguishes `VALID`, `INVALID`, and `UNANSWERED`; handlers return `UNANSWERED` for empty submissions and `INVALID` for malformed payloads. Raw list payloads preserve null elements until handler validation so malformed input can be rejected at the domain boundary. `QuestionEngine` and handler API signatures remain unchanged. ActivitySession still has legacy grading/reveal branches; MATCHING cross-resource pool identity validation and complete authoring→snapshot→runtime grading verification remain open. Do not label the Question Engine end-to-end complete.
 
 ## 8. Error contract / localization truth
 

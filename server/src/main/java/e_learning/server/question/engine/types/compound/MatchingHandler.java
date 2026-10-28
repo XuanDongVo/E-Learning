@@ -31,20 +31,19 @@ public final class MatchingHandler extends AbstractQuestionTypeHandler {
     }
 
     @Override
-    public AnswerParseResult parseAndValidate(
-            QuestionSpec spec,
-            RawAnswer raw
-    ) {
+    public AnswerParseResult parseAndValidate(QuestionSpec spec, RawAnswer raw) {
         requireType(spec);
 
-        if (raw == null || !(raw.value() instanceof String entryId)) {
-            return AnswerParseResult.invalid("answer.matching.required");
+        if (raw == null || raw.value() == null) {
+            return AnswerParseResult.unansweredResult();
+        }
+        if (!(raw.value() instanceof String entryId)) {
+            return AnswerParseResult.invalid("answer.matching.invalid");
         }
 
         entryId = entryId.trim();
-
         if (entryId.isEmpty()) {
-            return AnswerParseResult.invalid("answer.matching.required");
+            return AnswerParseResult.unansweredResult();
         }
 
         MatchingSpec q = (MatchingSpec) spec;
@@ -52,15 +51,8 @@ public final class MatchingHandler extends AbstractQuestionTypeHandler {
             return AnswerParseResult.invalid("question.matching.definition.incomplete");
         }
 
-        // Chỉ xác nhận định dạng và tạo câu trả lời đã chuẩn hóa.
-        // Kiểm tra entryId có thuộc Pool của q.poolId() hay không
-        // cần được thực hiện ở tầng có thể truy cập Shared Content.
-        return AnswerParseResult.valid(
-                new ValidatedAnswer(
-                        type(),
-                        new MatchingAnswer(entryId)
-                )
-        );
+        // Pool membership is validated in the application layer that resolves shared content.
+        return AnswerParseResult.valid(new ValidatedAnswer(type(), new MatchingAnswer(entryId)));
     }
 
     @Override
@@ -74,7 +66,6 @@ public final class MatchingHandler extends AbstractQuestionTypeHandler {
         boolean correct = actual.equals(q.correctEntryId());
 
         BigDecimal earned = correct ? BigDecimal.ONE : BigDecimal.ZERO;
-
         PartGrade part = new PartGrade(
                 q.correctEntryId(),
                 correct ? PartStatus.CORRECT : PartStatus.INCORRECT,
@@ -83,9 +74,6 @@ public final class MatchingHandler extends AbstractQuestionTypeHandler {
                 Optional.of(new NormalizedAnswerValue(actual))
         );
 
-        return new GradeResult(
-                earned,
-                List.of(part)
-        );
+        return new GradeResult(earned, List.of(part));
     }
 }

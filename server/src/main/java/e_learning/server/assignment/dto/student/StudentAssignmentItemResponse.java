@@ -5,10 +5,12 @@ import java.time.LocalDateTime;
 public record StudentAssignmentItemResponse(
         Long id,
         String title,
+        int dueInDays,
         LocalDateTime dueAt,
         long questionCount,
         Integer timeLimitMinutes,
         StudentAssignmentStatus status,
-        String description
+        String description,
+        String dueLabel
 ) {
 }

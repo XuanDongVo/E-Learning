@@ -184,3 +184,13 @@ Important integration risk for the later code review:
 - The snapshot contains ordered Composition, settings, question render specs and separate grading data. The runtime projection returns only the student portion of each question snapshot.
 - Timeout auto-submit/finalization, answer autosave/revision/idempotency, Question Engine grading, result visibility and Assignment authoring hard-lock remain incomplete. Matching/POOL resolution and all question-type projections require integration tests.
 - No current-HEAD compilation, automated tests, Flyway validation, frontend build or browser/E2E verification has been run.
+
+
+## Sprint 1 implementation update — Matching and Answer Pool validation (2026-10-28)
+
+- `AssignmentCompositionService` now resolves Matching definitions against Answer Pool blocks in the same Section using stable `poolKey` and entry IDs, not entry text.
+- Composition save rejects a Matching question with no resolvable pool, a missing correct entry, an entry ID absent from that pool, blank/missing entry IDs, duplicate entry IDs, or empty entry text.
+- Legacy saved Pool blocks without `poolKey` can be resolved by their persisted Composition item ID (`b-{itemId}`) when that matches the existing frontend logical-ID convention.
+- Builder validation now flags blank/duplicate Answer Pool entry IDs, missing correct entries, and Matching-to-Pool links that cross Sections.
+- Scope limitation: current Matching contract still models one prompt and one `correctEntryId` per question. This change validates the existing single-answer relationship; it does not implement a multi-row Matching matrix, general entry-to-row pairs, `shuffleAnswers`, or the separate Content Sharing reference table.
+- Verification: tests/build/typecheck/browser E2E were not run; no tests were added or modified per owner instruction.

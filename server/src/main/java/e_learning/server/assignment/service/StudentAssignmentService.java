@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
@@ -111,15 +112,31 @@ public class StudentAssignmentService {
         long questionCount = assignmentItemRepository
                 .countByAssignmentIdAndItemType(assignment.getId(), "QUESTION");
 
+        int dueInDays = Math.toIntExact(ChronoUnit.DAYS.between(now.toLocalDate(), assignment.getDueAt().toLocalDate()));
+        String dueLabel = formatDueLabel(dueInDays);
+
         return new StudentAssignmentItemResponse(
                 assignment.getId(),
                 assignment.getName(),
+                dueInDays,
                 assignment.getDueAt(),
                 questionCount,
                 assignment.getTimeLimitMinutes(),
                 status,
-                assignment.getDescription()
+                assignment.getDescription(),
+                dueLabel
         );
+    }
+
+    private String formatDueLabel(int dueInDays) {
+        if (dueInDays < 0) {
+            int overdueDays = Math.abs(dueInDays);
+            return overdueDays == 1 ? "Overdue by 1 day" : "Overdue by " + overdueDays + " days";
+        }
+        if (dueInDays == 0) {
+            return "Due today";
+        }
+        return dueInDays == 1 ? "Due in 1 day" : "Due in " + dueInDays + " days";
     }
 
     private StudentAssignmentStatus resolveStatus(

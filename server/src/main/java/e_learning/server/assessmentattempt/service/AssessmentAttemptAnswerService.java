@@ -192,7 +192,7 @@ public class AssessmentAttemptAnswerService {
             case SINGLE_CHOICE, MATCHING -> payload.get("selectedKey");
             case MULTIPLE_CHOICE -> payload.get("selectedKeys");
             case TRUE_FALSE, FILL_IN_BLANK, TYPE_ANSWER -> payload.get("value");
-            case CLOZE -> payload.get("answers");
+            case CLOZE -> payload.get("values");
         };
     }
 
@@ -200,7 +200,10 @@ public class AssessmentAttemptAnswerService {
         String content = rawString(student.get("content"));
         if (content.isBlank()) content = rawString(student.get("prompt"));
         QuestionType type = QuestionType.valueOf(stringValue(student.get("type")));
-        Difficulty difficulty = Difficulty.valueOf(stringValue(grading.get("difficulty")));
+        String difficultyValue = stringValue(grading.get("difficulty"));
+        // Older in-progress Attempts may have snapshots created before difficulty was copied here.
+        // Difficulty does not affect answer parsing, so use a neutral fallback for validation only.
+        Difficulty difficulty = difficultyValue.isBlank() ? Difficulty.MEDIUM : Difficulty.valueOf(difficultyValue);
         QuestionSpec.QuestionCommon common = new QuestionSpec.QuestionCommon(
                 content, difficulty, nullableString(grading.get("explanation")), null, List.of());
 

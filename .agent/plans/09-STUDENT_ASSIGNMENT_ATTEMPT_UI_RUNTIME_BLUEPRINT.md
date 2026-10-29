@@ -582,8 +582,9 @@ All translations must exist for every supported locale before a screen is consid
 - [ ] Verify the implemented authorization/snapshot/projection with backend tests and complete Question Engine/POOL integration.
 
 **Frontend — scaffold implemented, runtime not verified**
-- [x] Dynamic route `/student/assignments/:assignmentId` opens the Player directly; no separate Intro screen or Start button in the student flow.
-- [x] On route entry, acquire the browser lock and automatically call the authoritative backend Start/Resume endpoint; backend remains responsible for eligibility and state validation.
+- [x] `/student/assignments/:assignmentId/intro` is the assignment information page; its Start/Resume button acquires the browser lock and calls the authoritative backend Start/Resume endpoint.
+- [x] After successful Start/Resume, the safe runtime is handed off through session-scoped storage and the browser navigates to `/student/assignments/:assignmentId`, which renders Student Paper.
+- [x] The paper route acquires its own browser lock and consumes the one-time runtime handoff. A direct visit/refresh without a handoff calls backend Start/Resume to recover the authoritative snapshot.
 - [x] Web Lock with `ifAvailable: true`; conflict/unsupported-browser states.
 - [x] IndexedDB stable UUID credential persisted before the start/resume request.
 - [x] Student Paper renderers for common choices, text answers, Matching/Cloze, plus composition block renderers for Instructions/Passage/Pool/Media.

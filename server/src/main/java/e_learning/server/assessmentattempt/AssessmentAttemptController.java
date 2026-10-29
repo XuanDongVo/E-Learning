@@ -27,7 +27,7 @@ import java.util.Objects;
  * intentionally a TODO stub until the owner implements the backend logic.
  */
 @RestController
-@RequestMapping("/v1/assignments")
+@RequestMapping("/v1/student/assignments")
 @RequiredArgsConstructor
 public class AssessmentAttemptController {
     private final AssessmentAttemptService attemptService;

@@ -20,31 +20,31 @@ import type {
  */
 export const studentAssignmentAttemptService = {
   intro: (assignmentId: number) =>
-    request<AttemptIntroResponse>(`/v1/assignments/${assignmentId}/assessment-attempt/intro`),
+    request<AttemptIntroResponse>(`/v1/student/assignments/${assignmentId}/assessment-attempt/intro`),
 
   startOrResume: (assignmentId: number, body: StartOrResumeAttemptRequest) =>
-    request<AttemptRuntimeResponse>(`/v1/assignments/${assignmentId}/assessment-attempt`, {
+    request<AttemptRuntimeResponse>(`/v1/student/assignments/${assignmentId}/assessment-attempt`, {
       method: "POST",
       body: JSON.stringify(body),
     }),
 
   saveAnswer: (attemptId: number, body: SaveAttemptAnswerRequest) =>
-    request<SaveAttemptAnswerResponse>(`/v1/assessment-attempts/${attemptId}/answers`, {
+    request<SaveAttemptAnswerResponse>(`/v1/student/assessment-attempts/${attemptId}/answers`, {
       method: "PUT",
       body: JSON.stringify(body),
     }),
 
   submit: (attemptId: number, body: SubmitAttemptRequest) =>
-    request<AttemptResultResponse>(`/v1/assessment-attempts/${attemptId}/submit`, {
+    request<AttemptResultResponse>(`/v1/student/assessment-attempts/${attemptId}/submit`, {
       method: "POST",
       body: JSON.stringify(body),
     }),
 
   result: (attemptId: number) =>
-    request<AttemptResultResponse>(`/v1/assessment-attempts/${attemptId}/result`),
+    request<AttemptResultResponse>(`/v1/student/assessment-attempts/${attemptId}/result`),
 
   event: (attemptId: number, body: CreateAttemptEventRequest) =>
-    request<AttemptSummaryResponse>(`/v1/assessment-attempts/${attemptId}/events`, {
+    request<AttemptSummaryResponse>(`/v1/student/assessment-attempts/${attemptId}/events`, {
       method: "POST",
       body: JSON.stringify(body),
     }),

@@ -2,24 +2,15 @@
 
 import { useEffect, useState } from "react";
 
-export type AttemptBrowserLockState =
-  | "CHECKING"
-  | "OWNED"
-  | "CONFLICT"
-  | "UNSUPPORTED"
-  | "ERROR";
+export type AttemptBrowserLockState = "CHECKING" | "OWNED" | "CONFLICT";
 
-/**
- * Holds an exclusive same-origin lock for the mounted Attempt page.
- * The callback waits until the page unmounts, so the lock is not released
- * after the start/resume HTTP request finishes.
- */
+/** Best-effort tab guard. The backend remains the authority for Attempt access. */
 export function useAttemptBrowserLock(lockName: string | null): AttemptBrowserLockState {
   const [state, setState] = useState<AttemptBrowserLockState>("CHECKING");
 
   useEffect(() => {
     let cancelled = false;
-    let releaseLock: (() => void) | undefined;
+    let release: (() => void) | undefined;
 
     if (!lockName) {
       setState("CHECKING");
@@ -27,16 +18,16 @@ export function useAttemptBrowserLock(lockName: string | null): AttemptBrowserLo
     }
 
     if (typeof navigator === "undefined" || !navigator.locks?.request) {
-      setState("UNSUPPORTED");
+      // Web Locks is only a browser-level guard; do not turn lack of support into
+      // an application error because the server still validates the Attempt.
+      setState("OWNED");
       return;
     }
 
     setState("CHECKING");
 
-    void navigator.locks.request(
-      lockName,
-      { mode: "exclusive", ifAvailable: true },
-      async (lock) => {
+    void navigator.locks
+      .request(lockName, { mode: "exclusive", ifAvailable: true }, async (lock) => {
         if (cancelled) return;
         if (!lock) {
           setState("CONFLICT");
@@ -45,17 +36,18 @@ export function useAttemptBrowserLock(lockName: string | null): AttemptBrowserLo
 
         setState("OWNED");
         await new Promise<void>((resolve) => {
-          releaseLock = resolve;
+          release = resolve;
           if (cancelled) resolve();
         });
-      },
-    ).catch(() => {
-      if (!cancelled) setState("ERROR");
-    });
+      })
+      .catch(() => {
+        // A browser API failure must not replace the backend's authorization/session checks.
+        if (!cancelled) setState("OWNED");
+      });
 
     return () => {
       cancelled = true;
-      releaseLock?.();
+      release?.();
     };
   }, [lockName]);
 

@@ -39,9 +39,24 @@ function getCardTone(assignmentId: number | string, index = 0) {
   return CARD_TONES[seed % CARD_TONES.length];
 }
 
+function formatDueAt(dueAt: string | null) {
+  if (!dueAt) return "No due date";
+
+  const date = new Date(dueAt);
+  if (Number.isNaN(date.getTime())) return "No due date";
+
+  return new Intl.DateTimeFormat(undefined, {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(date);
+}
+
 export function AssignmentCard({ assignment, index = 0 }: AssignmentCardProps) {
-  const urgent = assignment.status !== "SUBMITTED" && assignment.dueInDays <= 2;
   const done = assignment.status === "SUBMITTED";
+  const urgent = !done && !assignment.late && assignment.dueInDays >= 0 && assignment.dueInDays <= 2;
   const tone = getCardTone(assignment.id, index);
 
   return (
@@ -58,13 +73,11 @@ export function AssignmentCard({ assignment, index = 0 }: AssignmentCardProps) {
         )}
       />
 
-      <div className="relative z-10 mb-2 flex items-start justify-between">
+      <div className="relative z-10 mb-2 flex items-start justify-between gap-2">
         <span
           className={cn(
             "grid h-12 w-12 place-items-center rounded-2xl border-2 border-foreground shadow-pop-sm -rotate-6",
-            done
-              ? "bg-accent text-foreground"
-              : tone.iconBg,
+            done ? "bg-accent text-foreground" : tone.iconBg,
           )}
         >
           {done ? (
@@ -75,37 +88,45 @@ export function AssignmentCard({ assignment, index = 0 }: AssignmentCardProps) {
             <ClipboardList size={22} />
           )}
         </span>
-        <span
-          className={cn(
-            "inline-flex items-center gap-1.5 rounded-full border-1.5 border-foreground bg-card px-2.5 py-1 text-xs font-extrabold shadow-xs",
-            done && "bg-success-soft text-foreground",
-            urgent && "bg-primary text-foreground",
-            !done && !urgent && assignment.status === "IN_PROGRESS" && "bg-accent-soft text-foreground",
+
+        <div className="flex flex-wrap justify-end gap-1.5">
+          {assignment.late && (
+            <span className="inline-flex items-center gap-1.5 rounded-full border-1.5 border-foreground bg-destructive-soft px-2.5 py-1 text-xs font-extrabold text-foreground shadow-xs">
+              <Flame size={14} />
+              Late
+            </span>
           )}
-        >
-          {done ? (
-            <>
-              <CheckCircle2 size={14} className="text-success" />
-              Submitted
-            </>
-          ) : urgent ? (
-            <>
-              <Flame size={14} className="text-primary-hover" />
-              Due in {assignment.dueInDays} days
-            </>
-          ) : (
-            ASSIGNMENT_STATUS_LABEL[assignment.status]
-          )}
-        </span>
+
+          <span
+            className={cn(
+              "inline-flex items-center gap-1.5 rounded-full border-1.5 border-foreground bg-card px-2.5 py-1 text-xs font-extrabold shadow-xs",
+              done && "bg-success-soft text-foreground",
+              urgent && "bg-primary text-foreground",
+              !done && !urgent && !assignment.late && assignment.status === "IN_PROGRESS" && "bg-accent-soft text-foreground",
+            )}
+          >
+            {done ? (
+              <>
+                <CheckCircle2 size={14} className="text-success" />
+                Submitted
+              </>
+            ) : assignment.late ? (
+              ASSIGNMENT_STATUS_LABEL[assignment.status]
+            ) : urgent ? (
+              <>
+                <Flame size={14} className="text-primary-hover" />
+                Due in {assignment.dueInDays} days
+              </>
+            ) : (
+              ASSIGNMENT_STATUS_LABEL[assignment.status]
+            )}
+          </span>
+        </div>
       </div>
 
-      {/* Content */}
       <div className="relative z-10 flex flex-col flex-1">
         <h2 className="text-lg font-bold leading-snug mt-1">
-          <Link
-            href="/student/assignments/$assignmentId"
-            className="hover:underline hover:decoration-2"
-          >
+          <Link href="/student/assignments/$assignmentId" className="hover:underline hover:decoration-2">
             {assignment.title}
           </Link>
         </h2>
@@ -117,30 +138,23 @@ export function AssignmentCard({ assignment, index = 0 }: AssignmentCardProps) {
           </span>
           <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-1 font-semibold text-muted-foreground">
             <Clock3 size={13} />
-            {assignment.timeLimitMinutes} min
+            {assignment.timeLimitMinutes ?? "—"} min
           </span>
           <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-1 font-semibold text-muted-foreground">
             <CalendarDays size={13} />
-            {assignment.dueLabel}
+            {formatDueAt(assignment.dueAt)}
           </span>
         </div>
 
-        {/* Action Link Button */}
         <Link
           href="/student/assignments/$assignmentId"
           className={cn(
             "mt-auto flex min-h-[46px] items-center justify-between rounded-xl border-2 border-foreground px-4 text-sm font-extrabold shadow-[0_3px_0_var(--foreground)] transition-all hover:bg-primary-hover active:translate-y-1 active:shadow-none cursor-pointer",
-            done
-              ? "bg-card text-foreground hover:bg-muted"
-              : "bg-primary text-foreground",
+            done ? "bg-card text-foreground hover:bg-muted" : "bg-primary text-foreground",
           )}
         >
           <span>
-            {done
-              ? "View details"
-              : assignment.status === "IN_PROGRESS"
-                ? "Continue"
-                : "Start"}
+            {done ? "View details" : assignment.status === "IN_PROGRESS" ? "Continue" : "Start"}
           </span>
           <ArrowRight size={17} />
         </Link>
@@ -148,4 +162,3 @@ export function AssignmentCard({ assignment, index = 0 }: AssignmentCardProps) {
     </article>
   );
 }
-

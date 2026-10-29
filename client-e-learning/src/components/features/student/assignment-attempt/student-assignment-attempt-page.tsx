@@ -221,13 +221,6 @@ export function StudentAssignmentAttemptPage({ assignmentId }: { assignmentId: s
             </p>
           </div>
           <div className="space-y-2">
-            <div className="rounded-xl border border-border-color bg-card-bg px-4 py-3 text-sm">
-              <div className="flex items-center gap-2 font-semibold text-neutral-dark">
-                <CalendarClock className="h-4 w-4 text-primary" />
-                {t("intro.dueAt")}
-              </div>
-              <p className="mt-1 text-neutral-muted">{formattedAssignmentDueAt ?? t("intro.noDueDate")}</p>
-            </div>
             {formattedAttemptDeadline && (
               <div className="rounded-xl border border-primary/20 bg-primary-light/40 px-4 py-3 text-sm">
                 <div className="flex items-center gap-2 font-semibold text-neutral-dark">

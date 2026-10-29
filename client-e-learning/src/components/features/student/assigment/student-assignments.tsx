@@ -1,52 +1,71 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { AssignmentFilter, StudentAssignmentItem } from "./types";
-import { STUDENT_ASSIGNMENTS_MOCK } from "./student-assignment.mock";
 import { AssignmentHero } from "./assignment-hero";
 import { AssignmentFilterBar } from "./assignment-filter-bar";
 import { AssignmentCard } from "./assignment-card";
 import { AssignmentEmptyState } from "./assignment-empty-state";
+import { studentAssignmentService } from "@/services/student/student-assignment.service";
 
 interface StudentAssignmentsProps {
   initialAssignments?: StudentAssignmentItem[];
 }
 
-export function StudentAssignments({
-  initialAssignments = STUDENT_ASSIGNMENTS_MOCK,
-}: StudentAssignmentsProps) {
+export function StudentAssignments({ initialAssignments = [] }: StudentAssignmentsProps) {
   const [filter, setFilter] = useState<AssignmentFilter>("TODO");
   const [query, setQuery] = useState("");
+  const [assignments, setAssignments] = useState<StudentAssignmentItem[]>(initialAssignments);
+  const [loading, setLoading] = useState(initialAssignments.length === 0);
+  const [error, setError] = useState<string | null>(null);
 
-  const assignments = initialAssignments;
+  useEffect(() => {
+    let active = true;
+    setLoading(true);
+    setError(null);
+
+    studentAssignmentService
+      .getAssignments(filter)
+      .then((data) => {
+        if (!active) return;
+        setAssignments(data);
+      })
+      .catch(() => {
+        if (!active) return;
+        setError("Unable to load assignments.");
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [filter]);
 
   const records = useMemo(() => {
     const search = query.trim().toLowerCase();
     return assignments.filter(
-      (a) =>
-        (filter === "TODO" || a.status === filter) &&
-        (search === "" || a.title.toLowerCase().includes(search)),
+      (assignment) => search === "" || assignment.title.toLowerCase().includes(search),
     );
-  }, [assignments, filter, query]);
+  }, [assignments, query]);
 
   const todoCount = useMemo(
-    () => assignments.filter((a) => a.status !== "SUBMITTED").length,
-    [assignments],
+    () => (filter === "TODO" ? assignments.length : 0),
+    [assignments, filter],
   );
 
   const counts: Record<AssignmentFilter, number> = useMemo(
     () => ({
-      TODO: assignments.filter((a) => a.status === "TODO").length,
-      IN_PROGRESS: assignments.filter((a) => a.status === "IN_PROGRESS").length,
-      SUBMITTED: assignments.filter((a) => a.status === "SUBMITTED").length,
+      TODO: filter === "TODO" ? assignments.length : 0,
+      IN_PROGRESS: filter === "IN_PROGRESS" ? assignments.length : 0,
+      SUBMITTED: filter === "SUBMITTED" ? assignments.length : 0,
     }),
-    [assignments],
+    [assignments, filter],
   );
 
   return (
     <div className="grid gap-5 sm:gap-6">
-      {/* Hero Banner */}
       <AssignmentHero todoCount={todoCount} />
 
-      {/* Filter Tabs & Search Bar */}
       <AssignmentFilterBar
         currentFilter={filter}
         onFilterChange={setFilter}
@@ -55,29 +74,39 @@ export function StudentAssignments({
         counts={counts}
       />
 
-      {/* Result Count Caption */}
-      <p className="text-xs sm:text-sm font-semibold text-muted-foreground" aria-live="polite">
-        {records.length} {records.length === 1 ? "assignment" : "assignments"}
-      </p>
+      {loading && (
+        <p className="text-sm font-semibold text-muted-foreground" aria-live="polite">
+          Loading assignments…
+        </p>
+      )}
 
-      {/* Grid of Assignments or Empty State */}
-      {records.length ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {records.map((assignment, index) => (
-            <AssignmentCard
-              key={assignment.id}
-              assignment={assignment}
-              index={index}
+      {error && (
+        <p className="rounded-xl border-2 border-destructive bg-destructive-soft px-4 py-3 text-sm font-semibold" role="alert">
+          {error}
+        </p>
+      )}
+
+      {!loading && !error && (
+        <>
+          <p className="text-xs sm:text-sm font-semibold text-muted-foreground" aria-live="polite">
+            {records.length} {records.length === 1 ? "assignment" : "assignments"}
+          </p>
+
+          {records.length ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              {records.map((assignment, index) => (
+                <AssignmentCard key={assignment.id} assignment={assignment} index={index} />
+              ))}
+            </div>
+          ) : (
+            <AssignmentEmptyState
+              onClearFilters={() => {
+                setQuery("");
+                setFilter("TODO");
+              }}
             />
-          ))}
-        </div>
-      ) : (
-        <AssignmentEmptyState
-          onClearFilters={() => {
-            setQuery("");
-            setFilter("TODO");
-          }}
-        />
+          )}
+        </>
       )}
     </div>
   );

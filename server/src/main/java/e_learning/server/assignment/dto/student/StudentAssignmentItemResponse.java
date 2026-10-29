@@ -10,7 +10,6 @@ public record StudentAssignmentItemResponse(
         long questionCount,
         Integer timeLimitMinutes,
         StudentAssignmentStatus status,
-        String description,
-        String dueLabel
+        String description
 ) {
 }

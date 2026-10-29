@@ -48,19 +48,12 @@ export function StudentAssignments({ initialAssignments = [] }: StudentAssignmen
     );
   }, [assignments, query]);
 
-  const todoCount = useMemo(
-    () => (filter === "TODO" ? assignments.length : 0),
-    [assignments, filter],
-  );
-
-  const counts: Record<AssignmentFilter, number> = useMemo(
-    () => ({
-      TODO: filter === "TODO" ? assignments.length : 0,
-      IN_PROGRESS: filter === "IN_PROGRESS" ? assignments.length : 0,
-      SUBMITTED: filter === "SUBMITTED" ? assignments.length : 0,
-    }),
-    [assignments, filter],
-  );
+  const todoCount = filter === "TODO" ? assignments.length : 0;
+  const counts: Record<AssignmentFilter, number> = {
+    TODO: filter === "TODO" ? assignments.length : 0,
+    IN_PROGRESS: filter === "IN_PROGRESS" ? assignments.length : 0,
+    SUBMITTED: filter === "SUBMITTED" ? assignments.length : 0,
+  };
 
   return (
     <div className="grid gap-5 sm:gap-6">
@@ -81,7 +74,10 @@ export function StudentAssignments({ initialAssignments = [] }: StudentAssignmen
       )}
 
       {error && (
-        <p className="rounded-xl border-2 border-destructive bg-destructive-soft px-4 py-3 text-sm font-semibold" role="alert">
+        <p
+          className="rounded-xl border-2 border-destructive/30 bg-destructive/5 px-4 py-3 text-sm font-semibold text-destructive"
+          role="alert"
+        >
           {error}
         </p>
       )}

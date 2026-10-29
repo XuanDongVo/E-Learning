@@ -37,13 +37,12 @@ public class StudentAssignmentService {
     private final AssessmentAttemptRepository assessmentAttemptRepository;
 
     /**
-     * Student assignment list is grouped by AssessmentAttempt lifecycle:
-     * TODO = no attempt exists, IN_PROGRESS = attempt is in progress,
-     * SUBMITTED = attempt has been submitted or timed out.
+     * Student assignment lifecycle is derived from the student's attempt:
+     * TODO = no attempt, IN_PROGRESS = active attempt,
+     * SUBMITTED = submitted or timed out attempt.
      *
-     * The default TODO tab also includes IN_PROGRESS so the student can see
-     * assignments that still need action. The SUBMITTED tab is loaded only
-     * when explicitly requested by the client.
+     * The TODO tab intentionally includes IN_PROGRESS so unfinished work remains
+     * visible. Submitted work is returned only for the explicit SUBMITTED tab.
      */
     public List<StudentAssignmentItemResponse> getMyAssignments(
             Long studentId,
@@ -111,6 +110,8 @@ public class StudentAssignmentService {
                         assignment.getDueAt().toLocalDate()
                 ));
 
+        boolean late = resolveLate(assignment, attempt, now);
+
         return new StudentAssignmentItemResponse(
                 assignment.getId(),
                 assignment.getName(),
@@ -119,6 +120,7 @@ public class StudentAssignmentService {
                 questionCount,
                 assignment.getTimeLimitMinutes(),
                 actualStatus,
+                late,
                 assignment.getDescription()
         );
     }
@@ -132,6 +134,27 @@ public class StudentAssignmentService {
             case IN_PROGRESS -> StudentAssignmentStatus.IN_PROGRESS;
             case SUBMITTED, TIMED_OUT -> StudentAssignmentStatus.SUBMITTED;
         };
+    }
+
+    private boolean resolveLate(
+            Assignment assignment,
+            AssessmentAttempt attempt,
+            LocalDateTime now
+    ) {
+        LocalDateTime dueAt = assignment.getDueAt();
+        if (dueAt == null) {
+            return false;
+        }
+
+        if (attempt == null) {
+            return now.isAfter(dueAt);
+        }
+
+        if (attempt.getStatus() == AssessmentAttemptStatus.IN_PROGRESS) {
+            return now.isAfter(dueAt);
+        }
+
+        return attempt.isLate();
     }
 
     private boolean matchesRequestedTab(

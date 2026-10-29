@@ -6,7 +6,6 @@ import { Link, useRouter } from "@/i18n/navigation";
 import {
   ArrowLeft,
   BookOpenCheck,
-  CalendarClock,
   CircleAlert,
   Clock3,
   LoaderCircle,

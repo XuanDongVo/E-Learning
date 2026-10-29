@@ -4,8 +4,8 @@ import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum StudentAssignmentStatus {
     TODO("todo"),
-    COMPLETED("completed"),
-    LATE("late");
+    IN_PROGRESS("in_progress"),
+    SUBMITTED("submitted");
 
     private final String value;
 
@@ -18,15 +18,15 @@ public enum StudentAssignmentStatus {
         return value;
     }
 
-    public static StudentAssignmentStatus fromFilter(String value) {
+    public static StudentAssignmentStatus fromRequest(String value) {
         if (value == null || value.isBlank()) {
-            return null;
+            throw new IllegalArgumentException("Student assignment status is required");
         }
 
         return switch (value.trim().toLowerCase()) {
-            case "todo", "pending", "in_progress", "in-progress", "in progress" -> TODO;
-            case "completed", "done", "finish", "finished" -> COMPLETED;
-            case "late", "overdue" -> LATE;
+            case "todo" -> TODO;
+            case "in_progress", "in-progress", "in progress" -> IN_PROGRESS;
+            case "submitted", "completed", "done", "finish", "finished" -> SUBMITTED;
             default -> throw new IllegalArgumentException("Unsupported student assignment status: " + value);
         };
     }

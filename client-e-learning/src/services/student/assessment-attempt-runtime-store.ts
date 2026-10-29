@@ -1,12 +1,12 @@
 import type { AttemptRuntimeResponse } from "@/types/student/assignment-attempt";
 
-function runtimeStorageKey(studentId: string, assignmentId: number): string {
+function runtimeStorageKey(studentId: number, assignmentId: number): string {
   return `student-assignment-runtime:${studentId}:${assignmentId}`;
 }
 
 /** Best-effort handoff; the paper route can recover through the backend if storage is unavailable. */
 export function storeAttemptRuntime(
-  studentId: string,
+  studentId: number,
   assignmentId: number,
   runtime: AttemptRuntimeResponse,
 ): void {
@@ -23,7 +23,7 @@ export function storeAttemptRuntime(
 
 /** Consume once so a later refresh will request an authoritative resume snapshot. */
 export function consumeAttemptRuntime(
-  studentId: string,
+  studentId: number,
   assignmentId: number,
 ): AttemptRuntimeResponse | null {
   if (typeof window === "undefined") return null;

@@ -112,7 +112,7 @@ export function StudentAssignmentPaperPage({ assignmentId }: { assignmentId: str
     if (phase !== "INTRO" || !user || user.role !== "STUDENT" || !validAssignmentId || lockState !== "OWNED" || startRequestedRef.current) return;
     startRequestedRef.current = true;
 
-    const handoffRuntime = consumeAttemptRuntime(user.id, parsedAssignmentId);
+    const handoffRuntime = consumeAttemptRuntime((user.id), parsedAssignmentId);
     if (handoffRuntime) {
       setRuntime(handoffRuntime);
       setAnswers(Object.fromEntries(

@@ -1,8 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { useQuery } from "@tanstack/react-query";
 import { Link, useRouter } from "@/i18n/navigation";
 import {
   ArrowLeft,
@@ -23,7 +22,6 @@ import { useAttemptBrowserLock } from "./hooks/use-attempt-browser-lock";
 import { StudentPaper } from "./student-paper";
 import type {
   AttemptAnswerPayload,
-  AttemptIntroResponse,
   AttemptRuntimeResponse,
 } from "@/types/student/assignment-attempt";
 
@@ -53,33 +51,12 @@ export function StudentAssignmentAttemptPage({ assignmentId }: { assignmentId: s
     ? `assessment-attempt:${user.id}:assignment:${parsedAssignmentId}`
     : null;
   const lockState = useAttemptBrowserLock(lockName);
-  const introQuery = useQuery<AttemptIntroResponse>({
-    queryKey: ["student", "assignment-attempt-intro", user?.id, parsedAssignmentId],
-    enabled: user?.role === "STUDENT" && validAssignmentId && lockState === "OWNED",
-    retry: false,
-    queryFn: async () => {
-      const response = await studentAssignmentAttemptService.intro(parsedAssignmentId);
-      if (!response.data) throw new Error("ASSESSMENT_ATTEMPT_INTRO_EMPTY_RESPONSE");
-      return response.data;
-    },
-  });
-
   const [phase, setPhase] = useState<PagePhase>("INTRO");
   const [runtime, setRuntime] = useState<AttemptRuntimeResponse | null>(null);
   const [answers, setAnswers] = useState<Record<number, AttemptAnswerPayload>>({});
   const [hasLocalChanges, setHasLocalChanges] = useState(false);
   const [failureCode, setFailureCode] = useState<string | null>(null);
-
-  const formattedAssignmentDueAt = useMemo(() => {
-    const value = introQuery.data?.dueAt;
-    if (!value) return null;
-    const dueAt = new Date(value);
-    if (Number.isNaN(dueAt.getTime())) return null;
-    return new Intl.DateTimeFormat(locale, {
-      dateStyle: "medium",
-      timeStyle: "short",
-    }).format(dueAt);
-  }, [introQuery.data?.dueAt, locale]);
+  const startRequestedRef = useRef(false);
 
   const formattedAttemptDeadline = useMemo(() => {
     if (!runtime?.deadlineAt) return null;
@@ -130,6 +107,12 @@ export function StudentAssignmentAttemptPage({ assignmentId }: { assignmentId: s
       setPhase("ERROR");
     }
   }, [lockState, parsedAssignmentId, user, validAssignmentId]);
+
+  useEffect(() => {
+    if (phase !== "INTRO" || !user || user.role !== "STUDENT" || !validAssignmentId || lockState !== "OWNED" || startRequestedRef.current) return;
+    startRequestedRef.current = true;
+    void startOrResume();
+  }, [lockState, phase, startOrResume, user, validAssignmentId]);
 
   useEffect(() => {
     if (!hasLocalChanges || phase !== "ACTIVE") return;
@@ -292,122 +275,41 @@ export function StudentAssignmentAttemptPage({ assignmentId }: { assignmentId: s
     );
   }
 
-  if (phase === "INTRO" && (introQuery.data?.attemptStatus === "SUBMITTED" || introQuery.data?.attemptStatus === "TIMED_OUT")) {
-    const timedOut = introQuery.data.attemptStatus === "TIMED_OUT";
+  if (phase === "INTRO" || phase === "STARTING") {
     return (
       <StatusPanel
-        icon={timedOut ? <Clock3 className="h-6 w-6" /> : <BookOpenCheck className="h-6 w-6" />}
-        title={timedOut ? t("states.timedOut") : t("states.alreadySubmitted")}
-        description={t("states.resultSprint4")}
-        action={<Link href="/student/assignments"><Button>{t("backToAssignments")}</Button></Link>}
+        icon={<LoaderCircle className="h-6 w-6 animate-spin" />}
+        title={t("states.starting")}
+        description={t("intro.description")}
+      />
+    );
+  }
+
+  if (phase === "ERROR") {
+    const conflict = failureCode === "ASSESSMENT_ATTEMPT_SESSION_CONFLICT";
+    const lost = failureCode === "ASSESSMENT_ATTEMPT_SESSION_LOST";
+    return (
+      <StatusPanel
+        icon={<CircleAlert className="h-6 w-6" />}
+        title={conflict ? t("session.conflictTitle") : lost ? t("session.credentialLostTitle") : t("errors.startFailedTitle")}
+        description={conflict ? t("session.conflictDescription") : lost ? t("session.credentialLostDescription") : t("errors.startFailedDescription")}
+        action={
+          conflict || lost
+            ? <Link href="/student/assignments"><Button variant="secondary">{t("backToAssignments")}</Button></Link>
+            : <Button onClick={() => {
+                startRequestedRef.current = false;
+                void startOrResume();
+              }}>{t("errors.retryIntro")}</Button>
+        }
       />
     );
   }
 
   return (
-    <main className="mx-auto max-w-3xl space-y-6 p-4 sm:p-6">
-      <Link href="/student/assignments" className="inline-flex items-center gap-2 text-sm font-semibold text-neutral-muted hover:text-neutral-dark">
-        <ArrowLeft className="h-4 w-4" />
-        {t("backToAssignments")}
-      </Link>
-
-      <header className="space-y-2">
-        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary-light text-primary">
-          <BookOpenCheck className="h-6 w-6" />
-        </div>
-        <p className="text-xs font-bold uppercase tracking-wider text-primary">{t("intro.eyebrow")}</p>
-        <h1 className="text-2xl font-extrabold tracking-tight text-neutral-dark sm:text-3xl">
-          {introQuery.data?.assignmentTitle ?? runtime?.assignmentTitle ?? t("intro.titleWithId", { id: parsedAssignmentId })}
-        </h1>
-        <p className="max-w-2xl text-sm leading-6 text-neutral-muted">{t("intro.description")}</p>
-        {introQuery.data?.gradeName && (
-          <p className="text-sm font-semibold text-neutral-muted">{t("intro.gradeValue", { grade: introQuery.data.gradeName })}</p>
-        )}
-        {introQuery.data && (
-          <p className="text-sm text-neutral-muted">
-            {t("intro.questionCount", { count: introQuery.data.questionCount })}
-          </p>
-        )}
-      </header>
-
-      <section className="grid gap-3 rounded-2xl border border-border-color bg-card-bg p-5 sm:grid-cols-2">
-        <div className="flex items-start gap-3">
-          <Clock3 className="mt-0.5 h-5 w-5 text-primary" />
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-neutral-muted">{t("intro.timeLimit")}</p>
-            <p className="mt-1 font-bold text-neutral-dark">
-              {(introQuery.data?.timeLimitMinutes ?? runtime?.timeLimitMinutes) !== undefined
-                ? ((introQuery.data?.timeLimitMinutes ?? runtime?.timeLimitMinutes) || 0) > 0
-                  ? t("intro.timeLimitValue", { minutes: Math.ceil((introQuery.data?.timeLimitMinutes ?? runtime?.timeLimitMinutes ?? 0) / 60) })
-                  : t("intro.noTimeLimit")
-                : t("intro.metadataUnavailable")}
-            </p>
-          </div>
-        </div>
-        <div className="flex items-start gap-3">
-          <CalendarClock className="mt-0.5 h-5 w-5 text-primary" />
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-neutral-muted">{t("intro.dueAt")}</p>
-            <p className="mt-1 font-bold text-neutral-dark">{formattedAssignmentDueAt ?? t("intro.metadataUnavailable")}</p>
-          </div>
-        </div>
-      </section>
-
-
-      {introQuery.isError && (
-        <div role="status" className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950">
-          <p>{t("errors.introLoadFailed")}</p>
-          <Button variant="outline" size="sm" onClick={() => void introQuery.refetch()} disabled={introQuery.isFetching}>
-            {introQuery.isFetching ? t("states.starting") : t("errors.retryIntro")}
-          </Button>
-        </div>
-      )}
-
-      {phase === "ERROR" && (
-        <div role="alert" className="flex items-start gap-3 rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-950">
-          <CircleAlert className="mt-0.5 h-5 w-5 shrink-0" />
-          <div>
-            <p className="font-bold">
-              {failureCode === "ASSESSMENT_ATTEMPT_SESSION_CONFLICT"
-                ? t("session.conflictTitle")
-                : failureCode === "ASSESSMENT_ATTEMPT_SESSION_LOST"
-                  ? t("session.credentialLostTitle")
-                  : t("errors.startFailedTitle")}
-            </p>
-            <p className="mt-1">
-              {failureCode === "ASSESSMENT_ATTEMPT_SESSION_CONFLICT"
-                ? t("session.conflictDescription")
-                : failureCode === "ASSESSMENT_ATTEMPT_SESSION_LOST"
-                  ? t("session.credentialLostDescription")
-                  : t("errors.startFailedDescription")}
-            </p>
-            {failureCode && <p className="mt-2 font-mono text-xs opacity-75">{failureCode}</p>}
-            {(failureCode === "ASSESSMENT_ATTEMPT_SESSION_CONFLICT" || failureCode === "ASSESSMENT_ATTEMPT_SESSION_LOST") && (
-              <Link href="/student/assignments" className="mt-3 inline-flex font-semibold underline">
-                {t("backToAssignments")}
-              </Link>
-            )}
-          </div>
-        </div>
-      )}
-
-      <div className="space-y-3 rounded-2xl border border-border-color bg-card-bg p-5">
-        <h2 className="font-bold text-neutral-dark">{t("intro.beforeStartTitle")}</h2>
-        <ul className="list-disc space-y-2 pl-5 text-sm leading-6 text-neutral-muted">
-          <li>{t("intro.ruleOneAttempt")}</li>
-          <li>{t("intro.ruleDeadline")}</li>
-          <li>{t("intro.ruleDraft")}</li>
-        </ul>
-        <Button
-          className="w-full sm:w-auto"
-          disabled={lockState !== "OWNED" || phase === "STARTING" || failureCode === "ASSESSMENT_ATTEMPT_SESSION_CONFLICT" || failureCode === "ASSESSMENT_ATTEMPT_SESSION_LOST"}
-          onClick={() => void startOrResume()}
-        >
-          {phase === "STARTING" && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
-          {phase === "STARTING" ? t("states.starting") : introQuery.data?.attemptStatus === "IN_PROGRESS" ? t("intro.resume") : t("intro.start")}
-        </Button>
-      </div>
-    </main>
+    <StatusPanel
+      icon={<LoaderCircle className="h-6 w-6 animate-spin" />}
+      title={t("states.starting")}
+    />
   );
 }
 

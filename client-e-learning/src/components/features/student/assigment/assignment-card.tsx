@@ -34,7 +34,8 @@ const CARD_TONES = [
 ] as const;
 
 function getCardTone(assignmentId: number | string, index = 0) {
-  const numericId = typeof assignmentId === "number" ? assignmentId : Number(assignmentId);
+  const numericId =
+    typeof assignmentId === "number" ? assignmentId : Number(assignmentId);
   const seed = Number.isFinite(numericId) ? Math.abs(numericId) : index;
   return CARD_TONES[seed % CARD_TONES.length];
 }
@@ -56,7 +57,11 @@ function formatDueAt(dueAt: string | null) {
 
 export function AssignmentCard({ assignment, index = 0 }: AssignmentCardProps) {
   const done = assignment.status === "SUBMITTED";
-  const urgent = !done && !assignment.late && assignment.dueInDays >= 0 && assignment.dueInDays <= 2;
+  const urgent =
+    !done &&
+    !assignment.late &&
+    assignment.dueInDays >= 0 &&
+    assignment.dueInDays <= 2;
   const tone = getCardTone(assignment.id, index);
 
   return (
@@ -102,7 +107,11 @@ export function AssignmentCard({ assignment, index = 0 }: AssignmentCardProps) {
               "inline-flex items-center gap-1.5 rounded-full border-1.5 border-foreground bg-card px-2.5 py-1 text-xs font-extrabold shadow-xs",
               done && "bg-success-soft text-foreground",
               urgent && "bg-primary text-foreground",
-              !done && !urgent && !assignment.late && assignment.status === "IN_PROGRESS" && "bg-accent-soft text-foreground",
+              !done &&
+                !urgent &&
+                !assignment.late &&
+                assignment.status === "IN_PROGRESS" &&
+                "bg-accent-soft text-foreground",
             )}
           >
             {done ? (
@@ -126,7 +135,10 @@ export function AssignmentCard({ assignment, index = 0 }: AssignmentCardProps) {
 
       <div className="relative z-10 flex flex-col flex-1">
         <h2 className="text-lg font-bold leading-snug mt-1">
-          <Link href="/student/assignments/$assignmentId" className="hover:underline hover:decoration-2">
+          <Link
+            href={`/student/assignments/${assignment.id}`}
+            className="hover:underline hover:decoration-2"
+          >
             {assignment.title}
           </Link>
         </h2>
@@ -147,14 +159,20 @@ export function AssignmentCard({ assignment, index = 0 }: AssignmentCardProps) {
         </div>
 
         <Link
-          href="/student/assignments/$assignmentId"
+          href={`/student/assignments/${assignment.id}`}
           className={cn(
             "mt-auto flex min-h-[46px] items-center justify-between rounded-xl border-2 border-foreground px-4 text-sm font-extrabold shadow-[0_3px_0_var(--foreground)] transition-all hover:bg-primary-hover active:translate-y-1 active:shadow-none cursor-pointer",
-            done ? "bg-card text-foreground hover:bg-muted" : "bg-primary text-foreground",
+            done
+              ? "bg-card text-foreground hover:bg-muted"
+              : "bg-primary text-foreground",
           )}
         >
           <span>
-            {done ? "View details" : assignment.status === "IN_PROGRESS" ? "Continue" : "Start"}
+            {done
+              ? "View details"
+              : assignment.status === "IN_PROGRESS"
+                ? "Continue"
+                : "Start"}
           </span>
           <ArrowRight size={17} />
         </Link>

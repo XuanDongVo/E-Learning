@@ -3,10 +3,10 @@ package e_learning.server.assignment.dto.student;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum StudentAssignmentStatus {
-    TODO("todo"),
-    IN_PROGRESS("in_progress"),
-    SUBMITTED("submitted"),
-    LATE("late");
+    TODO("TODO"),
+    IN_PROGRESS("IN_PROGRESS"),
+    SUBMITTED("SUBMITTED"),
+    LATE("LATE");
 
     private final String value;
 

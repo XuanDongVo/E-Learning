@@ -26,11 +26,12 @@ export function StudentAssignments({ initialAssignments = [] }: StudentAssignmen
   } = useQuery({
     queryKey: QUERY_KEYS.studentAssignments(filter),
     queryFn: () => studentAssignmentService.getAssignments(filter),
-    // Server-provided initial data applies only to the TODO tab.
     initialData: filter === "TODO" && initialAssignments.length > 0
       ? initialAssignments
       : undefined,
   });
+
+  console.log("assignments", assignments);
 
   const records = useMemo(() => {
     const search = query.trim().toLowerCase();

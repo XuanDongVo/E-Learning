@@ -24,7 +24,6 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Locale;
 
 @Service
 @RequiredArgsConstructor
@@ -38,13 +37,17 @@ public class StudentAssignmentService {
     private final AssessmentAttemptRepository assessmentAttemptRepository;
 
     /**
-     * Return published assignments targeted to the student's active class.
-     * The optional status and q filters are applied to this authorized set.
+     * Student assignment list is grouped by AssessmentAttempt lifecycle:
+     * TODO = no attempt exists, IN_PROGRESS = attempt is in progress,
+     * SUBMITTED = attempt has been submitted or timed out.
+     *
+     * The default TODO tab also includes IN_PROGRESS so the student can see
+     * assignments that still need action. The SUBMITTED tab is loaded only
+     * when explicitly requested by the client.
      */
     public List<StudentAssignmentItemResponse> getMyAssignments(
             Long studentId,
-            String statusFilter,
-            String query
+            String statusFilter
     ) {
         User student = userRepository.findById(studentId)
                 .filter(user -> user.getStatus() == UserStatus.ACTIVE)
@@ -55,65 +58,58 @@ public class StudentAssignmentService {
 
         Long activeClassId = membership.getClassEntity().getId();
         LocalDateTime now = LocalDateTime.now();
-        StudentAssignmentStatus requestedStatus;
+
+        final StudentAssignmentStatus requestedStatus;
         try {
-            requestedStatus = StudentAssignmentStatus.fromFilter(statusFilter);
+            requestedStatus = StudentAssignmentStatus.fromRequest(statusFilter);
         } catch (IllegalArgumentException exception) {
             throw new AppException(ErrorCode.INVALID_REQUEST);
         }
-        String normalizedQuery = normalizeQuery(query);
 
         return assignmentRepository.findAllByStatusOrderByDueAtAscIdAsc(AssignmentStatus.PUBLISHED)
                 .stream()
                 .filter(assignment -> isVisibleToClass(assignment, activeClassId))
-                .filter(assignment -> assignment.getStartAt() == null || !assignment.getStartAt().isAfter(now))
-                .filter(assignment -> matchesQuery(assignment, normalizedQuery))
-                .map(assignment -> toResponse(assignment, studentId, now))
-                .filter(item -> requestedStatus == null || item.status() == requestedStatus)
-                .sorted(Comparator.comparing(StudentAssignmentItemResponse::dueAt,
-                        Comparator.nullsLast(Comparator.naturalOrder())))
+                .filter(assignment -> assignment.getStartAt() == null
+                        || !assignment.getStartAt().isAfter(now))
+                .map(assignment -> toResponse(assignment, studentId, requestedStatus, now))
+                .filter(response -> response != null)
+                .sorted(Comparator.comparing(
+                        StudentAssignmentItemResponse::dueAt,
+                        Comparator.nullsLast(Comparator.naturalOrder())
+                ))
                 .toList();
     }
 
     private boolean isVisibleToClass(Assignment assignment, Long activeClassId) {
-        return assignment.getClassIds() != null && assignment.getClassIds().contains(activeClassId);
-    }
-
-    private boolean matchesQuery(Assignment assignment, String query) {
-        if (query == null) {
-            return true;
-        }
-
-        return containsIgnoreCase(assignment.getName(), query)
-                || containsIgnoreCase(assignment.getDescription(), query);
-    }
-
-    private boolean containsIgnoreCase(String value, String query) {
-        return value != null && value.toLowerCase(Locale.ROOT).contains(query);
-    }
-
-    private String normalizeQuery(String query) {
-        if (query == null || query.isBlank()) {
-            return null;
-        }
-        return query.trim().toLowerCase(Locale.ROOT);
+        return assignment.getClassIds() != null
+                && assignment.getClassIds().contains(activeClassId);
     }
 
     private StudentAssignmentItemResponse toResponse(
             Assignment assignment,
             Long studentId,
+            StudentAssignmentStatus requestedStatus,
             LocalDateTime now
     ) {
         AssessmentAttempt attempt = assessmentAttemptRepository
                 .findByAssignmentIdAndStudentId(assignment.getId(), studentId)
                 .orElse(null);
 
-        StudentAssignmentStatus status = resolveStatus(assignment, attempt, now);
+        StudentAssignmentStatus actualStatus = resolveStatus(attempt);
+
+        if (!matchesRequestedTab(actualStatus, requestedStatus)) {
+            return null;
+        }
+
         long questionCount = assignmentItemRepository
                 .countByAssignmentIdAndItemType(assignment.getId(), "QUESTION");
 
-        int dueInDays = Math.toIntExact(ChronoUnit.DAYS.between(now.toLocalDate(), assignment.getDueAt().toLocalDate()));
-        String dueLabel = formatDueLabel(dueInDays);
+        int dueInDays = assignment.getDueAt() == null
+                ? 0
+                : Math.toIntExact(ChronoUnit.DAYS.between(
+                        now.toLocalDate(),
+                        assignment.getDueAt().toLocalDate()
+                ));
 
         return new StudentAssignmentItemResponse(
                 assignment.getId(),
@@ -122,39 +118,31 @@ public class StudentAssignmentService {
                 assignment.getDueAt(),
                 questionCount,
                 assignment.getTimeLimitMinutes(),
-                status,
-                assignment.getDescription(),
-                dueLabel
+                actualStatus,
+                assignment.getDescription()
         );
     }
 
-    private String formatDueLabel(int dueInDays) {
-        if (dueInDays < 0) {
-            int overdueDays = Math.abs(dueInDays);
-            return overdueDays == 1 ? "Overdue by 1 day" : "Overdue by " + overdueDays + " days";
+    private StudentAssignmentStatus resolveStatus(AssessmentAttempt attempt) {
+        if (attempt == null) {
+            return StudentAssignmentStatus.TODO;
         }
-        if (dueInDays == 0) {
-            return "Due today";
-        }
-        return dueInDays == 1 ? "Due in 1 day" : "Due in " + dueInDays + " days";
+
+        return switch (attempt.getStatus()) {
+            case IN_PROGRESS -> StudentAssignmentStatus.IN_PROGRESS;
+            case SUBMITTED, TIMED_OUT -> StudentAssignmentStatus.SUBMITTED;
+        };
     }
 
-    private StudentAssignmentStatus resolveStatus(
-            Assignment assignment,
-            AssessmentAttempt attempt,
-            LocalDateTime now
+    private boolean matchesRequestedTab(
+            StudentAssignmentStatus actualStatus,
+            StudentAssignmentStatus requestedStatus
     ) {
-        if (attempt != null
-                && (attempt.getStatus() == AssessmentAttemptStatus.SUBMITTED
-                || attempt.getStatus() == AssessmentAttemptStatus.TIMED_OUT)) {
-            return StudentAssignmentStatus.COMPLETED;
+        if (requestedStatus == StudentAssignmentStatus.TODO) {
+            return actualStatus == StudentAssignmentStatus.TODO
+                    || actualStatus == StudentAssignmentStatus.IN_PROGRESS;
         }
 
-        if (assignment.getDueAt() != null && assignment.getDueAt().isBefore(now)) {
-            return StudentAssignmentStatus.LATE;
-        }
-
-        // The existing frontend groups an in-progress attempt under "todo".
-        return StudentAssignmentStatus.TODO;
+        return actualStatus == requestedStatus;
     }
 }

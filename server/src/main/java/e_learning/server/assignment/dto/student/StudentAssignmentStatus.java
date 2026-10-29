@@ -5,7 +5,8 @@ import com.fasterxml.jackson.annotation.JsonValue;
 public enum StudentAssignmentStatus {
     TODO("todo"),
     IN_PROGRESS("in_progress"),
-    SUBMITTED("submitted");
+    SUBMITTED("submitted"),
+    LATE("late");
 
     private final String value;
 

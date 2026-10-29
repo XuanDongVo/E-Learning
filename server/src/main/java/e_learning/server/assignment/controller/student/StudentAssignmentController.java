@@ -1,9 +1,10 @@
-package e_learning.server.assignment.controller;
+package e_learning.server.assignment.controller.student;
 
 import e_learning.server.assignment.dto.student.StudentAssignmentItemResponse;
-import e_learning.server.assignment.service.StudentAssignmentService;
+import e_learning.server.assignment.service.student.StudentAssignmentService;
 import e_learning.server.common.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,11 +23,11 @@ public class StudentAssignmentController {
     private final StudentAssignmentService studentAssignmentService;
 
     @GetMapping
-    public ApiResponse<List<StudentAssignmentItemResponse>> getMyAssignments(
+    public ResponseEntity<ApiResponse<List<StudentAssignmentItemResponse>>> getMyAssignments(
             @AuthenticationPrincipal Jwt jwt,
             @RequestParam String status
     ) {
         Long studentId = Long.valueOf(Objects.requireNonNull(jwt.getSubject()));
-        return ApiResponse.success(studentAssignmentService.getMyAssignments(studentId, status));
+        return ResponseEntity.ok(ApiResponse.success(studentAssignmentService.getMyAssignments(studentId, status)));
     }
 }

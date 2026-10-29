@@ -1,4 +1,4 @@
-package e_learning.server.assignment.service;
+package e_learning.server.assignment.service.student;
 
 import e_learning.server.assignment.dto.student.StudentAssignmentItemResponse;
 import e_learning.server.assignment.dto.student.StudentAssignmentStatus;

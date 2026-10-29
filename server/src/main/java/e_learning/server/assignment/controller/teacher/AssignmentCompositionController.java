@@ -1,4 +1,4 @@
-package e_learning.server.assignment.controller;
+package e_learning.server.assignment.controller.teacher;
 
 import e_learning.server.assignment.dto.AssignmentCompositionRequest;
 import e_learning.server.assignment.dto.AssignmentCompositionResponse;

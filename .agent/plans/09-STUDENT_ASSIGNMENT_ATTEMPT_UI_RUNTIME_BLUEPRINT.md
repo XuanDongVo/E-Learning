@@ -582,8 +582,8 @@ All translations must exist for every supported locale before a screen is consid
 - [ ] Verify the implemented authorization/snapshot/projection with backend tests and complete Question Engine/POOL integration.
 
 **Frontend — scaffold implemented, runtime not verified**
-- [x] Dynamic route `/student/assignments/:assignmentId` and Intro/Player shell.
-- [x] Intro metadata API contract; Intro remains usable with fallback ID when the backend stub is not implemented.
+- [x] Dynamic route `/student/assignments/:assignmentId` opens the Player directly; no separate Intro screen or Start button in the student flow.
+- [x] On route entry, acquire the browser lock and automatically call the authoritative backend Start/Resume endpoint; backend remains responsible for eligibility and state validation.
 - [x] Web Lock with `ifAvailable: true`; conflict/unsupported-browser states.
 - [x] IndexedDB stable UUID credential persisted before the start/resume request.
 - [x] Student Paper renderers for common choices, text answers, Matching/Cloze, plus composition block renderers for Instructions/Passage/Pool/Media.

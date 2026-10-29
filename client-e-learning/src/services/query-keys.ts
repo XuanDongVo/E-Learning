@@ -1,6 +1,8 @@
 export const QUERY_KEYS = {
   currentUser:["currentUser"] as const, dashboardStats:["dashboardStats"] as const,
-  assignments:["assignments"] as const, assignmentDetail:(id:string)=>["assignmentDetail",id] as const,
+  assignments:["assignments"] as const,
+  studentAssignments:(status:string)=>["student","assignments",status] as const,
+  assignmentDetail:(id:string)=>["assignmentDetail",id] as const,
   units:["units"] as const, unitDetail:(id:string)=>["unitDetail",id] as const,
   contentUnits:(gradeId:number)=>["content","units",gradeId] as const,
   contentUnit:(id:number)=>["content","unit",id] as const,

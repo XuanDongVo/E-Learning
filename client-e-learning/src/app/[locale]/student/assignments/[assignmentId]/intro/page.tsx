@@ -5,7 +5,6 @@ import { StudentAssignmentIntro } from "@/components/features/student/assignment
 import { studentAssignmentAttemptService } from "@/services/student/student-assignment-attempt.service";
 import { getOrCreateAttemptSessionCredential } from "@/services/student/assessment-attempt-session-store";
 import { storeAttemptRuntime } from "@/services/student/assessment-attempt-runtime-store";
-import { useAttemptBrowserLock } from "@/components/features/student/assignment-attempt/hooks/use-attempt-browser-lock";
 import { useAuth } from "@/components/auth/auth-provider";
 import { toAppError } from "@/lib/errors/app-error";
 import { useRouter } from "@/i18n/navigation";
@@ -24,10 +23,6 @@ export default function StudentAssignmentsIntroRoute({
   const runtimeT = useTranslations("student.assignmentAttempt");
   const router = useRouter();
   const { user } = useAuth();
-  const lockName = user?.role === "STUDENT" && validAssignmentId
-    ? `assessment-attempt:${user.id}:assignment:${parsedAssignmentId}`
-    : null;
-  const lockState = useAttemptBrowserLock(lockName);
   const [isStarting, setIsStarting] = useState(false);
   const [startError, setStartError] = useState<string | null>(null);
 
@@ -43,14 +38,13 @@ export default function StudentAssignmentsIntroRoute({
   const assignment = assignmentResponse?.data;
 
   const startOrResume = useCallback(async () => {
-    if (!user || user.role !== "STUDENT" || !validAssignmentId || lockState !== "OWNED" || isStarting) {
+    if (!user || user.role !== "STUDENT" || !validAssignmentId || isStarting) {
       return;
     }
 
     setIsStarting(true);
     setStartError(null);
     try {
-      // Persist the stable credential before making the authoritative Start/Resume request.
       const activeSessionId = await getOrCreateAttemptSessionCredential(user.id, parsedAssignmentId);
       const response = await studentAssignmentAttemptService.startOrResume(
         parsedAssignmentId,
@@ -65,7 +59,7 @@ export default function StudentAssignmentsIntroRoute({
     } finally {
       setIsStarting(false);
     }
-  }, [isStarting, lockState, parsedAssignmentId, router, user, validAssignmentId]);
+  }, [isStarting, parsedAssignmentId, router, user, validAssignmentId]);
 
   return (
     <div className="mx-auto flex max-w-[1440px] flex-col gap-4 p-4 pb-24 sm:p-5 lg:p-6">
@@ -73,16 +67,6 @@ export default function StudentAssignmentsIntroRoute({
       {isError && <p>{t("loadFailed")}</p>}
       {!isLoading && !isError && assignment && (
         <>
-          {lockState === "CONFLICT" && (
-            <p role="alert" className="rounded-xl border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950">
-              {runtimeT("session.conflictDescription")}
-            </p>
-          )}
-          {lockState === "UNSUPPORTED" && (
-            <p role="alert" className="rounded-xl border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950">
-              {runtimeT("session.lockUnsupportedDescription")}
-            </p>
-          )}
           {startError && (
             <p role="alert" className="rounded-xl border border-rose-300 bg-rose-50 p-3 text-sm text-rose-950">
               {runtimeT("errors.startFailedDescription")}

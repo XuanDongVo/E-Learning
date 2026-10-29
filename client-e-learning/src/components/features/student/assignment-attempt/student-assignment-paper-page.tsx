@@ -9,12 +9,10 @@ import {
   CircleAlert,
   Clock3,
   LoaderCircle,
-  LockKeyhole,
   ShieldAlert,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/components/auth/auth-provider";
-import { useAttemptBrowserLock } from "./hooks/use-attempt-browser-lock";
 import { useAttemptRuntime, createInitialAttemptAnswers } from "./hooks/use-attempt-runtime";
 import { StudentPaper } from "./student-paper";
 import type { AttemptAnswerPayload } from "@/types/student/assignment-attempt";
@@ -38,14 +36,10 @@ export function StudentAssignmentPaperPage({ assignmentId }: { assignmentId: str
   const { user, isLoading: isAuthLoading } = useAuth();
   const parsedAssignmentId = Number(assignmentId);
   const validAssignmentId = isPositiveInteger(parsedAssignmentId);
-  const lockName = user?.role === "STUDENT" && validAssignmentId
-    ? `assessment-attempt:${user.id}:assignment:${parsedAssignmentId}`
-    : null;
-  const lockState = useAttemptBrowserLock(lockName);
   const runtimeState = useAttemptRuntime(
     user?.id ?? null,
     parsedAssignmentId,
-    lockState === "OWNED" && user?.role === "STUDENT" && validAssignmentId,
+    user?.role === "STUDENT" && validAssignmentId,
   );
   const [answers, setAnswers] = useState<Record<number, AttemptAnswerPayload>>({});
   const [hasLocalChanges, setHasLocalChanges] = useState(false);
@@ -116,21 +110,6 @@ export function StudentAssignmentPaperPage({ assignmentId }: { assignmentId: str
         icon={<ShieldAlert className="h-6 w-6" />}
         title={t("errors.studentOnly")}
         action={<Link href="/student"><Button variant="secondary">{t("backToDashboard")}</Button></Link>}
-      />
-    );
-  }
-
-  if (lockState === "CHECKING") {
-    return <StatusPanel icon={<LoaderCircle className="h-6 w-6 animate-spin" />} title={t("states.checkingSession")} />;
-  }
-
-  if (lockState === "CONFLICT") {
-    return (
-      <StatusPanel
-        icon={<LockKeyhole className="h-6 w-6" />}
-        title={t("session.conflictTitle")}
-        description={t("session.conflictDescription")}
-        action={<Link href="/student/assignments"><Button variant="secondary">{t("backToAssignments")}</Button></Link>}
       />
     );
   }

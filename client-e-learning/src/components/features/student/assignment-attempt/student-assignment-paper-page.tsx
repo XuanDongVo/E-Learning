@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/navigation";
 import {
@@ -14,25 +14,16 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/components/auth/auth-provider";
-import { toAppError } from "@/lib/errors/app-error";
-import { studentAssignmentAttemptService } from "@/services/student/student-assignment-attempt.service";
-import { getOrCreateAttemptSessionCredential } from "@/services/student/assessment-attempt-session-store";
-import { consumeAttemptRuntime } from "@/services/student/assessment-attempt-runtime-store";
 import { useAttemptBrowserLock } from "./hooks/use-attempt-browser-lock";
+import { useAttemptRuntime, createInitialAttemptAnswers } from "./hooks/use-attempt-runtime";
 import { StudentPaper } from "./student-paper";
-import type {
-  AttemptAnswerPayload,
-  AttemptRuntimeResponse,
-} from "@/types/student/assignment-attempt";
-
-type PagePhase = "INTRO" | "STARTING" | "ACTIVE" | "COMPLETE" | "ERROR";
+import type { AttemptAnswerPayload } from "@/types/student/assignment-attempt";
 
 function hasMeaningfulAnswer(value: unknown): boolean {
   if (value === null || value === undefined) return false;
   if (typeof value === "string") return value.trim().length > 0;
   if (Array.isArray(value)) return value.some(hasMeaningfulAnswer);
   if (typeof value === "object") return Object.values(value as Record<string, unknown>).some(hasMeaningfulAnswer);
-  // Boolean false is still an explicit response, not an unanswered value.
   return true;
 }
 
@@ -51,12 +42,21 @@ export function StudentAssignmentPaperPage({ assignmentId }: { assignmentId: str
     ? `assessment-attempt:${user.id}:assignment:${parsedAssignmentId}`
     : null;
   const lockState = useAttemptBrowserLock(lockName);
-  const [phase, setPhase] = useState<PagePhase>("INTRO");
-  const [runtime, setRuntime] = useState<AttemptRuntimeResponse | null>(null);
+  const runtimeState = useAttemptRuntime(
+    user?.id ?? null,
+    parsedAssignmentId,
+    lockState === "OWNED" && user?.role === "STUDENT" && validAssignmentId,
+  );
   const [answers, setAnswers] = useState<Record<number, AttemptAnswerPayload>>({});
   const [hasLocalChanges, setHasLocalChanges] = useState(false);
-  const [failureCode, setFailureCode] = useState<string | null>(null);
-  const startRequestedRef = useRef(false);
+
+  const runtime = runtimeState.runtime;
+
+  useEffect(() => {
+    if (!runtime) return;
+    setAnswers(createInitialAttemptAnswers(runtime));
+    setHasLocalChanges(false);
+  }, [runtime]);
 
   const formattedAttemptDeadline = useMemo(() => {
     if (!runtime?.deadlineAt) return null;
@@ -68,70 +68,8 @@ export function StudentAssignmentPaperPage({ assignmentId }: { assignmentId: str
     }).format(deadline);
   }, [locale, runtime?.deadlineAt]);
 
-  const startOrResume = useCallback(async () => {
-    if (!user || user.role !== "STUDENT" || !validAssignmentId || lockState !== "OWNED") {
-      return;
-    }
-
-    setPhase("STARTING");
-    setFailureCode(null);
-
-    try {
-      // The same UUID is reused after a retry, refresh or ordinary browser restart.
-      // Persist it before the HTTP request so a lost response cannot create a second ID.
-      const activeSessionId = await getOrCreateAttemptSessionCredential(
-        user.id,
-        parsedAssignmentId,
-      );
-      const response = await studentAssignmentAttemptService.startOrResume(
-        parsedAssignmentId,
-        { activeSessionId },
-      );
-
-      if (!response.data) {
-        throw new Error("ASSESSMENT_ATTEMPT_EMPTY_RESPONSE");
-      }
-
-      setRuntime(response.data);
-      setAnswers(Object.fromEntries(
-        response.data.questions.map((question) => [
-          question.attemptQuestionId,
-          question.answerPayload ?? {},
-        ]),
-      ));
-      setHasLocalChanges(false);
-      setPhase(response.data.status === "IN_PROGRESS" ? "ACTIVE" : "COMPLETE");
-    } catch (error) {
-      const normalized = toAppError(error);
-      setFailureCode(normalized.code);
-      setPhase("ERROR");
-    }
-  }, [lockState, parsedAssignmentId, user, validAssignmentId]);
-
   useEffect(() => {
-    if (phase !== "INTRO" || !user || user.role !== "STUDENT" || !validAssignmentId || lockState !== "OWNED" || startRequestedRef.current) return;
-    startRequestedRef.current = true;
-
-    const handoffRuntime = consumeAttemptRuntime((user.id), parsedAssignmentId);
-    if (handoffRuntime) {
-      setRuntime(handoffRuntime);
-      setAnswers(Object.fromEntries(
-        handoffRuntime.questions.map((question) => [
-          question.attemptQuestionId,
-          question.answerPayload ?? {},
-        ]),
-      ));
-      setHasLocalChanges(false);
-      setPhase(handoffRuntime.status === "IN_PROGRESS" ? "ACTIVE" : "COMPLETE");
-      return;
-    }
-
-    // A refresh or direct paper URL has no one-time handoff; ask the backend to resume.
-    void startOrResume();
-  }, [lockState, parsedAssignmentId, phase, startOrResume, user, validAssignmentId]);
-
-  useEffect(() => {
-    if (!hasLocalChanges || phase !== "ACTIVE") return;
+    if (!hasLocalChanges || runtimeState.status !== "ACTIVE") return;
 
     const warnBeforeLeaving = (event: BeforeUnloadEvent) => {
       event.preventDefault();
@@ -140,7 +78,7 @@ export function StudentAssignmentPaperPage({ assignmentId }: { assignmentId: str
 
     window.addEventListener("beforeunload", warnBeforeLeaving);
     return () => window.removeEventListener("beforeunload", warnBeforeLeaving);
-  }, [hasLocalChanges, phase]);
+  }, [hasLocalChanges, runtimeState.status]);
 
   const leavePlayer = useCallback(() => {
     if (hasLocalChanges && !window.confirm(t("draft.confirmLeave"))) return;
@@ -197,29 +135,28 @@ export function StudentAssignmentPaperPage({ assignmentId }: { assignmentId: str
     );
   }
 
-  if (lockState === "UNSUPPORTED") {
-    return (
-      <StatusPanel
-        icon={<ShieldAlert className="h-6 w-6" />}
-        title={t("session.lockUnsupportedTitle")}
-        description={t("session.lockUnsupportedDescription")}
-        action={<Link href="/student/assignments"><Button variant="secondary">{t("backToAssignments")}</Button></Link>}
-      />
-    );
+  if (runtimeState.status === "LOADING") {
+    return <StatusPanel icon={<LoaderCircle className="h-6 w-6 animate-spin" />} title={t("states.starting")} description={t("intro.description")} />;
   }
 
-  if (lockState === "ERROR") {
+  if (runtimeState.status === "ERROR") {
+    const conflict = runtimeState.errorCode === "ASSESSMENT_ATTEMPT_SESSION_CONFLICT";
+    const lost = runtimeState.errorCode === "ASSESSMENT_ATTEMPT_SESSION_LOST";
     return (
       <StatusPanel
         icon={<CircleAlert className="h-6 w-6" />}
-        title={t("session.lockErrorTitle")}
-        description={t("session.lockErrorDescription")}
-        action={<Link href="/student/assignments"><Button variant="secondary">{t("backToAssignments")}</Button></Link>}
+        title={conflict ? t("session.conflictTitle") : lost ? t("session.credentialLostTitle") : t("errors.startFailedTitle")}
+        description={conflict ? t("session.conflictDescription") : lost ? t("session.credentialLostDescription") : t("errors.startFailedDescription")}
+        action={
+          conflict || lost
+            ? <Link href="/student/assignments"><Button variant="secondary">{t("backToAssignments")}</Button></Link>
+            : <Button onClick={runtimeState.retry}>{t("errors.retryIntro")}</Button>
+        }
       />
     );
   }
 
-  if (phase === "ACTIVE" && runtime) {
+  if (runtimeState.status === "ACTIVE" && runtime) {
     const questionCount = runtime.questions.length;
     const answeredCount = runtime.questions.filter((question) => {
       const payload = answers[question.attemptQuestionId];
@@ -272,7 +209,7 @@ export function StudentAssignmentPaperPage({ assignmentId }: { assignmentId: str
     );
   }
 
-  if (phase === "COMPLETE" && runtime) {
+  if (runtimeState.status === "COMPLETE" && runtime) {
     const timedOut = runtime.status === "TIMED_OUT";
     return (
       <StatusPanel
@@ -284,42 +221,7 @@ export function StudentAssignmentPaperPage({ assignmentId }: { assignmentId: str
     );
   }
 
-  if (phase === "INTRO" || phase === "STARTING") {
-    return (
-      <StatusPanel
-        icon={<LoaderCircle className="h-6 w-6 animate-spin" />}
-        title={t("states.starting")}
-        description={t("intro.description")}
-      />
-    );
-  }
-
-  if (phase === "ERROR") {
-    const conflict = failureCode === "ASSESSMENT_ATTEMPT_SESSION_CONFLICT";
-    const lost = failureCode === "ASSESSMENT_ATTEMPT_SESSION_LOST";
-    return (
-      <StatusPanel
-        icon={<CircleAlert className="h-6 w-6" />}
-        title={conflict ? t("session.conflictTitle") : lost ? t("session.credentialLostTitle") : t("errors.startFailedTitle")}
-        description={conflict ? t("session.conflictDescription") : lost ? t("session.credentialLostDescription") : t("errors.startFailedDescription")}
-        action={
-          conflict || lost
-            ? <Link href="/student/assignments"><Button variant="secondary">{t("backToAssignments")}</Button></Link>
-            : <Button onClick={() => {
-                startRequestedRef.current = false;
-                void startOrResume();
-              }}>{t("errors.retryIntro")}</Button>
-        }
-      />
-    );
-  }
-
-  return (
-    <StatusPanel
-      icon={<LoaderCircle className="h-6 w-6 animate-spin" />}
-      title={t("states.starting")}
-    />
-  );
+  return <StatusPanel icon={<LoaderCircle className="h-6 w-6 animate-spin" />} title={t("states.starting")} />;
 }
 
 function StatusPanel({

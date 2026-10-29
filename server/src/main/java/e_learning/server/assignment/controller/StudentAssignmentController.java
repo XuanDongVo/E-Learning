@@ -24,10 +24,9 @@ public class StudentAssignmentController {
     @GetMapping
     public ApiResponse<List<StudentAssignmentItemResponse>> getMyAssignments(
             @AuthenticationPrincipal Jwt jwt,
-            @RequestParam String status,
-            @RequestParam(name = "q", required = false) String query
+            @RequestParam String status
     ) {
         Long studentId = Long.valueOf(Objects.requireNonNull(jwt.getSubject()));
-        return ApiResponse.success(studentAssignmentService.getMyAssignments(studentId, status, query));
+        return ApiResponse.success(studentAssignmentService.getMyAssignments(studentId, status));
     }
 }

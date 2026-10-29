@@ -1,16 +1,16 @@
 # E-Learning — Phase 5: Assignments
 Status: ACTIVE CANONICAL SPEC — Composition/scoring amended by ADR 0024/0026
-Last revised: 2026-10-23
+Last revised: 2026-10-27
 
 Assignment is formal teacher-assigned work with target, schedule, one attempt and an official automatically calculated score. It is independent from Activity and owns its question copies.
 
 ## Assignment
-Fields include grade_id, academic_year, class_ids, name, description, status, start_at, due_at, time_limit_seconds, show_score_after_submit and show_answers_after_submit. `class_ids` is a server-validated JSONB snapshot of one or more concrete class recipients; selecting a whole Grade is a frontend convenience and is not persisted as a target.
-- time_limit_seconds is the whole-attempt timer.
+Fields include grade_id, academic_year, class_ids, name, description, status, start_at, due_at, time_limit_minutes, show_score_after_submit and show_answers_after_submit. `class_ids` is a server-validated JSONB snapshot of one or more concrete class recipients; selecting a whole Grade is a frontend convenience and is not persisted as a target.
+- time_limit_minutes is the whole-attempt duration stored in minutes; deadline_at is calculated from the server start time.
 - show_score_after_submit defaults TRUE and controls whether the automatically calculated score is displayed immediately after submission.
 - show_answers_after_submit defaults TRUE and independently controls correct-answer/explanation visibility.
 - Current recipient model is one `grade_id` plus a server-validated concrete `class_ids` snapshot. Grade selection in the UI is a convenience; `AssignmentTarget`/`AssignmentTargetType` are not current runtime entities. Late submissions are accepted and labeled Late without penalty. Completion = submitted.
-- This file defines the intended product contract. The formal AssessmentAttempt runtime, attempt lock enforcement, timeout submission and persisted scoring are not implemented yet; do not describe them as shipped.
+- The initial start/resume and snapshot slice is present but unverified. Autosave, timeout finalization, persisted scoring and the Assignment authoring lock remain incomplete; do not describe the full runtime as shipped.
 
 ## Composition
 The Assignment Builder demo is the product prototype. Canonical model: .agent/architecture/assignment-composition-v1.md.

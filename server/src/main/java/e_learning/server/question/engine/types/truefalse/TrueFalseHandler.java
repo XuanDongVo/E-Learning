@@ -9,6 +9,13 @@ import java.util.Locale;
 public final class TrueFalseHandler extends AbstractQuestionTypeHandler {
     public QuestionType type() { return QuestionType.TRUE_FALSE; }
     public DefinitionValidation validateDefinition(QuestionSpec s) { DefinitionValidation c = common(s); if (c != null) return c; return ((TrueFalseSpec) s).expected() == null ? DefinitionValidation.incomplete("answers.true_false.required") : DefinitionValidation.ready(); }
-    public AnswerParseResult parseAndValidate(QuestionSpec s, RawAnswer raw) { requireType(s); String v = text(raw == null ? null : raw.value()).toUpperCase(Locale.ROOT); if (!v.equals("TRUE") && !v.equals("FALSE")) return AnswerParseResult.invalid("answer.true_false.required"); return AnswerParseResult.valid(new ValidatedAnswer(type(), Boolean.valueOf(v))); }
+    public AnswerParseResult parseAndValidate(QuestionSpec s, RawAnswer raw) {
+        requireType(s);
+        if (raw == null || raw.unanswered()) return AnswerParseResult.unansweredResult();
+        String v = text(raw.value()).toUpperCase(Locale.ROOT);
+        if (v.isBlank()) return AnswerParseResult.unansweredResult();
+        if (!v.equals("TRUE") && !v.equals("FALSE")) return AnswerParseResult.invalid("answer.true_false.invalid");
+        return AnswerParseResult.valid(new ValidatedAnswer(type(), Boolean.valueOf(v)));
+    }
     public GradeResult grade(QuestionSpec s, ValidatedAnswer a) { return gradeOne("answer", true, ((TrueFalseSpec) s).expected().equals(a.value()), String.valueOf(a.value())); }
 }

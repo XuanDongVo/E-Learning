@@ -2,6 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { X } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { studentService } from "@/services/student.service";
 
 interface StudentDetailModalProps {
@@ -13,6 +14,7 @@ export function StudentDetailModal({
   studentId,
   onClose,
 }: StudentDetailModalProps) {
+  const t = useTranslations("teacher.students");
   const student = useQuery({
     queryKey: ["student", studentId],
     queryFn: () => studentService.get(studentId),
@@ -36,16 +38,16 @@ export function StudentDetailModal({
         <div className="flex items-start justify-between gap-4">
           <div>
             <p className="text-body-sm font-extrabold uppercase tracking-[0.16em] text-primary">
-              Student details
+              {t("detail.eyebrow")}
             </p>
             <h2 id="student-detail-title" className="mt-1 text-ui-2xl font-extrabold">
-              {detail?.fullName ?? "Student information"}
+              {detail?.fullName ?? t("detail.titleFallback")}
             </h2>
           </div>
           <button
             type="button"
             onClick={onClose}
-            aria-label="Close student details"
+            aria-label={t("detail.close")}
             className="rounded-full p-2 text-neutral-muted hover:bg-background-app"
           >
             <X className="size-5" />
@@ -54,35 +56,35 @@ export function StudentDetailModal({
 
         {student.isLoading && (
           <p className="mt-8 text-center text-neutral-muted">
-            Loading student details...
+            {t("detail.loading")}
           </p>
         )}
         {student.isError && (
           <p role="alert" className="mt-8 rounded-md bg-red-50 p-4 text-red-700">
-            Unable to load student details.
+            {t("detail.error")}
           </p>
         )}
         {detail && (
           <div className="mt-6 space-y-6">
             <section className="grid gap-4 sm:grid-cols-2">
-              <Detail label="Email" value={detail.email} />
-              <Detail label="Phone" value={detail.phone || "No phone"} />
-              <Detail label="Date of birth" value={detail.dateOfBirth || "Not provided"} />
-              <Detail label="Gender" value={detail.gender || "Not provided"} />
+              <Detail label={t("detail.email")} value={detail.email} />
+              <Detail label={t("detail.phone")} value={detail.phone || t("table.noPhone")} />
+              <Detail label={t("detail.dob")} value={detail.dateOfBirth || "—"} />
+              <Detail label={t("detail.gender")} value={detail.gender || "—"} />
             </section>
             <section className="rounded-[var(--radius-md)] border border-border-color p-4">
-              <h3 className="font-extrabold">Class and account</h3>
+              <h3 className="font-extrabold">{t("table.classAndGrade")}</h3>
               <dl className="mt-3 grid gap-3 sm:grid-cols-3">
-                <Detail label="Class" value={detail.className || "No active class"} />
-                <Detail label="Membership" value={detail.classStatus || "Not enrolled"} />
+                <Detail label={t("table.classAndGrade")} value={detail.className || t("noActiveClass")} />
+                <Detail label={t("detail.personal")} value={detail.classStatus || "—"} />
                 <Detail
-                  label="Account status"
-                  value={detail.accountStatus === "ACTIVE" ? "Active" : "Locked"}
+                  label={t("table.status")}
+                  value={detail.accountStatus === "ACTIVE" ? t("active") : t("locked")}
                 />
               </dl>
             </section>
             <section>
-              <h3 className="font-extrabold">Guardians</h3>
+              <h3 className="font-extrabold">{t("detail.guardians")}</h3>
               {detail.guardians.length ? (
                 <div className="mt-3 grid gap-3 sm:grid-cols-2">
                   {detail.guardians.map((guardian) => (
@@ -92,7 +94,7 @@ export function StudentDetailModal({
                     >
                       <p className="font-bold">
                         {guardian.fullName}
-                        {guardian.primary ? " · Primary" : ""}
+                        {guardian.primary ? ` · ${t("detail.primary")}` : ""}
                       </p>
                       <p className="text-body-sm text-neutral-muted">
                         {guardian.relationship}
@@ -107,7 +109,7 @@ export function StudentDetailModal({
                   ))}
                 </div>
               ) : (
-                <p className="mt-2 text-neutral-muted">No guardian information.</p>
+                <p className="mt-2 text-neutral-muted">{t("detail.noGuardians")}</p>
               )}
             </section>
           </div>

@@ -10,10 +10,31 @@
       "overdue": "Đã quá hạn",
       "resume": "Tiếp tục làm bài",
       "start": "Bắt đầu làm bài",
-      "savedAnswersRestored": "Các câu trả lời đã lưu được khôi phục."
+      "savedAnswersRestored": "Các câu trả lời đã lưu được khôi phục.",
+      "eyebrow": "Bài tập dành cho học sinh",
+      "description": "Bắt đầu bài tập hoặc tiếp tục lần làm bài đã gắn với tài khoản của bạn. Hệ thống sử dụng đề đã lưu của giáo viên và thời hạn do máy chủ quyết định.",
+      "titleWithId": "Bài tập #{id}",
+      "beforeStartTitle": "Trước khi bắt đầu",
+      "ruleOneAttempt": "Bài tập chỉ có một lần làm chính thức. Mở lại sẽ tiếp tục đúng lần làm bài đó.",
+      "ruleDeadline": "Thời hạn do máy chủ quyết định và vẫn tiếp tục chạy khi đóng trình duyệt.",
+      "ruleDraft": "Trong bản Sprint 1 này, câu trả lời chỉ nằm trong trang hiện tại; tính năng tự lưu chưa được kết nối.",
+      "startOrResume": "Bắt đầu / tiếp tục làm bài",
+      "noDueDate": "Chưa có thông tin",
+      "timeLimitValue": "{minutes} phút",
+      "metadataUnavailable": "Chưa có thông tin",
+      "gradeValue": "Khối: {grade}",
+      "questionCount": "{count} câu hỏi",
+      "unavailable": "Bài tập hiện chưa thể bắt đầu hoặc tiếp tục. Hãy kiểm tra thông tin bài tập hoặc liên hệ giáo viên."
     },
-    "header": { "progress": "Tiến độ", "submit": "Nộp bài" },
-    "timer": { "remaining": "Thời gian còn lại", "noLimit": "Không giới hạn thời gian", "timeUp": "Đã hết thời gian" },
+    "header": {
+      "progress": "Tiến độ",
+      "submit": "Nộp bài"
+    },
+    "timer": {
+      "remaining": "Thời gian còn lại",
+      "noLimit": "Không giới hạn thời gian",
+      "timeUp": "Đã hết thời gian"
+    },
     "save": {
       "saved": "Đã lưu",
       "saving": "Đang lưu...",
@@ -23,11 +44,15 @@
       "unsyncedCount": "{count} thay đổi chưa đồng bộ"
     },
     "session": {
-      "conflictTitle": "Bài làm đang được mở ở nơi khác",
-      "conflictDescription": "Một phiên đang hoạt động khác hiện đang giữ quyền làm bài này.",
+      "conflictTitle": "Bài làm đang được thao tác trên một màn hình khác. Vui lòng quay lại màn hình đang làm bài.",
+      "conflictDescription": "Một tab khác đang giữ quyền làm bài này.",
       "retry": "Thử lại",
-      "reclaim": "Nhận lại phiên",
-      "stale": "Phiên trước có vẻ đã không còn hoạt động."
+      "lockUnsupportedTitle": "Trình duyệt này chưa hỗ trợ mở bài an toàn",
+      "lockUnsupportedDescription": "Bài làm cần cơ chế khóa tab. Hãy sử dụng trình duyệt hiện đại, đã cập nhật và kết nối bảo mật.",
+      "lockErrorTitle": "Không thể giữ quyền sử dụng tab",
+      "lockErrorDescription": "Hãy đóng các tab bài làm trùng lặp rồi tải lại trang.",
+      "credentialLostTitle": "Không thể khôi phục phiên làm bài",
+      "credentialLostDescription": "Không tìm thấy mã phiên đã lưu. Bản xem trước này sẽ không tự tạo mã phiên thay thế."
     },
     "visibility": {
       "tabHidden": "Bạn đã rời khỏi tab làm bài.",
@@ -52,6 +77,55 @@
       "answersShown": "Đáp án đã được hiển thị.",
       "answersHidden": "Đáp án đang được ẩn.",
       "late": "Nộp bài trễ"
+    },
+    "backToAssignments": "Quay lại danh sách bài tập",
+    "backToDashboard": "Quay lại trang chủ",
+    "player": {
+      "eyebrow": "Đang làm bài",
+      "progress": "Đã trả lời {answered}/{total} câu",
+      "attemptDeadline": "Thời điểm kết thúc lần làm bài"
+    },
+    "draft": {
+      "warningTitle": "Câu trả lời chưa được lưu",
+      "warningDescription": "Đừng tải lại hoặc đóng trang nếu cần giữ các thay đổi này. Tự lưu từng phần sẽ được kết nối ở Sprint 2.",
+      "sprint2Note": "Bản xem trước Sprint 1 — chưa kết nối tự lưu",
+      "confirmLeave": "Rời trang này? Các câu trả lời đã thay đổi trong bản xem trước Sprint 1 sẽ bị mất."
+    },
+    "states": {
+      "checkingAuth": "Đang kiểm tra tài khoản…",
+      "checkingSession": "Đang kiểm tra quyền sử dụng tab này…",
+      "timedOut": "Lần làm bài đã hết thời gian",
+      "alreadySubmitted": "Lần làm bài này đã kết thúc",
+      "resultSprint4": "Màn hình kết quả sẽ được kết nối trong Sprint 4.",
+      "starting": "Đang mở bài làm…"
+    },
+    "errors": {
+      "invalidAssignment": "Đường dẫn này chứa mã bài tập không hợp lệ.",
+      "studentOnly": "Chỉ học sinh đã đăng nhập mới có thể mở lần làm bài này.",
+      "startFailedTitle": "Không thể mở bài làm",
+      "startFailedDescription": "Endpoint máy chủ có thể chưa được triển khai. Giao diện không giả lập hay tự tạo bài làm ở phía trình duyệt.",
+      "introLoadFailed": "Chưa tải được thông tin bài tập. Bạn vẫn có thể thử bắt đầu/tiếp tục; máy chủ phải tự xác thực quyền truy cập.",
+      "retryIntro": "Tải lại thông tin"
+    },
+    "paper": {
+      "questionFallback": "Câu hỏi",
+      "answer": "Câu trả lời",
+      "true": "Đúng",
+      "false": "Sai",
+      "blank": "Ô trống {index}",
+      "sectionFallback": "Phần {index}",
+      "unsupportedType": "Loại câu hỏi này chưa được trình bày trong giao diện làm bài hiện tại.",
+      "matchingPoolMissing": "Không tìm thấy nhóm đáp án dùng chung của câu hỏi này.",
+      "types": {
+        "SINGLE_CHOICE": "Chọn một đáp án",
+        "MULTIPLE_CHOICE": "Chọn nhiều đáp án",
+        "TRUE_FALSE": "Đúng / sai",
+        "FILL_IN_BLANK": "Điền vào chỗ trống",
+        "TYPE_ANSWER": "Tự nhập đáp án",
+        "MATCHING": "Nối đáp án",
+        "CLOZE": "Điền từ vào đoạn văn",
+        "UNKNOWN": "Câu hỏi"
+      }
     }
   }
 }

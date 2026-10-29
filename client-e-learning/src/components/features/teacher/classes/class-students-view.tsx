@@ -4,10 +4,12 @@ import type { ClassStudentsViewProps } from "@/types/student";
 import { Link } from "@/i18n/navigation";
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useTranslations } from "next-intl";
 import { classService } from "@/services/class.service";
 import { studentService } from "@/services/student.service";
 
 export function ClassStudentsView({ classId }: ClassStudentsViewProps) {
+  const t = useTranslations("teacher.classes.classStudents");
   const qc = useQueryClient();
   const [search, setSearch] = useState("");
 
@@ -77,7 +79,11 @@ export function ClassStudentsView({ classId }: ClassStudentsViewProps) {
     if (activeClass) {
       if (
         window.confirm(
-          `Transfer ${selected.fullName} from ${activeClass.name} to ${className ?? "this class"}? The old membership will remain as history.`,
+          t("transferConfirm", {
+            studentName: selected.fullName,
+            oldClass: activeClass.name,
+            newClass: className ?? "this class",
+          }),
         )
       ) {
         transfer.mutate(studentId);
@@ -97,23 +103,23 @@ export function ClassStudentsView({ classId }: ClassStudentsViewProps) {
           href="/teacher/classes"
           className="text-body-sm font-bold text-primary"
         >
-          ← Classes
+          {t("back")}
         </Link>
         <h1 className="mt-2 text-ui-3xl font-extrabold">
-          {className || "Class"} students
+          {className ? t("title", { name: className }) : t("titleFallback")}
         </h1>
       </div>
 
       <div className="flex flex-col gap-3 sm:flex-row">
         <input
-          aria-label="Search class students"
+          aria-label={t("search")}
           value={search}
           onChange={(event) => setSearch(event.target.value)}
-          placeholder="Search students..."
+          placeholder={t("search")}
           className="h-10 flex-1 rounded-md border border-border-color px-3"
         />
         <select
-          aria-label="Add or transfer student"
+          aria-label={t("addOrTransfer")}
           value=""
           disabled={pending}
           onChange={(event) => {
@@ -123,7 +129,7 @@ export function ClassStudentsView({ classId }: ClassStudentsViewProps) {
           }}
           className="h-10 rounded-md border border-border-color px-3 sm:w-72"
         >
-          <option value="">Add or transfer student...</option>
+          <option value="">{t("addOrTransfer")}</option>
           {available.map((student) => {
             const activeClass = student.classes.find(
               (membership) => membership.status === "ACTIVE",
@@ -131,7 +137,7 @@ export function ClassStudentsView({ classId }: ClassStudentsViewProps) {
             return (
               <option key={student.id} value={student.id}>
                 {student.fullName}
-                {activeClass ? ` · Transfer from ${activeClass.name}` : ""}
+                {activeClass ? t("transferFrom", { className: activeClass.name }) : ""}
               </option>
             );
           })}
@@ -140,18 +146,17 @@ export function ClassStudentsView({ classId }: ClassStudentsViewProps) {
 
       {(add.isError || transfer.isError || remove.isError) && (
         <p role="alert" className="text-body-sm text-red-600">
-          The class membership could not be updated. Check the student&apos;s
-          current class and try again.
+          {t("membershipError")}
         </p>
       )}
 
       <div className="overflow-hidden rounded-md border border-border-color bg-card-bg">
         <div className="divide-y divide-border-color">
           {members.isLoading ? (
-            <p className="p-6 text-neutral-muted">Loading...</p>
+            <p className="p-6 text-neutral-muted">{t("loading")}</p>
           ) : list.length === 0 ? (
             <p className="p-6 text-neutral-muted">
-              No active students in this class yet.
+              {t("empty")}
             </p>
           ) : (
             list.map((student) => (
@@ -172,7 +177,7 @@ export function ClassStudentsView({ classId }: ClassStudentsViewProps) {
                   disabled={remove.isPending}
                   className="text-body-sm font-bold text-red-600"
                 >
-                  Remove
+                  {t("remove")}
                 </button>
               </div>
             ))

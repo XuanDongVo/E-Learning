@@ -16,7 +16,10 @@ public final class SingleChoiceHandler extends AbstractQuestionTypeHandler {
         return DefinitionValidation.ready();
     }
     public AnswerParseResult parseAndValidate(QuestionSpec s, RawAnswer raw) {
-        requireType(s); String v = text(raw == null ? null : raw.value()); if (v.isBlank()) return AnswerParseResult.invalid("answer.required");
+        requireType(s);
+        if (raw == null || raw.unanswered()) return AnswerParseResult.unansweredResult();
+        String v = text(raw.value());
+        if (v.isBlank()) return AnswerParseResult.unansweredResult();
         SingleChoiceSpec q = (SingleChoiceSpec) s;
         if (q.choices().stream().noneMatch(c -> c.key().equalsIgnoreCase(v))) return AnswerParseResult.invalid("answer.option.invalid");
         return AnswerParseResult.valid(new ValidatedAnswer(type(), q.choices().stream().filter(c -> c.key().equalsIgnoreCase(v)).findFirst().orElseThrow().key()));

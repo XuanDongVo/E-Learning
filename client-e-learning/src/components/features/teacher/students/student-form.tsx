@@ -21,6 +21,7 @@ const emptyGuardian: StudentGuardianRequest = {
 };
 export function StudentForm({ onSuccess, onCancel }: StudentFormProps) {
   const tErrors = useTranslations("errors");
+  const t = useTranslations("teacher.students.form");
   const { data: classesData } = useQuery({
     queryKey: ["classes"],
     queryFn: classService.list,
@@ -56,9 +57,9 @@ export function StudentForm({ onSuccess, onCancel }: StudentFormProps) {
       className="space-y-5 rounded-[var(--radius-md)] border border-border-color bg-card-bg p-5"
     >
       <div>
-        <h2 className="text-ui-xl font-extrabold">Add student</h2>
+        <h2 className="text-ui-xl font-extrabold">{t("title")}</h2>
         <p className="mt-1 text-body text-neutral-muted">
-          Create the account and assign the student to a class.
+          {t("subtitle")}
         </p>
       </div>
       {error && (
@@ -71,7 +72,7 @@ export function StudentForm({ onSuccess, onCancel }: StudentFormProps) {
       )}
       <div className="grid gap-4 md:grid-cols-2">
         <label className="text-body font-bold">
-          Full name
+          {t("fullName")}
           <input
             required
             value={form.fullName}
@@ -80,7 +81,7 @@ export function StudentForm({ onSuccess, onCancel }: StudentFormProps) {
           />
         </label>
         <label className="text-body font-bold">
-          Email
+          {t("email")}
           <input
             required
             type="email"
@@ -90,7 +91,7 @@ export function StudentForm({ onSuccess, onCancel }: StudentFormProps) {
           />
         </label>
         <label className="text-body font-bold">
-          Temporary password
+          {t("password")}
           <input
             required
             minLength={6}
@@ -101,7 +102,7 @@ export function StudentForm({ onSuccess, onCancel }: StudentFormProps) {
           />
         </label>
         <label className="text-body font-bold">
-          Class
+          {t("assignClass")}
           <select
             required
             value={form.classId || ""}
@@ -109,7 +110,7 @@ export function StudentForm({ onSuccess, onCancel }: StudentFormProps) {
             className="mt-2 h-10 w-full rounded-md border border-border-color px-3 font-normal"
           >
             <option value="" disabled>
-              Select class
+              {t("selectClass")}
             </option>
             {classes.map((c) => (
               <option key={c.id} value={c.id}>
@@ -119,7 +120,7 @@ export function StudentForm({ onSuccess, onCancel }: StudentFormProps) {
           </select>
         </label>
         <label className="text-body font-bold">
-          Date of birth
+          {t("dateOfBirth")}
           <input
             type="date"
             value={form.dateOfBirth || ""}
@@ -128,7 +129,7 @@ export function StudentForm({ onSuccess, onCancel }: StudentFormProps) {
           />
         </label>
         <label className="text-body font-bold">
-          Gender
+          {t("gender")}
           <select
             value={form.gender || ""}
             onChange={(e) =>
@@ -136,14 +137,14 @@ export function StudentForm({ onSuccess, onCancel }: StudentFormProps) {
             }
             className="mt-2 h-10 w-full rounded-md border border-border-color px-3 font-normal"
           >
-            <option value="">Prefer not to say</option>
-            <option value="MALE">Male</option>
-            <option value="FEMALE">Female</option>
-            <option value="OTHER">Other</option>
+            <option value="">{t("selectGender")}</option>
+            <option value="MALE">{t("genderMale")}</option>
+            <option value="FEMALE">{t("genderFemale")}</option>
+            <option value="OTHER">{t("genderOther")}</option>
           </select>
         </label>
         <label className="text-body font-bold md:col-span-2">
-          Student phone
+          {t("phone")}
           <input
             value={form.phone || ""}
             onChange={(e) => set("phone", e.target.value)}
@@ -152,10 +153,10 @@ export function StudentForm({ onSuccess, onCancel }: StudentFormProps) {
         </label>
       </div>
       <div className="border-t border-border-color pt-4">
-        <h3 className="font-extrabold">Guardian</h3>
+        <h3 className="font-extrabold">{t("guardian")}</h3>
         <div className="mt-3 grid gap-4 md:grid-cols-2">
           <label className="text-body font-bold">
-            Name
+            {t("guardianName")}
             <input
               required
               value={form.guardians?.[0]?.fullName || ""}
@@ -171,7 +172,7 @@ export function StudentForm({ onSuccess, onCancel }: StudentFormProps) {
             />
           </label>
           <label className="text-body font-bold">
-            Phone
+            {t("guardianPhone")}
             <input
               required
               value={form.guardians?.[0]?.phone || ""}
@@ -194,13 +195,13 @@ export function StudentForm({ onSuccess, onCancel }: StudentFormProps) {
           onClick={onCancel}
           className="h-10 rounded-md border border-border-color px-4 font-bold"
         >
-          Cancel
+          {t("cancel")}
         </button>
         <button
           disabled={saving}
           className="h-10 rounded-md bg-primary px-4 font-bold text-primary-foreground"
         >
-          {saving ? "Creating..." : "Create student"}
+          {saving ? t("submitting") : t("submit")}
         </button>
       </div>
     </form>

@@ -1,142 +1,213 @@
 # Current Implementation State
 
-**Audit date:** 2026-10-23  
-**Branch:** `refactor/teacher-content-ui-routing`  
-**Application-code audit baseline:** `7bb5bb43bde786431c85ba0ca1d0c350cad684f4` (the application code was not fully re-audited after this baseline; later commits in this branch were documentation changes).  
-**Purpose:** canonical implementation truth for AI agents. This file records what is actually present in the branch; accepted ADRs remain the source of product decisions, while this file is the source of current implementation status.
+**Audit date:** 2026-10-27  
+**Branch:** `feature/student-assignment-attempt`  
+**Scope:** current source state after Sprint 0 contract implementation and session-policy rebaseline. This file records implementation truth; no runtime/build/browser verification was executed by these documentation changes.
 
 ## 1. Authority model
 
-Use this order when resolving project knowledge:
-
 1. Accepted ADRs = approved product/architecture decisions.
 2. `.agent/CURRENT_STATE.md` = current implementation state on this branch.
-3. Active phase/spec/architecture documents = intended implementation contract, updated to match the current state.
+3. Active phase/spec/architecture documents = intended implementation contract.
 4. `PROGRESS.md` = concise work log and verification record.
-5. Historical audits/plans = traceability only; never treat an old audit date as current state.
-6. Code = final authority for what physically exists when documentation and code disagree.
-
-A document must not claim that a target architecture is implemented merely because an ADR or plan accepts it.
+5. Historical audits/plans = traceability only.
+6. Code = final authority when documentation and code disagree.
 
 ## 2. Repository baseline
 
 - Frontend: Next.js + React + TypeScript + Tailwind CSS.
 - Backend: Spring Boot + Java 21 + JPA + Flyway + PostgreSQL.
-- Current highest Flyway migration on this branch: **V42**.
-- Applied migrations must never be edited; future schema changes start at the next unused version after a fresh migration-directory audit.
-- Current branch has no `assessment-attempt` backend feature package and no `AssessmentAttempt` runtime implementation.
+- V43 AssessmentAttempt schema was reported applied by the project owner and remains immutable; V45 migrates the Attempt duration column to minutes.
+- `assessmentattempt` contains V43 entities/repositories, contract DTOs, and a partial getIntro/startOrResume + snapshot implementation. Autosave, submit, timeout finalization and grading remain incomplete.
 
 ## 3. Phase status
 
 | Area | Current state | Classification |
 |---|---|---|
 | Phase 0–2 | Foundation, auth/users and classes exist | Implemented baseline |
-| Phase 3 Content | Grade → Unit → Section → Topic → QuestionBank → Question CRUD/preview/completeness/hint | Implemented baseline; semantic Question Engine migration is still partial |
+| Phase 3 Content | Grade → Unit → Section → Topic → QuestionBank → Question CRUD/preview/completeness/hint | Implemented baseline; semantic Question Engine migration still partial |
 | Phase 4 Activity | Unit-scoped Activity, banks/distribution, modes, strategies, readiness, preview and lifecycle | Implemented baseline |
-| Phase 5 Assignment | Assignment, Grade ownership, class target snapshots, schedule, whole-attempt time limit, answer/score display settings, Composition | Implemented authoring baseline; formal runtime attempt/scoring is not implemented |
+| Phase 5 Assignment | Assignment, Grade ownership, class target snapshots, schedule, whole-attempt time limit, answer/score display settings, Composition | Authoring baseline plus initial Attempt start/resume slice; scoring incomplete |
 | Phase 6 Student Management | Student/class/profile management | Done |
-| Phase 7 Scope A | ActivitySession runtime exists with mode/strategy selection, per-question Try Hard timer, Practice retry/hint behavior, snapshot payload persistence | Implemented, but Question Engine integration and verification are incomplete |
-| Phase 7 Scope B | Assignment Composition authoring is implemented; AssessmentAttempt, autosave answers, timeout scoring and analytics are not implemented | In progress / not complete |
-| Phase 8+ | Analytics, XP/ranking, dashboard/reporting work not complete as formal phases | Future |
+| Phase 7 Scope A | ActivitySession runtime exists | Implemented, but Question Engine integration/verification incomplete |
+| Phase 7 Scope B | Assignment authoring + V43/V45 runtime schema + initial start/resume slice | **Partial; runtime not fully verified** |
 
-## 4. Assignment implementation truth
+## 4. Sprint 0 — Contract Freeze / Foundation
 
-### Implemented
+### Backend completed
 
-- Assignment owns AssignmentQuestion records; AssignmentQuestion has no product-order `position` field.
-- Composition uses ordered `assignment_sections` and `assignment_items` with persisted positions.
-- Existing assignments were backfilled deterministically from `question_id ASC` into Composition.
-- Composition GET/PUT API exists.
-- Builder persistence uses backend APIs rather than the former localStorage repository.
-- Builder is the canonical authoring route reached from Assignment list/create flows; legacy assignment routes redirect to it.
-- Assignment-specific points/required/example flags live on Composition items.
-- `show_answers_after_submit`, `show_score_after_submit` and `show_points_per_question` exist on Assignment.
-- Server publish readiness is enforced in `AssignmentService.updateStatus`: metadata, class/grade/year consistency, schedule, whole-attempt time limit, question completeness, Composition structure/order, ownership, block payloads and positive total scored points are checked server-side.
-- Assignment time limit is validated as a whole-attempt setting and must be greater than one minute.
-- Grade ownership plus explicit class IDs are the current recipient model; do not describe the old recipient polymorphism as current.
-- V40 contains the Grade/class-recipient refactor; V41 contains the column rename correction; V42 enforces the time-limit constraint.
+- Added AssessmentAttempt-specific stable error codes to `ErrorCode.java`.
+- Added runtime DTOs for safe runtime projection, question projection, incremental answer save, submit, result and visibility-aware result questions. Session claim/heartbeat DTOs were removed when ADR 0027 simplified the MVP policy to a stable credential without lease/takeover.
+- Expanded `SaveAttemptAnswerRequest` with `attemptQuestionId`, `expectedRevision`, `activeSessionId` and `requestId`.
+- Added `AssessmentAttemptSnapshotContract` with snapshot version 1 and stable top-level document/settings keys.
+- Restricted runtime DTO comments/contracts explicitly state that active student payloads must not expose answer keys, accepted answers, grading internals or hidden normalized values.
 
-### Not implemented / not verified
+### Frontend completed
 
-- No `AssessmentAttempt` entity/service/controller/repository exists yet.
-- No official one-attempt-per-student Assignment runtime exists yet.
-- No immutable Assignment attempt snapshot exists yet.
-- No autosaved student Assignment answers or idempotent submit flow exists yet.
-- No server-side automatic Assignment score calculation on submit/timeout exists yet.
-- No persisted Assignment per-part grade/normalized-submission analytics exists yet.
-- The accepted hard-lock-after-first-attempt policy cannot be runtime-enforced until AssessmentAttempt exists.
-- `show_score_after_submit` is modeled/configured, but the runtime that calculates and conditionally exposes the score is not implemented.
+- Added `assessmentAttempt.types.ts`, API boundary, state machine and English/Vietnamese i18n.
+- TypeScript runtime types were aligned with the flat Java runtime DTO contract; `required` is not part of the student runtime question contract because all questions are skippable.
 
-## 5. ActivitySession implementation truth
+### Sprint 0 intentionally NOT implemented
 
-### Implemented
+- No controller endpoints.
+- No `startOrResume` service implementation at the time of the Sprint 0 baseline.
+- No snapshot assembly at the time of the Sprint 0 baseline.
+- No active-class authorization implementation for Assignment Attempt.
+- No autosave persistence/idempotency implementation.
+- No session runtime implementation.
+- No grading/submit/timeout implementation.
+- No student Attempt UI screen yet.
+- No timer/autosave/submit/result components yet.
 
-- ActivitySession is a separate aggregate from Assignment work.
-- Student start validates published/readiness/grade access and resolves concrete mode and selection strategy.
-- Multiple available strategies require explicit student choice; the concrete strategy is stored on ActivitySession.
-- Existing open sessions are abandoned when a new run starts.
-- Selected questions are persisted with snapshot schema version, content revision and serialized snapshot payload.
-- Current ActivitySession answer/hint/reveal code reads the saved snapshot payload for the active question.
-- Practice has no timer, one retry, optional hint and final reveal behavior.
-- Try Hard uses a per-question deadline and life handling.
+## 5. Session ownership — accepted design, not yet implemented
 
-### Remaining boundary
+ADR 0027 is now the authoritative Phase 7B session policy.
 
-- `ActivitySessionQuestion` still retains a live `Question` relation alongside snapshot fields.
-- `ActivitySessionService` still contains type-specific answer checking/reveal branches instead of delegating all semantic operations to the canonical Question Engine.
-- Full snapshot completeness, migration/legacy-session rollout and end-to-end leakage/runtime verification are not yet proven by a recorded current CI/browser run.
+- One active browser tab may operate an Attempt.
+- Same-browser coordination uses Web Locks API with an exclusive lock and `ifAvailable: true`; a second tab fails fast instead of waiting.
+- A stable logical session credential is persisted for recovery so refresh, browser close/reopen and network interruption can resume the same Attempt when the credential remains available.
+- Backend validates the credential on every mutation and never silently replaces it for a second tab/device.
+- No heartbeat cadence, stale threshold or automatic takeover exists in the MVP design.
+- `TAB_HIDDEN` and `FULLSCREEN_EXIT` remain lightweight events; `SESSION_TAKEOVER` is not emitted by the MVP runtime even though V43 can accept the legacy value.
+- If site data/credential is cleared or unavailable, the runtime returns session-lost/recovery-required rather than silently creating a new session.
 
-## 6. Question Engine implementation truth
+This is a design decision only. Web Lock integration, durable credential handling and backend verification are not implemented yet.
 
-The current server contains a real Question Engine package, not merely a proposal. It includes:
+## 6. Assignment implementation truth
 
-- `QuestionSpec`, `RawAnswer`, `ValidatedAnswer`, `AnswerParseResult` and `GradeResult` domain models.
-- Handler/registry infrastructure.
-- Handlers/specs for SINGLE_CHOICE, MULTIPLE_CHOICE, TRUE_FALSE, FILL_IN_BLANK, TYPE_ANSWER, MATCHING and CLOZE.
-- Focused engine/compound tests and request-factory tests.
-- Question persistence/spec mapping classes remain in the feature layer.
+Implemented authoring remains unchanged: Composition owns order, AssignmentQuestion has no product-order position, whole-attempt time limit, target snapshots, independent score/answer visibility, server publish readiness and V40–V42 assignment fixes.
 
-The implementation is **partial**, not complete D1–D8 integration. Activity and Assignment feature services still contain semantic branches and the full persistence/round-trip/authoring/runtime contract for MATCHING/CLOZE is not yet verified end-to-end.
+Partially implemented: official runtime start/resume, immutable initial snapshot and safe student projection. Not implemented: autosave, grading, timeout finalization, result visibility enforcement and hard lock after first attempt.
 
-## 7. Question/content UI implementation truth
+## 7. Question Engine implementation truth
 
-Current canonical teacher content routes on this branch are:
-
-```text
-/teacher/content
-/teacher/content/units/:unitId
-/teacher/content/sections/:sectionId
-/teacher/content/topics/:topicId
-/teacher/content/question-banks
-/teacher/content/question-banks/:bankId
-/teacher/content/questions/:questionId
-```
-
-The global Question Banks screen is nested under the Content navigation group. The current routing work intentionally keeps Question Bank and Question Editor under the `/teacher/content/...` namespace. Do not introduce `/teacher/question-banks` or `/teacher/questions` unless a new owner decision explicitly changes this contract.
-
-The current Question Bank UI work includes Explorer retry states, Topic bank lifecycle/filter improvements, Question completeness filtering/pagination, preview accessibility, breadcrumbs and global Question Bank browsing. Validation gaps remain for full browser/navigation regression and complete lifecycle coverage.
+Question Engine and all seven handlers exist structurally. `AnswerParseResult` now distinguishes `VALID`, `INVALID`, and `UNANSWERED`; handlers return `UNANSWERED` for empty submissions and `INVALID` for malformed payloads. Raw list payloads preserve null elements until handler validation so malformed input can be rejected at the domain boundary. `QuestionEngine` and handler API signatures remain unchanged. ActivitySession still has legacy grading/reveal branches; MATCHING cross-resource pool identity validation and complete authoring→snapshot→runtime grading verification remain open. Do not label the Question Engine end-to-end complete.
 
 ## 8. Error contract / localization truth
 
-- Backend business errors use `AppException(ErrorCode.X)` and `GlobalExceptionHandler` exposes stable error codes.
-- `ErrorCode.java` contains the authoritative server code vocabulary; frontend `error.json` is expected to cover that vocabulary.
-- Frontend `AppError` resolves translations directly as `errors.<backendCode>`; the removed `explicitMessageKeys`/`inferMessageKey`/`appErrorMessageKey` indirection is not part of the current architecture.
-- Error-code/i18n parity is a required audit item whenever `ErrorCode` changes.
+- Backend business errors use `AppException(ErrorCode.X)` and `GlobalExceptionHandler` exposes stable codes.
+- `ErrorCode.java` is authoritative.
+- Frontend `AppError` resolves `errors.<backendCode>`.
+- Error-code/i18n parity is mandatory whenever `ErrorCode` changes.
 
-## 9. UI/documentation truth
+## 9. Routing / UI truth
 
-- `.agent/ui/QUESTION_BANK_QUESTION_MANAGEMENT_BLUEPRINT.md` and `QUESTION_BANK_UI_PHASE_PLAN.md` are active planning documents for the current content UI work.
-- Question Editor redesign/autosave refactor is deliberately separate from the current Content UI routing/bank work.
-- Historical UI audit checklists may remain incomplete until browser validation is actually executed; an unchecked validation item is not evidence of a code defect.
+Canonical teacher content routes remain under `/teacher/content/...`. Student Assignment Attempt UI has a contract ownership target under `features/student/assignment-attempt`; no route was added in Sprint 0.
 
 ## 10. Verification rule
 
-As of this audit, the branch has no recorded combined CI status on the audited HEAD. Therefore documentation must not say the current HEAD is fully verified. A future validation run must record the exact commit, workflow/run, backend tests, frontend lint/tests/typecheck/build and any browser/runtime checks.
+Documentation and contract changes are not runtime verification. No backend tests, frontend lint/typecheck/build, Flyway validation, browser E2E or current-HEAD CI run was executed by this rebaseline. Do not call the runtime verified until exact test/build/browser evidence exists for the current HEAD.
 
-## 11. Immediate next documentation-driven gates
+## 11. Next gate
 
-1. Keep this file current after every substantive implementation change.
-2. Rebaseline `PROGRESS.md` from this file instead of appending another historical continuation block.
-3. Update active architecture/spec files whose status claims predate V31–V42.
-4. Treat `AssessmentAttempt` as the major remaining Phase 7B feature; do not document it as existing.
-5. Keep Content UI routing under `/teacher/content/...` until explicitly changed by an owner decision.
+Next gate:
+1. Run backend compilation/tests and Flyway validation against the current HEAD.
+2. Verify the start/resume snapshot shape, answer-key leakage and Matching/POOL references.
+3. Verify the new answer-payload adapter against the actual Student UI contract, especially the documented Matching `{ pairs }` versus current `{ selectedKey }` mismatch; then run backend compilation/tests.
+4. Complete and verify answer autosave/revision/idempotency and per-Attempt concurrency on the current HEAD.
+5. Implement submit/timeout finalization and Question Engine grading, then enforce Assignment authoring hard-lock after first Attempt.
+
+The next implementation must not introduce heartbeat/stale takeover merely because older contract DTOs or reference code contain those concepts.
+
+## 12. Session-policy rebaseline — 2026-10-26
+
+- Added ADR 0027: `Single Active Tab with Resumable AssessmentAttempt`.
+- Updated active Student Attempt specification and UI/runtime blueprint to remove heartbeat/stale takeover from MVP ownership semantics.
+- The existing V43 `active_session_id` remains useful as the stable logical credential; it is not a time-based lease.
+- `last_activity_at` may be maintained from accepted runtime operations, but it is not used to transfer ownership.
+
+
+## 13. Sprint 1 — initial contract alignment (2026-10-26)
+
+**Status: Sprint 1 frontend scaffold + server method shells added; backend business logic and end-to-end runtime remain unimplemented/unverified.**
+
+Completed contract changes on this branch:
+- Added accepted ADR 0027 for Single Active Tab with Resumable AssessmentAttempt.
+- Added `StartOrResumeAttemptRequest`; the client generates/persists the UUID credential before the first request.
+- Removed `activeSessionId` from the generic Java `AttemptRuntimeResponse` and corresponding TypeScript runtime DTO. The credential must never be echoed in a runtime response.
+- Changed the frontend service contract to one `startOrResume(assignmentId, { activeSessionId })` POST; removed frontend heartbeat and claim-session calls.
+- Removed stale heartbeat/takeover wording from active Sprint 1/3 blueprint sections.
+
+Still not implemented:
+- Student authorization/Assignment target and schedule validation in the runtime service.
+- Stable credential registration and verification in the backend.
+- Active-class lookup and class snapshot.
+- Immutable Composition/settings/question snapshot builder and answer-safe runtime projection.
+- Backend business logic in `getIntro` and `startOrResume` was added in the 2026-10-27 implementation slice; compilation and runtime behavior are not yet verified.
+- Start/resume integration, answer autosave, timer, submit/result logic, and end-to-end tests.
+
+Verification: these are source/contract changes only. Backend compilation, frontend typecheck/build, tests, Flyway validation and browser/E2E checks were not run for this slice. The latest available CI evidence reviewed previously was on an older commit and failed; source-level changes are not a substitute for rerunning Gate A on the exact current HEAD.
+
+
+## 14. Sprint 1 readiness decision — 2026-10-26
+
+- **Contract/preparation work:** may proceed; the heartbeat/claim mismatch and credential leakage from the generic runtime DTO have been corrected.
+- **Full runtime implementation:** not GO until Gate A in .agent/plans/PHASE_7B_IMPLEMENTATION_MIGRATION_PLAN.md is passed against the exact current HEAD. The latest available CI run at review time was on an older SHA and failed; no current-HEAD run was found.
+- Required next gate: backend test/compile + Flyway validation, frontend tests/typecheck/build, and verification of existing ActivitySession/Question Engine/snapshot security before building Start/Resume runtime on top.
+
+
+## 15. Sprint 1 scaffold update — 2026-10-26
+
+**Scope delivered by assistant: frontend scaffolding + server signatures only. Server business logic is intentionally owner-owned.**
+
+Frontend source added:
+- Route: `/student/assignments/:assignmentId`.
+- Student-safe Intro API contract: `GET /v1/assignments/:assignmentId/assessment-attempt/intro`.
+- Start/Resume API contract: `POST /v1/assignments/:assignmentId/assessment-attempt`.
+- Web Locks exclusive tab lock with `ifAvailable: true`, fail-fast conflict and unsupported-browser states.
+- IndexedDB stable UUID credential store; client persists before the first request.
+- Student Paper for composition blocks and common question types; bilingual section/block labels.
+- Local-only answer draft warning and unsaved-navigation guard. No save endpoint is called in Sprint 1.
+
+Backend source added:
+- `AttemptIntroResponse` safe DTO.
+- `getIntro(assignmentId, studentId)` and `startOrResume(assignmentId, studentId, request)` service method stubs.
+- Controller method shells that extract the JWT subject and delegate.
+- The current implementation has initial getIntro/startOrResume logic; compilation and runtime behavior are not yet verified.
+
+Not yet done:
+- Actual assignment/target/schedule/role authorization, ACTIVE class attribution, Attempt creation concurrency, credential comparison, snapshot builder, restricted-answer projection.
+- Autosave, server timer enforcement, submit/grading/results, Student assignment list integration.
+- Build/test/browser/E2E verification on the current HEAD. The page is a scaffold, not a working runtime until the owner implements the stubs.
+
+Important integration risk for the later code review:
+- Current Question Engine handlers consume type-specific `RawAnswer` values (e.g. single choice and Matching expect a string; Multiple Choice expects a collection; Cloze has structured parts), while the frontend stores structured `answerPayload` objects such as `{ selectedKey }`, `{ selectedKeys }`, `{ value }`, `{ pairs }`, and `{ values }`. The backend implementation must define and test an explicit adapter from persisted JSON payload to canonical `RawAnswer` for every question type. Do not grade directly from a UI-shaped JSON object without normalization.
+- The student runtime projection must omit correct keys, accepted answers, explanation/grading internals where restricted; a raw serialized `QuestionSpec` must not be returned to the client without a dedicated safe projection.
+
+
+## Sprint 1 implementation update — 2026-10-27
+
+- V43 was already applied and remains unchanged. V45 renames assessment_attempts.time_limit_seconds to time_limit_minutes and converts legacy stored seconds to minutes.
+- AssessmentAttempt entity and runtime response now use minutes. deadline_at is calculated once as started_at + time_limit_minutes and is preserved on resume.
+- getIntro validates active Student, active class and class target; its question count comes from Composition QUESTION items rather than the legacy AssignmentQuestion count.
+- startOrResume uses get-or-create without an Assignment-wide lock. A separate transactional creation service builds the snapshot. The unique constraint uq_assessment_attempt_assignment_student arbitrates concurrent creation; only a conflict on that named constraint is re-read and recovered.
+- The snapshot contains ordered Composition, settings, question render specs and separate grading data. The runtime projection returns only the student portion of each question snapshot.
+- Timeout auto-submit/finalization, answer autosave/revision/idempotency, Question Engine grading, result visibility and Assignment authoring hard-lock remain incomplete. Matching/POOL resolution and all question-type projections require integration tests.
+- No current-HEAD compilation, automated tests, Flyway validation, frontend build or browser/E2E verification has been run.
+
+
+## Sprint 1 implementation update — Matching and Answer Pool validation (2026-10-28)
+
+- `AssignmentCompositionService` now resolves Matching definitions against Answer Pool blocks in the same Section using stable `poolKey` and entry IDs, not entry text.
+- Composition save rejects a Matching question with no resolvable pool, a missing correct entry, an entry ID absent from that pool, blank/missing entry IDs, duplicate entry IDs, or empty entry text.
+- Legacy saved Pool blocks without `poolKey` can be resolved by their persisted Composition item ID (`b-{itemId}`) when that matches the existing frontend logical-ID convention.
+- Builder validation now flags blank/duplicate Answer Pool entry IDs, missing correct entries, and Matching-to-Pool links that cross Sections.
+- Scope limitation: current Matching contract still models one prompt and one `correctEntryId` per question. This change validates the existing single-answer relationship; it does not implement a multi-row Matching matrix, general entry-to-row pairs, `shuffleAnswers`, or the separate Content Sharing reference table.
+- Verification: tests/build/typecheck/browser E2E were not run; no tests were added or modified per owner instruction.
+
+
+## 16. Matching Answer Pool runtime validation — 2026-10-28
+
+- `AssessmentAttemptAnswerService` validates a saved MATCHING draft's `selectedKey` against the Answer Pool entries in the immutable Attempt document snapshot, resolved by the question snapshot's `poolId` and restricted to the question's snapshotted Section.
+- Empty `selectedKey` is accepted as an unanswered draft; a non-empty ID must exist in the referenced POOL. The client cannot provide its own pool list to satisfy validation.
+- The original pool-membership check was subsequently integrated with Question Engine parsing for all seven types in Section 17. Matching's Student UI payload contract still needs confirmation; submit/finalization and grading remain unimplemented.
+- Verification: no backend compile, tests, frontend typecheck/build, Flyway validation, or browser/E2E run was performed. No tests were added or modified.
+## 17. Assignment Attempt answer validation — 2026-10-28
+
+- `AssessmentAttemptAnswerService` now injects `QuestionEngine` and adapts persisted answer payloads to `RawAnswer` before saving a draft.
+- The adapter reconstructs `QuestionSpec` from the immutable question snapshot's student spec and grading data, then calls `parseAndValidate`. It never calls `grade` during autosave.
+- `INVALID` payloads are rejected with `ASSESSMENT_ATTEMPT_INVALID_ANSWER`; both `VALID` and `UNANSWERED` are accepted so students can save partial drafts.
+- Payload fields currently mapped by the service: SINGLE_CHOICE/MATCHING → `selectedKey`; MULTIPLE_CHOICE → `selectedKeys`; TRUE_FALSE/FILL_IN_BLANK/TYPE_ANSWER → `value`; CLOZE → `values`.
+- MATCHING additionally validates the selected Answer Pool entry against the immutable document snapshot and the question's section. The Attempt creation snapshot now includes question difficulty for reconstruction; older snapshots without this field use MEDIUM only as the QuestionCommon validation context (difficulty does not affect answer parsing).
+- **Contract risk still open:** older Phase 7 notes describe Matching payloads as `{ pairs }`, while the existing Matching validator and this adapter use `{ selectedKey }` for the current single-prompt/single-correct-entry model. Confirm the actual Student UI request shape before treating Matching end-to-end as complete; do not silently adapt a multi-row `pairs` structure to the current single-answer engine.
+- Verification: source was committed, but no backend compilation/tests, frontend typecheck/build, Flyway validation, or browser/E2E verification was run. No tests were added or modified.

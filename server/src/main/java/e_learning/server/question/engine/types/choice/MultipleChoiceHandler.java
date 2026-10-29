@@ -17,16 +17,19 @@ public final class MultipleChoiceHandler extends AbstractQuestionTypeHandler {
         return DefinitionValidation.ready();
     }
     public AnswerParseResult parseAndValidate(QuestionSpec s, RawAnswer raw) {
-        requireType(s); if (raw == null || !(raw.value() instanceof List<?> list) || list.isEmpty()) return AnswerParseResult.invalid("answer.options.required");
-        List<String> values = list.stream().map(this::text).map(String::toUpperCase).toList();
-        Set<String> keys = ((MultipleChoiceSpec) s).choices().stream().map(QuestionSpec.Choice::key).map(String::toUpperCase).collect(Collectors.toSet());
+        requireType(s);
+        if (raw == null || raw.value() == null) return AnswerParseResult.unansweredResult();
+        if (!(raw.value() instanceof List<?> list)) return AnswerParseResult.invalid("answer.options.invalid");
+        if (list.isEmpty()) return AnswerParseResult.unansweredResult();
+        List<String> values = list.stream().map(this::text).map(v -> v.toUpperCase(Locale.ROOT)).toList();
+        Set<String> keys = ((MultipleChoiceSpec) s).choices().stream().map(QuestionSpec.Choice::key).map(v -> v.toUpperCase(Locale.ROOT)).collect(Collectors.toSet());
         if (values.stream().anyMatch(v -> v.isBlank() || !keys.contains(v))) return AnswerParseResult.invalid("answer.option.invalid");
         if (new HashSet<>(values).size() != values.size()) return AnswerParseResult.invalid("answer.option.duplicate");
         return AnswerParseResult.valid(new ValidatedAnswer(type(), List.copyOf(values)));
     }
     public GradeResult grade(QuestionSpec s, ValidatedAnswer a) {
-        Set<String> actual = ((List<?>) a.value()).stream().map(this::text).map(String::toUpperCase).collect(Collectors.toSet());
-        Set<String> expected = ((MultipleChoiceSpec) s).correctKeys().stream().map(String::toUpperCase).collect(Collectors.toSet());
+        Set<String> actual = ((List<?>) a.value()).stream().map(this::text).map(v -> v.toUpperCase(Locale.ROOT)).collect(Collectors.toSet());
+        Set<String> expected = ((MultipleChoiceSpec) s).correctKeys().stream().map(v -> v.toUpperCase(Locale.ROOT)).collect(Collectors.toSet());
         return gradeOne("answer", true, actual.equals(expected), String.join(",", actual.stream().sorted().toList()));
     }
 }

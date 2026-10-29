@@ -130,3 +130,10 @@ Thêm `CONTENT_SHARING` làm container Composition; container chứa ordered mem
 ### 12.4 Trạng thái xác minh
 
 Đây là audit tĩnh theo file trên nhánh được nêu. Chưa xác minh build, Flyway trên DB mới/đã có dữ liệu, end-to-end trên browser hoặc việc các API runtime thực tế đã dùng hết các type mới. Không được đánh dấu tính năng hoàn tất chỉ dựa vào sự tồn tại của spec/handler/DTO.
+
+
+## Current source audit (2026-10-25)
+
+- `AssignmentCompositionService.validateBlockPayload` requires POOL entries and nonempty text, but does not establish stable unique entry IDs or resolve Question `poolId/correctEntryId` references.
+- Builder serialization carries MATCHING `definition.matching { poolId, correctEntryId }` and CLOZE segments/blanks. DTO presence is not proof of round-trip/runtime parity.
+- See `.agent/audits/2026-10-25-question-engine-current-code-audit.md` for detailed findings and verification limits.

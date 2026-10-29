@@ -1,5 +1,6 @@
 import type { StudentsToolbarProps } from "@/types/student";
 import { Search, X } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 export function StudentsToolbar({
   search,
@@ -16,26 +17,28 @@ export function StudentsToolbar({
   onNoClassChange,
   onClear,
 }: StudentsToolbarProps) {
+  const t = useTranslations("teacher.students");
+
   return (
     <div className="space-y-3">
       <div className="flex flex-col gap-3 lg:flex-row">
         <label className="relative flex-1">
           <Search className="absolute left-3 top-3 size-4 text-neutral-subtle" />
           <input
-            aria-label="Search students"
+            aria-label={t("searchPlaceholder")}
             value={search}
             onChange={(event) => onSearchChange(event.target.value)}
-            placeholder="Search name, email, or phone"
+            placeholder={t("searchPlaceholder")}
             className="h-10 w-full rounded-[var(--radius-md)] border border-border-color bg-card-bg pl-9 pr-3 text-body outline-none focus:border-primary"
           />
         </label>
         <select
-          aria-label="Filter by class"
+          aria-label={t("allClasses")}
           value={classFilter}
           onChange={(event) => onClassChange(event.target.value)}
           className="h-10 lg:w-44 rounded-[var(--radius-md)] border border-border-color bg-card-bg px-3"
         >
-          <option value="all">All classes</option>
+          <option value="all">{t("allClasses")}</option>
           {classes.map((item) => (
             <option key={item.id} value={item.id}>
               {item.name}
@@ -43,12 +46,12 @@ export function StudentsToolbar({
           ))}
         </select>
         <select
-          aria-label="Filter by grade"
+          aria-label={t("allGrades")}
           value={gradeFilter}
           onChange={(event) => onGradeChange(event.target.value)}
           className="h-10 lg:w-44 rounded-[var(--radius-md)] border border-border-color bg-card-bg px-3"
         >
-          <option value="all">All grades</option>
+          <option value="all">{t("allGrades")}</option>
           {grades.map((item) => (
             <option key={item.id} value={item.id}>
               {item.name}
@@ -56,18 +59,18 @@ export function StudentsToolbar({
           ))}
         </select>
         <select
-          aria-label="Filter by account status"
+          aria-label={t("anyAccount")}
           value={statusFilter}
           onChange={(event) => onStatusChange(event.target.value)}
           className="h-10 lg:w-44 rounded-[var(--radius-md)] border border-border-color bg-card-bg px-3"
         >
-          <option value="all">Any account</option>
-          <option value="ACTIVE">Active</option>
-          <option value="INACTIVE">Locked</option>
+          <option value="all">{t("anyAccount")}</option>
+          <option value="ACTIVE">{t("active")}</option>
+          <option value="INACTIVE">{t("locked")}</option>
         </select>
       </div>
       <div className="flex flex-wrap items-center gap-2 text-body-sm">
-        <span className="text-neutral-muted">Quick filter</span>
+        <span className="text-neutral-muted">{t("quickFilter")}</span>
         <button
           type="button"
           onClick={() => onNoClassChange(!noClass)}
@@ -78,7 +81,7 @@ export function StudentsToolbar({
               : "border-border-color")
           }
         >
-          No active class
+          {t("noActiveClass")}
         </button>
         {(search ||
           classFilter !== "all" ||
@@ -90,7 +93,7 @@ export function StudentsToolbar({
             onClick={onClear}
             className="inline-flex items-center gap-1 text-primary"
           >
-            <X className="size-3.5" /> Clear filters
+            <X className="size-3.5" /> {t("clearFilters")}
           </button>
         )}
       </div>

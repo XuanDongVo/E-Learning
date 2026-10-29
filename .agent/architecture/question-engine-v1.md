@@ -331,3 +331,8 @@ Code hiện có `QuestionWriteRequest.definition`, `QuestionDefinitionRequest`, 
 - Xem ADR 0024 và `.agent/plans/CONTENT_SHARING_MATCHING_CLOZE_AUDIT.md` để biết hợp đồng Content Sharing: membership trong group và semantic Question–Block references là hai quan hệ riêng.
 - Các handler hiện tại chia điểm đều và trả per-part results; việc teacher override điểm part theo ADR 0026 cần contract riêng ở Composition và snapshot, không phải thay đổi canonical QuestionSpec.
 - Trước khi mở UI tạo Matching/Cloze, cần kiểm tra create/read/update mapping, student projection không lộ đáp án, runtime snapshot, submit grading, migration và E2E. Không bật chỉ dựa vào enum/spec/handler.
+
+
+## Current source audit (2026-10-25)
+
+Use `.agent/audits/2026-10-25-question-engine-current-code-audit.md` for source-level findings. Current code has registry/factory/mapper branches for seven types, but ActivitySessionService still uses legacy type-specific answer/reveal logic. MatchingSpec stores poolId/correctEntryId without resolving the POOL or validating entry membership. ClozeHandler enforces segments.size() == blanks.size() + 1, unique nonblank keys and nonempty accepted answers; older claims to the contrary are stale. End-to-end tests/builds were not run during this audit.

@@ -23,17 +23,38 @@
   --color-popover-foreground: var(--popover-foreground);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-soft: var(--primary-soft);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary-hover: var(--secondary-hover);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
+  --color-learning: var(--learning);
+  --color-learning-soft: var(--learning-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
   --color-destructive: var(--destructive);
+  --color-destructive-soft: var(--destructive-soft);
   --color-destructive-foreground: var(--destructive-foreground);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-teal: var(--teal);
+  --color-teal-soft: var(--teal-soft);
+  --color-pink: var(--pink);
+  --color-pink-soft: var(--pink-soft);
+  --color-warm-soft: var(--warm-soft);
+
+  --color-neutral-dark: var(--foreground);
+  --color-neutral-muted: var(--muted-foreground);
+  --color-neutral-subtle: var(--muted-foreground);
 
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
@@ -52,23 +73,11 @@
 
   --color-brand-soft: var(--brand-soft);
   --color-warm: var(--warm);
-  --color-warm-soft: var(--warm-soft);
-  --color-success: var(--success);
-  --color-success-soft: var(--success-soft);
-  --color-info: var(--info);
-  --color-info-soft: var(--info-soft);
   --color-background-app: var(--background);
-  --color-card-bg: var(--card);
   --color-border-color: var(--border);
-  --color-primary-light: var(--brand-soft);
+  --color-primary-light: var(--primary-soft);
   --color-secondary-light: var(--secondary);
   --color-accent-light: var(--warm-soft);
-  --color-neutral-dark: var(--foreground);
-  --color-neutral-muted: var(--muted-foreground);
-  --color-neutral-subtle: var(--muted-foreground);
-  --color-primary-hover: var(--primary-hover);
-  --color-secondary-hover: var(--secondary-hover);
-
   --color-pop-shadow: var(--pop-shadow);
   --color-ink: var(--ink);
   --color-marker: var(--marker);
@@ -77,29 +86,11 @@
   --shadow-pop: var(--elevation-md);
   --shadow-pop-lg: var(--elevation-lg);
   --shadow-pop-accent: var(--pop);
-
-  --color-practice-paper: oklch(0.985 0.02 86);
-  --color-practice-ink: oklch(0.35 0.06 253);
-  --color-practice-subtle: oklch(0.58 0.04 253);
-  --color-practice-border: oklch(0.83 0.04 82);
-  --color-practice-blue: oklch(0.56 0.19 258);
-  --color-practice-blue-dark: oklch(0.43 0.15 258);
-  --color-practice-light: oklch(0.99 0.005 85);
-  --color-practice-hint: oklch(0.965 0.025 250);
-  --color-practice-yellow: oklch(0.87 0.16 88);
-  --color-practice-shadow: oklch(0.43 0.13 280);
-  --color-practice-green: oklch(0.81 0.2 137);
-  --color-practice-good: oklch(0.47 0.13 155);
-  --color-practice-good-soft: oklch(0.94 0.05 155);
-  --color-practice-bad: oklch(0.5 0.17 26);
-  --color-practice-bad-soft: oklch(0.96 0.025 26);
-  --color-practice-overlay: oklch(0.2 0.07 260 / 65%);
 }
 
 :root {
   --radius: 0.5rem;
 
-  /* Theme colors based on warm neo/edu canvas */
   --bg: #f8f0e3;
   --bg-panel: #ffffff;
   --bg-elevated: #ffffff;
@@ -114,26 +105,25 @@
   --ink: #4f3e34;
   --ink-fg: #fffdf8;
   --pop-shadow: #e9c99a;
+  --marker: #f0a81c;
 
   --elevation-sm: 2px 2px 0 var(--pop-shadow);
   --elevation-md: 4px 4px 0 var(--pop-shadow), 0 0 0 1.5px var(--ink);
   --elevation-lg: 6px 6px 0 var(--pop-shadow), 0 0 0 1.5px var(--ink);
   --pop: 3px 3px 0 var(--pop-shadow);
 
-  /* Map core tokens to warm contrast theme */
   --background: #f8f0e3;
   --foreground: #2b2220;
-
   --card: #ffffff;
   --card-bg: #ffffff;
   --card-foreground: #2b2220;
-
   --popover: #ffffff;
   --popover-foreground: #2b2220;
 
   --primary: #f0652f;
   --primary-foreground: #ffffff;
   --primary-hover: #de5523;
+  --primary-soft: #f0652f1f;
 
   --secondary: #fff5e9;
   --secondary-foreground: #4a3f3a;
@@ -145,10 +135,24 @@
   --accent: #f0a81c;
   --accent-foreground: #2b2220;
 
+  --learning: #2f7fe0;
+  --learning-soft: #2f7fe01f;
+  --warning: #f0a81c;
+  --warning-soft: #f0a81c1f;
+  --success: #2f9a5e;
+  --success-soft: #2f9a5e1f;
+  --info: #2f7fe0;
+  --info-soft: #2f7fe01f;
   --destructive: #d93f3f;
+  --destructive-soft: #d93f3f1f;
   --destructive-foreground: #ffffff;
+  --teal: #12968a;
+  --teal-soft: #12968a1f;
+  --pink: #dd3f68;
+  --pink-soft: #dd3f681f;
+  --warm: #e2601c;
+  --warm-soft: #e2601c1f;
 
-  /* Sharp distinct border replacing faint borders */
   --border: #462d142b;
   --input: #462d1433;
   --border-input: #462d1440;
@@ -170,97 +174,48 @@
   --sidebar-ring: #f0652f8c;
 
   --brand-soft: #f0652f1f;
-  --warm: #e2601c;
-  --warm-soft: #e2601c1f;
-
-  --success: #2f9a5e;
-  --success-soft: #2f9a5e1f;
-
-  --info: #2f7fe0;
-  --info-soft: #2f7fe01f;
-
-  --text-display: 2.25rem;
-  --text-display--line-height: 1.1;
-  --text-ui-3xl: 1.625rem;
-  --text-ui-3xl--line-height: 1.2;
-  --text-ui-2xl: 1.375rem;
-  --text-ui-2xl--line-height: 1.25;
-  --text-ui-xl: 1.125rem;
-  --text-ui-xl--line-height: 1.3;
-  --text-ui-lg: 1rem;
-  --text-ui-lg--line-height: 1.35;
-  --text-page-title: 1.625rem;
-  --text-page-title--line-height: 1.2;
-  --text-section-title: 1.125rem;
-  --text-section-title--line-height: 1.3;
-  --text-card-title: 1rem;
-  --text-card-title--line-height: 1.35;
-  --text-body: 0.875rem;
-  --text-body--line-height: 1.5;
-  --text-body-sm: 0.75rem;
-  --text-body-sm--line-height: 1.45;
-  --text-label: 0.6875rem;
-  --text-label--line-height: 1.4;
-  --text-caption: 0.625rem;
-  --text-caption--line-height: 1.4;
-  --text-micro: 0.5625rem;
-  --text-micro--line-height: 1.35;
 }
 
 .dark {
   --background: oklch(0.129 0.042 264.695);
   --foreground: oklch(0.984 0.003 247.858);
-
   --card: oklch(0.208 0.042 265.755);
+  --card-bg: oklch(0.208 0.042 265.755);
   --card-foreground: oklch(0.984 0.003 247.858);
-
   --popover: oklch(0.208 0.042 265.755);
   --popover-foreground: oklch(0.984 0.003 247.858);
-
   --primary: oklch(0.929 0.013 255.508);
   --primary-foreground: oklch(0.208 0.042 265.755);
-
   --secondary: oklch(0.279 0.041 260.031);
   --secondary-foreground: oklch(0.984 0.003 247.858);
-
   --muted: oklch(0.279 0.041 260.031);
   --muted-foreground: oklch(0.704 0.04 256.788);
-
   --accent: oklch(0.279 0.041 260.031);
   --accent-foreground: oklch(0.984 0.003 247.858);
-
   --destructive: oklch(0.704 0.191 22.216);
   --destructive-foreground: oklch(0.984 0.003 247.858);
-
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
   --ring: oklch(0.551 0.027 264.364);
-
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-
-  --sidebar: oklch(0.208 0.042 265.755);
-  --sidebar-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-accent: oklch(0.279 0.041 260.031);
-  --sidebar-accent-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.551 0.027 264.364);
+  --primary-soft: oklch(0.279 0.041 260.031);
+  --learning: oklch(0.696 0.17 162.48);
+  --learning-soft: oklch(0.279 0.041 260.031);
+  --warning: oklch(0.769 0.188 70.08);
+  --warning-soft: oklch(0.279 0.041 260.031);
+  --success: oklch(0.696 0.17 162.48);
+  --success-soft: oklch(0.279 0.041 260.031);
+  --info: oklch(0.769 0.188 70.08);
+  --info-soft: oklch(0.279 0.041 260.031);
+  --destructive-soft: oklch(0.279 0.041 260.031);
+  --teal: oklch(0.696 0.17 162.48);
+  --teal-soft: oklch(0.279 0.041 260.031);
+  --pink: oklch(0.645 0.246 16.439);
+  --pink-soft: oklch(0.279 0.041 260.031);
 }
 
 @layer base {
-  * {
-    border-color: var(--color-border);
-  }
-
-  html {
-    scroll-behavior: smooth;
-  }
-
+  * { border-color: var(--color-border); }
+  html { scroll-behavior: smooth; }
   body {
     margin: 0;
     background-color: var(--color-background);
@@ -269,51 +224,28 @@
     font-size: 0.875rem;
     line-height: 1.5;
   }
+  button, input, textarea, select { font: inherit; }
+}
 
-  button,
-  input,
-  textarea,
-  select {
-    font: inherit;
-  }
+@keyframes pipo-wave {
+  50% { transform: rotate(-5deg); }
+}
+
+@keyframes pipo-bounce {
+  50% { transform: translateY(-7px); }
 }
 
 @keyframes slide-in {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-@utility animate-slide-in {
-  animation: slide-in 420ms ease-out both;
-}
-
-@utility border-ink {
-  border-color: var(--ink);
-}
-
-@utility shadow-pop-sm {
-  box-shadow: 2px 2px 0 var(--pop-shadow);
-}
-
-@utility shadow-pop {
-  box-shadow: 3px 3px 0 var(--pop-shadow);
-}
-
-@utility shadow-pop-ink {
-  box-shadow: 3px 3px 0 var(--pop-shadow), 0 0 0 1.5px var(--ink);
-}
-
-@utility shadow-pop-lg {
-  box-shadow: 5px 5px 0 var(--pop-shadow), 0 0 0 2px var(--ink);
-}
-
+@utility animate-slide-in { animation: slide-in 420ms ease-out both; }
+@utility border-ink { border-color: var(--ink); }
+@utility shadow-pop-sm { box-shadow: 2px 2px 0 var(--pop-shadow); }
+@utility shadow-pop { box-shadow: 3px 3px 0 var(--pop-shadow); }
+@utility shadow-pop-ink { box-shadow: 3px 3px 0 var(--pop-shadow), 0 0 0 1.5px var(--ink); }
+@utility shadow-pop-lg { box-shadow: 5px 5px 0 var(--pop-shadow), 0 0 0 2px var(--ink); }
 @utility card-pop {
   background-color: var(--card);
   border: 1.5px solid var(--ink);
@@ -321,15 +253,9 @@
   border-radius: 1rem;
 }
 
-
 @media (prefers-reduced-motion: reduce) {
-  html {
-    scroll-behavior: auto !important;
-  }
-
-  *,
-  *::before,
-  *::after {
+  html { scroll-behavior: auto !important; }
+  *, *::before, *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;

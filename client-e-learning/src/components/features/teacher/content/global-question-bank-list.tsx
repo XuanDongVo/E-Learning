@@ -4,6 +4,7 @@ import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { useMemo, useState, type FormEvent } from "react";
 import { useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslations } from "next-intl";
 import { Search, RotateCcw, ChevronLeft, ChevronRight, LibraryBig } from "lucide-react";
 
 import { gradeService } from "@/services/grade.service";
@@ -21,6 +22,8 @@ function numericParam(value: string | null): number | undefined {
 }
 
 export function GlobalQuestionBankList() {
+  const t = useTranslations("teacher.content.globalBanks");
+  const tCommon = useTranslations("common");
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -89,7 +92,8 @@ export function GlobalQuestionBankList() {
   const pageData = banksQuery.data?.data;
   const banks = pageData?.items ?? [];
 
-  const statusLabel = (status: string) => status === "PUBLISHED" ? "Published" : status === "ARCHIVED" ? "Archived" : "Draft";
+  const statusLabel = (status: string) =>
+    status === "PUBLISHED" ? t("status.published") : status === "ARCHIVED" ? t("status.archived") : t("status.draft");
   const statusClass = (status: string) => status === "PUBLISHED"
     ? "bg-emerald-50 text-emerald-700"
     : status === "ARCHIVED" ? "bg-slate-100 text-slate-600" : "bg-amber-50 text-amber-700";
@@ -99,13 +103,13 @@ export function GlobalQuestionBankList() {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <div className="mb-2 flex items-center gap-2 text-xs text-muted-foreground">
-            <Link href="/teacher/content" className="hover:text-foreground">Content Explorer</Link>
-            <span>/</span><span className="text-foreground">Question Banks</span>
+            <Link href="/teacher/content" className="hover:text-foreground">{t("breadcrumbExplorer")}</Link>
+            <span>/</span><span className="text-foreground">{t("breadcrumbBanks")}</span>
           </div>
-          <h1 className="text-2xl font-bold tracking-tight">Question Banks</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Browse banks across grades, units, sections and topics.</p>
+          <h1 className="text-2xl font-bold tracking-tight">{t("title")}</h1>
+          <p className="mt-1 text-sm text-muted-foreground">{t("subtitle")}</p>
         </div>
-        <div className="text-sm text-muted-foreground">{pageData?.totalElements ?? "—"} banks</div>
+        <div className="text-sm text-muted-foreground">{t("totalBanks", { count: pageData?.totalElements ?? 0 })}</div>
       </div>
 
       <section className="rounded-xl border-2 border-ink bg-card p-4 sm:p-5">
@@ -115,43 +119,43 @@ export function GlobalQuestionBankList() {
             <input
               value={searchDraft}
               onChange={(event) => setSearchDraftState({ source: search, value: event.target.value })}
-              placeholder="Search bank name or description..."
-              aria-label="Search bank name or description"
+              placeholder={t("searchPlaceholder")}
+              aria-label={t("searchPlaceholder")}
               className="h-10 w-full rounded-lg border border-input bg-background pl-9 pr-3 text-sm outline-none focus:ring-2 focus:ring-ring/30"
             />
           </label>
-          <button type="submit" className="h-10 rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground">Search</button>
+          <button type="submit" className="h-10 rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground">{t("search")}</button>
           <button type="button" onClick={resetFilters} className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border-2 border-ink px-3 text-sm font-medium hover:bg-muted">
-            <RotateCcw className="size-4" /> Reset
+            <RotateCcw className="size-4" /> {t("reset")}
           </button>
         </form>
 
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           <label className="space-y-1.5 text-xs font-semibold text-muted-foreground">
-            Grade
+            {t("grade")}
             <select value={gradeId ?? ""} onChange={(e) => updateUrl({ gradeId: e.target.value || undefined, unitId: undefined, sectionId: undefined, topicId: undefined })} className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm font-normal text-foreground">
-              <option value="">All grades</option>
+              <option value="">{t("allGrades")}</option>
               {grades.map((grade) => <option key={grade.id} value={grade.id}>{grade.name}</option>)}
             </select>
           </label>
           <label className="space-y-1.5 text-xs font-semibold text-muted-foreground">
-            Unit
+            {t("unit")}
             <select value={unitId ?? ""} disabled={!gradeId} onChange={(e) => updateUrl({ unitId: e.target.value || undefined, sectionId: undefined, topicId: undefined })} className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm font-normal text-foreground disabled:opacity-50">
-              <option value="">All units</option>
+              <option value="">{t("allUnits")}</option>
               {units.map((unit) => <option key={unit.id} value={unit.id}>{unit.code} · {unit.name}</option>)}
             </select>
           </label>
           <label className="space-y-1.5 text-xs font-semibold text-muted-foreground">
-            Section
+            {t("section")}
             <select value={sectionId ?? ""} disabled={!unitId} onChange={(e) => updateUrl({ sectionId: e.target.value || undefined, topicId: undefined })} className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm font-normal text-foreground disabled:opacity-50">
-              <option value="">All sections</option>
+              <option value="">{t("allSections")}</option>
               {sections.map((section) => <option key={section.id} value={section.id}>{section.name}</option>)}
             </select>
           </label>
           <label className="space-y-1.5 text-xs font-semibold text-muted-foreground">
-            Topic
+            {t("topic")}
             <select value={topicId ?? ""} disabled={!sectionId} onChange={(e) => updateUrl({ topicId: e.target.value || undefined })} className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm font-normal text-foreground disabled:opacity-50">
-              <option value="">All topics</option>
+              <option value="">{t("allTopics")}</option>
               {topics.map((topic) => <option key={topic.id} value={topic.id}>{topic.name}</option>)}
             </select>
           </label>
@@ -163,22 +167,21 @@ export function GlobalQuestionBankList() {
             onChange={(e) => updateUrl({ includeArchived: e.target.checked ? "true" : undefined })}
             className="size-4 rounded border-input accent-primary"
           />
-          Include archived banks
+          {t("includeArchived")}
         </label>
       </section>
 
       {banksQuery.isLoading ? (
-        <div className="rounded-xl border-2 border-ink bg-card p-12 text-center text-sm text-muted-foreground">Loading question banks…</div>
+        <div className="rounded-xl border-2 border-ink bg-card p-12 text-center text-sm text-muted-foreground">{tCommon("loading")}</div>
       ) : banksQuery.isError ? (
         <div className="rounded-xl border border-destructive/30 bg-card p-8 text-center">
           <p className="text-sm text-destructive">Could not load question banks.</p>
-          <button onClick={() => void banksQuery.refetch()} className="mt-3 rounded-lg border-2 border-ink px-4 py-2 text-sm font-semibold hover:bg-muted">Retry</button>
+          <button onClick={() => void banksQuery.refetch()} className="mt-3 rounded-lg border-2 border-ink px-4 py-2 text-sm font-semibold hover:bg-muted">{tCommon("retry")}</button>
         </div>
       ) : banks.length === 0 ? (
         <div className="rounded-xl border border-dashed border-2 border-ink bg-card p-12 text-center">
           <LibraryBig className="mx-auto size-8 text-muted-foreground" />
-          <h2 className="mt-3 font-semibold">{search || gradeId || unitId || sectionId || topicId ? "No banks match these filters" : "No question banks yet"}</h2>
-          <p className="mt-1 text-sm text-muted-foreground">Try adjusting the search or hierarchy filters.</p>
+          <h2 className="mt-3 font-semibold">{t("empty")}</h2>
         </div>
       ) : (
         <div className="overflow-hidden rounded-xl border-2 border-ink bg-card">
@@ -203,10 +206,10 @@ export function GlobalQuestionBankList() {
             ))}
           </div>
           <div className="flex items-center justify-between border-t border-ink px-4 py-3 text-sm">
-            <span className="text-muted-foreground">Page {pageData?.page ?? page} of {Math.max(1, pageData?.totalPages ?? 1)} · {pageData?.totalElements ?? 0} banks</span>
+            <span className="text-muted-foreground">{t("page", { page: pageData?.page ?? page, totalPages: Math.max(1, pageData?.totalPages ?? 1) })} · {t("totalBanks", { count: pageData?.totalElements ?? 0 })}</span>
             <div className="flex gap-2">
-              <button disabled={page <= 1} onClick={() => updateUrl({ page: String(page - 1) }, false)} className="inline-flex h-9 items-center gap-1 rounded-lg border border-ink px-3 disabled:opacity-40"><ChevronLeft className="size-4" /> Previous</button>
-              <button disabled={!pageData || page >= pageData.totalPages} onClick={() => updateUrl({ page: String(page + 1) }, false)} className="inline-flex h-9 items-center gap-1 rounded-lg border border-ink px-3 disabled:opacity-40">Next <ChevronRight className="size-4" /></button>
+              <button disabled={page <= 1} onClick={() => updateUrl({ page: String(page - 1) }, false)} className="inline-flex h-9 items-center gap-1 rounded-lg border border-ink px-3 disabled:opacity-40"><ChevronLeft className="size-4" /> {t("previous")}</button>
+              <button disabled={!pageData || page >= pageData.totalPages} onClick={() => updateUrl({ page: String(page + 1) }, false)} className="inline-flex h-9 items-center gap-1 rounded-lg border border-ink px-3 disabled:opacity-40">{t("next")} <ChevronRight className="size-4" /></button>
             </div>
           </div>
         </div>

@@ -28,7 +28,7 @@ import type {
   ContentView,
   CreateUnitRequest,
 } from "@/types/content";
-import { useLocale } from "@/components/i18n/locale-provider";
+import { useTranslations } from "next-intl";
 import { CreateUnitModal } from "./components/create-unit-modal";
 
 export function ContentOverview({
@@ -36,7 +36,8 @@ export function ContentOverview({
 }: {
   onNavigate: (view: ContentView, id?: number) => void;
 }) {
-  const { t } = useLocale();
+  const tContent = useTranslations("teacher.content");
+  const tCommon = useTranslations("common");
   const queryClient = useQueryClient();
   const [gradeId, setGradeId] = useState<number>();
   const [selectedUnitId, setSelectedUnitId] = useState<number>();
@@ -133,12 +134,12 @@ export function ContentOverview({
     <>
       <header className="mb-5 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
         <div>
-          <p className="text-body-sm font-bold text-primary">{t("content")}</p>
+          <p className="text-body-sm font-bold text-primary">{tContent("content")}</p>
           <h1 className="mt-1 text-page-title font-extrabold tracking-tight">
-            {t("content")}
+            {tContent("content")}
           </h1>
           <p className="mt-1 text-body text-neutral-muted">
-            {t("contentDescription")}
+            {tContent("contentDescription")}
           </p>
         </div>
         <button
@@ -146,18 +147,18 @@ export function ContentOverview({
           onClick={openCreate}
           className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-primary bg-primary px-4 text-body-sm font-bold text-primary-foreground shadow-pop-sm transition hover:bg-primary-hover active:translate-y-0.5"
         >
-          <Plus className="size-4" /> {t("createUnit")}
+          <Plus className="size-4" /> {tContent("createUnit")}
         </button>
       </header>
 
       {grades.isLoading && (
-        <p className="mb-3 text-body-sm text-muted-foreground">{t("loading")}</p>
+        <p className="mb-3 text-body-sm text-muted-foreground">{tCommon("loading")}</p>
       )}
       {grades.isError && (
         <div role="alert" className="mb-3 flex flex-wrap items-center justify-between gap-3 rounded-xl border-2 border-destructive/30 bg-destructive/5 p-4 text-body-sm text-destructive shadow-pop-sm">
           <span>Could not load grades. Try again.</span>
           <button type="button" onClick={() => void grades.refetch()} className="rounded-lg border border-destructive/40 bg-card px-3 py-1.5 font-bold shadow-pop-sm hover:bg-destructive/10">
-            Retry
+            {tCommon("retry")}
           </button>
         </div>
       )}
@@ -187,9 +188,9 @@ export function ContentOverview({
             </div>
             <p className="mt-1 text-body-sm text-muted-foreground">Choose a unit to explore its sections and topics.</p>
             <div className="mt-3.5 flex items-center justify-between gap-2">
-              <h3 className="text-body-sm font-extrabold text-foreground">{t("units")}</h3>
+              <h3 className="text-body-sm font-extrabold text-foreground">{tContent("units")}</h3>
 
-              <span className="text-body-sm font-semibold text-muted-foreground">{visibleUnits.length} {t("unitCount")}</span>
+              <span className="text-body-sm font-semibold text-muted-foreground">{visibleUnits.length} {tContent("unitCount")}</span>
             </div>
 
             <label className="relative mt-3 block">
@@ -198,7 +199,7 @@ export function ContentOverview({
               <input
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
-                placeholder={t("search")}
+                placeholder={tContent("search")}
                 className="h-9 w-full rounded-xl border-2 border-border bg-card pl-9 pr-3 text-body-sm font-medium outline-none shadow-pop-sm focus:border-primary focus:ring-2 focus:ring-primary/20"
               />
             </label>
@@ -212,7 +213,7 @@ export function ContentOverview({
             )}
             {units.isLoading && (
               <p className="p-3 text-body-sm text-muted-foreground">
-                {t("loading")}
+                {tCommon("loading")}
               </p>
             )}
 
@@ -220,14 +221,14 @@ export function ContentOverview({
               <div role="alert" className="m-2 rounded-lg border border-destructive/20 bg-destructive/5 p-3 text-body-sm text-destructive">
                 <p>Could not load units.</p>
                 <button type="button" onClick={() => void units.refetch()} className="mt-2 rounded-md border border-destructive/30 px-3 py-1.5 font-semibold hover:bg-destructive/10">
-                  Retry
+                  {tCommon("retry")}
                 </button>
               </div>
             )}
 
             {!units.isLoading && !units.isError && visibleUnits.length === 0 && (
               <p className="p-3 text-body-sm text-muted-foreground">
-                {t("noUnits")}
+                {tContent("noUnits")}
               </p>
             )}
 
@@ -274,14 +275,14 @@ export function ContentOverview({
                   <span>{activeUnit.totalSection} sections</span>
                   <span>{activeUnit.totalTopic} topics</span>
                   <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-semibold">{activeUnit.status}</span>
-                  <span className="sm:ml-auto">{t("sectionsAndTopics")}</span>
+                  <span className="sm:ml-auto">{tContent("sectionsAndTopics")}</span>
                 </div>
               </div>
 
               <div className="space-y-3 p-4">
                 {sections.isLoading && (
                   <p className="text-body-sm text-muted-foreground">
-                    {t("loading")}
+                    {tCommon("loading")}
                   </p>
                 )}
 
@@ -289,7 +290,7 @@ export function ContentOverview({
                   <div role="alert" className="rounded-lg border border-destructive/20 bg-destructive/5 p-4 text-body-sm text-destructive">
                     <p>Could not load sections for this unit.</p>
                     <button type="button" onClick={() => void sections.refetch()} className="mt-2 rounded-md border border-destructive/30 px-3 py-1.5 font-semibold hover:bg-destructive/10">
-                      Retry
+                      {tCommon("retry")}
                     </button>
                   </div>
                 )}
@@ -351,7 +352,7 @@ export function ContentOverview({
                         {expanded && (
                           <div className="divide-y-2 divide-border/60 border-t-2 border-border bg-background-app/40 p-2">
                             {topics[(sections.data ?? []).findIndex((item) => item.id === section.id)]?.isLoading && (
-                              <p className="px-4 py-3 text-body-sm text-muted-foreground">{t("loading")}</p>
+                              <p className="px-4 py-3 text-body-sm text-muted-foreground">{tCommon("loading")}</p>
                             )}
                             {topics[(sections.data ?? []).findIndex((item) => item.id === section.id)]?.isError && (
                               <div role="alert" className="px-4 py-3 text-body-sm text-destructive">
@@ -361,7 +362,7 @@ export function ContentOverview({
                                   onClick={() => void topics[(sections.data ?? []).findIndex((item) => item.id === section.id)]?.refetch()}
                                   className="mt-2 rounded-md border border-destructive/30 px-3 py-1.5 font-semibold hover:bg-destructive/10"
                                 >
-                                  Retry
+                                  {tCommon("retry")}
                                 </button>
                               </div>
                             )}
@@ -380,14 +381,14 @@ export function ContentOverview({
 
                                 <StatusBadge status={topic.status} />
                                 <span className="text-body-sm text-muted-foreground">
-                                  {topic.totalQuestionBank} {t("questionBanks")}
+                                  {topic.totalQuestionBank} {tContent("questionBanks")}
                                 </span>
                               </button>
                             ))}
 
                             {!topics[(sections.data ?? []).findIndex((item) => item.id === section.id)]?.isLoading && !topics[(sections.data ?? []).findIndex((item) => item.id === section.id)]?.isError && sectionTopics.length === 0 && (
                               <p className="px-4 py-3 text-body-sm text-muted-foreground">
-                                {t("noTopics")}
+                                {tContent("noTopics")}
                               </p>
                             )}
                           </div>
@@ -402,7 +403,7 @@ export function ContentOverview({
               <div>
                 <Folder className="mx-auto size-8 text-primary" />
 
-                <p className="mt-3 text-body font-bold">{t("selectUnit")}</p>
+                <p className="mt-3 text-body font-bold">{tContent("selectUnit")}</p>
               </div>
             </div>
           )}

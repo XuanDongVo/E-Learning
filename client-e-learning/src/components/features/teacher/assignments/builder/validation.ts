@@ -34,6 +34,11 @@ export function validate(a: Assignment): Issue[] {
       if (b.type === "MEDIA" && !b.alt.trim()) add("warning", "item", it.id, "Image is missing alt text");
       if (b.type === "INSTRUCTIONS" && !b.text.trim()) add("warning", "item", it.id, "Instructions are empty");
       if (b.type === "POOL" && b.entries.some((x) => !x.text.trim())) add("error", "item", it.id, "Answer pool has an empty entry");
+      if (b.type === "POOL") {
+        const entryIds = b.entries.map((entry) => entry.id.trim());
+        if (entryIds.some((id) => !id)) add("error", "item", it.id, "Every answer pool entry needs a stable ID");
+        if (new Set(entryIds).size !== entryIds.length) add("error", "item", it.id, "Answer pool entry IDs must be unique");
+      }
       continue;
     }
     const c = it.content;
@@ -62,10 +67,23 @@ export function validate(a: Assignment): Issue[] {
     }
     if (c.type === "MATCHING") {
       const pool = c.poolId ? (a.items[c.poolId] as BlockItem | undefined) : undefined;
-      if (!pool || pool.block.type !== "POOL") add("error", "item", it.id, "Matching item has no answer pool");
-      else if (!c.correctEntryId || !pool.block.entries.some((x) => x.id === c.correctEntryId))
-        add("error", "item", it.id, "Matching item has no correct letter");
-      else usedEntries.add(c.correctEntryId);
+      const poolPlacement = c.poolId ? docOrder(a).find((entry) => entry.id === c.poolId) : undefined;
+      if (!pool || pool.kind !== "block" || pool.block.type !== "POOL") {
+        add("error", "item", it.id, "Matching item has no answer pool");
+      } else {
+        if (poolPlacement?.sectionId !== e.sectionId) {
+          add("error", "item", it.id, "Matching item and answer pool must be in the same section");
+        }
+        const ids = pool.block.entries.map((entry) => entry.id.trim());
+        if (ids.some((id) => !id) || new Set(ids).size !== ids.length) {
+          add("error", "item", pool.id, "Answer pool entry IDs must be present and unique");
+        }
+        if (!c.correctEntryId || !pool.block.entries.some((entry) => entry.id === c.correctEntryId)) {
+          add("error", "item", it.id, "Matching item must select a correct entry from its answer pool");
+        } else {
+          usedEntries.add(c.correctEntryId);
+        }
+      }
     }
   }
   for (const it of Object.values(a.items)) {

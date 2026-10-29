@@ -21,6 +21,7 @@ async function loadMessages(locale: "vi" | "en") {
     studentAssignments,
     studentActivities,
     studentProgress,
+    studentAssignmentAttempt,
   ] = await Promise.all([
     import(`../messages/${locale}/common.json`),
     import(`../messages/${locale}/navigation.json`),
@@ -39,6 +40,7 @@ async function loadMessages(locale: "vi" | "en") {
     import(`../messages/${locale}/student/assignments.json`),
     import(`../messages/${locale}/student/activities.json`),
     import(`../messages/${locale}/student/progress.json`),
+    import(`../messages/${locale}/student/assignment-attempt.json`),
   ]);
 
   const teacher = {
@@ -56,20 +58,19 @@ async function loadMessages(locale: "vi" | "en") {
     assignments: studentAssignments.default,
     activities: studentActivities.default,
     progress: studentProgress.default,
+    assignmentAttempt: studentAssignmentAttempt.default,
   };
 
-  // Keep existing root-level keys working during the incremental migration.
   return {
     ...common.default,
     ...navigation.default,
-    ...teacher.content,
-    ...errors.default,
-    teacher,
-    student,
     common: common.default,
     navigation: navigation.default,
     form: form.default,
     feedback: feedback.default,
+    errors: errors.default,
+    teacher,
+    student,
   };
 }
 

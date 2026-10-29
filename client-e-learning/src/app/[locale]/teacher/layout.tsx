@@ -22,7 +22,8 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { AuthGuard } from "@/components/auth/auth-guard";
-import { LocaleProvider, useLocale } from "@/components/i18n/locale-provider";
+import { LocaleToggle } from "@/components/layout/locale-toggle";
+import { useTranslations } from "next-intl";
 
 const navigation: {
   key:
@@ -57,7 +58,8 @@ function TeacherSidebar({
   onClose: () => void;
 }) {
   const pathname = usePathname();
-  const { t } = useLocale();
+  const tNav = useTranslations("navigation");
+  const tCommon = useTranslations("common");
   const [contentExpandedOverride, setContentExpandedOverride] = useState<boolean | null>(null);
   const contentExpanded = contentExpandedOverride ?? pathname.startsWith("/teacher/content");
   const questionBanksActive = pathname.startsWith(
@@ -125,7 +127,7 @@ function TeacherSidebar({
                 }`}
               >
                 <Icon className="size-[1.05rem]" />
-                <span className="flex-1">{t(key)}</span>
+                <span className="flex-1">{key === "overview" ? tCommon("overview") : tNav(key)}</span>
               </Link>
             );
           })}
@@ -141,7 +143,7 @@ function TeacherSidebar({
               }`}
             >
               <BookOpen className="size-[1.05rem]" />
-              <span className="flex-1 text-left">{t("content")}</span>
+              <span className="flex-1 text-left">{tNav("content")}</span>
               {contentExpanded ? (
                 <ChevronDown className="size-4" />
               ) : (
@@ -160,7 +162,7 @@ function TeacherSidebar({
                       : "text-muted-foreground hover:bg-muted/70 hover:text-foreground"
                   }`}
                 >
-                  {t("contentExplorer")}
+                  {tNav("contentExplorer")}
                 </Link>
                 <Link
                   href="/teacher/content/question-banks"
@@ -172,7 +174,7 @@ function TeacherSidebar({
                       : "text-muted-foreground hover:bg-muted/70 hover:text-foreground"
                   }`}
                 >
-                  {t("questionBanksNav")}
+                  {tNav("questionBanksNav")}
                 </Link>
               </div>
             )}
@@ -220,82 +222,53 @@ export default function TeacherLayout({
 
   return (
     <AuthGuard requiredRole="TEACHER">
-      <LocaleProvider>
-        <div className="min-h-screen bg-background-app text-foreground font-sans">
-          <TeacherSidebar
-            open={sidebarOpen}
-            onClose={() => setSidebarOpen(false)}
-          />
-          <div className="min-h-screen lg:pl-60">
-           {!isAssignmentEditor && (
-             <header className="sticky top-0 z-20 flex h-[4.1rem] items-center gap-3 border-b-2 border-border bg-card/95 px-4 backdrop-blur sm:px-6">
+      <div className="min-h-screen bg-background-app text-foreground font-sans">
+        <TeacherSidebar
+          open={sidebarOpen}
+          onClose={() => setSidebarOpen(false)}
+        />
+        <div className="min-h-screen lg:pl-60">
+         {!isAssignmentEditor && (
+           <header className="sticky top-0 z-20 flex h-[4.1rem] items-center gap-3 border-b-2 border-border bg-card/95 px-4 backdrop-blur sm:px-6">
+            <button
+              className="grid size-9 place-items-center rounded-lg border border-border bg-card text-muted-foreground shadow-pop-sm lg:hidden"
+              aria-label="Mở menu"
+              onClick={() => setSidebarOpen(true)}
+            >
+              <Menu className="size-4" />
+            </button>
+            <div className="relative hidden w-full max-w-md sm:block">
+              <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+              <input
+                className="h-10 w-full rounded-xl border-2 border-border bg-card pl-9 pr-3 text-[0.8125rem] font-medium outline-none placeholder:text-muted-foreground shadow-pop-sm transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+                placeholder="Tìm lớp học, unit, học sinh..."
+                aria-label="Tìm kiếm"
+              />
+            </div>
+            <div className="ml-auto flex items-center gap-2.5">
+              <LocaleToggle />
               <button
-                className="grid size-9 place-items-center rounded-lg border border-border bg-card text-muted-foreground shadow-pop-sm lg:hidden"
-                aria-label="Mở menu"
-                onClick={() => setSidebarOpen(true)}
+                className="grid size-9 place-items-center rounded-xl border border-border bg-card text-muted-foreground shadow-pop-sm hover:bg-muted"
+                aria-label="Trợ giúp"
               >
-                <Menu className="size-4" />
+                <CircleHelp className="size-4" />
               </button>
-              <div className="relative hidden w-full max-w-md sm:block">
-                <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-                <input
-                  className="h-10 w-full rounded-xl border-2 border-border bg-card pl-9 pr-3 text-[0.8125rem] font-medium outline-none placeholder:text-muted-foreground shadow-pop-sm transition focus:border-primary focus:ring-2 focus:ring-primary/20"
-                  placeholder="Tìm lớp học, unit, học sinh..."
-                  aria-label="Tìm kiếm"
-                />
-              </div>
-              <div className="ml-auto flex items-center gap-2.5">
-                <LocaleToggle />
-                <button
-                  className="grid size-9 place-items-center rounded-xl border border-border bg-card text-muted-foreground shadow-pop-sm hover:bg-muted"
-                  aria-label="Trợ giúp"
-                >
-                  <CircleHelp className="size-4" />
-                </button>
-                <button
-                  className="relative grid size-9 place-items-center rounded-xl border border-border bg-card text-muted-foreground shadow-pop-sm hover:bg-muted"
-                  aria-label="Thông báo"
-                  onClick={() => toast.success("Bạn không có thông báo mới")}
-                >
-                  <Bell className="size-4" />
-                  <span className="absolute right-2 top-2 size-2 rounded-full bg-primary" />
-                </button>
-              </div>
-            </header>
-           )}
-            <main className="mx-auto w-full max-w-[1500px] p-4 sm:p-6">
-              {children}
-            </main>
-          </div>
+              <button
+                className="relative grid size-9 place-items-center rounded-xl border border-border bg-card text-muted-foreground shadow-pop-sm hover:bg-muted"
+                aria-label="Thông báo"
+                onClick={() => toast.success("Bạn không có thông báo mới")}
+              >
+                <Bell className="size-4" />
+                <span className="absolute right-2 top-2 size-2 rounded-full bg-primary" />
+              </button>
+            </div>
+          </header>
+         )}
+          <main className="mx-auto w-full max-w-[1500px] p-4 sm:p-6">
+            {children}
+          </main>
         </div>
-      </LocaleProvider>
+      </div>
     </AuthGuard>
-  );
-}
-
-function LocaleToggle() {
-  const { locale, setLocale, t } = useLocale();
-  return (
-    <div
-      className="flex h-9 items-center rounded-lg border border-border bg-card p-0.5"
-      aria-label={t("language")}
-    >
-      <button
-        type="button"
-        onClick={() => setLocale("vi")}
-        className={`rounded-md px-2 text-[0.6875rem] font-bold ${locale === "vi" ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}
-        aria-pressed={locale === "vi"}
-      >
-        VI
-      </button>
-      <button
-        type="button"
-        onClick={() => setLocale("en")}
-        className={`rounded-md px-2 text-[0.6875rem] font-bold ${locale === "en" ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}
-        aria-pressed={locale === "en"}
-      >
-        EN
-      </button>
-    </div>
   );
 }

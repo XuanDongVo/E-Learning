@@ -14,7 +14,7 @@ Phase 5 introduces formal Assignments independent from Activities. The Assignmen
 - `class_ids` is validated server-side: it must be non-empty, unique, teacher-scoped, and every class must belong to the selected Grade and academic year.
 - The frontend may use Grade selection to select matching classes, but Grade is not itself a persisted recipient target.
 - Students may start after due_at; the submission is labeled Late without a score penalty.
-- time_limit_seconds is per Assignment Attempt and is independent of due_at.
+- time_limit_minutes is the whole Assignment Attempt duration and is independent of due_at. ADR 0028 supersedes the old seconds unit; Activity still uses time_limit_seconds per question.
 - Assignment questions are owned by the Assignment and do not reference Activity or QuestionBank.
 - AssignmentQuestion contains only assignment_id and question_id. It has no position, no topic_id and no manual order field.
 - There is no Assignment question reorder API or UI.
@@ -22,7 +22,7 @@ Phase 5 introduces formal Assignments independent from Activities. The Assignmen
 - Assignment question creation accepts a list so the same endpoint supports one-question and bulk creation.
 - Shared Question persistence is extracted into QuestionPersistenceService.
 - Excel import is deferred until its contract is finalized.
-- Assignment question editing/deletion is blocked for archived assignments. Additional Attempt-time structural locking is a Phase 7 rule.
+- Assignment question editing/deletion is blocked for archived assignments. Additional Attempt-time structural locking is a Phase 7 rule and is not yet implemented in the current runtime slice.
 
 ## Consequences
 

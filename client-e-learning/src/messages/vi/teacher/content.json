@@ -1,4 +1,5 @@
 {
+  "content": "Nội dung",
   "contentDescription": "Khối lớp → Unit → Section → Topic → Ngân hàng câu hỏi.",
   "createUnit": "Tạo Unit",
   "units": "Danh sách Unit",
@@ -9,5 +10,69 @@
   "noTopics": "Chưa có Topic trong Section này.",
   "questionBanks": "ngân hàng",
   "questions": "câu hỏi",
-  "search": "Tìm Unit..."
+  "search": "Tìm Unit...",
+  "globalBanks": {
+    "title": "Ngân hàng câu hỏi",
+    "breadcrumbExplorer": "Khám phá nội dung",
+    "breadcrumbBanks": "Ngân hàng câu hỏi",
+    "subtitle": "Duyệt ngân hàng câu hỏi theo khối lớp, unit, section và topic.",
+    "searchPlaceholder": "Tìm tên ngân hàng hoặc mô tả...",
+    "search": "Tìm kiếm",
+    "reset": "Đặt lại",
+    "grade": "Khối",
+    "allGrades": "Tất cả các khối",
+    "unit": "Unit",
+    "allUnits": "Tất cả các unit",
+    "section": "Section",
+    "allSections": "Tất cả các section",
+    "topic": "Topic",
+    "allTopics": "Tất cả các topic",
+    "includeArchived": "Bao gồm cả ngân hàng đã lưu trữ",
+    "totalBanks": "{count} ngân hàng",
+    "empty": "Không tìm thấy ngân hàng câu hỏi nào phù hợp với bộ lọc.",
+    "status": {
+      "draft": "Bản nháp",
+      "published": "Đã xuất bản",
+      "archived": "Đã lưu trữ"
+    },
+    "viewBank": "Xem chi tiết",
+    "page": "Trang {page} / {totalPages}",
+    "previous": "Trước",
+    "next": "Sau"
+  },
+  "bankDetail": {
+    "label": "Ngân hàng câu hỏi",
+    "editBank": "Chỉnh sửa ngân hàng",
+    "addQuestion": "Thêm câu hỏi",
+    "importQuestions": "Nhập câu hỏi",
+    "searchQuestions": "Tìm kiếm câu hỏi...",
+    "allTypes": "Tất cả các loại",
+    "allDifficulties": "Tất cả độ khó",
+    "allCompleteness": "Tất cả trạng thái",
+    "complete": "Đầy đủ",
+    "incomplete": "Chưa hoàn chỉnh",
+    "emptyQuestions": "Chưa có câu hỏi nào trong ngân hàng này.",
+    "totalQuestions": "Tổng cộng {count} câu hỏi"
+  },
+  "unit": {
+    "label": "Unit",
+    "sections": "Sections",
+    "activities": "Hoạt động",
+    "createSection": "Tạo Section",
+    "noSections": "Chưa có Section nào trong Unit này.",
+    "order": "Thứ tự",
+    "manageUnit": "Quản lý Unit"
+  },
+  "section": {
+    "label": "Section",
+    "topics": "Topics",
+    "createTopic": "Tạo Topic",
+    "noTopics": "Chưa có Topic nào trong Section này."
+  },
+  "topic": {
+    "label": "Topic",
+    "questionBanks": "Ngân hàng câu hỏi",
+    "createBank": "Tạo ngân hàng",
+    "noBanks": "Chưa có ngân hàng câu hỏi nào trong Topic này."
+  }
 }

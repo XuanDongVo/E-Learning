@@ -1,8 +1,8 @@
 # .agent Knowledge Base Index
 
 **Index version:** 1.0  
-**Last structural audit:** 2026-10-23  
-**Branch baseline:** `refactor/teacher-content-ui-routing`  
+**Last structural/source audit:** 2026-10-25  
+**Branch baseline:** `feature/student-assignment-attempt`  
 **Rule:** this index describes the documentation lifecycle; it does not replace the code as evidence of implementation.
 
 ## 1. Read order
@@ -20,6 +20,7 @@ The numbered sequence below is the required reading order for an AI agent. The s
 | 06 | `.agent/architecture/` | Backend/frontend boundaries, API and architectural contracts | Active architecture, reconciled with ADRs and code |
 | 07 | `.agent/plans/PHASES.md`, then the active phase spec | Scope and phase sequencing | Active execution scope |
 | 08 | Task-specific plans under `.agent/plans/` | Concrete implementation plan for a current task | Active only when explicitly marked active |
+| 08 (active plan) | `.agent/plans/08-STUDENT_ASSIGNMENT_ATTEMPT_SPEC.md` | Vietnamese business rules, ERD, use cases, risks and acceptance criteria for Student Assignment Attempt | Active specification; schema/skeleton added, runtime not implemented |
 | 09 | `.agent/ui/` | Screen, route, interaction and accessibility contracts | UI contract; never overrides API/domain rules |
 | 10 | `.agent/checklists/definition-of-done.md` | Verification gate | Process requirement |
 | 11 | `.agent/audits/` | Dated evidence of prior code audits and migrations | Historical evidence; not current state unless revalidated |
@@ -65,10 +66,11 @@ When sources disagree, apply this order:
 
 ## 5. Current high-priority facts
 
-- Branch: `refactor/teacher-content-ui-routing`.
-- Current documented Flyway baseline: V42; re-list migrations before allocating another version.
-- Question Engine exists structurally with seven question-type handlers/specs; integration and end-to-end parity remain incomplete.
-- Assignment Composition authoring/API persistence exists; formal `AssessmentAttempt` runtime does not.
+- Current task branch: `feature/student-assignment-attempt`; `refactor/teacher-content-ui-routing` is the parent/base branch for the Assignment Attempt work.
+- New AssessmentAttempt migration V43 is added on `feature/student-assignment-attempt`; verify Flyway validation and actual database state before applying it or allocating any later version.
+- Question Engine has seven handlers/specs and factory/mapper branches. ActivitySession still uses legacy grading branches; MATCHING POOL references are not resolved/validated; CLOZE cardinality validation is present. End-to-end parity remains unverified.
+- Latest source audit: `.agent/audits/2026-10-25-question-engine-current-code-audit.md`.
+- Assignment Composition authoring/API persistence exists. V43 and initial `AssessmentAttempt` entity/repository/service skeleton are added; runtime behavior is not implemented or verified.
 - ActivitySession exists, but snapshot-only semantics and complete leakage/immutability verification remain open.
 - Teacher content routes are under `/teacher/content/...`.
 - Current implementation and remaining gaps are recorded in `CURRENT_STATE.md`; do not infer them from old plans.

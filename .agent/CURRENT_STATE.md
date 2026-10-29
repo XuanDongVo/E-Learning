@@ -211,3 +211,10 @@ Important integration risk for the later code review:
 - MATCHING additionally validates the selected Answer Pool entry against the immutable document snapshot and the question's section. The Attempt creation snapshot now includes question difficulty for reconstruction; older snapshots without this field use MEDIUM only as the QuestionCommon validation context (difficulty does not affect answer parsing).
 - **Contract risk still open:** older Phase 7 notes describe Matching payloads as `{ pairs }`, while the existing Matching validator and this adapter use `{ selectedKey }` for the current single-prompt/single-correct-entry model. Confirm the actual Student UI request shape before treating Matching end-to-end as complete; do not silently adapt a multi-row `pairs` structure to the current single-answer engine.
 - Verification: source was committed, but no backend compilation/tests, frontend typecheck/build, Flyway validation, or browser/E2E verification was run. No tests were added or modified.
+
+## 14. Sprint 1 — direct Student Paper entry (2026-10-29)
+
+- The route `/student/assignments/[assignmentId]` remains a thin route wrapper around `StudentAssignmentAttemptPage`; it must not render `StudentPaper` directly because the paper requires an authenticated runtime snapshot and the active-tab lock.
+- `StudentAssignmentAttemptPage` now automatically starts/resumes when the authenticated Student owns the Web Lock. It persists/reuses the stable IndexedDB credential before POSTing to `/v1/student/assignments/{assignmentId}/assessment-attempt`, then renders `StudentPaper` from the returned runtime snapshot.
+- The separate Intro screen and Start button were removed from this route. Loading, session-conflict, session-lost and retryable errors remain explicit states.
+- Sprint 1 still is not verified: current-HEAD frontend lint/typecheck/build, backend tests, real snapshot/POOL compatibility and browser multi-tab checks have not been run in this change.

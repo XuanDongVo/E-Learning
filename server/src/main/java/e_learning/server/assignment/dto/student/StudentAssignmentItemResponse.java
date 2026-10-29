@@ -10,6 +10,7 @@ public record StudentAssignmentItemResponse(
         long questionCount,
         Integer timeLimitMinutes,
         StudentAssignmentStatus status,
+        boolean late,
         String description
 ) {
 }

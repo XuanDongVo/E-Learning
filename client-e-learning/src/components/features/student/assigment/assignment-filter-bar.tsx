@@ -12,7 +12,6 @@ interface AssignmentFilterBarProps {
 }
 
 const TABS: { value: AssignmentFilter; label: string }[] = [
-  { value: "ALL", label: "All" },
   { value: "TODO", label: "To do" },
   { value: "IN_PROGRESS", label: "In progress" },
   { value: "SUBMITTED", label: "Submitted" },
@@ -27,7 +26,6 @@ export function AssignmentFilterBar({
 }: AssignmentFilterBarProps) {
   return (
     <div className="flex flex-wrap items-center justify-between gap-3 sm:gap-4">
-      {/* Status tabs */}
       <div
         className="flex w-full sm:w-auto items-center gap-2 overflow-x-auto pb-1 sm:pb-0"
         role="tablist"
@@ -60,7 +58,6 @@ export function AssignmentFilterBar({
         })}
       </div>
 
-      {/* Search Input */}
       <div className="flex w-full sm:w-auto sm:max-w-xs flex-1 items-center gap-2 min-h-[46px] rounded-full border-2 border-foreground bg-card px-4 shadow-pop-sm focus-within:shadow-pop">
         <Search size={18} className="shrink-0 text-muted-foreground" />
         <Input
@@ -74,4 +71,3 @@ export function AssignmentFilterBar({
     </div>
   );
 }
-

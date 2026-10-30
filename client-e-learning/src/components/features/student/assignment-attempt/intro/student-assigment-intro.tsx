@@ -126,7 +126,6 @@ export function StudentAssignmentIntro({
           {/* Mascot Pipo & Bóng thoại */}
           <div className="flex flex-col items-center shrink-0">
             <div className="relative">
-              {/* <InlinePipo mood={pipoMood} size={115} /> */}
               <Pipo mood={pipoMood} size={115} color="success" />
               {/* Bóng thoại Pipo */}
               <div className="sm:hidden mt-2 px-3 py-1.5 rounded-2xl bg-white border-2 border-orange-300 text-xs font-bold text-orange-950 text-center shadow-[0_2px_0_#fed7aa]">

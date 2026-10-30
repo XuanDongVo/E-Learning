@@ -168,6 +168,14 @@
         "MATCHING": "Nối đáp án",
         "CLOZE": "Điền từ vào đoạn văn",
         "UNKNOWN": "Câu hỏi"
+      },
+      "sectionLabel": "Phần",
+      "questionOf": "Câu {current} / {total}",
+      "palette": {
+        "title": "Danh sách câu hỏi",
+        "answered": "đã trả lời",
+        "answeredLegend": "Đã làm",
+        "unansweredLegend": "Chưa làm"
       }
     }
   }

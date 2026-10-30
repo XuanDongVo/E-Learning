@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useMemo } from "react";
+import { Fragment, createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import type {
   AttemptAnswerPayload,
@@ -10,6 +10,8 @@ import type {
 } from "@/types/student/assignment-attempt";
 
 type JsonRecord = Record<string, unknown>;
+
+const QuestionTotalContext = createContext(0);
 
 interface CompositionItemSnapshot {
   id?: number | string;
@@ -28,6 +30,14 @@ interface CompositionSectionSnapshot {
   instructions?: string;
   instructionsVi?: string;
   items?: CompositionItemSnapshot[];
+}
+
+export function hasMeaningfulAnswer(value: unknown): boolean {
+  if (value === null || value === undefined) return false;
+  if (typeof value === "string") return value.trim().length > 0;
+  if (Array.isArray(value)) return value.some(hasMeaningfulAnswer);
+  if (typeof value === "object") return Object.values(value as Record<string, unknown>).some(hasMeaningfulAnswer);
+  return true;
 }
 
 function asRecord(value: unknown): JsonRecord | null {
@@ -67,7 +77,7 @@ function snapshotSections(document: JsonRecord, locale: string): CompositionSect
     .map((section) => ({
       id: typeof section.id === "string" || typeof section.id === "number" ? section.id : undefined,
       position: typeof section.position === "number" ? section.position : 0,
-      title: asString(locale === "vi" ? section.titleVi ?? section.title : section.title),
+      title: asString(section.title) || asString(section.titleVi),
       titleVi: asString(section.titleVi),
       instructions: asString(locale === "vi" ? section.instructionsVi ?? section.instructions : section.instructions),
       instructionsVi: asString(section.instructionsVi),
@@ -77,6 +87,7 @@ function snapshotSections(document: JsonRecord, locale: string): CompositionSect
     }))
     .sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
 }
+
 function safeQuestionSnapshot(question: AttemptRuntimeQuestion): StudentQuestionSnapshot {
   const value = asRecord(question.questionSnapshot) ?? {};
   const spec = asRecord(value.spec ?? value.definition ?? value.questionSpec) ?? value;
@@ -208,18 +219,10 @@ function QuestionCard({
   onAnswerChange: (answer: AttemptAnswerPayload) => void;
 }) {
   const t = useTranslations("student.assignmentAttempt.paper");
+  const total = useContext(QuestionTotalContext);
   const snapshot = useMemo(() => safeQuestionSnapshot(question), [question]);
   const type = snapshot.type;
   const matchingPool = snapshot.answerPool.length > 0 ? snapshot.answerPool : poolOptions;
-  const typeLabels: Record<string, string> = {
-    SINGLE_CHOICE: t("types.SINGLE_CHOICE"),
-    MULTIPLE_CHOICE: t("types.MULTIPLE_CHOICE"),
-    TRUE_FALSE: t("types.TRUE_FALSE"),
-    FILL_IN_BLANK: t("types.FILL_IN_BLANK"),
-    TYPE_ANSWER: t("types.TYPE_ANSWER"),
-    MATCHING: t("types.MATCHING"),
-    CLOZE: t("types.CLOZE"),
-  };
   const selectedKey = typeof answer?.selectedKey === "string" ? answer.selectedKey : "";
   const selectedKeys = Array.isArray(answer?.selectedKeys) ? answer.selectedKeys.filter((value): value is string => typeof value === "string") : [];
   const value = typeof answer?.value === "string" ? answer.value : "";
@@ -227,14 +230,18 @@ function QuestionCard({
   const pairs = asRecord(answer?.pairs) ?? {};
 
   return (
-    <article className="space-y-4 rounded-2xl border border-border-color bg-card-bg p-5" aria-labelledby={`question-${question.attemptQuestionId}`}>
-      <header className="flex flex-wrap items-center justify-between gap-2">
-        <h3 id={`question-${question.attemptQuestionId}`} className="font-extrabold text-neutral-dark">
-          {question.position + 1}. {snapshot.prompt || t("questionFallback")}
-        </h3>
-        <span className="rounded-full bg-background-app px-3 py-1 text-xs font-semibold text-neutral-muted">
-          {typeLabels[type] ?? t("types.UNKNOWN")}
+    <article
+      data-question-id={question.attemptQuestionId}
+      className="scroll-mt-24 space-y-4 rounded-2xl border border-border-color bg-white p-5"
+      aria-labelledby={`question-${question.attemptQuestionId}`}
+    >
+      <header className="space-y-3">
+        <span className="inline-flex rounded-md bg-primary-light px-2.5 py-1 text-sm font-bold text-primary">
+          {t("questionOf", { current: question.position + 1, total })}
         </span>
+        <h3 id={`question-${question.attemptQuestionId}`} className="text-base font-semibold text-neutral-dark">
+          {snapshot.prompt || t("questionFallback")}
+        </h3>
       </header>
 
       {snapshot.media.map((media, index) => (
@@ -246,24 +253,24 @@ function QuestionCard({
       ))}
 
       {(type === "SINGLE_CHOICE" || type === "TRUE_FALSE") && (
-        <fieldset className="space-y-2">
+        <fieldset className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <legend className="sr-only">{snapshot.prompt}</legend>
-          {(snapshot.choices.length ? snapshot.choices : [{ key: "TRUE", text: t("true") }, { key: "FALSE", text: t("false") }]).map((choice) => (
-            <label key={choice.key} className={`flex cursor-pointer items-center gap-3 rounded-xl border p-3 transition ${selectedKey === choice.key ? "border-primary bg-primary-light" : "border-border-color hover:bg-background-app"}`}>
+          {(snapshot.choices.length ? snapshot.choices : [{ key: "TRUE", text: t("true") }, { key: "FALSE", text: t("false") }]).map((choice, index) => (
+            <label key={choice.key} className={`flex cursor-pointer items-center gap-3 rounded-xl border p-3 transition ${selectedKey === choice.key ? "border-primary bg-primary-light" : "border-border-color bg-white hover:bg-background-app"}`}>
               <input type="radio" name={`attempt-${question.attemptQuestionId}`} checked={selectedKey === choice.key} onChange={() => onAnswerChange({ selectedKey: choice.key })} />
-              <span>{choice.text}</span>
+              <span><b className="mr-1.5">{String.fromCharCode(65 + index)}.</b>{choice.text}</span>
             </label>
           ))}
         </fieldset>
       )}
 
       {type === "MULTIPLE_CHOICE" && (
-        <fieldset className="space-y-2">
+        <fieldset className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <legend className="sr-only">{snapshot.prompt}</legend>
-          {snapshot.choices.map((choice) => (
-            <label key={choice.key} className={`flex cursor-pointer items-center gap-3 rounded-xl border p-3 transition ${selectedKeys.includes(choice.key) ? "border-primary bg-primary-light" : "border-border-color hover:bg-background-app"}`}>
+          {snapshot.choices.map((choice, index) => (
+            <label key={choice.key} className={`flex cursor-pointer items-center gap-3 rounded-xl border p-3 transition ${selectedKeys.includes(choice.key) ? "border-primary bg-primary-light" : "border-border-color bg-white hover:bg-background-app"}`}>
               <input type="checkbox" checked={selectedKeys.includes(choice.key)} onChange={(event) => onAnswerChange({ selectedKeys: event.target.checked ? [...selectedKeys, choice.key] : selectedKeys.filter((key) => key !== choice.key) })} />
-              <span>{choice.text}</span>
+              <span><b className="mr-1.5">{String.fromCharCode(65 + index)}.</b>{choice.text}</span>
             </label>
           ))}
         </fieldset>
@@ -294,7 +301,7 @@ function QuestionCard({
         <fieldset className="space-y-2">
           <legend className="sr-only">{snapshot.prompt}</legend>
           {matchingPool.map((option) => (
-            <label key={option.key} className={`flex cursor-pointer items-center gap-3 rounded-xl border p-3 transition ${selectedKey === option.key ? "border-primary bg-primary-light" : "border-border-color hover:bg-background-app"}`}>
+            <label key={option.key} className={`flex cursor-pointer items-center gap-3 rounded-xl border p-3 transition ${selectedKey === option.key ? "border-primary bg-primary-light" : "border-border-color bg-white hover:bg-background-app"}`}>
               <input type="radio" name={`attempt-${question.attemptQuestionId}`} checked={selectedKey === option.key} onChange={() => onAnswerChange({ selectedKey: option.key })} />
               <span>{option.text}</span>
             </label>
@@ -395,6 +402,9 @@ function renderItem(
   return <div key={`${keyPrefix}-item-${String(item.id ?? item.position)}`} className="space-y-3">{block}{children}</div>;
 }
 
+const ROMAN = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"];
+const toRoman = (n: number) => ROMAN[n - 1] ?? String(n);
+
 export function StudentPaper({
   runtime,
   answers,
@@ -406,6 +416,9 @@ export function StudentPaper({
 }) {
   const locale = useLocale();
   const t = useTranslations("student.assignmentAttempt.paper");
+  const paperRef = useRef<HTMLDivElement>(null);
+  const [activeId, setActiveId] = useState<number | null>(null);
+
   const document = asRecord(runtime.document) ?? {};
   const sections = snapshotSections(document, locale);
   const questionsByItemId = new Map<number, AttemptRuntimeQuestion>();
@@ -415,29 +428,136 @@ export function StudentPaper({
   });
   sections.forEach((section) => (section.items ?? []).forEach((item) => collectPoolOptions(item, poolsById)));
 
-  if (sections.length > 0) {
-    return (
-      <div className="space-y-6">
-        {sections.map((section, sectionIndex) => (
-          <section key={String(section.id ?? sectionIndex)} className="space-y-4">
-            <header className="space-y-1">
-              <h2 className="text-lg font-extrabold text-neutral-dark">{section.title || t("sectionFallback", { index: sectionIndex + 1 })}</h2>
+  const orderedQuestions = useMemo(
+    () => runtime.questions.slice().sort((a, b) => a.position - b.position),
+    [runtime.questions],
+  );
+  const total = orderedQuestions.length;
+  const answeredCount = orderedQuestions.filter((q) => hasMeaningfulAnswer(answers[q.attemptQuestionId])).length;
+  const progress = total > 0 ? Math.round((answeredCount / total) * 100) : 0;
+
+  // Highlight câu hỏi đang nằm trong vùng nhìn thấy
+  useEffect(() => {
+    const root = paperRef.current;
+    if (!root) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const top = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
+        if (top) setActiveId(Number(top.target.getAttribute("data-question-id")));
+      },
+      { rootMargin: "-96px 0px -60% 0px", threshold: 0 },
+    );
+    root.querySelectorAll("[data-question-id]").forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
+  }, [orderedQuestions, sections.length]);
+
+  const goToQuestion = (attemptQuestionId: number) => {
+    const el = paperRef.current?.querySelector(`[data-question-id="${attemptQuestionId}"]`);
+    el?.scrollIntoView({ behavior: "smooth", block: "start" });
+    setActiveId(attemptQuestionId);
+  };
+
+  const paperBody =
+    sections.length > 0 ? (
+      sections.map((section, sectionIndex) => {
+        const subtitle = section.titleVi && section.titleVi !== section.title ? section.titleVi : "";
+        return (
+          <section
+            key={String(section.id ?? sectionIndex)}
+            className="rounded-3xl border border-border-color bg-white p-6 shadow-sm sm:p-8"
+          >
+            <header className="space-y-2 border-b border-border-color pb-5">
+              <span className="inline-flex rounded-md bg-primary-light px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-primary">
+                {t("sectionLabel")} {toRoman(sectionIndex + 1)}
+              </span>
+              <h2 className="text-xl font-extrabold text-neutral-dark">
+                {section.title || t("sectionFallback", { index: sectionIndex + 1 })}
+              </h2>
+              {subtitle && <p className="text-sm italic text-neutral-muted">{subtitle}</p>}
               {section.instructions && <p className="text-sm leading-6 text-neutral-muted">{section.instructions}</p>}
             </header>
-            {(section.items ?? []).slice().sort((a, b) => (a.position ?? 0) - (b.position ?? 0)).map((item, index) =>
-              renderItem(item, questionsByItemId, poolsById, answers, onAnswerChange, `section-${sectionIndex}-${index}`, locale),
-            )}
+            <div className="mt-6 space-y-5">
+              {(section.items ?? [])
+                .slice()
+                .sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
+                .map((item, index) =>
+                  renderItem(item, questionsByItemId, poolsById, answers, onAnswerChange, `section-${sectionIndex}-${index}`, locale),
+                )}
+            </div>
           </section>
-        ))}
-      </div>
+        );
+      })
+    ) : (
+      <section className="rounded-3xl border border-border-color bg-white p-6 shadow-sm sm:p-8">
+        <div className="space-y-5">
+          {orderedQuestions.map((question) => (
+            <QuestionCard
+              key={question.attemptQuestionId}
+              question={question}
+              answer={answers[question.attemptQuestionId]}
+              poolOptions={[]}
+              onAnswerChange={(answer) => onAnswerChange(question.attemptQuestionId, answer)}
+            />
+          ))}
+        </div>
+      </section>
     );
-  }
 
   return (
-    <div className="space-y-4">
-      {runtime.questions.slice().sort((a, b) => a.position - b.position).map((question) => (
-        <QuestionCard key={question.attemptQuestionId} question={question} answer={answers[question.attemptQuestionId]} poolOptions={[]} onAnswerChange={(answer) => onAnswerChange(question.attemptQuestionId, answer)} />
-      ))}
-    </div>
+    <QuestionTotalContext.Provider value={total}>
+      <div className="mx-auto grid w-full max-w-7xl gap-6 bg-white px-4 py-6 sm:px-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+        {/* Vùng làm bài: các section nằm trong khung riêng */}
+        <div ref={paperRef} className="min-w-0 space-y-6">{paperBody}</div>
+
+        {/* Bản đồ câu hỏi: dính theo khi lướt */}
+        <aside className="hidden lg:block">
+          <div className="sticky top-4 flex max-h-[calc(100vh-2rem)] flex-col rounded-3xl border border-border-color bg-white p-6 shadow-sm">
+            <div className="flex items-center justify-between gap-2">
+              <h2 className="text-sm font-extrabold uppercase tracking-wide text-neutral-dark">{t("palette.title")}</h2>
+              <span className="text-sm font-bold text-primary">{answeredCount} / {total}</span>
+            </div>
+            <div className="mt-3 h-2 overflow-hidden rounded-full bg-background-app" aria-hidden="true">
+              <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${progress}%` }} />
+            </div>
+
+            <nav aria-label={t("palette.title")} className="mt-5 min-h-0 flex-1 overflow-y-auto">
+              <ul className="grid grid-cols-5 gap-2">
+                {orderedQuestions.map((question) => {
+                  const answered = hasMeaningfulAnswer(answers[question.attemptQuestionId]);
+                  const active = activeId === question.attemptQuestionId;
+                  return (
+                    <li key={question.attemptQuestionId}>
+                      <button
+                        type="button"
+                        onClick={() => goToQuestion(question.attemptQuestionId)}
+                        aria-current={active ? "true" : undefined}
+                        className={`flex h-10 w-full items-center justify-center rounded-lg text-sm font-semibold transition ${
+                          answered ? "bg-primary-light text-primary" : "bg-background-app text-neutral-dark hover:bg-border-color"
+                        } ${active ? "ring-2 ring-primary ring-offset-1" : ""}`}
+                      >
+                        {question.position + 1}
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            </nav>
+
+            <ul className="mt-5 space-y-2 border-t border-border-color pt-4 text-sm text-neutral-muted">
+              <li className="flex items-center gap-2">
+                <span className="h-4 w-4 rounded border border-border-color bg-background-app" />
+                {t("palette.unansweredLegend")}
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="h-4 w-4 rounded border border-primary/30 bg-primary-light" />
+                {t("palette.answeredLegend")}
+              </li>
+            </ul>
+          </div>
+        </aside>
+      </div>
+    </QuestionTotalContext.Provider>
   );
 }

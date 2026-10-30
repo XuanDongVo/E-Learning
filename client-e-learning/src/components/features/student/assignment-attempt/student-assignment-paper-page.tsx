@@ -10,11 +10,13 @@ import {
   Clock3,
   LoaderCircle,
   ShieldAlert,
+  Maximize,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/components/auth/auth-provider";
 import { useAttemptRuntime, createInitialAttemptAnswers } from "./hooks/use-attempt-runtime";
 import { StudentPaper } from "./student-paper";
+import { useAttemptFullscreen } from "./hooks/use-attempt-fullscreen";
 import type { AttemptAnswerPayload } from "@/types/student/assignment-attempt";
 
 function hasMeaningfulAnswer(value: unknown): boolean {
@@ -43,6 +45,7 @@ export function StudentAssignmentPaperPage({ assignmentId }: { assignmentId: str
   );
   const [answers, setAnswers] = useState<Record<number, AttemptAnswerPayload>>({});
   const [hasLocalChanges, setHasLocalChanges] = useState(false);
+  const { isFullscreen, isSupported, enterFullscreen } = useAttemptFullscreen();
 
   const runtime = runtimeState.runtime;
 
@@ -143,8 +146,14 @@ export function StudentAssignmentPaperPage({ assignmentId }: { assignmentId: str
     }).length;
 
     return (
-      <main className="mx-auto max-w-5xl space-y-5 p-4 pb-24 sm:p-6">
-        <header className="flex flex-wrap items-start justify-between gap-4">
+      <main className="fixed inset-0 z-40 flex h-dvh flex-col overflow-hidden bg-background-app">
+        {!isFullscreen && (
+          <div role="status" className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-950">
+            <span>{isSupported ? t("player.fullscreenPrompt") : t("player.fullscreenUnavailable")}</span>
+            {isSupported && <Button size="sm" onClick={() => void enterFullscreen()} className="gap-2"><Maximize className="h-4 w-4" />{t("player.enterFullscreen")}</Button>}
+          </div>
+        )}
+        <header className="flex shrink-0 flex-wrap items-center justify-between gap-4 border-b border-border-color bg-card-bg px-4 py-3 sm:px-6">
           <div className="min-w-0">
             <p className="text-xs font-bold uppercase tracking-wider text-primary">{t("player.eyebrow")}</p>
             <h1 className="mt-1 text-2xl font-extrabold tracking-tight text-neutral-dark">{runtime.assignmentTitle}</h1>
@@ -165,6 +174,7 @@ export function StudentAssignmentPaperPage({ assignmentId }: { assignmentId: str
           </div>
         </header>
 
+        <section className="min-h-0 flex-1 overflow-y-auto px-4 py-4 sm:px-6 sm:py-6">
         {hasLocalChanges && (
           <div role="status" className="flex items-start gap-3 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950">
             <CircleAlert className="mt-0.5 h-5 w-5 shrink-0" />
@@ -177,13 +187,14 @@ export function StudentAssignmentPaperPage({ assignmentId }: { assignmentId: str
 
         <StudentPaper runtime={runtime} answers={answers} onAnswerChange={changeAnswer} />
 
-        <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-border-color pt-4">
+        <footer className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-border-color pt-4 pb-6">
           <Button variant="ghost" onClick={leavePlayer} className="gap-2">
             <ArrowLeft className="h-4 w-4" />
             {t("backToAssignments")}
           </Button>
           <span className="text-xs text-neutral-muted">{t("draft.sprint2Note")}</span>
         </footer>
+        </section>
       </main>
     );
   }

@@ -223,7 +223,12 @@ export function StudentAssignmentPaperPage({
     return mapped;
   }, [autosaveAnswers]);
 
-  const { away, leaveCount, enterFullscreen } = useAttemptFullscreen({
+  const {
+    away,
+    leaveCount,
+    needsEnterFullscreen,
+    enterFullscreen,
+  } = useAttemptFullscreen({
     enabled: isExamActive,
   });
 
@@ -267,7 +272,6 @@ export function StudentAssignmentPaperPage({
         console.warn("Pending answers could not be fully saved before submit");
         return;
       }
-      // Submit API deferred — flush only for now
       setShowSubmitConfirm(false);
     } catch (err) {
       console.error("Submit prep failed", toAppError(err).code, err);
@@ -437,7 +441,7 @@ export function StudentAssignmentPaperPage({
 
         <section
           className="min-h-0 flex-1 overflow-y-auto px-2 py-4 sm:px-4 sm:py-6 pb-20"
-          inert={away || undefined}
+          inert={away || needsEnterFullscreen || undefined}
         >
           <StudentPaper runtime={runtime} answers={answers} onAnswerChange={changeAnswer} />
         </section>
@@ -500,6 +504,34 @@ export function StudentAssignmentPaperPage({
                 <Button className="flex-1 rounded-xl gap-1.5" onClick={handleSubmitExam} disabled={isSubmitting}>
                   {isSubmitting ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                   <span>Lưu nháp & đóng</span>
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {needsEnterFullscreen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/80 p-4 backdrop-blur-xs">
+            <div
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="fs-gate-title"
+              className="w-full max-w-md rounded-3xl border border-border bg-card p-6 text-center shadow-2xl"
+            >
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                <Maximize className="h-6 w-6" />
+              </div>
+              <h2 id="fs-gate-title" className="mt-4 text-lg font-bold text-foreground">
+                Vào toàn màn hình để bắt đầu làm bài
+              </h2>
+              <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                Bài kiểm tra yêu cầu chế độ toàn màn hình. Thời gian vẫn tính theo máy chủ.
+                Đây không phải cảnh cáo — hãy bấm nút bên dưới để tiếp tục.
+              </p>
+              <div className="mt-5">
+                <Button className="w-full gap-2 rounded-xl" onClick={() => void enterFullscreen()}>
+                  <Maximize className="h-4 w-4" />
+                  Vào toàn màn hình
                 </Button>
               </div>
             </div>

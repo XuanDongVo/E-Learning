@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import type { AssessmentAttemptEventType } from "@/types/student/assignment-attempt";
 
 function isFullscreenSupported(): boolean {
   return (
@@ -9,53 +10,48 @@ function isFullscreenSupported(): boolean {
   );
 }
 
+function resolveLeaveEventType(): AssessmentAttemptEventType {
+  const fsMissing = isFullscreenSupported() && !document.fullscreenElement;
+  if (fsMissing) return "FULLSCREEN_EXIT";
+  return "TAB_HIDDEN";
+}
+
 interface UseAttemptGuardOptions {
-  /** Only while the attempt is ACTIVE. */
   enabled?: boolean;
-  /** Debounce leave detection to absorb F5 / short visibility blips (ms). */
   leaveDebounceMs?: number;
-  onAwayChange?: (away: boolean, count: number) => void;
+  /** Fired once per confirmed leave after debounce (armed only). */
+  onLeaveSignal?: (payload: {
+    eventType: AssessmentAttemptEventType;
+    localLeaveCount: number;
+  }) => void;
 }
 
 /**
  * Fullscreen UX + soft leave monitoring for formal attempts.
- *
- * Browser rule: requestFullscreen must run from a user gesture — it cannot
- * auto-fire on mount. Until the student successfully enters fullscreen once
- * in this page lifetime (`armed`), we do NOT increment leaveCount.
- *
- * F5 / reload resets in-memory leaveCount and armed (expected).
- * System dialogs that briefly hide the tab are absorbed by debounce when armed.
+ * Leave signals are client-reported; server events are the durable source of truth.
  */
 export function useAttemptFullscreen({
   enabled = true,
   leaveDebounceMs = 400,
-  onAwayChange,
+  onLeaveSignal,
 }: UseAttemptGuardOptions = {}) {
   const [isFullscreen, setIsFullscreen] = useState(
     () => typeof document !== "undefined" && document.fullscreenElement !== null,
   );
   const [isSupported] = useState(isFullscreenSupported);
-
-  /** True only after enterFullscreen succeeds at least once this mount. */
   const [armed, setArmed] = useState(false);
-  /** Student is outside the allowed surface (only meaningful when armed). */
   const [away, setAway] = useState(false);
-  /** In-memory only — never persisted. Resets on F5. */
   const [leaveCount, setLeaveCount] = useState(0);
 
   const armedRef = useRef(false);
   const prevAwayRef = useRef(false);
   const leaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const onAwayChangeRef = useRef(onAwayChange);
-  onAwayChangeRef.current = onAwayChange;
+  const onLeaveSignalRef = useRef(onLeaveSignal);
+  onLeaveSignalRef.current = onLeaveSignal;
 
   useEffect(() => {
     const syncFullscreen = () => {
-      const on = document.fullscreenElement !== null;
-      setIsFullscreen(on);
-      // Returning via browser chrome after reload while still fullscreen is rare;
-      // do not auto-arm without an explicit enterFullscreen success in this mount.
+      setIsFullscreen(document.fullscreenElement !== null);
     };
     document.addEventListener("fullscreenchange", syncFullscreen);
     syncFullscreen();
@@ -74,7 +70,6 @@ export function useAttemptFullscreen({
     }
 
     const evaluate = () => {
-      // Not armed yet: never count as a leave violation.
       if (!armedRef.current) {
         setAway(false);
         prevAwayRef.current = false;
@@ -92,7 +87,6 @@ export function useAttemptFullscreen({
         leaveTimerRef.current = null;
       }
 
-      // Debounce: F5 / brief system UI should not immediately count.
       leaveTimerRef.current = setTimeout(() => {
         leaveTimerRef.current = null;
         if (!armedRef.current) return;
@@ -103,9 +97,10 @@ export function useAttemptFullscreen({
         if (stillMissing && !prevAwayRef.current) {
           prevAwayRef.current = true;
           setAway(true);
+          const eventType = resolveLeaveEventType();
           setLeaveCount((prev) => {
             const next = prev + 1;
-            onAwayChangeRef.current?.(true, next);
+            onLeaveSignalRef.current?.({ eventType, localLeaveCount: next });
             return next;
           });
           return;
@@ -114,7 +109,6 @@ export function useAttemptFullscreen({
         if (!stillMissing && prevAwayRef.current) {
           prevAwayRef.current = false;
           setAway(false);
-          onAwayChangeRef.current?.(false, leaveCount);
         }
       }, leaveDebounceMs);
     };
@@ -125,7 +119,6 @@ export function useAttemptFullscreen({
     const preventContextMenu = (e: MouseEvent) => e.preventDefault();
     document.addEventListener("contextmenu", preventContextMenu);
 
-    // Initial evaluation only after arming happens via enterFullscreen.
     evaluate();
 
     return () => {
@@ -136,7 +129,7 @@ export function useAttemptFullscreen({
       events.forEach((evt) => document.removeEventListener(evt, evaluate));
       document.removeEventListener("contextmenu", preventContextMenu);
     };
-  }, [enabled, leaveDebounceMs, leaveCount]);
+  }, [enabled, leaveDebounceMs]);
 
   const markArmed = useCallback(() => {
     armedRef.current = true;
@@ -145,14 +138,8 @@ export function useAttemptFullscreen({
     prevAwayRef.current = false;
   }, []);
 
-  /**
-   * Must be called from a user gesture (Start / Resume / Continue).
-   * Success arms the leave guard for this page lifetime.
-   */
   const enterFullscreen = useCallback(async (): Promise<boolean> => {
     if (!isFullscreenSupported()) {
-      // Unsupported browser: treat as armed so the student is not stuck on a gate,
-      // but leave monitoring for fsMissing will not apply (isFullscreenSupported false).
       markArmed();
       return false;
     }
@@ -179,11 +166,17 @@ export function useAttemptFullscreen({
     try {
       await document.exitFullscreen();
     } catch {
-      // Do not block navigation if the browser refuses to exit.
+      // ignore
     }
   }, []);
 
-  /** Show a non-punitive "enter fullscreen" gate — not a leave warning. */
+  /** Prefer server count when available (after event API). */
+  const setServerLeaveCount = useCallback((count: number) => {
+    if (Number.isFinite(count) && count >= 0) {
+      setLeaveCount(count);
+    }
+  }, []);
+
   const needsEnterFullscreen = enabled && isSupported && !armed;
 
   return {
@@ -191,9 +184,9 @@ export function useAttemptFullscreen({
     isSupported,
     armed,
     needsEnterFullscreen,
-    /** Only true after armed and a confirmed leave (debounced). */
     away: armed && away,
     leaveCount,
+    setServerLeaveCount,
     enterFullscreen,
     exitFullscreen,
   };

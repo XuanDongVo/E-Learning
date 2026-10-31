@@ -141,6 +141,13 @@ export interface CreateAttemptEventRequest {
   activeSessionId: string;
 }
 
+export interface CreateAttemptEventResponse {
+  eventId: number;
+  eventType: AssessmentAttemptEventType;
+  occurredAt: string;
+  leaveEventCount: number;
+}
+
 export type AssessmentAttemptErrorCode =
   | "ASSESSMENT_ATTEMPT_NOT_FOUND"
   | "ASSESSMENT_ATTEMPT_ACCESS_DENIED"

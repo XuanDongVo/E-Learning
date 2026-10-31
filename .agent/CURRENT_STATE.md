@@ -30,9 +30,7 @@
 | Phase 5 Assignment | Assignment, Grade ownership, class target snapshots, schedule, whole-attempt time limit, answer/score display settings, Composition | Authoring baseline plus initial Attempt start/resume slice; scoring incomplete |
 | Phase 6 Student Management | Student/class/profile management | Done |
 | Phase 7 Scope A | ActivitySession runtime exists | Implemented, but Question Engine integration/verification incomplete |
-| Phase 7 Scope B | Assignment authoring + V43/V45/V47 runtime schema + start/resume + autosave on question | **Partial; runtime not fully verified** |
-
-See historical sections below for sprint-by-sprint notes. **Authoritative draft-answer storage:** ADR 0028 / section 18.
+| Phase 7 Scope B | Assignment authoring + V43–V47 runtime + start/resume + autosave on question | **Partial; runtime not fully verified** |
 
 ## 18. Draft answer on AssessmentAttemptQuestion — 2026-10-31 (ADR 0028)
 
@@ -44,6 +42,6 @@ See historical sections below for sprint-by-sprint notes. **Authoritative draft-
 - API wire shape unchanged. Service class name not renamed.
 - Verification: source-only; compile/Flyway/tests/browser not run on this HEAD.
 
----
+## Note on historical sprint sections
 
-*Earlier sprint notes (sections 4–17) remain in git history on this branch; truncated here only if the previous full body is still present on the branch prior to this doc slice. Prefer section 2, section 18, ADR 0028, and PROGRESS.md for current truth on answer storage.*
+Sprint 0–1 narrative sections previously recorded on this branch (session policy, Matching validation, Intro/Paper split, etc.) remain valid as historical context in git history prior to the ADR 0028 doc pass. For **current answer storage and schema**, use section 2, section 18, ADR 0028, and `.agent/PROGRESS.md`.

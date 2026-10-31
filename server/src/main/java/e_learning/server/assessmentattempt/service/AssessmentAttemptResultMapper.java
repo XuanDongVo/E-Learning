@@ -13,7 +13,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Component
@@ -23,8 +27,14 @@ public class AssessmentAttemptResultMapper {
     private final AssessmentAttemptPartResultRepository partResultRepository;
 
     public AttemptResultResponse toResponse(AssessmentAttempt attempt) {
-        boolean scoreVisible = settingFlag(attempt, AssessmentAttemptSnapshotContract.SETTINGS_SHOW_SCORE_AFTER_SUBMIT, true);
-        boolean answersVisible = settingFlag(attempt, AssessmentAttemptSnapshotContract.SETTINGS_SHOW_ANSWERS_AFTER_SUBMIT, true);
+        boolean scoreVisible = settingFlag(
+                attempt,
+                AssessmentAttemptSnapshotContract.SETTINGS_SHOW_SCORE_AFTER_SUBMIT,
+                true);
+        boolean answersVisible = settingFlag(
+                attempt,
+                AssessmentAttemptSnapshotContract.SETTINGS_SHOW_ANSWERS_AFTER_SUBMIT,
+                true);
 
         List<AssessmentAttemptQuestion> questions =
                 questionRepository.findAllByAttemptIdOrderByPositionAsc(attempt.getId());
@@ -33,7 +43,10 @@ public class AssessmentAttemptResultMapper {
                         attempt.getId());
 
         Map<Long, List<AssessmentAttemptPartResult>> partsByQuestion = parts.stream()
-                .collect(Collectors.groupingBy(p -> p.getAttemptQuestion().getId(), LinkedHashMap::new, Collectors.toList()));
+                .collect(Collectors.groupingBy(
+                        p -> p.getAttemptQuestion().getId(),
+                        LinkedHashMap::new,
+                        Collectors.toList()));
 
         List<AttemptResultQuestionResponse> questionRows = new ArrayList<>();
         for (AssessmentAttemptQuestion question : questions) {
@@ -44,11 +57,10 @@ public class AssessmentAttemptResultMapper {
                     .map(AssessmentAttemptPartResult::getEarnedPoints)
                     .filter(Objects::nonNull)
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
-            AttemptPartStatus status = rollup(questionParts, question);
 
+            AttemptPartStatus status = rollup(questionParts, question);
             Object answerKey = answersVisible ? extractAnswerKey(question.getQuestionSnapshot()) : null;
             BigDecimal responseEarned = scoreVisible ? earned : null;
-            BigDecimal responsePossible = scoreVisible || true ? question.getPossiblePoints() : null;
 
             questionRows.add(new AttemptResultQuestionResponse(
                     question.getId(),
@@ -61,9 +73,6 @@ public class AssessmentAttemptResultMapper {
             ));
         }
 
-        BigDecimal totalEarned = scoreVisible ? attempt.getTotalEarnedPoints() : null;
-        BigDecimal percentage = scoreVisible ? attempt.getPercentageScore() : null;
-
         return new AttemptResultResponse(
                 attempt.getId(),
                 attempt.getAssignment().getId(),
@@ -72,62 +81,90 @@ public class AssessmentAttemptResultMapper {
                 attempt.getTimedOutAt(),
                 attempt.isLate(),
                 attempt.getTotalPossiblePoints(),
-                totalEarned,
-                percentage,
+                scoreVisible ? attempt.getTotalEarnedPoints() : null,
+                scoreVisible ? attempt.getPercentageScore() : null,
                 scoreVisible,
                 answersVisible,
                 questionRows
         );
     }
 
-    private static AttemptPartStatus rollup(List<AssessmentAttemptPartResult> parts, AssessmentAttemptQuestion question) {
+    private static AttemptPartStatus rollup(
+            List<AssessmentAttemptPartResult> parts,
+            AssessmentAttemptQuestion question
+    ) {
         if (question.isExample()) {
             return AttemptPartStatus.UNANSWERED;
         }
         if (parts.isEmpty()) {
-            return isBlank(question.getAnswerPayload()) ? AttemptPartStatus.UNANSWERED : AttemptPartStatus.INCORRECT;
+            return isBlank(question.getAnswerPayload())
+                    ? AttemptPartStatus.UNANSWERED
+                    : AttemptPartStatus.INCORRECT;
         }
+
         boolean anyPartial = false;
+        boolean anyCorrect = false;
         boolean anyIncorrect = false;
         boolean allUnanswered = true;
-        boolean allCorrect = true;
+
         for (AssessmentAttemptPartResult part : parts) {
             AttemptPartStatus status = part.getStatus();
-            if (status != AttemptPartStatus.UNANSWERED) allUnanswered = false;
-            if (status != AttemptPartStatus.CORRECT) allCorrect = false;
-            if (status == AttemptPartStatus.PARTIALLY_CORRECT) anyPartial = true;
-            if (status == AttemptPartStatus.INCORRECT) anyIncorrect = true;
+            if (status != AttemptPartStatus.UNANSWERED) {
+                allUnanswered = false;
+            }
+            switch (status) {
+                case CORRECT -> anyCorrect = true;
+                case PARTIALLY_CORRECT -> anyPartial = true;
+                case INCORRECT -> anyIncorrect = true;
+                case UNANSWERED -> { }
+            }
         }
-        if (allUnanswered) return AttemptPartStatus.UNANSWERED;
-        if (allCorrect) return AttemptPartStatus.CORRECT;
-        if (anyPartial || (anyIncorrect && !allCorrect && !allUnanswered && parts.stream()
-                .anyMatch(p -> p.getStatus() == AttemptPartStatus.CORRECT))) {
+
+        if (allUnanswered) {
+            return AttemptPartStatus.UNANSWERED;
+        }
+        if (anyPartial || (anyCorrect && anyIncorrect)) {
             return AttemptPartStatus.PARTIALLY_CORRECT;
+        }
+        if (anyCorrect) {
+            return AttemptPartStatus.CORRECT;
         }
         return AttemptPartStatus.INCORRECT;
     }
 
-    @SuppressWarnings("unchecked")
     private static Object extractAnswerKey(Map<String, Object> snapshot) {
-        if (snapshot == null) return null;
+        if (snapshot == null) {
+            return null;
+        }
         Object grading = snapshot.get("grading");
-        if (!(grading instanceof Map<?, ?> map)) return null;
+        if (!(grading instanceof Map<?, ?> map)) {
+            return null;
+        }
         Map<String, Object> result = new LinkedHashMap<>();
-        Object options = map.get("options");
-        Object answers = map.get("answers");
-        Object explanation = map.get("explanation");
-        if (options != null) result.put("options", options);
-        if (answers != null) result.put("answers", answers);
-        if (explanation != null) result.put("explanation", explanation);
+        if (map.get("options") != null) {
+            result.put("options", map.get("options"));
+        }
+        if (map.get("answers") != null) {
+            result.put("answers", map.get("answers"));
+        }
+        if (map.get("explanation") != null) {
+            result.put("explanation", map.get("explanation"));
+        }
         return result.isEmpty() ? null : result;
     }
 
     private static boolean settingFlag(AssessmentAttempt attempt, String key, boolean defaultValue) {
         Map<String, Object> settings = attempt.getSettingsSnapshot();
-        if (settings == null || !settings.containsKey(key)) return defaultValue;
+        if (settings == null || !settings.containsKey(key)) {
+            return defaultValue;
+        }
         Object value = settings.get(key);
-        if (value instanceof Boolean b) return b;
-        if (value == null) return defaultValue;
+        if (value instanceof Boolean b) {
+            return b;
+        }
+        if (value == null) {
+            return defaultValue;
+        }
         return Boolean.parseBoolean(String.valueOf(value));
     }
 

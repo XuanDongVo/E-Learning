@@ -24,7 +24,7 @@ import java.util.Objects;
  * Do not expose this endpoint to students until the service TODOs are completed and tested.
  */
 @RestController
-@RequestMapping("/v1/assessment-attempts")
+@RequestMapping("/v1/student/assessment-attempts")
 @RequiredArgsConstructor
 public class AssessmentAttemptAnswerController {
     private final AssessmentAttemptAnswerService answerService;

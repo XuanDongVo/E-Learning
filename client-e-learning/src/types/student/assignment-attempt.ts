@@ -3,32 +3,68 @@ export type AssessmentAttemptPlayerState = "LOADING" | "INTRO" | "STARTING" | "A
 export type AssessmentAttemptSaveState = "SAVED" | "SAVING" | "PENDING" | "FAILED";
 export type AssessmentAttemptEventType = "TAB_HIDDEN" | "FULLSCREEN_EXIT";
 export type AttemptAnswerPayload = Record<string, unknown>;
+export type JsonRecord = Record<string, unknown>;
 
 /** Matches the flat Java AttemptRuntimeResponse record. */
+export interface AttemptRuntimeQuestionResponse {
+  attemptQuestionId: number | string;
+  assignmentItemId: number | string | null;
+  position: number;
+  questionSnapshot: JsonRecord;
+  possiblePoints?: number;
+  required?: boolean;
+  example?: boolean;
+}
 export interface AttemptRuntimeResponse {
-  attemptId: number;
-  assignmentId: number;
+  attemptId: number | string;
+  assignmentId: number | string;
   assignmentTitle: string;
-  status: AssessmentAttemptStatus;
-  startedAt: string;
-  deadlineAt: string;
-  serverNow: string;
-  timeLimitMinutes: number;
-  classIdAtStart: number;
-  classNameAtStart: string;
-  late: boolean;
-  snapshotVersion: number;
-  document: Record<string, unknown>;
-  settings: {
-    show_score_after_submit?: boolean;
-    show_answers_after_submit?: boolean;
-    show_points_per_question?: boolean;
-    [key: string]: unknown;
-  };
-  questions: AttemptRuntimeQuestion[];
+  status: string;
+  startedAt?: string;
+  deadlineAt?: string;
+  serverNow?: string;
+  timeLimitMinutes?: number;
+  classIdAtStart?: number | string;
+  classNameAtStart?: string;
+  late?: boolean;
+  snapshotVersion?: number;
+  document: JsonRecord;
+  settings?: JsonRecord;
+  questions: AttemptRuntimeQuestionResponse[];
 }
 
+
 /** Matches Java AttemptRuntimeQuestionResponse. Never includes a required flag or answer key. */
+
+
+export interface AttemptRuntimeQuestionResponse {
+  attemptQuestionId: number | string;
+  assignmentItemId: number | string | null;
+  position: number;
+  questionSnapshot: JsonRecord;
+  possiblePoints?: number;
+  required?: boolean;
+  example?: boolean;
+}
+
+export interface AttemptRuntimeResponse {
+  attemptId: number | string;
+  assignmentId: number | string;
+  assignmentTitle: string;
+  status: string;
+  startedAt?: string;
+  deadlineAt?: string;
+  serverNow?: string;
+  timeLimitMinutes?: number;
+  classIdAtStart?: number | string;
+  classNameAtStart?: string;
+  late?: boolean;
+  snapshotVersion?: number;
+  document: JsonRecord;
+  settings?: JsonRecord;
+  questions: AttemptRuntimeQuestionResponse[];
+}
+
 export interface AttemptRuntimeQuestion {
   attemptQuestionId: number;
   assignmentItemId: number | null;
@@ -54,6 +90,8 @@ export interface StudentQuestionSnapshot {
   segments: { text: string; blankKey?: string }[];
   blankKeys: string[];
 }
+
+
 
 /** Student-safe pre-start metadata; does not expose target class IDs or authoring data. */
 export interface AttemptIntroResponse {
@@ -81,7 +119,6 @@ export interface AttemptSummaryResponse {
 /** Generate once and persist in IndexedDB before the first start-or-resume request. */
 export interface StartOrResumeAttemptRequest { activeSessionId: string; }
 export interface SaveAttemptAnswerRequest {
-  attemptQuestionId: number;
   answerPayload: AttemptAnswerPayload;
   expectedRevision: number;
   activeSessionId: string;
@@ -128,3 +165,34 @@ export type AssessmentAttemptErrorCode =
   | "ASSESSMENT_ATTEMPT_SAVE_FAILED"
   | "ASSESSMENT_ATTEMPT_INVALID_STATE"
   | "ASSESSMENT_ATTEMPT_REQUEST_REPLAY";
+
+
+
+  // ============================================================================
+// 1. DATA CONTRACT & TYPES (Khớp chuẩn DTO Backend Spring Boot)
+// ============================================================================
+
+export interface PoolOption {
+  key: string;
+  text: string;
+}
+
+export interface CompositionItemSnapshot {
+  id?: number | string;
+  position?: number;
+  itemType?: string;
+  questionId?: number | null;
+  blockPayload?: JsonRecord | null;
+  children?: CompositionItemSnapshot[];
+}
+
+export interface CompositionSectionSnapshot {
+  id?: number | string;
+  position?: number;
+  title?: string;
+  titleVi?: string;
+  instructions?: string;
+  instructionsVi?: string;
+  items?: CompositionItemSnapshot[];
+}
+

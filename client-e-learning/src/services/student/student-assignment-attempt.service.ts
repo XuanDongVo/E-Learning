@@ -28,8 +28,8 @@ export const studentAssignmentAttemptService = {
       body: JSON.stringify(body),
     }),
 
-  saveAnswer: (attemptId: number, body: SaveAttemptAnswerRequest) =>
-    request<SaveAttemptAnswerResponse>(`/v1/student/assessment-attempts/${attemptId}/answers`, {
+  saveAnswer: (attemptId: number, attemptQuestionId: number , body: SaveAttemptAnswerRequest) =>
+    request<SaveAttemptAnswerResponse>(`/v1/student/assessment-attempts/${attemptId}/questions/${attemptQuestionId}/answer`, {
       method: "PUT",
       body: JSON.stringify(body),
     }),

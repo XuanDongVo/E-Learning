@@ -4,6 +4,7 @@ import type {
   AttemptResultResponse,
   AttemptRuntimeResponse,
   CreateAttemptEventRequest,
+  CreateAttemptEventResponse,
   SaveAttemptAnswerRequest,
   SaveAttemptAnswerResponse,
   StartOrResumeAttemptRequest,
@@ -51,7 +52,7 @@ export const studentAssignmentAttemptService = {
     request<AttemptResultResponse>(`/v1/student/assessment-attempts/${attemptId}/result`),
 
   event: (attemptId: number, body: CreateAttemptEventRequest) =>
-    request<AttemptSummaryResponse>(`/v1/student/assessment-attempts/${attemptId}/events`, {
+    request<CreateAttemptEventResponse>(`/v1/student/assessment-attempts/${attemptId}/events`, {
       method: "POST",
       body: JSON.stringify(body),
     }),

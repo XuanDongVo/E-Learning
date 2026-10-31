@@ -1,8 +1,16 @@
 package e_learning.server.assessmentattempt.dto.request;
 
-import jakarta.validation.constraints.NotBlank;
+import e_learning.server.assessmentattempt.enums.AssessmentAttemptEventType;
 import jakarta.validation.constraints.NotNull;
 
-public record AttemptEventRequest(@NotNull EventType eventType, @NotBlank String activeSessionId) {
-    public enum EventType { TAB_HIDDEN, FULLSCREEN_EXIT }
+import java.util.UUID;
+
+/**
+ * Client soft signal while an official attempt is in progress.
+ * SESSION_TAKEOVER is not accepted from students (ADR 0027).
+ */
+public record AttemptEventRequest(
+        @NotNull AssessmentAttemptEventType eventType,
+        @NotNull UUID activeSessionId
+) {
 }

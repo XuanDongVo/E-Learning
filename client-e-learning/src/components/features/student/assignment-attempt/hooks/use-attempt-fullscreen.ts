@@ -29,10 +29,16 @@ interface UseAttemptGuardOptions {
 /**
  * Fullscreen UX + soft leave monitoring for formal attempts.
  * Leave signals are client-reported; server events are the durable source of truth.
+ *
+ * Counting rules (prevent double-count):
+ * - Only one leave count per "away episode" (away -> back -> away).
+ * - Debounced confirmation before counting.
+ * - Cooldown window after a count so FS+visibility dual events cannot double-fire.
+ * - Server leaveEventCount always wins via setServerLeaveCount.
  */
 export function useAttemptFullscreen({
   enabled = true,
-  leaveDebounceMs = 400,
+  leaveDebounceMs = 500,
   onLeaveSignal,
 }: UseAttemptGuardOptions = {}) {
   const [isFullscreen, setIsFullscreen] = useState(
@@ -46,8 +52,14 @@ export function useAttemptFullscreen({
   const armedRef = useRef(false);
   const prevAwayRef = useRef(false);
   const leaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  /** Prevents a second count while still in the same away episode / dual-event burst. */
+  const countLockRef = useRef(false);
+  const lastCountedAtRef = useRef(0);
+  const leaveCountRef = useRef(0);
   const onLeaveSignalRef = useRef(onLeaveSignal);
   onLeaveSignalRef.current = onLeaveSignal;
+
+  const LEAVE_COOLDOWN_MS = 1000;
 
   useEffect(() => {
     const syncFullscreen = () => {
@@ -66,20 +78,24 @@ export function useAttemptFullscreen({
       }
       setAway(false);
       prevAwayRef.current = false;
+      countLockRef.current = false;
       return;
     }
+
+    const isCurrentlyAway = () =>
+      (isFullscreenSupported() && !document.fullscreenElement) || document.hidden;
 
     const evaluate = () => {
       if (!armedRef.current) {
         setAway(false);
         prevAwayRef.current = false;
+        countLockRef.current = false;
         return;
       }
 
-      const fsMissing = isFullscreenSupported() && !document.fullscreenElement;
-      const isHidden = document.hidden;
-      const isAwayNow = fsMissing || isHidden;
+      const isAwayNow = isCurrentlyAway();
 
+      // No state change → ignore (covers dual FS+visibility events).
       if (isAwayNow === prevAwayRef.current) return;
 
       if (leaveTimerRef.current) {
@@ -91,24 +107,38 @@ export function useAttemptFullscreen({
         leaveTimerRef.current = null;
         if (!armedRef.current) return;
 
-        const stillMissing =
-          (isFullscreenSupported() && !document.fullscreenElement) || document.hidden;
+        const stillAway = isCurrentlyAway();
 
-        if (stillMissing && !prevAwayRef.current) {
-          prevAwayRef.current = true;
-          setAway(true);
-          const eventType = resolveLeaveEventType();
-          setLeaveCount((prev) => {
-            const next = prev + 1;
-            onLeaveSignalRef.current?.({ eventType, localLeaveCount: next });
-            return next;
-          });
+        // Returning from away → reset episode lock so next leave can count once.
+        if (!stillAway && prevAwayRef.current) {
+          prevAwayRef.current = false;
+          countLockRef.current = false;
+          setAway(false);
           return;
         }
 
-        if (!stillMissing && prevAwayRef.current) {
-          prevAwayRef.current = false;
-          setAway(false);
+        // Confirmed leave: count at most once per episode + cooldown.
+        if (stillAway && !prevAwayRef.current) {
+          const now = Date.now();
+          const inCooldown = now - lastCountedAtRef.current < LEAVE_COOLDOWN_MS;
+
+          if (countLockRef.current || inCooldown) {
+            // Still treat as away UI-wise, but do not increment again.
+            prevAwayRef.current = true;
+            setAway(true);
+            return;
+          }
+
+          prevAwayRef.current = true;
+          countLockRef.current = true;
+          lastCountedAtRef.current = now;
+          setAway(true);
+
+          const eventType = resolveLeaveEventType();
+          const next = leaveCountRef.current + 1;
+          leaveCountRef.current = next;
+          setLeaveCount(next);
+          onLeaveSignalRef.current?.({ eventType, localLeaveCount: next });
         }
       }, leaveDebounceMs);
     };
@@ -136,6 +166,7 @@ export function useAttemptFullscreen({
     setArmed(true);
     setAway(false);
     prevAwayRef.current = false;
+    countLockRef.current = false;
   }, []);
 
   const enterFullscreen = useCallback(async (): Promise<boolean> => {
@@ -173,6 +204,7 @@ export function useAttemptFullscreen({
   /** Prefer server count when available (after event API). */
   const setServerLeaveCount = useCallback((count: number) => {
     if (Number.isFinite(count) && count >= 0) {
+      leaveCountRef.current = count;
       setLeaveCount(count);
     }
   }, []);

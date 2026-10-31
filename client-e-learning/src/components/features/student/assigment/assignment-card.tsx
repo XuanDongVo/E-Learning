@@ -136,7 +136,7 @@ export function AssignmentCard({ assignment, index = 0 }: AssignmentCardProps) {
       <div className="relative z-10 flex flex-col flex-1">
         <h2 className="text-lg font-bold leading-snug mt-1">
           <Link
-            href={`/student/assignments/${assignment.id}`}
+            href={`/student/assignments/${assignment.id}/intro`}
             className="hover:underline hover:decoration-2"
           >
             {assignment.title}
@@ -159,7 +159,7 @@ export function AssignmentCard({ assignment, index = 0 }: AssignmentCardProps) {
         </div>
 
         <Link
-          href={`/student/assignments/${assignment.id}`}
+          href={`/student/assignments/${assignment.id}/intro`}
           className={cn(
             "mt-auto flex min-h-[46px] items-center justify-between rounded-xl border-2 border-foreground px-4 text-sm font-extrabold shadow-[0_3px_0_var(--foreground)] transition-all hover:bg-primary-hover active:translate-y-1 active:shadow-none cursor-pointer",
             done

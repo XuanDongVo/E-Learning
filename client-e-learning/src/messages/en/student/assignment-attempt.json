@@ -24,6 +24,49 @@
       "metadataUnavailable": "Unavailable",
       "gradeValue": "Grade: {grade}",
       "questionCount": "{count} questions",
+      "questionLabel": "Questions",
+      "status": {
+        "notStarted": "Not started",
+        "inProgress": "In progress",
+        "submitted": "Submitted",
+        "timedOut": "Time's up"
+      },
+      "dialogue": {
+        "notStarted": "Ready? Stay focused and do your best!",
+        "inProgress": "You have an unfinished attempt. Continue to complete it!",
+        "submitted": "Great job! You have submitted this assignment!",
+        "timedOut": "This assignment's time limit has ended."
+      },
+      "overdueTitle": "This assignment is overdue!",
+      "overdueDescription": "Your submission will be marked late after the due time.",
+      "rules": {
+        "title": "Assignment Rules",
+        "oneAttemptTitle": "One attempt only:",
+        "oneAttempt": "Each assignment can only be completed once. Your progress and result will be recorded.",
+        "autoSaveTitle": "Answers are saved automatically:",
+        "autoSave": "Your answers are automatically saved whenever you select or change an answer.",
+        "noHintsTitle": "No hints or assistance:",
+        "noHints": "This is an official assessment. Hints and answers are not provided while you are completing the assignment.",
+        "stayOnScreenTitle": "Stay on the assignment screen:",
+        "stayOnScreen": "While completing the assignment, leaving the page or switching to another screen may be detected and may trigger a warning.",
+        "singleTabTitle": "Use only one tab:",
+        "singleTab": "Do not open the assignment in multiple tabs or windows at the same time. Only one active session is allowed.",
+        "warningTitle": "Leaving the assignment may trigger a warning:",
+        "warning": "If you leave the assignment screen, the system will record the event and show a warning when you return.",
+        "submitTitle": "Review before submitting:",
+        "submit": "Review your answers before submitting. Once submitted, you cannot make further changes to your attempt."
+      },
+      "actionDescription": {
+        "notStarted": "Start the assignment to open the paper and begin the timer.",
+        "inProgress": "You have an unfinished attempt. Continue where you left off!",
+        "submitted": "This assignment was submitted successfully.",
+        "timedOut": "Time is up and the assignment can no longer be edited."
+      },
+      "completed": "Completed",
+      "timeUp": "Time is up",
+      "backToAssignments": "All assignments",
+      "loading": "Loading assignment details...",
+      "loadFailed": "Assignment details could not be loaded.",
       "unavailable": "This assignment is not currently available to start or resume. Check the assignment details or contact your teacher."
     },
     "header": {

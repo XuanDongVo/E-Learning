@@ -24,6 +24,49 @@
       "metadataUnavailable": "Chưa có thông tin",
       "gradeValue": "Khối: {grade}",
       "questionCount": "{count} câu hỏi",
+      "questionLabel": "Số câu hỏi",
+      "status": {
+        "notStarted": "Chưa làm",
+        "inProgress": "Đang làm dở",
+        "submitted": "Đã nộp bài",
+        "timedOut": "Hết thời gian"
+      },
+      "dialogue": {
+        "notStarted": "Sẵn sàng chưa? Hãy tập trung làm thật tốt nhé!",
+        "inProgress": "Bạn còn bài làm dở, hãy bấm tiếp tục để hoàn thành ngay nhé!",
+        "submitted": "Xuất sắc! Bạn đã nộp bài tập này rồi!",
+        "timedOut": "Bài tập đã kết thúc thời gian làm bài."
+      },
+      "overdueTitle": "Bài tập đã quá hạn nộp!",
+      "overdueDescription": "Bài làm của bạn sẽ được đánh dấu nộp muộn sau mốc thời gian quy định.",
+      "rules": {
+        "title": "Quy chế khi làm bài",
+        "oneAttemptTitle": "Làm 1 lượt duy nhất:",
+        "oneAttempt": "Mỗi bài chỉ được thực hiện một lượt. Hệ thống ghi nhận tiến trình và kết quả bài làm.",
+        "autoSaveTitle": "Tự động lưu câu trả lời:",
+        "autoSave": "Mỗi khi bạn chọn hoặc thay đổi đáp án, bài làm sẽ được tự động lưu.",
+        "noHintsTitle": "Không hỗ trợ gợi ý:",
+        "noHints": "Đây là bài tập đánh giá chính thức, không cung cấp gợi ý hoặc đáp án trong lúc làm bài.",
+        "stayOnScreenTitle": "Không rời màn hình làm bài:",
+        "stayOnScreen": "Khi đang làm bài, việc chuyển sang màn hình khác hoặc rời khỏi trang có thể được hệ thống ghi nhận và cảnh báo.",
+        "singleTabTitle": "Chỉ sử dụng một tab:",
+        "singleTab": "Không mở bài làm trên nhiều tab hoặc cửa sổ cùng lúc. Hệ thống chỉ cho phép một phiên làm bài hoạt động.",
+        "warningTitle": "Lưu ý khi rời bài:",
+        "warning": "Nếu bạn rời khỏi màn hình làm bài, hệ thống sẽ hiển thị cảnh báo. Hãy quay lại bài làm để tiếp tục.",
+        "submitTitle": "Kiểm tra trước khi nộp:",
+        "submit": "Sau khi nộp bài, bạn không thể tiếp tục thay đổi câu trả lời trong lượt làm này."
+      },
+      "actionDescription": {
+        "notStarted": "Bấm nút để mở đề và bắt đầu tính giờ làm bài.",
+        "inProgress": "Bạn đang làm dở bài này. Bấm để tiếp tục làm tiếp!",
+        "submitted": "Bài tập đã được nộp thành công.",
+        "timedOut": "Đã hết thời gian làm bài, không thể chỉnh sửa."
+      },
+      "completed": "Đã hoàn thành",
+      "timeUp": "Đã hết giờ",
+      "backToAssignments": "Tất cả bài tập",
+      "loading": "Đang tải thông tin bài tập...",
+      "loadFailed": "Không thể tải thông tin bài tập.",
       "unavailable": "Bài tập hiện chưa thể bắt đầu hoặc tiếp tục. Hãy kiểm tra thông tin bài tập hoặc liên hệ giáo viên."
     },
     "header": {
@@ -125,6 +168,14 @@
         "MATCHING": "Nối đáp án",
         "CLOZE": "Điền từ vào đoạn văn",
         "UNKNOWN": "Câu hỏi"
+      },
+      "sectionLabel": "Phần",
+      "questionOf": "Câu {current} / {total}",
+      "palette": {
+        "title": "Danh sách câu hỏi",
+        "answered": "đã trả lời",
+        "answeredLegend": "Đã làm",
+        "unansweredLegend": "Chưa làm"
       }
     }
   }

@@ -1,10 +1,10 @@
-import { StudentAssignmentAttemptPage } from "@/components/features/student/assignment-attempt/student-assignment-attempt-page";
+import { StudentAssignmentPaperPage } from "@/components/features/student/assignment-attempt/student-assignment-paper-page";
 
-export default async function StudentAssignmentAttemptRoute({
+export default async function StudentAssignmentPaperRoute({
   params,
 }: {
   params: Promise<{ assignmentId: string }>;
 }) {
   const { assignmentId } = await params;
-  return <StudentAssignmentAttemptPage assignmentId={assignmentId} />;
+  return <StudentAssignmentPaperPage assignmentId={assignmentId} />;
 }

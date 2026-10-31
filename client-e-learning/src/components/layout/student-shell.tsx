@@ -8,8 +8,9 @@ import { StudentHeader } from "@/components/layout/student-header";
 export function StudentShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const immersiveActivity = /^\/student\/units\/[^/]+\/activities\/[^/]+$/.test(pathname);
+  const immersiveAssignmentAttempt = /^\/student\/assignments\/[^/]+$/.test(pathname);
 
-  if (immersiveActivity) {
+  if (immersiveActivity || immersiveAssignmentAttempt) {
     return (
       <div className="min-h-screen bg-background-app">
         <main className="min-h-screen">{children}</main>

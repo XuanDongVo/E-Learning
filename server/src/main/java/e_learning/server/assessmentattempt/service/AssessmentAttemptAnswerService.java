@@ -3,12 +3,10 @@ package e_learning.server.assessmentattempt.service;
 import e_learning.server.assessmentattempt.dto.request.SaveAttemptAnswerRequest;
 import e_learning.server.assessmentattempt.dto.response.SaveAttemptAnswerResponse;
 import e_learning.server.assessmentattempt.entity.AssessmentAttempt;
-import e_learning.server.assessmentattempt.entity.AssessmentAttemptAnswer;
 import e_learning.server.assessmentattempt.entity.AssessmentAttemptAnswerMutation;
 import e_learning.server.assessmentattempt.entity.AssessmentAttemptQuestion;
 import e_learning.server.assessmentattempt.enums.AssessmentAttemptStatus;
 import e_learning.server.assessmentattempt.repository.AssessmentAttemptAnswerMutationRepository;
-import e_learning.server.assessmentattempt.repository.AssessmentAttemptAnswerRepository;
 import e_learning.server.assessmentattempt.repository.AssessmentAttemptQuestionRepository;
 import e_learning.server.assessmentattempt.repository.AssessmentAttemptRepository;
 import e_learning.server.assessmentattempt.validator.QuestionAnswerFormatValidator;
@@ -31,38 +29,29 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Persists student answer drafts with request idempotency and answer-level optimistic locking.
+ * Persists student answer drafts on {@link AssessmentAttemptQuestion} with request idempotency
+ * and question-level optimistic locking ({@code revision}).
  */
 @Service
 @RequiredArgsConstructor
 public class AssessmentAttemptAnswerService {
     private final AssessmentAttemptRepository attemptRepository;
     private final AssessmentAttemptQuestionRepository attemptQuestionRepository;
-    private final AssessmentAttemptAnswerRepository answerRepository;
     private final AssessmentAttemptAnswerMutationRepository mutationRepository;
     private final ObjectMapper objectMapper;
     private final QuestionAnswerFormatValidator formatValidator;
 
     /*
-     * 1. Define transaction boundary and load the AssessmentAttempt.
-     * 2. Verify student ownership, activeSessionId, attempt state and deadline.
-     * 3. Verify attemptQuestionId belongs to the attempt.
-     * 4. Calculate canonical payload hash.
-     * 5. Resolve/replay idempotency using requestId and payload hash.
-     * 6. Load the current AssessmentAttemptAnswer.
-     * 7. Compare expectedRevision with the current answer revision.
-     * 8. Validate answerPayload against the immutable question snapshot.
-     * 9. Persist answer using optimistic locking (@Version).
-     * 10. Persist idempotency mutation atomically.
-     * 11. Update lastActivityAt.
-     * 12. Return SaveAttemptAnswerResponse acknowledgement.
+     * 1. Load AssessmentAttempt; verify ownership, activeSessionId, state, deadline.
+     * 2. Load AssessmentAttemptQuestion by id + attemptId.
+     * 3. Canonical payload hash + requestId idempotency (Mutation).
+     * 4. Validate expectedRevision against question.revision.
+     * 5. Validate answerPayload against immutable student.spec in question_snapshot.
+     * 6. Persist answer_payload + saved_at on the question (@Version revision).
+     * 7. Persist Mutation; update attempt.lastActivityAt.
      *
-     * Concurrency policy:
-     * - No pessimistic lock.
-     * - AssessmentAttemptAnswer.revision uses @Version.
-     * - activeSessionId rejects stale/inactive sessions.
-     * - Race conditions between autosave, submit, timeout and refresh
-     *   are intentionally tolerated by the current product scope.
+     * Concurrency: no pessimistic lock; AssessmentAttemptQuestion.revision is @Version.
+     * Normalized values are not stored on draft save (submit/grade path later).
      */
     @Transactional
     public SaveAttemptAnswerResponse saveAnswer(Long attemptId, Long attemptQuestionId, Long studentId,
@@ -91,17 +80,14 @@ public class AssessmentAttemptAnswerService {
         }
 
         validateAnswerPayload(attemptQuestion.getQuestionSnapshot(), request.answerPayload());
+        validateExpectedRevision(attemptQuestion.getRevision(), request.expectedRevision());
 
-        Optional<AssessmentAttemptAnswer> existingAnswer =
-                answerRepository.findByAttemptQuestionId(attemptQuestionId);
-        validateExpectedRevision(existingAnswer, request.expectedRevision());
-
-        AssessmentAttemptAnswer answer = existingAnswer.orElseGet(AssessmentAttemptAnswer::new);
-        if (answer.getId() == null) answer.setAttemptQuestion(attemptQuestion);
-        answer.setAnswerPayload(request.answerPayload());
+        LocalDateTime savedAt = LocalDateTime.now();
+        attemptQuestion.setAnswerPayload(request.answerPayload());
+        attemptQuestion.setSavedAt(savedAt);
 
         try {
-            answerRepository.saveAndFlush(answer);
+            attemptQuestionRepository.saveAndFlush(attemptQuestion);
         } catch (ObjectOptimisticLockingFailureException exception) {
             throw new AppException(ErrorCode.ASSESSMENT_ATTEMPT_VERSION_CONFLICT);
         }
@@ -111,13 +97,13 @@ public class AssessmentAttemptAnswerService {
         mutation.setAttemptQuestion(attemptQuestion);
         mutation.setRequestId(request.requestId());
         mutation.setPayloadHash(payloadHash);
-        mutation.setResultRevision(answer.getRevision());
-        mutation.setSavedAt(answer.getSavedAt());
+        mutation.setResultRevision(attemptQuestion.getRevision());
+        mutation.setSavedAt(savedAt);
         mutationRepository.saveAndFlush(mutation);
 
-        attempt.setLastActivityAt(answer.getSavedAt());
+        attempt.setLastActivityAt(savedAt);
         return SaveAttemptAnswerResponse.map(request.requestId(), attemptQuestionId,
-                answer.getRevision(), answer.getSavedAt(), LocalDateTime.now());
+                attemptQuestion.getRevision(), savedAt, LocalDateTime.now());
     }
 
     private void verifyStudentOwnership(AssessmentAttempt attempt, Long studentId) {
@@ -141,8 +127,7 @@ public class AssessmentAttemptAnswerService {
         }
     }
 
-    private void validateExpectedRevision(Optional<AssessmentAttemptAnswer> existingAnswer, long expectedRevision) {
-        long currentRevision = existingAnswer.map(AssessmentAttemptAnswer::getRevision).orElse(0L);
+    private void validateExpectedRevision(long currentRevision, long expectedRevision) {
         if (currentRevision != expectedRevision) {
             throw new AppException(ErrorCode.ASSESSMENT_ATTEMPT_VERSION_CONFLICT);
         }
@@ -155,7 +140,6 @@ public class AssessmentAttemptAnswerService {
             throw new AppException(ErrorCode.ASSESSMENT_ATTEMPT_INVALID_ANSWER);
         }
 
-        // Chỉ đọc student.spec
         if (!(questionSnapshot.get("student") instanceof Map<?, ?> student)
                 || !(student.get("spec") instanceof Map<?, ?> studentSpecMap)) {
             throw new AppException(ErrorCode.ASSESSMENT_ATTEMPT_INVALID_ANSWER);
@@ -190,23 +174,16 @@ public class AssessmentAttemptAnswerService {
 
         if (node.isArray()) {
             var array = objectMapper.createArrayNode();
-
-            // Preserve array order; answers may depend on the position of each item.
             node.forEach(item -> array.add(canonicalize(item)));
-
             return array;
         }
 
         ObjectNode object = objectMapper.createObjectNode();
         java.util.TreeSet<String> sorted = new java.util.TreeSet<>();
-
-        // Collect property names and sort them for deterministic JSON output.
         node.properties().forEach(entry -> sorted.add(entry.getKey()));
-
         for (String name : sorted) {
             object.set(name, canonicalize(node.get(name)));
         }
-
         return object;
     }
 

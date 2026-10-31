@@ -4,6 +4,7 @@ import type {
   AttemptResultResponse,
   AttemptRuntimeResponse,
   CreateAttemptEventRequest,
+  CreateAttemptEventResponse,
   SaveAttemptAnswerRequest,
   SaveAttemptAnswerResponse,
   StartOrResumeAttemptRequest,
@@ -12,39 +13,46 @@ import type {
 } from "@/types/student/assignment-attempt";
 
 /**
- * Sprint 1 HTTP contract.
+ * Student Assignment Attempt HTTP contract.
  *
- * The client must persist activeSessionId in IndexedDB before calling startOrResume.
- * The server validates the credential and never echoes it in AttemptRuntimeResponse.
- * There is intentionally no heartbeat or claim/takeover endpoint in the MVP.
+ * Persist activeSessionId in IndexedDB before startOrResume and every mutation.
+ * The server never echoes the credential in AttemptRuntimeResponse.
+ * No heartbeat or claim/takeover endpoint in the MVP.
  */
 export const studentAssignmentAttemptService = {
   intro: (assignmentId: number) =>
-    request<AttemptIntroResponse>(`/v1/assignments/${assignmentId}/assessment-attempt/intro`),
+    request<AttemptIntroResponse>(`/v1/student/assignments/${assignmentId}/assessment-attempt/intro`),
 
   startOrResume: (assignmentId: number, body: StartOrResumeAttemptRequest) =>
-    request<AttemptRuntimeResponse>(`/v1/assignments/${assignmentId}/assessment-attempt`, {
+    request<AttemptRuntimeResponse>(`/v1/student/assignments/${assignmentId}/assessment-attempt`, {
       method: "POST",
       body: JSON.stringify(body),
     }),
 
-  saveAnswer: (attemptId: number, body: SaveAttemptAnswerRequest) =>
-    request<SaveAttemptAnswerResponse>(`/v1/assessment-attempts/${attemptId}/answers`, {
-      method: "PUT",
-      body: JSON.stringify(body),
-    }),
+  saveAnswer: (
+    attemptId: number,
+    attemptQuestionId: number,
+    body: SaveAttemptAnswerRequest,
+  ) =>
+    request<SaveAttemptAnswerResponse>(
+      `/v1/student/assessment-attempts/${attemptId}/questions/${attemptQuestionId}/answer`,
+      {
+        method: "PUT",
+        body: JSON.stringify(body),
+      },
+    ),
 
   submit: (attemptId: number, body: SubmitAttemptRequest) =>
-    request<AttemptResultResponse>(`/v1/assessment-attempts/${attemptId}/submit`, {
+    request<AttemptResultResponse>(`/v1/student/assessment-attempts/${attemptId}/submit`, {
       method: "POST",
       body: JSON.stringify(body),
     }),
 
   result: (attemptId: number) =>
-    request<AttemptResultResponse>(`/v1/assessment-attempts/${attemptId}/result`),
+    request<AttemptResultResponse>(`/v1/student/assessment-attempts/${attemptId}/result`),
 
   event: (attemptId: number, body: CreateAttemptEventRequest) =>
-    request<AttemptSummaryResponse>(`/v1/assessment-attempts/${attemptId}/events`, {
+    request<CreateAttemptEventResponse>(`/v1/student/assessment-attempts/${attemptId}/events`, {
       method: "POST",
       body: JSON.stringify(body),
     }),

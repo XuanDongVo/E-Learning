@@ -12,11 +12,11 @@ import type {
 } from "@/types/student/assignment-attempt";
 
 /**
- * Sprint 1 HTTP contract.
+ * Student Assignment Attempt HTTP contract.
  *
- * The client must persist activeSessionId in IndexedDB before calling startOrResume.
- * The server validates the credential and never echoes it in AttemptRuntimeResponse.
- * There is intentionally no heartbeat or claim/takeover endpoint in the MVP.
+ * Persist activeSessionId in IndexedDB before startOrResume and every mutation.
+ * The server never echoes the credential in AttemptRuntimeResponse.
+ * No heartbeat or claim/takeover endpoint in the MVP.
  */
 export const studentAssignmentAttemptService = {
   intro: (assignmentId: number) =>
@@ -28,11 +28,18 @@ export const studentAssignmentAttemptService = {
       body: JSON.stringify(body),
     }),
 
-  saveAnswer: (attemptId: number, attemptQuestionId: number , body: SaveAttemptAnswerRequest) =>
-    request<SaveAttemptAnswerResponse>(`/v1/student/assessment-attempts/${attemptId}/questions/${attemptQuestionId}/answer`, {
-      method: "PUT",
-      body: JSON.stringify(body),
-    }),
+  saveAnswer: (
+    attemptId: number,
+    attemptQuestionId: number,
+    body: SaveAttemptAnswerRequest,
+  ) =>
+    request<SaveAttemptAnswerResponse>(
+      `/v1/student/assessment-attempts/${attemptId}/questions/${attemptQuestionId}/answer`,
+      {
+        method: "PUT",
+        body: JSON.stringify(body),
+      },
+    ),
 
   submit: (attemptId: number, body: SubmitAttemptRequest) =>
     request<AttemptResultResponse>(`/v1/student/assessment-attempts/${attemptId}/submit`, {

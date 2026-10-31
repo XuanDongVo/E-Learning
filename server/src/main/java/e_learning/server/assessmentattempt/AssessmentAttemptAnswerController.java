@@ -18,10 +18,8 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Objects;
 
 /**
- * Answer autosave endpoint scaffold.
- *
- * The service intentionally contains no business implementation yet.
- * Do not expose this endpoint to students until the service TODOs are completed and tested.
+ * Student answer autosave. Draft state is stored on AssessmentAttemptQuestion (ADR 0028).
+ * activeSessionId must match the Attempt credential; no silent re-issue or takeover.
  */
 @RestController
 @RequestMapping("/v1/student/assessment-attempts")

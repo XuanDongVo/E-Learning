@@ -544,41 +544,28 @@ function QuestionCard({
         </div>
       )}
 
-      {/* 4. MATCHING */}
-      {type === "MATCHING" && snapshot.items.length > 0 && (
-        <div className="space-y-3">
-          {snapshot.items.map((item) => {
-            const picked =
-              typeof pairs[item.key] === "string"
-                ? String(pairs[item.key])
-                : "";
-            return (
-              <label
-                key={item.key}
-                className="grid gap-2 rounded-xl border border-border bg-muted/20 p-3 sm:grid-cols-[1fr_220px] sm:items-center"
-              >
-                <span className="text-sm font-medium text-foreground">
-                  {renderRichText(item.text)}
-                </span>
-                <select
-                  value={picked}
-                  onChange={(e) =>
-                    onAnswerChange({
-                      pairs: { ...pairs, [item.key]: e.target.value },
-                    })
-                  }
-                  className="h-10 rounded-lg border border-border bg-card px-2.5 text-sm text-foreground focus:border-primary focus:outline-hidden"
-                >
-                  <option value="">— Select answer —</option>
-                  {matchingPool.map((opt) => (
-                    <option key={opt.key} value={opt.key}>
-                      {opt.text}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            );
-          })}
+      {/* 4. MATCHING — 1 prompt, chọn 1 entry từ pool */}
+      {type === "MATCHING" && (
+        <div className="space-y-2">
+          <select
+            value={selectedKey}
+            onChange={(e) => onAnswerChange({ selectedKey: e.target.value })}
+            className="h-10 w-full max-w-xs rounded-lg border border-border bg-card px-2.5 text-sm text-foreground focus:border-primary focus:outline-hidden"
+            aria-label={snapshot.prompt || "Select matching answer"}
+          >
+            <option value="">— Select answer —</option>
+            {matchingPool.map((opt) => (
+              <option key={opt.key} value={opt.key}>
+                {opt.text}
+              </option>
+            ))}
+          </select>
+          {matchingPool.length === 0 && (
+            <p className="text-xs text-muted-foreground">
+              Không tìm thấy Answer Pool (kiểm tra poolId / block POOL trong
+              đề).
+            </p>
+          )}
         </div>
       )}
 

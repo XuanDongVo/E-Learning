@@ -1,9 +1,12 @@
 package e_learning.server.assessmentattempt;
 
 import e_learning.server.assessmentattempt.dto.request.StartOrResumeAttemptRequest;
+import e_learning.server.assessmentattempt.dto.request.SubmitAttemptRequest;
 import e_learning.server.assessmentattempt.dto.response.AttemptIntroResponse;
+import e_learning.server.assessmentattempt.dto.response.AttemptResultResponse;
 import e_learning.server.assessmentattempt.dto.response.AttemptRuntimeResponse;
 import e_learning.server.assessmentattempt.service.AssessmentAttemptService;
+import e_learning.server.assessmentattempt.service.AssessmentAttemptSubmitService;
 import e_learning.server.common.response.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -19,18 +22,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Objects;
 
-/**
- * Sprint 1 controller shell only.
- *
- * Authentication identity is extracted here; student authorization and all Assignment
- * business validation must live in AssessmentAttemptService. The service method is
- * intentionally a TODO stub until the owner implements the backend logic.
- */
 @RestController
 @RequestMapping("/v1/student/assignments")
 @RequiredArgsConstructor
 public class AssessmentAttemptController {
     private final AssessmentAttemptService attemptService;
+    private final AssessmentAttemptSubmitService attemptSubmitService;
 
     @GetMapping("/{assignmentId}/assessment-attempt/intro")
     public ResponseEntity<ApiResponse<AttemptIntroResponse>> getIntro(
@@ -52,6 +49,29 @@ public class AssessmentAttemptController {
         Long studentId = Long.valueOf(Objects.requireNonNull(jwt.getSubject()));
         return ResponseEntity.ok(ApiResponse.success(
                 attemptService.startOrResume(assignmentId, studentId, request)
+        ));
+    }
+
+    @PostMapping("/{assignmentId}/assessment-attempt/submit")
+    public ResponseEntity<ApiResponse<AttemptResultResponse>> submit(
+            @PathVariable Long assignmentId,
+            @Valid @RequestBody SubmitAttemptRequest request,
+            @AuthenticationPrincipal Jwt jwt
+    ) {
+        Long studentId = Long.valueOf(Objects.requireNonNull(jwt.getSubject()));
+        return ResponseEntity.ok(ApiResponse.success(
+                attemptSubmitService.submit(assignmentId, studentId, request)
+        ));
+    }
+
+    @GetMapping("/{assignmentId}/assessment-attempt/result")
+    public ResponseEntity<ApiResponse<AttemptResultResponse>> result(
+            @PathVariable Long assignmentId,
+            @AuthenticationPrincipal Jwt jwt
+    ) {
+        Long studentId = Long.valueOf(Objects.requireNonNull(jwt.getSubject()));
+        return ResponseEntity.ok(ApiResponse.success(
+                attemptSubmitService.getResult(assignmentId, studentId)
         ));
     }
 }

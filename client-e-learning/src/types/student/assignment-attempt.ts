@@ -5,48 +5,23 @@ export type AssessmentAttemptEventType = "TAB_HIDDEN" | "FULLSCREEN_EXIT";
 export type AttemptAnswerPayload = Record<string, unknown>;
 export type JsonRecord = Record<string, unknown>;
 
+/** Matches Java AttemptRuntimeQuestionResponse. Never includes answer keys. */
+export interface AttemptRuntimeQuestionResponse {
+  attemptQuestionId: number | string;
+  assignmentItemId?: number | string | null;
+  questionId?: number | string | null;
+  sectionKey?: string | null;
+  sectionTitle?: string | null;
+  position: number;
+  questionSnapshot: JsonRecord;
+  possiblePoints?: number;
+  required?: boolean;
+  example?: boolean;
+  answerPayload?: AttemptAnswerPayload | null;
+  answerRevision?: number;
+}
+
 /** Matches the flat Java AttemptRuntimeResponse record. */
-export interface AttemptRuntimeQuestionResponse {
-  attemptQuestionId: number | string;
-  assignmentItemId: number | string | null;
-  position: number;
-  questionSnapshot: JsonRecord;
-  possiblePoints?: number;
-  required?: boolean;
-  example?: boolean;
-}
-export interface AttemptRuntimeResponse {
-  attemptId: number | string;
-  assignmentId: number | string;
-  assignmentTitle: string;
-  status: string;
-  startedAt?: string;
-  deadlineAt?: string;
-  serverNow?: string;
-  timeLimitMinutes?: number;
-  classIdAtStart?: number | string;
-  classNameAtStart?: string;
-  late?: boolean;
-  snapshotVersion?: number;
-  document: JsonRecord;
-  settings?: JsonRecord;
-  questions: AttemptRuntimeQuestionResponse[];
-}
-
-
-/** Matches Java AttemptRuntimeQuestionResponse. Never includes a required flag or answer key. */
-
-
-export interface AttemptRuntimeQuestionResponse {
-  attemptQuestionId: number | string;
-  assignmentItemId: number | string | null;
-  position: number;
-  questionSnapshot: JsonRecord;
-  possiblePoints?: number;
-  required?: boolean;
-  example?: boolean;
-}
-
 export interface AttemptRuntimeResponse {
   attemptId: number | string;
   assignmentId: number | string;
@@ -91,8 +66,6 @@ export interface StudentQuestionSnapshot {
   blankKeys: string[];
 }
 
-
-
 /** Student-safe pre-start metadata; does not expose target class IDs or authoring data. */
 export interface AttemptIntroResponse {
   assignmentId: number;
@@ -117,20 +90,31 @@ export interface AttemptSummaryResponse {
 }
 
 /** Generate once and persist in IndexedDB before the first start-or-resume request. */
-export interface StartOrResumeAttemptRequest { activeSessionId: string; }
+export interface StartOrResumeAttemptRequest {
+  activeSessionId: string;
+}
+
+/** Body only — attemptQuestionId is a path variable. */
 export interface SaveAttemptAnswerRequest {
   answerPayload: AttemptAnswerPayload;
   expectedRevision: number;
   activeSessionId: string;
   requestId: string;
 }
+
 export interface SaveAttemptAnswerResponse {
+  requestId: string;
   attemptQuestionId: number;
   revision: number;
   savedAt: string;
   serverNow: string;
 }
-export interface SubmitAttemptRequest { activeSessionId: string; requestId: string; }
+
+export interface SubmitAttemptRequest {
+  activeSessionId: string;
+  requestId: string;
+}
+
 export interface AttemptResultQuestion {
   attemptQuestionId: number;
   position: number;
@@ -140,6 +124,7 @@ export interface AttemptResultQuestion {
   answer: AttemptAnswerPayload | null;
   answerKey: unknown | null;
 }
+
 export interface AttemptResultResponse {
   attempt: AttemptSummaryResponse;
   score: number | null;
@@ -150,7 +135,12 @@ export interface AttemptResultResponse {
   answersVisible: boolean;
   questions: AttemptResultQuestion[];
 }
-export interface CreateAttemptEventRequest { eventType: AssessmentAttemptEventType; activeSessionId: string; }
+
+export interface CreateAttemptEventRequest {
+  eventType: AssessmentAttemptEventType;
+  activeSessionId: string;
+}
+
 export type AssessmentAttemptErrorCode =
   | "ASSESSMENT_ATTEMPT_NOT_FOUND"
   | "ASSESSMENT_ATTEMPT_ACCESS_DENIED"
@@ -165,12 +155,6 @@ export type AssessmentAttemptErrorCode =
   | "ASSESSMENT_ATTEMPT_SAVE_FAILED"
   | "ASSESSMENT_ATTEMPT_INVALID_STATE"
   | "ASSESSMENT_ATTEMPT_REQUEST_REPLAY";
-
-
-
-  // ============================================================================
-// 1. DATA CONTRACT & TYPES (Khớp chuẩn DTO Backend Spring Boot)
-// ============================================================================
 
 export interface PoolOption {
   key: string;
@@ -195,4 +179,3 @@ export interface CompositionSectionSnapshot {
   instructionsVi?: string;
   items?: CompositionItemSnapshot[];
 }
-

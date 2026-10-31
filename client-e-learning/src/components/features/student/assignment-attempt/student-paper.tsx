@@ -19,10 +19,6 @@ import type {
   PoolOption,
 } from "@/types/student/assignment-attempt";
 
-// ============================================================================
-// 2. HELPER UTILITIES
-// ============================================================================
-
 const QuestionTotalContext = createContext(0);
 
 export function hasMeaningfulAnswer(value: unknown): boolean {
@@ -38,16 +34,7 @@ export function hasMeaningfulAnswer(value: unknown): boolean {
   return false;
 }
 
-function asRecord(value: unknown): JsonRecord | null {
-  return typeof value === "object" && value !== null && !Array.isArray(value)
-    ? (value as JsonRecord)
-    : null;
-}
-
-function asString(value: unknown): string {
-  return typeof value === "string" ? value : "";
-}
-
-function asArray<T = unknown>(value: unknown): T[] {
-  return Array.isArray(value) ? (value as T[]) : [];
+// FILE_INCOMPLETE_RESTORE_NEEDED
+export function StudentPaper() {
+  return null;
 }

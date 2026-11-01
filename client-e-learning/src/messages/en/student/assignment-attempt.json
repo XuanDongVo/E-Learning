@@ -1,1 +1,167 @@
-PLACEHOLDER
+{
+  "assignmentAttempt": {
+    "intro": {
+      "title": "Assignment attempt",
+      "grade": "Grade",
+      "questions": "questions",
+      "timeLimit": "Time limit",
+      "noTimeLimit": "No time limit",
+      "dueAt": "Due",
+      "description": "Start or resume the official attempt linked to your account. The system uses the teacher snapshot and a server-controlled deadline.",
+      "titleWithId": "Assignment #{id}",
+      "beforeStartTitle": "Before you start",
+      "ruleOneAttempt": "This assignment has one official attempt. Reopening continues that same attempt.",
+      "ruleDeadline": "The deadline is controlled by the server and keeps running if you close the browser.",
+      "ruleDraft": "Answers are autosaved while you work.",
+      "startOrResume": "Start / resume attempt",
+      "noDueDate": "Not available",
+      "timeLimitValue": "{minutes} minutes",
+      "metadataUnavailable": "Not available",
+      "gradeValue": "Grade: {grade}",
+      "questionCount": "{count} questions",
+      "questionLabel": "Questions",
+      "status": {
+        "notStarted": "Not started",
+        "inProgress": "In progress",
+        "submitted": "Submitted",
+        "timedOut": "Timed out"
+      },
+      "dialogue": {
+        "notStarted": "Ready? Stay focused and do your best!",
+        "inProgress": "You have an unfinished attempt — continue to finish it.",
+        "submitted": "Great job! This assignment is already submitted.",
+        "timedOut": "This assignment attempt has timed out."
+      },
+      "overdueTitle": "This assignment is past due",
+      "overdueDescription": "Your submission will be marked late after the due time.",
+      "rules": {
+        "title": "Rules",
+        "oneAttemptTitle": "One official attempt:",
+        "oneAttempt": "Each assignment can be taken once. Progress and results are recorded.",
+        "autoSaveTitle": "Autosave:",
+        "autoSave": "Answers are saved automatically when you change them.",
+        "noHintsTitle": "No hints:",
+        "noHints": "This is an official graded attempt; hints are not available while working.",
+        "stayOnScreenTitle": "Stay on the attempt screen:",
+        "stayOnScreen": "Leaving the page or switching away may be recorded.",
+        "singleTabTitle": "One tab only:",
+        "singleTab": "Do not open the attempt in multiple tabs. Only one active session is allowed.",
+        "warningTitle": "Leaving the attempt:",
+        "warning": "If you leave the attempt screen, the system may show a warning."
+      }
+    },
+    "header": {
+      "title": "Attempt",
+      "leave": "Leave"
+    },
+    "timer": {
+      "remaining": "Remaining",
+      "urgent": "Time is almost up"
+    },
+    "save": {
+      "saved": "Saved",
+      "saving": "Saving...",
+      "unsaved": "Unsaved",
+      "error": "Save failed"
+    },
+    "session": {
+      "conflict": "This attempt is open in another tab"
+    },
+    "visibility": {
+      "leaveWarning": "You left the attempt screen"
+    },
+    "submit": {
+      "title": "Submit attempt?",
+      "confirm": "Submit",
+      "confirming": "Submitting…",
+      "button": "Submit",
+      "unanswered": "{count} unanswered questions",
+      "pendingSaves": "{count} changes still saving",
+      "failedSaves": "{count} changes could not be saved",
+      "waitForSave": "Wait for saves to finish",
+      "cancel": "Cancel",
+      "error": "Could not submit. Please try again.",
+      "sessionMissing": "Session not found. Reload the page and try again."
+    },
+    "result": {
+      "title": "Attempt result",
+      "submitted": "Submitted",
+      "submittedTitle": "Assignment submitted",
+      "timedOut": "Timed out",
+      "timedOutTitle": "Time is up — the system submitted your attempt",
+      "timedOutHint": "Only answers saved on the server before the deadline were graded.",
+      "score": "Score",
+      "percent": "Percentage",
+      "scoreHidden": "Your score is not available yet.",
+      "answersShown": "Answers are available.",
+      "answersHidden": "Answers are hidden.",
+      "answersHeading": "Answers",
+      "late": "Submitted late",
+      "startedAt": "Started",
+      "finishedAt": "Finished",
+      "lockedHint": "This attempt is locked. You cannot change answers.",
+      "loading": "Loading…",
+      "loadFailed": "Could not load the result.",
+      "review": {
+        "questionLabel": "Q{number}",
+        "yourAnswer": "Your answer",
+        "correctAnswer": "Correct answer",
+        "status": {
+          "correct": "Correct",
+          "partial": "Partially correct",
+          "incorrect": "Incorrect",
+          "unanswered": "Unanswered"
+        }
+      }
+    },
+    "backToAssignments": "Back to assignments",
+    "backToDashboard": "Back to dashboard",
+    "player": {
+      "eyebrow": "Assignment in progress",
+      "progress": "Answered {answered} of {total} questions",
+      "attemptDeadline": "Attempt deadline"
+    },
+    "draft": {
+      "warningTitle": "Your answers are not saved yet",
+      "warningDescription": "Do not refresh or close this page if you need to keep these edits.",
+      "sprint2Note": "Autosave is connected",
+      "confirmLeave": "Leave this page? Unsaved changes may be lost."
+    },
+    "states": {
+      "checkingAuth": "Checking your account…",
+      "checkingSession": "Checking active tab permission…",
+      "timedOut": "This attempt has timed out",
+      "alreadySubmitted": "This assignment attempt is already finished",
+      "resultSprint4": "The result screen is available.",
+      "starting": "Opening attempt…"
+    },
+    "errors": {
+      "invalidAssignment": "The assignment ID in this link is invalid.",
+      "studentOnly": "Only a signed-in student can open this assignment attempt.",
+      "startFailedTitle": "The attempt could not be opened",
+      "startFailedDescription": "The server endpoint may not be ready yet. No practice attempt has been mocked locally.",
+      "introLoadFailed": "Assignment details could not be loaded.",
+      "retryIntro": "Retry details"
+    },
+    "paper": {
+      "questionFallback": "Question",
+      "answer": "Answer",
+      "true": "True",
+      "false": "False",
+      "blank": "Blank {index}",
+      "sectionFallback": "Section {index}",
+      "unsupportedType": "This question type is not supported by the current Student Paper renderer yet.",
+      "matchingPoolMissing": "The shared answer pool for this question could not be found.",
+      "types": {
+        "SINGLE_CHOICE": "Single choice",
+        "MULTIPLE_CHOICE": "Multiple choice",
+        "TRUE_FALSE": "True / false",
+        "FILL_IN_BLANK": "Fill in the blank",
+        "TYPE_ANSWER": "Type answer",
+        "MATCHING": "Matching",
+        "CLOZE": "Cloze",
+        "UNKNOWN": "Question"
+      }
+    }
+  }
+}

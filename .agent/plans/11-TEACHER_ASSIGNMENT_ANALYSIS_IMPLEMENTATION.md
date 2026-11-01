@@ -1,32 +1,50 @@
-# Teacher Assignment Analysis — Implementation Scaffold
+# Teacher Assignment Analysis — Implementation Status
 
-**Status:** IN PROGRESS  
+**Status:** FEATURE COMPLETE (code) — pending local E2E  
 **Branch:** `feature/teacher-assignment-analysis`  
 **Spec:** `10-TEACHER_ASSIGNMENT_ANALYSIS_SPEC.md`  
 **Last updated:** 2026-11-01
 
-## Done in this branch (code)
+## Decisions locked
+
+| Topic | Decision |
+|---|---|
+| Roster | Live enrollment in `Assignment.classIds` |
+| Duration | `finishedAt - startedAt` |
+| Overall band | HIGH ≥80 / MID ≥50 / LOW <50 median % |
+| Accuracy denominator | Non-example outcomes on terminal attempts; CORRECT only in numerator |
+| Score distribution | Fixed 10 buckets |
+| Auth | `/v1/teacher/**` → `ROLE_TEACHER` (already in SecurityConfig) |
+| Answer key | Always on teacher attempt review |
+| Students page | `PageResponse` 1-indexed |
+
+## Implemented
 
 ### Backend
-- DTO under `assignmentanalysis/dto/response/*` (no `Dto` suffix)
-- Students list uses `common.dto.PageResponse` (1-indexed `page`)
-- `AssignmentAnalysisService.getOverview` — live roster via `classIds` + `ClassMember`, attempts, progress, score distribution (10 buckets), class comparison + overall band
-- `getStudents` — filter + in-memory page
-- `getAttemptReview` — terminal attempts only; teacher always sees answer key from snapshot grading
-- `getQuestions` — still empty stub
-- Repo: `findAllByAssignmentIdWithStudent`
+- `dto/response/*` without Dto suffix; students use `common.dto.PageResponse`
+- Overview: progress, score, class comparison + **accuracyPercent**
+- Students filters + paging
+- **Questions aggregation** by position (skip example); accuracy + score rate
+- Attempt review with answer key
+- Batch load questions/parts by attempt ids
 
 ### Frontend
-- Modular analysis UI
-- `AttemptReviewSheet` wired from Students “View”
-- Service uses `res.data`; students page 1-indexed
-- i18n `teacher.analytics.review.*`
+- Modular analysis UI + AttemptReviewSheet
+- i18n vi/en `teacher.analytics`
+- Feedback + Skeleton; always `res.data`
 
-## Next phase
+### Security
+- Verified: no additional path rules needed for `/v1/teacher/assignments/{id}/analytics/**`
 
-1. **Questions aggregation** from PartResults across finalized attempts (+ section grouping)
-2. Class-level **accuracyPercent** (needs question outcomes)
-3. Delete legacy sample `result/teacher-assignment-result-view.tsx` when UI stable
-4. Spring Security path check for `/v1/teacher/assignments/**`
-5. Remove leftover `*Dto.java` files if still present under old dto package root
-6. E2E with real graded attempts
+## Local E2E checklist
+
+1. Teacher → `/teacher/assignments/{id}/results`
+2. Overview metrics with graded data
+3. Students filter + review sheet
+4. Questions tab counts
+5. Non-terminal attempt → 409
+
+## Optional later
+
+- Remove sample `result/teacher-assignment-result-view.tsx`
+- Cache/large-class performance

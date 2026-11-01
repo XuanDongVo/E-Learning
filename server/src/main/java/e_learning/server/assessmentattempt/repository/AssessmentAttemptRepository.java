@@ -22,6 +22,14 @@ public interface AssessmentAttemptRepository extends JpaRepository<AssessmentAtt
             @Param("studentId") Long studentId);
 
     @Query("""
+            select a from AssessmentAttempt a
+            join fetch a.student
+            join fetch a.assignment
+            where a.assignment.id = :assignmentId
+            """)
+    List<AssessmentAttempt> findAllByAssignmentIdWithStudent(@Param("assignmentId") Long assignmentId);
+
+    @Query("""
             select a.id from AssessmentAttempt a
             where a.status = e_learning.server.assessmentattempt.enums.AssessmentAttemptStatus.IN_PROGRESS
               and a.deadlineAt is not null

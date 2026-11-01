@@ -56,7 +56,10 @@
     "header": { "title": "Attempt", "leave": "Leave" },
     "timer": { "remaining": "Remaining", "urgent": "Time is almost up" },
     "save": { "saved": "Saved", "saving": "Saving...", "unsaved": "Unsaved", "error": "Save failed" },
-    "session": { "conflict": "This attempt is open in another tab" },
+    "session": {
+      "conflict": "This attempt is open in another tab",
+      "conflictHint": "Only one tab may take this attempt. Close the other tab or return to assignments."
+    },
     "visibility": { "leaveWarning": "You left the attempt screen" },
     "submit": {
       "title": "Submit attempt?",
@@ -69,7 +72,8 @@
       "waitForSave": "Wait for saves to finish",
       "cancel": "Cancel",
       "error": "Could not submit. Please try again.",
-      "sessionMissing": "Session not found. Reload the page and try again."
+      "sessionMissing": "Session not found. Reload the page and try again.",
+      "recoveringResult": "Checking the result on the server…"
     },
     "result": {
       "title": "Attempt result",

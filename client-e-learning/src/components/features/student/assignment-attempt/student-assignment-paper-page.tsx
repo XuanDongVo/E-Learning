@@ -80,8 +80,10 @@ function useServerCountdown(
 
   const onTimeUpRef = useRef(onTimeUp);
   onTimeUpRef.current = onTimeUp;
+  const firedTimeUpRef = useRef(false);
 
   useEffect(() => {
+    firedTimeUpRef.current = false;
     if (!deadlineAt) {
       setRemainingSeconds(null);
       return;
@@ -92,7 +94,10 @@ function useServerCountdown(
       const currentServerTime = Date.now() + serverOffsetRef.current;
       const secondsLeft = Math.max(0, Math.floor((deadlineTime - currentServerTime) / 1000));
       setRemainingSeconds(secondsLeft);
-      if (secondsLeft <= 0) onTimeUpRef.current?.();
+      if (secondsLeft <= 0 && !firedTimeUpRef.current) {
+        firedTimeUpRef.current = true;
+        onTimeUpRef.current?.();
+      }
     };
     tick();
     const interval = setInterval(tick, 1000);
@@ -133,6 +138,9 @@ export function StudentAssignmentPaperPage({
 
   const [showSubmitConfirm, setShowSubmitConfirm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitReason, setSubmitReason] = useState<"manual" | "time_up" | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const autoSubmitStartedRef = useRef(false);
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
   const [sessionLoadError, setSessionLoadError] = useState<string | null>(null);
 
@@ -261,16 +269,6 @@ export function StudentAssignmentPaperPage({
     setServerLeaveCountRef.current = setServerLeaveCount;
   }, [setServerLeaveCount]);
 
-  const handleTimeUp = useCallback(() => {
-    if (!isSubmitting) void flushAllPending();
-  }, [isSubmitting, flushAllPending]);
-
-  const { formattedTime, isUrgent } = useServerCountdown(
-    runtime?.deadlineAt,
-    runtime?.serverNow,
-    handleTimeUp,
-  );
-
   const hasUnsaved =
     saveStatus === "unsaved" || saveStatus === "saving" || saveStatus === "error";
 
@@ -293,30 +291,61 @@ export function StudentAssignmentPaperPage({
     [setAnswer],
   );
 
-  const handleSubmitExam = async () => {
-    if (!activeSessionId) {
-      setSessionLoadError("ASSESSMENT_ATTEMPT_SESSION_LOST");
-      return;
-    }
-    try {
+  const submitAttempt = useCallback(
+    async (reason: "manual" | "time_up") => {
+      if (!activeSessionId) {
+        setSessionLoadError("ASSESSMENT_ATTEMPT_SESSION_LOST");
+        return;
+      }
+      if (isSubmitting) return;
+
       setIsSubmitting(true);
-      await flushAllPending();
-      const requestId =
-        typeof crypto !== "undefined" && "randomUUID" in crypto
-          ? crypto.randomUUID()
-          : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
-      await studentAssignmentAttemptService.submit(parsedAssignmentId, {
-        activeSessionId,
-        requestId,
-      });
-      setShowSubmitConfirm(false);
-      router.push(`/student/assignments/${parsedAssignmentId}/result`);
-    } catch (err) {
-      console.error("Submit failed", toAppError(err).code, err);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+      setSubmitReason(reason);
+      setSubmitError(null);
+      try {
+        await flushAllPending();
+        const requestId =
+          typeof crypto !== "undefined" && "randomUUID" in crypto
+            ? crypto.randomUUID()
+            : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+        await studentAssignmentAttemptService.submit(parsedAssignmentId, {
+          activeSessionId,
+          requestId,
+        });
+        setShowSubmitConfirm(false);
+        router.push(`/student/assignments/${parsedAssignmentId}/result`);
+      } catch (err) {
+        const appErr = toAppError(err);
+        console.error("Submit failed", reason, appErr.code, err);
+        setSubmitError(appErr.message || t("submit.error"));
+        if (reason === "time_up") {
+          autoSubmitStartedRef.current = false;
+        }
+      } finally {
+        setIsSubmitting(false);
+        setSubmitReason(null);
+      }
+    },
+    [activeSessionId, flushAllPending, isSubmitting, parsedAssignmentId, router, t],
+  );
+
+  const handleSubmitExam = useCallback(() => {
+    void submitAttempt("manual");
+  }, [submitAttempt]);
+
+  const handleTimeUp = useCallback(() => {
+    if (!isExamActive) return;
+    if (autoSubmitStartedRef.current || isSubmitting) return;
+    autoSubmitStartedRef.current = true;
+    setShowSubmitConfirm(false);
+    void submitAttempt("time_up");
+  }, [isExamActive, isSubmitting, submitAttempt]);
+
+  const { formattedTime, isUrgent } = useServerCountdown(
+    runtime?.deadlineAt,
+    runtime?.serverNow,
+    handleTimeUp,
+  );
 
   const saveInline =
     saveStatus === "saving" || saveStatus === "unsaved"
@@ -454,6 +483,7 @@ export function StudentAssignmentPaperPage({
               onClick={() => setShowSubmitConfirm(true)}
               className="gap-2 rounded-xl font-bold shadow-xs"
               size="sm"
+              disabled={isSubmitting}
             >
               <Send className="h-4 w-4" />
               <span>{t("submit.button")}</span>
@@ -463,12 +493,12 @@ export function StudentAssignmentPaperPage({
 
         <section
           className="min-h-0 flex-1 overflow-y-auto px-2 py-4 sm:px-4 sm:py-6 pb-20"
-          inert={away || needsEnterFullscreen || undefined}
+          inert={away || needsEnterFullscreen || isSubmitting || undefined}
         >
           <StudentPaper runtime={runtime} answers={answers} onAnswerChange={changeAnswer} />
         </section>
 
-        {showSubmitConfirm && (
+        {showSubmitConfirm && !isSubmitting && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/50 p-4 backdrop-blur-xs">
             <div role="dialog" aria-modal="true" className="w-full max-w-md space-y-4 rounded-3xl border border-border bg-card p-6 shadow-2xl">
               <div className="flex items-center gap-3">
@@ -523,6 +553,35 @@ export function StudentAssignmentPaperPage({
           </div>
         )}
 
+        {isSubmitting && submitReason === "time_up" && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/70 p-4 backdrop-blur-xs">
+            <div
+              className="w-full max-w-md rounded-3xl border border-border bg-card p-6 text-center shadow-2xl"
+              role="status"
+            >
+              <p className="text-lg font-bold text-foreground">{t("states.timedOut")}</p>
+              <p className="mt-2 text-sm text-muted-foreground">{t("submit.confirming")}</p>
+            </div>
+          </div>
+        )}
+
+        {submitError && !isSubmitting && (
+          <div className="fixed inset-x-0 bottom-4 z-50 mx-auto max-w-md px-4">
+            <div className="rounded-xl border border-destructive/30 bg-card p-4 shadow-lg" role="alert">
+              <p className="text-sm font-semibold text-destructive">{t("submit.error")}</p>
+              <p className="mt-1 text-xs text-muted-foreground">{submitError}</p>
+              <div className="mt-3 flex gap-2">
+                <BusyButton className="flex-1" onClick={() => void submitAttempt("manual")}>
+                  {t("submit.button")}
+                </BusyButton>
+                <Button variant="outline" className="flex-1" onClick={() => setSubmitError(null)}>
+                  {t("submit.cancel")}
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {needsEnterFullscreen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/80 p-4 backdrop-blur-xs">
             <div role="dialog" aria-modal="true" className="w-full max-w-md rounded-3xl border border-border bg-card p-6 text-center shadow-2xl">
@@ -543,7 +602,7 @@ export function StudentAssignmentPaperPage({
           </div>
         )}
 
-        {away && !needsEnterFullscreen && (
+        {away && !needsEnterFullscreen && !isSubmitting && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/70 p-4 backdrop-blur-xs">
             <div className="w-full max-w-md rounded-3xl border border-border bg-card p-6 text-center shadow-2xl">
               <Lock className="mx-auto h-8 w-8 text-destructive" />

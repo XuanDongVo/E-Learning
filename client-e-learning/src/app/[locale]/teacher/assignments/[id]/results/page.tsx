@@ -1,7 +1,17 @@
-'use-client';
+"use client";
 
-import TeacherAssignmentResultsView from "@/components/features/teacher/assignments/result/teacher-assignment-result-view"
+import { use } from "react";
+import { TeacherAssignmentAnalysisPage } from "@/components/features/teacher/assignments/analysis/analysis-page";
 
-export default function AssignmentResultsPage() {
-  return <TeacherAssignmentResultsView />;
+export default function AssignmentResultsPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = use(params);
+  const assignmentId = Number(id);
+  if (!Number.isFinite(assignmentId) || assignmentId <= 0) {
+    return null;
+  }
+  return <TeacherAssignmentAnalysisPage assignmentId={assignmentId} />;
 }

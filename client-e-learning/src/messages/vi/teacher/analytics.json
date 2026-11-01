@@ -1,1 +1,94 @@
-{}
+{
+  "title": "Kết quả bài giao",
+  "backToList": "Danh sách",
+  "dueAt": "Hạn nộp",
+  "loadError": "Không tải được dữ liệu phân tích",
+  "retry": "Thử lại",
+  "empty": "Chưa có dữ liệu",
+  "prev": "Trước",
+  "next": "Sau",
+  "tabs": {
+    "overview": "Tổng quan",
+    "students": "Học sinh",
+    "questions": "Câu hỏi"
+  },
+  "progress": {
+    "title": "Tiến độ",
+    "assigned": "Đã giao",
+    "notStarted": "Chưa làm",
+    "inProgress": "Đang làm",
+    "submitted": "Đã nộp",
+    "timedOut": "Hết giờ",
+    "late": "Nộp trễ",
+    "overdue": "Quá hạn",
+    "submissionRate": "Tỉ lệ nộp"
+  },
+  "score": {
+    "title": "Điểm số",
+    "gradedCount": "{count} bài đã chấm",
+    "average": "Trung bình",
+    "median": "Trung vị",
+    "highest": "Cao nhất",
+    "lowest": "Thấp nhất",
+    "distribution": "Phân bố điểm"
+  },
+  "classComparison": {
+    "title": "So sánh lớp",
+    "class": "Lớp",
+    "assigned": "Sĩ số giao",
+    "submissionRate": "Tỉ lệ nộp",
+    "average": "Điểm TB",
+    "median": "Trung vị",
+    "accuracy": "% đúng",
+    "overallBand": "Kết quả chung",
+    "band": {
+      "HIGH": "Tốt",
+      "MID": "Khá",
+      "LOW": "Cần cải thiện"
+    }
+  },
+  "students": {
+    "empty": "Không có học sinh phù hợp bộ lọc",
+    "searchPlaceholder": "Tìm học sinh…",
+    "lifecycle": "Trạng thái",
+    "deadline": "Hạn",
+    "class": "Lớp",
+    "all": "Tất cả",
+    "allClasses": "Mọi lớp",
+    "viewAttempt": "Xem bài",
+    "status": {
+      "NOT_STARTED": "Chưa làm",
+      "IN_PROGRESS": "Đang làm",
+      "SUBMITTED": "Đã nộp",
+      "TIMED_OUT": "Hết giờ"
+    },
+    "deadlineState": {
+      "NONE": "—",
+      "ON_TIME": "Đúng hạn",
+      "LATE": "Trễ",
+      "OVERDUE": "Quá hạn"
+    },
+    "col": {
+      "student": "Học sinh",
+      "class": "Lớp",
+      "status": "Trạng thái",
+      "deadline": "Hạn",
+      "score": "Điểm",
+      "duration": "Thời gian"
+    }
+  },
+  "questions": {
+    "empty": "Chưa có câu hỏi đã chấm",
+    "ungrouped": "Không thuộc phần",
+    "col": {
+      "prompt": "Câu hỏi",
+      "n": "N",
+      "correct": "Đúng",
+      "partial": "Một phần",
+      "incorrect": "Sai",
+      "unanswered": "Bỏ trống",
+      "accuracy": "% đúng",
+      "scoreRate": "Tỉ lệ điểm"
+    }
+  }
+}

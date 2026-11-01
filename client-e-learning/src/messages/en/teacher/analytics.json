@@ -1,1 +1,94 @@
-{}
+{
+  "title": "Assignment results",
+  "backToList": "Back",
+  "dueAt": "Due",
+  "loadError": "Could not load analysis",
+  "retry": "Retry",
+  "empty": "No data yet",
+  "prev": "Prev",
+  "next": "Next",
+  "tabs": {
+    "overview": "Overview",
+    "students": "Students",
+    "questions": "Questions"
+  },
+  "progress": {
+    "title": "Progress",
+    "assigned": "Assigned",
+    "notStarted": "Not started",
+    "inProgress": "In progress",
+    "submitted": "Submitted",
+    "timedOut": "Timed out",
+    "late": "Late",
+    "overdue": "Overdue",
+    "submissionRate": "Submission rate"
+  },
+  "score": {
+    "title": "Scores",
+    "gradedCount": "{count} graded attempts",
+    "average": "Average",
+    "median": "Median",
+    "highest": "Highest",
+    "lowest": "Lowest",
+    "distribution": "Score distribution"
+  },
+  "classComparison": {
+    "title": "Class comparison",
+    "class": "Class",
+    "assigned": "Assigned",
+    "submissionRate": "Submission rate",
+    "average": "Average",
+    "median": "Median",
+    "accuracy": "% correct",
+    "overallBand": "Overall",
+    "band": {
+      "HIGH": "Strong",
+      "MID": "Fair",
+      "LOW": "Needs work"
+    }
+  },
+  "students": {
+    "empty": "No students match these filters",
+    "searchPlaceholder": "Search students…",
+    "lifecycle": "Status",
+    "deadline": "Deadline",
+    "class": "Class",
+    "all": "All",
+    "allClasses": "All classes",
+    "viewAttempt": "View",
+    "status": {
+      "NOT_STARTED": "Not started",
+      "IN_PROGRESS": "In progress",
+      "SUBMITTED": "Submitted",
+      "TIMED_OUT": "Timed out"
+    },
+    "deadlineState": {
+      "NONE": "—",
+      "ON_TIME": "On time",
+      "LATE": "Late",
+      "OVERDUE": "Overdue"
+    },
+    "col": {
+      "student": "Student",
+      "class": "Class",
+      "status": "Status",
+      "deadline": "Deadline",
+      "score": "Score",
+      "duration": "Duration"
+    }
+  },
+  "questions": {
+    "empty": "No graded questions yet",
+    "ungrouped": "Ungrouped",
+    "col": {
+      "prompt": "Question",
+      "n": "N",
+      "correct": "Correct",
+      "partial": "Partial",
+      "incorrect": "Incorrect",
+      "unanswered": "Blank",
+      "accuracy": "% correct",
+      "scoreRate": "Score rate"
+    }
+  }
+}

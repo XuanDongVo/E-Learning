@@ -63,7 +63,7 @@ export function StudentsPanel({
         classes={classes}
       />
       {query.isLoading ? (
-        <SkeletonTable rows={6} cols={6} />
+        <SkeletonTable rows={6} columns={6} />
       ) : query.isError ? (
         <RegionState
           variant="error"

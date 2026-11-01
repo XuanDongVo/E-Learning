@@ -3,7 +3,7 @@
 **Audit date:** 2026-11-01  
 **Branch:** `feature/teacher-assignment-analysis`  
 **Baseline:** `main` after merge of `feature/student-assignment-attempt` (PR #30)  
-**Scope:** documentation rebaseline after closing the Student Assignment Attempt feature and opening the next Teacher Assignment Analysis feature.
+**Scope:** documentation rebaseline for Teacher Assignment Analysis; AssessmentAttempt pipeline re-checked against `main` code.
 
 ## 1. Authority model
 
@@ -20,82 +20,86 @@
 - Backend: Spring Boot + Java 21 + JPA + Flyway + PostgreSQL.
 - Assignment Attempt runtime was merged to `main` through PR #30.
 - V43–V47 are the current AssessmentAttempt migration sequence on the merged baseline.
-- ADR 0028 is authoritative for current answer storage: draft answer payload, revision and saved time live on `assessment_attempt_questions`; the former `assessment_attempt_answers` table is removed.
-- AssessmentAttempt contains start/resume, immutable snapshot and autosave slices. Submit, timeout finalization, automatic grading and persisted PartResults remain follow-up implementation work and were not verified by this documentation audit.
+- ADR 0028 (attempt-answer-on-question) is authoritative for draft-answer storage on `assessment_attempt_questions`.
+
+### AssessmentAttempt pipeline on `main` (code evidence)
+
+| Capability | Code | Notes |
+|---|---|---|
+| Start / resume + snapshot | Implemented | `AssessmentAttemptCreationService` |
+| Autosave | Implemented | answer payload on `AssessmentAttemptQuestion` |
+| Manual submit | Implemented | `AssessmentAttemptSubmitService.submit` |
+| Auto-grade from snapshot | Implemented | `AssessmentAttemptGradingService.gradeAndPersist` |
+| PartResults + attempt totals | Implemented | entity `AssessmentAttemptPartResult`; totals on attempt |
+| Student result | Implemented | `GET .../assessment-attempt/result` |
+| Timeout finalization | Implemented | `finalizeTimeoutIfDue` + `AssessmentAttemptTimeoutJob` (`@Scheduled`) |
+| Assignment hard-lock after first attempt | **Not verified / likely remaining** | Follow-up |
+| Full compile/test/browser verification | **Not claimed** | Exact-HEAD E2E still open |
+
+Package README under `assessmentattempt` is partially stale (still lists timeout job as remaining); prefer this table and the service classes as truth.
 
 ## 3. Feature status
 
 | Area | Current state | Classification |
 |---|---|---|
 | Phase 0–2 | Foundation, auth/users and classes | Implemented baseline |
-| Phase 3 Content | Grade → Unit → Section → Topic → QuestionBank → Question CRUD/preview/completeness/hint | Implemented baseline; Question Engine migration/integration still partial |
-| Phase 4 Activity | Unit-scoped Activity, banks/distribution, modes, strategies, readiness, preview and lifecycle | Implemented baseline |
-| Phase 5 Assignment | Assignment authoring, recipients, schedule, Composition, settings | Implemented authoring baseline |
-| Phase 6 Student Management | Student/class/profile management | Done |
-| Phase 7 Scope A | ActivitySession runtime | Implemented baseline; end-to-end verification remains open |
-| Phase 7 Scope B | AssessmentAttempt start/resume, snapshot and autosave baseline | Feature closed/merged; remaining runtime completion is follow-up |
-| Teacher Assignment Analysis | Business specification created; implementation not started | **ACTIVE NEXT FEATURE** |
+| Phase 3 Content | Grade → Unit → Section → Topic → QuestionBank → Question | Implemented baseline; QE integration still partial in places |
+| Phase 4 Activity | Unit-scoped Activity runtime authoring | Implemented baseline |
+| Phase 5 Assignment | Authoring, `class_ids` targets, schedule, Composition, settings | Implemented authoring baseline |
+| Phase 6 Student Management | Done | Done |
+| Phase 7 Scope A | ActivitySession | Implemented; E2E verification open |
+| Phase 7 Scope B | AssessmentAttempt full finalize path on `main` | **Implemented in code**; E2E + hard-lock remain |
+| Teacher Assignment Analysis | Spec active; UI sample exists; production analytics not started | **ACTIVE FEATURE** |
 
 ## 4. Closed Student Assignment Attempt feature
 
-`feature/student-assignment-attempt` is considered closed as a feature branch because its work was merged to `main` in PR #30.
+`feature/student-assignment-attempt` was merged via PR #30. Do not reopen that branch for new work.
 
-Closure does **not** mean every planned runtime capability is production-verified. The remaining gaps are explicitly carried forward:
+Remaining **follow-ups** (not blockers to starting Teacher Analysis design, but affect data quality claims):
 
-- submit finalization
-- timeout finalization
-- automatic grading
-- persisted per-part result generation
-- result/review endpoints
-- Assignment hard-lock after first Attempt
-- full Question Engine runtime/persistence parity
-- exact-HEAD backend/frontend/browser verification
+- Assignment hard-lock after first Attempt starts
+- Exact-HEAD backend/frontend/browser verification of submit/timeout/grade
+- Optional: student-membership snapshot at publish time (see Teacher Analysis roster decision)
 
-These are implementation follow-ups, not reasons to reopen the historical branch.
+## 5. Teacher Assignment Analysis contract
 
-## 5. Current Teacher Assignment Analysis contract
-
-Canonical next feature specification:
+Canonical specification:
 
 `.agent/plans/10-TEACHER_ASSIGNMENT_ANALYSIS_SPEC.md`
 
-Scope:
+Sample/prototype UI (not production contract):
 
-```text
-Assignment
-├── Overview
-│   ├── Progress
-│   ├── Score
-│   └── Class Comparison
-├── Students
-│   └── Attempt Review
-└── Questions
-    ├── Assignment Section grouping
-    └── Question Analysis
-```
+`client-e-learning/src/components/features/teacher/assignments/result/teacher-assignment-result-view.tsx`
 
-The analysis is based on persisted AssessmentAttempt/grading data. It must not re-grade from mutable Question Bank content or calculate authoritative metrics in the browser.
+- Client-side aggregation over a sample dataset (`isSample`)
+- Must not be copied as the production architecture; replace with backend aggregate APIs
 
-Important domain boundary:
+### Product decisions adopted for MVP (2026-11-01)
 
-- Assignment Section = Composition grouping inside an Assignment.
-- Content Section = Unit-owned content hierarchy.
-- Teacher Assignment Analysis uses Assignment Section only as grouping/context; it does not implement Content Section/Unit/Topic analytics in MVP.
+| Topic | Decision |
+|---|---|
+| Roster ("sĩ số giao") | **Live enrollment** in `Assignment.classIds` at query time; no student-ID snapshot in MVP |
+| Class context for Attempt | Always `classIdAtStart` / `classNameAtStart` when Attempt exists |
+| Duration | `submittedAt - startedAt` (or `timedOutAt - startedAt`); null while IN_PROGRESS |
+| Class Comparison with 1 class | **Still show one row** |
+| Accuracy vs scoreRate | Both exposed; different labels (see spec) |
+| Kết quả chung | Optional compact band labels from backend using fixed % thresholds |
+| Score range filter | **Defer** from Students MVP |
+| Score distribution | Fixed 10-point buckets 0–10 … 90–100 |
+| Auth | Single-teacher deployment; authorize by authenticated TEACHER role + Assignment exists |
+| Export | None in MVP |
 
-## 6. Dependency gate for Teacher Analysis
+## 6. Dependency gate (updated)
 
-Teacher Analysis is not production-ready until the Assignment Attempt pipeline can persist reliable finalized results:
+**Code path for finalized results exists on `main`.** Teacher Analysis may implement backend aggregates against real Attempt rows.
 
-1. submit
-2. timeout finalization
-3. automatic grading from immutable snapshot
-4. PartResults
-5. Attempt totals
-6. example-question exclusion
-7. historical snapshot integrity
+Still required before calling analytics "production-verified":
 
-The Teacher Analysis UI may be built against a contract/mock dataset before those dependencies are complete, but must not be presented as real analytics until the backend result pipeline is verified.
+1. Confirm example-question exclusion in grading totals matches ADR 0026
+2. Smoke-test submit + timeout job + result against a real Assignment
+3. IDOR tests on teacher analytics endpoints when they land
+4. Hard-lock policy if authoring still mutates live Assignments with Attempts
 
 ## 7. Verification status
 
-This documentation rebaseline did not run backend compile/tests, Flyway validation, frontend lint/typecheck/build or browser/E2E. No new implementation verification is claimed.
+This update re-read AssessmentAttempt services/controllers on `main`. It did **not** run backend compile/tests, Flyway, frontend build, or browser/E2E.

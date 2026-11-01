@@ -1,1 +1,8 @@
-{}
+{
+  "loading": "Đang tải danh sách bài tập…",
+  "loadFailed": "Không tải được danh sách bài tập.",
+  "count": "{count} bài tập",
+  "emptyTitle": "Không tìm thấy bài tập",
+  "emptyDescription": "Thử đổi từ khóa hoặc bộ lọc.",
+  "clearFilters": "Xóa bộ lọc"
+}

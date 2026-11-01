@@ -41,12 +41,12 @@ export function OverviewPanel({ onGoStudents }: { onGoStudents?: () => void }) {
         <KpiCard
           label="Tỉ lệ nộp"
           value={`${Math.round(o.submissionRate * 100)}%`}
-          hint={`${o.submittedCount}/${o.assignedCount} học sinh được giao"`}
+          hint={`${o.submittedCount}/${o.assignedCount} học sinh được giao`}
         />
         <KpiCard
           label="Điểm trung bình"
           value={`${o.averagePercent}%`}
-          hint={`Trung vị ${o.medianPercent}% · tính trên ${o.submittedCount} bài đã nộp"`}
+          hint={`Trung vị ${o.medianPercent}% · tính trên ${o.submittedCount} bài đã nộp`}
         />
         <KpiCard
           label="Thấp nhất – cao nhất"
@@ -55,8 +55,8 @@ export function OverviewPanel({ onGoStudents }: { onGoStudents?: () => void }) {
         />
         <KpiCard
           label="Thời gian làm trung bình"
-          value={`${o.avgDurationMinutes} phút"`}
-          hint={`giới hạn ${o.timeLimitMinutes} phút"`}
+          value={`${o.avgDurationMinutes} phút`}
+          hint={`giới hạn ${o.timeLimitMinutes} phút`}
           footer={
             <div className="mt-3 h-2 overflow-hidden rounded-full bg-muted">
               <div
@@ -70,7 +70,6 @@ export function OverviewPanel({ onGoStudents }: { onGoStudents?: () => void }) {
         />
       </div>
 
-      {/* Fix accidental quotes in hints - rewrite cleaner without typos */}
       <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
         <div className="mb-3 flex items-center justify-between">
           <h3 className="text-sm font-semibold">Tiến độ</h3>
@@ -147,7 +146,9 @@ export function OverviewPanel({ onGoStudents }: { onGoStudents?: () => void }) {
 
         <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
           <h3 className="mb-3 text-sm font-semibold">Câu cần chú ý</h3>
-          <p className="mb-2 text-xs font-medium text-rose-600">Đúng dưới 40% — nên xem lại ({o.hardQuestions.length})</p>
+          <p className="mb-2 text-xs font-medium text-rose-600">
+            Đúng dưới 40% — nên xem lại ({o.hardQuestions.length})
+          </p>
           <ul className="space-y-2">
             {o.hardQuestions.map((q) => (
               <li key={q.position} className="flex items-start justify-between gap-2 text-sm">

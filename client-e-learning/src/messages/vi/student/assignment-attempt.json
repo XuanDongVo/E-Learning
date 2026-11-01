@@ -56,7 +56,10 @@
     "header": { "title": "Làm bài", "leave": "Thoát" },
     "timer": { "remaining": "Còn lại", "urgent": "Sắp hết giờ" },
     "save": { "saved": "Đã lưu", "saving": "Đang lưu...", "unsaved": "Chưa lưu", "error": "Lưu lỗi" },
-    "session": { "conflict": "Phiên làm bài đang mở ở tab khác" },
+    "session": {
+      "conflict": "Phiên làm bài đang mở ở tab khác",
+      "conflictHint": "Chỉ một tab được phép làm bài. Đóng tab kia hoặc quay lại danh sách bài tập."
+    },
     "visibility": { "leaveWarning": "Bạn đã rời khỏi màn hình làm bài" },
     "submit": {
       "title": "Nộp bài?",
@@ -69,7 +72,8 @@
       "waitForSave": "Chờ lưu xong",
       "cancel": "Hủy",
       "error": "Không nộp được bài. Thử lại sau.",
-      "sessionMissing": "Không tìm thấy phiên làm bài. Tải lại trang và thử lại."
+      "sessionMissing": "Không tìm thấy phiên làm bài. Tải lại trang và thử lại.",
+      "recoveringResult": "Đang kiểm tra kết quả trên máy chủ…"
     },
     "result": {
       "title": "Kết quả bài làm",

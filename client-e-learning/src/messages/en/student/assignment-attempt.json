@@ -7,11 +7,11 @@
       "timeLimit": "Time limit",
       "noTimeLimit": "No time limit",
       "dueAt": "Due",
-      "description": "Start or resume the official attempt linked to your account. The system uses the teacher snapshot and a server-controlled deadline.",
+      "description": "Start or resume the official attempt linked to your account.",
       "titleWithId": "Assignment #{id}",
       "beforeStartTitle": "Before you start",
-      "ruleOneAttempt": "This assignment has one official attempt. Reopening continues that same attempt.",
-      "ruleDeadline": "The deadline is controlled by the server and keeps running if you close the browser.",
+      "ruleOneAttempt": "This assignment has one official attempt.",
+      "ruleDeadline": "The deadline is controlled by the server.",
       "ruleDraft": "Answers are autosaved while you work.",
       "startOrResume": "Start / resume attempt",
       "noDueDate": "Not available",
@@ -20,6 +20,9 @@
       "gradeValue": "Grade: {grade}",
       "questionCount": "{count} questions",
       "questionLabel": "Questions",
+      "loading": "Loading assignment details…",
+      "loadFailed": "Could not load assignment details.",
+      "unavailable": "This assignment is unavailable.",
       "status": {
         "notStarted": "Not started",
         "inProgress": "In progress",
@@ -37,39 +40,27 @@
       "rules": {
         "title": "Rules",
         "oneAttemptTitle": "One official attempt:",
-        "oneAttempt": "Each assignment can be taken once. Progress and results are recorded.",
+        "oneAttempt": "Each assignment can be taken once.",
         "autoSaveTitle": "Autosave:",
         "autoSave": "Answers are saved automatically when you change them.",
         "noHintsTitle": "No hints:",
-        "noHints": "This is an official graded attempt; hints are not available while working.",
+        "noHints": "This is an official graded attempt.",
         "stayOnScreenTitle": "Stay on the attempt screen:",
-        "stayOnScreen": "Leaving the page or switching away may be recorded.",
+        "stayOnScreen": "Leaving the page may be recorded.",
         "singleTabTitle": "One tab only:",
-        "singleTab": "Do not open the attempt in multiple tabs. Only one active session is allowed.",
+        "singleTab": "Only one active session is allowed.",
         "warningTitle": "Leaving the attempt:",
         "warning": "If you leave the attempt screen, the system may show a warning."
       }
     },
-    "header": {
-      "title": "Attempt",
-      "leave": "Leave"
-    },
-    "timer": {
-      "remaining": "Remaining",
-      "urgent": "Time is almost up"
-    },
-    "save": {
-      "saved": "Saved",
-      "saving": "Saving...",
-      "unsaved": "Unsaved",
-      "error": "Save failed"
-    },
+    "header": { "title": "Attempt", "leave": "Leave" },
+    "timer": { "remaining": "Remaining", "urgent": "Time is almost up" },
+    "save": { "saved": "Saved", "saving": "Saving...", "unsaved": "Unsaved", "error": "Save failed" },
     "session": {
-      "conflict": "This attempt is open in another tab"
+      "conflict": "This attempt is open in another tab",
+      "conflictHint": "Only one tab may take this attempt. Close the other tab or return to assignments."
     },
-    "visibility": {
-      "leaveWarning": "You left the attempt screen"
-    },
+    "visibility": { "leaveWarning": "You left the attempt screen" },
     "submit": {
       "title": "Submit attempt?",
       "confirm": "Submit",
@@ -81,7 +72,8 @@
       "waitForSave": "Wait for saves to finish",
       "cancel": "Cancel",
       "error": "Could not submit. Please try again.",
-      "sessionMissing": "Session not found. Reload the page and try again."
+      "sessionMissing": "Session not found. Reload the page and try again.",
+      "recoveringResult": "Checking the result on the server…"
     },
     "result": {
       "title": "Attempt result",
@@ -99,7 +91,7 @@
       "late": "Submitted late",
       "startedAt": "Started",
       "finishedAt": "Finished",
-      "lockedHint": "This attempt is locked. You cannot change answers.",
+      "lockedHint": "This attempt is locked.",
       "loading": "Loading…",
       "loadFailed": "Could not load the result.",
       "review": {
@@ -123,7 +115,7 @@
     },
     "draft": {
       "warningTitle": "Your answers are not saved yet",
-      "warningDescription": "Do not refresh or close this page if you need to keep these edits.",
+      "warningDescription": "Do not refresh or close this page.",
       "sprint2Note": "Autosave is connected",
       "confirmLeave": "Leave this page? Unsaved changes may be lost."
     },
@@ -139,7 +131,7 @@
       "invalidAssignment": "The assignment ID in this link is invalid.",
       "studentOnly": "Only a signed-in student can open this assignment attempt.",
       "startFailedTitle": "The attempt could not be opened",
-      "startFailedDescription": "The server endpoint may not be ready yet. No practice attempt has been mocked locally.",
+      "startFailedDescription": "The server endpoint may not be ready yet.",
       "introLoadFailed": "Assignment details could not be loaded.",
       "retryIntro": "Retry details"
     },
@@ -150,8 +142,16 @@
       "false": "False",
       "blank": "Blank {index}",
       "sectionFallback": "Section {index}",
-      "unsupportedType": "This question type is not supported by the current Student Paper renderer yet.",
-      "matchingPoolMissing": "The shared answer pool for this question could not be found.",
+      "unsupportedType": "This question type is not supported yet.",
+      "matchingPoolMissing": "The shared answer pool could not be found.",
+      "fullscreen": {
+        "title": "Enter fullscreen to start",
+        "description": "This attempt requires fullscreen. The server timer keeps running.",
+        "enter": "Enter fullscreen",
+        "awayTitle": "You left the attempt screen",
+        "awayDescription": "Return to fullscreen to continue.",
+        "continue": "Continue attempt"
+      },
       "types": {
         "SINGLE_CHOICE": "Single choice",
         "MULTIPLE_CHOICE": "Multiple choice",

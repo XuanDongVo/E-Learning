@@ -6,23 +6,24 @@ import {
   useMemo,
   useRef,
   useState,
-  type ReactNode,
 } from "react";
 import Link from "next/link";
 import { useRouter } from "@/i18n/navigation";
 import {
   AlertTriangle,
-  BookOpenCheck,
   CheckCircle2,
-  CircleAlert,
   Clock3,
-  LoaderCircle,
   Lock,
   Maximize,
   Send,
-  ShieldAlert,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
+import {
+  BusyButton,
+  FullPageState,
+  InlineStatus,
+} from "@/components/feedback";
 import { useAuth } from "@/components/auth/auth-provider";
 import {
   useAttemptRuntime,
@@ -35,6 +36,7 @@ import { getOrCreateAttemptSessionCredential } from "@/services/student/assessme
 import { studentAssignmentAttemptService } from "@/services/student/student-assignment-attempt.service";
 import type { AttemptAnswerPayload } from "@/types/student/assignment-attempt";
 import { toAppError } from "@/lib/errors/app-error";
+import { pollFinalizedResult } from "./poll-finalized-result";
 
 export function hasMeaningfulAnswer(value: unknown): boolean {
   if (value === null || value === undefined) return false;
@@ -79,8 +81,10 @@ function useServerCountdown(
 
   const onTimeUpRef = useRef(onTimeUp);
   onTimeUpRef.current = onTimeUp;
+  const firedTimeUpRef = useRef(false);
 
   useEffect(() => {
+    firedTimeUpRef.current = false;
     if (!deadlineAt) {
       setRemainingSeconds(null);
       return;
@@ -91,7 +95,10 @@ function useServerCountdown(
       const currentServerTime = Date.now() + serverOffsetRef.current;
       const secondsLeft = Math.max(0, Math.floor((deadlineTime - currentServerTime) / 1000));
       setRemainingSeconds(secondsLeft);
-      if (secondsLeft <= 0) onTimeUpRef.current?.();
+      if (secondsLeft <= 0 && !firedTimeUpRef.current) {
+        firedTimeUpRef.current = true;
+        onTimeUpRef.current?.();
+      }
     };
     tick();
     const interval = setInterval(tick, 1000);
@@ -119,6 +126,8 @@ export function StudentAssignmentPaperPage({
 }) {
   const { user, isLoading: isAuthLoading } = useAuth();
   const router = useRouter();
+  const t = useTranslations("student.assignmentAttempt");
+  const tf = useTranslations("feedback");
   const parsedAssignmentId = Number(assignmentId);
   const validAssignmentId = isPositiveInteger(parsedAssignmentId);
 
@@ -130,6 +139,9 @@ export function StudentAssignmentPaperPage({
 
   const [showSubmitConfirm, setShowSubmitConfirm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitReason, setSubmitReason] = useState<"manual" | "time_up" | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const autoSubmitStartedRef = useRef(false);
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
   const [sessionLoadError, setSessionLoadError] = useState<string | null>(null);
 
@@ -262,16 +274,6 @@ export function StudentAssignmentPaperPage({
     setServerLeaveCountRef.current = setServerLeaveCount;
   }, [setServerLeaveCount]);
 
-  const handleTimeUp = useCallback(() => {
-    if (!isSubmitting) void flushAllPending();
-  }, [isSubmitting, flushAllPending]);
-
-  const { formattedTime, isUrgent } = useServerCountdown(
-    runtime?.deadlineAt,
-    runtime?.serverNow,
-    handleTimeUp,
-  );
-
   const hasUnsaved =
     saveStatus === "unsaved" || saveStatus === "saving" || saveStatus === "error";
 
@@ -294,70 +296,104 @@ export function StudentAssignmentPaperPage({
     [setAnswer],
   );
 
-  const handleSubmitExam = async () => {
-    if (!activeSessionId) {
-      setSessionLoadError("ASSESSMENT_ATTEMPT_SESSION_LOST");
-      return;
-    }
-    try {
-      setIsSubmitting(true);
-      await flushAllPending();
-      const requestId =
-        typeof crypto !== "undefined" && "randomUUID" in crypto
-          ? crypto.randomUUID()
-          : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
-      await studentAssignmentAttemptService.submit(parsedAssignmentId, {
-        activeSessionId,
-        requestId,
-      });
-      setShowSubmitConfirm(false);
-      router.push(`/student/assignments/${parsedAssignmentId}/result`);
-    } catch (err) {
-      console.error("Submit failed", toAppError(err).code, err);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+  const submitAttempt = useCallback(
+    async (reason: "manual" | "time_up") => {
+      if (!activeSessionId) {
+        setSessionLoadError("ASSESSMENT_ATTEMPT_SESSION_LOST");
+        return;
+      }
+      if (isSubmitting) return;
 
-  const saveStatusLabel =
-    saveStatus === "saving"
-      ? "Đang lưu..."
-      : saveStatus === "unsaved"
-        ? "Chưa lưu"
-        : saveStatus === "error"
-          ? "Lưu lỗi"
-          : "Đã lưu";
+      setIsSubmitting(true);
+      setSubmitReason(reason);
+      setSubmitError(null);
+      try {
+        await flushAllPending();
+        const requestId =
+          typeof crypto !== "undefined" && "randomUUID" in crypto
+            ? crypto.randomUUID()
+            : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+        await studentAssignmentAttemptService.submit(parsedAssignmentId, {
+          activeSessionId,
+          requestId,
+        });
+        setShowSubmitConfirm(false);
+        router.push(`/student/assignments/${parsedAssignmentId}/result`);
+      } catch (err) {
+        const appErr = toAppError(err);
+        console.error("Submit failed", reason, appErr.code, err);
+
+        if (reason === "time_up") {
+          const recovered = await pollFinalizedResult(parsedAssignmentId);
+          if (recovered) {
+            setShowSubmitConfirm(false);
+            setSubmitError(null);
+            router.push(`/student/assignments/${parsedAssignmentId}/result`);
+            return;
+          }
+          autoSubmitStartedRef.current = false;
+        }
+
+        setSubmitError(appErr.message || t("submit.error"));
+      } finally {
+        setIsSubmitting(false);
+        setSubmitReason(null);
+      }
+    },
+    [activeSessionId, flushAllPending, isSubmitting, parsedAssignmentId, router, t],
+  );
+
+  const handleSubmitExam = useCallback(() => {
+    void submitAttempt("manual");
+  }, [submitAttempt]);
+
+  const handleTimeUp = useCallback(() => {
+    if (!isExamActive) return;
+    if (autoSubmitStartedRef.current || isSubmitting) return;
+    autoSubmitStartedRef.current = true;
+    setShowSubmitConfirm(false);
+    void submitAttempt("time_up");
+  }, [isExamActive, isSubmitting, submitAttempt]);
+
+  const { formattedTime, isUrgent } = useServerCountdown(
+    runtime?.deadlineAt,
+    runtime?.serverNow,
+    handleTimeUp,
+  );
+
+  const saveInline =
+    saveStatus === "saving" || saveStatus === "unsaved"
+      ? { tone: "progress" as const, message: tf("saving") }
+      : saveStatus === "error"
+        ? { tone: "error" as const, message: tf("saveFailed") }
+        : { tone: "success" as const, message: tf("saved") };
 
   if (!validAssignmentId) {
     return (
-      <main className="mx-auto max-w-3xl p-6">
-        <div className="rounded-2xl border border-destructive/20 bg-destructive/10 p-6" role="alert">
-          <h1 className="font-bold text-destructive">Mã đề thi không hợp lệ.</h1>
-          <Link href="/student/assignments" className="mt-4 inline-flex text-sm font-semibold text-primary underline">
-            Quay lại danh sách bài tập
+      <FullPageState
+        variant="error"
+        title={t("errors.invalidAssignment")}
+        action={
+          <Link href="/student/assignments">
+            <Button variant="secondary">{t("backToAssignments")}</Button>
           </Link>
-        </div>
-      </main>
-    );
-  }
-
-  if (isAuthLoading) {
-    return (
-      <StatusPanel
-        icon={<LoaderCircle className="h-6 w-6 animate-spin" />}
-        title="Đang kiểm tra thông tin tài khoản..."
+        }
       />
     );
   }
 
+  if (isAuthLoading) {
+    return <FullPageState variant="loading" title={t("states.checkingAuth")} />;
+  }
+
   if (!user || user.role !== "STUDENT") {
     return (
-      <StatusPanel
-        icon={<ShieldAlert className="h-6 w-6" />}
-        title="Chỉ học sinh mới có quyền làm bài kiểm tra này."
+      <FullPageState
+        variant="error"
+        title={t("errors.studentOnly")}
         action={
           <Link href="/student">
-            <Button variant="secondary">Về trang chủ</Button>
+            <Button variant="secondary">{t("backToDashboard")}</Button>
           </Link>
         }
       />
@@ -366,10 +402,10 @@ export function StudentAssignmentPaperPage({
 
   if (runtimeState.status === "LOADING") {
     return (
-      <StatusPanel
-        icon={<LoaderCircle className="h-6 w-6 animate-spin" />}
-        title="Đang tải dữ liệu bài thi..."
-        description="Vui lòng chờ trong giây lát trong khi hệ thống đồng bộ đề thi."
+      <FullPageState
+        variant="loading"
+        title={t("states.starting")}
+        description={t("errors.startFailedDescription")}
       />
     );
   }
@@ -383,29 +419,29 @@ export function StudentAssignmentPaperPage({
     const conflict = effectiveErrorCode === "ASSESSMENT_ATTEMPT_SESSION_CONFLICT";
     const lost = effectiveErrorCode === "ASSESSMENT_ATTEMPT_SESSION_LOST";
     return (
-      <StatusPanel
-        icon={<CircleAlert className="h-6 w-6" />}
+      <FullPageState
+        variant="error"
         title={
           conflict
-            ? "Phiên làm bài đang mở ở thiết bị khác"
+            ? t("session.conflict")
             : lost
-              ? "Mất thông tin phiên làm bài"
-              : "Không thể mở bài thi"
+              ? t("submit.sessionMissing")
+              : t("errors.startFailedTitle")
         }
         description={
           conflict
-            ? "Bạn chỉ có thể mở một màn hình làm bài duy nhất. Hãy đóng các tab khác trước khi tiếp tục."
+            ? t("session.conflict")
             : lost
-              ? "Phiên làm bài trên thiết bị này không còn hiệu lực. Hãy mở lại đúng trình duyệt đã bấm Start."
-              : "Vui lòng làm mới lại trang hoặc liên hệ giáo viên để được hỗ trợ."
+              ? t("submit.sessionMissing")
+              : t("errors.startFailedDescription")
         }
         action={
           conflict || lost ? (
             <Link href="/student/assignments">
-              <Button variant="secondary">Quay lại danh sách</Button>
+              <Button variant="secondary">{t("backToAssignments")}</Button>
             </Link>
           ) : (
-            <Button onClick={runtimeState.retry}>Thử lại</Button>
+            <Button onClick={runtimeState.retry}>{tf("retry")}</Button>
           )
         }
       />
@@ -430,23 +466,13 @@ export function StudentAssignmentPaperPage({
               </h1>
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <span className="font-medium text-primary">
-                  Đã làm {answeredCount}/{questionCount} câu
+                  {t("player.progress", { answered: answeredCount, total: questionCount })}
                 </span>
-                <span
-                  className={
-                    saveStatus === "error"
-                      ? "font-semibold text-destructive"
-                      : saveStatus === "saving" || saveStatus === "unsaved"
-                        ? "font-medium text-amber-600"
-                        : "font-medium text-muted-foreground"
-                  }
-                >
-                  · {saveStatusLabel}
+                <span className="inline-flex items-center gap-1">
+                  · <InlineStatus tone={saveInline.tone} message={saveInline.message} />
                 </span>
                 {leaveCount > 0 && (
-                  <span className="font-semibold text-destructive">
-                    · Rời màn hình: {leaveCount} lần
-                  </span>
+                  <span className="font-semibold text-destructive">· {leaveCount}</span>
                 )}
               </div>
             </div>
@@ -460,7 +486,7 @@ export function StudentAssignmentPaperPage({
                     ? "animate-pulse border-destructive/40 bg-destructive/10 text-destructive"
                     : "border-border bg-muted/60 text-foreground"
                 }`}
-                title="Thời gian làm bài còn lại"
+                title={t("player.attemptDeadline")}
               >
                 <Clock3 className={`h-4 w-4 ${isUrgent ? "text-destructive" : "text-primary"}`} />
                 <span className="font-mono tracking-tight">{formattedTime}</span>
@@ -471,21 +497,22 @@ export function StudentAssignmentPaperPage({
               onClick={() => setShowSubmitConfirm(true)}
               className="gap-2 rounded-xl font-bold shadow-xs"
               size="sm"
+              disabled={isSubmitting}
             >
               <Send className="h-4 w-4" />
-              <span>Nộp bài</span>
+              <span>{t("submit.button")}</span>
             </Button>
           </div>
         </header>
 
         <section
           className="min-h-0 flex-1 overflow-y-auto px-2 py-4 sm:px-4 sm:py-6 pb-20"
-          inert={away || needsEnterFullscreen || undefined}
+          inert={away || needsEnterFullscreen || isSubmitting || undefined}
         >
           <StudentPaper runtime={runtime} answers={answers} onAnswerChange={changeAnswer} />
         </section>
 
-        {showSubmitConfirm && (
+        {showSubmitConfirm && !isSubmitting && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/50 p-4 backdrop-blur-xs">
             <div role="dialog" aria-modal="true" className="w-full max-w-md space-y-4 rounded-3xl border border-border bg-card p-6 shadow-2xl">
               <div className="flex items-center gap-3">
@@ -501,35 +528,69 @@ export function StudentAssignmentPaperPage({
                   )}
                 </div>
                 <div>
-                  <h2 className="text-lg font-bold text-foreground">Xác nhận nộp bài thi</h2>
-                  <p className="text-xs text-muted-foreground">
-                    Hệ thống sẽ lưu các câu trả lời đang chờ rồi nộp bài lên máy chủ.
-                  </p>
+                  <h2 className="text-lg font-bold text-foreground">{t("submit.title")}</h2>
+                  <p className="text-xs text-muted-foreground">{tf("working")}</p>
                 </div>
               </div>
               <div className="rounded-2xl border border-border bg-muted/40 p-4 space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Tổng số câu:</span>
-                  <span className="font-bold text-foreground">{questionCount} câu</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Đã trả lời:</span>
-                  <span className="font-bold text-primary">{answeredCount} câu</span>
+                  <span className="text-muted-foreground">
+                    {t("player.progress", { answered: answeredCount, total: questionCount })}
+                  </span>
                 </div>
                 {unAnsweredCount > 0 && (
                   <div className="flex justify-between pt-1 border-t border-border/60 text-destructive font-semibold">
-                    <span>Chưa trả lời:</span>
-                    <span>{unAnsweredCount} câu</span>
+                    <span>{t("submit.unanswered", { count: unAnsweredCount })}</span>
                   </div>
                 )}
               </div>
               <div className="flex gap-2.5 pt-2">
-                <Button variant="outline" className="flex-1 rounded-xl" onClick={() => setShowSubmitConfirm(false)} disabled={isSubmitting}>
-                  Làm tiếp
+                <Button
+                  variant="outline"
+                  className="flex-1 rounded-xl"
+                  onClick={() => setShowSubmitConfirm(false)}
+                  disabled={isSubmitting}
+                >
+                  {t("submit.cancel")}
                 </Button>
-                <Button className="flex-1 rounded-xl gap-1.5" onClick={handleSubmitExam} disabled={isSubmitting}>
-                  {isSubmitting ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-                  <span>Nộp bài</span>
+                <BusyButton
+                  className="flex-1 rounded-xl gap-1.5"
+                  onClick={handleSubmitExam}
+                  busy={isSubmitting}
+                  busyLabel={t("submit.confirming")}
+                >
+                  <Send className="h-4 w-4" />
+                  <span>{t("submit.confirm")}</span>
+                </BusyButton>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {isSubmitting && submitReason === "time_up" && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/70 p-4 backdrop-blur-xs">
+            <div
+              className="w-full max-w-md rounded-3xl border border-border bg-card p-6 text-center shadow-2xl"
+              role="status"
+            >
+              <p className="text-lg font-bold text-foreground">{t("states.timedOut")}</p>
+              <p className="mt-2 text-sm text-muted-foreground">{t("submit.confirming")}</p>
+              <p className="mt-1 text-xs text-muted-foreground">{t("submit.recoveringResult")}</p>
+            </div>
+          </div>
+        )}
+
+        {submitError && !isSubmitting && (
+          <div className="fixed inset-x-0 bottom-4 z-50 mx-auto max-w-md px-4">
+            <div className="rounded-xl border border-destructive/30 bg-card p-4 shadow-lg" role="alert">
+              <p className="text-sm font-semibold text-destructive">{t("submit.error")}</p>
+              <p className="mt-1 text-xs text-muted-foreground">{submitError}</p>
+              <div className="mt-3 flex gap-2">
+                <BusyButton className="flex-1" onClick={() => void submitAttempt("manual")}>
+                  {t("submit.button")}
+                </BusyButton>
+                <Button variant="outline" className="flex-1" onClick={() => setSubmitError(null)}>
+                  {t("submit.cancel")}
                 </Button>
               </div>
             </div>
@@ -542,28 +603,28 @@ export function StudentAssignmentPaperPage({
               <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
                 <Maximize className="h-6 w-6" />
               </div>
-              <h2 className="mt-4 text-lg font-bold text-foreground">Vào toàn màn hình để bắt đầu làm bài</h2>
+              <h2 className="mt-4 text-lg font-bold text-foreground">{t("paper.fullscreen.title")}</h2>
               <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-                Bài kiểm tra yêu cầu chế độ toàn màn hình. Thời gian vẫn tính theo máy chủ.
+                {t("paper.fullscreen.description")}
               </p>
               <div className="mt-5">
                 <Button className="w-full gap-2 rounded-xl" onClick={() => void enterFullscreen()}>
                   <Maximize className="h-4 w-4" />
-                  Vào toàn màn hình
+                  {t("paper.fullscreen.enter")}
                 </Button>
               </div>
             </div>
           </div>
         )}
 
-        {away && !needsEnterFullscreen && (
+        {away && !needsEnterFullscreen && !isSubmitting && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/70 p-4 backdrop-blur-xs">
             <div className="w-full max-w-md rounded-3xl border border-border bg-card p-6 text-center shadow-2xl">
               <Lock className="mx-auto h-8 w-8 text-destructive" />
-              <h2 className="mt-3 text-lg font-bold">Bạn đã rời màn hình làm bài</h2>
-              <p className="mt-2 text-sm text-muted-foreground">Quay lại toàn màn hình để tiếp tục.</p>
+              <h2 className="mt-3 text-lg font-bold">{t("paper.fullscreen.awayTitle")}</h2>
+              <p className="mt-2 text-sm text-muted-foreground">{t("paper.fullscreen.awayDescription")}</p>
               <Button className="mt-4 w-full rounded-xl" onClick={() => void enterFullscreen()}>
-                Tiếp tục làm bài
+                {t("paper.fullscreen.continue")}
               </Button>
             </div>
           </div>
@@ -573,36 +634,15 @@ export function StudentAssignmentPaperPage({
   }
 
   return (
-    <StatusPanel
-      icon={<BookOpenCheck className="h-6 w-6" />}
-      title="Không có dữ liệu bài thi"
-      description="Thử tải lại trang hoặc quay về danh sách bài tập."
+    <FullPageState
+      variant="empty"
+      title={t("errors.startFailedTitle")}
+      description={t("errors.startFailedDescription")}
       action={
         <Link href="/student/assignments">
-          <Button variant="secondary">Quay lại danh sách</Button>
+          <Button variant="secondary">{t("backToAssignments")}</Button>
         </Link>
       }
     />
-  );
-}
-
-function StatusPanel({
-  icon,
-  title,
-  description,
-  action,
-}: {
-  icon: ReactNode;
-  title: string;
-  description?: string;
-  action?: ReactNode;
-}) {
-  return (
-    <main className="mx-auto flex min-h-[50vh] max-w-lg flex-col items-center justify-center gap-4 p-6 text-center">
-      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-muted text-primary">{icon}</div>
-      <h1 className="text-lg font-bold text-foreground">{title}</h1>
-      {description && <p className="text-sm text-muted-foreground">{description}</p>}
-      {action}
-    </main>
   );
 }

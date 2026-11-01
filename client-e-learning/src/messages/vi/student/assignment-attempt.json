@@ -20,6 +20,9 @@
       "gradeValue": "Khối: {grade}",
       "questionCount": "{count} câu hỏi",
       "questionLabel": "Số câu hỏi",
+      "loading": "Đang tải thông tin bài tập…",
+      "loadFailed": "Không tải được thông tin bài tập.",
+      "unavailable": "Bài tập không khả dụng.",
       "status": {
         "notStarted": "Chưa làm",
         "inProgress": "Đang làm dở",
@@ -50,26 +53,14 @@
         "warning": "Nếu bạn rời khỏi màn hình làm bài, hệ thống sẽ hiển thị cảnh báo."
       }
     },
-    "header": {
-      "title": "Làm bài",
-      "leave": "Thoát"
-    },
-    "timer": {
-      "remaining": "Còn lại",
-      "urgent": "Sắp hết giờ"
-    },
-    "save": {
-      "saved": "Đã lưu",
-      "saving": "Đang lưu...",
-      "unsaved": "Chưa lưu",
-      "error": "Lưu lỗi"
-    },
+    "header": { "title": "Làm bài", "leave": "Thoát" },
+    "timer": { "remaining": "Còn lại", "urgent": "Sắp hết giờ" },
+    "save": { "saved": "Đã lưu", "saving": "Đang lưu...", "unsaved": "Chưa lưu", "error": "Lưu lỗi" },
     "session": {
-      "conflict": "Phiên làm bài đang mở ở tab khác"
+      "conflict": "Phiên làm bài đang mở ở tab khác",
+      "conflictHint": "Chỉ một tab được phép làm bài. Đóng tab kia hoặc quay lại danh sách bài tập."
     },
-    "visibility": {
-      "leaveWarning": "Bạn đã rời khỏi màn hình làm bài"
-    },
+    "visibility": { "leaveWarning": "Bạn đã rời khỏi màn hình làm bài" },
     "submit": {
       "title": "Nộp bài?",
       "confirm": "Nộp bài",
@@ -81,7 +72,8 @@
       "waitForSave": "Chờ lưu xong",
       "cancel": "Hủy",
       "error": "Không nộp được bài. Thử lại sau.",
-      "sessionMissing": "Không tìm thấy phiên làm bài. Tải lại trang và thử lại."
+      "sessionMissing": "Không tìm thấy phiên làm bài. Tải lại trang và thử lại.",
+      "recoveringResult": "Đang kiểm tra kết quả trên máy chủ…"
     },
     "result": {
       "title": "Kết quả bài làm",
@@ -152,6 +144,14 @@
       "sectionFallback": "Phần {index}",
       "unsupportedType": "Loại câu hỏi này chưa được hỗ trợ trên giao diện làm bài.",
       "matchingPoolMissing": "Không tìm thấy ngân hàng đáp án dùng chung cho câu hỏi này.",
+      "fullscreen": {
+        "title": "Vào toàn màn hình để bắt đầu làm bài",
+        "description": "Bài kiểm tra yêu cầu chế độ toàn màn hình. Thời gian vẫn tính theo máy chủ.",
+        "enter": "Vào toàn màn hình",
+        "awayTitle": "Bạn đã rời màn hình làm bài",
+        "awayDescription": "Quay lại toàn màn hình để tiếp tục.",
+        "continue": "Tiếp tục làm bài"
+      },
       "types": {
         "SINGLE_CHOICE": "Trắc nghiệm một đáp án",
         "MULTIPLE_CHOICE": "Trắc nghiệm nhiều đáp án",

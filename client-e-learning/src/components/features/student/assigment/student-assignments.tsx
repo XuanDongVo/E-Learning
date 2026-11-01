@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslations } from "next-intl";
 import type { AssignmentFilter, StudentAssignmentItem } from "./types";
 import { AssignmentHero } from "./assignment-hero";
 import { AssignmentFilterBar } from "./assignment-filter-bar";
@@ -9,12 +10,19 @@ import { AssignmentCard } from "./assignment-card";
 import { AssignmentEmptyState } from "./assignment-empty-state";
 import { studentAssignmentService } from "@/services/student/student-assignment.service";
 import { QUERY_KEYS } from "@/services/query-keys";
+import { RegionState } from "@/components/feedback";
+import { Button } from "@/components/ui/button";
+import { SkeletonGrid } from "@/components/ui/skeleton/skeleton-grid";
 
 interface StudentAssignmentsProps {
   initialAssignments?: StudentAssignmentItem[];
 }
 
+
+
 export function StudentAssignments({ initialAssignments = [] }: StudentAssignmentsProps) {
+  const t = useTranslations("student.assignments");
+  const tf = useTranslations("feedback");
   const [filter, setFilter] = useState<AssignmentFilter>("TODO");
   const [query, setQuery] = useState("");
 
@@ -26,9 +34,8 @@ export function StudentAssignments({ initialAssignments = [] }: StudentAssignmen
   } = useQuery({
     queryKey: QUERY_KEYS.studentAssignments(filter),
     queryFn: () => studentAssignmentService.getAssignments(filter),
-    initialData: filter === "TODO" && initialAssignments.length > 0
-      ? initialAssignments
-      : undefined,
+    initialData:
+      filter === "TODO" && initialAssignments.length > 0 ? initialAssignments : undefined,
   });
 
   const records = useMemo(() => {
@@ -57,32 +64,24 @@ export function StudentAssignments({ initialAssignments = [] }: StudentAssignmen
         counts={counts}
       />
 
-      {isLoading && (
-        <p className="text-sm font-semibold text-muted-foreground" aria-live="polite">
-          Loading assignments…
-        </p>
-      )}
+      {isLoading && <SkeletonGrid />}
 
       {isError && (
-        <div
-          className="rounded-xl border-2 border-destructive/30 bg-destructive/5 px-4 py-3 text-sm font-semibold text-destructive"
-          role="alert"
-        >
-          <p>Unable to load assignments.</p>
-          <button
-            type="button"
-            onClick={() => refetch()}
-            className="mt-2 underline underline-offset-4"
-          >
-            Try again
-          </button>
-        </div>
+        <RegionState
+          variant="error"
+          title={t("loadFailed")}
+          action={
+            <Button type="button" variant="secondary" onClick={() => void refetch()}>
+              {tf("retry")}
+            </Button>
+          }
+        />
       )}
 
       {!isLoading && !isError && (
         <>
           <p className="text-xs sm:text-sm font-semibold text-muted-foreground" aria-live="polite">
-            {records.length} {records.length === 1 ? "assignment" : "assignments"}
+            {t("count", { count: records.length })}
           </p>
 
           {records.length ? (

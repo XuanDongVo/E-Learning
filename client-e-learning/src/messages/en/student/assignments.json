@@ -1,1 +1,8 @@
-{}
+{
+  "loading": "Loading assignments…",
+  "loadFailed": "Unable to load assignments.",
+  "count": "{count} assignments",
+  "emptyTitle": "No assignments found",
+  "emptyDescription": "Try another title or keyword.",
+  "clearFilters": "Clear filters"
+}

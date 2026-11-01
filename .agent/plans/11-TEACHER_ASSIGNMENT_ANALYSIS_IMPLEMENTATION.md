@@ -5,74 +5,28 @@
 **Spec:** `10-TEACHER_ASSIGNMENT_ANALYSIS_SPEC.md`  
 **Last updated:** 2026-11-01
 
-## Decisions locked
+## Done in this branch (code)
 
-| Topic | Decision |
-|---|---|
-| Roster | Live enrollment in `Assignment.classIds` |
-| Duration | `finishedAt - startedAt` (`submittedAt` or `timedOutAt`) |
-| 1-class comparison | Still show one row |
-| Overall band | HIGH ≥80 / MID ≥50 / LOW <50 median % |
-| Accuracy denominator | All finalized graded attempts; statuses CORRECT/PARTIAL/INCORRECT/UNANSWERED |
-| Score filter | Deferred |
-| Score distribution | Fixed 10 buckets |
-| Auth MVP | TEACHER + assignment exists |
-| Export | None |
-| Attempt review answer key | Always visible to teacher |
+### Backend
+- DTO under `assignmentanalysis/dto/response/*` (no `Dto` suffix)
+- Students list uses `common.dto.PageResponse` (1-indexed `page`)
+- `AssignmentAnalysisService.getOverview` — live roster via `classIds` + `ClassMember`, attempts, progress, score distribution (10 buckets), class comparison + overall band
+- `getStudents` — filter + in-memory page
+- `getAttemptReview` — terminal attempts only; teacher always sees answer key from snapshot grading
+- `getQuestions` — still empty stub
+- Repo: `findAllByAssignmentIdWithStudent`
 
-## FE structure (modular)
+### Frontend
+- Modular analysis UI
+- `AttemptReviewSheet` wired from Students “View”
+- Service uses `res.data`; students page 1-indexed
+- i18n `teacher.analytics.review.*`
 
-```text
-components/features/teacher/assignments/analysis/
-  analysis-page.tsx
-  analysis-header.tsx
-  analysis-tabs.tsx
-  types.ts
-  overview/
-    overview-panel.tsx
-    progress-summary.tsx
-    score-summary.tsx
-    score-distribution.tsx
-    class-comparison-table.tsx
-  students/
-    students-panel.tsx
-    students-filters.tsx
-    students-table.tsx
-  questions/
-    questions-panel.tsx
-```
+## Next phase
 
-Legacy sample (do not extend): `.../result/teacher-assignment-result-view.tsx`
-
-Route: `/[locale]/teacher/assignments/[id]/results?tab=overview|students|questions`
-
-i18n: `messages/{vi,en}/teacher/analytics.json` under namespace `teacher.analytics`
-
-Feedback: `RegionState`, `FullPageState`; loading: `Skeleton` / `SkeletonTable`
-
-Service: `services/assignment/assignment-analysis.service.ts` — **always `res.data`**
-
-## BE structure
-
-```text
-server/.../assignmentanalysis/
-  AssignmentAnalysisController.java
-  service/AssignmentAnalysisService.java   # skeleton: empty aggregates, assignment lookup
-  dto/*Response / *Dto
-```
-
-Endpoints:
-
-- `GET /v1/teacher/assignments/{id}/analytics/overview`
-- `GET /v1/teacher/assignments/{id}/analytics/students`
-- `GET /v1/teacher/assignments/{id}/analytics/questions`
-- `GET /v1/teacher/assignments/{id}/students/{studentId}/attempt`
-
-## Next slices
-
-1. Overview aggregation (roster + attempts + score + class rows)
-2. Students pagination/filters
-3. Questions aggregate by snapshot + PartResult
-4. Attempt review sheet UI + endpoint body
-5. Security config path permit for TEACHER role if needed
+1. **Questions aggregation** from PartResults across finalized attempts (+ section grouping)
+2. Class-level **accuracyPercent** (needs question outcomes)
+3. Delete legacy sample `result/teacher-assignment-result-view.tsx` when UI stable
+4. Spring Security path check for `/v1/teacher/assignments/**`
+5. Remove leftover `*Dto.java` files if still present under old dto package root
 6. E2E with real graded attempts

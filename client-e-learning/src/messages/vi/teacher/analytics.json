@@ -90,5 +90,20 @@
       "accuracy": "% đúng",
       "scoreRate": "Tỉ lệ điểm"
     }
+  },
+  "review": {
+    "title": "Chi tiết bài làm",
+    "loadError": "Không tải được bài làm",
+    "retry": "Thử lại",
+    "example": "Ví dụ",
+    "noPrompt": "(Không có đề)",
+    "studentAnswer": "Câu trả lời học sinh",
+    "correctAnswer": "Đáp án",
+    "outcome": {
+      "CORRECT": "Đúng",
+      "PARTIAL": "Một phần",
+      "INCORRECT": "Sai",
+      "UNANSWERED": "Bỏ trống"
+    }
   }
 }

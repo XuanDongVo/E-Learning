@@ -90,5 +90,20 @@
       "accuracy": "% correct",
       "scoreRate": "Score rate"
     }
+  },
+  "review": {
+    "title": "Attempt review",
+    "loadError": "Could not load attempt",
+    "retry": "Retry",
+    "example": "Example",
+    "noPrompt": "(No prompt)",
+    "studentAnswer": "Student answer",
+    "correctAnswer": "Correct answer",
+    "outcome": {
+      "CORRECT": "Correct",
+      "PARTIAL": "Partial",
+      "INCORRECT": "Incorrect",
+      "UNANSWERED": "Blank"
+    }
   }
 }

@@ -26,7 +26,7 @@ export function StudentsPanel({
     deadlineState: "ALL",
     classId: initialClassId,
   });
-  const [page, setPage] = useState(0);
+  const [page, setPage] = useState(1);
 
   const query = useQuery({
     queryKey: QUERY_KEYS.teacherAssignmentAnalysisStudents(assignmentId, {
@@ -57,7 +57,7 @@ export function StudentsPanel({
       <StudentsFilters
         value={filters}
         onChange={(next) => {
-          setPage(0);
+          setPage(1);
           setFilters(next);
         }}
         classes={classes}
@@ -79,22 +79,22 @@ export function StudentsPanel({
       ) : (
         <>
           <StudentsTable rows={query.data.items} onViewAttempt={onViewAttempt} />
-          {query.data.meta.totalPages > 1 ? (
+          {query.data.totalPages > 1 ? (
             <div className="flex items-center justify-end gap-2 text-sm">
               <button
                 type="button"
-                disabled={page <= 0}
+                disabled={page <= 1}
                 className="rounded border px-2 py-1 disabled:opacity-40"
-                onClick={() => setPage((p) => Math.max(0, p - 1))}
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
               >
                 {t("prev")}
               </button>
               <span>
-                {page + 1} / {query.data.meta.totalPages}
+                {page} / {query.data.totalPages}
               </span>
               <button
                 type="button"
-                disabled={page + 1 >= query.data.meta.totalPages}
+                disabled={page >= query.data.totalPages}
                 className="rounded border px-2 py-1 disabled:opacity-40"
                 onClick={() => setPage((p) => p + 1)}
               >

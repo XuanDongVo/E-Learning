@@ -2,8 +2,9 @@ import { request } from "@/services/api.service";
 import type {
   AssignmentAnalysisOverview,
   AttemptReview,
+  PageResponse,
   QuestionAnalysisList,
-  StudentResultsPage,
+  StudentResultRow,
   StudentResultsQuery,
 } from "@/types/assignment-analysis";
 
@@ -17,10 +18,7 @@ function qs(params: Record<string, string | number | undefined | null>): string 
   return s ? `?${s}` : "";
 }
 
-/**
- * Teacher Assignment Analysis API.
- * Always use response.data (ApiResponse wrap).
- */
+/** Always use response.data (ApiResponse wrap). */
 export const assignmentAnalysisService = {
   async getOverview(assignmentId: number): Promise<AssignmentAnalysisOverview> {
     const res = await request<AssignmentAnalysisOverview>(
@@ -32,10 +30,10 @@ export const assignmentAnalysisService = {
   async getStudents(
     assignmentId: number,
     query: StudentResultsQuery = {},
-  ): Promise<StudentResultsPage> {
-    const res = await request<StudentResultsPage>(
+  ): Promise<PageResponse<StudentResultRow>> {
+    const res = await request<PageResponse<StudentResultRow>>(
       `/v1/teacher/assignments/${assignmentId}/analytics/students${qs({
-        page: query.page ?? 0,
+        page: query.page ?? 1,
         size: query.size ?? 20,
         lifecycleStatus: query.lifecycleStatus,
         deadlineState: query.deadlineState,
@@ -43,7 +41,7 @@ export const assignmentAnalysisService = {
         search: query.search,
       })}`,
     );
-    return res.data as StudentResultsPage;
+    return res.data as PageResponse<StudentResultRow>;
   },
 
   async getQuestions(assignmentId: number): Promise<QuestionAnalysisList> {

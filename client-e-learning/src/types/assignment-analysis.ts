@@ -35,7 +35,6 @@ export interface ProgressCounts {
   timedOut: number;
   late: number;
   overdue: number;
-  /** submitted / assigned */
   submissionRate: number | null;
 }
 
@@ -89,16 +88,17 @@ export interface StudentResultRow {
   durationSeconds: number | null;
 }
 
-export interface PageMeta {
+/** Matches server `PageResponse<T>` (page is 1-indexed). */
+export interface PageResponse<T> {
+  items: T[];
   page: number;
   size: number;
   totalElements: number;
   totalPages: number;
-}
-
-export interface StudentResultsPage {
-  items: StudentResultRow[];
-  meta: PageMeta;
+  first?: boolean;
+  last?: boolean;
+  isFirst?: boolean;
+  isLast?: boolean;
 }
 
 export interface QuestionAnalysisRow {
@@ -131,7 +131,7 @@ export interface AttemptReviewPart {
 }
 
 export interface AttemptReviewQuestion {
-  questionId: string;
+  questionId: number;
   position: number;
   sectionTitle: string | null;
   prompt: string;
@@ -165,6 +165,7 @@ export interface AttemptReview {
 }
 
 export interface StudentResultsQuery {
+  /** 1-indexed, matches PageResponse */
   page?: number;
   size?: number;
   lifecycleStatus?: AttemptLifecycleStatus | "ALL";

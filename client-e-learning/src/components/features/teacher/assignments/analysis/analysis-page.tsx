@@ -12,6 +12,7 @@ import { AnalysisTabs } from "./analysis-tabs";
 import { OverviewPanel } from "./overview/overview-panel";
 import { StudentsPanel } from "./students/students-panel";
 import { QuestionsPanel } from "./questions/questions-panel";
+import { AttemptReviewSheet } from "./attempt-review/attempt-review-sheet";
 import type { AnalysisTab } from "./types";
 import { ANALYSIS_TABS } from "./types";
 
@@ -31,6 +32,8 @@ export function TeacherAssignmentAnalysisPage({
   const pathname = usePathname();
   const tab = parseTab(searchParams.get("tab"));
   const [filterClassId, setFilterClassId] = useState<number | null>(null);
+  const [reviewStudentId, setReviewStudentId] = useState<number | null>(null);
+  const [reviewOpen, setReviewOpen] = useState(false);
 
   const overviewQuery = useQuery({
     queryKey: QUERY_KEYS.teacherAssignmentAnalysisOverview(assignmentId),
@@ -49,6 +52,11 @@ export function TeacherAssignmentAnalysisPage({
   const onSelectClass = (classId: number) => {
     setFilterClassId(classId);
     setTab("students");
+  };
+
+  const onViewAttempt = (studentId: number) => {
+    setReviewStudentId(studentId);
+    setReviewOpen(true);
   };
 
   if (overviewQuery.isError && !overviewQuery.data) {
@@ -77,13 +85,18 @@ export function TeacherAssignmentAnalysisPage({
           <StudentsPanel
             assignmentId={assignmentId}
             initialClassId={filterClassId}
-            onViewAttempt={() => {
-              /* Attempt review sheet — next slice */
-            }}
+            onViewAttempt={onViewAttempt}
           />
         ) : null}
         {tab === "questions" ? <QuestionsPanel assignmentId={assignmentId} /> : null}
       </main>
+
+      <AttemptReviewSheet
+        assignmentId={assignmentId}
+        studentId={reviewStudentId}
+        open={reviewOpen}
+        onOpenChange={setReviewOpen}
+      />
     </div>
   );
 }

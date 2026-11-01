@@ -75,6 +75,7 @@ export interface SaveAttemptAnswerRequest {
 }
 
 export interface SaveAttemptAnswerResponse {
+  requestId: string;
   attemptQuestionId: number;
   revision: number;
   savedAt: string;
@@ -118,18 +119,3 @@ export interface CreateAttemptEventRequest {
   eventType: AssessmentAttemptEventType;
   activeSessionId: string;
 }
-
-export type AssessmentAttemptErrorCode =
-  | "ASSESSMENT_ATTEMPT_NOT_FOUND"
-  | "ASSESSMENT_ATTEMPT_ACCESS_DENIED"
-  | "ASSESSMENT_ATTEMPT_SESSION_CONFLICT"
-  | "ASSESSMENT_ATTEMPT_SESSION_LOST"
-  | "ASSESSMENT_ATTEMPT_TIME_UP"
-  | "ASSESSMENT_ATTEMPT_ALREADY_SUBMITTED"
-  | "ASSESSMENT_ATTEMPT_ALREADY_TIMED_OUT"
-  | "ASSESSMENT_ATTEMPT_FINALIZING"
-  | "ASSESSMENT_ATTEMPT_VERSION_CONFLICT"
-  | "ASSESSMENT_ATTEMPT_INVALID_ANSWER"
-  | "ASSESSMENT_ATTEMPT_SAVE_FAILED"
-  | "ASSESSMENT_ATTEMPT_INVALID_STATE"
-  | "ASSESSMENT_ATTEMPT_REQUEST_REPLAY";

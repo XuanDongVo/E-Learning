@@ -31,8 +31,6 @@ export function StudentAssignments({ initialAssignments = [] }: StudentAssignmen
       : undefined,
   });
 
-  console.log("assignments", assignments);
-
   const records = useMemo(() => {
     const search = query.trim().toLowerCase();
     return assignments.filter(

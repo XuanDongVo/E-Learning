@@ -1,5 +1,5 @@
 import { Sparkles } from "lucide-react";
-import { Pipo } from "./student-foundation";
+import { Pipo } from "@/components/ui/mascot";
 
 interface AssignmentHeroProps {
   todoCount: number;

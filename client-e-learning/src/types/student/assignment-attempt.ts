@@ -1,34 +1,56 @@
 export type AssessmentAttemptStatus = "IN_PROGRESS" | "SUBMITTED" | "TIMED_OUT";
-export type AssessmentAttemptPlayerState = "LOADING" | "INTRO" | "STARTING" | "ACTIVE" | "SAVING" | "SESSION_CONFLICT" | "SUBMITTING" | "FINALIZING" | "TIME_UP" | "RESULT" | "ERROR";
+export type AssessmentAttemptPlayerState =
+  | "LOADING"
+  | "INTRO"
+  | "STARTING"
+  | "ACTIVE"
+  | "SAVING"
+  | "SESSION_CONFLICT"
+  | "SUBMITTING"
+  | "FINALIZING"
+  | "TIME_UP"
+  | "RESULT"
+  | "ERROR";
 export type AssessmentAttemptSaveState = "SAVED" | "SAVING" | "PENDING" | "FAILED";
 export type AssessmentAttemptEventType = "TAB_HIDDEN" | "FULLSCREEN_EXIT";
 export type AttemptAnswerPayload = Record<string, unknown>;
+export type JsonRecord = Record<string, unknown>;
+
+/** Matches Java AttemptRuntimeQuestionResponse. Never includes answer keys. */
+export interface AttemptRuntimeQuestionResponse {
+  attemptQuestionId: number | string;
+  assignmentItemId?: number | string | null;
+  questionId?: number | string | null;
+  sectionKey?: string | null;
+  sectionTitle?: string | null;
+  position: number;
+  questionSnapshot: JsonRecord;
+  possiblePoints?: number;
+  required?: boolean;
+  example?: boolean;
+  answerPayload?: AttemptAnswerPayload | null;
+  answerRevision?: number;
+}
 
 /** Matches the flat Java AttemptRuntimeResponse record. */
 export interface AttemptRuntimeResponse {
-  attemptId: number;
-  assignmentId: number;
+  attemptId: number | string;
+  assignmentId: number | string;
   assignmentTitle: string;
-  status: AssessmentAttemptStatus;
-  startedAt: string;
-  deadlineAt: string;
-  serverNow: string;
-  timeLimitMinutes: number;
-  classIdAtStart: number;
-  classNameAtStart: string;
-  late: boolean;
-  snapshotVersion: number;
-  document: Record<string, unknown>;
-  settings: {
-    show_score_after_submit?: boolean;
-    show_answers_after_submit?: boolean;
-    show_points_per_question?: boolean;
-    [key: string]: unknown;
-  };
-  questions: AttemptRuntimeQuestion[];
+  status: string;
+  startedAt?: string;
+  deadlineAt?: string;
+  serverNow?: string;
+  timeLimitMinutes?: number;
+  classIdAtStart?: number | string;
+  classNameAtStart?: string;
+  late?: boolean;
+  snapshotVersion?: number;
+  document: JsonRecord;
+  settings?: JsonRecord;
+  questions: AttemptRuntimeQuestionResponse[];
 }
 
-/** Matches Java AttemptRuntimeQuestionResponse. Never includes a required flag or answer key. */
 export interface AttemptRuntimeQuestion {
   attemptQuestionId: number;
   assignmentItemId: number | null;
@@ -59,72 +81,98 @@ export interface StudentQuestionSnapshot {
 export interface AttemptIntroResponse {
   assignmentId: number;
   assignmentTitle: string;
-  gradeName: string;
+  gradeName: string | null;
   questionCount: number;
-  dueAt: string;
-  timeLimitMinutes: number;
+  timeLimitMinutes: number | null;
+  dueAt: string ;
+  startAt: string | null;
   attemptStatus: AssessmentAttemptStatus | null;
   late: boolean;
+  showScoreAfterSubmit?: boolean;
+  showAnswersAfterSubmit?: boolean;
 }
 
-export interface AttemptSummaryResponse {
-  id: number;
-  assignmentId: number;
-  status: AssessmentAttemptStatus;
-  startedAt: string;
-  deadlineAt: string;
-  submittedAt: string | null;
-  timedOutAt: string | null;
-  late: boolean;
+export interface StartOrResumeAttemptRequest {
+  activeSessionId: string;
 }
 
-/** Generate once and persist in IndexedDB before the first start-or-resume request. */
-export interface StartOrResumeAttemptRequest { activeSessionId: string; }
 export interface SaveAttemptAnswerRequest {
-  attemptQuestionId: number;
-  answerPayload: AttemptAnswerPayload;
-  expectedRevision: number;
   activeSessionId: string;
   requestId: string;
+  expectedRevision: number;
+  answerPayload: AttemptAnswerPayload | null;
 }
+
 export interface SaveAttemptAnswerResponse {
   attemptQuestionId: number;
   revision: number;
   savedAt: string;
-  serverNow: string;
 }
-export interface SubmitAttemptRequest { activeSessionId: string; requestId: string; }
-export interface AttemptResultQuestion {
+
+export interface SubmitAttemptRequest {
+  activeSessionId: string;
+  requestId: string;
+}
+
+/** Matches Java AttemptResultQuestionResponse. */
+export interface AttemptResultQuestionResponse {
   attemptQuestionId: number;
   position: number;
   possiblePoints: number;
   earnedPoints: number | null;
   status: "CORRECT" | "PARTIALLY_CORRECT" | "INCORRECT" | "UNANSWERED" | null;
-  answer: AttemptAnswerPayload | null;
+  answerPayload: AttemptAnswerPayload | null;
   answerKey: unknown | null;
 }
+
+/** Matches Java AttemptResultResponse (flat). */
 export interface AttemptResultResponse {
-  attempt: AttemptSummaryResponse;
-  score: number | null;
-  percentageScore: number | null;
+  attemptId: number;
+  assignmentId: number;
+  status: AssessmentAttemptStatus;
+  submittedAt: string | null;
+  timedOutAt: string | null;
+  late: boolean;
   totalPossiblePoints: number | null;
   totalEarnedPoints: number | null;
+  percentageScore: number | null;
   scoreVisible: boolean;
   answersVisible: boolean;
-  questions: AttemptResultQuestion[];
+  questions: AttemptResultQuestionResponse[];
 }
-export interface CreateAttemptEventRequest { eventType: AssessmentAttemptEventType; activeSessionId: string; }
-export type AssessmentAttemptErrorCode =
-  | "ASSESSMENT_ATTEMPT_NOT_FOUND"
-  | "ASSESSMENT_ATTEMPT_ACCESS_DENIED"
-  | "ASSESSMENT_ATTEMPT_SESSION_CONFLICT"
-  | "ASSESSMENT_ATTEMPT_SESSION_LOST"
-  | "ASSESSMENT_ATTEMPT_TIME_UP"
-  | "ASSESSMENT_ATTEMPT_ALREADY_SUBMITTED"
-  | "ASSESSMENT_ATTEMPT_ALREADY_TIMED_OUT"
-  | "ASSESSMENT_ATTEMPT_FINALIZING"
-  | "ASSESSMENT_ATTEMPT_VERSION_CONFLICT"
-  | "ASSESSMENT_ATTEMPT_INVALID_ANSWER"
-  | "ASSESSMENT_ATTEMPT_SAVE_FAILED"
-  | "ASSESSMENT_ATTEMPT_INVALID_STATE"
-  | "ASSESSMENT_ATTEMPT_REQUEST_REPLAY";
+
+export interface CreateAttemptEventRequest {
+  eventType: AssessmentAttemptEventType;
+  activeSessionId: string;
+}
+
+export interface CreateAttemptEventResponse {
+  eventId: number;
+  eventType: AssessmentAttemptEventType;
+  occurredAt: string;
+  leaveEventCount: number;
+}
+
+  export interface PoolOption {
+  key: string;
+  text: string;
+}
+
+export interface CompositionItemSnapshot {
+  id?: number | string;
+  position?: number;
+  itemType?: string;
+  questionId?: number | null;
+  blockPayload?: JsonRecord | null;
+  children?: CompositionItemSnapshot[];
+}
+
+export interface CompositionSectionSnapshot {
+  id?: number | string;
+  position?: number;
+  title?: string;
+  titleVi?: string;
+  instructions?: string;
+  instructionsVi?: string;
+  items?: CompositionItemSnapshot[];
+}

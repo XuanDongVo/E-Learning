@@ -1,4 +1,4 @@
-import { Pipo } from "./student-foundation";
+import { Pipo } from "@/components/ui/mascot";
 
 interface AssignmentEmptyStateProps {
   onClearFilters: () => void;
@@ -19,4 +19,3 @@ export function AssignmentEmptyState({ onClearFilters }: AssignmentEmptyStatePro
     </div>
   );
 }
-

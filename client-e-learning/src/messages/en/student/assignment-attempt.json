@@ -7,76 +7,112 @@
       "timeLimit": "Time limit",
       "noTimeLimit": "No time limit",
       "dueAt": "Due",
-      "overdue": "Overdue",
-      "resume": "Resume",
-      "start": "Start assignment",
-      "savedAnswersRestored": "Your saved answers have been restored.",
-      "eyebrow": "Student assignment",
-      "description": "Start this assignment or resume the attempt already linked to your account. Your teacher's saved paper and the server deadline are used for the attempt.",
+      "description": "Start or resume the official attempt linked to your account. The system uses the teacher snapshot and a server-controlled deadline.",
       "titleWithId": "Assignment #{id}",
       "beforeStartTitle": "Before you start",
-      "ruleOneAttempt": "This assignment has one official attempt. Reopening it resumes the same attempt.",
-      "ruleDeadline": "The deadline is controlled by the server and continues while the browser is closed.",
-      "ruleDraft": "For this Sprint 1 preview, answer edits are kept in this page only; autosave is not connected yet.",
-      "startOrResume": "Start / resume assignment",
-      "noDueDate": "Not provided",
+      "ruleOneAttempt": "This assignment has one official attempt. Reopening continues that same attempt.",
+      "ruleDeadline": "The deadline is controlled by the server and keeps running if you close the browser.",
+      "ruleDraft": "Answers are autosaved while you work.",
+      "startOrResume": "Start / resume attempt",
+      "noDueDate": "Not available",
       "timeLimitValue": "{minutes} minutes",
-      "metadataUnavailable": "Unavailable",
+      "metadataUnavailable": "Not available",
       "gradeValue": "Grade: {grade}",
       "questionCount": "{count} questions",
-      "unavailable": "This assignment is not currently available to start or resume. Check the assignment details or contact your teacher."
+      "questionLabel": "Questions",
+      "status": {
+        "notStarted": "Not started",
+        "inProgress": "In progress",
+        "submitted": "Submitted",
+        "timedOut": "Timed out"
+      },
+      "dialogue": {
+        "notStarted": "Ready? Stay focused and do your best!",
+        "inProgress": "You have an unfinished attempt — continue to finish it.",
+        "submitted": "Great job! This assignment is already submitted.",
+        "timedOut": "This assignment attempt has timed out."
+      },
+      "overdueTitle": "This assignment is past due",
+      "overdueDescription": "Your submission will be marked late after the due time.",
+      "rules": {
+        "title": "Rules",
+        "oneAttemptTitle": "One official attempt:",
+        "oneAttempt": "Each assignment can be taken once. Progress and results are recorded.",
+        "autoSaveTitle": "Autosave:",
+        "autoSave": "Answers are saved automatically when you change them.",
+        "noHintsTitle": "No hints:",
+        "noHints": "This is an official graded attempt; hints are not available while working.",
+        "stayOnScreenTitle": "Stay on the attempt screen:",
+        "stayOnScreen": "Leaving the page or switching away may be recorded.",
+        "singleTabTitle": "One tab only:",
+        "singleTab": "Do not open the attempt in multiple tabs. Only one active session is allowed.",
+        "warningTitle": "Leaving the attempt:",
+        "warning": "If you leave the attempt screen, the system may show a warning."
+      }
     },
     "header": {
-      "progress": "Progress",
-      "submit": "Submit"
+      "title": "Attempt",
+      "leave": "Leave"
     },
     "timer": {
-      "remaining": "Time remaining",
-      "noLimit": "No time limit",
-      "timeUp": "Time is up"
+      "remaining": "Remaining",
+      "urgent": "Time is almost up"
     },
     "save": {
       "saved": "Saved",
       "saving": "Saving...",
-      "pending": "Changes pending",
-      "failed": "Save failed",
-      "retry": "Retry",
-      "unsyncedCount": "{count} unsynced changes"
+      "unsaved": "Unsaved",
+      "error": "Save failed"
     },
     "session": {
-      "conflictTitle": "This assignment is being worked on in another screen. Please return to the screen where you are working.",
-      "conflictDescription": "Another active tab currently holds the right to work on this assignment.",
-      "retry": "Retry",
-      "lockUnsupportedTitle": "This browser cannot safely open the assignment",
-      "lockUnsupportedDescription": "This attempt requires browser tab locking. Open it in a supported, up-to-date browser using a secure connection.",
-      "lockErrorTitle": "Could not reserve this browser tab",
-      "lockErrorDescription": "Close any duplicate attempt tabs and reload this page.",
-      "credentialLostTitle": "Your attempt session could not be restored",
-      "credentialLostDescription": "The saved session credential is missing. This preview will not create a replacement session automatically."
+      "conflict": "This attempt is open in another tab"
     },
     "visibility": {
-      "tabHidden": "You left the assignment tab.",
-      "fullscreenExit": "You exited fullscreen.",
-      "continue": "Continue assignment"
+      "leaveWarning": "You left the attempt screen"
     },
     "submit": {
-      "title": "Submit assignment?",
+      "title": "Submit attempt?",
       "confirm": "Submit",
+      "confirming": "Submitting…",
+      "button": "Submit",
       "unanswered": "{count} unanswered questions",
-      "pendingSaves": "{count} changes are still being saved",
+      "pendingSaves": "{count} changes still saving",
       "failedSaves": "{count} changes could not be saved",
       "waitForSave": "Wait for saves to finish",
-      "cancel": "Cancel"
+      "cancel": "Cancel",
+      "error": "Could not submit. Please try again.",
+      "sessionMissing": "Session not found. Reload the page and try again."
     },
     "result": {
-      "title": "Assignment result",
+      "title": "Attempt result",
       "submitted": "Submitted",
+      "submittedTitle": "Assignment submitted",
       "timedOut": "Timed out",
+      "timedOutTitle": "Time is up — the system submitted your attempt",
+      "timedOutHint": "Only answers saved on the server before the deadline were graded.",
       "score": "Score",
+      "percent": "Percentage",
       "scoreHidden": "Your score is not available yet.",
       "answersShown": "Answers are available.",
       "answersHidden": "Answers are hidden.",
-      "late": "Submitted late"
+      "answersHeading": "Answers",
+      "late": "Submitted late",
+      "startedAt": "Started",
+      "finishedAt": "Finished",
+      "lockedHint": "This attempt is locked. You cannot change answers.",
+      "loading": "Loading…",
+      "loadFailed": "Could not load the result.",
+      "review": {
+        "questionLabel": "Q{number}",
+        "yourAnswer": "Your answer",
+        "correctAnswer": "Correct answer",
+        "status": {
+          "correct": "Correct",
+          "partial": "Partially correct",
+          "incorrect": "Incorrect",
+          "unanswered": "Unanswered"
+        }
+      }
     },
     "backToAssignments": "Back to assignments",
     "backToDashboard": "Back to dashboard",
@@ -87,24 +123,24 @@
     },
     "draft": {
       "warningTitle": "Your answers are not saved yet",
-      "warningDescription": "Do not refresh or close this page if you need to keep these edits. Incremental autosave will be connected in Sprint 2.",
-      "sprint2Note": "Sprint 1 preview — autosave is not connected",
-      "confirmLeave": "Leave this page? Any answer changes made in this Sprint 1 preview will be lost."
+      "warningDescription": "Do not refresh or close this page if you need to keep these edits.",
+      "sprint2Note": "Autosave is connected",
+      "confirmLeave": "Leave this page? Unsaved changes may be lost."
     },
     "states": {
       "checkingAuth": "Checking your account…",
       "checkingSession": "Checking active tab permission…",
       "timedOut": "This attempt has timed out",
       "alreadySubmitted": "This assignment attempt is already finished",
-      "resultSprint4": "The result screen will be connected in Sprint 4.",
+      "resultSprint4": "The result screen is available.",
       "starting": "Opening attempt…"
     },
     "errors": {
       "invalidAssignment": "The assignment ID in this link is invalid.",
       "studentOnly": "Only a signed-in student can open this assignment attempt.",
       "startFailedTitle": "The attempt could not be opened",
-      "startFailedDescription": "The server endpoint may not be implemented yet. No practice attempt has been mocked or created locally.",
-      "introLoadFailed": "Assignment details could not be loaded. You can still try Start / Resume; the server must validate access.",
+      "startFailedDescription": "The server endpoint may not be ready yet. No practice attempt has been mocked locally.",
+      "introLoadFailed": "Assignment details could not be loaded.",
       "retryIntro": "Retry details"
     },
     "paper": {

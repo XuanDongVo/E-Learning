@@ -31,6 +31,7 @@ An accepted ADR overrides lower-level documents. Never delete an ADR; supersede 
 | 0025 | Assignment grading lock and Activity updates | Accepted; Assignment lock after first attempt starts |
 | 0026 | Assignment automatic scoring and score visibility | Accepted; automatic scoring, default/custom points, independent score and answer visibility |
 | 0027 | Single Active Tab with Resumable AssessmentAttempt | **Accepted; Phase 7B session ownership** |
+| 0028 | AssessmentAttempt draft answer on AssessmentAttemptQuestion | **Accepted; drops 1–1 Answer entity (V47)** |
 
 ## Current decision chain
 
@@ -46,6 +47,7 @@ ADR 0019 controls Assignment post-submit answer visibility through show_answers_
 ADR 0021 separates ActivitySession from formal AssessmentAttempt and forbids a shared polymorphic Attempt.
 ADR 0023 accepts Question Engine D1–D8. ADR 0025 governs Assignment hard-lock and Activity update/snapshot semantics. ADR 0026 defines automatic Assignment scoring and visibility.
 ADR 0027 defines the Phase 7B single-active-tab/resumable session policy: Web Locks provides same-browser exclusive tab coordination, a stable session credential is persisted for recovery, another tab is rejected immediately, and there is no heartbeat-driven stale takeover in MVP.
+ADR 0028 stores the AssessmentAttempt draft answer on AssessmentAttemptQuestion (answer_payload, revision, saved_at) and removes the separate AssessmentAttemptAnswer table; Mutation idempotency remains; normalized values are not stored on draft save.
 
 ## Canonical implementation plan
 

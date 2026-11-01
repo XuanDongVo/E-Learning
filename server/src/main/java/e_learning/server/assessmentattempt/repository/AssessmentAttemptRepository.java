@@ -2,12 +2,32 @@ package e_learning.server.assessmentattempt.repository;
 
 import e_learning.server.assessmentattempt.entity.AssessmentAttempt;
 import e_learning.server.assessmentattempt.enums.AssessmentAttemptStatus;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 public interface AssessmentAttemptRepository extends JpaRepository<AssessmentAttempt, Long> {
     Optional<AssessmentAttempt> findByAssignmentIdAndStudentId(Long assignmentId, Long studentId);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select a from AssessmentAttempt a where a.assignment.id = :assignmentId and a.student.id = :studentId")
+    Optional<AssessmentAttempt> findByAssignmentIdAndStudentIdForUpdate(
+            @Param("assignmentId") Long assignmentId,
+            @Param("studentId") Long studentId);
+
+    @Query("""
+            select a.id from AssessmentAttempt a
+            where a.status = e_learning.server.assessmentattempt.enums.AssessmentAttemptStatus.IN_PROGRESS
+              and a.deadlineAt is not null
+              and a.deadlineAt < :cutoff
+            """)
+    List<Long> findIdsDueForTimeout(@Param("cutoff") LocalDateTime cutoff);
 
     boolean existsByAssignmentId(Long assignmentId);
 

@@ -54,9 +54,33 @@ public class AssessmentAttemptQuestion {
     @Column(nullable = false)
     private Integer position;
 
+    /**
+     * Immutable question snapshot at attempt start: {@code student} (safe render) + {@code grading} (server-only).
+     * Must not be rewritten after create.
+     */
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "question_snapshot", columnDefinition = "jsonb", nullable = false)
     private Map<String, Object> questionSnapshot;
+
+    /**
+     * Student draft answer payload. Null until the first successful autosave.
+     */
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "answer_payload", columnDefinition = "jsonb")
+    private Map<String, Object> answerPayload;
+
+    /**
+     * Optimistic lock for draft answer updates only. Starts at 0; increments on each answer save.
+     */
+    @Version
+    @Column(nullable = false)
+    private long revision;
+
+    /**
+     * Last time answer_payload was successfully saved. Null if never answered.
+     */
+    @Column(name = "saved_at")
+    private LocalDateTime savedAt;
 
     @Column(name = "possible_points", nullable = false, precision = 10, scale = 2)
     private BigDecimal possiblePoints = BigDecimal.ZERO;

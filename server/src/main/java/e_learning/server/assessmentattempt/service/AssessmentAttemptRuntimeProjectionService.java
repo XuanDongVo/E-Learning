@@ -3,10 +3,8 @@ package e_learning.server.assessmentattempt.service;
 import e_learning.server.assessmentattempt.dto.response.AttemptRuntimeQuestionResponse;
 import e_learning.server.assessmentattempt.dto.response.AttemptRuntimeResponse;
 import e_learning.server.assessmentattempt.entity.AssessmentAttempt;
-import e_learning.server.assessmentattempt.entity.AssessmentAttemptAnswer;
 import e_learning.server.assessmentattempt.entity.AssessmentAttemptQuestion;
 import e_learning.server.assessmentattempt.enums.AssessmentAttemptStatus;
-import e_learning.server.assessmentattempt.repository.AssessmentAttemptAnswerRepository;
 import e_learning.server.assessmentattempt.repository.AssessmentAttemptQuestionRepository;
 import e_learning.server.assessmentattempt.repository.AssessmentAttemptRepository;
 import e_learning.server.assignment.entity.Assignment;
@@ -38,7 +36,6 @@ import java.util.UUID;
 public class AssessmentAttemptRuntimeProjectionService {
     private final AssessmentAttemptRepository attemptRepository;
     private final AssessmentAttemptQuestionRepository questionRepository;
-    private final AssessmentAttemptAnswerRepository answerRepository;
     private final AssignmentRepository assignmentRepository;
     private final UserRepository userRepository;
     private final ClassMemberRepository classMemberRepository;
@@ -67,8 +64,6 @@ public class AssessmentAttemptRuntimeProjectionService {
                 // Timeout finalization/auto-submit is a later slice. Never extend the deadline on resume.
                 throw new AppException(ErrorCode.ASSESSMENT_ATTEMPT_TIME_UP);
             }
-            // Existing Attempts use their immutable class/content snapshot. A later class transfer or
-            // operationally archiving the Assignment must not silently rewrite historical attribution.
             return Optional.of(toResponse(attempt, assignment));
         }
 
@@ -118,19 +113,22 @@ public class AssessmentAttemptRuntimeProjectionService {
     private AttemptRuntimeQuestionResponse toQuestionResponse(AssessmentAttemptQuestion question) {
         Map<String, Object> snapshot = question.getQuestionSnapshot();
         Map<String, Object> studentData = toMap(snapshot.get("student"));
-        // The persisted grading object is deliberately not copied into the student response.
+        // Never expose persisted grading / answer keys to the student runtime DTO.
         Map<String, Object> safeSnapshot = new LinkedHashMap<>();
         safeSnapshot.put("spec", toMap(studentData.get("spec")));
 
-        Optional<AssessmentAttemptAnswer> answer = answerRepository.findByAttemptQuestionId(question.getId());
+        Map<String, Object> answerPayload = question.getAnswerPayload() == null
+                ? Map.of()
+                : question.getAnswerPayload();
+
         return new AttemptRuntimeQuestionResponse(
                 question.getId(),
                 question.getAssignmentItem() == null ? null : question.getAssignmentItem().getId(),
                 question.getSourceQuestion() == null ? null : question.getSourceQuestion().getId(),
                 question.getSectionKey(), question.getSectionTitle(), question.getPosition(), safeSnapshot,
                 question.getPossiblePoints(), question.isExample(),
-                answer.map(AssessmentAttemptAnswer::getAnswerPayload).orElseGet(Map::of),
-                answer.map(AssessmentAttemptAnswer::getRevision).orElse(0L));
+                answerPayload,
+                question.getRevision());
     }
 
     private Map<String, Object> toMap(Object value) {

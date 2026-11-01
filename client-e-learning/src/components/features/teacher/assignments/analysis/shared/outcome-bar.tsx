@@ -1,10 +1,19 @@
-import type { MockOutcome } from "../mock-data";
+"use client";
+
+import { useTranslations } from "next-intl";
+
+export type OutcomeMix = {
+  correct: number;
+  partial: number;
+  incorrect: number;
+  blank: number;
+};
 
 export function OutcomeBar({
   outcome,
   className = "",
 }: {
-  outcome: MockOutcome;
+  outcome: OutcomeMix;
   className?: string;
 }) {
   const total =
@@ -29,19 +38,20 @@ export function OutcomeBar({
 }
 
 export function OutcomeLegend() {
+  const t = useTranslations("teacher.analytics");
   return (
     <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
       <span className="inline-flex items-center gap-1">
-        <span className="size-2 rounded-full bg-emerald-500" /> Đúng
+        <span className="size-2 rounded-full bg-emerald-500" /> {t("legend.correct")}
       </span>
       <span className="inline-flex items-center gap-1">
-        <span className="size-2 rounded-full bg-amber-400" /> Một phần
+        <span className="size-2 rounded-full bg-amber-400" /> {t("legend.partial")}
       </span>
       <span className="inline-flex items-center gap-1">
-        <span className="size-2 rounded-full bg-rose-500" /> Sai
+        <span className="size-2 rounded-full bg-rose-500" /> {t("legend.incorrect")}
       </span>
       <span className="inline-flex items-center gap-1">
-        <span className="size-2 rounded-full bg-slate-300" /> Bỏ trống
+        <span className="size-2 rounded-full bg-slate-300" /> {t("legend.blank")}
       </span>
     </div>
   );

@@ -51,8 +51,10 @@ ADR 0028 stores the AssessmentAttempt draft answer on AssessmentAttemptQuestion 
 
 ## Canonical implementation plan
 
-Read `.agent/plans/PHASE_7B_IMPLEMENTATION_MIGRATION_PLAN.md` before coding Phase 7B. For Student Assignment Attempt, read `.agent/plans/08-STUDENT_ASSIGNMENT_ATTEMPT_SPEC.md` and `.agent/plans/09-STUDENT_ASSIGNMENT_ATTEMPT_UI_RUNTIME_BLUEPRINT.md`; ADR 0027 is authoritative for session ownership.
+For Student Assignment Attempt, the historical implementation plan is `.agent/plans/08-STUDENT_ASSIGNMENT_ATTEMPT_SPEC.md` and UI/runtime blueprint `.agent/plans/09-STUDENT_ASSIGNMENT_ATTEMPT_UI_RUNTIME_BLUEPRINT.md`. ADR 0027 remains authoritative for session ownership.
+
+For the current Teacher Assignment Analysis feature, read `.agent/plans/10-TEACHER_ASSIGNMENT_ANALYSIS_SPEC.md`. It is a product specification, not proof that analytics are implemented.
 
 ## Authority note
 
-Only Accepted ADRs define approved behavior. Implementation status is tracked separately in PROGRESS.md; accepted architecture is not evidence of implemented code or passing tests.
+Only Accepted ADRs define approved behavior. Implementation status is tracked separately in `CURRENT_STATE.md` and `PROGRESS.md`; accepted architecture is not evidence of implemented code or passing tests.

@@ -1,1 +1,12 @@
-{}
+{
+  "loading": "Đang tải…",
+  "retry": "Thử lại",
+  "empty": "Chưa có dữ liệu",
+  "errorGeneric": "Có lỗi xảy ra. Vui lòng thử lại.",
+  "errorNetwork": "Không kết nối được máy chủ.",
+  "saved": "Đã lưu",
+  "saving": "Đang lưu…",
+  "saveFailed": "Lưu thất bại",
+  "working": "Đang xử lý…",
+  "dismiss": "Đóng"
+}

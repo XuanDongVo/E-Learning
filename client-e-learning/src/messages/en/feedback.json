@@ -1,1 +1,12 @@
-{}
+{
+  "loading": "Loading…",
+  "retry": "Try again",
+  "empty": "Nothing here yet",
+  "errorGeneric": "Something went wrong. Please try again.",
+  "errorNetwork": "Could not reach the server.",
+  "saved": "Saved",
+  "saving": "Saving…",
+  "saveFailed": "Save failed",
+  "working": "Working…",
+  "dismiss": "Dismiss"
+}

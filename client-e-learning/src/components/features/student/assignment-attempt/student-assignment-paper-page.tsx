@@ -429,9 +429,7 @@ export function StudentAssignmentPaperPage({
                   · <InlineStatus tone={saveInline.tone} message={saveInline.message} />
                 </span>
                 {leaveCount > 0 && (
-                  <span className="font-semibold text-destructive">
-                    · {leaveCount}
-                  </span>
+                  <span className="font-semibold text-destructive">· {leaveCount}</span>
                 )}
               </div>
             </div>
@@ -492,7 +490,9 @@ export function StudentAssignmentPaperPage({
               </div>
               <div className="rounded-2xl border border-border bg-muted/40 p-4 space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">{t("player.progress", { answered: answeredCount, total: questionCount })}</span>
+                  <span className="text-muted-foreground">
+                    {t("player.progress", { answered: answeredCount, total: questionCount })}
+                  </span>
                 </div>
                 {unAnsweredCount > 0 && (
                   <div className="flex justify-between pt-1 border-t border-border/60 text-destructive font-semibold">
@@ -501,7 +501,12 @@ export function StudentAssignmentPaperPage({
                 )}
               </div>
               <div className="flex gap-2.5 pt-2">
-                <Button variant="outline" className="flex-1 rounded-xl" onClick={() => setShowSubmitConfirm(false)} disabled={isSubmitting}>
+                <Button
+                  variant="outline"
+                  className="flex-1 rounded-xl"
+                  onClick={() => setShowSubmitConfirm(false)}
+                  disabled={isSubmitting}
+                >
                   {t("submit.cancel")}
                 </Button>
                 <BusyButton
@@ -524,14 +529,14 @@ export function StudentAssignmentPaperPage({
               <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
                 <Maximize className="h-6 w-6" />
               </div>
-              <h2 className="mt-4 text-lg font-bold text-foreground">Vào toàn màn hình để bắt đầu làm bài</h2>
+              <h2 className="mt-4 text-lg font-bold text-foreground">{t("paper.fullscreen.title")}</h2>
               <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-                Bài kiểm tra yêu cầu chế độ toàn màn hình. Thời gian vẫn tính theo máy chủ.
+                {t("paper.fullscreen.description")}
               </p>
               <div className="mt-5">
                 <Button className="w-full gap-2 rounded-xl" onClick={() => void enterFullscreen()}>
                   <Maximize className="h-4 w-4" />
-                  Vào toàn màn hình
+                  {t("paper.fullscreen.enter")}
                 </Button>
               </div>
             </div>
@@ -542,10 +547,10 @@ export function StudentAssignmentPaperPage({
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/70 p-4 backdrop-blur-xs">
             <div className="w-full max-w-md rounded-3xl border border-border bg-card p-6 text-center shadow-2xl">
               <Lock className="mx-auto h-8 w-8 text-destructive" />
-              <h2 className="mt-3 text-lg font-bold">Bạn đã rời màn hình làm bài</h2>
-              <p className="mt-2 text-sm text-muted-foreground">Quay lại toàn màn hình để tiếp tục.</p>
+              <h2 className="mt-3 text-lg font-bold">{t("paper.fullscreen.awayTitle")}</h2>
+              <p className="mt-2 text-sm text-muted-foreground">{t("paper.fullscreen.awayDescription")}</p>
               <Button className="mt-4 w-full rounded-xl" onClick={() => void enterFullscreen()}>
-                Tiếp tục làm bài
+                {t("paper.fullscreen.continue")}
               </Button>
             </div>
           </div>

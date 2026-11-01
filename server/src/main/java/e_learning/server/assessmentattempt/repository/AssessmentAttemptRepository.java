@@ -8,6 +8,8 @@ import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 public interface AssessmentAttemptRepository extends JpaRepository<AssessmentAttempt, Long> {
@@ -18,6 +20,14 @@ public interface AssessmentAttemptRepository extends JpaRepository<AssessmentAtt
     Optional<AssessmentAttempt> findByAssignmentIdAndStudentIdForUpdate(
             @Param("assignmentId") Long assignmentId,
             @Param("studentId") Long studentId);
+
+    @Query("""
+            select a.id from AssessmentAttempt a
+            where a.status = e_learning.server.assessmentattempt.enums.AssessmentAttemptStatus.IN_PROGRESS
+              and a.deadlineAt is not null
+              and a.deadlineAt < :cutoff
+            """)
+    List<Long> findIdsDueForTimeout(@Param("cutoff") LocalDateTime cutoff);
 
     boolean existsByAssignmentId(Long assignmentId);
 

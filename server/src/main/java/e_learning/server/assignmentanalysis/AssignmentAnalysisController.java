@@ -1,10 +1,11 @@
 package e_learning.server.assignmentanalysis;
 
-import e_learning.server.assignmentanalysis.dto.AssignmentAnalysisOverviewResponse;
-import e_learning.server.assignmentanalysis.dto.AttemptReviewResponse;
-import e_learning.server.assignmentanalysis.dto.QuestionAnalysisListResponse;
-import e_learning.server.assignmentanalysis.dto.StudentResultsPageResponse;
+import e_learning.server.assignmentanalysis.dto.response.AnalysisOverviewResponse;
+import e_learning.server.assignmentanalysis.dto.response.AttemptReviewResponse;
+import e_learning.server.assignmentanalysis.dto.response.QuestionAnalysisListResponse;
+import e_learning.server.assignmentanalysis.dto.response.StudentResultRow;
 import e_learning.server.assignmentanalysis.service.AssignmentAnalysisService;
+import e_learning.server.common.dto.PageResponse;
 import e_learning.server.common.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -24,7 +25,7 @@ public class AssignmentAnalysisController {
     private final AssignmentAnalysisService analysisService;
 
     @GetMapping("/analytics/overview")
-    public ResponseEntity<ApiResponse<AssignmentAnalysisOverviewResponse>> overview(
+    public ResponseEntity<ApiResponse<AnalysisOverviewResponse>> overview(
             @PathVariable Long assignmentId,
             @AuthenticationPrincipal Jwt jwt
     ) {
@@ -34,9 +35,9 @@ public class AssignmentAnalysisController {
     }
 
     @GetMapping("/analytics/students")
-    public ResponseEntity<ApiResponse<StudentResultsPageResponse>> students(
+    public ResponseEntity<ApiResponse<PageResponse<StudentResultRow>>> students(
             @PathVariable Long assignmentId,
-            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(required = false) String lifecycleStatus,
             @RequestParam(required = false) String deadlineState,

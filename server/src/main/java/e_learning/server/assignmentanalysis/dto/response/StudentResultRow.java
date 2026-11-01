@@ -13,5 +13,7 @@ public record StudentResultRow(
         Double possiblePoints,
         String startedAt,
         String finishedAt,
-        Long durationSeconds
+        Long durationSeconds,
+        Integer blankCount,
+        Double deltaVsClassAvg
 ) {}

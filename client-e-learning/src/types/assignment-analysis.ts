@@ -16,6 +16,8 @@ export type QuestionOutcomeStatus =
   | "INCORRECT"
   | "UNANSWERED";
 
+export type DifficultyFlag = "HARD" | "EASY" | null;
+
 export interface AssignmentAnalysisSummary {
   assignmentId: number;
   title: string;
@@ -86,9 +88,10 @@ export interface StudentResultRow {
   startedAt: string | null;
   finishedAt: string | null;
   durationSeconds: number | null;
+  blankCount?: number | null;
+  deltaVsClassAvg?: number | null;
 }
 
-/** Matches server `PageResponse<T>` (page is 1-indexed). */
 export interface PageResponse<T> {
   items: T[];
   page: number;
@@ -99,6 +102,30 @@ export interface PageResponse<T> {
   last?: boolean;
   isFirst?: boolean;
   isLast?: boolean;
+}
+
+export interface AnswerDistributionItem {
+  key: string;
+  label: string;
+  count: number;
+  correct: boolean;
+}
+
+export interface BlankDistribution {
+  blankKey: string;
+  blankLabel: string;
+  answers: AnswerDistributionItem[];
+  blankCount: number;
+}
+
+export interface QuestionAnswerDistribution {
+  kind: "OPTIONS" | "TEXT" | "CLOZE" | "MATCHING" | "UNKNOWN";
+  options: AnswerDistributionItem[];
+  textAnswers: AnswerDistributionItem[];
+  blanks: BlankDistribution[];
+  matchPairs: BlankDistribution[];
+  unansweredCount: number;
+  sampleSize: number;
 }
 
 export interface QuestionAnalysisRow {
@@ -116,10 +143,30 @@ export interface QuestionAnalysisRow {
   unansweredCount: number;
   accuracyPercent: number | null;
   scoreRatePercent: number | null;
+  difficulty: DifficultyFlag;
+  distribution: QuestionAnswerDistribution | null;
 }
 
 export interface QuestionAnalysisList {
   items: QuestionAnalysisRow[];
+}
+
+export interface SectionAnalysisRow {
+  sectionId: string | null;
+  sectionTitle: string | null;
+  questionCount: number;
+  sampleSlots: number;
+  correctCount: number;
+  partialCount: number;
+  incorrectCount: number;
+  unansweredCount: number;
+  accuracyPercent: number | null;
+  scoreRatePercent: number | null;
+  blankPercent: number | null;
+}
+
+export interface SectionAnalysisList {
+  items: SectionAnalysisRow[];
 }
 
 export interface AttemptReviewPart {
@@ -165,7 +212,6 @@ export interface AttemptReview {
 }
 
 export interface StudentResultsQuery {
-  /** 1-indexed, matches PageResponse */
   page?: number;
   size?: number;
   lifecycleStatus?: AttemptLifecycleStatus | "ALL";

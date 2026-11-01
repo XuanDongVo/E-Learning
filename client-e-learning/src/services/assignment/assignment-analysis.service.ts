@@ -4,15 +4,10 @@ import type {
   AttemptReview,
   PageResponse,
   QuestionAnalysisList,
+  SectionAnalysisList,
   StudentResultRow,
   StudentResultsQuery,
 } from "@/types/assignment-analysis";
-
-/**
- * Toggle: UI currently uses local mock in analysis/mock-data.ts.
- * Set to false and wire panels back to these methods when backend matches product mock.
- */
-export const ANALYSIS_USE_MOCK = true;
 
 function qs(params: Record<string, string | number | undefined | null>): string {
   const sp = new URLSearchParams();
@@ -24,13 +19,9 @@ function qs(params: Record<string, string | number | undefined | null>): string 
   return s ? `?${s}` : "";
 }
 
-/**
- * Real API client — kept for later. Analysis page does not call these while ANALYSIS_USE_MOCK=true.
- * Always use response.data (ApiResponse wrap).
- */
+/** Always use response.data (ApiResponse wrap). */
 export const assignmentAnalysisService = {
   async getOverview(assignmentId: number): Promise<AssignmentAnalysisOverview> {
-    // if (ANALYSIS_USE_MOCK) throw new Error("Use mock-data while ANALYSIS_USE_MOCK=true");
     const res = await request<AssignmentAnalysisOverview>(
       `/v1/teacher/assignments/${assignmentId}/analytics/overview`,
     );
@@ -44,7 +35,7 @@ export const assignmentAnalysisService = {
     const res = await request<PageResponse<StudentResultRow>>(
       `/v1/teacher/assignments/${assignmentId}/analytics/students${qs({
         page: query.page ?? 1,
-        size: query.size ?? 20,
+        size: query.size ?? 50,
         lifecycleStatus: query.lifecycleStatus,
         deadlineState: query.deadlineState,
         classId: query.classId ?? undefined,
@@ -59,6 +50,13 @@ export const assignmentAnalysisService = {
       `/v1/teacher/assignments/${assignmentId}/analytics/questions`,
     );
     return res.data as QuestionAnalysisList;
+  },
+
+  async getSections(assignmentId: number): Promise<SectionAnalysisList> {
+    const res = await request<SectionAnalysisList>(
+      `/v1/teacher/assignments/${assignmentId}/analytics/sections`,
+    );
+    return res.data as SectionAnalysisList;
   },
 
   async getAttemptReview(assignmentId: number, studentId: number): Promise<AttemptReview> {

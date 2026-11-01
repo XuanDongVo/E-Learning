@@ -1,70 +1,104 @@
 {
   "title": "Assignment results",
-  "backToList": "Back",
+  "backToList": "Back to assignments",
   "dueAt": "Due",
-  "loadError": "Could not load analysis",
+  "loadError": "Failed to load analysis",
   "retry": "Retry",
   "empty": "No data yet",
   "prev": "Prev",
   "next": "Next",
+  "metricsInfo": "How metrics are calculated",
   "tabs": {
     "overview": "Overview",
+    "overviewHint": "How did the class do?",
+    "questions": "By question",
+    "questionsHint": "Which items are hard?",
+    "sections": "By section",
+    "sectionsHint": "Which skills are weak?",
     "students": "Students",
-    "questions": "Questions"
+    "studentsHint": "Who needs attention?",
+    "classes": "By class",
+    "classesHint": "How do classes compare?"
+  },
+  "overview": {
+    "submissionRate": "Submission rate",
+    "assignedOf": "{submitted}/{assigned} assigned students",
+    "averageScore": "Average score",
+    "medianHint": "Median {median}% · based on {count} submissions",
+    "range": "Lowest – highest",
+    "rangeHint": "Includes timed-out attempts",
+    "avgDuration": "Average time spent",
+    "timeLimit": "limit {minutes} min",
+    "progress": "Progress",
+    "viewStudents": "View student list",
+    "progressNote": "Students who never opened after the due date count as Overdue. In-progress attempts are excluded from score metrics.",
+    "distribution": "Score distribution",
+    "distributionN": "n={count} submissions",
+    "distributionNote": "Red bars: under 50%. Average {avg}%, median {median}%.",
+    "attention": "Items to review",
+    "hardTitle": "Under 40% correct — review ({count})",
+    "easyTitle": "Over 90% correct — possibly too easy ({count})",
+    "minutes": "{n} min"
   },
   "progress": {
-    "title": "Progress",
-    "assigned": "Assigned",
-    "notStarted": "Not started",
-    "inProgress": "In progress",
     "submitted": "Submitted",
-    "timedOut": "Timed out",
     "late": "Late",
-    "overdue": "Overdue",
-    "submissionRate": "Submission rate"
+    "timedOut": "Timed out",
+    "inProgress": "In progress",
+    "notStarted": "Not started",
+    "overdue": "Overdue"
   },
-  "score": {
-    "title": "Scores",
-    "gradedCount": "{count} graded attempts",
-    "average": "Average",
-    "median": "Median",
-    "highest": "Highest",
-    "lowest": "Lowest",
-    "distribution": "Score distribution"
+  "questions": {
+    "sortOrder": "Paper order",
+    "sortHardest": "Most missed",
+    "sortEasiest": "Most correct",
+    "filterAll": "All ({count})",
+    "filterHard": "Hard ({count})",
+    "filterEasy": "Too easy ({count})",
+    "footnote": "Accuracy = fully correct / submitted attempts (blanks stay in the denominator). Under 40% = Hard, over 90% = Too easy. Click a row to see type-specific answer distribution.",
+    "col": {
+      "position": "#",
+      "content": "Prompt",
+      "type": "Type",
+      "result": "Outcome",
+      "correct": "Correct",
+      "blank": "Blank"
+    },
+    "hard": "HARD",
+    "easy": "EASY",
+    "distOptions": "Choices selected",
+    "distOptionsMulti": "Choices selected (multi-select)",
+    "distText": "Top student answers",
+    "distCloze": "Per blank",
+    "distMatching": "Per pair",
+    "blank": "Blank",
+    "correctMark": "✓ correct",
+    "noDist": "No answer distribution for this item.",
+    "unsupported": "Type {type} has no detailed distribution yet."
   },
-  "classComparison": {
-    "title": "Class comparison",
-    "class": "Class",
-    "assigned": "Assigned",
-    "submissionRate": "Submission rate",
-    "average": "Average",
-    "median": "Median",
-    "accuracy": "% correct",
-    "overallBand": "Overall",
-    "band": {
-      "HIGH": "Strong",
-      "MID": "Fair",
-      "LOW": "Needs work"
+  "sections": {
+    "footnote": "% correct = fully correct parts / (questions × attempts). Score rate includes partial credit.",
+    "weakest": "Weakest: {title} ({percent}%).",
+    "col": {
+      "section": "Section",
+      "count": "Items",
+      "result": "Outcome",
+      "accuracy": "% correct",
+      "scoreRate": "% score",
+      "blank": "Blank"
     }
   },
   "students": {
-    "empty": "No students match these filters",
     "searchPlaceholder": "Search students…",
-    "lifecycle": "Status",
-    "deadline": "Deadline",
-    "class": "Class",
-    "all": "All",
-    "allClasses": "All classes",
-    "viewAttempt": "View",
+    "all": "All ({count})",
+    "sortByName": "By name",
+    "empty": "No students match filters",
+    "viewAttempt": "Review",
     "status": {
       "NOT_STARTED": "Not started",
       "IN_PROGRESS": "In progress",
       "SUBMITTED": "Submitted",
-      "TIMED_OUT": "Timed out"
-    },
-    "deadlineState": {
-      "NONE": "—",
-      "ON_TIME": "On time",
+      "TIMED_OUT": "Timed out",
       "LATE": "Late",
       "OVERDUE": "Overdue"
     },
@@ -72,31 +106,36 @@
       "student": "Student",
       "class": "Class",
       "status": "Status",
-      "deadline": "Deadline",
       "score": "Score",
-      "duration": "Duration"
+      "percent": "%",
+      "delta": "vs avg",
+      "duration": "Time",
+      "blank": "Blank"
     }
   },
-  "questions": {
-    "empty": "No graded questions yet",
-    "ungrouped": "Ungrouped",
+  "classes": {
+    "singleNote": "Assigned to {count} class(es). With multiple classes, each is one row. Attempts stay on the class at start — transfers keep the original class.",
     "col": {
-      "prompt": "Question",
-      "n": "N",
-      "correct": "Correct",
-      "partial": "Partial",
-      "incorrect": "Incorrect",
-      "unanswered": "Blank",
-      "accuracy": "% correct",
-      "scoreRate": "Score rate"
+      "class": "Class",
+      "assigned": "Assigned",
+      "submissionRate": "Submission rate",
+      "average": "Avg score",
+      "median": "Median",
+      "outcome": "Outcome mix",
+      "accuracy": "% correct"
     }
   },
   "review": {
-    "title": "Attempt review",
-    "loadError": "Could not load attempt",
-    "retry": "Retry",
-    "example": "Example",
-    "noPrompt": "(No prompt)",
+    "readonly": "Read-only · teachers only",
+    "score": "Score",
+    "vsClass": "vs class avg",
+    "duration": "Duration",
+    "classAtStart": "Class at start",
+    "started": "Started",
+    "finished": "Submitted",
+    "bySection": "By section",
+    "classAvgMark": "Tick mark = class average.",
+    "byQuestion": "By question",
     "studentAnswer": "Student answer",
     "correctAnswer": "Correct answer",
     "outcome": {
@@ -105,5 +144,11 @@
       "INCORRECT": "Incorrect",
       "UNANSWERED": "Blank"
     }
+  },
+  "legend": {
+    "correct": "Correct",
+    "partial": "Partial",
+    "incorrect": "Incorrect",
+    "blank": "Blank"
   }
 }

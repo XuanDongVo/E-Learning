@@ -1,109 +1,154 @@
 {
   "title": "Kết quả bài giao",
-  "backToList": "Danh sách",
+  "backToList": "Về trình soạn",
   "dueAt": "Hạn nộp",
   "loadError": "Không tải được dữ liệu phân tích",
   "retry": "Thử lại",
   "empty": "Chưa có dữ liệu",
   "prev": "Trước",
   "next": "Sau",
+  "metricsInfo": "Cách tính chỉ số",
   "tabs": {
     "overview": "Tổng quan",
+    "overviewHint": "Cả lớp làm thế nào?",
+    "questions": "Theo câu hỏi",
+    "questionsHint": "Câu nào sai nhiều, sai vì sao?",
+    "sections": "Theo phần",
+    "sectionsHint": "Yếu dạng bài nào?",
     "students": "Học sinh",
-    "questions": "Câu hỏi"
+    "studentsHint": "Em nào cần chú ý?",
+    "classes": "Theo lớp",
+    "classesHint": "Lớp nào khác lớp nào?"
+  },
+  "overview": {
+    "submissionRate": "Tỉ lệ nộp",
+    "assignedOf": "{submitted}/{assigned} học sinh được giao",
+    "averageScore": "Điểm trung bình",
+    "medianHint": "Trung vị {median}% · tính trên {count} bài đã nộp",
+    "range": "Thấp nhất – cao nhất",
+    "rangeHint": "Kể cả bài hết giờ",
+    "avgDuration": "Thời gian làm trung bình",
+    "timeLimit": "giới hạn {minutes} phút",
+    "progress": "Tiến độ",
+    "viewStudents": "Xem danh sách học sinh",
+    "progressNote": "Em chưa mở bài sau hạn được tính “Quá hạn”. Bài “Đang làm” chưa tính vào chỉ số điểm.",
+    "distribution": "Phân bố điểm",
+    "distributionN": "n={count} bài đã nộp",
+    "distributionNote": "Cột đỏ: dưới 50%. Trung bình {avg}%, trung vị {median}%.",
+    "attention": "Câu cần chú ý",
+    "hardTitle": "Đúng dưới 40% — nên xem lại ({count})",
+    "easyTitle": "Đúng trên 90% — có thể quá dễ ({count})",
+    "minutes": "{n} phút"
   },
   "progress": {
-    "title": "Tiến độ",
-    "assigned": "Đã giao",
-    "notStarted": "Chưa làm",
-    "inProgress": "Đang làm",
     "submitted": "Đã nộp",
-    "timedOut": "Hết giờ",
     "late": "Nộp trễ",
-    "overdue": "Quá hạn",
-    "submissionRate": "Tỉ lệ nộp"
+    "timedOut": "Hết giờ",
+    "inProgress": "Đang làm",
+    "notStarted": "Chưa làm",
+    "overdue": "Quá hạn"
   },
-  "score": {
-    "title": "Điểm số",
-    "gradedCount": "{count} bài đã chấm",
-    "average": "Trung bình",
-    "median": "Trung vị",
-    "highest": "Cao nhất",
-    "lowest": "Thấp nhất",
-    "distribution": "Phân bố điểm"
+  "questions": {
+    "sortOrder": "Thứ tự đề",
+    "sortHardest": "Sai nhiều nhất",
+    "sortEasiest": "Đúng nhiều nhất",
+    "filterAll": "Tất cả ({count})",
+    "filterHard": "Khó ({count})",
+    "filterEasy": "Quá dễ ({count})",
+    "footnote": "Tỉ lệ đúng = số em đúng / bài đã nộp (bỏ trống vẫn tính ở mẫu số). Dưới 40% = Khó, trên 90% = Quá dễ. Bấm vào câu để xem phân bố theo loại câu.",
+    "col": {
+      "position": "Câu",
+      "content": "Nội dung",
+      "type": "Loại",
+      "result": "Kết quả",
+      "correct": "Đúng",
+      "blank": "Bỏ trống"
+    },
+    "hard": "KHÓ",
+    "easy": "QUÁ DỄ",
+    "distOptions": "Số em chọn từng phương án",
+    "distOptionsMulti": "Số em chọn từng phương án (có thể chọn nhiều)",
+    "distText": "Câu trả lời học sinh (top)",
+    "distCloze": "Từng chỗ trống",
+    "distMatching": "Từng cặp nối",
+    "blank": "Bỏ trống",
+    "correctMark": "✓ đúng",
+    "noDist": "Chưa có phân bố đáp án cho câu này.",
+    "unsupported": "Loại câu {type} chưa hỗ trợ xem phân bố chi tiết."
   },
-  "classComparison": {
-    "title": "So sánh lớp",
-    "class": "Lớp",
-    "assigned": "Sĩ số giao",
-    "submissionRate": "Tỉ lệ nộp",
-    "average": "Điểm TB",
-    "median": "Trung vị",
-    "accuracy": "% đúng",
-    "overallBand": "Kết quả chung",
-    "band": {
-      "HIGH": "Tốt",
-      "MID": "Khá",
-      "LOW": "Cần cải thiện"
+  "sections": {
+    "footnote": "% đúng = số câu đúng hoàn toàn / (số câu × số bài). % điểm tính cả điểm một phần.",
+    "weakest": "Yếu nhất: {title} ({percent}%).",
+    "col": {
+      "section": "Phần",
+      "count": "Số câu",
+      "result": "Kết quả",
+      "accuracy": "% đúng",
+      "scoreRate": "% điểm",
+      "blank": "Bỏ trống"
     }
   },
   "students": {
-    "empty": "Không có học sinh phù hợp bộ lọc",
     "searchPlaceholder": "Tìm học sinh…",
-    "lifecycle": "Trạng thái",
-    "deadline": "Hạn",
-    "class": "Lớp",
-    "all": "Tất cả",
-    "allClasses": "Mọi lớp",
+    "all": "Tất cả ({count})",
+    "sortByName": "Theo tên",
+    "empty": "Không có học sinh phù hợp bộ lọc",
     "viewAttempt": "Xem bài",
     "status": {
       "NOT_STARTED": "Chưa làm",
       "IN_PROGRESS": "Đang làm",
       "SUBMITTED": "Đã nộp",
-      "TIMED_OUT": "Hết giờ"
-    },
-    "deadlineState": {
-      "NONE": "—",
-      "ON_TIME": "Đúng hạn",
-      "LATE": "Trễ",
+      "TIMED_OUT": "Hết giờ",
+      "LATE": "Nộp trễ",
       "OVERDUE": "Quá hạn"
     },
     "col": {
       "student": "Học sinh",
       "class": "Lớp",
       "status": "Trạng thái",
-      "deadline": "Hạn",
       "score": "Điểm",
-      "duration": "Thời gian"
+      "percent": "%",
+      "delta": "So với TB",
+      "duration": "Thời gian",
+      "blank": "Bỏ trống"
     }
   },
-  "questions": {
-    "empty": "Chưa có câu hỏi đã chấm",
-    "ungrouped": "Không thuộc phần",
+  "classes": {
+    "singleNote": "Bài đang giao cho {count} lớp. Khi giao nhiều lớp, mỗi lớp là một dòng. Bài đã làm tính vào lớp lúc bắt đầu — em chuyển lớp sau vẫn ở lớp cũ.",
     "col": {
-      "prompt": "Câu hỏi",
-      "n": "N",
-      "correct": "Đúng",
-      "partial": "Một phần",
-      "incorrect": "Sai",
-      "unanswered": "Bỏ trống",
-      "accuracy": "% đúng",
-      "scoreRate": "Tỉ lệ điểm"
+      "class": "Lớp",
+      "assigned": "Được giao",
+      "submissionRate": "Tỉ lệ nộp",
+      "average": "Điểm TB",
+      "median": "Trung vị",
+      "outcome": "Tỉ lệ đúng tất cả câu",
+      "accuracy": "% đúng"
     }
   },
   "review": {
-    "title": "Chi tiết bài làm",
-    "loadError": "Không tải được bài làm",
-    "retry": "Thử lại",
-    "example": "Ví dụ",
-    "noPrompt": "(Không có đề)",
-    "studentAnswer": "Câu trả lời học sinh",
-    "correctAnswer": "Đáp án",
+    "readonly": "Chế độ chỉ đọc · chỉ giáo viên xem được",
+    "score": "Điểm",
+    "vsClass": "So với TB lớp",
+    "duration": "Thời gian",
+    "classAtStart": "Lớp lúc làm",
+    "started": "Bắt đầu",
+    "finished": "Nộp lúc",
+    "bySection": "Theo phần của đề",
+    "classAvgMark": "Vạch dọc = trung bình lớp.",
+    "byQuestion": "Từng câu",
+    "studentAnswer": "Em trả lời",
+    "correctAnswer": "Đáp án đúng",
     "outcome": {
       "CORRECT": "Đúng",
       "PARTIAL": "Một phần",
       "INCORRECT": "Sai",
       "UNANSWERED": "Bỏ trống"
     }
+  },
+  "legend": {
+    "correct": "Đúng",
+    "partial": "Một phần",
+    "incorrect": "Sai",
+    "blank": "Bỏ trống"
   }
 }

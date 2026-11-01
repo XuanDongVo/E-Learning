@@ -36,8 +36,11 @@ export default function StudentAssignmentResultPage() {
       setLoading(true);
       setError(null);
       try {
-        const data = await studentAssignmentAttemptService.result(assignmentId);
-        if (!cancelled) setResult(data.data ?? data);
+        const response = await studentAssignmentAttemptService.result(assignmentId);
+        if (!response.data) {
+          throw new Error("ASSESSMENT_ATTEMPT_RESULT_EMPTY");
+        }
+        if (!cancelled) setResult(response.data);
       } catch (err) {
         if (!cancelled) setError(toAppError(err).message || t("result.loadFailed"));
       } finally {

@@ -68,7 +68,8 @@ public class AssignmentAnalysisService {
 
         ProgressCounts progress = buildProgress(roster, attemptByStudent, assignment.getDueAt());
         ScoreSummary score = buildScoreSummary(attempts);
-        List<ClassComparisonRow> classRows = buildClassComparison(roster, attemptByStudent, assignment.getDueAt());
+        Map<Long, Double> accuracyByClass = computeClassAccuracy(attempts);
+        List<ClassComparisonRow> classRows = buildClassComparison(roster, attemptByStudent, accuracyByClass);
 
         BigDecimal totalPossible = attempts.stream()
                 .filter(this::isTerminal)
@@ -126,7 +127,6 @@ public class AssignmentAnalysisService {
         rows.sort(Comparator.comparing(StudentResultRow::studentName, Comparator.nullsLast(String::compareToIgnoreCase)));
 
         int safeSize = Math.min(100, Math.max(1, size));
-        // PageResponse is 1-indexed for clients
         int safePage = Math.max(1, page);
         int from = (safePage - 1) * safeSize;
         int total = rows.size();
@@ -147,8 +147,57 @@ public class AssignmentAnalysisService {
     @Transactional(readOnly = true)
     public QuestionAnalysisListResponse getQuestions(Long assignmentId, Long teacherId) {
         requireAssignment(assignmentId);
-        // Next phase: aggregate from PartResults across finalized attempts
-        return new QuestionAnalysisListResponse(List.of());
+        List<AssessmentAttempt> attempts = attemptRepository.findAllByAssignmentIdWithStudent(assignmentId)
+                .stream()
+                .filter(this::isTerminal)
+                .toList();
+        if (attempts.isEmpty()) {
+            return new QuestionAnalysisListResponse(List.of());
+        }
+
+        List<Long> attemptIds = attempts.stream().map(AssessmentAttempt::getId).toList();
+        List<AssessmentAttemptQuestion> allQuestions =
+                questionRepository.findAllByAttemptIdInOrderByAttemptIdAscPositionAsc(attemptIds);
+        List<AssessmentAttemptPartResult> allParts = partResultRepository.findAllByAttemptIds(attemptIds);
+
+        Map<Long, List<AssessmentAttemptPartResult>> partsByQuestionId = allParts.stream()
+                .collect(Collectors.groupingBy(p -> p.getAttemptQuestion().getId()));
+
+        Map<Integer, QuestionAgg> byPosition = new LinkedHashMap<>();
+
+        for (AssessmentAttemptQuestion q : allQuestions) {
+            if (q.isExample()) {
+                continue;
+            }
+            int pos = q.getPosition() != null ? q.getPosition() : 0;
+            QuestionAgg agg = byPosition.computeIfAbsent(pos, p -> new QuestionAgg(p));
+            agg.seedFrom(q);
+
+            List<AssessmentAttemptPartResult> qParts = partsByQuestionId.getOrDefault(q.getId(), List.of());
+            AttemptPartStatus status = rollup(qParts, q);
+            BigDecimal earned = qParts.stream()
+                    .map(AssessmentAttemptPartResult::getEarnedPoints)
+                    .filter(Objects::nonNull)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+            BigDecimal possible = q.getPossiblePoints() != null ? q.getPossiblePoints() : BigDecimal.ZERO;
+
+            agg.attemptCount++;
+            switch (status) {
+                case CORRECT -> agg.correctCount++;
+                case PARTIALLY_CORRECT -> agg.partialCount++;
+                case INCORRECT -> agg.incorrectCount++;
+                case UNANSWERED -> agg.unansweredCount++;
+            }
+            agg.earnedSum = agg.earnedSum.add(earned);
+            agg.possibleSum = agg.possibleSum.add(possible);
+        }
+
+        List<QuestionAnalysisRow> items = byPosition.values().stream()
+                .sorted(Comparator.comparingInt(a -> a.position))
+                .map(QuestionAgg::toRow)
+                .toList();
+
+        return new QuestionAnalysisListResponse(items);
     }
 
     @Transactional(readOnly = true)
@@ -236,8 +285,6 @@ public class AssignmentAnalysisService {
                 questionRows
         );
     }
-
-    // --- roster ---
 
     private record RosterStudent(Long studentId, String studentName, Long classId, String className) {}
 
@@ -355,10 +402,55 @@ public class AssignmentAnalysisService {
         );
     }
 
+    private Map<Long, Double> computeClassAccuracy(List<AssessmentAttempt> attempts) {
+        List<AssessmentAttempt> terminal = attempts.stream().filter(this::isTerminal).toList();
+        if (terminal.isEmpty()) {
+            return Map.of();
+        }
+
+        List<Long> attemptIds = terminal.stream().map(AssessmentAttempt::getId).toList();
+        Map<Long, Long> attemptToClass = new HashMap<>();
+        for (AssessmentAttempt a : terminal) {
+            if (a.getClassIdAtStart() != null) {
+                attemptToClass.put(a.getId(), a.getClassIdAtStart());
+            }
+        }
+
+        List<AssessmentAttemptQuestion> questions =
+                questionRepository.findAllByAttemptIdInOrderByAttemptIdAscPositionAsc(attemptIds);
+        List<AssessmentAttemptPartResult> parts = partResultRepository.findAllByAttemptIds(attemptIds);
+        Map<Long, List<AssessmentAttemptPartResult>> partsByQ = parts.stream()
+                .collect(Collectors.groupingBy(p -> p.getAttemptQuestion().getId()));
+
+        Map<Long, int[]> counters = new HashMap<>();
+        for (AssessmentAttemptQuestion q : questions) {
+            if (q.isExample()) continue;
+            Long attemptId = q.getAttempt() != null ? q.getAttempt().getId() : null;
+            if (attemptId == null) continue;
+            Long classId = attemptToClass.get(attemptId);
+            if (classId == null) continue;
+
+            AttemptPartStatus status = rollup(partsByQ.getOrDefault(q.getId(), List.of()), q);
+            int[] c = counters.computeIfAbsent(classId, id -> new int[2]);
+            c[1]++;
+            if (status == AttemptPartStatus.CORRECT) {
+                c[0]++;
+            }
+        }
+
+        Map<Long, Double> result = new HashMap<>();
+        for (Map.Entry<Long, int[]> e : counters.entrySet()) {
+            int total = e.getValue()[1];
+            if (total == 0) continue;
+            result.put(e.getKey(), round1(100.0 * e.getValue()[0] / total));
+        }
+        return result;
+    }
+
     private List<ClassComparisonRow> buildClassComparison(
             RosterContext roster,
             Map<Long, AssessmentAttempt> attemptByStudent,
-            LocalDateTime dueAt
+            Map<Long, Double> accuracyByClass
     ) {
         Map<Long, List<RosterStudent>> byClass = roster.students.stream()
                 .collect(Collectors.groupingBy(RosterStudent::classId, LinkedHashMap::new, Collectors.toList()));
@@ -369,8 +461,6 @@ public class AssignmentAnalysisService {
             int assigned = members.size();
             int submitted = 0;
             List<Double> percents = new ArrayList<>();
-            int correctEligible = 0;
-            int correctCount = 0;
 
             for (RosterStudent rs : members) {
                 AssessmentAttempt a = attemptByStudent.get(rs.studentId());
@@ -389,7 +479,6 @@ public class AssignmentAnalysisService {
             Double rate = assigned == 0 ? null : submitted / (double) assigned;
             String band = overallBand(med);
 
-            // accuracy at class level deferred to question slice; null for now unless we have per-question data
             rows.add(new ClassComparisonRow(
                     classId,
                     roster.classNames.getOrDefault(classId, "Class " + classId),
@@ -398,7 +487,7 @@ public class AssignmentAnalysisService {
                     rate,
                     avg,
                     med,
-                    null,
+                    accuracyByClass.get(classId),
                     band
             ));
         }
@@ -477,7 +566,6 @@ public class AssignmentAnalysisService {
 
     private Double toDoublePercent(BigDecimal percentageScore) {
         if (percentageScore == null) return null;
-        // Stored as 0–100 or 0–1 depending on grading path; normalize presentation to 0–100
         double v = percentageScore.doubleValue();
         if (v <= 1.0) return round1(v * 100.0);
         return round1(v);
@@ -557,5 +645,63 @@ public class AssignmentAnalysisService {
         if (map.get("answers") != null) result.put("answers", map.get("answers"));
         if (map.get("explanation") != null) result.put("explanation", map.get("explanation"));
         return result.isEmpty() ? null : result;
+    }
+
+    private static final class QuestionAgg {
+        final int position;
+        String sectionId;
+        String sectionTitle;
+        String promptPreview;
+        String questionType;
+        String questionId;
+        int attemptCount;
+        int correctCount;
+        int partialCount;
+        int incorrectCount;
+        int unansweredCount;
+        BigDecimal earnedSum = BigDecimal.ZERO;
+        BigDecimal possibleSum = BigDecimal.ZERO;
+
+        QuestionAgg(int position) {
+            this.position = position;
+        }
+
+        void seedFrom(AssessmentAttemptQuestion q) {
+            if (promptPreview == null) {
+                String prompt = extractPrompt(q.getQuestionSnapshot());
+                promptPreview = prompt.length() > 160 ? prompt.substring(0, 160) + "…" : prompt;
+                questionType = extractType(q.getQuestionSnapshot());
+                sectionTitle = q.getSectionTitle();
+                sectionId = q.getSectionKey();
+                questionId = q.getSourceQuestion() != null
+                        ? String.valueOf(q.getSourceQuestion().getId())
+                        : "pos-" + position;
+            }
+        }
+
+        QuestionAnalysisRow toRow() {
+            Double accuracy = attemptCount == 0 ? null : round1(100.0 * correctCount / attemptCount);
+            Double scoreRate = possibleSum.compareTo(BigDecimal.ZERO) <= 0
+                    ? null
+                    : round1(earnedSum.multiply(BigDecimal.valueOf(100))
+                    .divide(possibleSum, 1, RoundingMode.HALF_UP)
+                    .doubleValue());
+            return new QuestionAnalysisRow(
+                    questionId != null ? questionId : "pos-" + position,
+                    position,
+                    sectionId,
+                    sectionTitle,
+                    promptPreview != null ? promptPreview : "",
+                    questionType != null ? questionType : "UNKNOWN",
+                    false,
+                    attemptCount,
+                    correctCount,
+                    partialCount,
+                    incorrectCount,
+                    unansweredCount,
+                    accuracy,
+                    scoreRate
+            );
+        }
     }
 }

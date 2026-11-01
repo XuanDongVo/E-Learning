@@ -1,5 +1,16 @@
 export type AssessmentAttemptStatus = "IN_PROGRESS" | "SUBMITTED" | "TIMED_OUT";
-export type AssessmentAttemptPlayerState = "LOADING" | "INTRO" | "STARTING" | "ACTIVE" | "SAVING" | "SESSION_CONFLICT" | "SUBMITTING" | "FINALIZING" | "TIME_UP" | "RESULT" | "ERROR";
+export type AssessmentAttemptPlayerState =
+  | "LOADING"
+  | "INTRO"
+  | "STARTING"
+  | "ACTIVE"
+  | "SAVING"
+  | "SESSION_CONFLICT"
+  | "SUBMITTING"
+  | "FINALIZING"
+  | "TIME_UP"
+  | "RESULT"
+  | "ERROR";
 export type AssessmentAttemptSaveState = "SAVED" | "SAVING" | "PENDING" | "FAILED";
 export type AssessmentAttemptEventType = "TAB_HIDDEN" | "FULLSCREEN_EXIT";
 export type AttemptAnswerPayload = Record<string, unknown>;
@@ -70,44 +81,32 @@ export interface StudentQuestionSnapshot {
 export interface AttemptIntroResponse {
   assignmentId: number;
   assignmentTitle: string;
-  gradeName: string;
+  gradeName: string | null;
   questionCount: number;
-  dueAt: string;
-  timeLimitMinutes: number;
+  timeLimitMinutes: number | null;
+  dueAt: string | null;
+  startAt: string | null;
   attemptStatus: AssessmentAttemptStatus | null;
   late: boolean;
+  showScoreAfterSubmit?: boolean;
+  showAnswersAfterSubmit?: boolean;
 }
 
-export interface AttemptSummaryResponse {
-  id: number;
-  assignmentId: number;
-  status: AssessmentAttemptStatus;
-  startedAt: string;
-  deadlineAt: string;
-  submittedAt: string | null;
-  timedOutAt: string | null;
-  late: boolean;
-}
-
-/** Generate once and persist in IndexedDB before the first start-or-resume request. */
 export interface StartOrResumeAttemptRequest {
   activeSessionId: string;
 }
 
-/** Body only — attemptQuestionId is a path variable. */
 export interface SaveAttemptAnswerRequest {
-  answerPayload: AttemptAnswerPayload;
-  expectedRevision: number;
   activeSessionId: string;
   requestId: string;
+  expectedRevision: number;
+  answerPayload: AttemptAnswerPayload | null;
 }
 
 export interface SaveAttemptAnswerResponse {
-  requestId: string;
   attemptQuestionId: number;
   revision: number;
   savedAt: string;
-  serverNow: string;
 }
 
 export interface SubmitAttemptRequest {
@@ -115,25 +114,31 @@ export interface SubmitAttemptRequest {
   requestId: string;
 }
 
-export interface AttemptResultQuestion {
+/** Matches Java AttemptResultQuestionResponse. */
+export interface AttemptResultQuestionResponse {
   attemptQuestionId: number;
   position: number;
   possiblePoints: number;
   earnedPoints: number | null;
   status: "CORRECT" | "PARTIALLY_CORRECT" | "INCORRECT" | "UNANSWERED" | null;
-  answer: AttemptAnswerPayload | null;
+  answerPayload: AttemptAnswerPayload | null;
   answerKey: unknown | null;
 }
 
+/** Matches Java AttemptResultResponse (flat). */
 export interface AttemptResultResponse {
-  attempt: AttemptSummaryResponse;
-  score: number | null;
-  percentageScore: number | null;
+  attemptId: number;
+  assignmentId: number;
+  status: AssessmentAttemptStatus;
+  submittedAt: string | null;
+  timedOutAt: string | null;
+  late: boolean;
   totalPossiblePoints: number | null;
   totalEarnedPoints: number | null;
+  percentageScore: number | null;
   scoreVisible: boolean;
   answersVisible: boolean;
-  questions: AttemptResultQuestion[];
+  questions: AttemptResultQuestionResponse[];
 }
 
 export interface CreateAttemptEventRequest {
@@ -162,11 +167,6 @@ export type AssessmentAttemptErrorCode =
   | "ASSESSMENT_ATTEMPT_SAVE_FAILED"
   | "ASSESSMENT_ATTEMPT_INVALID_STATE"
   | "ASSESSMENT_ATTEMPT_REQUEST_REPLAY";
-
-export interface PoolOption {
-  key: string;
-  text: string;
-}
 
 export interface CompositionItemSnapshot {
   id?: number | string;

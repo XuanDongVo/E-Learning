@@ -9,7 +9,6 @@ import type {
   SaveAttemptAnswerResponse,
   StartOrResumeAttemptRequest,
   SubmitAttemptRequest,
-  AttemptSummaryResponse,
 } from "@/types/student/assignment-attempt";
 
 /**
@@ -42,14 +41,20 @@ export const studentAssignmentAttemptService = {
       },
     ),
 
-  submit: (attemptId: number, body: SubmitAttemptRequest) =>
-    request<AttemptResultResponse>(`/v1/student/assessment-attempts/${attemptId}/submit`, {
-      method: "POST",
-      body: JSON.stringify(body),
-    }),
+  /** Manual submit — assignment-scoped path matches AssessmentAttemptController. */
+  submit: (assignmentId: number, body: SubmitAttemptRequest) =>
+    request<AttemptResultResponse>(
+      `/v1/student/assignments/${assignmentId}/assessment-attempt/submit`,
+      {
+        method: "POST",
+        body: JSON.stringify(body),
+      },
+    ),
 
-  result: (attemptId: number) =>
-    request<AttemptResultResponse>(`/v1/student/assessment-attempts/${attemptId}/result`),
+  result: (assignmentId: number) =>
+    request<AttemptResultResponse>(
+      `/v1/student/assignments/${assignmentId}/assessment-attempt/result`,
+    ),
 
   event: (attemptId: number, body: CreateAttemptEventRequest) =>
     request<CreateAttemptEventResponse>(`/v1/student/assessment-attempts/${attemptId}/events`, {

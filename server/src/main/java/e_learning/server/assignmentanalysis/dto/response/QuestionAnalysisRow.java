@@ -14,5 +14,7 @@ public record QuestionAnalysisRow(
         int incorrectCount,
         int unansweredCount,
         Double accuracyPercent,
-        Double scoreRatePercent
+        Double scoreRatePercent,
+        String difficulty,
+        QuestionAnswerDistribution distribution
 ) {}

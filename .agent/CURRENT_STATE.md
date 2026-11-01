@@ -2,8 +2,7 @@
 
 **Audit date:** 2026-11-01  
 **Branch:** `feature/teacher-assignment-analysis`  
-**Baseline:** `main` after merge of `feature/student-assignment-attempt` (PR #30)  
-**Scope:** documentation rebaseline for Teacher Assignment Analysis; AssessmentAttempt pipeline re-checked against `main` code.
+**Baseline:** `main` after merge of `feature/student-assignment-attempt` (PR #30)
 
 ## 1. Authority model
 
@@ -18,88 +17,61 @@
 
 - Frontend: Next.js + React + TypeScript + Tailwind CSS.
 - Backend: Spring Boot + Java 21 + JPA + Flyway + PostgreSQL.
-- Assignment Attempt runtime was merged to `main` through PR #30.
-- V43–V47 are the current AssessmentAttempt migration sequence on the merged baseline.
-- ADR 0028 (attempt-answer-on-question) is authoritative for draft-answer storage on `assessment_attempt_questions`.
-
-### AssessmentAttempt pipeline on `main` (code evidence)
-
-| Capability | Code | Notes |
-|---|---|---|
-| Start / resume + snapshot | Implemented | `AssessmentAttemptCreationService` |
-| Autosave | Implemented | answer payload on `AssessmentAttemptQuestion` |
-| Manual submit | Implemented | `AssessmentAttemptSubmitService.submit` |
-| Auto-grade from snapshot | Implemented | `AssessmentAttemptGradingService.gradeAndPersist` |
-| PartResults + attempt totals | Implemented | entity `AssessmentAttemptPartResult`; totals on attempt |
-| Student result | Implemented | `GET .../assessment-attempt/result` |
-| Timeout finalization | Implemented | `finalizeTimeoutIfDue` + `AssessmentAttemptTimeoutJob` (`@Scheduled`) |
-| Assignment hard-lock after first attempt | **Not verified / likely remaining** | Follow-up |
-| Full compile/test/browser verification | **Not claimed** | Exact-HEAD E2E still open |
-
-Package README under `assessmentattempt` is partially stale (still lists timeout job as remaining); prefer this table and the service classes as truth.
+- AssessmentAttempt finalize path is on `main` (submit, grade, PartResults, timeout job).
 
 ## 3. Feature status
 
-| Area | Current state | Classification |
-|---|---|---|
-| Phase 0–2 | Foundation, auth/users and classes | Implemented baseline |
-| Phase 3 Content | Grade → Unit → Section → Topic → QuestionBank → Question | Implemented baseline; QE integration still partial in places |
-| Phase 4 Activity | Unit-scoped Activity runtime authoring | Implemented baseline |
-| Phase 5 Assignment | Authoring, `class_ids` targets, schedule, Composition, settings | Implemented authoring baseline |
-| Phase 6 Student Management | Done | Done |
-| Phase 7 Scope A | ActivitySession | Implemented; E2E verification open |
-| Phase 7 Scope B | AssessmentAttempt full finalize path on `main` | **Implemented in code**; E2E + hard-lock remain |
-| Teacher Assignment Analysis | Spec active; UI sample exists; production analytics not started | **ACTIVE FEATURE** |
+| Area | State |
+|---|---|
+| Phase 0–6 | Baseline / DONE |
+| Phase 7 Scope A ActivitySession | Implemented; E2E open |
+| Phase 7 Scope B AssessmentAttempt | Code on `main`; E2E + hard-lock open |
+| **Phase 8 Teacher Assignment Analysis** | **Code complete on this branch; local E2E not claimed** |
 
-## 4. Closed Student Assignment Attempt feature
+## 4. Teacher Assignment Analysis (this branch)
 
-`feature/student-assignment-attempt` was merged via PR #30. Do not reopen that branch for new work.
+**Route:** `/teacher/assignments/{id}/results`  
+**Spec:** `.agent/plans/10-TEACHER_ASSIGNMENT_ANALYSIS_SPEC.md`  
+**Impl log:** `.agent/plans/11-TEACHER_ASSIGNMENT_ANALYSIS_IMPLEMENTATION.md`
 
-Remaining **follow-ups** (not blockers to starting Teacher Analysis design, but affect data quality claims):
+### Backend (`assignmentanalysis`)
 
-- Assignment hard-lock after first Attempt starts
-- Exact-HEAD backend/frontend/browser verification of submit/timeout/grade
-- Optional: student-membership snapshot at publish time (see Teacher Analysis roster decision)
+- `GET .../analytics/overview` — progress, score (10 buckets), class comparison + accuracy + overall band
+- `GET .../analytics/students` — filters + `PageResponse` (1-indexed)
+- `GET .../analytics/questions` — aggregate by position (skip example)
+- `GET .../students/{studentId}/attempt` — review; answer key always for teacher
+- DTOs under `dto/response/` (no `Dto` suffix); students use `common.dto.PageResponse`
+- Roster: live enrollment via `Assignment.classIds` + `ClassMember`
+- Security: covered by existing `/v1/teacher/**` → `ROLE_TEACHER`
 
-## 5. Teacher Assignment Analysis contract
+### Frontend
 
-Canonical specification:
+- Modular UI under `components/features/teacher/assignments/analysis/`
+- Entry: list **Results** link (non-DRAFT) + results page route
+- Attempt review sheet; i18n `teacher.analytics.*`
+- Always `response.data` (ApiResponse wrap)
+- Sample `result/teacher-assignment-result-view.tsx` **removed**
 
-`.agent/plans/10-TEACHER_ASSIGNMENT_ANALYSIS_SPEC.md`
-
-Sample/prototype UI (not production contract):
-
-`client-e-learning/src/components/features/teacher/assignments/result/teacher-assignment-result-view.tsx`
-
-- Client-side aggregation over a sample dataset (`isSample`)
-- Must not be copied as the production architecture; replace with backend aggregate APIs
-
-### Product decisions adopted for MVP (2026-11-01)
+### Product decisions (locked)
 
 | Topic | Decision |
 |---|---|
-| Roster ("sĩ số giao") | **Live enrollment** in `Assignment.classIds` at query time; no student-ID snapshot in MVP |
-| Class context for Attempt | Always `classIdAtStart` / `classNameAtStart` when Attempt exists |
-| Duration | `submittedAt - startedAt` (or `timedOutAt - startedAt`); null while IN_PROGRESS |
-| Class Comparison with 1 class | **Still show one row** |
-| Accuracy vs scoreRate | Both exposed; different labels (see spec) |
-| Kết quả chung | Optional compact band labels from backend using fixed % thresholds |
-| Score range filter | **Defer** from Students MVP |
-| Score distribution | Fixed 10-point buckets 0–10 … 90–100 |
-| Auth | Single-teacher deployment; authorize by authenticated TEACHER role + Assignment exists |
-| Export | None in MVP |
+| Roster | Live `classIds` enrollment |
+| Duration | finishedAt − startedAt |
+| Overall band | HIGH ≥80 / MID ≥50 / LOW &lt;50 (median %) |
+| Accuracy | CORRECT / all non-example outcomes on terminal attempts |
+| Class comparison | Always show rows (including single class) |
+| Score range filter | Deferred |
+| Export | None |
 
-## 6. Dependency gate (updated)
+### Explicitly deferred (spec ok, not in MVP code)
 
-**Code path for finalized results exists on `main`.** Teacher Analysis may implement backend aggregates against real Attempt rows.
+- Answer distribution by question type (option/blank charts)
+- Per-question detail endpoint
+- Score range filter on Students
+- IDOR tests / ownership beyond role + assignment exists
+- Hard-lock on Assignment after first attempt (runtime follow-up)
 
-Still required before calling analytics "production-verified":
+## 5. Verification status
 
-1. Confirm example-question exclusion in grading totals matches ADR 0026
-2. Smoke-test submit + timeout job + result against a real Assignment
-3. IDOR tests on teacher analytics endpoints when they land
-4. Hard-lock policy if authoring still mutates live Assignments with Attempts
-
-## 7. Verification status
-
-This update re-read AssessmentAttempt services/controllers on `main`. It did **not** run backend compile/tests, Flyway, frontend build, or browser/E2E.
+No compile/test/browser run claimed for this pass. Local E2E checklist lives in `11-...IMPLEMENTATION.md`.

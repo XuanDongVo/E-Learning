@@ -3,20 +3,8 @@
 **Current branch:** `feature/teacher-assignment-analysis`  
 **Current implementation baseline:** `.agent/CURRENT_STATE.md`
 
-## Phase 0–2
-Foundation, authentication/users and classes. Implemented baseline.
-
-## Phase 3 — Content
-Grade → Unit → Section → Topic → QuestionBank → Question. Implemented baseline. Topic formula sheet deferred (ADR 0016).
-
-## Phase 4 — Activities
-Unit-scoped Activity baseline implemented.
-
-## Phase 5 — Assignments
-Independent Assignment with Grade ownership, `class_ids` recipient list, schedule, whole-attempt time limit, visibility settings, Composition. Authoring baseline implemented. **No per-student recipient snapshot** in MVP schema.
-
-## Phase 6 — Student Management
-DONE.
+## Phase 0–6
+Baseline / DONE (see CURRENT_STATE).
 
 ## Phase 7 — Student Runtime
 
@@ -24,31 +12,18 @@ DONE.
 Implemented baseline; E2E verification open.
 
 ### Scope B — AssessmentAttempt
-**FEATURE MERGED (PR #30).** On `main` the finalize path is present in code:
-
-- submit + auto-grade from immutable snapshot
-- PartResults and attempt totals
-- result endpoint
-- scheduled timeout job (`AssessmentAttemptTimeoutJob`)
-
-Still open: Assignment hard-lock after first attempt, exact-HEAD E2E verification, package README sync.
+FEATURE MERGED (PR #30). Finalize path on `main`. Remaining: hard-lock, exact-HEAD E2E.
 
 ## Phase 8 — Teacher Assignment Analysis
-**ACTIVE FEATURE**
 
-Canonical specification: `.agent/plans/10-TEACHER_ASSIGNMENT_ANALYSIS_SPEC.md`
+**Status: CODE COMPLETE on `feature/teacher-assignment-analysis` (pending local E2E).**
 
-Sample UI only: `client-e-learning/src/components/features/teacher/assignments/result/teacher-assignment-result-view.tsx`
+- Spec: `10-TEACHER_ASSIGNMENT_ANALYSIS_SPEC.md`
+- Impl notes: `11-TEACHER_ASSIGNMENT_ANALYSIS_IMPLEMENTATION.md`
+- Production UI: `client-e-learning/.../assignments/analysis/`
+- APIs: `/v1/teacher/assignments/{id}/analytics/*` + attempt review
 
-MVP decisions (roster, duration, metrics, class comparison, filters) are recorded in `.agent/CURRENT_STATE.md` §5.
+Deferred vs full spec: answer-option distributions, question detail endpoint, score-range filter, export.
 
-Production analytics use backend aggregates over persisted Attempt/PartResult data. Frontend must not re-grade.
-
-## Phase 9
-XP and ranking.
-
-## Phase 10
-Teacher dashboard using real data only.
-
-## Phase 11
-Reports and polish.
+## Phase 9–11
+XP/ranking, teacher dashboard, reports — not started.

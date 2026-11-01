@@ -1,32 +1,22 @@
 # Project Progress
 
-**Current source audit:** 2026-11-01  
+**Updated:** 2026-11-01  
 **Branch:** `feature/teacher-assignment-analysis`  
-**Canonical implementation state:** `.agent/CURRENT_STATE.md`
+**Canonical state:** `.agent/CURRENT_STATE.md`
 
 ## Current stage
 
-- Phase 6 Student Management: **DONE**.
-- Phase 7 Scope A ActivitySession: **IMPLEMENTED, NOT FULLY VERIFIED**.
-- Phase 7 Scope B AssessmentAttempt: **MERGED + finalize path present on `main`**.
-  - Code: submit, auto-grade, PartResults, attempt totals, result endpoint, scheduled timeout job.
-  - Remaining: hard-lock, exact-HEAD E2E verification, package README freshness.
-- Teacher Assignment Analysis: **SPEC ACTIVE; sample UI only; production analytics not started**.
+- Phase 7 Scope B AssessmentAttempt: on `main` (finalize path present).
+- **Phase 8 Teacher Assignment Analysis: implementation code complete on this branch.**
 
-## AssessmentAttempt code check (2026-11-01)
+## Teacher Analysis work log
 
-Verified by reading `main` sources (not by running tests):
-
-- `AssessmentAttemptSubmitService` — manual submit + `finalizeTimeoutIfDue`
-- `AssessmentAttemptGradingService` — grade from snapshot, persist PartResults/totals
-- `AssessmentAttemptTimeoutJob` — `@Scheduled` scan with grace minutes
-- `AssessmentAttemptController` — intro, start/resume, submit, result
-- Entities: `AssessmentAttempt`, `AssessmentAttemptQuestion`, `AssessmentAttemptPartResult`
-
-## Teacher Analysis owner decisions (proposed → adopted in CURRENT_STATE)
-
-See `.agent/CURRENT_STATE.md` §5 and updates in `10-TEACHER_ASSIGNMENT_ANALYSIS_SPEC.md` §25.
+- Spec + decisions locked (roster, duration, bands, accuracy).
+- Backend overview / students / questions / attempt review.
+- FE modular analysis UI + review sheet + Results entry from list.
+- Removed sample result view; cleaned legacy DTO names.
+- Docs synced (`CURRENT_STATE`, this file, `PHASES`, plan 11).
 
 ## Verification
 
-No compile/test/browser run claimed for this documentation pass.
+No automated compile/test/browser claimed. Owner should run local E2E against graded attempts.

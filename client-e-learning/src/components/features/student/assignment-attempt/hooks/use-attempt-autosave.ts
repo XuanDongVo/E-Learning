@@ -2,20 +2,13 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toAppError } from "@/lib/errors/app-error";
+import { SaveAttemptAnswerResponse } from "@/features/student/assignment-attempt/types/assessmentAttempt.types";
 
 export interface SaveAttemptAnswerRequestBody {
   activeSessionId: string;
   requestId: string;
   expectedRevision: number;
   answerPayload: Record<string, unknown>;
-}
-
-export interface SaveAttemptAnswerResponseBody {
-  requestId: string;
-  attemptQuestionId: number;
-  revision: number;
-  savedAt: string;
-  serverNow: string;
 }
 
 export type SaveStatus = "saved" | "saving" | "unsaved" | "error";
@@ -30,7 +23,7 @@ interface UseAttemptAutosaveOptions {
     attemptId: number,
     attemptQuestionId: number,
     body: SaveAttemptAnswerRequestBody,
-  ) => Promise<SaveAttemptAnswerResponseBody>;
+  ) => Promise<SaveAttemptAnswerResponse>;
   debounceMs?: number;
   onError?: (questionId: number, error: unknown) => void;
   /** Fatal session errors — stop all queues; do not re-issue session UUID. */

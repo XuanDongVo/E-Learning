@@ -6,7 +6,6 @@ import e_learning.server.assessmentattempt.entity.AssessmentAttempt;
 import e_learning.server.assessmentattempt.enums.AssessmentAttemptStatus;
 import e_learning.server.assessmentattempt.repository.AssessmentAttemptAnswerMutationRepository;
 import e_learning.server.assessmentattempt.repository.AssessmentAttemptRepository;
-import e_learning.server.assignment.entity.Assignment;
 import e_learning.server.common.exception.AppException;
 import e_learning.server.common.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -126,11 +126,33 @@ public class AssessmentAttemptSubmitService {
     }
 
     private static boolean resolveLate(AssessmentAttempt attempt, LocalDateTime submittedAt) {
-        Assignment assignment = attempt.getAssignment();
-        if (assignment == null || assignment.getDueAt() == null) {
+        Map<String, Object> settings = attempt.getSettingsSnapshot();
+        if (settings == null) {
             return false;
         }
-        return !submittedAt.isBefore(assignment.getDueAt());
+
+        Object dueRaw = settings.get("due_at");
+        if (dueRaw == null) {
+            return false;
+        }
+
+        String dueText = String.valueOf(dueRaw).trim();
+        if (dueText.isEmpty() || "null".equalsIgnoreCase(dueText)) {
+            return false;
+        }
+
+        try {
+            LocalDateTime dueAt = LocalDateTime.parse(dueText);
+            return !submittedAt.isBefore(dueAt);
+        } catch (Exception ignored) {
+            // Snapshot có thể là ISO-8601 có offset / Z
+            try {
+                LocalDateTime dueAt = java.time.OffsetDateTime.parse(dueText).toLocalDateTime();
+                return !submittedAt.isBefore(dueAt);
+            } catch (Exception ex) {
+                return false;
+            }
+        }
     }
 
     private static boolean isTerminal(AssessmentAttempt attempt) {

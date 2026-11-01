@@ -34,7 +34,7 @@ export default function StudentAssignmentResultPage() {
       setError(null);
       try {
         const data = await studentAssignmentAttemptService.result(assignmentId);
-        if (!cancelled) setResult(data);
+        if (!cancelled) setResult(data.data);
       } catch (err) {
         if (!cancelled) setError(toAppError(err).message || t("result.loadFailed"));
       } finally {

@@ -18,6 +18,7 @@ import { QUERY_KEYS } from "@/services/query-keys";
 import { Button } from "@/components/ui/button";
 import { UnitCard } from "./unit-card";
 import { Pipo } from "@/components/ui/mascot";
+import { SkeletonGrid } from "@/components/ui/skeleton/skeleton-grid";
 
 export function UnitsView() {
   const tErrors = useTranslations("errors");
@@ -98,25 +99,7 @@ export function UnitsView() {
       )}
 
       {/* ─── Loading State (Skeleton) ─── */}
-      {isLoading && (
-        <div
-          className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3"
-          role="status"
-          aria-label="Đang tải danh sách Unit"
-        >
-          {[0, 1, 2].map((i) => (
-            <div
-              key={i}
-              className="flex h-80 flex-col rounded-3xl border-2 border-border bg-card p-4 shadow-pop"
-            >
-              <div className="h-36 w-full animate-pulse rounded-2xl bg-muted" />
-              <div className="mt-4 h-5 w-3/4 animate-pulse rounded-md bg-muted" />
-              <div className="mt-2 h-4 w-1/2 animate-pulse rounded-md bg-muted/60" />
-              <div className="mt-auto h-11 w-full animate-pulse rounded-xl bg-muted" />
-            </div>
-          ))}
-        </div>
-      )}
+      {isLoading && <SkeletonGrid />}
 
       {/* ─── Error State (Dùng token destructive) ─── */}
       {isError && (

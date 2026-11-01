@@ -205,7 +205,11 @@ export function StudentAssignmentPaperPage({
         body,
       );
       if (!response.data) throw new Error("ASSESSMENT_ATTEMPT_SAVE_FAILED");
-      return response.data;
+      return {
+        ...response.data,
+        requestId: body.requestId,
+        serverNow: new Date().toISOString(),
+      };
     },
     [],
   );

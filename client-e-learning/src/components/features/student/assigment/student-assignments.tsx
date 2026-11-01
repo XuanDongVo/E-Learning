@@ -12,36 +12,13 @@ import { studentAssignmentService } from "@/services/student/student-assignment.
 import { QUERY_KEYS } from "@/services/query-keys";
 import { RegionState } from "@/components/feedback";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
+import { SkeletonGrid } from "@/components/ui/skeleton/skeleton-grid";
 
 interface StudentAssignmentsProps {
   initialAssignments?: StudentAssignmentItem[];
 }
 
-function AssignmentListSkeleton() {
-  return (
-    <div
-      className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"
-      aria-busy="true"
-      aria-label="Loading"
-    >
-      {Array.from({ length: 6 }).map((_, i) => (
-        <div
-          key={i}
-          className="rounded-2xl border border-border bg-card p-5 space-y-3 shadow-xs"
-        >
-          <Skeleton className="h-5 w-2/3" />
-          <Skeleton className="h-4 w-1/2" />
-          <Skeleton className="h-4 w-full" />
-          <Skeleton className="h-4 w-4/5" />
-          <div className="pt-2">
-            <Skeleton className="h-9 w-28 rounded-xl" />
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
+
 
 export function StudentAssignments({ initialAssignments = [] }: StudentAssignmentsProps) {
   const t = useTranslations("student.assignments");
@@ -87,7 +64,7 @@ export function StudentAssignments({ initialAssignments = [] }: StudentAssignmen
         counts={counts}
       />
 
-      {isLoading && <AssignmentListSkeleton />}
+      {isLoading && <SkeletonGrid />}
 
       {isError && (
         <RegionState

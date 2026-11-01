@@ -3,6 +3,7 @@ package e_learning.server.assignmentanalysis;
 import e_learning.server.assignmentanalysis.dto.response.AnalysisOverviewResponse;
 import e_learning.server.assignmentanalysis.dto.response.AttemptReviewResponse;
 import e_learning.server.assignmentanalysis.dto.response.QuestionAnalysisListResponse;
+import e_learning.server.assignmentanalysis.dto.response.SectionAnalysisListResponse;
 import e_learning.server.assignmentanalysis.dto.response.StudentResultRow;
 import e_learning.server.assignmentanalysis.service.AssignmentAnalysisService;
 import e_learning.server.common.dto.PageResponse;
@@ -47,15 +48,8 @@ public class AssignmentAnalysisController {
     ) {
         return ResponseEntity.ok(ApiResponse.success(
                 analysisService.getStudents(
-                        assignmentId,
-                        teacherId(jwt),
-                        page,
-                        size,
-                        lifecycleStatus,
-                        deadlineState,
-                        classId,
-                        search
-                )
+                        assignmentId, teacherId(jwt), page, size,
+                        lifecycleStatus, deadlineState, classId, search)
         ));
     }
 
@@ -66,6 +60,16 @@ public class AssignmentAnalysisController {
     ) {
         return ResponseEntity.ok(ApiResponse.success(
                 analysisService.getQuestions(assignmentId, teacherId(jwt))
+        ));
+    }
+
+    @GetMapping("/analytics/sections")
+    public ResponseEntity<ApiResponse<SectionAnalysisListResponse>> sections(
+            @PathVariable Long assignmentId,
+            @AuthenticationPrincipal Jwt jwt
+    ) {
+        return ResponseEntity.ok(ApiResponse.success(
+                analysisService.getSections(assignmentId, teacherId(jwt))
         ));
     }
 

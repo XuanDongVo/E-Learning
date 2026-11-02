@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
+import { DataTable, type DataTableColumn } from "@/components/ui/data-table/data-table";
 import type { StudentResultRow } from "@/types/assignment-analysis";
 
 function formatDuration(seconds: number | null) {
@@ -19,48 +20,33 @@ export function StudentsTable({
   onViewAttempt: (studentId: number) => void;
 }) {
   const t = useTranslations("teacher.analytics.students");
+  const columns: DataTableColumn<StudentResultRow>[] = [
+    { id: "student", header: t("col.student"), cell: (row) => <span className="font-medium">{row.studentName}</span> },
+    { id: "class", header: t("col.class"), cell: (row) => row.className },
+    { id: "status", header: t("col.status"), cell: (row) => t(`status.${row.lifecycleStatus}`) },
+    { id: "deadline", header: t("col.deadline"), cell: (row) => t(`deadlineState.${row.deadlineState}`) },
+    { id: "score", header: t("col.score"), cell: (row) => <span className="tabular-nums">{row.scorePercent == null ? "—" : `${row.scorePercent.toFixed(0)}%`}</span> },
+    { id: "duration", header: t("col.duration"), cell: (row) => <span className="tabular-nums">{formatDuration(row.durationSeconds)}</span> },
+    {
+      id: "actions",
+      header: null,
+      align: "right",
+      cell: (row) =>
+        row.attemptId != null ? (
+          <Button type="button" variant="ghost" size="sm" onClick={() => onViewAttempt(row.studentId)}>
+            {t("viewAttempt")}
+          </Button>
+        ) : null,
+    },
+  ];
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-border">
-      <table className="w-full min-w-[720px] text-left text-sm">
-        <thead className="bg-muted/40 text-xs text-muted-foreground">
-          <tr>
-            <th className="px-3 py-2 font-medium">{t("col.student")}</th>
-            <th className="px-3 py-2 font-medium">{t("col.class")}</th>
-            <th className="px-3 py-2 font-medium">{t("col.status")}</th>
-            <th className="px-3 py-2 font-medium">{t("col.deadline")}</th>
-            <th className="px-3 py-2 font-medium">{t("col.score")}</th>
-            <th className="px-3 py-2 font-medium">{t("col.duration")}</th>
-            <th className="px-3 py-2 font-medium" />
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((row) => (
-            <tr key={row.studentId} className="border-t border-border/70">
-              <td className="px-3 py-2 font-medium">{row.studentName}</td>
-              <td className="px-3 py-2">{row.className}</td>
-              <td className="px-3 py-2">{t(`status.${row.lifecycleStatus}`)}</td>
-              <td className="px-3 py-2">{t(`deadlineState.${row.deadlineState}`)}</td>
-              <td className="px-3 py-2 tabular-nums">
-                {row.scorePercent == null ? "—" : `${row.scorePercent.toFixed(0)}%`}
-              </td>
-              <td className="px-3 py-2 tabular-nums">{formatDuration(row.durationSeconds)}</td>
-              <td className="px-3 py-2 text-right">
-                {row.attemptId != null ? (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => onViewAttempt(row.studentId)}
-                  >
-                    {t("viewAttempt")}
-                  </Button>
-                ) : null}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <DataTable
+      data={rows}
+      columns={columns}
+      getRowKey={(row) => row.studentId}
+      minWidth="720px"
+      emptyState={<div className="rounded-2xl border border-dashed border-border bg-card p-8 text-center text-sm text-muted-foreground">{t("empty")}</div>}
+    />
   );
 }

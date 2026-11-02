@@ -45,9 +45,9 @@ export function TeacherAssignmentAnalysisPage({ assignmentId }: { assignmentId: 
   );
 
   return (
-    <div className="min-h-screen bg-[#f6f7fb] text-foreground">
+    <div className="text-foreground">
       <AnalysisHeader title={overviewQuery.data?.summary.title} />
-      <main className="mx-auto max-w-6xl space-y-4 px-4 py-6">
+      <main className="space-y-4">
         <AnalysisTabs value={tab} onChange={setTab} />
 
         {overviewQuery.isError ? (

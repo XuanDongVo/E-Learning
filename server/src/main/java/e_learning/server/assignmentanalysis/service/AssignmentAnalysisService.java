@@ -65,7 +65,7 @@ public class AssignmentAnalysisService {
 
     @Transactional(readOnly = true)
     public PageResponse<StudentResultRow> getStudents(Long assignmentId, Long teacherId, int page, int size,
-            String lifecycleStatus, String deadlineState, Long classId, String search) {
+                                                      String lifecycleStatus, String deadlineState, Long classId, String search) {
         Assignment assignment = requireAssignment(assignmentId);
         RosterContext roster = buildRoster(assignment);
         Map<Long, AssessmentAttempt> attemptByStudent =
@@ -209,8 +209,11 @@ public class AssignmentAnalysisService {
                 toDoublePercent(attempt.getPercentageScore()), questionRows);
     }
 
-    private record RosterStudent(Long studentId, String studentName, Long classId, String className) {}
-    private record RosterContext(List<Long> classIds, Map<Long, String> classNames, List<RosterStudent> students) {}
+    private record RosterStudent(Long studentId, String studentName, Long classId, String className) {
+    }
+
+    private record RosterContext(List<Long> classIds, Map<Long, String> classNames, List<RosterStudent> students) {
+    }
 
     private RosterContext buildRoster(Assignment assignment) {
         List<Long> classIds = assignment.getClassIds() != null
@@ -242,10 +245,19 @@ public class AssignmentAnalysisService {
         LocalDateTime now = LocalDateTime.now();
         for (RosterStudent rs : roster.students) {
             AssessmentAttempt a = attemptByStudent.get(rs.studentId());
-            if (a == null) { notStarted++; if (dueAt != null && now.isAfter(dueAt)) overdue++; continue; }
+            if (a == null) {
+                notStarted++;
+                if (dueAt != null && now.isAfter(dueAt)) overdue++;
+                continue;
+            }
             if (a.getStatus() == AssessmentAttemptStatus.IN_PROGRESS) inProgress++;
-            else if (a.getStatus() == AssessmentAttemptStatus.SUBMITTED) { submitted++; if (a.isLate()) late++; }
-            else if (a.getStatus() == AssessmentAttemptStatus.TIMED_OUT) { timedOut++; if (a.isLate()) late++; }
+            else if (a.getStatus() == AssessmentAttemptStatus.SUBMITTED) {
+                submitted++;
+                if (a.isLate()) late++;
+            } else if (a.getStatus() == AssessmentAttemptStatus.TIMED_OUT) {
+                timedOut++;
+                if (a.isLate()) late++;
+            }
         }
         return new ProgressCounts(assigned, notStarted, inProgress, submitted, timedOut, late, overdue,
                 assigned == 0 ? null : submitted / (double) assigned);
@@ -296,7 +308,7 @@ public class AssignmentAnalysisService {
     }
 
     private List<ClassComparisonRow> buildClassComparison(RosterContext roster,
-            Map<Long, AssessmentAttempt> attemptByStudent, Map<Long, Double> accuracyByClass) {
+                                                          Map<Long, AssessmentAttempt> attemptByStudent, Map<Long, Double> accuracyByClass) {
         Map<Long, List<RosterStudent>> byClass = roster.students.stream()
                 .collect(Collectors.groupingBy(RosterStudent::classId, LinkedHashMap::new, Collectors.toList()));
         List<ClassComparisonRow> rows = new ArrayList<>();
@@ -358,7 +370,8 @@ public class AssignmentAnalysisService {
     private String resolveDeadlineState(AssessmentAttempt a, LocalDateTime dueAt) {
         if (a.isLate()) return "LATE";
         if (a.getStatus() == AssessmentAttemptStatus.IN_PROGRESS) return "OPEN";
-        if (a.getStatus() == AssessmentAttemptStatus.SUBMITTED || a.getStatus() == AssessmentAttemptStatus.TIMED_OUT) return "ON_TIME";
+        if (a.getStatus() == AssessmentAttemptStatus.SUBMITTED || a.getStatus() == AssessmentAttemptStatus.TIMED_OUT)
+            return "ON_TIME";
         if (dueAt != null && LocalDateTime.now().isAfter(dueAt)) return "OVERDUE";
         return "NONE";
     }
@@ -377,7 +390,9 @@ public class AssignmentAnalysisService {
         return (sorted.get(n / 2 - 1) + sorted.get(n / 2)) / 2.0;
     }
 
-    private static Double round1(double v) { return Math.round(v * 10.0) / 10.0; }
+    private static Double round1(double v) {
+        return Math.round(v * 10.0) / 10.0;
+    }
 
     private Double toDoublePercent(BigDecimal percentageScore) {
         if (percentageScore == null) return null;
@@ -403,7 +418,8 @@ public class AssignmentAnalysisService {
                 case CORRECT -> anyCorrect = true;
                 case PARTIALLY_CORRECT -> anyPartial = true;
                 case INCORRECT -> anyIncorrect = true;
-                case UNANSWERED -> { }
+                case UNANSWERED -> {
+                }
             }
         }
         if (allUnanswered) return AttemptPartStatus.UNANSWERED;
@@ -413,29 +429,76 @@ public class AssignmentAnalysisService {
     }
 
     private static String extractPrompt(Map<String, Object> snapshot) {
-        if (snapshot == null) return "";
-        Object c = snapshot.get("content");
-        if (c instanceof Map<?, ?> m && m.get("prompt") != null) return String.valueOf(m.get("prompt"));
-        if (c instanceof String s) return s;
-        if (snapshot.get("prompt") != null) return String.valueOf(snapshot.get("prompt"));
-        return "";
+        if (snapshot == null) {
+            return "";
+        }
+
+        Object student = snapshot.get("student");
+        if (student instanceof Map<?, ?> studentMap) {
+            Object spec = studentMap.get("spec");
+
+            if (spec instanceof Map<?, ?> specMap) {
+                Object prompt = specMap.get("prompt");
+                if (prompt != null) {
+                    return String.valueOf(prompt);
+                }
+            }
+
+            if (spec instanceof String s) {
+                return s;
+            }
+        }
+
+        Object prompt = snapshot.get("prompt");
+        return prompt != null ? String.valueOf(prompt) : "";
     }
 
     private static String extractType(Map<String, Object> snapshot) {
-        if (snapshot == null) return "UNKNOWN";
-        Object t = snapshot.get("type");
-        if (t == null) t = snapshot.get("questionType");
-        return t == null ? "UNKNOWN" : String.valueOf(t);
+        if (snapshot == null) {
+            return "UNKNOWN";
+        }
+
+        Object student = snapshot.get("student");
+        if (!(student instanceof Map<?, ?> studentMap)) {
+            return "UNKNOWN";
+        }
+
+        Object spec = studentMap.get("spec");
+        if (!(spec instanceof Map<?, ?> specMap)) {
+            return "UNKNOWN";
+        }
+
+        Object type = specMap.get("type");
+        return type == null ? "UNKNOWN" : String.valueOf(type);
     }
 
     private static Object extractAnswerKey(Map<String, Object> snapshot) {
-        if (snapshot == null) return null;
+        if (snapshot == null) {
+            return null;
+        }
+
         Object grading = snapshot.get("grading");
-        if (!(grading instanceof Map<?, ?> map)) return null;
+        if (!(grading instanceof Map<?, ?> gradingMap)) {
+            return null;
+        }
+
         Map<String, Object> result = new LinkedHashMap<>();
-        if (map.get("options") != null) result.put("options", map.get("options"));
-        if (map.get("answers") != null) result.put("answers", map.get("answers"));
-        if (map.get("explanation") != null) result.put("explanation", map.get("explanation"));
+
+        Object options = gradingMap.get("options");
+        if (options != null) {
+            result.put("options", options);
+        }
+
+        Object answers = gradingMap.get("answers");
+        if (answers != null) {
+            result.put("answers", answers);
+        }
+
+        Object explantation = gradingMap.get("explantation");
+        if (explantation != null) {
+            result.put("explanation", explantation);
+        }
+
         return result.isEmpty() ? null : result;
     }
 
@@ -444,7 +507,11 @@ public class AssignmentAnalysisService {
         String sectionId, sectionTitle, promptPreview, questionType, questionId;
         int attemptCount, correctCount, partialCount, incorrectCount, unansweredCount;
         BigDecimal earnedSum = BigDecimal.ZERO, possibleSum = BigDecimal.ZERO;
-        QuestionAgg(int position) { this.position = position; }
+
+        QuestionAgg(int position) {
+            this.position = position;
+        }
+
         void seedFrom(AssessmentAttemptQuestion q) {
             if (promptPreview == null) {
                 String prompt = extractPrompt(q.getQuestionSnapshot());
@@ -455,6 +522,7 @@ public class AssignmentAnalysisService {
                 questionId = "pos-" + position;
             }
         }
+
         QuestionAnalysisRow toRow(QuestionAnswerDistribution distribution) {
             Double accuracy = attemptCount == 0 ? null : round1(100.0 * correctCount / attemptCount);
             Double scoreRate = possibleSum.compareTo(BigDecimal.ZERO) <= 0 ? null
@@ -476,10 +544,14 @@ public class AssignmentAnalysisService {
     private static final class SectionAgg {
         final String sectionId, sectionTitle;
         int questionCount, sampleSlots, correctCount, partialCount, incorrectCount, unansweredCount;
-        double scoreRateWeightedSum; int scoreRateWeight;
+        double scoreRateWeightedSum;
+        int scoreRateWeight;
+
         SectionAgg(String sectionId, String sectionTitle) {
-            this.sectionId = sectionId; this.sectionTitle = sectionTitle;
+            this.sectionId = sectionId;
+            this.sectionTitle = sectionTitle;
         }
+
         SectionAnalysisRow toRow() {
             Double accuracy = sampleSlots == 0 ? null : round1(100.0 * correctCount / sampleSlots);
             Double blank = sampleSlots == 0 ? null : round1(100.0 * unansweredCount / sampleSlots);

@@ -138,7 +138,7 @@ export function UnitDetailView({ unitId, mascotSlot }: UnitDetailViewProps) {
   const topicCount = unit.sections.reduce((sum, s) => sum + s.topics.length, 0);
 
   return (
-    <div className=" space-y-6 p-4 pb-24 sm:p-5 lg:p-6 lg:pb-8">
+    <div className="space-y-6">
       {/* ─── Back Action ─── */}
       <Link
         href="/student/units"

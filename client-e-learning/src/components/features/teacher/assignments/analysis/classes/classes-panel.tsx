@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import type { ClassComparisonRow } from "@/types/assignment-analysis";
+import { DataTable, type DataTableColumn } from "@/components/ui/data-table/data-table";
 
 export function ClassesPanel({
   rows,
@@ -11,6 +12,14 @@ export function ClassesPanel({
   loading?: boolean;
 }) {
   const t = useTranslations("teacher.analytics");
+  const columns: DataTableColumn<ClassComparisonRow>[] = [
+    { id: "class", header: t("classes.col.class"), cell: (row) => <span className="font-semibold">{row.className}</span> },
+    { id: "assigned", header: t("classes.col.assigned"), cell: (row) => <span className="tabular-nums">{row.assignedCount}</span> },
+    { id: "submission", header: t("classes.col.submissionRate"), cell: (row) => <span className="tabular-nums">{row.submissionRate != null ? `${Math.round(row.submissionRate * 100)}%` : "—"} ({row.submittedCount})</span> },
+    { id: "average", header: t("classes.col.average"), cell: (row) => <span className="tabular-nums">{row.averagePercent != null ? `${row.averagePercent}%` : "—"} <span className="text-xs text-muted-foreground">n={row.submittedCount}</span></span> },
+    { id: "median", header: t("classes.col.median"), cell: (row) => <span className="tabular-nums">{row.medianPercent != null ? `${row.medianPercent}%` : "—"}</span> },
+    { id: "accuracy", header: t("classes.col.accuracy"), cell: (row) => <span className="tabular-nums">{row.accuracyPercent != null ? `${row.accuracyPercent}%` : "—"}</span> },
+  ];
 
   if (loading) {
     return <div className="rounded-2xl border border-border bg-card p-8 text-sm text-muted-foreground">{t("empty")}</div>;
@@ -21,50 +30,13 @@ export function ClassesPanel({
       <div className="rounded-xl border border-border bg-muted/30 px-4 py-3 text-sm text-muted-foreground">
         {t("classes.singleNote", { count: rows.length })}
       </div>
-
-      <div className="overflow-hidden rounded-2xl border border-border bg-card">
-        <table className="w-full text-left text-sm">
-          <thead className="bg-muted/40 text-xs text-muted-foreground">
-            <tr>
-              <th className="px-3 py-2 font-medium">{t("classes.col.class")}</th>
-              <th className="px-3 py-2 font-medium">{t("classes.col.assigned")}</th>
-              <th className="px-3 py-2 font-medium">{t("classes.col.submissionRate")}</th>
-              <th className="px-3 py-2 font-medium">{t("classes.col.average")}</th>
-              <th className="px-3 py-2 font-medium">{t("classes.col.median")}</th>
-              <th className="px-3 py-2 font-medium">{t("classes.col.accuracy")}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((r) => (
-              <tr key={r.classId} className="border-t border-border/70">
-                <td className="px-3 py-3 font-semibold">{r.className}</td>
-                <td className="px-3 py-3 tabular-nums">{r.assignedCount}</td>
-                <td className="px-3 py-3 tabular-nums">
-                  {r.submissionRate != null ? `${Math.round(r.submissionRate * 100)}%` : "—"}{" "}
-                  ({r.submittedCount})
-                </td>
-                <td className="px-3 py-3 tabular-nums">
-                  {r.averagePercent != null ? `${r.averagePercent}%` : "—"}{" "}
-                  <span className="text-xs text-muted-foreground">n={r.submittedCount}</span>
-                </td>
-                <td className="px-3 py-3 tabular-nums">
-                  {r.medianPercent != null ? `${r.medianPercent}%` : "—"}
-                </td>
-                <td className="px-3 py-3 tabular-nums">
-                  {r.accuracyPercent != null ? `${r.accuracyPercent}%` : "—"}
-                </td>
-              </tr>
-            ))}
-            {rows.length === 0 ? (
-              <tr>
-                <td colSpan={6} className="px-3 py-8 text-center text-muted-foreground">
-                  {t("empty")}
-                </td>
-              </tr>
-            ) : null}
-          </tbody>
-        </table>
-      </div>
+      <DataTable
+        data={rows}
+        columns={columns}
+        getRowKey={(row) => row.classId}
+        minWidth="640px"
+        emptyState={<div className="rounded-2xl border border-dashed border-border bg-card p-8 text-center text-sm text-muted-foreground">{t("empty")}</div>}
+      />
     </div>
   );
 }

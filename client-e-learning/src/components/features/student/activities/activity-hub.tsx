@@ -17,8 +17,7 @@ export function ActivityHub({ unitId }: { unitId?: number }) {
     enabled: !!unitId,
   });
   return (
-    <main className="min-h-screen bg-background-app px-5 py-8 sm:px-8 lg:px-10">
-      <div className="mx-auto max-w-6xl">
+    <div className="space-y-8">
         <div className="max-w-2xl">
           <p className="text-body-sm font-bold uppercase tracking-[0.12em] text-primary">
             Activities
@@ -75,8 +74,7 @@ export function ActivityHub({ unitId }: { unitId?: number }) {
               </div>
             )}
         </section>
-      </div>
-    </main>
+    </div>
   );
 }
 

@@ -3,6 +3,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { assignmentAnalysisService } from "@/services/assignment/assignment-analysis.service";
+import type { SectionAnalysisRow } from "@/types/assignment-analysis";
+import { DataTable, type DataTableColumn } from "@/components/ui/data-table/data-table";
 import { OutcomeBar, OutcomeLegend } from "../shared/outcome-bar";
 
 export function SectionsPanel({ assignmentId }: { assignmentId: number }) {
@@ -16,80 +18,44 @@ export function SectionsPanel({ assignmentId }: { assignmentId: number }) {
     return <div className="rounded-2xl border border-border bg-card p-8 text-sm text-muted-foreground">{t("empty")}</div>;
   }
   if (query.isError) {
-    return (
-      <div className="rounded-xl border border-destructive/30 p-4 text-sm">
-        {t("loadError")}{" "}
-        <button type="button" className="text-primary" onClick={() => query.refetch()}>
-          {t("retry")}
-        </button>
-      </div>
-    );
+    return <div className="rounded-xl border border-destructive/30 p-4 text-sm">{t("loadError")}{" "}<button type="button" className="text-primary" onClick={() => query.refetch()}>{t("retry")}</button></div>;
   }
 
   const items = query.data?.items ?? [];
   const weakest = [...items].sort((a, b) => (a.accuracyPercent ?? 100) - (b.accuracyPercent ?? 100))[0];
+  const columns: DataTableColumn<SectionAnalysisRow>[] = [
+    { id: "section", header: t("sections.col.section"), cell: (row) => <span className="font-medium">{row.sectionTitle ?? "—"}</span> },
+    { id: "count", header: t("sections.col.count"), cell: (row) => <span className="tabular-nums">{row.questionCount}</span> },
+    {
+      id: "result",
+      header: t("sections.col.result"),
+      cell: (row) => {
+        const n = Math.max(row.sampleSlots, 1);
+        return <OutcomeBar outcome={{ correct: Math.round((100 * row.correctCount) / n), partial: Math.round((100 * row.partialCount) / n), incorrect: Math.round((100 * row.incorrectCount) / n), blank: Math.round((100 * row.unansweredCount) / n) }} />;
+      },
+    },
+    { id: "accuracy", header: t("sections.col.accuracy"), cell: (row) => <span className="tabular-nums">{row.accuracyPercent ?? 0}% <span className="text-xs text-muted-foreground">n={row.sampleSlots}</span></span> },
+    { id: "score", header: t("sections.col.scoreRate"), cell: (row) => <span className="tabular-nums">{row.scoreRatePercent ?? 0}%</span> },
+    { id: "blank", header: t("sections.col.blank"), cell: (row) => <span className="tabular-nums text-muted-foreground">{row.blankPercent ?? 0}%</span> },
+  ];
 
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="text-xs text-muted-foreground">
           {t("sections.footnote")}{" "}
-          {weakest ? (
-            <span className="font-medium text-foreground">
-              {t("sections.weakest", {
-                title: weakest.sectionTitle ?? "—",
-                percent: weakest.accuracyPercent ?? 0,
-              })}
-            </span>
-          ) : null}
+          {weakest ? <span className="font-medium text-foreground">{t("sections.weakest", { title: weakest.sectionTitle ?? "—", percent: weakest.accuracyPercent ?? 0 })}</span> : null}
         </p>
         <OutcomeLegend />
       </div>
-
-      <div className="overflow-hidden rounded-2xl border border-border bg-card">
-        <table className="w-full text-left text-sm">
-          <thead className="bg-muted/40 text-xs text-muted-foreground">
-            <tr>
-              <th className="px-3 py-2 font-medium">{t("sections.col.section")}</th>
-              <th className="px-3 py-2 font-medium">{t("sections.col.count")}</th>
-              <th className="px-3 py-2 font-medium">{t("sections.col.result")}</th>
-              <th className="px-3 py-2 font-medium">{t("sections.col.accuracy")}</th>
-              <th className="px-3 py-2 font-medium">{t("sections.col.scoreRate")}</th>
-              <th className="px-3 py-2 font-medium">{t("sections.col.blank")}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {items.map((s) => {
-              const n = Math.max(s.sampleSlots, 1);
-              const outcome = {
-                correct: Math.round((100 * s.correctCount) / n),
-                partial: Math.round((100 * s.partialCount) / n),
-                incorrect: Math.round((100 * s.incorrectCount) / n),
-                blank: Math.round((100 * s.unansweredCount) / n),
-              };
-              const weak = (s.accuracyPercent ?? 100) < 40;
-              return (
-                <tr
-                  key={s.sectionId ?? s.sectionTitle ?? Math.random()}
-                  className={`border-t border-border/70 ${weak ? "bg-rose-50/50" : ""}`}
-                >
-                  <td className="px-3 py-3 font-medium">{s.sectionTitle ?? "—"}</td>
-                  <td className="px-3 py-3 tabular-nums">{s.questionCount}</td>
-                  <td className="min-w-[10rem] px-3 py-3">
-                    <OutcomeBar outcome={outcome} />
-                  </td>
-                  <td className="px-3 py-3 tabular-nums">
-                    {s.accuracyPercent ?? 0}%{" "}
-                    <span className="text-xs text-muted-foreground">n={s.sampleSlots}</span>
-                  </td>
-                  <td className="px-3 py-3 tabular-nums">{s.scoreRatePercent ?? 0}%</td>
-                  <td className="px-3 py-3 tabular-nums text-muted-foreground">{s.blankPercent ?? 0}%</td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+      <DataTable
+        data={items}
+        columns={columns}
+        getRowKey={(row) => row.sectionId ?? row.sectionTitle ?? "section"}
+        minWidth="720px"
+        rowClassName={(row) => (row.accuracyPercent != null && row.accuracyPercent < 40 ? "bg-rose-50" : "")}
+        emptyState={<div className="rounded-2xl border border-dashed border-border bg-card p-8 text-center text-sm text-muted-foreground">{t("empty")}</div>}
+      />
     </div>
   );
 }

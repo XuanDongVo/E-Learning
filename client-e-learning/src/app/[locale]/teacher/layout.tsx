@@ -264,7 +264,7 @@ export default function TeacherLayout({
             </div>
           </header>
          )}
-          <main className="mx-auto w-full max-w-[1500px] p-4 sm:p-6">
+          <main className="mx-auto w-full max-w-[1440px] p-4 sm:p-5 lg:p-6">
             {children}
           </main>
         </div>

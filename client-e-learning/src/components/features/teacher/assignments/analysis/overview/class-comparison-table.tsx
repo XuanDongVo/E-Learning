@@ -3,10 +3,7 @@
 import { useTranslations } from "next-intl";
 import type { ClassComparisonRow } from "@/types/assignment-analysis";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
-function pct(v: number | null) {
-  return v == null ? "—" : `${(v * (v <= 1 ? 100 : 1)).toFixed(0)}%`;
-}
+import { DataTable, type DataTableColumn } from "@/components/ui/data-table/data-table";
 
 /** Accepts either 0–1 or 0–100 rates from backend. */
 function rateLabel(v: number | null) {
@@ -23,6 +20,24 @@ export function ClassComparisonTable({
   onSelectClass?: (classId: number) => void;
 }) {
   const t = useTranslations("teacher.analytics.classComparison");
+  const columns: DataTableColumn<ClassComparisonRow>[] = [
+    {
+      id: "class",
+      header: t("class"),
+      cell: (row) =>
+        onSelectClass ? (
+          <button type="button" className="font-medium text-primary hover:underline" onClick={() => onSelectClass(row.classId)}>
+            {row.className}
+          </button>
+        ) : row.className,
+    },
+    { id: "assigned", header: t("assigned"), cell: (row) => <span className="tabular-nums">{row.assignedCount}</span> },
+    { id: "submission", header: t("submissionRate"), cell: (row) => <span className="tabular-nums">{rateLabel(row.submissionRate)} ({row.submittedCount})</span> },
+    { id: "average", header: t("average"), cell: (row) => <span className="tabular-nums">{rateLabel(row.averagePercent)}</span> },
+    { id: "median", header: t("median"), cell: (row) => <span className="tabular-nums">{rateLabel(row.medianPercent)}</span> },
+    { id: "accuracy", header: t("accuracy"), cell: (row) => <span className="tabular-nums">{rateLabel(row.accuracyPercent)}</span> },
+    { id: "band", header: t("overallBand"), cell: (row) => row.overallBand ? t(`band.${row.overallBand}`) : "—" },
+  ];
 
   if (!rows.length) return null;
 
@@ -31,50 +46,8 @@ export function ClassComparisonTable({
       <CardHeader className="pb-2">
         <CardTitle className="text-base">{t("title")}</CardTitle>
       </CardHeader>
-      <CardContent className="overflow-x-auto">
-        <table className="w-full min-w-[640px] text-left text-sm">
-          <thead>
-            <tr className="border-b border-border text-xs text-muted-foreground">
-              <th className="py-2 pr-2 font-medium">{t("class")}</th>
-              <th className="py-2 pr-2 font-medium">{t("assigned")}</th>
-              <th className="py-2 pr-2 font-medium">{t("submissionRate")}</th>
-              <th className="py-2 pr-2 font-medium">{t("average")}</th>
-              <th className="py-2 pr-2 font-medium">{t("median")}</th>
-              <th className="py-2 pr-2 font-medium">{t("accuracy")}</th>
-              <th className="py-2 font-medium">{t("overallBand")}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row) => (
-              <tr key={row.classId} className="border-b border-border/60">
-                <td className="py-2 pr-2">
-                  {onSelectClass ? (
-                    <button
-                      type="button"
-                      className="font-medium text-primary hover:underline"
-                      onClick={() => onSelectClass(row.classId)}
-                    >
-                      {row.className}
-                    </button>
-                  ) : (
-                    row.className
-                  )}
-                </td>
-                <td className="py-2 pr-2 tabular-nums">{row.assignedCount}</td>
-                <td className="py-2 pr-2 tabular-nums">
-                  {rateLabel(row.submissionRate)}
-                  <span className="text-muted-foreground"> ({row.submittedCount})</span>
-                </td>
-                <td className="py-2 pr-2 tabular-nums">{rateLabel(row.averagePercent)}</td>
-                <td className="py-2 pr-2 tabular-nums">{rateLabel(row.medianPercent)}</td>
-                <td className="py-2 pr-2 tabular-nums">{rateLabel(row.accuracyPercent)}</td>
-                <td className="py-2">
-                  {row.overallBand ? t(`band.${row.overallBand}`) : "—"}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <CardContent>
+        <DataTable data={rows} columns={columns} getRowKey={(row) => row.classId} minWidth="640px" />
       </CardContent>
     </Card>
   );

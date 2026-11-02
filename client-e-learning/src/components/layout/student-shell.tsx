@@ -13,17 +13,19 @@ export function StudentShell({ children }: { children: React.ReactNode }) {
   if (immersiveActivity || immersiveAssignmentAttempt) {
     return (
       <div className="min-h-screen bg-background-app">
-        <main className="min-h-screen">{children}</main>
+        <main className="h-dvh w-full overflow-hidden">{children}</main>
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen bg-background-app">
+    <div className="flex min-h-screen bg-background-app pb-16 lg:pb-0">
       <StudentSidebar />
       <div className="flex min-w-0 flex-1 flex-col">
         <StudentHeader />
-        <main className="flex-1 pb-16 lg:pb-0">{children}</main>
+        <main className="mx-auto w-full max-w-[1440px] p-4 sm:p-5 lg:p-6">
+          {children}
+        </main>
         <StudentBottomNav />
       </div>
     </div>

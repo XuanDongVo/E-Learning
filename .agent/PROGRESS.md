@@ -19,4 +19,9 @@
 
 ## Verification
 
-No automated compile/test/browser claimed. Owner should run local E2E against graded attempts.
+- Frontend global page layout refactor completed on this branch: TeacherLayout and StudentShell now own the standard `1440px` page container; only the two Student runtime routes use immersive `h-dvh` rendering.
+- `client-e-learning`: TypeScript and production build pass. Full ESLint remains blocked by pre-existing errors in the assignment result page and autosave hook; focused changed-file lint has no errors.
+- Owner should run local E2E against graded attempts and visually verify 375px, 768px, and 1440px layouts.
+- Teacher DataTable refactor added a generic React/TypeScript core at `client-e-learning/src/components/ui/data-table/data-table.tsx`.
+- StudentTable, ActivityWorkspace, Assignment Analysis class comparison/classes/sections/students tables now use the shared column/pagination presentation while retaining feature-owned renderers and behavior.
+- Expandable question analysis rows and content import preview remain specialized tables because their nested row interaction is not representable by the minimal DataTable column contract without changing behavior.

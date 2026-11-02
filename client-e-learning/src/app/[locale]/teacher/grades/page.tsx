@@ -143,7 +143,7 @@ export default function TeacherGradesPage() {
   };
 
   return (
-    <div className="mx-auto max-w-7xl space-y-6">
+    <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-body-sm font-extrabold uppercase tracking-[0.16em] text-primary">

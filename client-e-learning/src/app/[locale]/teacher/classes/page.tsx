@@ -153,7 +153,7 @@ export default function ClassesPage() {
   };
 
   return (
-    <div className="mx-auto max-w-7xl space-y-6">
+    <div className="space-y-6">
       <ClassesHeader onCreate={openCreate} />
       <ClassesToolbar
         query={query}

@@ -7,7 +7,7 @@ import { RecentActivityCard } from "./recent-activity-card";
 
 export function TeacherDashboardView() {
   return (
-    <div className="mx-auto max-w-[1180px] space-y-5">
+    <div className="space-y-5">
       <section className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
         <div>
           <p className="text-body-sm font-bold text-primary">Thứ Sáu, 02 tháng 10</p>

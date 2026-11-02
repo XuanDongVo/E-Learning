@@ -37,14 +37,26 @@ public class ActivitySession {
     @Column(name = "hint_used_count", nullable = false) private int hintUsedCount;
     @Column(precision = 5, scale = 2) private BigDecimal score;
     private Integer lives;
+    /**
+     * Snapshot of Activity.timeLimitSeconds at session start (ADR 0025).
+     * Try Hard deadline uses this value, not the live Activity row.
+     */
+    @Column(name = "time_limit_seconds")
+    private Integer timeLimitSeconds;
     @OneToMany(mappedBy = "session", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("position ASC") private List<ActivitySessionQuestion> questions = new ArrayList<>();
 
     public ActivitySession(User student, Activity activity, ActivityMode mode,
-                           SelectionStrategy selectionStrategy, int totalQuestions, Integer lives) {
-        this.student = student; this.activity = activity; this.mode = mode;
-        this.selectionStrategy = selectionStrategy; this.totalQuestions = totalQuestions;
-        this.lives = lives; this.startedAt = LocalDateTime.now();
+                           SelectionStrategy selectionStrategy, int totalQuestions, Integer lives,
+                           Integer timeLimitSeconds) {
+        this.student = student;
+        this.activity = activity;
+        this.mode = mode;
+        this.selectionStrategy = selectionStrategy;
+        this.totalQuestions = totalQuestions;
+        this.lives = lives;
+        this.timeLimitSeconds = timeLimitSeconds;
+        this.startedAt = LocalDateTime.now();
     }
     public void addQuestion(ActivitySessionQuestion question) { question.setSession(this); questions.add(question); }
 }

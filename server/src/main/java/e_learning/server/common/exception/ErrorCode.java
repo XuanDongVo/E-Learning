@@ -63,6 +63,7 @@ public enum ErrorCode {
     ASSIGNMENT_TIME_LIMIT_INVALID(HttpStatus.BAD_REQUEST, "ASSIGNMENT_TIME_LIMIT_INVALID", "The assignment time limit is invalid"),
     ASSIGNMENT_QUESTION_LIMIT_EXCEEDED(HttpStatus.BAD_REQUEST, "ASSIGNMENT_QUESTION_LIMIT_EXCEEDED", "An assignment cannot contain more than 100 questions"),
     ASSIGNMENT_QUESTIONS_LOCKED(HttpStatus.CONFLICT, "ASSIGNMENT_QUESTIONS_LOCKED", "Assignment questions cannot be changed in the current assignment state"),
+    ASSIGNMENT_LOCKED_AFTER_ATTEMPT(HttpStatus.CONFLICT, "ASSIGNMENT_LOCKED_AFTER_ATTEMPT", "This assignment can no longer be edited because a student attempt has already started. Clone the assignment to make changes."),
     ASSIGNMENT_NOT_READY(HttpStatus.CONFLICT, "ASSIGNMENT_NOT_READY", "The assignment is not ready to be published"),
     ASSIGNMENT_STATUS_TRANSITION_INVALID(HttpStatus.BAD_REQUEST, "ASSIGNMENT_STATUS_TRANSITION_INVALID", "The requested status transition is not allowed"),
 
@@ -89,7 +90,8 @@ public enum ErrorCode {
     ASSESSMENT_ATTEMPT_INVALID_ANSWER(HttpStatus.BAD_REQUEST, "ASSESSMENT_ATTEMPT_INVALID_ANSWER", "The answer is invalid for this question"),
     ASSESSMENT_ATTEMPT_SAVE_FAILED(HttpStatus.CONFLICT, "ASSESSMENT_ATTEMPT_SAVE_FAILED", "The answer could not be saved"),
     ASSESSMENT_ATTEMPT_INVALID_STATE(HttpStatus.CONFLICT, "ASSESSMENT_ATTEMPT_INVALID_STATE", "The assessment attempt is not in a writable state"),
-    ASSESSMENT_ATTEMPT_REQUEST_REPLAY(HttpStatus.CONFLICT, "ASSESSMENT_ATTEMPT_REQUEST_REPLAY", "The request has already been processed");
+    ASSESSMENT_ATTEMPT_REQUEST_REPLAY(HttpStatus.CONFLICT, "ASSESSMENT_ATTEMPT_REQUEST_REPLAY", "The request has already been processed"),
+    ASSESSMENT_ATTEMPT_GRADING_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "ASSESSMENT_ATTEMPT_GRADING_FAILED", "Grading failed due to a system or snapshot error; the attempt was not finalized");
 
     private final HttpStatus status;
     private final String code;

@@ -23,5 +23,6 @@
 - `client-e-learning`: TypeScript and production build pass. Full ESLint remains blocked by pre-existing errors in the assignment result page and autosave hook; focused changed-file lint has no errors.
 - Owner should run local E2E against graded attempts and visually verify 375px, 768px, and 1440px layouts.
 - Teacher DataTable refactor added a generic React/TypeScript core at `client-e-learning/src/components/ui/data-table/data-table.tsx`.
+- Student result view now consumes the expanded server result DTO, has no mock/demo fallback, and uses localized, split review components.
 - StudentTable, ActivityWorkspace, Assignment Analysis class comparison/classes/sections/students tables now use the shared column/pagination presentation while retaining feature-owned renderers and behavior.
 - Expandable question analysis rows and content import preview remain specialized tables because their nested row interaction is not representable by the minimal DataTable column contract without changing behavior.

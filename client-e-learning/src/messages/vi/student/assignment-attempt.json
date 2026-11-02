@@ -88,6 +88,15 @@
       "answersShown": "Đáp án đã được hiển thị.",
       "answersHidden": "Đáp án đang được ẩn.",
       "answersHeading": "Đáp án",
+      "points": "điểm",
+      "duration": "Thời gian làm",
+      "answered": "Đã trả lời",
+      "questionDetails": "Chi tiết câu hỏi",
+      "navigator": "Danh sách câu hỏi",
+      "filters": {
+        "all": "Tất cả",
+        "empty": "Không có câu hỏi phù hợp với bộ lọc."
+      },
       "late": "Nộp muộn",
       "startedAt": "Bắt đầu",
       "finishedAt": "Hoàn tất",
@@ -98,6 +107,10 @@
         "questionLabel": "Câu {number}",
         "yourAnswer": "Bạn trả lời",
         "correctAnswer": "Đáp án",
+        "chosen": "Bạn chọn",
+        "noAnswer": "Chưa trả lời",
+        "notAvailable": "Chưa có thông tin",
+        "explanation": "Giải thích",
         "status": {
           "correct": "Đúng",
           "partial": "Đúng một phần",

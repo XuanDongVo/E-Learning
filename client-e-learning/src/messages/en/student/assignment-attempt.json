@@ -88,6 +88,15 @@
       "answersShown": "Answers are available.",
       "answersHidden": "Answers are hidden.",
       "answersHeading": "Answers",
+      "points": "points",
+      "duration": "Duration",
+      "answered": "Answered",
+      "questionDetails": "Question details",
+      "navigator": "Question navigator",
+      "filters": {
+        "all": "All",
+        "empty": "No questions match this filter."
+      },
       "late": "Submitted late",
       "startedAt": "Started",
       "finishedAt": "Finished",
@@ -98,6 +107,10 @@
         "questionLabel": "Q{number}",
         "yourAnswer": "Your answer",
         "correctAnswer": "Correct answer",
+        "chosen": "Selected",
+        "noAnswer": "No answer",
+        "notAvailable": "Not available",
+        "explanation": "Explanation",
         "status": {
           "correct": "Correct",
           "partial": "Partially correct",

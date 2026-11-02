@@ -117,7 +117,7 @@ export default function StudentAssignmentsIntroRoute({
   }
 
   return (
-    <div className="mx-auto flex max-w-[1440px] flex-col gap-4 p-4 pb-24 sm:p-5 lg:p-6">
+    <div className="flex flex-col gap-4">
       {startError && (
         <PageBanner
           tone="error"

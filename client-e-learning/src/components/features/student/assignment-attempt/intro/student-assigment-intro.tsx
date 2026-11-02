@@ -96,7 +96,7 @@ export function StudentAssignmentIntro({
   }
 
   return (
-    <div className="w-full mx-auto px-4 py-6 font-sans text-slate-900">
+    <div className="font-sans text-slate-900">
       {/* Nút quay lại dạng chip xúc giác */}
       <button
         type="button"

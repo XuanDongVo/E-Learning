@@ -1,0 +1,7 @@
+package e_learning.server.assignmentanalysis.dto.response;
+
+import java.util.List;
+
+public record QuestionAnalysisListResponse(
+        List<QuestionAnalysisRow> items
+) {}

@@ -1,84 +1,30 @@
 "use client";
 
-import Link from "next/link";
-import { CheckCircle2, Clock, Loader2 } from "lucide-react";
+import { Link } from "@/i18n/navigation";
+import { useMemo, useState } from "react";
+import {
+  ArrowLeft,
+  BarChart3,
+  CheckCircle2,
+  Clock,
+  Loader2,
+  Lock,
+} from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import type { AttemptResultResponse } from "@/types/student/assignment-attempt";
-
-type ReviewStatus = "CORRECT" | "PARTIAL" | "INCORRECT" | "UNANSWERED";
-
-function mapStatus(status: AttemptResultResponse["questions"][number]["status"]): ReviewStatus {
-  if (status === "PARTIALLY_CORRECT") return "PARTIAL";
-  if (status === "CORRECT") return "CORRECT";
-  if (status === "UNANSWERED") return "UNANSWERED";
-  return "INCORRECT";
-}
-
-function formatAnswerPayload(payload: Record<string, unknown> | null | undefined): string[] {
-  if (!payload) return [];
-  if (typeof payload.selectedKey === "string" && payload.selectedKey) {
-    return [payload.selectedKey];
-  }
-  if (Array.isArray(payload.selectedKeys)) {
-    return payload.selectedKeys.map(String);
-  }
-  if (payload.value !== undefined && payload.value !== null && String(payload.value).length > 0) {
-    return [String(payload.value)];
-  }
-  if (payload.values && typeof payload.values === "object") {
-    return Object.entries(payload.values as Record<string, unknown>).map(
-      ([k, v]) => `${k}: ${v == null ? "" : String(v)}`,
-    );
-  }
-  return [];
-}
-
-function formatAnswerKey(answerKey: unknown): string[] {
-  if (answerKey == null) return [];
-  if (typeof answerKey === "string") return [answerKey];
-  if (Array.isArray(answerKey)) return answerKey.map(String);
-  if (typeof answerKey === "object") {
-    const record = answerKey as Record<string, unknown>;
-    if (Array.isArray(record.answers)) {
-      return record.answers.map((item) => {
-        if (item && typeof item === "object") {
-          const row = item as Record<string, unknown>;
-          return String(row.rawValue ?? row.normalizedValue ?? "");
-        }
-        return String(item);
-      }).filter(Boolean);
-    }
-    if (Array.isArray(record.options)) {
-      return record.options
-        .filter((item) => item && typeof item === "object" && (item as { correct?: boolean }).correct)
-        .map((item) => String((item as { key?: string }).key ?? ""))
-        .filter(Boolean);
-    }
-  }
-  return [];
-}
-
-function formatWhen(value: string | null | undefined, locale: string): string {
-  if (!value) return "—";
-  try {
-    return new Intl.DateTimeFormat(locale, {
-      dateStyle: "short",
-      timeStyle: "short",
-    }).format(new Date(value));
-  } catch {
-    return value;
-  }
-}
-
-function percentDisplay(score: number | null | undefined): string {
-  if (score == null || Number.isNaN(Number(score))) return "—";
-  const n = Number(score);
-  // Server stores 0–1 fraction (scale 4)
-  const pct = n <= 1 ? n * 100 : n;
-  return `${Math.round(pct * 100) / 100}`;
-}
+import { cn } from "@/lib/utils";
+import { ResultQuestionCard } from "./result-question-card";
+import {
+  FilterType,
+  formatDuration,
+  formatWhen,
+  mapStatus,
+  percentDisplay,
+  points,
+  ScoreRing,
+  STATUS_CONFIG,
+} from "./result-helpers";
 
 export function StudentResultView({
   result,
@@ -93,141 +39,285 @@ export function StudentResultView({
 }) {
   const t = useTranslations("student.assignmentAttempt");
   const locale = useLocale();
-
+  const [activeFilter, setActiveFilter] = useState<FilterType>("all");
+  const questions = useMemo(() => result?.questions ?? [], [result]);
+  const effectiveStartedAt = result?.startedAt ?? startedAt ?? null;
+  const finishedAt =
+    result?.finishedAt ?? result?.submittedAt ?? result?.timedOutAt ?? null;
+  const counts = useMemo(() => {
+    const values = { CORRECT: 0, PARTIAL: 0, INCORRECT: 0, UNANSWERED: 0 };
+    questions.forEach((question) => values[mapStatus(question.status)]++);
+    return values;
+  }, [questions]);
+  const filteredQuestions =
+    activeFilter === "all"
+      ? questions
+      : questions.filter(
+          (question) => mapStatus(question.status) === activeFilter,
+        );
+  const answeredCount = questions.length - counts.UNANSWERED;
+  const title = result?.assignmentTitle ?? assignmentTitle ?? t("result.title");
   const timedOut = result?.status === "TIMED_OUT";
-  const finishedAt = result?.timedOutAt ?? result?.submittedAt ?? null;
 
-  const statusText: Record<ReviewStatus, string> = {
-    CORRECT: t("result.review.status.correct"),
-    PARTIAL: t("result.review.status.partial"),
-    INCORRECT: t("result.review.status.incorrect"),
-    UNANSWERED: t("result.review.status.unanswered"),
-  };
+  if (loading && !result) {
+    return (
+      <div className="flex items-center justify-center gap-2 rounded-lg border bg-card p-12 text-sm text-muted-foreground">
+        <Loader2 className="h-5 w-5 animate-spin" />
+        {t("result.loading")}
+      </div>
+    );
+  }
 
-  const statusClass: Record<ReviewStatus, string> = {
-    CORRECT: "text-success",
-    PARTIAL: "text-warning-foreground",
-    INCORRECT: "text-destructive",
-    UNANSWERED: "text-muted-foreground",
-  };
+  if (!result) {
+    return (
+      <div className="rounded-lg border bg-card p-8 text-center">
+        <p className="text-sm text-muted-foreground">
+          {t("result.loadFailed")}
+        </p>
+        <Button asChild variant="outline" className="mt-4">
+          <Link href="/student/assignments">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            {t("backToAssignments")}
+          </Link>
+        </Button>
+      </div>
+    );
+  }
 
   return (
-    <div className="mx-auto max-w-2xl space-y-4 px-4 py-10">
-      <div className="rounded-lg border bg-card p-6">
-        <div className="flex flex-wrap items-center gap-2">
-          {timedOut ? (
-            <Clock className="h-5 w-5 text-warning" />
-          ) : (
-            <CheckCircle2 className="h-5 w-5 text-success" />
-          )}
-          <h1 className="text-xl font-semibold">
-            {timedOut ? t("result.timedOutTitle") : t("result.submittedTitle")}
-          </h1>
-          {result?.late && (
-            <span className="rounded-full border border-warning/40 bg-warning/10 px-2 py-0.5 text-xs font-medium text-warning-foreground">
-              {t("result.late")}
-            </span>
-          )}
-        </div>
+    <>
+      <header className="flex h-14 items-center gap-3 border-b bg-card px-4 rounded-xl mb-4">
+        <Button variant="ghost" size="sm" asChild>
+          <Link href="/student/assignments">
+            <ArrowLeft className="h-4 w-4" /> Danh sách bài
+          </Link>
+        </Button>
+        <BarChart3 className="  h-4 w-4 text-primary" />
+        <h1 className="min-w-0 truncate font-semibold">Kết quả · {title}</h1>
+        <div className="ml-auto flex items-center gap-2"></div>
+      </header>
 
-        {assignmentTitle && (
-          <p className="mt-1 text-sm text-muted-foreground">{assignmentTitle}</p>
-        )}
-
-        {timedOut && (
-          <p className="mt-2 text-sm text-muted-foreground">{t("result.timedOutHint")}</p>
-        )}
-
-        <div className="mt-5 flex flex-wrap items-end gap-8">
-          <div>
-            <div className="text-xs text-muted-foreground">{t("result.score")}</div>
-            <div className="text-3xl font-bold tabular-nums">
-              {result?.scoreVisible ? (result.totalEarnedPoints ?? "—") : "—"}
-              <span className="text-lg font-medium text-muted-foreground">
-                {" "}/ {result?.totalPossiblePoints ?? "—"}
-              </span>
-            </div>
-            {result && !result.scoreVisible && (
-              <p className="mt-1 text-xs text-muted-foreground">{t("result.scoreHidden")}</p>
-            )}
-          </div>
-          <div>
-            <div className="text-xs text-muted-foreground">{t("result.percent")}</div>
-            <div className="text-xl font-semibold tabular-nums">
-              {result?.scoreVisible ? percentDisplay(result.percentageScore) : "—"}%
-            </div>
-          </div>
-          <div className="text-sm text-muted-foreground">
-            <div>
-              {t("result.startedAt")}: {formatWhen(startedAt ?? null, locale)}
-            </div>
-            <div>
-              {t("result.finishedAt")}: {formatWhen(finishedAt, locale)}
-            </div>
-          </div>
-        </div>
-
-        <p className="mt-3 text-xs text-muted-foreground">{t("result.lockedHint")}</p>
-      </div>
-
-      <div className="rounded-lg border bg-card p-6">
-        <h2 className="font-semibold">{t("result.answersHeading")}</h2>
-
-        {loading && (
-          <p className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
-            <Loader2 className="h-4 w-4 animate-spin" />
-            {t("result.loading")}
-          </p>
-        )}
-
-        {!loading && result && !result.answersVisible && (
-          <p className="mt-2 text-sm text-muted-foreground">{t("result.answersHidden")}</p>
-        )}
-
-        {!loading && result?.answersVisible && (
-          <ol className="mt-3 divide-y">
-            {result.questions.map((q) => {
-              const status = mapStatus(q.status);
-              const yourAnswer = formatAnswerPayload(q.answerPayload);
-              const correct = formatAnswerKey(q.answerKey);
-              return (
-                <li
-                  key={q.attemptQuestionId}
-                  className="grid grid-cols-[3.5rem_1fr] gap-2 py-2 text-sm"
-                >
-                  <span className="font-semibold text-primary">
-                    {t("result.review.questionLabel", { number: q.position + 1 })}
+      <div className="space-y-6">
+        <div className="rounded-xl border bg-card p-6 shadow-sm">
+          <div className="flex flex-wrap items-center gap-6">
+            <ScoreRing
+              percent={percentDisplay(result.percentageScore)}
+              label={t("result.percent")}
+            />
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-2">
+                {timedOut ? (
+                  <Clock className="h-5 w-5 text-warning" />
+                ) : (
+                  <CheckCircle2 className="h-5 w-5 text-success" />
+                )}
+                <h1 className="text-xl font-bold">
+                  {timedOut
+                    ? t("result.timedOutTitle")
+                    : t("result.submittedTitle")}
+                </h1>
+                {result.late && (
+                  <span className="rounded-full border border-warning/40 bg-warning/10 px-2 py-0.5 text-xs font-semibold text-warning-foreground">
+                    {t("result.late")}
                   </span>
-                  <div>
-                    <div className={cn("text-xs font-medium", statusClass[status])}>
-                      {statusText[status]}
-                    </div>
-                    <div>
-                      {t("result.review.yourAnswer")}:{" "}
-                      {yourAnswer.length ? yourAnswer.join("; ") : "—"}
-                    </div>
-                    {status !== "CORRECT" && (
-                      <div className="text-muted-foreground">
-                        {t("result.review.correctAnswer")}:{" "}
-                        {correct.length ? correct.join("; ") : "—"}
-                      </div>
-                    )}
-                    {result.scoreVisible && q.earnedPoints != null && (
-                      <div className="text-xs text-muted-foreground">
-                        {q.earnedPoints} / {q.possiblePoints}
-                      </div>
-                    )}
-                  </div>
-                </li>
-              );
-            })}
-          </ol>
-        )}
-      </div>
+                )}
+              </div>
+              <p className="mt-1 text-sm font-medium text-muted-foreground">
+                {title}
+              </p>
+              <div className="mt-3 text-3xl font-extrabold tabular-nums">
+                {result.scoreVisible ? (
+                  <>
+                    {points(result.totalEarnedPoints)}
+                    <span className="text-lg font-medium text-muted-foreground">
+                      {" "}
+                      / {points(result.totalPossiblePoints)}{" "}
+                      {t("result.points")}
+                    </span>
+                  </>
+                ) : (
+                  <span className="text-lg font-normal text-muted-foreground">
+                    {t("result.scoreHidden")}
+                  </span>
+                )}
+              </div>
+              <dl className="mt-3 grid grid-cols-2 gap-x-6 gap-y-2 text-xs sm:grid-cols-4">
+                <SummaryItem
+                  label={t("result.startedAt")}
+                  value={formatWhen(effectiveStartedAt, locale)}
+                />
+                <SummaryItem
+                  label={t("result.finishedAt")}
+                  value={formatWhen(finishedAt, locale)}
+                />
+                <SummaryItem
+                  label={t("result.duration")}
+                  value={formatDuration(effectiveStartedAt, finishedAt)}
+                />
+                <SummaryItem
+                  label={t("result.answered")}
+                  value={`${answeredCount} / ${questions.length}`}
+                />
+              </dl>
+            </div>
+          </div>
 
-      <Button asChild variant="outline">
-        <Link href="/student/assignments">{t("backToAssignments")}</Link>
-      </Button>
+          {result.answersVisible && (
+            <div className="mt-6 grid grid-cols-2 gap-2 sm:grid-cols-4">
+              {(["CORRECT", "PARTIAL", "INCORRECT", "UNANSWERED"] as const).map(
+                (status) => {
+                  const config = STATUS_CONFIG[status];
+                  const Icon = config.icon;
+                  const active = activeFilter === status;
+                  return (
+                    <button
+                      key={status}
+                      type="button"
+                      onClick={() => setActiveFilter(active ? "all" : status)}
+                      className={cn(
+                        "flex items-center gap-3 rounded-lg border p-3 text-left transition-colors",
+                        active ? config.soft : "bg-card hover:bg-muted/50",
+                      )}
+                    >
+                      <Icon className={cn("h-5 w-5", config.text)} />
+                      <div>
+                        <div className="text-xl font-bold tabular-nums leading-none">
+                          {counts[status]}
+                        </div>
+                        <div className="mt-1 text-xs text-muted-foreground">
+                          {t(`result.review.status.${status.toLowerCase()}`)}
+                        </div>
+                      </div>
+                    </button>
+                  );
+                },
+              )}
+            </div>
+          )}
+
+          <div className="mt-4 flex items-center gap-1.5 text-xs text-muted-foreground">
+            <Lock className="h-3.5 w-3.5" />
+            <span>{t("result.lockedHint")}</span>
+          </div>
+        </div>
+
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_17rem]">
+          <section className="space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h2 className="text-base font-bold">
+                {t("result.questionDetails")}
+              </h2>
+              {result.answersVisible && (
+                <div className="flex flex-wrap items-center gap-1">
+                  <FilterButton
+                    active={activeFilter === "all"}
+                    onClick={() => setActiveFilter("all")}
+                  >
+                    {t("result.filters.all")} ({questions.length})
+                  </FilterButton>
+                  {(
+                    ["CORRECT", "PARTIAL", "INCORRECT", "UNANSWERED"] as const
+                  ).map((status) => (
+                    <FilterButton
+                      key={status}
+                      active={activeFilter === status}
+                      onClick={() => setActiveFilter(status)}
+                    >
+                      {t(`result.review.status.${status.toLowerCase()}`)} (
+                      {counts[status]})
+                    </FilterButton>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {!result.answersVisible ? (
+              <div className="rounded-lg border bg-card p-8 text-center text-sm text-muted-foreground">
+                {t("result.answersHidden")}
+              </div>
+            ) : filteredQuestions.length === 0 ? (
+              <div className="rounded-lg border bg-card p-8 text-center text-sm text-muted-foreground">
+                {t("result.filters.empty")}
+              </div>
+            ) : (
+              filteredQuestions.map((question) => (
+                <ResultQuestionCard
+                  key={question.attemptQuestionId}
+                  question={question}
+                  scoreVisible={result.scoreVisible}
+                  t={t}
+                />
+              ))
+            )}
+          </section>
+
+          <aside className="h-fit rounded-lg border bg-card p-4 shadow-sm lg:sticky lg:top-6">
+            <h3 className="mb-3 text-sm font-bold">{t("result.navigator")}</h3>
+            <div className="grid grid-cols-5 gap-2 sm:grid-cols-8 lg:grid-cols-5">
+              {questions.map((question) => {
+                const status = mapStatus(question.status);
+                return (
+                  <button
+                    key={question.attemptQuestionId}
+                    type="button"
+                    onClick={() =>
+                      document
+                        .getElementById(`review-q-${question.position}`)
+                        ?.scrollIntoView({ behavior: "smooth" })
+                    }
+                    className={cn(
+                      "grid h-8 place-items-center rounded border text-xs font-semibold transition-colors hover:opacity-80",
+                      STATUS_CONFIG[status].cell,
+                    )}
+                  >
+                    {question.position + 1}
+                  </button>
+                );
+              })}
+            </div>
+            <Button asChild variant="outline" className="mt-5 w-full">
+              <Link href="/student/assignments">
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                {t("backToAssignments")}
+              </Link>
+            </Button>
+          </aside>
+        </div>
+      </div>
+    </>
+  );
+}
+
+function SummaryItem({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <dt className="text-muted-foreground">{label}</dt>
+      <dd className="font-medium">{value}</dd>
     </div>
+  );
+}
+
+function FilterButton({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "rounded-full border px-2.5 py-1 text-xs font-medium transition-colors",
+        active
+          ? "border-primary bg-primary text-primary-foreground"
+          : "bg-card text-muted-foreground hover:bg-muted",
+      )}
+    >
+      {children}
+    </button>
   );
 }

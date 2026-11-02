@@ -51,13 +51,13 @@ export function ActivityDetail({ activityId }: { activityId: number }) {
 
   if (query.isLoading)
     return (
-      <section className="mx-auto max-w-6xl rounded-xl border border-border-color bg-card-bg p-6 text-body text-neutral-muted">
+      <section className="rounded-xl border border-border-color bg-card-bg p-6 text-body text-neutral-muted">
         Loading activity…
       </section>
     );
   if (query.isError || !query.data)
     return (
-      <section className="mx-auto max-w-6xl rounded-xl border border-danger-light bg-danger-light p-6 text-body text-danger-text">
+      <section className="rounded-xl border border-danger-light bg-danger-light p-6 text-body text-danger-text">
         Could not load this Activity.
       </section>
     );
@@ -72,7 +72,7 @@ export function ActivityDetail({ activityId }: { activityId: number }) {
       : 0;
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6">
+    <div className="space-y-6">
       {/* ───────── Header ───────── */}
       <header className="space-y-4">
         <nav

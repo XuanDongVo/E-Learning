@@ -47,7 +47,7 @@ export function UnitsView() {
   );
 
   return (
-    <div className="space-y-6 pb-24">
+    <div className="space-y-6">
       {/* ─── Hero Banner Gamification (Dùng tokens bg-card, border-border, shadow-pop) ─── */}
       <header className="relative overflow-hidden rounded-3xl border-2 border-border bg-card p-5 sm:p-6 shadow-pop">
         <div className="flex flex-col-reverse items-center justify-between gap-4 md:flex-row md:items-center">

@@ -115,29 +115,57 @@ export interface SubmitAttemptRequest {
 }
 
 /** Matches Java AttemptResultQuestionResponse. */
-export interface AttemptResultQuestionResponse {
-  attemptQuestionId: number;
-  position: number;
-  possiblePoints: number;
-  earnedPoints: number | null;
-  status: "CORRECT" | "PARTIALLY_CORRECT" | "INCORRECT" | "UNANSWERED" | null;
-  answerPayload: AttemptAnswerPayload | null;
-  answerKey: unknown | null;
+export type AttemptResultQuestionStatus =
+  | "CORRECT"
+  | "PARTIALLY_CORRECT"
+  | "INCORRECT"
+  | "UNANSWERED";
+
+export interface AttemptResultAnswerKey {
+  options?: Array<{ key?: string; text?: string; correct?: boolean }>;
+  answers?: Array<{ rawValue?: string; normalizedValue?: string }>;
+  [key: string]: unknown;
 }
 
-/** Matches Java AttemptResultResponse (flat). */
+export interface AttemptResultQuestionResponse {
+  attemptQuestionId: number;
+  assignmentItemId: number | null;
+  sourceQuestionId: number | null;
+  position: number;
+  sectionKey: string | null;
+  sectionTitle: string | null;
+  sectionTitleVi: string | null;
+  possiblePoints: number | null;
+  earnedPoints: number | null;
+  status: AttemptResultQuestionStatus;
+  isExample: boolean;
+  questionSnapshot: JsonRecord;
+  answerPayload: AttemptAnswerPayload | null;
+  answerKey: AttemptResultAnswerKey | null;
+  explanation: string | null;
+}
+
+/** Matches Java AttemptResultResponse. */
 export interface AttemptResultResponse {
   attemptId: number;
   assignmentId: number;
+  assignmentTitle: string;
   status: AssessmentAttemptStatus;
+  startedAt: string;
   submittedAt: string | null;
   timedOutAt: string | null;
+  finishedAt: string | null;
+  deadlineAt: string | null;
+  timeLimitMinutes: number | null;
   late: boolean;
+  classIdAtStart: number | null;
+  classNameAtStart: string | null;
   totalPossiblePoints: number | null;
   totalEarnedPoints: number | null;
   percentageScore: number | null;
   scoreVisible: boolean;
   answersVisible: boolean;
+  document: JsonRecord | null;
   questions: AttemptResultQuestionResponse[];
 }
 

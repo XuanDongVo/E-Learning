@@ -48,42 +48,52 @@ export function AssignmentList({
   return (
     <div className="divide-y divide-border">
       {assignments.map((assignment) => (
-        <Link
+        <div
           key={assignment.id}
-          href={`/teacher/assignments/${assignment.id}`}
-          className="grid items-center gap-3 px-4 py-4 transition-colors hover:bg-muted/40 lg:grid-cols-[minmax(260px,1.5fr)_0.7fr_0.8fr_1.2fr_20px]"
+          className="grid items-center gap-3 px-4 py-4 transition-colors hover:bg-muted/40 lg:grid-cols-[minmax(260px,1.5fr)_0.7fr_0.8fr_1.2fr_auto]"
         >
-          <div className="min-w-0">
+          <Link
+            href={`/teacher/assignments/${assignment.id}`}
+            className="min-w-0"
+          >
             <p className="truncate text-body font-bold">
-              {assignment.name}
-
-              <AssignmentStatusBadge
-                status={assignment.status}
-              />
+              {assignment.name}{" "}
+              <AssignmentStatusBadge status={assignment.status} />
             </p>
-
             <p className="mt-1 text-body-sm text-muted-foreground">
-              {assignment.grade.name} ·{" "}
-              {assignment.questionCount} questions
+              {assignment.grade.name} · {assignment.questionCount} questions
             </p>
-          </div>
+          </Link>
 
           <span className="text-body-sm font-semibold">
             {assignment.grade.name}
           </span>
 
           <span className="text-body-sm text-muted-foreground">
-            {new Date(
-              assignment.dueAt,
-            ).toLocaleDateString("en-US")}
+            {new Date(assignment.dueAt).toLocaleDateString("en-US")}
           </span>
 
-          <div className="text-body-sm text-muted-foreground">
-            No submission data
+          <div className="flex flex-wrap items-center gap-2 text-body-sm">
+            {assignment.status !== "DRAFT" ? (
+              <Link
+                href={`/teacher/assignments/${assignment.id}/results`}
+                className="rounded-md border border-border px-2.5 py-1 font-medium text-primary hover:bg-muted"
+              >
+                Results
+              </Link>
+            ) : (
+              <span className="text-muted-foreground">Draft</span>
+            )}
           </div>
 
-          <ChevronRight className="size-4 text-muted-foreground" />
-        </Link>
+          <Link
+            href={`/teacher/assignments/${assignment.id}`}
+            className="justify-self-end text-muted-foreground"
+            aria-label="Open assignment"
+          >
+            <ChevronRight className="size-4" />
+          </Link>
+        </div>
       ))}
     </div>
   );

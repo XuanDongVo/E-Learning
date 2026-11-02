@@ -7,6 +7,17 @@ export const QUERY_KEYS = {
   studentAssignmentIntro: (assignmentId: number) =>
     ["student", "assignments", assignmentId, "attempt", "intro"] as const,
   assignmentDetail: (id: string) => ["assignmentDetail", id] as const,
+  teacherAssignmentAnalysisOverview: (assignmentId: number) =>
+    ["teacher", "assignments", assignmentId, "analytics", "overview"] as const,
+  teacherAssignmentAnalysisStudents: (
+    assignmentId: number,
+    filters: Record<string, unknown>,
+  ) =>
+    ["teacher", "assignments", assignmentId, "analytics", "students", filters] as const,
+  teacherAssignmentAnalysisQuestions: (assignmentId: number) =>
+    ["teacher", "assignments", assignmentId, "analytics", "questions"] as const,
+  teacherAssignmentAttemptReview: (assignmentId: number, studentId: number) =>
+    ["teacher", "assignments", assignmentId, "students", studentId, "attempt"] as const,
   units: ["units"] as const,
   unitDetail: (id: string) => ["unitDetail", id] as const,
   contentUnits: (gradeId: number) => ["content", "units", gradeId] as const,

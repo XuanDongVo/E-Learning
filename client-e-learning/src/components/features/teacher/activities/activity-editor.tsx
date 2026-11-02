@@ -111,7 +111,7 @@ export function ActivityEditor({ activityId }: { activityId?: number }) {
 
   if (activityId && existing.isLoading) {
     return (
-      <div className="mx-auto max-w-6xl p-8 text-neutral-muted">
+      <div className="p-8 text-neutral-muted">
         Loading activity...
       </div>
     );
@@ -119,7 +119,7 @@ export function ActivityEditor({ activityId }: { activityId?: number }) {
 
   if (activityId && existing.isError) {
     return (
-      <div className="mx-auto max-w-6xl rounded-xl border border-danger-light bg-danger-light p-4 text-body text-danger-text">
+      <div className="rounded-xl border border-danger-light bg-danger-light p-4 text-body text-danger-text">
         Could not load this Activity.
       </div>
     );
@@ -436,7 +436,7 @@ function ActivityEditorForm({
     total > 0 ? Math.min(100, Math.round((allocationTotal / total) * 100)) : 0;
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6 pb-16">
+    <div className="space-y-6 pb-16">
       {/* ───────── Header ───────── */}
       <header className="rounded-xl border border-border-color bg-card-bg p-5 shadow-sm">
         <Link

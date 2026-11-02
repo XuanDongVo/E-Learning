@@ -18,7 +18,7 @@ export function DashboardView() {
 
   if (isLoading || !data) {
     return (
-      <div className="flex flex-col gap-3 animate-pulse p-4 sm:p-5 lg:p-6 max-w-7xl mx-auto lg:h-screen">
+      <div className="flex flex-col gap-3 animate-pulse">
         <div className="h-7 bg-slate-200 rounded-lg w-1/3" />
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div className="h-14 bg-slate-100 rounded-2xl" />
@@ -39,7 +39,7 @@ export function DashboardView() {
   }
 
   return (
-    <div className="flex flex-col gap-4 p-4 sm:p-5 lg:p-6 max-w-[1440px] mx-auto pb-24 sm:pb-20 lg:pb-4 lg:h-screen lg:max-h-screen lg:overflow-hidden">
+    <div className="flex flex-col gap-4">
       <DashboardHeader user={data.user} />
 
       {/* Row 1: Assignments + Continue Learning — Stack on mobile, side-by-side on desktop */}

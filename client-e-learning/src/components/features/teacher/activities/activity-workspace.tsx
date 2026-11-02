@@ -10,14 +10,9 @@ import { gradeService } from "@/services/grade.service";
 import { unitService } from "@/services/content/content.unit.service";
 import { activityService } from "@/services/activity.service";
 import { QUERY_KEYS } from "@/services/query-keys";
-import type { ActivityMode, ActivityStatus } from "@/types/activity";
+import type { ActivityStatus } from "@/types/activity";
 import { ContentToolbar } from "@/components/features/teacher/content/components/content-toolbar";
-
-const modes: Record<ActivityMode, string> = {
-  LEARNING: "Practice",
-  TRY_HARD: "Try Hard",
-  BOTH: "Both",
-};
+import { ActivityTable } from "./activity-table";
 
 export function ActivityWorkspace() {
   const params = useSearchParams();
@@ -249,133 +244,40 @@ export function ActivityWorkspace() {
           </Link>
         </section>
       ) : (
-        <section className="overflow-hidden rounded-2xl border-2 border-ink bg-card shadow-pop">
-          <div className="flex flex-col gap-1 border-b-2 border-border px-5 py-4 sm:flex-row sm:items-baseline sm:justify-between bg-card">
-            <div>
-              <h2 className="text-card-title font-extrabold text-foreground">Activity list</h2>
-              <p className="mt-1 text-body-sm text-neutral-muted">
+        <section className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+          {/* Table Toolbar */}
+          <div className="flex flex-col gap-2 border-b border-border px-6 py-4.5 sm:flex-row sm:items-center sm:justify-between">
+            <div className="min-w-0">
+              <div className="flex items-center gap-2.5">
+                <h2 className="text-base font-bold text-foreground sm:text-lg">
+                  Activity list
+                </h2>
+                <span className="inline-flex items-center rounded-full border border-border bg-muted/60 px-2.5 py-0.5 text-xs font-semibold text-muted-foreground">
+                  {filtered.length}{" "}
+                  {filtered.length === 1 ? "activity" : "activities"}
+                </span>
+              </div>
+              <p className="mt-0.5 text-xs text-muted-foreground sm:text-sm">
                 {selectedUnit?.code} activities, sorted by most recently
                 updated.
               </p>
             </div>
-            <span className="rounded-lg border border-border bg-background-app px-2.5 py-1 text-body-sm font-bold text-neutral-muted shadow-pop-sm">
-              {filtered.length}{" "}
-              {filtered.length === 1 ? "activity" : "activities"}
-            </span>
           </div>
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[760px] border-collapse">
-              <thead>
-                <tr className="border-b border-border-color bg-background-app">
-                  {["Activity", "Questions", "Sources", "Mode", "Status"].map(
-                    (h) => (
-                      <th
-                        key={h}
-                        className="px-4 py-3 text-left text-label font-semibold text-neutral-muted"
-                      >
-                        {h}
-                      </th>
-                    ),
-                  )}
-                </tr>
-              </thead>
-              <tbody>
-                {visible.map((a) => (
-                  <tr
-                    key={a.id}
-                    className="border-b border-border-color last:border-0 hover:bg-background-app"
-                  >
-                    <td className="px-4 py-3.5">
-                      <Link
-                        href={`/teacher/activities/${a.id}`}
-                        className="block"
-                      >
-                        <span className="block truncate text-card-title font-semibold">
-                          {a.name}
-                        </span>
-                        <span className="mt-1 block max-w-prose truncate text-body-sm text-neutral-muted">
-                          {a.description || "No description"}
-                        </span>
-                      </Link>
-                    </td>
-                    <td className="px-4 py-3.5 text-body tabular-nums">
-                      {a.totalQuestions}
-                    </td>
-                    <td className="px-4 py-3.5 text-body tabular-nums text-neutral-muted">
-                      {a.banks.length}
-                    </td>
-                    <td className="px-4 py-3.5 text-body text-neutral-muted">
-                      {modes[a.mode]}
-                    </td>
-                    <td className="px-4 py-3.5">
-                      <div className="flex flex-wrap gap-2">
-                        <span
-                          className={`rounded-full px-2.5 py-1 text-body-sm font-semibold ${a.status === "PUBLISHED" ? "text-success" : "bg-background-app text-neutral-muted"}`}
-                        >
-                          {a.status === "PUBLISHED"
-                            ? "Published"
-                            : a.status === "ARCHIVED"
-                              ? "Archived"
-                              : "Draft"}
-                        </span>
-                        {a.status !== "ARCHIVED" && (
-                          <span
-                            className={`rounded-full px-2.5 py-1 text-body-sm font-semibold ${a.readiness.ready ? "bg-success-light text-success" : "text-accent-text"}`}
-                          >
-                            {a.readiness.ready ? "Ready" : "Needs attention"}
-                          </span>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </section>
-      )}
 
-      {visible.length > 0 && (
-        <footer className="flex flex-col gap-3 text-body-sm text-neutral-muted sm:flex-row sm:items-center sm:justify-between">
-          <span>
-            Showing {(page - 1) * pageSize + 1}–
-            {Math.min(page * pageSize, filtered.length)} of {filtered.length}
-          </span>
-          <div className="flex items-center gap-2">
-            <label className="flex items-center gap-2">
-              Rows
-              <select
-                value={pageSize}
-                onChange={(e) => {
-                  setPageSize(Number(e.target.value));
-                  setPage(1);
-                }}
-                className="h-8 rounded-lg border border-border-input bg-card-bg px-2"
-              >
-                <option value={10}>10</option>
-                <option value={20}>20</option>
-                <option value={50}>50</option>
-              </select>
-            </label>
-            <button
-              disabled={page <= 1}
-              onClick={() => setPage((p) => p - 1)}
-              className="h-8 rounded-lg border border-border-color px-3 disabled:opacity-50"
-            >
-              Previous
-            </button>
-            <span>
-              Page {page}/{pageCount}
-            </span>
-            <button
-              disabled={page >= pageCount}
-              onClick={() => setPage((p) => p + 1)}
-              className="h-8 rounded-lg border border-border-color px-3 disabled:opacity-50"
-            >
-              Next
-            </button>
-          </div>
-        </footer>
+          {/* Table */}
+          <ActivityTable
+            activities={visible}
+            page={page}
+            pageSize={pageSize}
+            total={filtered.length}
+            totalPages={pageCount}
+            onPageChange={setPage}
+            onPageSizeChange={(nextPageSize) => {
+              setPageSize(nextPageSize);
+              setPage(1);
+            }}
+          />
+        </section>
       )}
     </div>
   );

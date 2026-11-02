@@ -178,8 +178,10 @@ function snapshotItem(value: unknown): CompositionItemSnapshot | null {
   };
 }
 
-function snapshotSections(document: JsonRecord): CompositionSectionSnapshot[] {
-  return asArray<unknown>(document.sections)
+function snapshotSections(
+  documentsnapshot: JsonRecord,
+): CompositionSectionSnapshot[] {
+  return asArray<unknown>(documentsnapshot.sections)
     .map(asRecord)
     .filter((sec): sec is JsonRecord => sec !== null)
     .map((sec) => ({
@@ -775,8 +777,11 @@ export function StudentPaper({
 }: StudentPaperProps) {
   const paperRef = useRef<HTMLDivElement>(null);
 
-  const document = asRecord(runtime.document) ?? {};
-  const sections = useMemo(() => snapshotSections(document), [document]);
+  const documentsnapshot = asRecord(runtime.document) ?? {};
+  const sections = useMemo(
+    () => snapshotSections(documentsnapshot),
+    [documentsnapshot],
+  );
 
   // Map tra cứu câu hỏi theo assignmentItemId
   const questionsByItemId = useMemo(() => {
@@ -813,7 +818,7 @@ export function StudentPaper({
     const el = paperRef.current?.querySelector(
       `[data-question-id="${attemptQuestionId}"]`,
     );
-    el?.scrollIntoView({ behavior: "smooth", block: "start" });
+    el?.scrollIntoView({ behavior: "smooth" });
   };
 
   return (

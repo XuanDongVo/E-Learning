@@ -1,47 +1,77 @@
 # Current Implementation State
 
-**Audit date:** 2026-10-31  
-**Branch:** `feature/student-assignment-attempt`  
-**Scope:** current source state after Sprint 0 contract implementation and session-policy rebaseline. This file records implementation truth; no runtime/build/browser verification was executed by these documentation changes.
+**Audit date:** 2026-11-01  
+**Branch:** `feature/teacher-assignment-analysis`  
+**Baseline:** `main` after merge of `feature/student-assignment-attempt` (PR #30)
 
 ## 1. Authority model
 
 1. Accepted ADRs = approved product/architecture decisions.
-2. `.agent/CURRENT_STATE.md` = current implementation state on this branch.
+2. `.agent/CURRENT_STATE.md` = current implementation state.
 3. Active phase/spec/architecture documents = intended implementation contract.
-4. `PROGRESS.md` = concise work log and verification record.
+4. `.agent/PROGRESS.md` = concise work log and verification evidence.
 5. Historical audits/plans = traceability only.
-6. Code = final authority when documentation and code disagree.
+6. Code and migrations = final evidence of what is actually implemented.
 
 ## 2. Repository baseline
 
 - Frontend: Next.js + React + TypeScript + Tailwind CSS.
 - Backend: Spring Boot + Java 21 + JPA + Flyway + PostgreSQL.
-- V43 AssessmentAttempt schema was reported applied by the project owner and remains immutable; V45 migrates the Attempt duration column to minutes; V46 answer mutations; **V47 merges draft answer onto AssessmentAttemptQuestion and drops assessment_attempt_answers** (ADR 0028).
-- `assessmentattempt` contains entities/repositories, contract DTOs, getIntro/startOrResume + snapshot, and autosave on the question row. Submit, timeout finalization and grading remain incomplete.
+- AssessmentAttempt finalize path is on `main` (submit, grade, PartResults, timeout job).
 
-## 3. Phase status
+## 3. Feature status
 
-| Area | Current state | Classification |
-|---|---|---|
-| Phase 0–2 | Foundation, auth/users and classes exist | Implemented baseline |
-| Phase 3 Content | Grade → Unit → Section → Topic → QuestionBank → Question CRUD/preview/completeness/hint | Implemented baseline; semantic Question Engine migration still partial |
-| Phase 4 Activity | Unit-scoped Activity, banks/distribution, modes, strategies, readiness, preview and lifecycle | Implemented baseline |
-| Phase 5 Assignment | Assignment, Grade ownership, class target snapshots, schedule, whole-attempt time limit, answer/score display settings, Composition | Authoring baseline plus initial Attempt start/resume slice; scoring incomplete |
-| Phase 6 Student Management | Student/class/profile management | Done |
-| Phase 7 Scope A | ActivitySession runtime exists | Implemented, but Question Engine integration/verification incomplete |
-| Phase 7 Scope B | Assignment authoring + V43–V47 runtime + start/resume + autosave on question | **Partial; runtime not fully verified** |
+| Area | State |
+|---|---|
+| Phase 0–6 | Baseline / DONE |
+| Phase 7 Scope A ActivitySession | Implemented; E2E open |
+| Phase 7 Scope B AssessmentAttempt | Code on `main`; E2E + hard-lock open |
+| **Phase 8 Teacher Assignment Analysis** | **Code complete on this branch; local E2E not claimed** |
 
-## 18. Draft answer on AssessmentAttemptQuestion — 2026-10-31 (ADR 0028)
+## 4. Teacher Assignment Analysis (this branch)
 
-- Accepted ADR 0028: remove 1–1 `AssessmentAttemptAnswer`; store `answer_payload`, `@Version revision`, and `saved_at` on `AssessmentAttemptQuestion`.
-- V47 adds those columns and drops `assessment_attempt_answers` (no data backfill; owner confirmed cleared DB).
-- `AssessmentAttemptAnswerService.saveAnswer` updates the question row; Mutation idempotency unchanged.
-- Runtime projection reads answer fields from the question and still strips `grading` from student payloads.
-- Normalized draft values are not persisted; analytics normalize on submit/grade later (e.g. PartResult).
-- API wire shape unchanged. Service class name not renamed.
-- Verification: source-only; compile/Flyway/tests/browser not run on this HEAD.
+**Route:** `/teacher/assignments/{id}/results`  
+**Spec:** `.agent/plans/10-TEACHER_ASSIGNMENT_ANALYSIS_SPEC.md`  
+**Impl log:** `.agent/plans/11-TEACHER_ASSIGNMENT_ANALYSIS_IMPLEMENTATION.md`
 
-## Note on historical sprint sections
+### Backend (`assignmentanalysis`)
 
-Sprint 0–1 narrative sections previously recorded on this branch (session policy, Matching validation, Intro/Paper split, etc.) remain valid as historical context in git history prior to the ADR 0028 doc pass. For **current answer storage and schema**, use section 2, section 18, ADR 0028, and `.agent/PROGRESS.md`.
+- `GET .../analytics/overview` — progress, score (10 buckets), class comparison + accuracy + overall band
+- `GET .../analytics/students` — filters + `PageResponse` (1-indexed)
+- `GET .../analytics/questions` — aggregate by position (skip example)
+- `GET .../students/{studentId}/attempt` — review; answer key always for teacher
+- DTOs under `dto/response/` (no `Dto` suffix); students use `common.dto.PageResponse`
+- Roster: live enrollment via `Assignment.classIds` + `ClassMember`
+- Security: covered by existing `/v1/teacher/**` → `ROLE_TEACHER`
+
+### Frontend
+
+- Modular UI under `components/features/teacher/assignments/analysis/`
+- Entry: list **Results** link (non-DRAFT) + results page route
+- Attempt review sheet; i18n `teacher.analytics.*`
+- Always `response.data` (ApiResponse wrap)
+- Sample `result/teacher-assignment-result-view.tsx` **removed**
+
+### Product decisions (locked)
+
+| Topic | Decision |
+|---|---|
+| Roster | Live `classIds` enrollment |
+| Duration | finishedAt − startedAt |
+| Overall band | HIGH ≥80 / MID ≥50 / LOW &lt;50 (median %) |
+| Accuracy | CORRECT / all non-example outcomes on terminal attempts |
+| Class comparison | Always show rows (including single class) |
+| Score range filter | Deferred |
+| Export | None |
+
+### Explicitly deferred (spec ok, not in MVP code)
+
+- Answer distribution by question type (option/blank charts)
+- Per-question detail endpoint
+- Score range filter on Students
+- IDOR tests / ownership beyond role + assignment exists
+- Hard-lock on Assignment after first attempt (runtime follow-up)
+
+## 5. Verification status
+
+No compile/test/browser run claimed for this pass. Local E2E checklist lives in `11-...IMPLEMENTATION.md`.

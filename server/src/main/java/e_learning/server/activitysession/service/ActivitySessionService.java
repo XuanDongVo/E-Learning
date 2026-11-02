@@ -73,8 +73,9 @@ public class ActivitySessionService {
                 .forEach(open -> abandon(open));
 
         List<Question> selected = questionSelectionService.selectQuestions(activity);
+        Integer timeLimitSeconds = mode == ActivityMode.TRY_HARD ? activity.getTimeLimitSeconds() : null;
         ActivitySession session = new ActivitySession(student, activity, mode, strategy, selected.size(),
-                mode == ActivityMode.TRY_HARD ? activity.getLives() : null);
+                mode == ActivityMode.TRY_HARD ? activity.getLives() : null, timeLimitSeconds);
         for (int i = 0; i < selected.size(); i++) {
             ActivityQuestionSnapshot snapshot = snapshotAssembler.assemble(selected.get(i));
             session.addQuestion(new ActivitySessionQuestion(selected.get(i), i, snapshot));
@@ -102,7 +103,7 @@ public class ActivitySessionService {
         requireCurrentGradeAccess(session, studentId);
         ActivitySessionQuestion item = question(sessionId, questionId);
         if (item.isResolved()) throw new AppException(ErrorCode.ACTIVITY_SESSION_RETRY_EXHAUSTED);
-        serve(item, session.getActivity());
+        serve(item);
         boolean timedOut = isTimedOut(item);
         ActivityQuestionSnapshot snapshot = snapshotAssembler.read(item);
         boolean correct = !timedOut && isCorrect(snapshot, request.answer());
@@ -208,15 +209,29 @@ public class ActivitySessionService {
 
     private void serveCurrent(ActivitySession session) {
         session.getQuestions().stream().filter(q -> !q.isResolved()).findFirst()
-                .ifPresent(q -> serve(q, session.getActivity()));
+                .ifPresent(this::serve);
     }
 
-    private void serve(ActivitySessionQuestion item, Activity activity) {
+    /**
+     * First time a question is shown: stamp servedAt and (Try Hard) deadline from the
+     * session-level timeLimitSeconds snapshot — not the live Activity row (ADR 0025).
+     */
+    private void serve(ActivitySessionQuestion item) {
         if (item.getServedAt() != null) return;
         LocalDateTime now = LocalDateTime.now();
         item.setServedAt(now);
-        if (activity.getMode() != ActivityMode.LEARNING && item.getSession().getMode() == ActivityMode.TRY_HARD)
-            item.setDeadlineAt(now.plusSeconds(activity.getTimeLimitSeconds()));
+        ActivitySession session = item.getSession();
+        if (session.getMode() != ActivityMode.TRY_HARD) {
+            return;
+        }
+        Integer limit = session.getTimeLimitSeconds();
+        if (limit == null && session.getActivity() != null) {
+            // Legacy sessions created before the snapshot column
+            limit = session.getActivity().getTimeLimitSeconds();
+        }
+        if (limit != null && limit > 0) {
+            item.setDeadlineAt(now.plusSeconds(limit));
+        }
     }
 
     private boolean isTimedOut(ActivitySessionQuestion item) {

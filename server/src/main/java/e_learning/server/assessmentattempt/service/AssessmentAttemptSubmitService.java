@@ -25,7 +25,12 @@ public class AssessmentAttemptSubmitService {
     private final AssessmentAttemptResultMapper resultMapper;
 
     /**
-     * Manual submit. Allowed after due_at / deadline_at; marks late when after due.
+     * Manual submit. Server clock is authoritative for deadline_at (ADR 0009).
+     * <ul>
+     *   <li>now &lt; deadlineAt → SUBMITTED</li>
+     *   <li>now &gt;= deadlineAt → TIMED_OUT (same path as the timeout job)</li>
+     * </ul>
+     * Late is derived from due_at in settings snapshot, independent of deadline.
      */
     @Transactional
     public AttemptResultResponse submit(Long assignmentId, Long studentId, SubmitAttemptRequest request) {
@@ -53,7 +58,9 @@ public class AssessmentAttemptSubmitService {
             throw new AppException(ErrorCode.ASSESSMENT_ATTEMPT_SESSION_LOST);
         }
 
-        finalizeAttempt(attempt, false);
+        LocalDateTime now = LocalDateTime.now();
+        boolean timedOut = attempt.getDeadlineAt() != null && !now.isBefore(attempt.getDeadlineAt());
+        finalizeAttempt(attempt, timedOut, now);
         return resultMapper.toResponse(attempt);
     }
 
@@ -101,12 +108,10 @@ public class AssessmentAttemptSubmitService {
             return;
         }
 
-        finalizeAttempt(attempt, true);
+        finalizeAttempt(attempt, true, LocalDateTime.now());
     }
 
-    private void finalizeAttempt(AssessmentAttempt attempt, boolean timedOut) {
-        LocalDateTime now = LocalDateTime.now();
-
+    private void finalizeAttempt(AssessmentAttempt attempt, boolean timedOut, LocalDateTime now) {
         gradingService.gradeAndPersist(attempt);
 
         attempt.setSubmittedAt(now);

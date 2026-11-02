@@ -34,6 +34,7 @@ public class AssignmentQuestionService {
     private final QuestionPersistenceService questionPersistenceService;
     private final QuestionResponseMapper questionResponseMapper;
     private final ObjectMapper objectMapper;
+    private final AssignmentEditabilityService editabilityService;
 
     public List<AssignmentQuestionResponse> list(Long assignmentId) {
         findAssignment(assignmentId);
@@ -50,7 +51,7 @@ public class AssignmentQuestionService {
             String idempotencyKey
     ) {
         Assignment assignment = findAssignment(assignmentId);
-        ensureEditable(assignment);
+        editabilityService.ensureEditableForQuestion(assignment);
 
         if (requests == null || requests.isEmpty()) {
             throw new AppException(ErrorCode.EMPTY_QUESTION);
@@ -150,7 +151,7 @@ public class AssignmentQuestionService {
             UpdateAssignmentQuestionRequest request
     ) {
         Assignment assignment = findAssignment(assignmentId);
-        ensureEditable(assignment);
+        editabilityService.ensureEditableForQuestion(assignment);
         AssignmentQuestion ownership = findOwnershipOrCreate(assignment, questionId);
         Question question = questionPersistenceService.updateQuestion(questionId, request);
         ownership.setQuestion(question);
@@ -160,7 +161,7 @@ public class AssignmentQuestionService {
     @Transactional
     public void bulkDelete(Long assignmentId, BulkDeleteAssignmentQuestionsRequest request) {
         Assignment assignment = findAssignment(assignmentId);
-        ensureEditable(assignment);
+        editabilityService.ensureEditableForQuestion(assignment);
 
         Set<Long> ids = new HashSet<>(request.ids());
         List<AssignmentQuestion> ownerships =
@@ -174,20 +175,9 @@ public class AssignmentQuestionService {
         questionPersistenceService.deleteQuestions(ids);
     }
 
-    private void ensureEditable(Assignment assignment) {
-        if (assignment.getStatus() == e_learning.server.assignment.enums.AssignmentStatus.ARCHIVED) {
-            throw new AppException(ErrorCode.ASSIGNMENT_QUESTIONS_LOCKED);
-        }
-    }
-
     private Assignment findAssignment(Long assignmentId) {
         return assignmentRepository.findById(assignmentId)
                 .orElseThrow(() -> new AppException(ErrorCode.ASSIGNMENT_NOT_FOUND));
-    }
-
-    private AssignmentQuestion findOwnership(Long assignmentId, Long questionId) {
-        return assignmentQuestionRepository.findByAssignmentIdAndQuestionId(assignmentId, questionId)
-                .orElseThrow(() -> new AppException(ErrorCode.QUESTION_NOT_FOUND));
     }
 
     private AssignmentQuestionResponse toResponse(AssignmentQuestion ownership) {

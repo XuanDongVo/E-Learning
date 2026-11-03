@@ -1,5 +1,5 @@
 import { request } from "@/services/api.service";
-import type { AddClassMemberRequest, CreateStudentRequest, StudentDetail, StudentPageResponse, StudentSummary, UpdateStudentStatusRequest } from "@/types/teacher/student";
+import type { AddClassMemberRequest, CreateStudentRequest, StudentDetail, StudentPageResponse, StudentSummary, UpdateStudentProfileRequest, UpdateStudentStatusRequest } from "@/types/teacher/student";
 
 export const teacherStudentService = {
   list: (params: { search?: string; accountStatus?: string; classId?: string; gradeId?: string; noClass?: boolean; page?: number; size?: number } = {}) => {
@@ -16,6 +16,11 @@ export const teacherStudentService = {
   get: (studentId: number) => request<StudentDetail>(`/v1/users/students/${studentId}`),
   create: (payload: CreateStudentRequest) => request<StudentDetail>("/v1/users/students", { method: "POST", body: JSON.stringify(payload) }),
   updateStatus: (studentId: number, payload: UpdateStudentStatusRequest) => request<void>(`/v1/users/students/${studentId}/status`, { method: "PATCH", body: JSON.stringify(payload) }),
+  updateProfile: (studentId: number, payload: UpdateStudentProfileRequest) =>
+    request<StudentDetail>(`/v1/users/students/${studentId}/profile`, {
+      method: "PATCH",
+      body: JSON.stringify(payload),
+    }),
   listClassMembers: (classId: number) => request<StudentSummary[]>(`/v1/classes/${classId}/members`),
   addToClass: (classId: number, payload: AddClassMemberRequest) => request<void>(`/v1/classes/${classId}/members`, { method: "POST", body: JSON.stringify(payload) }),
   transferToClass: (classId: number, studentId: number) => request<void>(`/v1/classes/${classId}/members/${studentId}/transfer`, { method: "POST" }),

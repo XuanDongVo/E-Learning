@@ -56,6 +56,12 @@ export interface StudentDetail {
   guardians: StudentGuardian[];
   classId?: number | null;
   className?: string | null;
+  gradeId?: number | null;
+  gradeName?: string | null;
+  academicYear?: string | null;
+  membershipStatus?: string | null;
+  joinedAt?: string | null;
+  /** @deprecated use membershipStatus */
   classStatus?: string | null;
   accountStatus: StudentAccountStatus;
 }

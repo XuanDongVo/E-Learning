@@ -108,6 +108,19 @@
       "LEARNING": "Learning",
       "TRY_HARD": "Try Hard"
     },
+    "labels": {
+      "membership": {
+        "NONE": "Chưa có lớp",
+        "ACTIVE": "Đang trong lớp",
+        "LEFT": "Đã rời lớp"
+      },
+      "relationship": {
+        "MOTHER": "Mẹ",
+        "FATHER": "Bố",
+        "GUARDIAN": "Người giám hộ",
+        "OTHER": "Khác"
+      }
+    },
     "assignments": {
       "title": "Bài tập",
       "subtitle": "Assignment đã giao tới lớp của học sinh và attempt tương ứng.",
@@ -160,9 +173,28 @@
         "inProgress": "Đang làm"
       }
     },
+    "profile": {
+      "loading": "Đang tải hồ sơ…",
+      "contact": "Liên hệ",
+      "classAndAccount": "Lớp học & Tài khoản",
+      "grade": "Khối",
+      "accountStatus": "Trạng thái tài khoản"
+    },
+    "edit": {
+      "loading": "Đang tải form…",
+      "title": "Chỉnh sửa hồ sơ",
+      "subtitle": "Cập nhật thông tin cá nhân và phụ huynh.",
+      "saving": "Đang lưu…",
+      "save": "Lưu",
+      "accountHint": "Không chỉnh trên form này. Dùng danh sách học sinh (khóa tài khoản) hoặc roster lớp (chuyển / gỡ lớp)."
+    },
     "layout": {
       "resetPassword": "Đặt lại mật khẩu",
-      "resetPasswordSoon": "API đặt lại mật khẩu chưa có",
+      "resetPasswordConfirm": "Tạo mật khẩu tạm cho học sinh này?",
+      "resetting": "Đang đặt lại…",
+      "resetSuccess": "Đã đặt lại mật khẩu",
+      "temporaryPassword": "Mật khẩu tạm",
+      "dismiss": "Đóng",
       "editProfile": "Sửa hồ sơ"
     }
   }

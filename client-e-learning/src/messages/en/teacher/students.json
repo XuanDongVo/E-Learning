@@ -108,6 +108,19 @@
       "LEARNING": "Learning",
       "TRY_HARD": "Try Hard"
     },
+    "labels": {
+      "membership": {
+        "NONE": "No class",
+        "ACTIVE": "In class",
+        "LEFT": "Left class"
+      },
+      "relationship": {
+        "MOTHER": "Mother",
+        "FATHER": "Father",
+        "GUARDIAN": "Guardian",
+        "OTHER": "Other"
+      }
+    },
     "assignments": {
       "title": "Assignments",
       "subtitle": "Published assignments for this student and their attempts.",
@@ -160,9 +173,28 @@
         "inProgress": "In progress"
       }
     },
+    "profile": {
+      "loading": "Loading profile…",
+      "contact": "Contact",
+      "classAndAccount": "Class & account",
+      "grade": "Grade",
+      "accountStatus": "Account status"
+    },
+    "edit": {
+      "loading": "Loading form…",
+      "title": "Edit profile",
+      "subtitle": "Update personal and guardian information.",
+      "saving": "Saving…",
+      "save": "Save",
+      "accountHint": "Not editable here. Use the student list (lock account) or class roster (transfer / remove)."
+    },
     "layout": {
       "resetPassword": "Reset password",
-      "resetPasswordSoon": "Reset password API not available yet",
+      "resetPasswordConfirm": "Generate a temporary password for this student?",
+      "resetting": "Resetting…",
+      "resetSuccess": "Password reset",
+      "temporaryPassword": "Temporary password",
+      "dismiss": "Dismiss",
       "editProfile": "Edit profile"
     }
   }

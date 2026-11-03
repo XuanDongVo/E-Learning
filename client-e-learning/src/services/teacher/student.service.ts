@@ -14,6 +14,11 @@ export interface StudentLearningSummary {
   sessionTotal: number;
 }
 
+export interface ResetPasswordResult {
+  studentId: number;
+  temporaryPassword: string;
+}
+
 export const teacherStudentService = {
   list: (params: { search?: string; accountStatus?: string; classId?: string; gradeId?: string; noClass?: boolean; page?: number; size?: number } = {}) => {
     const query = new URLSearchParams();
@@ -52,6 +57,11 @@ export const teacherStudentService = {
       `${BASE}/${studentId}/activity-sessions?${query}`,
     );
   },
+  resetPassword: (studentId: number, newPassword?: string) =>
+    request<ResetPasswordResult>(`${BASE}/${studentId}/reset-password`, {
+      method: "POST",
+      body: JSON.stringify(newPassword ? { newPassword } : {}),
+    }),
   create: (payload: CreateStudentRequest) => request<StudentDetail>(BASE, { method: "POST", body: JSON.stringify(payload) }),
   updateStatus: (studentId: number, payload: UpdateStudentStatusRequest) =>
     request<void>(`${BASE}/${studentId}/status`, { method: "PATCH", body: JSON.stringify(payload) }),

@@ -134,4 +134,20 @@ public class TeacherStudentController {
         );
         return ApiResponse.success(null);
     }
+
+    @PostMapping("/{studentId}/reset-password")
+    public ApiResponse<ResetStudentPasswordResponse> resetPassword(
+            @PathVariable Long studentId,
+            @RequestBody(required = false) @Valid ResetStudentPasswordRequest request,
+            @AuthenticationPrincipal Jwt jwt
+    ) {
+        String password = request == null ? null : request.newPassword();
+        return ApiResponse.success(
+                managementService.resetPassword(
+                        studentId,
+                        Long.valueOf(Objects.requireNonNull(jwt.getSubject())),
+                        password
+                )
+        );
+    }
 }

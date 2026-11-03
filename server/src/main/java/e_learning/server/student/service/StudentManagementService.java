@@ -130,6 +130,34 @@ public class StudentManagementService {
         student.setStatus(status);
     }
 
+    @Transactional
+    public ResetStudentPasswordResponse resetPassword(Long studentId, Long teacherId, String newPasswordOrNull) {
+        boolean inScope = !classMemberRepository.findAllByStudentAndTeacher(studentId, teacherId).isEmpty();
+        if (!inScope) {
+            throw new AppException(ErrorCode.STUDENT_NOT_FOUND);
+        }
+        User user = student(studentId);
+        String plain = (newPasswordOrNull == null || newPasswordOrNull.isBlank())
+                ? generateTemporaryPassword()
+                : newPasswordOrNull.trim();
+        if (plain.length() < 6) {
+            throw new AppException(ErrorCode.INVALID_REQUEST);
+        }
+        user.setPasswordHash(passwordEncoder.encode(plain));
+        userRepository.save(user);
+        return new ResetStudentPasswordResponse(studentId, plain);
+    }
+
+    private static String generateTemporaryPassword() {
+        final String alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789";
+        java.security.SecureRandom random = new java.security.SecureRandom();
+        StringBuilder sb = new StringBuilder(10);
+        for (int i = 0; i < 10; i++) {
+            sb.append(alphabet.charAt(random.nextInt(alphabet.length())));
+        }
+        return sb.toString();
+    }
+
     @Transactional(readOnly = true)
     public List<StudentSummaryResponse> listClass(Long classId, Long teacherId) {
         ownedClass(classId, teacherId);
@@ -233,6 +261,7 @@ public class StudentManagementService {
                 ))
                 .toList();
 
+        var classEntity = member.getClassEntity();
         return new StudentDetailResponse(
                 user.getId(),
                 user.getFullName(),
@@ -241,9 +270,13 @@ public class StudentManagementService {
                 user.getEmail(),
                 profile.getPhone(),
                 guardians,
-                member.getClassEntity().getId(),
-                member.getClassEntity().getName(),
+                classEntity.getId(),
+                classEntity.getName(),
+                classEntity.getGrade().getId(),
+                classEntity.getGrade().getName(),
+                classEntity.getAcademicYear(),
                 member.getStatus(),
+                null,
                 user.getStatus().name()
         );
     }

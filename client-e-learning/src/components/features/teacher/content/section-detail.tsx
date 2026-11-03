@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowDown, ArrowUp, GripVertical, Layers, Plus, Tags } from "lucide-react";
+import { ArrowDown, ArrowUp, GripVertical, Plus, Tags } from "lucide-react";
 import { contentService } from "@/services/content.service";
 import { QUERY_KEYS } from "@/services/query-keys";
 import type {
@@ -14,6 +14,7 @@ import type {
 import { EntityHeader } from "./components/entity-header";
 import { TableTitle } from "./components/table-title";
 import { ContentEditor } from "./components/content-editor";
+import { FullPageState, RegionState } from "@/components/feedback";
 
 export function SectionDetail({
   sectionId,
@@ -154,14 +155,8 @@ export function SectionDetail({
     setDragOverId(null);
   };
 
-  if (section.isLoading)
-    return <p className="text-body-sm  text-slate-400">Loading section...</p>;
-  if (section.isError || !section.data)
-    return (
-      <p className="rounded-lg bg-rose-50 p-4 text-body-sm  text-rose-600">
-        Could not load section.
-      </p>
-    );
+  if (section.isLoading) return <FullPageState variant="loading" />;
+  if (section.isError || !section.data) return <FullPageState variant="error" />;
 
   const list = topics.data ?? [];
 
@@ -264,13 +259,7 @@ export function SectionDetail({
         )}
 
         {list.length === 0 && !createOpen ? (
-          <div className="flex flex-col items-center gap-2 px-4 py-16 text-center sm:px-5">
-            <Layers className="text-slate-300" size={26} strokeWidth={1.5} />
-            <p className="text-body-sm  text-slate-500">No topics yet</p>
-            <p className="text-xs text-slate-400">
-              Add a topic to start organizing this section&apos;s question banks.
-            </p>
-          </div>
+          <RegionState variant="empty" />
         ) : (
           <>
             {/* Column header — desktop only, sits directly above the row list */}

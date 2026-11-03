@@ -89,7 +89,7 @@ export default function StudentAssignmentResultPage() {
 
   return (
     <main>
-      <StudentResultView result={result} loading={false} />
+      <StudentResultView result={result} />
     </main>
   );
 }

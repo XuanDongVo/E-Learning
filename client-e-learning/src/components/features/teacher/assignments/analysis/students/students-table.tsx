@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { DataTable, type DataTableColumn } from "@/components/ui/data-table/data-table";
 import type { StudentResultRow } from "@/types/assignment-analysis";
+import { RegionState } from "@/components/feedback";
 
 function formatDuration(seconds: number | null) {
   if (seconds == null) return "—";
@@ -46,7 +47,7 @@ export function StudentsTable({
       columns={columns}
       getRowKey={(row) => row.studentId}
       minWidth="720px"
-      emptyState={<div className="rounded-2xl border border-dashed border-border bg-card p-8 text-center text-sm text-muted-foreground">{t("empty")}</div>}
+      emptyState={<RegionState variant="empty" description={t("empty")} />}
     />
   );
 }

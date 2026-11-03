@@ -30,6 +30,8 @@ import type {
 } from "@/types/content";
 import { useTranslations } from "next-intl";
 import { CreateUnitModal } from "./components/create-unit-modal";
+import { PageBanner, RegionState } from "@/components/feedback";
+import { SkeletonList } from "@/components/ui/skeleton/skeleton-list";
 
 export function ContentOverview({
   onNavigate,
@@ -151,16 +153,13 @@ export function ContentOverview({
         </button>
       </header>
 
-      {grades.isLoading && (
-        <p className="mb-3 text-body-sm text-muted-foreground">{tCommon("loading")}</p>
-      )}
+      {grades.isLoading && <RegionState variant="loading" className="mb-3" minHeight={96} />}
       {grades.isError && (
-        <div role="alert" className="mb-3 flex flex-wrap items-center justify-between gap-3 rounded-xl border-2 border-destructive/30 bg-destructive/5 p-4 text-body-sm text-destructive shadow-pop-sm">
-          <span>Could not load grades. Try again.</span>
-          <button type="button" onClick={() => void grades.refetch()} className="rounded-lg border border-destructive/40 bg-card px-3 py-1.5 font-bold shadow-pop-sm hover:bg-destructive/10">
-            {tCommon("retry")}
-          </button>
-        </div>
+        <PageBanner
+          tone="error"
+          message="Could not load grades. Try again."
+          action={<button type="button" onClick={() => void grades.refetch()} className="rounded-lg border border-destructive/40 bg-card px-3 py-1.5 font-bold shadow-pop-sm hover:bg-destructive/10">{tCommon("retry")}</button>}
+        />
       )}
       <div className="mb-5 flex gap-2.5 overflow-x-auto pb-1">
         {(grades.data ?? []).map((grade) => (
@@ -211,19 +210,10 @@ export function ContentOverview({
                 Could not create the unit. Check the details and try again.
               </div>
             )}
-            {units.isLoading && (
-              <p className="p-3 text-body-sm text-muted-foreground">
-                {tCommon("loading")}
-              </p>
-            )}
+            {units.isLoading && <SkeletonList count={3} className="p-1" />}
 
             {units.isError && (
-              <div role="alert" className="m-2 rounded-lg border border-destructive/20 bg-destructive/5 p-3 text-body-sm text-destructive">
-                <p>Could not load units.</p>
-                <button type="button" onClick={() => void units.refetch()} className="mt-2 rounded-md border border-destructive/30 px-3 py-1.5 font-semibold hover:bg-destructive/10">
-                  {tCommon("retry")}
-                </button>
-              </div>
+              <RegionState variant="error" action={<button type="button" onClick={() => void units.refetch()} className="rounded-md border border-destructive/30 px-3 py-1.5 font-semibold hover:bg-destructive/10">{tCommon("retry")}</button>} />
             )}
 
             {!units.isLoading && !units.isError && visibleUnits.length === 0 && (
@@ -280,19 +270,10 @@ export function ContentOverview({
               </div>
 
               <div className="space-y-3 p-4">
-                {sections.isLoading && (
-                  <p className="text-body-sm text-muted-foreground">
-                    {tCommon("loading")}
-                  </p>
-                )}
+                {sections.isLoading && <SkeletonList count={3} />}
 
                 {sections.isError && (
-                  <div role="alert" className="rounded-lg border border-destructive/20 bg-destructive/5 p-4 text-body-sm text-destructive">
-                    <p>Could not load sections for this unit.</p>
-                    <button type="button" onClick={() => void sections.refetch()} className="mt-2 rounded-md border border-destructive/30 px-3 py-1.5 font-semibold hover:bg-destructive/10">
-                      {tCommon("retry")}
-                    </button>
-                  </div>
+                  <RegionState variant="error" action={<button type="button" onClick={() => void sections.refetch()} className="rounded-md border border-destructive/30 px-3 py-1.5 font-semibold hover:bg-destructive/10">{tCommon("retry")}</button>} />
                 )}
 
                 {!sections.isLoading && !sections.isError && (sections.data ?? []).length === 0 && (
@@ -352,19 +333,13 @@ export function ContentOverview({
                         {expanded && (
                           <div className="divide-y-2 divide-border/60 border-t-2 border-border bg-background-app/40 p-2">
                             {topics[(sections.data ?? []).findIndex((item) => item.id === section.id)]?.isLoading && (
-                              <p className="px-4 py-3 text-body-sm text-muted-foreground">{tCommon("loading")}</p>
+                              <SkeletonList count={2} className="p-2" />
                             )}
                             {topics[(sections.data ?? []).findIndex((item) => item.id === section.id)]?.isError && (
-                              <div role="alert" className="px-4 py-3 text-body-sm text-destructive">
-                                <p>Could not load topics.</p>
-                                <button
-                                  type="button"
-                                  onClick={() => void topics[(sections.data ?? []).findIndex((item) => item.id === section.id)]?.refetch()}
-                                  className="mt-2 rounded-md border border-destructive/30 px-3 py-1.5 font-semibold hover:bg-destructive/10"
-                                >
-                                  {tCommon("retry")}
-                                </button>
-                              </div>
+                              <RegionState
+                                variant="error"
+                                action={<button type="button" onClick={() => void topics[(sections.data ?? []).findIndex((item) => item.id === section.id)]?.refetch()} className="rounded-md border border-destructive/30 px-3 py-1.5 font-semibold hover:bg-destructive/10">{tCommon("retry")}</button>}
+                              />
                             )}
                             {sectionTopics.map((topic) => (
                               <button

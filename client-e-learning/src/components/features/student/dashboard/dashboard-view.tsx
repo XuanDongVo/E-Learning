@@ -9,32 +9,29 @@ import { ContinueLearningSection } from "./continue-learning-section";
 import { RecentResultsSection } from "./recent-results-section";
 import { ClassRankingSection } from "./class-ranking-section";
 import { MascotBanner } from "./mascot-banner";
+import { FullPageState, RegionState } from "@/components/feedback";
+import { Button } from "@/components/ui/button";
 
 export function DashboardView() {
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: QUERY_KEYS.dashboardStats,
     queryFn: fetchDashboardData,
   });
 
-  if (isLoading || !data) {
+  if (isLoading) {
+    return <FullPageState variant="loading" />;
+  }
+
+  if (isError || !data) {
     return (
-      <div className="flex flex-col gap-3 animate-pulse">
-        <div className="h-7 bg-slate-200 rounded-lg w-1/3" />
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <div className="h-14 bg-slate-100 rounded-2xl" />
-          <div className="h-14 bg-slate-100 rounded-2xl" />
-          <div className="h-14 bg-slate-100 rounded-2xl" />
-        </div>
-        <div className="flex flex-col lg:flex-row lg:flex-[3] gap-4">
-          <div className="w-full lg:w-5/12 h-64 lg:h-auto bg-slate-100 rounded-2xl" />
-          <div className="w-full lg:w-7/12 h-64 lg:h-auto bg-slate-100 rounded-2xl" />
-        </div>
-        <div className="flex flex-col lg:flex-row lg:flex-[2] gap-4">
-          <div className="w-full lg:w-5/12 h-48 lg:h-auto bg-slate-100 rounded-2xl" />
-          <div className="w-full lg:w-4/12 h-48 lg:h-auto bg-slate-100 rounded-2xl" />
-          <div className="w-full lg:w-3/12 h-48 lg:h-auto bg-slate-100 rounded-2xl" />
-        </div>
-      </div>
+      <RegionState
+        variant="error"
+        action={
+          <Button type="button" variant="secondary" onClick={() => void refetch()}>
+            Retry
+          </Button>
+        }
+      />
     );
   }
 

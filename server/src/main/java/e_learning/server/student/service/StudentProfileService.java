@@ -72,13 +72,17 @@ public class StudentProfileService {
     @Transactional(readOnly = true)
     public StudentDetailResponse getForTeacher(Long studentId, Long teacherId) {
         User user = student(studentId);
-        ClassMember member = classMemberRepository
-                .findAllByStudentAndTeacher(studentId, teacherId)
-                .stream()
+        List<ClassMember> memberships = classMemberRepository.findAllByStudentAndTeacher(studentId, teacherId);
+        if (memberships.isEmpty()) {
+            throw new AppException(ErrorCode.STUDENT_NOT_FOUND);
+        }
+        ClassMember member = memberships.stream()
+                .filter(m -> "ACTIVE".equals(m.getStatus()))
                 .findFirst()
-                .orElseThrow(() -> new AppException(ErrorCode.STUDENT_NOT_FOUND));
+                .orElse(memberships.get(0));
 
         StudentProfile profile = profile(studentId);
+        var classEntity = member.getClassEntity();
         return new StudentDetailResponse(
                 user.getId(),
                 user.getFullName(),
@@ -87,11 +91,37 @@ public class StudentProfileService {
                 user.getEmail(),
                 profile.getPhone(),
                 guardians(profile),
-                member.getClassEntity().getId(),
-                member.getClassEntity().getName(),
+                classEntity.getId(),
+                classEntity.getName(),
+                classEntity.getGrade().getId(),
+                classEntity.getGrade().getName(),
+                classEntity.getAcademicYear(),
                 member.getStatus(),
+                null,
                 user.getStatus().name()
         );
+    }
+
+    @Transactional
+    public StudentDetailResponse updateForTeacher(Long studentId, Long teacherId, UpdateStudentProfileRequest request) {
+        getForTeacher(studentId, teacherId);
+
+        User user = student(studentId);
+        StudentProfile profile = profile(studentId);
+
+        if (request.fullName() != null && !request.fullName().isBlank()) {
+            user.setFullName(request.fullName().trim());
+        }
+        profile.update(request.dateOfBirth(), request.gender(), request.phone());
+
+        if (request.guardians() != null) {
+            guardianRepository.deleteAll(
+                    guardianRepository.findAllByStudentProfileIdOrderByPrimaryDescIdAsc(profile.getId())
+            );
+            saveGuardians(profile, request.guardians());
+        }
+
+        return getForTeacher(studentId, teacherId);
     }
 
     @Transactional(readOnly = true)
@@ -185,10 +215,8 @@ public class StudentProfileService {
         return (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
 
-            // Only students
             predicates.add(cb.equal(root.get("role"), Role.STUDENT));
 
-            // Teacher scope
             Subquery<Long> teacherScope = query.subquery(Long.class);
 
             Root<ClassMember> teacherMember = teacherScope.from(ClassMember.class);
@@ -200,27 +228,22 @@ public class StudentProfileService {
 
             predicates.add(cb.exists(teacherScope));
 
-            // Search
             if (StringUtils.hasText(search)) {
                 predicates.add(buildSearchPredicate(root, query, cb, search));
             }
 
-            // Account status
             if (status != null) {
                 predicates.add(cb.equal(root.get("status"), status));
             }
 
-            // Class filter
             if (classId != null) {
                 predicates.add(buildClassPredicate(root, query, cb, classId));
             }
 
-            // Grade filter
             if (gradeId != null) {
                 predicates.add(buildGradePredicate(root, query, cb, gradeId));
             }
 
-            // No class
             if (Boolean.TRUE.equals(noClass)) {
                 predicates.add(buildNoClassPredicate(root, query, cb));
             }

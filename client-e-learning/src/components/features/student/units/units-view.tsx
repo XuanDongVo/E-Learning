@@ -4,11 +4,9 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import {
-  BookOpen,
   Search,
   Sparkles,
   Trophy,
-  AlertCircle,
   RefreshCw,
   Compass,
 } from "lucide-react";
@@ -19,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { UnitCard } from "./unit-card";
 import { Pipo } from "@/components/ui/mascot";
 import { SkeletonGrid } from "@/components/ui/skeleton/skeleton-grid";
+import { RegionState } from "@/components/feedback";
 
 export function UnitsView() {
   const tErrors = useTranslations("errors");
@@ -103,59 +102,43 @@ export function UnitsView() {
 
       {/* ─── Error State (Dùng token destructive) ─── */}
       {isError && (
-        <div
-          role="alert"
-          className="flex flex-col items-center justify-center gap-3 rounded-3xl border-2 border-destructive bg-destructive-soft p-8 text-center shadow-pop"
-        >
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-destructive/20 bg-card text-destructive">
-            <AlertCircle className="h-6 w-6" />
-          </div>
-          <div>
-            <p className="text-base font-extrabold text-foreground">
-              Không thể tải danh sách bài học
-            </p>
-            <p className="mt-0.5 text-sm font-medium text-muted-foreground">
-              {getAppErrorMessage(error, tErrors as (key: string) => string)}
-            </p>
-          </div>
-          <Button
-            onClick={() => refetch()}
-            className="mt-2 h-11 gap-2 rounded-2xl border-2 border-ink bg-destructive font-extrabold text-destructive-foreground shadow-pop transition-all active:translate-y-0.5"
-          >
-            <RefreshCw className="h-4 w-4" />
-            Thử lại
-          </Button>
-        </div>
+        <RegionState
+          variant="error"
+          title="Không thể tải danh sách bài học"
+          description={getAppErrorMessage(error, tErrors as (key: string) => string)}
+          action={
+            <Button type="button" variant="secondary" onClick={() => void refetch()}>
+              <RefreshCw className="mr-1.5 h-4 w-4" />
+              Thử lại
+            </Button>
+          }
+        />
       )}
 
       {/* ─── Empty State ─── */}
       {units.length === 0 && !isLoading && !isError && (
-        <div className="flex flex-col items-center justify-center gap-2 rounded-3xl border-2 border-border bg-card p-12 text-center shadow-pop">
-          <span className="text-4xl">📭</span>
-          <p className="text-base font-extrabold text-foreground">
-            Chưa có bài học nào
-          </p>
-          <p className="max-w-md text-sm font-medium text-muted-foreground">
-            Giáo viên của bạn chưa công bố Unit nào cho lớp học này. Hãy quay
-            lại sau nhé!
-          </p>
-        </div>
+        <RegionState
+          variant="empty"
+          title="Chưa có bài học nào"
+          description="Giáo viên của bạn chưa công bố Unit nào cho lớp học này. Hãy quay lại sau nhé!"
+        />
       )}
 
       {/* ─── Không khớp tìm kiếm ─── */}
       {units.length > 0 && filteredUnits.length === 0 && (
-        <div className="flex flex-col items-center justify-center gap-2 rounded-3xl border-2 border-border bg-card p-10 text-center shadow-pop">
-          <span className="text-3xl">🔍</span>
-          <p className="text-sm font-extrabold text-foreground">
-            Không tìm thấy Unit phù hợp với từ khóa &quot;{searchTerm}&quot;
-          </p>
-          <button
-            onClick={() => setSearchTerm("")}
-            className="text-xs font-bold text-primary hover:underline"
-          >
-            Xóa tìm kiếm
-          </button>
-        </div>
+        <RegionState
+          variant="empty"
+          title={`Không tìm thấy Unit phù hợp với từ khóa "${searchTerm}"`}
+          action={
+            <button
+              type="button"
+              onClick={() => setSearchTerm("")}
+              className="text-xs font-bold text-primary hover:underline"
+            >
+              Xóa tìm kiếm
+            </button>
+          }
+        />
       )}
 
       {/* ─── Lưới Unit Cards ─── */}

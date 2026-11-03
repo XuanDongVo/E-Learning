@@ -7,6 +7,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { classService } from "@/services/class.service";
 import { studentService } from "@/services/student.service";
+import { RegionState } from "@/components/feedback";
+import { SkeletonList } from "@/components/ui/skeleton/skeleton-list";
 
 export function ClassStudentsView({ classId }: ClassStudentsViewProps) {
   const t = useTranslations("teacher.classes.classStudents");
@@ -153,11 +155,9 @@ export function ClassStudentsView({ classId }: ClassStudentsViewProps) {
       <div className="overflow-hidden rounded-md border border-border-color bg-card-bg">
         <div className="divide-y divide-border-color">
           {members.isLoading ? (
-            <p className="p-6 text-neutral-muted">{t("loading")}</p>
+            <SkeletonList count={5} className="p-4" />
           ) : list.length === 0 ? (
-            <p className="p-6 text-neutral-muted">
-              {t("empty")}
-            </p>
+            <RegionState variant="empty" description={t("empty")} />
           ) : (
             list.map((student) => (
               <div

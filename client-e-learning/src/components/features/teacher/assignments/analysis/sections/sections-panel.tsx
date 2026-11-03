@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { assignmentAnalysisService } from "@/services/assignment/assignment-analysis.service";
 import type { SectionAnalysisRow } from "@/types/assignment-analysis";
 import { DataTable, type DataTableColumn } from "@/components/ui/data-table/data-table";
+import { RegionState } from "@/components/feedback";
 import { OutcomeBar, OutcomeLegend } from "../shared/outcome-bar";
 
 export function SectionsPanel({ assignmentId }: { assignmentId: number }) {
@@ -54,7 +55,7 @@ export function SectionsPanel({ assignmentId }: { assignmentId: number }) {
         getRowKey={(row) => row.sectionId ?? row.sectionTitle ?? "section"}
         minWidth="720px"
         rowClassName={(row) => (row.accuracyPercent != null && row.accuracyPercent < 40 ? "bg-rose-50" : "")}
-        emptyState={<div className="rounded-2xl border border-dashed border-border bg-card p-8 text-center text-sm text-muted-foreground">{t("empty")}</div>}
+        emptyState={<RegionState variant="empty" description={t("empty")} />}
       />
     </div>
   );

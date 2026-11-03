@@ -23,7 +23,10 @@ import e_learning.server.question.engine.types.text.TypeAnswerSpec;
 import e_learning.server.question.engine.types.truefalse.TrueFalseSpec;
 import e_learning.server.question.enums.Difficulty;
 import e_learning.server.question.enums.QuestionType;
+import e_learning.server.common.exception.AppException;
+import e_learning.server.common.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -36,6 +39,7 @@ import java.util.*;
  */
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AssessmentAttemptGradingService {
     private static final String MAIN_PART = "main";
 
@@ -100,8 +104,10 @@ public class AssessmentAttemptGradingService {
                     }
                 }
             } catch (RuntimeException ex) {
-                results.add(partResult(question, MAIN_PART, AttemptPartStatus.INCORRECT,
-                        BigDecimal.ZERO, possible));
+                // System/snapshot/engine failure must not be recorded as a student incorrect answer.
+                log.error("Grading failed for attemptQuestionId={} attemptId={}: {}",
+                        question.getId(), attempt.getId(), ex.getMessage(), ex);
+                throw new AppException(ErrorCode.ASSESSMENT_ATTEMPT_GRADING_FAILED);
             }
         }
 

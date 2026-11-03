@@ -15,6 +15,7 @@ import {
   Zap,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { FullPageState } from "@/components/feedback";
 import { studentUnitService } from "@/services/student-unit.service";
 import { QUERY_KEYS } from "@/services/query-keys";
 import { ActivityCard } from "./activity-card";
@@ -73,64 +74,31 @@ export function UnitDetailView({ unitId, mascotSlot }: UnitDetailViewProps) {
 
   // ─── Loading State ───
   if (isLoading) {
-    return (
-      <div
-        role="status"
-        aria-label="Đang tải dữ liệu bài học"
-      >
-        <div className="h-44 animate-pulse rounded-3xl border-2 border-border bg-card shadow-pop" />
-        <div className="flex gap-2">
-          {[0, 1, 2, 3].map((i) => (
-            <div key={i} className="h-10 w-28 animate-pulse rounded-2xl bg-muted" />
-          ))}
-        </div>
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
-          {[0, 1, 2].map((i) => (
-            <div
-              key={i}
-              className="h-64 animate-pulse rounded-3xl border-2 border-border bg-card shadow-pop"
-            />
-          ))}
-        </div>
-      </div>
-    );
+    return <FullPageState variant="loading" title="Đang tải dữ liệu bài học" />;
   }
 
   // ─── Error State ───
   if (isError || !unit) {
     return (
-      <div >
-        <div
-          role="alert"
-          className="flex flex-col items-center justify-center gap-3 rounded-3xl border-2 border-destructive bg-destructive-soft p-8 text-center shadow-pop"
-        >
-          <span className="text-4xl">⚠️</span>
-          <div>
-            <p className="text-base font-extrabold text-foreground">
-              Không thể tải nội dung Unit này
-            </p>
-            <p className="mt-1 text-sm font-medium text-muted-foreground">
-              {error?.message || "Đã xảy ra lỗi trong quá trình kết nối."}
-            </p>
-          </div>
-          <div className="mt-2 flex flex-wrap justify-center gap-3">
-            <Button
-              onClick={() => refetch()}
-              className="h-11 rounded-2xl border-2 border-ink bg-destructive font-extrabold text-destructive-foreground shadow-pop active:translate-y-0.5"
-            >
+      <FullPageState
+        variant="error"
+        title="Không thể tải nội dung Unit này"
+        description={error?.message || "Đã xảy ra lỗi trong quá trình kết nối."}
+        action={
+          <div className="flex flex-wrap justify-center gap-3">
+            <Button onClick={() => void refetch()}>
               <RotateCcw className="mr-1.5 h-4 w-4" />
               Thử lại
             </Button>
-            <Button
-              asChild
-              variant="outline"
-              className="h-11 rounded-2xl border-2 border-border bg-card font-bold text-foreground shadow-pop-sm hover:border-primary"
+            <Link
+              href="/student/units"
+              className="inline-flex h-10 items-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium hover:bg-accent"
             >
-              <Link href="/student/units">Quay về danh sách</Link>
-            </Button>
+              Quay về danh sách
+            </Link>
           </div>
-        </div>
-      </div>
+        }
+      />
     );
   }
 

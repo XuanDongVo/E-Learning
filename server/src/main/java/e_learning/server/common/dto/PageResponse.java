@@ -22,7 +22,7 @@ public class PageResponse<T> {
     public static <T> PageResponse<T> from(Page<T> page) {
         return PageResponse.<T>builder()
                 .items(page.getContent())
-                .page(page.getNumber() + 1) // 1-indexed for client
+                .page(page.getNumber() + 1)
                 .size(page.getSize())
                 .totalElements(page.getTotalElements())
                 .totalPages(page.getTotalPages())
@@ -40,6 +40,40 @@ public class PageResponse<T> {
                 .totalPages(page.getTotalPages())
                 .isFirst(page.isFirst())
                 .isLast(page.isLast())
+                .build();
+    }
+
+    /** 1-indexed page slice over an already-materialized list. */
+    public static <T> PageResponse<T> fromList(List<T> all, int page, int size) {
+        int safeSize = size <= 0 ? 20 : size;
+        int safePage = Math.max(1, page);
+        long total = all == null ? 0 : all.size();
+        int totalPages = total == 0 ? 0 : (int) Math.ceil(total / (double) safeSize);
+        if (total == 0) {
+            return PageResponse.<T>builder()
+                    .items(List.of())
+                    .page(safePage)
+                    .size(safeSize)
+                    .totalElements(0)
+                    .totalPages(0)
+                    .isFirst(true)
+                    .isLast(true)
+                    .build();
+        }
+        if (safePage > totalPages) {
+            safePage = totalPages;
+        }
+        int from = (safePage - 1) * safeSize;
+        int to = Math.min(from + safeSize, all.size());
+        List<T> slice = from >= all.size() ? List.of() : all.subList(from, to);
+        return PageResponse.<T>builder()
+                .items(slice)
+                .page(safePage)
+                .size(safeSize)
+                .totalElements(total)
+                .totalPages(totalPages)
+                .isFirst(safePage <= 1)
+                .isLast(safePage >= totalPages)
                 .build();
     }
 }

@@ -10,6 +10,7 @@ import type {
   SelectionStrategy,
 } from "@/types/activity";
 import { ACTIVITY_DIFFICULTY_LABELS } from "@/types/activity";
+import { FullPageState } from "@/components/feedback";
 
 const modeLabels: Record<ActivityMode, string> = {
   LEARNING: "Practice",
@@ -49,18 +50,9 @@ export function ActivityDetail({ activityId }: { activityId: number }) {
     },
   });
 
-  if (query.isLoading)
-    return (
-      <section className="rounded-xl border border-border-color bg-card-bg p-6 text-body text-neutral-muted">
-        Loading activity…
-      </section>
-    );
+  if (query.isLoading) return <FullPageState variant="loading" />;
   if (query.isError || !query.data)
-    return (
-      <section className="rounded-xl border border-danger-light bg-danger-light p-6 text-body text-danger-text">
-        Could not load this Activity.
-      </section>
-    );
+    return <FullPageState variant="error" />;
 
   const a = query.data;
   const isArchived = a.status === "ARCHIVED";

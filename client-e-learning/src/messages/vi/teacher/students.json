@@ -83,5 +83,133 @@
     "cancel": "Hủy",
     "submitting": "Đang lưu...",
     "submit": "Tạo học sinh"
+  },
+  "hub": {
+    "tabs": {
+      "overview": "Tổng quan",
+      "assignments": "Bài tập",
+      "activities": "Luyện tập",
+      "profile": "Hồ sơ"
+    },
+    "assignmentStatus": {
+      "NOT_STARTED": "Chưa làm",
+      "IN_PROGRESS": "Đang làm",
+      "SUBMITTED": "Đã nộp",
+      "LATE": "Nộp muộn",
+      "TIMED_OUT": "Hết giờ"
+    },
+    "sessionStatus": {
+      "IN_PROGRESS": "Đang làm",
+      "COMPLETED": "Hoàn thành",
+      "GAME_OVER": "Hết mạng sống",
+      "ABANDONED": "Bỏ dở"
+    },
+    "sessionMode": {
+      "LEARNING": "Learning",
+      "TRY_HARD": "Try Hard"
+    },
+    "labels": {
+      "membership": {
+        "NONE": "Chưa có lớp",
+        "ACTIVE": "Đang trong lớp",
+        "LEFT": "Đã rời lớp"
+      },
+      "relationship": {
+        "MOTHER": "Mẹ",
+        "FATHER": "Bố",
+        "GUARDIAN": "Người giám hộ",
+        "OTHER": "Khác"
+      }
+    },
+    "assignments": {
+      "title": "Bài tập",
+      "subtitle": "Assignment đã giao tới lớp của học sinh và attempt tương ứng.",
+      "filterAll": "Tất cả",
+      "colTitle": "Bài tập",
+      "colDue": "Hạn nộp",
+      "colStatus": "Trạng thái",
+      "colSubmitted": "Nộp lúc",
+      "colScore": "Điểm",
+      "loading": "Đang tải bài tập…",
+      "error": "Không tải được danh sách bài tập.",
+      "empty": "Chưa có bài tập liên quan."
+    },
+    "activities": {
+      "title": "Lịch sử luyện tập",
+      "subtitle": "ActivitySession của học sinh.",
+      "modeAll": "Mọi chế độ",
+      "statusAll": "Mọi trạng thái",
+      "colActivity": "Hoạt động",
+      "colMode": "Chế độ",
+      "colStatus": "Trạng thái",
+      "colResult": "Kết quả",
+      "colCompleted": "Hoàn thành",
+      "resultLine": "{first}/{total} đúng lần đầu · {hints} gợi ý",
+      "loading": "Đang tải lịch sử…",
+      "error": "Không tải được lịch sử luyện tập.",
+      "empty": "Chưa có phiên luyện tập."
+    },
+    "overview": {
+      "assigned": "Đã giao",
+      "viewAll": "Xem tất cả",
+      "viewHistory": "Xem lịch sử",
+      "recentPractice": "Luyện tập gần đây",
+      "noAssignments": "Chưa có bài tập.",
+      "noSessions": "Chưa có phiên luyện tập.",
+      "personal": "Thông tin học sinh",
+      "currentClass": "Lớp hiện tại",
+      "class": "Lớp",
+      "noClass": "Chưa có lớp",
+      "membershipStatus": "Trạng thái lớp",
+      "academicYear": "Năm học",
+      "joinedAt": "Ngày vào lớp",
+      "assignmentDesc": "Theo trạng thái attempt thực tế",
+      "counts": {
+        "assigned": "Đã giao",
+        "submitted": "Đã nộp",
+        "late": "Nộp muộn",
+        "timedOut": "Hết giờ",
+        "notStarted": "Chưa làm",
+        "inProgress": "Đang làm"
+      }
+    },
+    "profile": {
+      "loading": "Đang tải hồ sơ…",
+      "contact": "Liên hệ",
+      "classAndAccount": "Lớp học & Tài khoản",
+      "grade": "Khối",
+      "accountStatus": "Trạng thái tài khoản"
+    },
+    "edit": {
+      "backToList": "Danh sách học sinh",
+      "eyebrow": "Chỉnh sửa hồ sơ",
+      "title": "Cập nhật học sinh",
+      "subtitle": "Cập nhật thông tin cá nhân, lớp học và liên hệ phụ huynh.",
+      "loading": "Đang tải form…",
+      "saving": "Đang lưu…",
+      "save": "Lưu cập nhật",
+      "accountHint": "Không chỉnh lớp / trạng thái tài khoản trên form này. Dùng roster lớp hoặc danh sách học sinh.",
+      "privacyTitle": "Quyền riêng tư",
+      "privacyBody": "Thông tin liên hệ chỉ hiển thị cho giáo viên phụ trách và quản trị viên.",
+      "statusActive": "Hồ sơ đang hoạt động",
+      "statusLocked": "Tài khoản đã khóa",
+      "sections": {
+        "student": "Thông tin học sinh",
+        "studentHint": "Thông tin dùng để nhận diện trong lớp học.",
+        "learning": "Thông tin học tập",
+        "learningHint": "Lớp và trạng thái hiện tại (chỉ xem).",
+        "contact": "Liên hệ",
+        "contactHint": "Thông tin học sinh và người giám hộ."
+      }
+    },
+    "layout": {
+      "resetPassword": "Đặt lại mật khẩu",
+      "resetPasswordConfirm": "Tạo mật khẩu tạm cho học sinh này?",
+      "resetting": "Đang đặt lại…",
+      "resetSuccess": "Đã đặt lại mật khẩu",
+      "temporaryPassword": "Mật khẩu tạm",
+      "dismiss": "Đóng",
+      "editProfile": "Sửa hồ sơ"
+    }
   }
 }

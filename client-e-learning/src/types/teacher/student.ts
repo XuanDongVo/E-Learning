@@ -1,1 +1,9 @@
-export type { AddClassMemberRequest, CreateStudentRequest, StudentDetail, StudentPageResponse, StudentSummary, UpdateStudentStatusRequest } from "@/types/student";
+export type {
+  AddClassMemberRequest,
+  CreateStudentRequest,
+  StudentDetail,
+  StudentPageResponse,
+  StudentSummary,
+  UpdateStudentProfileRequest,
+  UpdateStudentStatusRequest,
+} from "@/types/student";

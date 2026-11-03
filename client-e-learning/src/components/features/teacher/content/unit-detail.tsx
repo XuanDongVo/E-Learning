@@ -23,6 +23,7 @@ import type {
 import { EntityHeader } from "./components/entity-header";
 import { TableTitle } from "./components/table-title";
 import { ContentEditor } from "./components/content-editor";
+import { FullPageState } from "@/components/feedback";
 
 export function UnitDetail({
   unitId,
@@ -150,14 +151,9 @@ export function UnitDetail({
     setDragOverId(null);
   };
 
-  if (unit.isLoading)
-    return <p className="text-body-sm  text-slate-400">Loading unit...</p>;
+  if (unit.isLoading) return <FullPageState variant="loading" />;
   if (unit.isError || !unit.data)
-    return (
-      <p className="rounded-lg bg-rose-50 p-4 text-body-sm  text-rose-600">
-        Could not load unit.
-      </p>
-    );
+    return <FullPageState variant="error" />;
 
   const list = sections.data ?? [];
 

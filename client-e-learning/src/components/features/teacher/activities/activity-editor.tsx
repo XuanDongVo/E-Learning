@@ -6,6 +6,8 @@ import { useSearchParams } from "next/navigation";
 import { AlertTriangle, ArrowLeft, Check, Info, Search } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
+import { FullPageState, RegionState } from "@/components/feedback";
+import { SkeletonList } from "@/components/ui/skeleton/skeleton-list";
 import { getAppErrorMessage } from "@/lib/errors/app-error";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -110,19 +112,11 @@ export function ActivityEditor({ activityId }: { activityId?: number }) {
   });
 
   if (activityId && existing.isLoading) {
-    return (
-      <div className="p-8 text-neutral-muted">
-        Loading activity...
-      </div>
-    );
+    return <FullPageState variant="loading" />;
   }
 
   if (activityId && existing.isError) {
-    return (
-      <div className="rounded-xl border border-danger-light bg-danger-light p-4 text-body text-danger-text">
-        Could not load this Activity.
-      </div>
-    );
+    return <FullPageState variant="error" />;
   }
 
   return (
@@ -567,19 +561,11 @@ function ActivityEditorForm({
             </div>
 
             {sources.isLoading ? (
-              <p className="text-body text-neutral-muted">
-                Loading Question Banks…
-              </p>
+              <SkeletonList count={4} />
             ) : sources.isError ? (
-              <div className="rounded-lg border-l-4 border-danger bg-background-app p-4 text-body text-danger-text">
-                Could not load Question Banks.
-              </div>
+              <RegionState variant="error" />
             ) : grouped.length === 0 ? (
-              <div className="rounded-lg border border-dashed border-border-color p-6 text-center text-body text-neutral-muted">
-                {search
-                  ? "No Question Banks match your search."
-                  : "No Question Banks are available in this Unit."}
-              </div>
+              <RegionState variant="empty" />
             ) : (
               <div className="overflow-hidden rounded-lg border border-border-color">
                 {grouped.map(([section, topics]) => (

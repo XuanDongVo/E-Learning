@@ -36,6 +36,7 @@ public class AssignmentService {
     private final AssignmentItemRepository assignmentItemRepository;
     private final ClassRepository classRepository;
     private final GradeRepository gradeRepository;
+    private final AssignmentEditabilityService editabilityService;
 
     @Transactional(readOnly = true)
     public List<AssignmentResponse> list() {
@@ -75,6 +76,8 @@ public class AssignmentService {
 
     public AssignmentResponse update(Long id, CreateAssignmentRequest request, Long teacherId) {
         Assignment assignment = find(id);
+        // ADR 0025: freeze metadata/targets/schedule once any attempt has started
+        editabilityService.ensureEditableForStructure(assignment);
 
         String name = request.name().trim();
         String academicYear = request.academicYear().trim();
@@ -82,15 +85,15 @@ public class AssignmentService {
         List<Long> classIds = validateClassIds(request.classIds(), grade, academicYear, teacherId);
 
         boolean changedIdentity =
-                        !assignment.getName().equalsIgnoreCase(name)
+                !assignment.getName().equalsIgnoreCase(name)
                         || !assignment.getAcademicYear().equalsIgnoreCase(academicYear)
                         || !assignment.getGrade().getId().equals(grade.getId());
 
         if (changedIdentity
-                        && assignmentRepository.existsByGrade_IdAndAcademicYearAndNameIgnoreCase(
-                        grade.getId(),
-                        academicYear,
-                        name
+                && assignmentRepository.existsByGrade_IdAndAcademicYearAndNameIgnoreCase(
+                grade.getId(),
+                academicYear,
+                name
         )) {
             throw new AppException(ErrorCode.ASSIGNMENT_INVALID_CONFIGURATION);
         }

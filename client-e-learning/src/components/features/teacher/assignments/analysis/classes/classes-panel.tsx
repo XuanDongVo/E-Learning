@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import type { ClassComparisonRow } from "@/types/assignment-analysis";
 import { DataTable, type DataTableColumn } from "@/components/ui/data-table/data-table";
+import { RegionState } from "@/components/feedback";
 
 export function ClassesPanel({
   rows,
@@ -22,7 +23,7 @@ export function ClassesPanel({
   ];
 
   if (loading) {
-    return <div className="rounded-2xl border border-border bg-card p-8 text-sm text-muted-foreground">{t("empty")}</div>;
+    return <RegionState variant="loading" />;
   }
 
   return (
@@ -35,7 +36,7 @@ export function ClassesPanel({
         columns={columns}
         getRowKey={(row) => row.classId}
         minWidth="640px"
-        emptyState={<div className="rounded-2xl border border-dashed border-border bg-card p-8 text-center text-sm text-muted-foreground">{t("empty")}</div>}
+        emptyState={<RegionState variant="empty" description={t("empty")} />}
       />
     </div>
   );

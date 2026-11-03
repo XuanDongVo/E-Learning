@@ -49,7 +49,7 @@ export function PageBanner({
         <Button
           type="button"
           variant="ghost"
-          size="iconSm"
+          size="icon-sm"
           className="shrink-0"
           onClick={onDismiss}
           aria-label={t("dismiss")}

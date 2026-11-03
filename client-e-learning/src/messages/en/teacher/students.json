@@ -83,5 +83,133 @@
     "cancel": "Cancel",
     "submitting": "Creating student...",
     "submit": "Create student"
+  },
+  "hub": {
+    "tabs": {
+      "overview": "Overview",
+      "assignments": "Assignments",
+      "activities": "Practice",
+      "profile": "Profile"
+    },
+    "assignmentStatus": {
+      "NOT_STARTED": "Not started",
+      "IN_PROGRESS": "In progress",
+      "SUBMITTED": "Submitted",
+      "LATE": "Late",
+      "TIMED_OUT": "Timed out"
+    },
+    "sessionStatus": {
+      "IN_PROGRESS": "In progress",
+      "COMPLETED": "Completed",
+      "GAME_OVER": "Out of lives",
+      "ABANDONED": "Abandoned"
+    },
+    "sessionMode": {
+      "LEARNING": "Learning",
+      "TRY_HARD": "Try Hard"
+    },
+    "labels": {
+      "membership": {
+        "NONE": "No class",
+        "ACTIVE": "In class",
+        "LEFT": "Left class"
+      },
+      "relationship": {
+        "MOTHER": "Mother",
+        "FATHER": "Father",
+        "GUARDIAN": "Guardian",
+        "OTHER": "Other"
+      }
+    },
+    "assignments": {
+      "title": "Assignments",
+      "subtitle": "Published assignments for this student and their attempts.",
+      "filterAll": "All",
+      "colTitle": "Assignment",
+      "colDue": "Due",
+      "colStatus": "Status",
+      "colSubmitted": "Submitted at",
+      "colScore": "Score",
+      "loading": "Loading assignments…",
+      "error": "Could not load assignments.",
+      "empty": "No related assignments."
+    },
+    "activities": {
+      "title": "Practice history",
+      "subtitle": "Activity sessions for this student.",
+      "modeAll": "All modes",
+      "statusAll": "All statuses",
+      "colActivity": "Activity",
+      "colMode": "Mode",
+      "colStatus": "Status",
+      "colResult": "Result",
+      "colCompleted": "Completed",
+      "resultLine": "{first}/{total} first correct · {hints} hints",
+      "loading": "Loading history…",
+      "error": "Could not load practice history.",
+      "empty": "No practice sessions yet."
+    },
+    "overview": {
+      "assigned": "Assigned",
+      "viewAll": "View all",
+      "viewHistory": "View history",
+      "recentPractice": "Recent practice",
+      "noAssignments": "No assignments yet.",
+      "noSessions": "No practice sessions yet.",
+      "personal": "Student information",
+      "currentClass": "Current class",
+      "class": "Class",
+      "noClass": "No class",
+      "membershipStatus": "Membership",
+      "academicYear": "Academic year",
+      "joinedAt": "Joined",
+      "assignmentDesc": "Based on real attempt status",
+      "counts": {
+        "assigned": "Assigned",
+        "submitted": "Submitted",
+        "late": "Late",
+        "timedOut": "Timed out",
+        "notStarted": "Not started",
+        "inProgress": "In progress"
+      }
+    },
+    "profile": {
+      "loading": "Loading profile…",
+      "contact": "Contact",
+      "classAndAccount": "Class & account",
+      "grade": "Grade",
+      "accountStatus": "Account status"
+    },
+    "edit": {
+      "backToList": "Student list",
+      "eyebrow": "Edit profile",
+      "title": "Update student",
+      "subtitle": "Update personal details, class context, and guardian contact.",
+      "loading": "Loading form…",
+      "saving": "Saving…",
+      "save": "Save changes",
+      "accountHint": "Class and account status are not edited here. Use the class roster or student list.",
+      "privacyTitle": "Privacy",
+      "privacyBody": "Contact details are visible only to the assigned teacher and administrators.",
+      "statusActive": "Profile is active",
+      "statusLocked": "Account is locked",
+      "sections": {
+        "student": "Student information",
+        "studentHint": "Identity details used in class.",
+        "learning": "Learning context",
+        "learningHint": "Current class and account status (read-only).",
+        "contact": "Contact",
+        "contactHint": "Student and guardian contact details."
+      }
+    },
+    "layout": {
+      "resetPassword": "Reset password",
+      "resetPasswordConfirm": "Generate a temporary password for this student?",
+      "resetting": "Resetting…",
+      "resetSuccess": "Password reset",
+      "temporaryPassword": "Temporary password",
+      "dismiss": "Dismiss",
+      "editProfile": "Edit profile"
+    }
   }
 }

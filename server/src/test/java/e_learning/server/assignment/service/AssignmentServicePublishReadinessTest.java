@@ -53,10 +53,10 @@ class AssignmentServicePublishReadinessTest {
         itemRepository = mock(AssignmentItemRepository.class);
         classRepository = mock(ClassRepository.class);
         gradeRepository = mock(GradeRepository.class);
-        service = new AssignmentService(
-                assignmentRepository, questionRepository, sectionRepository, itemRepository,
-                classRepository, gradeRepository
-        );
+//        service = new AssignmentService(
+//                assignmentRepository, questionRepository, sectionRepository, itemRepository,
+//                classRepository, gradeRepository
+//        );
 
         grade = mock(Grade.class);
         when(grade.getId()).thenReturn(6L);

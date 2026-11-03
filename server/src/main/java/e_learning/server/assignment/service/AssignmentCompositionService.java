@@ -2,7 +2,6 @@ package e_learning.server.assignment.service;
 
 import e_learning.server.assignment.dto.*;
 import e_learning.server.assignment.entity.*;
-import e_learning.server.assignment.enums.AssignmentStatus;
 import e_learning.server.assignment.repository.*;
 import e_learning.server.question.dto.request.QuestionDefinitionRequest;
 import e_learning.server.question.entity.Question;
@@ -28,6 +27,7 @@ public class AssignmentCompositionService {
     private final AssignmentSectionRepository sectionRepository;
     private final AssignmentItemRepository itemRepository;
     private final ObjectMapper objectMapper;
+    private final AssignmentEditabilityService editabilityService;
 
     public AssignmentCompositionResponse get(Long assignmentId) {
         Assignment assignment = findAssignment(assignmentId);
@@ -62,9 +62,7 @@ public class AssignmentCompositionService {
     public AssignmentCompositionResponse replace(Long assignmentId, AssignmentCompositionRequest request) {
         // ---------- 0. Validate đầu vào ----------
         Assignment assignment = findAssignment(assignmentId);
-        if (assignment.getStatus() == AssignmentStatus.ARCHIVED) {
-            throw invalid("Archived assignments cannot be edited.");
-        }
+        editabilityService.ensureEditableForStructure(assignment);
         if (request.sections() == null || request.sections().isEmpty()) {
             throw invalid("Composition must contain at least one section.");
         }
@@ -493,7 +491,7 @@ public class AssignmentCompositionService {
     }
 
     private AssignmentCompositionResponse toResponse(Assignment assignment, List<AssignmentSection> sections,
-                                                      List<AssignmentItem> items) {
+                                                     List<AssignmentItem> items) {
         Map<Long, List<AssignmentItem>> childrenByParent = items.stream()
                 .filter(i -> i.getParentItem() != null)
                 .collect(Collectors.groupingBy(i -> i.getParentItem().getId()));
@@ -507,7 +505,7 @@ public class AssignmentCompositionService {
                         .map(item -> toItemResponse(item, childrenByParent)).toList())
         ).toList();
         return new AssignmentCompositionResponse(assignment.getId(), assignment.getCompositionSchemaVersion(),
-                 assignment.isShowScoreAfterSubmit(),
+                assignment.isShowScoreAfterSubmit(),
                 assignment.isShowPointsPerQuestion(), sectionResponses);
     }
 

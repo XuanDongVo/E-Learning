@@ -5,7 +5,6 @@ import { useTranslations } from "next-intl";
 import { getAppErrorMessage } from "@/lib/errors/app-error";
 import { useQuery } from "@tanstack/react-query";
 import {
-  AlertTriangle,
   ArrowUpDown,
   Building2,
   Pencil,
@@ -16,6 +15,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { gradeService } from "@/services/grade.service";
 import type { CreateGradeRequest, Grade } from "@/types/grade";
+import { PageBanner, RegionState } from "@/components/feedback";
+import { SkeletonList } from "@/components/ui/skeleton/skeleton-list";
 
 const emptyForm = {
   code: "",
@@ -158,7 +159,7 @@ export default function TeacherGradesPage() {
         </div>
         <Button
           type="button"
-          variant="primary"
+          variant="default"
           onClick={() => {
             resetForm();
             setError(null);
@@ -170,19 +171,7 @@ export default function TeacherGradesPage() {
       </div>
 
       {error && (
-        <div className="flex items-center justify-between gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-body text-red-700">
-          <span className="flex items-center gap-2">
-            <AlertTriangle className="h-4 w-4" />
-            {error}
-          </span>
-          <button
-            type="button"
-            onClick={() => setError(null)}
-            className="font-bold underline"
-          >
-            Dismiss
-          </button>
-        </div>
+        <PageBanner tone="error" message={error} onDismiss={() => setError(null)} />
       )}
 
       <div className="grid gap-6 lg:grid-cols-[380px_minmax(0,1fr)]">
@@ -268,13 +257,9 @@ export default function TeacherGradesPage() {
             </div>
 
             {isLoading ? (
-              <div className="rounded-xl border border-dashed border-border-color p-8 text-center text-body text-neutral-muted">
-                Loading grades...
-              </div>
+              <SkeletonList count={4} />
             ) : activeGrades.length === 0 ? (
-              <div className="rounded-xl border border-dashed border-border-color p-8 text-center text-body text-neutral-muted">
-                No active grades yet.
-              </div>
+              <RegionState variant="empty" />
             ) : (
               <div className="space-y-3">
                 {activeGrades.map((grade) => (
@@ -307,7 +292,7 @@ export default function TeacherGradesPage() {
                       <Button type="button" variant="outline" size="sm" onClick={() => handleDeactivate(grade.id)}>
                         Inactive
                       </Button>
-                      <Button type="button" variant="danger" size="sm" onClick={() => handleDelete(grade.id)}>
+                      <Button type="button" variant="destructive" size="sm" onClick={() => handleDelete(grade.id)}>
                         <Trash2 className="mr-1.5 h-3.5 w-3.5" />
                         Delete
                       </Button>
@@ -332,9 +317,7 @@ export default function TeacherGradesPage() {
             </div>
 
             {inactiveGrades.length === 0 ? (
-              <div className="rounded-xl border border-dashed border-border-color p-6 text-center text-body text-neutral-muted">
-                No archived grade.
-              </div>
+              <RegionState variant="empty" />
             ) : (
               <div className="space-y-3">
                 {inactiveGrades.map((grade) => (

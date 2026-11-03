@@ -1,4 +1,4 @@
-/** Teacher student hub — learning rows (real API). */
+/** Teacher student hub — learning row types (API codes only, labels via i18n). */
 
 export type StudentAssignmentStatus =
   | "NOT_STARTED"
@@ -35,33 +35,27 @@ export interface StudentActivitySessionItem {
   completedAt?: string | null;
 }
 
-export const ASSIGNMENT_STATUS_LABEL: Record<StudentAssignmentStatus, string> = {
-  NOT_STARTED: "Chưa làm",
-  IN_PROGRESS: "Đang làm",
-  SUBMITTED: "Đã nộp",
-  LATE: "Nộp muộn",
-  TIMED_OUT: "Hết giờ",
-};
+export interface PageResult<T> {
+  items: T[];
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+  isFirst: boolean;
+  isLast: boolean;
+}
 
-export const SESSION_STATUS_LABEL: Record<string, string> = {
-  IN_PROGRESS: "Đang làm",
-  COMPLETED: "Hoàn thành",
-  GAME_OVER: "Hết mạng sống",
-  ABANDONED: "Bỏ dở",
-};
-
-export const SESSION_MODE_LABEL: Record<string, string> = {
-  LEARNING: "Learning",
-  TRY_HARD: "Try Hard",
-};
-
-export function formatDateTime(value?: string | null): string {
+export function formatDateTime(value?: string | null, locale?: string): string {
   if (!value) return "—";
   try {
     const d = new Date(value);
     if (Number.isNaN(d.getTime())) return value;
-    const pad = (n: number) => String(n).padStart(2, "0");
-    return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}, ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    return new Intl.DateTimeFormat(locale || undefined, {
+      day: "2-digit",
+      month: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    }).format(d);
   } catch {
     return value;
   }

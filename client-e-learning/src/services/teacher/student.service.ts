@@ -1,6 +1,8 @@
 import { request } from "@/services/api.service";
 import type { AddClassMemberRequest, CreateStudentRequest, StudentDetail, StudentPageResponse, StudentSummary, UpdateStudentProfileRequest, UpdateStudentStatusRequest } from "@/types/teacher/student";
-import type { StudentActivitySessionItem, StudentAssignmentItem } from "@/types/teacher/student-learning";
+import type { PageResult, StudentActivitySessionItem, StudentAssignmentItem } from "@/types/teacher/student-learning";
+
+const BASE = "/v1/teacher/students";
 
 export const teacherStudentService = {
   list: (params: { search?: string; accountStatus?: string; classId?: string; gradeId?: string; noClass?: boolean; page?: number; size?: number } = {}) => {
@@ -12,22 +14,45 @@ export const teacherStudentService = {
     if (params.noClass) query.set("noClass", "true");
     query.set("page", String(params.page ?? 1));
     query.set("size", String(params.size ?? 8));
-    return request<StudentPageResponse>(`/v1/users/students?${query.toString()}`);
+    return request<StudentPageResponse>(`${BASE}?${query.toString()}`);
   },
-  get: (studentId: number) => request<StudentDetail>(`/v1/users/students/${studentId}`),
-  listAssignments: (studentId: number) =>
-    request<StudentAssignmentItem[]>(`/v1/users/students/${studentId}/assignments`),
-  listActivitySessions: (studentId: number) =>
-    request<StudentActivitySessionItem[]>(`/v1/users/students/${studentId}/activity-sessions`),
-  create: (payload: CreateStudentRequest) => request<StudentDetail>("/v1/users/students", { method: "POST", body: JSON.stringify(payload) }),
-  updateStatus: (studentId: number, payload: UpdateStudentStatusRequest) => request<void>(`/v1/users/students/${studentId}/status`, { method: "PATCH", body: JSON.stringify(payload) }),
+  get: (studentId: number) => request<StudentDetail>(`${BASE}/${studentId}`),
+  listAssignments: (
+    studentId: number,
+    params: { status?: string; page?: number; size?: number } = {},
+  ) => {
+    const query = new URLSearchParams();
+    if (params.status && params.status !== "ALL") query.set("status", params.status);
+    query.set("page", String(params.page ?? 1));
+    query.set("size", String(params.size ?? 20));
+    return request<PageResult<StudentAssignmentItem>>(`${BASE}/${studentId}/assignments?${query}`);
+  },
+  listActivitySessions: (
+    studentId: number,
+    params: { mode?: string; status?: string; page?: number; size?: number } = {},
+  ) => {
+    const query = new URLSearchParams();
+    if (params.mode && params.mode !== "all") query.set("mode", params.mode);
+    if (params.status && params.status !== "all") query.set("status", params.status);
+    query.set("page", String(params.page ?? 1));
+    query.set("size", String(params.size ?? 20));
+    return request<PageResult<StudentActivitySessionItem>>(
+      `${BASE}/${studentId}/activity-sessions?${query}`,
+    );
+  },
+  create: (payload: CreateStudentRequest) => request<StudentDetail>(BASE, { method: "POST", body: JSON.stringify(payload) }),
+  updateStatus: (studentId: number, payload: UpdateStudentStatusRequest) =>
+    request<void>(`${BASE}/${studentId}/status`, { method: "PATCH", body: JSON.stringify(payload) }),
   updateProfile: (studentId: number, payload: UpdateStudentProfileRequest) =>
-    request<StudentDetail>(`/v1/users/students/${studentId}/profile`, {
+    request<StudentDetail>(`${BASE}/${studentId}/profile`, {
       method: "PATCH",
       body: JSON.stringify(payload),
     }),
   listClassMembers: (classId: number) => request<StudentSummary[]>(`/v1/classes/${classId}/members`),
-  addToClass: (classId: number, payload: AddClassMemberRequest) => request<void>(`/v1/classes/${classId}/members`, { method: "POST", body: JSON.stringify(payload) }),
-  transferToClass: (classId: number, studentId: number) => request<void>(`/v1/classes/${classId}/members/${studentId}/transfer`, { method: "POST" }),
-  removeFromClass: (classId: number, studentId: number) => request<void>(`/v1/classes/${classId}/members/${studentId}`, { method: "DELETE" }),
+  addToClass: (classId: number, payload: AddClassMemberRequest) =>
+    request<void>(`/v1/classes/${classId}/members`, { method: "POST", body: JSON.stringify(payload) }),
+  transferToClass: (classId: number, studentId: number) =>
+    request<void>(`/v1/classes/${classId}/members/${studentId}/transfer`, { method: "POST" }),
+  removeFromClass: (classId: number, studentId: number) =>
+    request<void>(`/v1/classes/${classId}/members/${studentId}`, { method: "DELETE" }),
 };

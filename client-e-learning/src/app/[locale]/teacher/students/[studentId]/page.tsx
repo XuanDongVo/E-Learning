@@ -6,12 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useLocale, useTranslations } from "next-intl";
 import { ArrowRight } from "lucide-react";
 import { teacherStudentService } from "@/services/teacher/student.service";
-import {
-  formatDate,
-  genderLabel,
-  membershipLabel,
-  relationshipLabel,
-} from "@/mock/mock-student-data";
+import { formatDate } from "@/mock/mock-student-data";
 import { formatDateTime, formatScorePercent } from "@/types/teacher/student-learning";
 import { Button } from "@/components/ui/button";
 
@@ -51,6 +46,31 @@ export default function StudentOverviewPage() {
   const assignmentItems = assignments.data?.data?.items ?? [];
   const sessionItems = sessions.data?.data?.items ?? [];
 
+  const gender =
+    d?.gender === "MALE"
+      ? tForm("genderMale")
+      : d?.gender === "FEMALE"
+        ? tForm("genderFemale")
+        : d?.gender === "OTHER"
+          ? tForm("genderOther")
+          : "—";
+
+  const membership =
+    !d?.className
+      ? t("labels.membership.NONE")
+      : d.membershipStatus === "ACTIVE"
+        ? t("labels.membership.ACTIVE")
+        : t("labels.membership.LEFT");
+
+  const relationKey =
+    primary?.relationship === "MOTHER" || primary?.relationship === "Mẹ"
+      ? "MOTHER"
+      : primary?.relationship === "FATHER" || primary?.relationship === "Bố"
+        ? "FATHER"
+        : primary?.relationship === "GUARDIAN"
+          ? "GUARDIAN"
+          : "OTHER";
+
   const counts = [
     { key: "assigned" as const, val: s?.assigned ?? 0 },
     { key: "submitted" as const, val: s?.submitted ?? 0 },
@@ -66,9 +86,9 @@ export default function StudentOverviewPage() {
         <Panel title={t("overview.personal")}>
           <dl className="divide-y divide-border px-5 py-2 text-sm">
             <Row label={tDetail("dob")} value={formatDate(d?.dateOfBirth)} />
-            <Row label={tDetail("gender")} value={genderLabel(d?.gender)} />
+            <Row label={tDetail("gender")} value={gender} />
             <Row label={tDetail("phone")} value={d?.phone || "—"} />
-            <Row label={tForm("assignClass")} value={d?.gradeName || "—"} />
+            <Row label={t("profile.grade")} value={d?.gradeName || "—"} />
           </dl>
         </Panel>
 
@@ -82,10 +102,7 @@ export default function StudentOverviewPage() {
                   : t("overview.noClass")
               }
             />
-            <Row
-              label={t("overview.membershipStatus")}
-              value={membershipLabel(d?.membershipStatus, d?.className)}
-            />
+            <Row label={t("overview.membershipStatus")} value={membership} />
             <Row label={t("overview.academicYear")} value={d?.academicYear || "—"} />
             <Row label={t("overview.joinedAt")} value={formatDate(d?.joinedAt)} />
           </dl>
@@ -95,7 +112,7 @@ export default function StudentOverviewPage() {
           <dl className="divide-y divide-border px-5 py-2 text-sm">
             {primary ? (
               <>
-                <Row label={relationshipLabel(primary.relationship)} value={primary.fullName} />
+                <Row label={t(`labels.relationship.${relationKey}`)} value={primary.fullName} />
                 <Row label={tDetail("phone")} value={primary.phone || "—"} />
               </>
             ) : (
@@ -135,9 +152,7 @@ export default function StudentOverviewPage() {
               <div key={a.assignmentId} className="flex items-center justify-between p-4 text-xs">
                 <div>
                   <p className="text-sm font-bold">{a.title}</p>
-                  <p className="mt-0.5 text-muted-foreground">
-                    {formatDateTime(a.dueAt, locale)}
-                  </p>
+                  <p className="mt-0.5 text-muted-foreground">{formatDateTime(a.dueAt, locale)}</p>
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] font-bold">
@@ -176,9 +191,7 @@ export default function StudentOverviewPage() {
                   </p>
                 </div>
                 <div className="text-right">
-                  <span className="font-bold text-primary">
-                    {t(`sessionMode.${sItem.mode}`)}
-                  </span>
+                  <span className="font-bold text-primary">{t(`sessionMode.${sItem.mode}`)}</span>
                   <p className="text-muted-foreground">
                     {t(`sessionStatus.${sItem.status}`)}
                     {sItem.status !== "ABANDONED"

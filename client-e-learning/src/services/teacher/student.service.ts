@@ -4,6 +4,16 @@ import type { PageResult, StudentActivitySessionItem, StudentAssignmentItem } fr
 
 const BASE = "/v1/teacher/students";
 
+export interface StudentLearningSummary {
+  assigned: number;
+  submitted: number;
+  late: number;
+  timedOut: number;
+  notStarted: number;
+  inProgress: number;
+  sessionTotal: number;
+}
+
 export const teacherStudentService = {
   list: (params: { search?: string; accountStatus?: string; classId?: string; gradeId?: string; noClass?: boolean; page?: number; size?: number } = {}) => {
     const query = new URLSearchParams();
@@ -17,6 +27,8 @@ export const teacherStudentService = {
     return request<StudentPageResponse>(`${BASE}?${query.toString()}`);
   },
   get: (studentId: number) => request<StudentDetail>(`${BASE}/${studentId}`),
+  learningSummary: (studentId: number) =>
+    request<StudentLearningSummary>(`${BASE}/${studentId}/learning-summary`),
   listAssignments: (
     studentId: number,
     params: { status?: string; page?: number; size?: number } = {},

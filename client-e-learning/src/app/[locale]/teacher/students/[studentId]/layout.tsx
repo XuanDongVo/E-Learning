@@ -83,9 +83,7 @@ export default function StudentDetailLayout({ children }: { children: React.Reac
                     ? detail.className
                     : t("noActiveClass")}
                 </span>
-                {detail?.gradeName && (
-                  <span className="font-semibold">{detail.gradeName}</span>
-                )}
+                {detail?.gradeName && <span className="font-semibold">{detail.gradeName}</span>}
               </div>
             </div>
           </div>

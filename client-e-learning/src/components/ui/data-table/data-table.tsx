@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
+import { SkeletonTable } from "@/components/ui/skeleton/skeleton-table";
 
 export type DataTableAlign = "left" | "center" | "right";
 
@@ -64,7 +65,7 @@ export function DataTable<T>({
   rowClassName,
 }: DataTableProps<T>) {
   if (errorState) return errorState;
-  if (isLoading) return loadingState;
+  if (isLoading) return <SkeletonTable/>;
   if (!data.length) return emptyState;
 
   return (

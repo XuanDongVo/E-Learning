@@ -5,7 +5,10 @@ import { MoreVertical, Users } from "lucide-react";
 import { createPortal } from "react-dom";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { DataTable, type DataTableColumn } from "@/components/ui/data-table/data-table";
+import {
+  DataTable,
+  type DataTableColumn,
+} from "@/components/ui/data-table/data-table";
 import type { StudentTableProps } from "@/types/student";
 import type { StudentSummary } from "@/types/student";
 
@@ -28,7 +31,8 @@ export function StudentTable({
   const [openMenu, setOpenMenu] = useState<number | null>(null);
   const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
   const allSelected =
-    students.length > 0 && students.every((student) => selectedIds.includes(student.id));
+    students.length > 0 &&
+    students.every((student) => selectedIds.includes(student.id));
 
   const columns: DataTableColumn<StudentSummary>[] = [
     {
@@ -57,7 +61,10 @@ export function StudentTable({
       id: "student",
       header: t("table.student"),
       cell: (student) => (
-        <div className="flex items-center gap-3">
+        <Link
+          href={`/teacher/students/${student.id}`}
+          className="flex items-center gap-3 rounded-md outline-none hover:text-primary focus-visible:ring-2 focus-visible:ring-primary/40"
+        >
           <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary-light font-extrabold text-primary">
             {student.fullName
               .split(" ")
@@ -66,8 +73,9 @@ export function StudentTable({
               .slice(-2)
               .toUpperCase()}
           </div>
+
           <p className="text-body-sm">{student.fullName}</p>
-        </div>
+        </Link>
       ),
     },
     {
@@ -84,11 +92,15 @@ export function StudentTable({
       id: "class",
       header: t("table.classAndGrade"),
       cell: (student) => {
-        const activeClass = student.classes.find((item) => item.status === "ACTIVE");
+        const activeClass = student.classes.find(
+          (item) => item.status === "ACTIVE",
+        );
         return activeClass ? (
           <div>
             <p className="font-bold">{activeClass.name}</p>
-            <p className="text-body-sm text-neutral-muted">{activeClass.gradeName}</p>
+            <p className="text-body-sm text-neutral-muted">
+              {activeClass.gradeName}
+            </p>
           </div>
         ) : (
           <span className="rounded-full bg-warm-soft px-3 py-1 text-body-sm text-primary">
@@ -104,10 +116,14 @@ export function StudentTable({
         student.primaryGuardian ? (
           <div className="text-body-sm">
             <p>{student.primaryGuardian.fullName}</p>
-            <p className="mt-1 text-neutral-muted">{student.primaryGuardian.phone}</p>
+            <p className="mt-1 text-neutral-muted">
+              {student.primaryGuardian.phone}
+            </p>
           </div>
         ) : (
-          <span className="text-body-sm text-neutral-muted">{t("table.noGuardian")}</span>
+          <span className="text-body-sm text-neutral-muted">
+            {t("table.noGuardian")}
+          </span>
         ),
     },
     {
@@ -117,7 +133,9 @@ export function StudentTable({
         <span className="inline-flex items-center gap-2 text-body-sm">
           <span
             className={`size-2 rounded-full ${
-              student.accountStatus === "ACTIVE" ? "bg-success" : "bg-neutral-muted"
+              student.accountStatus === "ACTIVE"
+                ? "bg-success"
+                : "bg-neutral-muted"
             }`}
           />
           {student.accountStatus === "ACTIVE" ? t("active") : t("locked")}

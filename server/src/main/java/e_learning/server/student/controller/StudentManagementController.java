@@ -3,6 +3,7 @@ package e_learning.server.student.controller;
 import e_learning.server.common.dto.PageResponse;
 import e_learning.server.common.response.ApiResponse;
 import e_learning.server.student.dto.*;
+import e_learning.server.student.service.StudentLearningService;
 import e_learning.server.student.service.StudentManagementService;
 import e_learning.server.student.service.StudentProfileService;
 import e_learning.server.user.entity.UserStatus;
@@ -13,6 +14,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Objects;
 
 @RestController
@@ -21,6 +23,7 @@ import java.util.Objects;
 public class StudentManagementController {
     private final StudentManagementService managementService;
     private final StudentProfileService profileService;
+    private final StudentLearningService learningService;
 
     @GetMapping
     public ApiResponse<PageResponse<StudentSummaryResponse>> list(
@@ -44,6 +47,26 @@ public class StudentManagementController {
     ) {
         return ApiResponse.success(
                 profileService.getForTeacher(studentId, Long.valueOf(Objects.requireNonNull(jwt.getSubject())))
+        );
+    }
+
+    @GetMapping("/{studentId}/assignments")
+    public ApiResponse<List<StudentAssignmentItemResponse>> assignments(
+            @PathVariable Long studentId,
+            @AuthenticationPrincipal Jwt jwt
+    ) {
+        return ApiResponse.success(
+                learningService.listAssignments(studentId, Long.valueOf(Objects.requireNonNull(jwt.getSubject())))
+        );
+    }
+
+    @GetMapping("/{studentId}/activity-sessions")
+    public ApiResponse<List<StudentActivitySessionItemResponse>> activitySessions(
+            @PathVariable Long studentId,
+            @AuthenticationPrincipal Jwt jwt
+    ) {
+        return ApiResponse.success(
+                learningService.listActivitySessions(studentId, Long.valueOf(Objects.requireNonNull(jwt.getSubject())))
         );
     }
 

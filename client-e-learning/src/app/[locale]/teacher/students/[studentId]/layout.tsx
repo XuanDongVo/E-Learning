@@ -1,12 +1,14 @@
 "use client";
 
+import { useState } from "react";
 import { Link, usePathname } from "@/i18n/navigation";
 import { useParams } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { ChevronRight, KeyRound, Mail, Pencil, School } from "lucide-react";
 import { teacherStudentService } from "@/services/teacher/student.service";
 import { Button } from "@/components/ui/button";
+import { getAppErrorMessage } from "@/lib/errors/app-error";
 
 export default function StudentDetailLayout({ children }: { children: React.ReactNode }) {
   const params = useParams();
@@ -15,6 +17,10 @@ export default function StudentDetailLayout({ children }: { children: React.Reac
   const base = `/teacher/students/${studentId}`;
   const t = useTranslations("teacher.students");
   const tHub = useTranslations("teacher.students.hub");
+  const tErrors = useTranslations("errors");
+
+  const [tempPassword, setTempPassword] = useState<string | null>(null);
+  const [resetError, setResetError] = useState<string | null>(null);
 
   const student = useQuery({
     queryKey: ["teacher-student", studentId],
@@ -33,6 +39,18 @@ export default function StudentDetailLayout({ children }: { children: React.Reac
 
   const accountActive = detail?.accountStatus !== "INACTIVE";
   const accountLabel = accountActive ? t("active") : t("locked");
+
+  const reset = useMutation({
+    mutationFn: () => teacherStudentService.resetPassword(studentId),
+    onSuccess: (res) => {
+      setResetError(null);
+      setTempPassword(res.data.temporaryPassword);
+    },
+    onError: (err) => {
+      setTempPassword(null);
+      setResetError(getAppErrorMessage(err, tErrors));
+    },
+  });
 
   const tabs = [
     { href: base, label: tHub("tabs.overview"), exact: true },
@@ -93,10 +111,15 @@ export default function StudentDetailLayout({ children }: { children: React.Reac
               variant="outline"
               size="sm"
               className="gap-1.5 text-xs font-bold"
-              disabled
-              title={tHub("layout.resetPasswordSoon")}
+              disabled={reset.isPending || !Number.isFinite(studentId)}
+              onClick={() => {
+                if (window.confirm(tHub("layout.resetPasswordConfirm"))) {
+                  reset.mutate();
+                }
+              }}
             >
-              <KeyRound className="size-3.5" /> {tHub("layout.resetPassword")}
+              <KeyRound className="size-3.5" />{" "}
+              {reset.isPending ? tHub("layout.resetting") : tHub("layout.resetPassword")}
             </Button>
             <Button size="sm" className="gap-1.5 text-xs font-bold" asChild>
               <Link href={`${base}/edit`}>
@@ -134,6 +157,28 @@ export default function StudentDetailLayout({ children }: { children: React.Reac
           })}
         </div>
       </section>
+
+      {tempPassword && (
+        <div className="rounded-md border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-900">
+          <p className="font-bold">{tHub("layout.resetSuccess")}</p>
+          <p className="mt-1">
+            {tHub("layout.temporaryPassword")}:{" "}
+            <code className="rounded bg-white px-1.5 py-0.5 font-mono text-base">{tempPassword}</code>
+          </p>
+          <button
+            type="button"
+            className="mt-2 text-xs font-semibold underline"
+            onClick={() => setTempPassword(null)}
+          >
+            {tHub("layout.dismiss")}
+          </button>
+        </div>
+      )}
+      {resetError && (
+        <p role="alert" className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+          {resetError}
+        </p>
+      )}
 
       {student.isError && (
         <p role="alert" className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">

@@ -2,6 +2,8 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { X } from "lucide-react";
+import { RegionState } from "@/components/feedback";
+import { SkeletonCard } from "@/components/ui/skeleton/skeleton-card";
 import { useTranslations } from "next-intl";
 import { studentService } from "@/services/student.service";
 
@@ -55,14 +57,10 @@ export function StudentDetailModal({
         </div>
 
         {student.isLoading && (
-          <p className="mt-8 text-center text-neutral-muted">
-            {t("detail.loading")}
-          </p>
+          <SkeletonCard className="mt-6" lines={5} />
         )}
         {student.isError && (
-          <p role="alert" className="mt-8 rounded-md bg-red-50 p-4 text-red-700">
-            {t("detail.error")}
-          </p>
+          <RegionState className="mt-6" variant="error" description={t("detail.error")} />
         )}
         {detail && (
           <div className="mt-6 space-y-6">

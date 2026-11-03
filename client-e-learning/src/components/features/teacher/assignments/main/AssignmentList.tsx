@@ -1,5 +1,7 @@
-import { CalendarClock, ChevronRight } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { Link } from "@/i18n/navigation";
+import { RegionState } from "@/components/feedback";
+import { SkeletonList } from "@/components/ui/skeleton/skeleton-list";
 
 import { AssignmentStatusBadge } from "./AssignmentStatusBadge";
 
@@ -22,27 +24,11 @@ export function AssignmentList({
   isLoading,
 }: Props) {
   if (isLoading) {
-    return (
-      <p className="p-8 text-center text-body-sm text-muted-foreground">
-        Loading assignments...
-      </p>
-    );
+    return <SkeletonList count={5} />;
   }
 
   if (assignments.length === 0) {
-    return (
-      <div className="p-10 text-center">
-        <CalendarClock className="mx-auto size-8 text-primary" />
-
-        <p className="mt-3 text-body font-bold">
-          No assignments yet
-        </p>
-
-        <p className="mt-1 text-body-sm text-muted-foreground">
-          Create an assignment to get started.
-        </p>
-      </div>
-    );
+    return <RegionState variant="empty" />;
   }
 
   return (

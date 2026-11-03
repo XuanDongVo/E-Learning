@@ -146,7 +146,7 @@ export function PracticeResult({
           <RotateCcw size={16} />
           Luyện tập lại
         </Button>
-        <Button asChild variant="outline" className={paperBtn}>
+        <Button  variant="outline" className={paperBtn}>
           <Link href={`/student/units/${unitId}`}>Về Unit</Link>
         </Button>
       </div>

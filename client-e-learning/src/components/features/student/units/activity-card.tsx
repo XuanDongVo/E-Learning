@@ -109,7 +109,7 @@ export function ActivityCard({
       {/* ─── Nút hành động 3D Tactile CTA ─── */}
       <div className="mt-auto border-t border-border pt-3">
         <Button
-          asChild
+          
           className="h-11 w-full gap-2 rounded-2xl border-2 border-ink bg-primary text-sm font-extrabold text-primary-foreground shadow-pop transition-all hover:bg-primary-hover active:translate-y-0.5 active:shadow-pop-sm"
         >
           <Link href={`/student/units/${unitId}/activities/${activity.id}`}>

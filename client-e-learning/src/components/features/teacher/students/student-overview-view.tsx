@@ -63,9 +63,9 @@ export function StudentOverviewView() {
         : t("labels.membership.LEFT");
 
   const relationKey =
-    primary?.relationship === "MOTHER" || primary?.relationship === "Mẹ"
+    primary?.relationship === "MOTHER"
       ? "MOTHER"
-      : primary?.relationship === "FATHER" || primary?.relationship === "Bố"
+      : primary?.relationship === "FATHER"
         ? "FATHER"
         : primary?.relationship === "GUARDIAN"
           ? "GUARDIAN"
@@ -127,7 +127,7 @@ export function StudentOverviewView() {
           title={t("assignments.title")}
           description={t("overview.assignmentDesc")}
           action={
-            <Button variant="ghost" size="sm" className="gap-1 text-xs font-semibold" asChild>
+            <Button variant="ghost" size="sm" className="gap-1 text-xs font-semibold" >
               <Link href={`${base}/assignments`}>
                 {t("overview.viewAll")} <ArrowRight className="size-3.5" />
               </Link>
@@ -171,7 +171,7 @@ export function StudentOverviewView() {
           title={t("overview.recentPractice")}
           description={t("activities.subtitle")}
           action={
-            <Button variant="ghost" size="sm" className="gap-1 text-xs font-semibold" asChild>
+            <Button variant="ghost" size="sm" className="gap-1 text-xs font-semibold" >
               <Link href={`${base}/activities`}>
                 {t("overview.viewHistory")} <ArrowRight className="size-3.5" />
               </Link>

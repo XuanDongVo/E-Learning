@@ -13,6 +13,8 @@ import { QUERY_KEYS } from "@/services/query-keys";
 import type { ActivityStatus } from "@/types/activity";
 import { ContentToolbar } from "@/components/features/teacher/content/components/content-toolbar";
 import { ActivityTable } from "./activity-table";
+import { RegionState } from "@/components/feedback";
+import { SkeletonTable } from "@/components/ui/skeleton/skeleton-table";
 
 export function ActivityWorkspace() {
   const params = useSearchParams();
@@ -216,33 +218,23 @@ export function ActivityWorkspace() {
       </section>
 
       {!selectedUnit ? (
-        <section className="rounded-2xl border-2 border-ink bg-card p-10 text-center text-body text-neutral-muted shadow-pop">
-          Select a Unit to view activities.
-        </section>
+        <RegionState variant="empty" />
       ) : activities.isLoading ? (
-        <section className="rounded-2xl border-2 border-ink bg-card p-6 text-body text-neutral-muted shadow-pop">
-          Loading activities…
-        </section>
+        <SkeletonTable columns={5} />
       ) : activities.isError ? (
-        <section className="rounded-2xl border-2 border-destructive/30 bg-destructive/5 p-6 text-body text-destructive shadow-pop">
-          Could not load activities. Try again.
-        </section>
+        <RegionState variant="error" />
       ) : visible.length === 0 ? (
-        <section className="rounded-2xl border-2 border-ink bg-card p-10 text-center shadow-pop">
-          <p className="text-section-title font-bold text-foreground">
-            No activities found
-          </p>
-          <p className="mt-2 text-body text-neutral-muted">
-            Create the first activity for {selectedUnit.code} or change the
-            filters.
-          </p>
-          <Link
-            href={`/teacher/activities/new?unitId=${selectedUnit.id}`}
-            className="mt-4 inline-flex h-10 items-center rounded-xl border border-primary bg-primary px-4 text-body font-bold text-primary-foreground shadow-pop-sm transition hover:bg-primary-hover active:translate-y-0.5"
-          >
-            Create activity
-          </Link>
-        </section>
+        <RegionState
+          variant="empty"
+          action={
+            <Link
+              href={`/teacher/activities/new?unitId=${selectedUnit.id}`}
+              className="inline-flex h-10 items-center rounded-xl border border-primary bg-primary px-4 text-body font-bold text-primary-foreground"
+            >
+              Create activity
+            </Link>
+          }
+        />
       ) : (
         <section className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
           {/* Table Toolbar */}

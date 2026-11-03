@@ -137,7 +137,7 @@ export function Toolbox() {
   return (
     <div className="space-y-4 p-3">
       <div className="px-1">
-        <BatchAdd label="Add multiple questions" variant="primary" />
+        <BatchAdd label="Add multiple questions" variant="default" />
       </div>
       <p className="px-1 text-xs text-muted-foreground">
         Click to add after the selected item, or drag onto the page.

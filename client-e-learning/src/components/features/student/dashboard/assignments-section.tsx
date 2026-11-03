@@ -18,7 +18,7 @@ export function AssignmentsSection({ assignments }: AssignmentsSectionProps) {
         bg: "bg-[#FFEDD5]",
         border: "border-[#FED7AA]",
         text: "text-[#EA580C]",
-        buttonVariant: "primary" as const,
+        buttonVariant: "default" as const,
         buttonText: "Start",
       };
     }
@@ -28,7 +28,7 @@ export function AssignmentsSection({ assignments }: AssignmentsSectionProps) {
         bg: "bg-[#F3E8FF]",
         border: "border-[#E9D5FF]",
         text: "text-[#9333EA]",
-        buttonVariant: "primary" as const,
+        buttonVariant: "default" as const,
         buttonText: "Start",
       };
     }

@@ -29,6 +29,8 @@ import { QUERY_KEYS } from "@/services/query-keys";
 import { EntityHeader } from "./components/entity-header";
 import { Badge } from "./components/badge";
 import { ContentEditor } from "./components/content-editor";
+import { RegionState } from "@/components/feedback";
+import { SkeletonList } from "@/components/ui/skeleton/skeleton-list";
 import { DeleteQuestionsDialog } from "./components/delete-question-dialog";
 import {
   questionTypeOptions,
@@ -44,6 +46,7 @@ export function QuestionBankDetail({
 }) {
   const client = useQueryClient();
   const tErrors = useTranslations("errors");
+  const tContent = useTranslations("teacher.content");
   const searchParams = useSearchParams();
   const source = searchParams.get("source") === "global" ? "global" : "content";
 
@@ -566,25 +569,19 @@ export function QuestionBankDetail({
           </div>
 
           {questionsQuery.isLoading ? (
-            <div className="rounded-lg border border-slate-200 p-8 text-center text-sm text-slate-400" role="status">
-              Loading questions...
-            </div>
+            <SkeletonList count={5} />
           ) : questionsQuery.isError ? (
-            <div className="rounded-lg border border-rose-200 bg-rose-50/40 p-8 text-center text-sm text-slate-600">
-              <p role="alert">{getAppErrorMessage(questionsQuery.error, tErrors as (key: string) => string)}</p>
-              <button
-                type="button"
-                onClick={() => questionsQuery.refetch()}
-                className="mt-2 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50"
-              >
-                Retry
-              </button>
-            </div>
+            <RegionState
+              variant="error"
+              description={getAppErrorMessage(questionsQuery.error, tErrors as (key: string) => string)}
+              action={
+                <button type="button" onClick={() => void questionsQuery.refetch()} className="rounded-md border px-3 py-1.5 text-xs font-semibold">
+                  {tErrors("retry")}
+                </button>
+              }
+            />
           ) : questionsList.length === 0 ? (
-            <div className="rounded-lg border border-dashed border-slate-300 p-8 text-center">
-              <p className="font-semibold text-slate-700">No questions found</p>
-              <p className="mt-1 text-sm text-slate-500">Try changing your filters, or add a question to this bank.</p>
-            </div>
+            <RegionState variant="empty" description={tContent("bankDetail.emptyQuestions")} />
           ) : (
             questionsList.map((question, index) => {
               const rowIndex = (page - 1) * pageSize + index + 1;

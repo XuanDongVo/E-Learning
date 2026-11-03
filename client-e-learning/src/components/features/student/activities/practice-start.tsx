@@ -10,6 +10,8 @@ import type {
   ActivitySessionOptions,
   SelectionStrategy,
 } from "@/types/activity-session";
+import { RegionState } from "@/components/feedback";
+import { SkeletonCard } from "@/components/ui/skeleton/skeleton-card";
 
 const blueBtn =
   "text-practice-light bg-practice-blue shadow-[0_2px_0_var(--color-practice-blue-dark)] hover:text-practice-light hover:bg-practice-blue-dark";
@@ -108,7 +110,7 @@ export function PracticeStart(p: Props) {
       />
       <div className="relative mx-auto flex min-h-svh max-w-[640px] flex-col px-4 pb-6 pt-7">
         <div>
-          <Button asChild variant="outline" className={`${glassBtn} px-3`}>
+          <Button  variant="outline" className={`${glassBtn} px-3`}>
             <Link href={`/student/units/${p.unitId}`}>
               <ArrowLeft size={16} />
               <span>Quay lại</span>
@@ -120,18 +122,16 @@ export function PracticeStart(p: Props) {
           <h1 className="text-xl font-extrabold">Chọn cách luyện tập</h1>
 
           {p.loading && (
-            <p role="status" className="mt-4 text-sm font-semibold">
-              Đang tải cấu hình hoạt động…
-            </p>
+            <SkeletonCard className="mt-4" lines={4} />
           )}
 
           {p.loadError && (
-            <div role="alert" className="mt-4 text-sm font-semibold">
-              <p className="text-practice-bad">{p.loadError}</p>
-              <Button className={`${blueBtn} mt-3`} onClick={p.onReload}>
-                Thử lại
-              </Button>
-            </div>
+            <RegionState
+              className="mt-4"
+              variant="error"
+              description={p.loadError}
+              action={<Button className={`${blueBtn} mt-3`} onClick={p.onReload}>Thử lại</Button>}
+            />
           )}
 
           {p.options && (

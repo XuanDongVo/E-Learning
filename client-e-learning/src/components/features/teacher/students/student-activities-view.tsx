@@ -10,6 +10,8 @@ import {
   type StudentActivitySessionItem,
 } from "@/types/teacher/student-learning";
 import { DataTable, type DataTableColumn } from "@/components/ui/data-table/data-table";
+import { RegionState } from "@/components/feedback";
+import { SkeletonTable } from "@/components/ui/skeleton/skeleton-table";
 
 export function StudentActivitiesView() {
   const params = useParams();
@@ -131,15 +133,13 @@ export function StudentActivitiesView() {
         columns={columns}
         getRowKey={(row) => row.sessionId}
         isLoading={query.isLoading}
-        loadingState={<p className="p-4 text-sm text-muted-foreground">{t("activities.loading")}</p>}
+        loadingState={<SkeletonTable columns={6} />}
         errorState={
           query.isError ? (
-            <p role="alert" className="p-4 text-sm text-red-600">
-              {t("activities.error")}
-            </p>
+            <RegionState variant="error" description={t("activities.error")} />
           ) : undefined
         }
-        emptyState={<p className="p-4 text-sm text-muted-foreground">{t("activities.empty")}</p>}
+        emptyState={<RegionState variant="empty" description={t("activities.empty")} />}
         pagination={
           pageData
             ? {

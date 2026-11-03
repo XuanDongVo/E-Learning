@@ -8,6 +8,8 @@ import { getAppErrorMessage } from "@/lib/errors/app-error";
 import { studentActivityService } from "@/services/student/student-activity.service";
 import type { Activity } from "@/types/student/activity";
 import { ACTIVITY_DIFFICULTY_LABELS } from "@/types/activity";
+import { RegionState } from "@/components/feedback";
+import { SkeletonGrid } from "@/components/ui/skeleton/skeleton-grid";
 
 export function ActivityHub({ unitId }: { unitId?: number }) {
   const tErrors = useTranslations("errors");
@@ -49,17 +51,14 @@ export function ActivityHub({ unitId }: { unitId?: number }) {
             </div>
           )}
           {activities.isLoading && (
-            <div className="mt-5 border border-border-color bg-card-bg p-8 text-body-sm text-neutral-muted">
-              Loading activities…
-            </div>
+            <SkeletonGrid className="mt-5" count={4} />
           )}
           {activities.isError && (
-            <div
-              role="alert"
-              className="mt-5 border border-destructive/20 bg-danger-light p-5 text-body-sm text-danger-text"
-            >
-              {getAppErrorMessage(activities.error, tErrors as (key: string) => string)}
-            </div>
+            <RegionState
+              className="mt-5"
+              variant="error"
+              description={getAppErrorMessage(activities.error, tErrors as (key: string) => string)}
+            />
           )}
           {unitId &&
             activities.data?.data &&

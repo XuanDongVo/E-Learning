@@ -27,6 +27,8 @@ import {
 import { getAppErrorMessage } from "@/lib/errors/app-error";
 import type { Gender, GuardianRelationship } from "@/types/student";
 import { cn } from "@/lib/utils";
+import { SkeletonCard } from "@/components/ui/skeleton/skeleton-card";
+import { PageBanner } from "@/components/feedback";
 
 export function StudentEditForm() {
   const params = useParams();
@@ -114,9 +116,7 @@ export function StudentEditForm() {
       : t("noActiveClass");
 
   if (student.isLoading) {
-    return (
-      <p className="p-6 text-sm text-muted-foreground">{tHub("edit.loading")}</p>
-    );
+    return <SkeletonCard lines={8} showFooter />;
   }
 
   return (
@@ -138,21 +138,14 @@ export function StudentEditForm() {
           </h2>
           <p className="text-sm text-muted-foreground">{tHub("edit.subtitle")}</p>
         </div>
-        <Button variant="outline" size="sm" asChild>
+        <Button variant="outline" size="sm" >
           <Link href={`/teacher/students/${studentId}/profile`}>
             {tForm("cancel")}
           </Link>
         </Button>
       </div>
 
-      {error && (
-        <p
-          role="alert"
-          className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700"
-        >
-          {error}
-        </p>
-      )}
+      {error && <PageBanner tone="error" message={error} />}
 
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_280px]">
         <form
@@ -287,7 +280,7 @@ export function StudentEditForm() {
           </Section>
 
           <div className="flex justify-end gap-2 border-t border-border pt-4">
-            <Button variant="outline" type="button" asChild>
+            <Button variant="outline" type="button" >
               <Link href={`/teacher/students/${studentId}/profile`}>
                 {tForm("cancel")}
               </Link>

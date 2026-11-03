@@ -5,7 +5,7 @@ import { useMemo, useState, type FormEvent } from "react";
 import { useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
-import { Search, RotateCcw, ChevronLeft, ChevronRight, LibraryBig } from "lucide-react";
+import { Search, RotateCcw, ChevronLeft, ChevronRight } from "lucide-react";
 
 import { gradeService } from "@/services/grade.service";
 import { unitService } from "@/services/content/content.unit.service";
@@ -14,6 +14,8 @@ import { topicService } from "@/services/content/content.topic.service";
 import { questionBankService } from "@/services/content/content.questionBank.service";
 import { QUERY_KEYS } from "@/services/query-keys";
 import type { GlobalQuestionBankFilters } from "@/types/content";
+import { RegionState } from "@/components/feedback";
+import { SkeletonList } from "@/components/ui/skeleton/skeleton-list";
 
 function numericParam(value: string | null): number | undefined {
   if (!value) return undefined;
@@ -172,17 +174,18 @@ export function GlobalQuestionBankList() {
       </section>
 
       {banksQuery.isLoading ? (
-        <div className="rounded-xl border-2 border-ink bg-card p-12 text-center text-sm text-muted-foreground">{tCommon("loading")}</div>
+        <SkeletonList count={6} />
       ) : banksQuery.isError ? (
-        <div className="rounded-xl border border-destructive/30 bg-card p-8 text-center">
-          <p className="text-sm text-destructive">Could not load question banks.</p>
-          <button onClick={() => void banksQuery.refetch()} className="mt-3 rounded-lg border-2 border-ink px-4 py-2 text-sm font-semibold hover:bg-muted">{tCommon("retry")}</button>
-        </div>
+        <RegionState
+          variant="error"
+          action={
+            <button type="button" onClick={() => void banksQuery.refetch()} className="rounded-lg border px-4 py-2 text-sm font-semibold">
+              {tCommon("retry")}
+            </button>
+          }
+        />
       ) : banks.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-2 border-ink bg-card p-12 text-center">
-          <LibraryBig className="mx-auto size-8 text-muted-foreground" />
-          <h2 className="mt-3 font-semibold">{t("empty")}</h2>
-        </div>
+        <RegionState variant="empty" title={t("empty")} />
       ) : (
         <div className="overflow-hidden rounded-xl border-2 border-ink bg-card">
           <div className="divide-y divide-border">

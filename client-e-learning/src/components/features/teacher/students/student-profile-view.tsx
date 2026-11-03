@@ -8,6 +8,7 @@ import { Pencil } from "lucide-react";
 import { teacherStudentService } from "@/services/teacher/student.service";
 import { formatDate } from "@/mock/mock-student-data";
 import { Button } from "@/components/ui/button";
+import { SkeletonCard } from "@/components/ui/skeleton/skeleton-card";
 
 export function StudentProfileView() {
   const params = useParams();
@@ -44,16 +45,16 @@ export function StudentProfileView() {
         : tHub("labels.membership.LEFT");
 
   const relationKey =
-    primary?.relationship === "MOTHER" || primary?.relationship === "Mẹ"
+    primary?.relationship === "MOTHER"
       ? "MOTHER"
-      : primary?.relationship === "FATHER" || primary?.relationship === "Bố"
+      : primary?.relationship === "FATHER"
         ? "FATHER"
         : primary?.relationship === "GUARDIAN"
           ? "GUARDIAN"
           : "OTHER";
 
   if (student.isLoading) {
-    return <p className="p-6 text-sm text-muted-foreground">{tHub("profile.loading")}</p>;
+    return <SkeletonCard lines={6} />;
   }
 
   return (
@@ -61,7 +62,7 @@ export function StudentProfileView() {
       <ProfileCard
         title={tDetail("personal")}
         action={
-          <Button variant="outline" size="sm" className="h-7 gap-1 text-xs font-bold" asChild>
+          <Button variant="outline" size="sm" className="h-7 gap-1 text-xs font-bold" >
             <Link href={`/teacher/students/${studentId}/edit`}>
               <Pencil className="size-3" /> {t("table.edit")}
             </Link>

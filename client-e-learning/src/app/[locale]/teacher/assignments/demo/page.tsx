@@ -3,6 +3,7 @@
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import { AssignmentBuilder } from "@/components/features/teacher/assignments/builder/components/AssignmentBuilder";
+import { FullPageState } from "@/components/feedback";
 
 function AssignmentDemoContent() {
   const searchParams = useSearchParams();
@@ -19,9 +20,7 @@ export default function AssignmentDemoPage() {
   return (
     <Suspense
       fallback={
-        <div className="p-8 text-sm text-muted-foreground">
-          Loading assignment builder…
-        </div>
+        <FullPageState variant="loading" />
       }
     >
       <AssignmentDemoContent />

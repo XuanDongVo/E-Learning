@@ -76,12 +76,13 @@ export function useAttemptAutosave({
   const onErrorRef = useRef(onError);
   const onSessionInvalidRef = useRef(onSessionInvalid);
 
-  attemptIdRef.current = attemptId;
-  sessionRef.current = activeSessionId;
-  saveApiRef.current = saveApi;
-  onErrorRef.current = onError;
-  onSessionInvalidRef.current = onSessionInvalid;
-
+  useEffect(() => {
+    attemptIdRef.current = attemptId;
+    sessionRef.current = activeSessionId;
+    saveApiRef.current = saveApi;
+    onErrorRef.current = onError;
+    onSessionInvalidRef.current = onSessionInvalid;
+  });
   // Reset queues when attempt changes
   useEffect(() => {
     for (const q of queuesRef.current.values()) {
@@ -89,10 +90,12 @@ export function useAttemptAutosave({
     }
     queuesRef.current = new Map();
     stoppedRef.current = false;
-    setFatalSessionCode(null);
+    const timer = setTimeout(() => {
+      setFatalSessionCode(null);
     setAnswers(initialAnswers);
     setQuestionStatuses({});
     setSaveStatus("saved");
+    }, 0);
 
     for (const [rawId, payload] of Object.entries(initialAnswers)) {
       const questionId = Number(rawId);
@@ -106,6 +109,7 @@ export function useAttemptAutosave({
         hasError: false,
       });
     }
+    return () => clearTimeout(timer);
   }, [attemptId]); // eslint-disable-line react-hooks/exhaustive-deps -- reset only on attempt change
 
   const updateGlobalStatus = useCallback(() => {
@@ -140,6 +144,8 @@ export function useAttemptAutosave({
     }
     return q;
   }, [initialRevisions]);
+
+  const processQueueRef = useRef<((id: number) => Promise<void>) | null>(null);
 
   const processQueue = useCallback(async (questionId: number) => {
     if (stoppedRef.current || !enabled) return;
@@ -181,7 +187,7 @@ export function useAttemptAutosave({
       setQuestionStatuses((prev) => ({ ...prev, [questionId]: "saved" }));
 
       if (isDirty(q)) {
-        void processQueue(questionId);
+        void processQueueRef.current?.(questionId);
       }
     } catch (err) {
       q.isSending = false;
@@ -233,13 +239,13 @@ export function useAttemptAutosave({
       }
 
       if (options?.immediate) {
-        void processQueue(questionId);
+        void processQueueRef.current?.(questionId);
       } else {
         setQuestionStatuses((prev) => ({ ...prev, [questionId]: "unsaved" }));
         updateGlobalStatus();
         q.debounceTimer = setTimeout(() => {
           q.debounceTimer = null;
-          void processQueue(questionId);
+          void processQueueRef.current?.(questionId);
         }, debounceMs);
       }
     },
@@ -254,7 +260,7 @@ export function useAttemptAutosave({
         clearTimeout(q.debounceTimer);
         q.debounceTimer = null;
       }
-      void processQueue(questionId);
+      void processQueueRef.current?.(questionId);
     },
     [processQueue],
   );

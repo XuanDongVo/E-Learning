@@ -1,7 +1,7 @@
 "use client";
 
 import { Link } from "@/i18n/navigation";
-import { MoreVertical, Users } from "lucide-react";
+import { MoreVertical } from "lucide-react";
 import { createPortal } from "react-dom";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
@@ -11,6 +11,8 @@ import {
 } from "@/components/ui/data-table/data-table";
 import type { StudentTableProps } from "@/types/student";
 import type { StudentSummary } from "@/types/student";
+import { RegionState } from "@/components/feedback";
+import { SkeletonTable } from "@/components/ui/skeleton/skeleton-table";
 
 export function StudentTable({
   students,
@@ -218,17 +220,13 @@ export function StudentTable({
       columns={columns}
       getRowKey={(student) => student.id}
       isLoading={isLoading}
-      loadingState={
-        <div className="rounded-[var(--radius-md)] border border-border-color bg-card-bg p-10 text-center text-neutral-muted">
-          {t("loading")}
-        </div>
-      }
+      loadingState={<SkeletonTable columns={7} />}
       emptyState={
-        <div className="rounded-[var(--radius-md)] border border-dashed border-border-color bg-card-bg p-10 text-center">
-          <Users className="mx-auto size-8 text-primary" />
-          <p className="mt-3 font-bold">{t("emptyTitle")}</p>
-          <p className="mt-1 text-neutral-muted">{t("emptySubtitle")}</p>
-        </div>
+        <RegionState
+          variant="empty"
+          title={t("emptyTitle")}
+          description={t("emptySubtitle")}
+        />
       }
       minWidth="760px"
       pagination={{

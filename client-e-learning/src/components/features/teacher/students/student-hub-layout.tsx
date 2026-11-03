@@ -9,6 +9,7 @@ import { ChevronRight, KeyRound, Mail, Pencil, School } from "lucide-react";
 import { teacherStudentService } from "@/services/teacher/student.service";
 import { Button } from "@/components/ui/button";
 import { getAppErrorMessage } from "@/lib/errors/app-error";
+import { FullPageState, PageBanner } from "@/components/feedback";
 
 export function StudentHubLayout({ children }: { children: React.ReactNode }) {
   const params = useParams();
@@ -43,6 +44,11 @@ export function StudentHubLayout({ children }: { children: React.ReactNode }) {
   const reset = useMutation({
     mutationFn: () => teacherStudentService.resetPassword(studentId),
     onSuccess: (res) => {
+      if (!res.data) {
+        setTempPassword(null);
+        setResetError(t("detail.error"));
+        return;
+      }
       setResetError(null);
       setTempPassword(res.data.temporaryPassword);
     },
@@ -58,6 +64,9 @@ export function StudentHubLayout({ children }: { children: React.ReactNode }) {
     { href: `${base}/activities`, label: tHub("tabs.activities") },
     { href: `${base}/profile`, label: tHub("tabs.profile") },
   ];
+
+  if (student.isLoading) return <FullPageState variant="loading" />;
+  if (student.isError || !detail) return <FullPageState variant="error" />;
 
   return (
     <div className="space-y-4">
@@ -126,7 +135,7 @@ export function StudentHubLayout({ children }: { children: React.ReactNode }) {
               <KeyRound className="size-3.5" />{" "}
               {reset.isPending ? tHub("layout.resetting") : tHub("layout.resetPassword")}
             </Button>
-            <Button size="sm" className="gap-1.5 text-xs font-bold" asChild>
+            <Button size="sm" className="gap-1.5 text-xs font-bold" render={<Link href={`${base}/edit`} />}>
               <Link href={`${base}/edit`}>
                 <Pencil className="size-3.5" /> {tHub("layout.editProfile")}
               </Link>
@@ -182,15 +191,7 @@ export function StudentHubLayout({ children }: { children: React.ReactNode }) {
         </div>
       )}
       {resetError && (
-        <p role="alert" className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-          {resetError}
-        </p>
-      )}
-
-      {student.isError && (
-        <p role="alert" className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-          {t("detail.error")}
-        </p>
+        <PageBanner tone="error" message={resetError} />
       )}
 
       <div>{children}</div>

@@ -11,6 +11,7 @@ import type {
   Gender,
   StudentGuardianRequest,
 } from "@/types/student";
+import { PageBanner } from "@/components/feedback";
 
 const emptyGuardian: StudentGuardianRequest = {
   relationship: "GUARDIAN",
@@ -63,12 +64,7 @@ export function StudentForm({ onSuccess, onCancel }: StudentFormProps) {
         </p>
       </div>
       {error && (
-        <div
-          role="alert"
-          className="rounded-md border border-red-200 bg-red-50 p-3 text-red-700"
-        >
-          {error}
-        </div>
+        <PageBanner tone="error" message={error} />
       )}
       <div className="grid gap-4 md:grid-cols-2">
         <label className="text-body font-bold">

@@ -12,6 +12,8 @@ import {
   type StudentAssignmentStatus,
 } from "@/types/teacher/student-learning";
 import { DataTable, type DataTableColumn } from "@/components/ui/data-table/data-table";
+import { RegionState } from "@/components/feedback";
+import { SkeletonTable } from "@/components/ui/skeleton/skeleton-table";
 
 const STATUS_FILTERS: Array<"ALL" | StudentAssignmentStatus> = [
   "ALL",
@@ -114,15 +116,13 @@ export function StudentAssignmentsView() {
         columns={columns}
         getRowKey={(row) => row.assignmentId}
         isLoading={query.isLoading}
-        loadingState={<p className="p-4 text-sm text-muted-foreground">{t("assignments.loading")}</p>}
+        loadingState={<SkeletonTable columns={6} />}
         errorState={
           query.isError ? (
-            <p role="alert" className="p-4 text-sm text-red-600">
-              {t("assignments.error")}
-            </p>
+            <RegionState variant="error" description={t("assignments.error")} />
           ) : undefined
         }
-        emptyState={<p className="p-4 text-sm text-muted-foreground">{t("assignments.empty")}</p>}
+        emptyState={<RegionState variant="empty" description={t("assignments.empty")} />}
         pagination={
           pageData
             ? {

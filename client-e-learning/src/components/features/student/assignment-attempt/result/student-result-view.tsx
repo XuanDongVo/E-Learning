@@ -7,7 +7,6 @@ import {
   BarChart3,
   CheckCircle2,
   Clock,
-  Loader2,
   Lock,
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
@@ -30,12 +29,10 @@ export function StudentResultView({
   result,
   assignmentTitle,
   startedAt,
-  loading,
 }: {
   result: AttemptResultResponse | null;
   assignmentTitle?: string | null;
   startedAt?: string | null;
-  loading?: boolean;
 }) {
   const t = useTranslations("student.assignmentAttempt");
   const locale = useLocale();
@@ -59,35 +56,14 @@ export function StudentResultView({
   const title = result?.assignmentTitle ?? assignmentTitle ?? t("result.title");
   const timedOut = result?.status === "TIMED_OUT";
 
-  if (loading && !result) {
-    return (
-      <div className="flex items-center justify-center gap-2 rounded-lg border bg-card p-12 text-sm text-muted-foreground">
-        <Loader2 className="h-5 w-5 animate-spin" />
-        {t("result.loading")}
-      </div>
-    );
-  }
-
   if (!result) {
-    return (
-      <div className="rounded-lg border bg-card p-8 text-center">
-        <p className="text-sm text-muted-foreground">
-          {t("result.loadFailed")}
-        </p>
-        <Button asChild variant="outline" className="mt-4">
-          <Link href="/student/assignments">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            {t("backToAssignments")}
-          </Link>
-        </Button>
-      </div>
-    );
+    return null;
   }
 
   return (
     <>
       <header className="flex h-14 items-center gap-3 border-b bg-card px-4 rounded-xl mb-4">
-        <Button variant="ghost" size="sm" asChild>
+        <Button variant="ghost" size="sm" >
           <Link href="/student/assignments">
             <ArrowLeft className="h-4 w-4" /> Danh sách bài
           </Link>
@@ -275,7 +251,7 @@ export function StudentResultView({
                 );
               })}
             </div>
-            <Button asChild variant="outline" className="mt-5 w-full">
+            <Button  variant="outline" className="mt-5 w-full">
               <Link href="/student/assignments">
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 {t("backToAssignments")}

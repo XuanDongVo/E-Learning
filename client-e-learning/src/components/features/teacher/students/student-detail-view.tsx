@@ -3,22 +3,15 @@ import type { StudentDetailViewProps } from "@/types/student";
 import { Link } from "@/i18n/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { studentService } from "@/services/student.service";
+import { FullPageState } from "@/components/feedback";
 export function StudentDetailView({ studentId }: StudentDetailViewProps) {
   const q = useQuery({
     queryKey: ["student", studentId],
     queryFn: () => studentService.get(studentId),
   });
-  if (q.isLoading)
-    return <div className="p-8 text-neutral-muted">Loading student...</div>;
+  if (q.isLoading) return <FullPageState variant="loading" />;
   if (q.isError || !q.data?.data)
-    return (
-      <div
-        role="alert"
-        className="rounded-md border border-red-200 bg-red-50 p-4 text-red-700"
-      >
-        Unable to load student.
-      </div>
-    );
+    return <FullPageState variant="error" />;
   const s = q.data.data;
   return (
     <div className="space-y-6">

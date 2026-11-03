@@ -65,7 +65,7 @@ export function DataTable<T>({
   rowClassName,
 }: DataTableProps<T>) {
   if (errorState) return errorState;
-  if (isLoading) return <SkeletonTable/>;
+  if (isLoading) return loadingState ?? <SkeletonTable />;
   if (!data.length) return emptyState;
 
   return (

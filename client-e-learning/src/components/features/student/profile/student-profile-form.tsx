@@ -7,6 +7,7 @@ import { useTranslations } from "next-intl";
 import { getAppErrorMessage } from "@/lib/errors/app-error";
 import { useQuery } from "@tanstack/react-query";
 import { studentProfileService } from "@/services/student/student-profile.service";
+import { FullPageState } from "@/components/feedback";
 
 function StudentProfileFormFields({
   profile,
@@ -178,17 +179,9 @@ export function StudentProfileForm() {
   });
   const profile = q.data?.data;
 
-  if (q.isLoading)
-    return <div className="p-8 text-neutral-muted">Loading profile...</div>;
+  if (q.isLoading) return <FullPageState variant="loading" title="Loading profile..." />;
   if (q.isError || !profile)
-    return (
-      <div
-        role="alert"
-        className="rounded-md border border-red-200 bg-red-50 p-4 text-red-700"
-      >
-        Unable to load profile.
-      </div>
-    );
+    return <FullPageState variant="error" title="Unable to load profile." />;
 
   return (
     <StudentProfileFormFields

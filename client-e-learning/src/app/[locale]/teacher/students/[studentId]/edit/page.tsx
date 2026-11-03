@@ -109,7 +109,7 @@ export default function StudentEditPage() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" className="text-xs font-bold" asChild>
+          <Button variant="outline" size="sm" className="text-xs font-bold">
             <Link href={`/teacher/students/${studentId}/profile`}>Hủy</Link>
           </Button>
           <Button

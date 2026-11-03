@@ -103,7 +103,7 @@ export default function StudentOverviewPage() {
           title="Bài tập"
           description="Theo trạng thái attempt thực tế"
           action={
-            <Button variant="ghost" size="sm" className="gap-1 text-xs font-semibold" asChild>
+            <Button variant="ghost" size="sm" className="gap-1 text-xs font-semibold" >
               <Link href={`${base}/assignments`}>
                 Xem tất cả <ArrowRight className="size-3.5" />
               </Link>
@@ -145,7 +145,7 @@ export default function StudentOverviewPage() {
           title="Luyện tập gần đây"
           description="ActivitySession — practice"
           action={
-            <Button variant="ghost" size="sm" className="gap-1 text-xs font-semibold" asChild>
+            <Button variant="ghost" size="sm" className="gap-1 text-xs font-semibold" >
               <Link href={`${base}/activities`}>
                 Xem lịch sử <ArrowRight className="size-3.5" />
               </Link>

@@ -96,7 +96,7 @@ export default function StudentDetailLayout({ children }: { children: React.Reac
             >
               <KeyRound className="size-3.5" /> Đặt lại mật khẩu
             </Button>
-            <Button size="sm" className="gap-1.5 text-xs font-bold" asChild>
+            <Button size="sm" className="gap-1.5 text-xs font-bold" >
               <Link href={`${base}/edit`}>
                 <Pencil className="size-3.5" /> Sửa hồ sơ
               </Link>

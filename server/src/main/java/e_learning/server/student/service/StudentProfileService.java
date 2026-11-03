@@ -97,7 +97,7 @@ public class StudentProfileService {
                 classEntity.getGrade().getName(),
                 classEntity.getAcademicYear(),
                 member.getStatus(),
-                member.getJoinedAt(),
+                null,
                 user.getStatus().name()
         );
     }

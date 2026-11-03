@@ -34,7 +34,7 @@ export default function StudentProfilePage() {
       <ProfileCard
         title="Thông tin cá nhân"
         action={
-          <Button variant="outline" size="sm" className="h-7 gap-1 text-xs font-bold" asChild>
+          <Button variant="outline" size="sm" className="h-7 gap-1 text-xs font-bold" >
             <Link href={`/teacher/students/${studentId}/edit`}>
               <Pencil className="size-3" /> Sửa
             </Link>

@@ -13,11 +13,10 @@ import { useLocale, useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import type { AttemptResultResponse } from "@/types/student/assignment-attempt";
 import { cn } from "@/lib/utils";
+import { formatDateTime, formatDurationRange } from "@/utils/format";
 import { ResultQuestionCard } from "./result-question-card";
 import {
   FilterType,
-  formatDuration,
-  formatWhen,
   mapStatus,
   percentDisplay,
   points,
@@ -120,15 +119,15 @@ export function StudentResultView({
               <dl className="mt-3 grid grid-cols-2 gap-x-6 gap-y-2 text-xs sm:grid-cols-4">
                 <SummaryItem
                   label={t("result.startedAt")}
-                  value={formatWhen(effectiveStartedAt, locale)}
+                  value={formatDateTime(effectiveStartedAt, locale)}
                 />
                 <SummaryItem
                   label={t("result.finishedAt")}
-                  value={formatWhen(finishedAt, locale)}
+                  value={formatDateTime(finishedAt, locale)}
                 />
                 <SummaryItem
                   label={t("result.duration")}
-                  value={formatDuration(effectiveStartedAt, finishedAt)}
+                  value={formatDurationRange(effectiveStartedAt, finishedAt)}
                 />
                 <SummaryItem
                   label={t("result.answered")}

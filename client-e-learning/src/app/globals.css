@@ -393,6 +393,22 @@
   border-radius: 1rem;
 }
 
+@utility grid-paper {
+  background-color: var(--card, #ffffff);
+  background-image: 
+    linear-gradient(to right, rgb(0 0 0 / 0.06) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(0 0 0 / 0.06) 1px, transparent 1px);
+  background-size: 20px 20px; 
+}
+
+/* Hỗ trợ chế độ Dark Mode (nếu có) */
+:is(.dark .grid-paper) {
+  background-image: 
+    linear-gradient(to right, rgb(255 255 255 / 0.08) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(255 255 255 / 0.08) 1px, transparent 1px);
+}
+
+
 /* =========================================================
    ACCESSIBILITY
    ========================================================= */

@@ -3,10 +3,10 @@
 import { Link } from "@/i18n/navigation";
 import { useParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Pencil } from "lucide-react";
 import { teacherStudentService } from "@/services/teacher/student.service";
-import { formatDate } from "@/mock/mock-student-data";
+import { formatDate } from "@/utils/format";
 import { Button } from "@/components/ui/button";
 import { SkeletonCard } from "@/components/ui/skeleton/skeleton-card";
 
@@ -17,6 +17,7 @@ export function StudentProfileView() {
   const tHub = useTranslations("teacher.students.hub");
   const tDetail = useTranslations("teacher.students.detail");
   const tForm = useTranslations("teacher.students.form");
+  const locale = useLocale();
 
   const student = useQuery({
     queryKey: ["teacher-student", studentId],
@@ -70,7 +71,7 @@ export function StudentProfileView() {
         }
         items={[
           [tForm("fullName"), d?.fullName ?? "—"],
-          [tDetail("dob"), formatDate(d?.dateOfBirth)],
+          [tDetail("dob"), formatDate(d?.dateOfBirth, locale)],
           [tDetail("gender"), gender],
         ]}
       />

@@ -6,8 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useLocale, useTranslations } from "next-intl";
 import { ArrowRight } from "lucide-react";
 import { teacherStudentService } from "@/services/teacher/student.service";
-import { formatDate } from "@/mock/mock-student-data";
-import { formatDateTime, formatScorePercent } from "@/types/teacher/student-learning";
+import { formatDate, formatDateTime, formatScorePercent } from "@/utils/format";
 import { Button } from "@/components/ui/button";
 
 export function StudentOverviewView() {
@@ -85,7 +84,7 @@ export function StudentOverviewView() {
       <div className="grid content-start gap-5">
         <Panel title={t("overview.personal")}>
           <dl className="divide-y divide-border px-5 py-2 text-sm">
-            <Row label={tDetail("dob")} value={formatDate(d?.dateOfBirth)} />
+            <Row label={tDetail("dob")} value={formatDate(d?.dateOfBirth, locale)} />
             <Row label={tDetail("gender")} value={gender} />
             <Row label={tDetail("phone")} value={d?.phone || "—"} />
             <Row label={t("profile.grade")} value={d?.gradeName || "—"} />
@@ -104,7 +103,7 @@ export function StudentOverviewView() {
             />
             <Row label={t("overview.membershipStatus")} value={membership} />
             <Row label={t("overview.academicYear")} value={d?.academicYear || "—"} />
-            <Row label={t("overview.joinedAt")} value={formatDate(d?.joinedAt)} />
+            <Row label={t("overview.joinedAt")} value={formatDate(d?.joinedAt, locale)} />
           </dl>
         </Panel>
 

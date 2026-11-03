@@ -8,6 +8,7 @@ import { useTranslations } from "next-intl";
 import { ChevronRight, KeyRound, Mail, Pencil, School } from "lucide-react";
 import { teacherStudentService } from "@/services/teacher/student.service";
 import { Button } from "@/components/ui/button";
+import { getInitials } from "@/utils/format";
 import { getAppErrorMessage } from "@/lib/errors/app-error";
 import { FullPageState, PageBanner } from "@/components/feedback";
 
@@ -30,13 +31,7 @@ export function StudentHubLayout({ children }: { children: React.ReactNode }) {
   });
   const detail = student.data?.data;
   const name = detail?.fullName ?? "…";
-  const initials = name
-    .split(" ")
-    .filter(Boolean)
-    .map((p) => p[0])
-    .join("")
-    .slice(-2)
-    .toUpperCase();
+  const initials = getInitials(detail?.fullName);
 
   const accountActive = detail?.accountStatus !== "INACTIVE";
   const accountLabel = accountActive ? t("active") : t("locked");

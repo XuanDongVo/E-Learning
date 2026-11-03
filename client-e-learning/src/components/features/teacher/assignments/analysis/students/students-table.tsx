@@ -5,13 +5,7 @@ import { Button } from "@/components/ui/button";
 import { DataTable, type DataTableColumn } from "@/components/ui/data-table/data-table";
 import type { StudentResultRow } from "@/types/assignment-analysis";
 import { RegionState } from "@/components/feedback";
-
-function formatDuration(seconds: number | null) {
-  if (seconds == null) return "—";
-  const m = Math.floor(seconds / 60);
-  const s = seconds % 60;
-  return `${m}:${String(s).padStart(2, "0")}`;
-}
+import { formatDurationSeconds, formatScorePercent } from "@/utils/format";
 
 export function StudentsTable({
   rows,
@@ -26,8 +20,8 @@ export function StudentsTable({
     { id: "class", header: t("col.class"), cell: (row) => row.className },
     { id: "status", header: t("col.status"), cell: (row) => t(`status.${row.lifecycleStatus}`) },
     { id: "deadline", header: t("col.deadline"), cell: (row) => t(`deadlineState.${row.deadlineState}`) },
-    { id: "score", header: t("col.score"), cell: (row) => <span className="tabular-nums">{row.scorePercent == null ? "—" : `${row.scorePercent.toFixed(0)}%`}</span> },
-    { id: "duration", header: t("col.duration"), cell: (row) => <span className="tabular-nums">{formatDuration(row.durationSeconds)}</span> },
+    { id: "score", header: t("col.score"), cell: (row) => <span className="tabular-nums">{formatScorePercent(row.scorePercent, 0)}</span> },
+    { id: "duration", header: t("col.duration"), cell: (row) => <span className="tabular-nums">{formatDurationSeconds(row.durationSeconds)}</span> },
     {
       id: "actions",
       header: null,

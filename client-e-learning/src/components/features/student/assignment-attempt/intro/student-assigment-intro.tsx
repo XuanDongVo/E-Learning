@@ -13,6 +13,7 @@ import {
 import { useLocale, useTranslations } from "next-intl";
 import { Pipo, type PipoMood } from "@/components/ui/mascot";
 import type { AttemptIntroResponse } from "@/types/student/assignment-attempt";
+import { formatDueAt } from "@/utils/format";
 
 export interface StudentAssignmentIntroProps {
   data: AttemptIntroResponse;
@@ -20,24 +21,6 @@ export interface StudentAssignmentIntroProps {
   onStart?: () => void;
   onResume?: () => void;
   onViewResult?: () => void;
-}
-
-function formatDueAt(isoDate: string, locale: string): string {
-  try {
-    const d = new Date(isoDate);
-    if (isNaN(d.getTime())) return isoDate;
-
-    return new Intl.DateTimeFormat(locale, {
-      weekday: "long",
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    }).format(d);
-  } catch {
-    return isoDate;
-  }
 }
 
 export function StudentAssignmentIntro({

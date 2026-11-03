@@ -25,5 +25,6 @@
 - Teacher DataTable refactor added a generic React/TypeScript core at `client-e-learning/src/components/ui/data-table/data-table.tsx`.
 - Student result view now consumes the expanded server result DTO, has no mock/demo fallback, and uses localized, split review components.
 - Frontend state audit and migration started: page-level loading uses `FullPageState`, list/table regions use matching skeletons, and region error/empty states use `RegionState`. The migration matrix is in `.agent/frontend-state-audit.md`.
+- Shared frontend formatting utilities now live under `client-e-learning/src/utils/format/`; date/time, score, duration, and initials consumers use the barrel exports instead of local/type/mock helpers.
 - StudentTable, ActivityWorkspace, Assignment Analysis class comparison/classes/sections/students tables now use the shared column/pagination presentation while retaining feature-owned renderers and behavior.
 - Expandable question analysis rows and content import preview remain specialized tables because their nested row interaction is not representable by the minimal DataTable column contract without changing behavior.

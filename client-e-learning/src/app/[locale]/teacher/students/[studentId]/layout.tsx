@@ -3,9 +3,9 @@
 import { Link, usePathname } from "@/i18n/navigation";
 import { useParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslations } from "next-intl";
 import { ChevronRight, KeyRound, Mail, Pencil, School } from "lucide-react";
 import { teacherStudentService } from "@/services/teacher/student.service";
-import { accountStatusLabel } from "@/mock/mock-student-data";
 import { Button } from "@/components/ui/button";
 
 export default function StudentDetailLayout({ children }: { children: React.ReactNode }) {
@@ -13,6 +13,8 @@ export default function StudentDetailLayout({ children }: { children: React.Reac
   const studentId = Number(params.studentId);
   const pathname = usePathname();
   const base = `/teacher/students/${studentId}`;
+  const t = useTranslations("teacher.students");
+  const tHub = useTranslations("teacher.students.hub");
 
   const student = useQuery({
     queryKey: ["teacher-student", studentId],
@@ -28,20 +30,22 @@ export default function StudentDetailLayout({ children }: { children: React.Reac
     .join("")
     .slice(-2)
     .toUpperCase();
-  const accountLabel = accountStatusLabel(detail?.accountStatus);
+
+  const accountActive = detail?.accountStatus !== "INACTIVE";
+  const accountLabel = accountActive ? t("active") : t("locked");
 
   const tabs = [
-    { href: base, label: "Tổng quan", exact: true },
-    { href: `${base}/assignments`, label: "Bài tập" },
-    { href: `${base}/activities`, label: "Luyện tập" },
-    { href: `${base}/profile`, label: "Hồ sơ" },
+    { href: base, label: tHub("tabs.overview"), exact: true },
+    { href: `${base}/assignments`, label: tHub("tabs.assignments") },
+    { href: `${base}/activities`, label: tHub("tabs.activities") },
+    { href: `${base}/profile`, label: tHub("tabs.profile") },
   ];
 
   return (
     <div className="space-y-4">
       <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
         <Link href="/teacher/students" className="hover:text-foreground">
-          Học sinh
+          {t("title")}
         </Link>
         <ChevronRight className="size-3.5" />
         <span className="text-foreground">{name}</span>
@@ -58,15 +62,15 @@ export default function StudentDetailLayout({ children }: { children: React.Reac
                 <h1 className="text-2xl font-extrabold">{name}</h1>
                 <span
                   className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold ${
-                    detail?.accountStatus === "INACTIVE"
-                      ? "bg-muted text-muted-foreground"
-                      : "bg-emerald-500/10 text-emerald-600"
+                    accountActive
+                      ? "bg-emerald-500/10 text-emerald-600"
+                      : "bg-amber-500/10 text-amber-700"
                   }`}
                 >
                   {accountLabel}
                 </span>
               </div>
-              <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+              <div className="mt-1 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
                 {detail?.email && (
                   <span className="inline-flex items-center gap-1">
                     <Mail className="size-3.5" />
@@ -77,7 +81,7 @@ export default function StudentDetailLayout({ children }: { children: React.Reac
                   <School className="size-3.5" />
                   {detail?.membershipStatus === "ACTIVE" && detail.className
                     ? detail.className
-                    : "Chưa có lớp"}
+                    : t("noActiveClass")}
                 </span>
                 {detail?.gradeName && (
                   <span className="font-semibold">{detail.gradeName}</span>
@@ -92,13 +96,13 @@ export default function StudentDetailLayout({ children }: { children: React.Reac
               size="sm"
               className="gap-1.5 text-xs font-bold"
               disabled
-              title="API đặt lại mật khẩu chưa có"
+              title={tHub("layout.resetPasswordSoon")}
             >
-              <KeyRound className="size-3.5" /> Đặt lại mật khẩu
+              <KeyRound className="size-3.5" /> {tHub("layout.resetPassword")}
             </Button>
-            <Button size="sm" className="gap-1.5 text-xs font-bold" >
+            <Button size="sm" className="gap-1.5 text-xs font-bold" asChild>
               <Link href={`${base}/edit`}>
-                <Pencil className="size-3.5" /> Sửa hồ sơ
+                <Pencil className="size-3.5" /> {tHub("layout.editProfile")}
               </Link>
             </Button>
           </div>
@@ -135,7 +139,7 @@ export default function StudentDetailLayout({ children }: { children: React.Reac
 
       {student.isError && (
         <p role="alert" className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-          Không tải được thông tin học sinh. Kiểm tra quyền hoặc ID.
+          {t("detail.error")}
         </p>
       )}
 

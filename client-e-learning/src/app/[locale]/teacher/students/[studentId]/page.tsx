@@ -6,13 +6,19 @@ import { useQuery } from "@tanstack/react-query";
 import { ArrowRight } from "lucide-react";
 import { teacherStudentService } from "@/services/teacher/student.service";
 import {
-  mockAssignments,
-  mockSessions,
   formatDate,
   genderLabel,
-  relationshipLabel,
   membershipLabel,
+  relationshipLabel,
 } from "@/mock/mock-student-data";
+import {
+  ASSIGNMENT_STATUS_LABEL,
+  SESSION_MODE_LABEL,
+  SESSION_STATUS_LABEL,
+  formatDateTime,
+  formatScorePercent,
+  type StudentAssignmentStatus,
+} from "@/types/teacher/student-learning";
 import { Button } from "@/components/ui/button";
 
 export default function StudentOverviewPage() {
@@ -25,17 +31,31 @@ export default function StudentOverviewPage() {
     queryFn: () => teacherStudentService.get(studentId),
     enabled: Number.isFinite(studentId),
   });
+  const assignments = useQuery({
+    queryKey: ["teacher-student-assignments", studentId],
+    queryFn: () => teacherStudentService.listAssignments(studentId),
+    enabled: Number.isFinite(studentId),
+  });
+  const sessions = useQuery({
+    queryKey: ["teacher-student-sessions", studentId],
+    queryFn: () => teacherStudentService.listActivitySessions(studentId),
+    enabled: Number.isFinite(studentId),
+  });
+
   const d = student.data?.data;
   const primary = d?.guardians?.find((g) => g.primary) ?? d?.guardians?.[0];
+  const assignmentItems = assignments.data?.data ?? [];
+  const sessionItems = sessions.data?.data ?? [];
 
-  const count = (status: string) => mockAssignments.filter((a) => a.status === status).length;
+  const count = (status: StudentAssignmentStatus) =>
+    assignmentItems.filter((a) => a.status === status).length;
   const counts = [
-    { label: "Đã giao", val: mockAssignments.length },
-    { label: "Đã nộp", val: count("Đã nộp") },
-    { label: "Nộp muộn", val: count("Nộp muộn") },
-    { label: "Hết giờ", val: count("Hết giờ") },
-    { label: "Chưa làm", val: count("Chưa làm") },
-    { label: "Đang làm", val: count("Đang làm") },
+    { label: "Đã giao", val: assignmentItems.length },
+    { label: "Đã nộp", val: count("SUBMITTED") },
+    { label: "Nộp muộn", val: count("LATE") },
+    { label: "Hết giờ", val: count("TIMED_OUT") },
+    { label: "Chưa làm", val: count("NOT_STARTED") },
+    { label: "Đang làm", val: count("IN_PROGRESS") },
   ];
 
   return (
@@ -81,7 +101,7 @@ export default function StudentOverviewPage() {
       <div className="grid content-start gap-5">
         <Panel
           title="Bài tập"
-          description="Tóm tắt theo trạng thái attempt (dữ liệu mẫu đến khi có API theo học sinh)"
+          description="Theo trạng thái attempt thực tế"
           action={
             <Button variant="ghost" size="sm" className="gap-1 text-xs font-semibold" asChild>
               <Link href={`${base}/assignments`}>
@@ -99,15 +119,22 @@ export default function StudentOverviewPage() {
             ))}
           </div>
           <div className="divide-y divide-border">
-            {mockAssignments.slice(0, 3).map((a) => (
+            {assignmentItems.length === 0 && (
+              <p className="p-4 text-sm text-muted-foreground">Chưa có bài tập.</p>
+            )}
+            {assignmentItems.slice(0, 3).map((a) => (
               <div key={a.assignmentId} className="flex items-center justify-between p-4 text-xs">
                 <div>
                   <p className="text-sm font-bold">{a.title}</p>
-                  <p className="mt-0.5 text-muted-foreground">Hạn: {a.due}</p>
+                  <p className="mt-0.5 text-muted-foreground">Hạn: {formatDateTime(a.dueAt)}</p>
                 </div>
                 <div className="flex items-center gap-3">
-                  <StatusPill status={a.status} />
-                  <span className="min-w-10 text-right text-sm font-extrabold">{a.score ?? "—"}</span>
+                  <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] font-bold">
+                    {ASSIGNMENT_STATUS_LABEL[a.status]}
+                  </span>
+                  <span className="min-w-10 text-right text-sm font-extrabold">
+                    {formatScorePercent(a.scorePercent)}
+                  </span>
                 </div>
               </div>
             ))}
@@ -116,7 +143,7 @@ export default function StudentOverviewPage() {
 
         <Panel
           title="Luyện tập gần đây"
-          description="ActivitySession — practice, không phải điểm chính thức"
+          description="ActivitySession — practice"
           action={
             <Button variant="ghost" size="sm" className="gap-1 text-xs font-semibold" asChild>
               <Link href={`${base}/activities`}>
@@ -126,18 +153,26 @@ export default function StudentOverviewPage() {
           }
         >
           <div className="divide-y divide-border">
-            {mockSessions.slice(0, 3).map((s) => (
-              <div key={s.id} className="flex items-center justify-between p-4 text-xs">
+            {sessionItems.length === 0 && (
+              <p className="p-4 text-sm text-muted-foreground">Chưa có phiên luyện tập.</p>
+            )}
+            {sessionItems.slice(0, 3).map((s) => (
+              <div key={s.sessionId} className="flex items-center justify-between p-4 text-xs">
                 <div>
-                  <p className="text-sm font-bold">{s.activity}</p>
+                  <p className="text-sm font-bold">{s.activityName}</p>
                   <p className="mt-0.5 text-muted-foreground">
-                    {s.unit} · {s.completedAt}
+                    {s.unitLabel} · {formatDateTime(s.completedAt ?? s.startedAt)}
                   </p>
                 </div>
                 <div className="text-right">
-                  <span className="font-bold text-primary">{s.mode}</span>
+                  <span className="font-bold text-primary">
+                    {SESSION_MODE_LABEL[s.mode] ?? s.mode}
+                  </span>
                   <p className="text-muted-foreground">
-                    {s.status === "Bỏ dở" ? "—" : `${s.firstCorrect}/${s.total} đúng lần đầu`}
+                    {SESSION_STATUS_LABEL[s.status] ?? s.status}
+                    {s.status !== "ABANDONED"
+                      ? ` · ${s.firstCorrectCount}/${s.totalQuestions}`
+                      : ""}
                   </p>
                 </div>
               </div>
@@ -181,16 +216,4 @@ function Row({ label, value }: { label: string; value: string }) {
       <dd className="text-right font-semibold">{value}</dd>
     </div>
   );
-}
-
-function StatusPill({ status }: { status: string }) {
-  const color =
-    status === "Đã nộp"
-      ? "bg-emerald-500/10 text-emerald-600"
-      : status === "Nộp muộn" || status === "Hết giờ"
-        ? "bg-amber-500/10 text-amber-600"
-        : status === "Đang làm"
-          ? "bg-primary/10 text-primary"
-          : "bg-muted text-muted-foreground";
-  return <span className={`rounded-full px-2 py-0.5 text-[11px] font-bold ${color}`}>{status}</span>;
 }

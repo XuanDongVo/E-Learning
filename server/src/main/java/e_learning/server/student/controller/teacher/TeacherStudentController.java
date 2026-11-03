@@ -50,6 +50,16 @@ public class TeacherStudentController {
         );
     }
 
+    @GetMapping("/{studentId}/learning-summary")
+    public ApiResponse<StudentLearningSummaryResponse> learningSummary(
+            @PathVariable Long studentId,
+            @AuthenticationPrincipal Jwt jwt
+    ) {
+        return ApiResponse.success(
+                learningService.summary(studentId, Long.valueOf(Objects.requireNonNull(jwt.getSubject())))
+        );
+    }
+
     @GetMapping("/{studentId}/assignments")
     public ApiResponse<PageResponse<StudentAssignmentItemResponse>> assignments(
             @PathVariable Long studentId,
@@ -62,9 +72,7 @@ public class TeacherStudentController {
                 learningService.listAssignments(
                         studentId,
                         Long.valueOf(Objects.requireNonNull(jwt.getSubject())),
-                        status,
-                        page,
-                        size
+                        status, page, size
                 )
         );
     }
@@ -82,10 +90,7 @@ public class TeacherStudentController {
                 learningService.listActivitySessions(
                         studentId,
                         Long.valueOf(Objects.requireNonNull(jwt.getSubject())),
-                        mode,
-                        status,
-                        page,
-                        size
+                        mode, status, page, size
                 )
         );
     }

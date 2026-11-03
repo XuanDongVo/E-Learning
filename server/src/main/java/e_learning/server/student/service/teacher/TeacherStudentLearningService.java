@@ -15,8 +15,12 @@ import e_learning.server.classes.repository.ClassRepository;
 import e_learning.server.common.dto.PageResponse;
 import e_learning.server.student.dto.StudentActivitySessionItemResponse;
 import e_learning.server.student.dto.StudentAssignmentItemResponse;
+import e_learning.server.student.dto.StudentLearningSummaryResponse;
 import e_learning.server.student.service.StudentProfileService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -53,24 +57,35 @@ public class TeacherStudentLearningService {
     ) {
         profileService.getForTeacher(studentId, teacherId);
 
-        List<ActivitySession> sessions =
-                sessionRepository.findAllByStudentIdWithActivityOrderByStartedAtDesc(studentId);
+        ActivityMode modeEnum = StringUtils.hasText(mode) ? parseMode(mode) : null;
+        ActivitySessionStatus statusEnum = StringUtils.hasText(status) ? parseSessionStatus(status) : null;
 
-        if (StringUtils.hasText(mode)) {
-            ActivityMode modeEnum = parseMode(mode);
-            if (modeEnum != null) {
-                sessions = sessions.stream().filter(s -> s.getMode() == modeEnum).toList();
-            }
-        }
-        if (StringUtils.hasText(status)) {
-            ActivitySessionStatus statusEnum = parseSessionStatus(status);
-            if (statusEnum != null) {
-                sessions = sessions.stream().filter(s -> s.getStatus() == statusEnum).toList();
-            }
-        }
+        int safeSize = size <= 0 ? 20 : size;
+        int safePage = Math.max(1, page);
+        PageRequest pageable = PageRequest.of(safePage - 1, safeSize, Sort.by(Sort.Direction.DESC, "startedAt"));
 
-        List<StudentActivitySessionItemResponse> rows = sessions.stream().map(this::toSessionRow).toList();
-        return PageResponse.fromList(rows, page, size);
+        Page<ActivitySession> result = sessionRepository.searchByStudent(
+                studentId, modeEnum, statusEnum, pageable
+        );
+        List<StudentActivitySessionItemResponse> rows = result.getContent().stream()
+                .map(this::toSessionRow)
+                .toList();
+        return PageResponse.from(result, rows);
+    }
+
+    @Transactional(readOnly = true)
+    public StudentLearningSummaryResponse summary(Long studentId, Long teacherId) {
+        profileService.getForTeacher(studentId, teacherId);
+        List<StudentAssignmentItemResponse> rows = buildAssignmentRows(studentId, teacherId);
+        long submitted = rows.stream().filter(r -> "SUBMITTED".equals(r.status())).count();
+        long late = rows.stream().filter(r -> "LATE".equals(r.status())).count();
+        long timedOut = rows.stream().filter(r -> "TIMED_OUT".equals(r.status())).count();
+        long notStarted = rows.stream().filter(r -> "NOT_STARTED".equals(r.status())).count();
+        long inProgress = rows.stream().filter(r -> "IN_PROGRESS".equals(r.status())).count();
+        long sessionTotal = sessionRepository.countByStudentId(studentId);
+        return new StudentLearningSummaryResponse(
+                rows.size(), submitted, late, timedOut, notStarted, inProgress, sessionTotal
+        );
     }
 
     private List<StudentAssignmentItemResponse> buildAssignmentRows(Long studentId, Long teacherId) {

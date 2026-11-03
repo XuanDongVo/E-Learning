@@ -3,127 +3,169 @@
 import { useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
+import { useLocale, useTranslations } from "next-intl";
 import { teacherStudentService } from "@/services/teacher/student.service";
 import {
-  SESSION_MODE_LABEL,
-  SESSION_STATUS_LABEL,
   formatDateTime,
+  type StudentActivitySessionItem,
 } from "@/types/teacher/student-learning";
+import { DataTable, type DataTableColumn } from "@/components/ui/data-table/data-table";
 
 export default function StudentActivitiesPage() {
   const params = useParams();
   const studentId = Number(params.studentId);
+  const t = useTranslations("teacher.students.hub");
+  const tTable = useTranslations("teacher.students.table");
+  const locale = useLocale();
   const [mode, setMode] = useState<"all" | "LEARNING" | "TRY_HARD">("all");
   const [status, setStatus] = useState<"all" | string>("all");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
 
   const query = useQuery({
-    queryKey: ["teacher-student-sessions", studentId],
-    queryFn: () => teacherStudentService.listActivitySessions(studentId),
+    queryKey: ["teacher-student-sessions", studentId, mode, status, page, pageSize],
+    queryFn: () =>
+      teacherStudentService.listActivitySessions(studentId, {
+        mode,
+        status,
+        page,
+        size: pageSize,
+      }),
     enabled: Number.isFinite(studentId),
   });
-  const items = query.data?.data ?? [];
-  const rows = useMemo(
-    () =>
-      items.filter((s) => {
-        const modeOk = mode === "all" || s.mode === mode;
-        const statusOk = status === "all" || s.status === status;
-        return modeOk && statusOk;
-      }),
-    [items, mode, status],
+  const pageData = query.data?.data;
+  const items = pageData?.items ?? [];
+
+  const columns: DataTableColumn<StudentActivitySessionItem>[] = useMemo(
+    () => [
+      {
+        id: "activity",
+        header: t("activities.colActivity"),
+        cell: (row) => (
+          <div>
+            <p className="text-sm font-bold">{row.activityName}</p>
+            <p className="text-muted-foreground">{row.unitLabel}</p>
+          </div>
+        ),
+      },
+      {
+        id: "mode",
+        header: t("activities.colMode"),
+        cell: (row) => (
+          <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-bold text-primary">
+            {t(`sessionMode.${row.mode}`)}
+          </span>
+        ),
+      },
+      {
+        id: "status",
+        header: t("activities.colStatus"),
+        cell: (row) => (
+          <SessionPill status={row.status} label={t(`sessionStatus.${row.status}`)} />
+        ),
+      },
+      {
+        id: "result",
+        header: t("activities.colResult"),
+        cell: (row) =>
+          row.status === "ABANDONED"
+            ? "—"
+            : t("activities.resultLine", {
+                first: row.firstCorrectCount,
+                total: row.totalQuestions,
+                hints: row.hintUsedCount,
+              }),
+        className: "text-muted-foreground",
+      },
+      {
+        id: "completed",
+        header: t("activities.colCompleted"),
+        cell: (row) => formatDateTime(row.completedAt ?? row.startedAt, locale),
+        className: "text-muted-foreground",
+      },
+    ],
+    [t, locale],
   );
 
   return (
-    <div className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
-      <div className="flex flex-col gap-3 border-b border-border p-4 sm:flex-row sm:items-center sm:justify-between">
+    <div className="space-y-3">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h2 className="text-sm font-extrabold">Lịch sử luyện tập</h2>
-          <p className="mt-0.5 text-xs text-muted-foreground">
-            ActivitySession của học sinh (COMPLETED / GAME_OVER / ABANDONED / IN_PROGRESS).
-          </p>
+          <h2 className="text-sm font-extrabold">{t("activities.title")}</h2>
+          <p className="mt-0.5 text-xs text-muted-foreground">{t("activities.subtitle")}</p>
         </div>
         <div className="flex flex-wrap gap-2">
           <select
             className="h-9 rounded-md border border-border bg-card px-2 text-xs font-semibold"
             value={mode}
-            onChange={(e) => setMode(e.target.value as typeof mode)}
-            aria-label="Lọc chế độ"
+            onChange={(e) => {
+              setMode(e.target.value as typeof mode);
+              setPage(1);
+            }}
+            aria-label={t("activities.modeAll")}
           >
-            <option value="all">Mọi chế độ</option>
-            <option value="LEARNING">Learning</option>
-            <option value="TRY_HARD">Try Hard</option>
+            <option value="all">{t("activities.modeAll")}</option>
+            <option value="LEARNING">{t("sessionMode.LEARNING")}</option>
+            <option value="TRY_HARD">{t("sessionMode.TRY_HARD")}</option>
           </select>
           <select
             className="h-9 rounded-md border border-border bg-card px-2 text-xs font-semibold"
             value={status}
-            onChange={(e) => setStatus(e.target.value)}
-            aria-label="Lọc trạng thái"
+            onChange={(e) => {
+              setStatus(e.target.value);
+              setPage(1);
+            }}
+            aria-label={t("activities.statusAll")}
           >
-            <option value="all">Mọi trạng thái</option>
-            <option value="COMPLETED">Hoàn thành</option>
-            <option value="GAME_OVER">Hết mạng sống</option>
-            <option value="ABANDONED">Bỏ dở</option>
-            <option value="IN_PROGRESS">Đang làm</option>
+            <option value="all">{t("activities.statusAll")}</option>
+            <option value="COMPLETED">{t("sessionStatus.COMPLETED")}</option>
+            <option value="GAME_OVER">{t("sessionStatus.GAME_OVER")}</option>
+            <option value="ABANDONED">{t("sessionStatus.ABANDONED")}</option>
+            <option value="IN_PROGRESS">{t("sessionStatus.IN_PROGRESS")}</option>
           </select>
         </div>
       </div>
 
-      {query.isLoading && <p className="p-4 text-sm text-muted-foreground">Đang tải lịch sử…</p>}
-      {query.isError && (
-        <p role="alert" className="p-4 text-sm text-red-600">
-          Không tải được lịch sử luyện tập.
-        </p>
-      )}
-      {!query.isLoading && !query.isError && rows.length === 0 && (
-        <p className="p-4 text-sm text-muted-foreground">Chưa có phiên luyện tập.</p>
-      )}
-
-      {rows.length > 0 && (
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[720px] text-left text-xs">
-            <thead className="border-b border-border bg-muted/40 text-[11px] font-bold uppercase tracking-wide text-muted-foreground">
-              <tr>
-                <th className="px-4 py-3">Hoạt động</th>
-                <th className="px-4 py-3">Chế độ</th>
-                <th className="px-4 py-3">Trạng thái</th>
-                <th className="px-4 py-3">Kết quả</th>
-                <th className="px-4 py-3">Hoàn thành</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {rows.map((s) => (
-                <tr key={s.sessionId} className="hover:bg-muted/30">
-                  <td className="px-4 py-3">
-                    <p className="text-sm font-bold">{s.activityName}</p>
-                    <p className="text-muted-foreground">{s.unitLabel}</p>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-bold text-primary">
-                      {SESSION_MODE_LABEL[s.mode] ?? s.mode}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <SessionPill status={s.status} />
-                  </td>
-                  <td className="px-4 py-3 text-muted-foreground">
-                    {s.status === "ABANDONED"
-                      ? "—"
-                      : `${s.firstCorrectCount}/${s.totalQuestions} đúng lần đầu · ${s.hintUsedCount} gợi ý`}
-                  </td>
-                  <td className="px-4 py-3 text-muted-foreground">
-                    {formatDateTime(s.completedAt ?? s.startedAt)}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+      <DataTable
+        data={items}
+        columns={columns}
+        getRowKey={(row) => row.sessionId}
+        isLoading={query.isLoading}
+        loadingState={<p className="p-4 text-sm text-muted-foreground">{t("activities.loading")}</p>}
+        errorState={
+          query.isError ? (
+            <p role="alert" className="p-4 text-sm text-red-600">
+              {t("activities.error")}
+            </p>
+          ) : undefined
+        }
+        emptyState={<p className="p-4 text-sm text-muted-foreground">{t("activities.empty")}</p>}
+        pagination={
+          pageData
+            ? {
+                page: pageData.page,
+                totalPages: Math.max(1, pageData.totalPages),
+                totalElements: pageData.totalElements,
+                pageSize: pageData.size,
+                totalLabel: tTable("totalStudents", { total: pageData.totalElements }),
+                showLabel: tTable("show"),
+                perPageLabel: tTable("perPage"),
+                previousLabel: tTable("previous"),
+                nextLabel: tTable("next"),
+                onPageChange: setPage,
+                onPageSizeChange: (size) => {
+                  setPageSize(size);
+                  setPage(1);
+                },
+              }
+            : undefined
+        }
+      />
     </div>
   );
 }
 
-function SessionPill({ status }: { status: string }) {
-  const label = SESSION_STATUS_LABEL[status] ?? status;
+function SessionPill({ status, label }: { status: string; label: string }) {
   const color =
     status === "COMPLETED"
       ? "bg-emerald-500/10 text-emerald-600"

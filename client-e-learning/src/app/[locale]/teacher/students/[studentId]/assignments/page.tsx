@@ -3,15 +3,17 @@
 import { useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
+import { useLocale, useTranslations } from "next-intl";
 import { teacherStudentService } from "@/services/teacher/student.service";
 import {
-  ASSIGNMENT_STATUS_LABEL,
   formatDateTime,
   formatScorePercent,
+  type StudentAssignmentItem,
   type StudentAssignmentStatus,
 } from "@/types/teacher/student-learning";
+import { DataTable, type DataTableColumn } from "@/components/ui/data-table/data-table";
 
-const FILTERS: Array<"ALL" | StudentAssignmentStatus> = [
+const STATUS_FILTERS: Array<"ALL" | StudentAssignmentStatus> = [
   "ALL",
   "SUBMITTED",
   "LATE",
@@ -23,90 +25,130 @@ const FILTERS: Array<"ALL" | StudentAssignmentStatus> = [
 export default function StudentAssignmentsPage() {
   const params = useParams();
   const studentId = Number(params.studentId);
-  const [filter, setFilter] = useState<(typeof FILTERS)[number]>("ALL");
+  const t = useTranslations("teacher.students.hub");
+  const tTable = useTranslations("teacher.students.table");
+  const locale = useLocale();
+  const [status, setStatus] = useState<(typeof STATUS_FILTERS)[number]>("ALL");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
 
   const query = useQuery({
-    queryKey: ["teacher-student-assignments", studentId],
-    queryFn: () => teacherStudentService.listAssignments(studentId),
+    queryKey: ["teacher-student-assignments", studentId, status, page, pageSize],
+    queryFn: () =>
+      teacherStudentService.listAssignments(studentId, {
+        status: status === "ALL" ? undefined : status,
+        page,
+        size: pageSize,
+      }),
     enabled: Number.isFinite(studentId),
   });
-  const items = query.data?.data ?? [];
-  const rows = useMemo(
-    () => (filter === "ALL" ? items : items.filter((a) => a.status === filter)),
-    [filter, items],
+  const pageData = query.data?.data;
+  const items = pageData?.items ?? [];
+
+  const columns: DataTableColumn<StudentAssignmentItem>[] = useMemo(
+    () => [
+      {
+        id: "title",
+        header: t("assignments.colTitle"),
+        cell: (row) => <span className="font-bold text-sm">{row.title}</span>,
+      },
+      {
+        id: "due",
+        header: t("assignments.colDue"),
+        cell: (row) => formatDateTime(row.dueAt, locale),
+        className: "text-muted-foreground",
+      },
+      {
+        id: "status",
+        header: t("assignments.colStatus"),
+        cell: (row) => (
+          <StatusPill status={row.status} label={t(`assignmentStatus.${row.status}`)} />
+        ),
+      },
+      {
+        id: "submitted",
+        header: t("assignments.colSubmitted"),
+        cell: (row) => formatDateTime(row.submittedAt, locale),
+        className: "text-muted-foreground",
+      },
+      {
+        id: "score",
+        header: t("assignments.colScore"),
+        align: "right",
+        cell: (row) => (
+          <span className="font-extrabold">{formatScorePercent(row.scorePercent)}</span>
+        ),
+      },
+    ],
+    [t, locale],
   );
 
   return (
-    <div className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
-      <div className="flex flex-col gap-3 border-b border-border p-4 sm:flex-row sm:items-center sm:justify-between">
+    <div className="space-y-3">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h2 className="text-sm font-extrabold">Bài tập</h2>
-          <p className="mt-0.5 text-xs text-muted-foreground">
-            Assignment đã giao tới lớp của học sinh và attempt tương ứng (nếu có).
-          </p>
+          <h2 className="text-sm font-extrabold">{t("assignments.title")}</h2>
+          <p className="mt-0.5 text-xs text-muted-foreground">{t("assignments.subtitle")}</p>
         </div>
         <div className="flex flex-wrap gap-1.5">
-          {FILTERS.map((f) => (
+          {STATUS_FILTERS.map((f) => (
             <button
               key={f}
               type="button"
-              onClick={() => setFilter(f)}
+              onClick={() => {
+                setStatus(f);
+                setPage(1);
+              }}
               className={`rounded-full px-3 py-1 text-xs font-bold ${
-                filter === f ? "bg-primary text-primary-foreground" : "border border-border bg-card"
+                status === f ? "bg-primary text-primary-foreground" : "border border-border bg-card"
               }`}
             >
-              {f === "ALL" ? "Tất cả" : ASSIGNMENT_STATUS_LABEL[f]}
+              {f === "ALL" ? t("assignments.filterAll") : t(`assignmentStatus.${f}`)}
             </button>
           ))}
         </div>
       </div>
 
-      {query.isLoading && <p className="p-4 text-sm text-muted-foreground">Đang tải bài tập…</p>}
-      {query.isError && (
-        <p role="alert" className="p-4 text-sm text-red-600">
-          Không tải được danh sách bài tập.
-        </p>
-      )}
-      {!query.isLoading && !query.isError && rows.length === 0 && (
-        <p className="p-4 text-sm text-muted-foreground">Chưa có bài tập liên quan.</p>
-      )}
-
-      {rows.length > 0 && (
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[640px] text-left text-xs">
-            <thead className="border-b border-border bg-muted/40 text-[11px] font-bold uppercase tracking-wide text-muted-foreground">
-              <tr>
-                <th className="px-4 py-3">Bài tập</th>
-                <th className="px-4 py-3">Hạn nộp</th>
-                <th className="px-4 py-3">Trạng thái</th>
-                <th className="px-4 py-3">Nộp lúc</th>
-                <th className="px-4 py-3 text-right">Điểm</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {rows.map((a) => (
-                <tr key={a.assignmentId} className="hover:bg-muted/30">
-                  <td className="px-4 py-3 text-sm font-bold">{a.title}</td>
-                  <td className="px-4 py-3 text-muted-foreground">{formatDateTime(a.dueAt)}</td>
-                  <td className="px-4 py-3">
-                    <StatusPill status={a.status} />
-                  </td>
-                  <td className="px-4 py-3 text-muted-foreground">{formatDateTime(a.submittedAt)}</td>
-                  <td className="px-4 py-3 text-right font-extrabold">
-                    {formatScorePercent(a.scorePercent)}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+      <DataTable
+        data={items}
+        columns={columns}
+        getRowKey={(row) => row.assignmentId}
+        isLoading={query.isLoading}
+        loadingState={<p className="p-4 text-sm text-muted-foreground">{t("assignments.loading")}</p>}
+        errorState={
+          query.isError ? (
+            <p role="alert" className="p-4 text-sm text-red-600">
+              {t("assignments.error")}
+            </p>
+          ) : undefined
+        }
+        emptyState={<p className="p-4 text-sm text-muted-foreground">{t("assignments.empty")}</p>}
+        pagination={
+          pageData
+            ? {
+                page: pageData.page,
+                totalPages: Math.max(1, pageData.totalPages),
+                totalElements: pageData.totalElements,
+                pageSize: pageData.size,
+                totalLabel: tTable("totalStudents", { total: pageData.totalElements }),
+                showLabel: tTable("show"),
+                perPageLabel: tTable("perPage"),
+                previousLabel: tTable("previous"),
+                nextLabel: tTable("next"),
+                onPageChange: setPage,
+                onPageSizeChange: (size) => {
+                  setPageSize(size);
+                  setPage(1);
+                },
+              }
+            : undefined
+        }
+      />
     </div>
   );
 }
 
-function StatusPill({ status }: { status: StudentAssignmentStatus }) {
-  const label = ASSIGNMENT_STATUS_LABEL[status] ?? status;
+function StatusPill({ status, label }: { status: StudentAssignmentStatus; label: string }) {
   const color =
     status === "SUBMITTED"
       ? "bg-emerald-500/10 text-emerald-600"

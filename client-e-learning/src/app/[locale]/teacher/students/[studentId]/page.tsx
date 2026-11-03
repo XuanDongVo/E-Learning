@@ -3,6 +3,7 @@
 import { Link } from "@/i18n/navigation";
 import { useParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
+import { useLocale, useTranslations } from "next-intl";
 import { ArrowRight } from "lucide-react";
 import { teacherStudentService } from "@/services/teacher/student.service";
 import {
@@ -11,85 +12,94 @@ import {
   membershipLabel,
   relationshipLabel,
 } from "@/mock/mock-student-data";
-import {
-  formatDateTime,
-  formatScorePercent,
-  type StudentAssignmentStatus,
-} from "@/types/teacher/student-learning";
+import { formatDateTime, formatScorePercent } from "@/types/teacher/student-learning";
 import { Button } from "@/components/ui/button";
 
 export default function StudentOverviewPage() {
   const params = useParams();
   const studentId = Number(params.studentId);
   const base = `/teacher/students/${studentId}`;
+  const t = useTranslations("teacher.students.hub");
+  const tDetail = useTranslations("teacher.students.detail");
+  const tForm = useTranslations("teacher.students.form");
+  const locale = useLocale();
 
   const student = useQuery({
     queryKey: ["teacher-student", studentId],
     queryFn: () => teacherStudentService.get(studentId),
     enabled: Number.isFinite(studentId),
   });
+  const summary = useQuery({
+    queryKey: ["teacher-student-summary", studentId],
+    queryFn: () => teacherStudentService.learningSummary(studentId),
+    enabled: Number.isFinite(studentId),
+  });
   const assignments = useQuery({
-    queryKey: ["teacher-student-assignments-overview", studentId],
-    queryFn: () => teacherStudentService.listAssignments(studentId, { page: 1, size: 50 }),
+    queryKey: ["teacher-student-assignments-preview", studentId],
+    queryFn: () => teacherStudentService.listAssignments(studentId, { page: 1, size: 3 }),
     enabled: Number.isFinite(studentId),
   });
   const sessions = useQuery({
-    queryKey: ["teacher-student-sessions-overview", studentId],
-    queryFn: () => teacherStudentService.listActivitySessions(studentId, { page: 1, size: 5 }),
+    queryKey: ["teacher-student-sessions-preview", studentId],
+    queryFn: () => teacherStudentService.listActivitySessions(studentId, { page: 1, size: 3 }),
     enabled: Number.isFinite(studentId),
   });
 
   const d = student.data?.data;
   const primary = d?.guardians?.find((g) => g.primary) ?? d?.guardians?.[0];
+  const s = summary.data?.data;
   const assignmentItems = assignments.data?.data?.items ?? [];
   const sessionItems = sessions.data?.data?.items ?? [];
 
-  const count = (status: StudentAssignmentStatus) =>
-    assignmentItems.filter((a) => a.status === status).length;
   const counts = [
-    { label: "Đã giao", val: assignments.data?.data?.totalElements ?? assignmentItems.length },
-    { label: "Đã nộp", val: count("SUBMITTED") },
-    { label: "Nộp muộn", val: count("LATE") },
-    { label: "Hết giờ", val: count("TIMED_OUT") },
-    { label: "Chưa làm", val: count("NOT_STARTED") },
-    { label: "Đang làm", val: count("IN_PROGRESS") },
+    { key: "assigned" as const, val: s?.assigned ?? 0 },
+    { key: "submitted" as const, val: s?.submitted ?? 0 },
+    { key: "late" as const, val: s?.late ?? 0 },
+    { key: "timedOut" as const, val: s?.timedOut ?? 0 },
+    { key: "notStarted" as const, val: s?.notStarted ?? 0 },
+    { key: "inProgress" as const, val: s?.inProgress ?? 0 },
   ];
 
   return (
     <div className="grid gap-5 xl:grid-cols-[0.8fr_1.6fr]">
       <div className="grid content-start gap-5">
-        <Panel title="Thông tin học sinh">
+        <Panel title={t("overview.personal")}>
           <dl className="divide-y divide-border px-5 py-2 text-sm">
-            <Row label="Ngày sinh" value={formatDate(d?.dateOfBirth)} />
-            <Row label="Giới tính" value={genderLabel(d?.gender)} />
-            <Row label="Điện thoại" value={d?.phone || "—"} />
-            <Row label="Khối" value={d?.gradeName || "—"} />
+            <Row label={tDetail("dob")} value={formatDate(d?.dateOfBirth)} />
+            <Row label={tDetail("gender")} value={genderLabel(d?.gender)} />
+            <Row label={tDetail("phone")} value={d?.phone || "—"} />
+            <Row label={tForm("assignClass")} value={d?.gradeName || "—"} />
           </dl>
         </Panel>
 
-        <Panel title="Lớp hiện tại">
+        <Panel title={t("overview.currentClass")}>
           <dl className="divide-y divide-border px-5 py-2 text-sm">
             <Row
-              label="Lớp"
+              label={t("overview.class")}
               value={
-                d?.membershipStatus === "ACTIVE" && d.className ? d.className : "Chưa có lớp"
+                d?.membershipStatus === "ACTIVE" && d.className
+                  ? d.className
+                  : t("overview.noClass")
               }
             />
-            <Row label="Trạng thái lớp" value={membershipLabel(d?.membershipStatus, d?.className)} />
-            <Row label="Năm học" value={d?.academicYear || "—"} />
-            <Row label="Ngày vào lớp" value={formatDate(d?.joinedAt)} />
+            <Row
+              label={t("overview.membershipStatus")}
+              value={membershipLabel(d?.membershipStatus, d?.className)}
+            />
+            <Row label={t("overview.academicYear")} value={d?.academicYear || "—"} />
+            <Row label={t("overview.joinedAt")} value={formatDate(d?.joinedAt)} />
           </dl>
         </Panel>
 
-        <Panel title="Phụ huynh">
+        <Panel title={tDetail("guardians")}>
           <dl className="divide-y divide-border px-5 py-2 text-sm">
             {primary ? (
               <>
                 <Row label={relationshipLabel(primary.relationship)} value={primary.fullName} />
-                <Row label="Liên hệ" value={primary.phone || "—"} />
+                <Row label={tDetail("phone")} value={primary.phone || "—"} />
               </>
             ) : (
-              <p className="py-3 text-sm text-muted-foreground">Chưa có thông tin phụ huynh.</p>
+              <p className="py-3 text-sm text-muted-foreground">{tDetail("noGuardians")}</p>
             )}
           </dl>
         </Panel>
@@ -97,37 +107,41 @@ export default function StudentOverviewPage() {
 
       <div className="grid content-start gap-5">
         <Panel
-          title="Bài tập"
-          description="Theo trạng thái attempt thực tế"
+          title={t("assignments.title")}
+          description={t("overview.assignmentDesc")}
           action={
             <Button variant="ghost" size="sm" className="gap-1 text-xs font-semibold" asChild>
               <Link href={`${base}/assignments`}>
-                Xem tất cả <ArrowRight className="size-3.5" />
+                {t("overview.viewAll")} <ArrowRight className="size-3.5" />
               </Link>
             </Button>
           }
         >
           <div className="grid grid-cols-2 border-b border-border sm:grid-cols-3 lg:grid-cols-6">
             {counts.map((item) => (
-              <div key={item.label} className="border-r border-border p-3 last:border-r-0">
-                <p className="text-[11px] font-semibold text-muted-foreground">{item.label}</p>
+              <div key={item.key} className="border-r border-border p-3 last:border-r-0">
+                <p className="text-[11px] font-semibold text-muted-foreground">
+                  {t(`overview.counts.${item.key}`)}
+                </p>
                 <p className="mt-1 text-xl font-extrabold">{item.val}</p>
               </div>
             ))}
           </div>
           <div className="divide-y divide-border">
             {assignmentItems.length === 0 && (
-              <p className="p-4 text-sm text-muted-foreground">Chưa có bài tập.</p>
+              <p className="p-4 text-sm text-muted-foreground">{t("overview.noAssignments")}</p>
             )}
-            {assignmentItems.slice(0, 3).map((a) => (
+            {assignmentItems.map((a) => (
               <div key={a.assignmentId} className="flex items-center justify-between p-4 text-xs">
                 <div>
                   <p className="text-sm font-bold">{a.title}</p>
-                  <p className="mt-0.5 text-muted-foreground">Hạn: {formatDateTime(a.dueAt)}</p>
+                  <p className="mt-0.5 text-muted-foreground">
+                    {formatDateTime(a.dueAt, locale)}
+                  </p>
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] font-bold">
-                    {a.status}
+                    {t(`assignmentStatus.${a.status}`)}
                   </span>
                   <span className="min-w-10 text-right text-sm font-extrabold">
                     {formatScorePercent(a.scorePercent)}
@@ -139,34 +153,36 @@ export default function StudentOverviewPage() {
         </Panel>
 
         <Panel
-          title="Luyện tập gần đây"
-          description="ActivitySession — practice"
+          title={t("overview.recentPractice")}
+          description={t("activities.subtitle")}
           action={
             <Button variant="ghost" size="sm" className="gap-1 text-xs font-semibold" asChild>
               <Link href={`${base}/activities`}>
-                Xem lịch sử <ArrowRight className="size-3.5" />
+                {t("overview.viewHistory")} <ArrowRight className="size-3.5" />
               </Link>
             </Button>
           }
         >
           <div className="divide-y divide-border">
             {sessionItems.length === 0 && (
-              <p className="p-4 text-sm text-muted-foreground">Chưa có phiên luyện tập.</p>
+              <p className="p-4 text-sm text-muted-foreground">{t("overview.noSessions")}</p>
             )}
-            {sessionItems.slice(0, 3).map((s) => (
-              <div key={s.sessionId} className="flex items-center justify-between p-4 text-xs">
+            {sessionItems.map((sItem) => (
+              <div key={sItem.sessionId} className="flex items-center justify-between p-4 text-xs">
                 <div>
-                  <p className="text-sm font-bold">{s.activityName}</p>
+                  <p className="text-sm font-bold">{sItem.activityName}</p>
                   <p className="mt-0.5 text-muted-foreground">
-                    {s.unitLabel} · {formatDateTime(s.completedAt ?? s.startedAt)}
+                    {sItem.unitLabel} · {formatDateTime(sItem.completedAt ?? sItem.startedAt, locale)}
                   </p>
                 </div>
                 <div className="text-right">
-                  <span className="font-bold text-primary">{s.mode}</span>
+                  <span className="font-bold text-primary">
+                    {t(`sessionMode.${sItem.mode}`)}
+                  </span>
                   <p className="text-muted-foreground">
-                    {s.status}
-                    {s.status !== "ABANDONED"
-                      ? ` · ${s.firstCorrectCount}/${s.totalQuestions}`
+                    {t(`sessionStatus.${sItem.status}`)}
+                    {sItem.status !== "ABANDONED"
+                      ? ` · ${sItem.firstCorrectCount}/${sItem.totalQuestions}`
                       : ""}
                   </p>
                 </div>

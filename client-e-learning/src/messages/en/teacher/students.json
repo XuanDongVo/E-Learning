@@ -83,5 +83,66 @@
     "cancel": "Cancel",
     "submitting": "Creating student...",
     "submit": "Create student"
+  },
+  "hub": {
+    "tabs": {
+      "overview": "Overview",
+      "assignments": "Assignments",
+      "activities": "Practice",
+      "profile": "Profile"
+    },
+    "assignmentStatus": {
+      "NOT_STARTED": "Not started",
+      "IN_PROGRESS": "In progress",
+      "SUBMITTED": "Submitted",
+      "LATE": "Late",
+      "TIMED_OUT": "Timed out"
+    },
+    "sessionStatus": {
+      "IN_PROGRESS": "In progress",
+      "COMPLETED": "Completed",
+      "GAME_OVER": "Out of lives",
+      "ABANDONED": "Abandoned"
+    },
+    "sessionMode": {
+      "LEARNING": "Learning",
+      "TRY_HARD": "Try Hard"
+    },
+    "assignments": {
+      "title": "Assignments",
+      "subtitle": "Published assignments for this student and their attempts.",
+      "filterAll": "All",
+      "colTitle": "Assignment",
+      "colDue": "Due",
+      "colStatus": "Status",
+      "colSubmitted": "Submitted at",
+      "colScore": "Score",
+      "loading": "Loading assignments…",
+      "error": "Could not load assignments.",
+      "empty": "No related assignments."
+    },
+    "activities": {
+      "title": "Practice history",
+      "subtitle": "Activity sessions for this student.",
+      "modeAll": "All modes",
+      "statusAll": "All statuses",
+      "colActivity": "Activity",
+      "colMode": "Mode",
+      "colStatus": "Status",
+      "colResult": "Result",
+      "colCompleted": "Completed",
+      "resultLine": "{first}/{total} first correct · {hints} hints",
+      "loading": "Loading history…",
+      "error": "Could not load practice history.",
+      "empty": "No practice sessions yet."
+    },
+    "overview": {
+      "assigned": "Assigned",
+      "viewAll": "View all",
+      "viewHistory": "View history",
+      "recentPractice": "Recent practice",
+      "noAssignments": "No assignments yet.",
+      "noSessions": "No practice sessions yet."
+    }
   }
 }

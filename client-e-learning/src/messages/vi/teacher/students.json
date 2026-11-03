@@ -83,5 +83,66 @@
     "cancel": "Hủy",
     "submitting": "Đang lưu...",
     "submit": "Tạo học sinh"
+  },
+  "hub": {
+    "tabs": {
+      "overview": "Tổng quan",
+      "assignments": "Bài tập",
+      "activities": "Luyện tập",
+      "profile": "Hồ sơ"
+    },
+    "assignmentStatus": {
+      "NOT_STARTED": "Chưa làm",
+      "IN_PROGRESS": "Đang làm",
+      "SUBMITTED": "Đã nộp",
+      "LATE": "Nộp muộn",
+      "TIMED_OUT": "Hết giờ"
+    },
+    "sessionStatus": {
+      "IN_PROGRESS": "Đang làm",
+      "COMPLETED": "Hoàn thành",
+      "GAME_OVER": "Hết mạng sống",
+      "ABANDONED": "Bỏ dở"
+    },
+    "sessionMode": {
+      "LEARNING": "Learning",
+      "TRY_HARD": "Try Hard"
+    },
+    "assignments": {
+      "title": "Bài tập",
+      "subtitle": "Assignment đã giao tới lớp của học sinh và attempt tương ứng.",
+      "filterAll": "Tất cả",
+      "colTitle": "Bài tập",
+      "colDue": "Hạn nộp",
+      "colStatus": "Trạng thái",
+      "colSubmitted": "Nộp lúc",
+      "colScore": "Điểm",
+      "loading": "Đang tải bài tập…",
+      "error": "Không tải được danh sách bài tập.",
+      "empty": "Chưa có bài tập liên quan."
+    },
+    "activities": {
+      "title": "Lịch sử luyện tập",
+      "subtitle": "ActivitySession của học sinh.",
+      "modeAll": "Mọi chế độ",
+      "statusAll": "Mọi trạng thái",
+      "colActivity": "Hoạt động",
+      "colMode": "Chế độ",
+      "colStatus": "Trạng thái",
+      "colResult": "Kết quả",
+      "colCompleted": "Hoàn thành",
+      "resultLine": "{first}/{total} đúng lần đầu · {hints} gợi ý",
+      "loading": "Đang tải lịch sử…",
+      "error": "Không tải được lịch sử luyện tập.",
+      "empty": "Chưa có phiên luyện tập."
+    },
+    "overview": {
+      "assigned": "Đã giao",
+      "viewAll": "Xem tất cả",
+      "viewHistory": "Xem lịch sử",
+      "recentPractice": "Luyện tập gần đây",
+      "noAssignments": "Chưa có bài tập.",
+      "noSessions": "Chưa có phiên luyện tập."
+    }
   }
 }

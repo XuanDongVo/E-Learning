@@ -142,7 +142,28 @@
       "viewHistory": "Xem lịch sử",
       "recentPractice": "Luyện tập gần đây",
       "noAssignments": "Chưa có bài tập.",
-      "noSessions": "Chưa có phiên luyện tập."
+      "noSessions": "Chưa có phiên luyện tập.",
+      "personal": "Thông tin học sinh",
+      "currentClass": "Lớp hiện tại",
+      "class": "Lớp",
+      "noClass": "Chưa có lớp",
+      "membershipStatus": "Trạng thái lớp",
+      "academicYear": "Năm học",
+      "joinedAt": "Ngày vào lớp",
+      "assignmentDesc": "Theo trạng thái attempt thực tế",
+      "counts": {
+        "assigned": "Đã giao",
+        "submitted": "Đã nộp",
+        "late": "Nộp muộn",
+        "timedOut": "Hết giờ",
+        "notStarted": "Chưa làm",
+        "inProgress": "Đang làm"
+      }
+    },
+    "layout": {
+      "resetPassword": "Đặt lại mật khẩu",
+      "resetPasswordSoon": "API đặt lại mật khẩu chưa có",
+      "editProfile": "Sửa hồ sơ"
     }
   }
 }

@@ -142,7 +142,28 @@
       "viewHistory": "View history",
       "recentPractice": "Recent practice",
       "noAssignments": "No assignments yet.",
-      "noSessions": "No practice sessions yet."
+      "noSessions": "No practice sessions yet.",
+      "personal": "Student information",
+      "currentClass": "Current class",
+      "class": "Class",
+      "noClass": "No class",
+      "membershipStatus": "Membership",
+      "academicYear": "Academic year",
+      "joinedAt": "Joined",
+      "assignmentDesc": "Based on real attempt status",
+      "counts": {
+        "assigned": "Assigned",
+        "submitted": "Submitted",
+        "late": "Late",
+        "timedOut": "Timed out",
+        "notStarted": "Not started",
+        "inProgress": "In progress"
+      }
+    },
+    "layout": {
+      "resetPassword": "Reset password",
+      "resetPasswordSoon": "Reset password API not available yet",
+      "editProfile": "Edit profile"
     }
   }
 }

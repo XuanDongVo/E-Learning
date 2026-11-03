@@ -1,170 +1,229 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
-import { ArrowLeft, Save, UserRound, GraduationCap, Contact } from "lucide-react";
-import { mockStudent } from "@/mock/mock-student-data";
+import { useEffect, useState } from "react";
+import { Link, useRouter } from "@/i18n/navigation";
+import { useParams } from "next/navigation";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { ArrowLeft, Save, UserRound, Contact } from "lucide-react";
+import { teacherStudentService } from "@/services/teacher/student.service";
+import { accountStatusLabel } from "@/mock/mock-student-data";
+import { getAppErrorMessage } from "@/lib/errors/app-error";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import type { Gender, UpdateStudentProfileRequest } from "@/types/student";
+import { useTranslations } from "next-intl";
 
-export default function StudentEditPage({ params }: { params: { studentId: string } }) {
-  const [name, setName] = useState(mockStudent.name);
-  const [className, setClassName] = useState(mockStudent.className);
-  const [status, setStatus] = useState(mockStudent.status);
-  const [notes, setNotes] = useState(mockStudent.notes);
+/** Teacher edits identity profile only — not class transfer or account lock. */
+export default function StudentEditPage() {
+  const params = useParams();
+  const studentId = Number(params.studentId);
+  const router = useRouter();
+  const qc = useQueryClient();
+  const tErrors = useTranslations("errors");
+
+  const student = useQuery({
+    queryKey: ["teacher-student", studentId],
+    queryFn: () => teacherStudentService.get(studentId),
+    enabled: Number.isFinite(studentId),
+  });
+  const d = student.data?.data;
+  const primary = d?.guardians?.find((g) => g.primary) ?? d?.guardians?.[0];
+
+  const [fullName, setFullName] = useState("");
+  const [dateOfBirth, setDateOfBirth] = useState("");
+  const [gender, setGender] = useState<string>("");
+  const [phone, setPhone] = useState("");
+  const [guardianName, setGuardianName] = useState("");
+  const [guardianPhone, setGuardianPhone] = useState("");
+  const [guardianRelation, setGuardianRelation] = useState("GUARDIAN");
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!d) return;
+    setFullName(d.fullName ?? "");
+    setDateOfBirth(d.dateOfBirth ? d.dateOfBirth.slice(0, 10) : "");
+    setGender(d.gender ?? "");
+    setPhone(d.phone ?? "");
+    setGuardianName(primary?.fullName ?? "");
+    setGuardianPhone(primary?.phone ?? "");
+    setGuardianRelation(primary?.relationship ?? "GUARDIAN");
+  }, [d, primary?.fullName, primary?.phone, primary?.relationship]);
+
+  const save = useMutation({
+    mutationFn: (payload: UpdateStudentProfileRequest) =>
+      teacherStudentService.updateProfile(studentId, payload),
+    onSuccess: async () => {
+      await qc.invalidateQueries({ queryKey: ["teacher-student", studentId] });
+      await qc.invalidateQueries({ queryKey: ["students"] });
+      router.push(`/teacher/students/${studentId}/profile`);
+    },
+    onError: (err) => {
+      setError(getAppErrorMessage(err, tErrors as (key: string) => string));
+    },
+  });
+
+  const onSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    const payload: UpdateStudentProfileRequest = {
+      fullName: fullName.trim() || undefined,
+      dateOfBirth: dateOfBirth || undefined,
+      gender: (gender as Gender) || undefined,
+      phone: phone.trim() || undefined,
+      guardians: guardianName.trim()
+        ? [
+            {
+              relationship: guardianRelation as "FATHER" | "MOTHER" | "GUARDIAN" | "OTHER",
+              fullName: guardianName.trim(),
+              phone: guardianPhone.trim() || "—",
+              primary: true,
+            },
+          ]
+        : undefined,
+    };
+    save.mutate(payload);
+  };
 
   return (
     <div className="space-y-4">
       <Link
-        href={`/students/${params.studentId}`}
+        href={`/teacher/students/${studentId}/profile`}
         className="inline-flex items-center gap-1.5 text-xs font-bold text-muted-foreground hover:text-foreground"
       >
-        <ArrowLeft className="size-3.5" /> Quay lại thông tin học sinh
+        <ArrowLeft className="size-3.5" /> Quay lại hồ sơ
       </Link>
 
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-extrabold">Cập nhật học sinh</h1>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            Chỉnh sửa thông tin cá nhân, lớp học và thông tin liên hệ phụ huynh.
+          <h1 className="text-2xl font-extrabold">Cập nhật hồ sơ</h1>
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            Chỉ thông tin cá nhân và phụ huynh. Đổi lớp dùng roster lớp; khóa tài khoản dùng trạng thái
+            tài khoản trên danh sách học sinh.
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" className="font-bold text-xs">
-            <Link href={`/students/${params.studentId}`}>Hủy</Link>
+          <Button variant="outline" size="sm" className="text-xs font-bold" asChild>
+            <Link href={`/teacher/students/${studentId}/profile`}>Hủy</Link>
           </Button>
-          <Button size="sm" className="gap-1.5 font-bold text-xs">
-            <Save className="size-3.5" /> Lưu thay đổi
+          <Button
+            size="sm"
+            className="gap-1.5 text-xs font-bold"
+            disabled={save.isPending}
+            onClick={onSubmit}
+          >
+            <Save className="size-3.5" /> {save.isPending ? "Đang lưu…" : "Lưu cập nhật"}
           </Button>
         </div>
       </div>
 
-      <div className="grid gap-5 xl:grid-cols-[1fr_300px]">
-        {/* Cột form chính */}
+      {error && (
+        <p role="alert" className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+          {error}
+        </p>
+      )}
+
+      <form onSubmit={onSubmit} className="grid gap-5 xl:grid-cols-[1fr_280px]">
         <div className="space-y-5 rounded-lg border border-border bg-card p-5 shadow-sm">
-          {/* 1. Thông tin cá nhân */}
           <div>
-            <div className="flex items-center gap-2 font-bold text-sm border-b border-border pb-2 mb-4">
+            <div className="mb-4 flex items-center gap-2 border-b border-border pb-2 text-sm font-bold">
               <UserRound className="size-4 text-primary" />
-              <span>Thông tin nhận diện</span>
+              <span>Thông tin cá nhân</span>
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <label className="text-xs font-bold text-muted-foreground mb-1 block">Họ và tên *</label>
-                <Input value={name} onChange={(e) => setName(e.target.value)} className="h-10 text-sm" />
-              </div>
-              <div>
-                <label className="text-xs font-bold text-muted-foreground mb-1 block">Mã học sinh *</label>
-                <Input defaultValue={mockStudent.code} className="h-10 text-sm" />
-              </div>
-              <div>
-                <label className="text-xs font-bold text-muted-foreground mb-1 block">Ngày sinh</label>
-                <Input type="date" defaultValue="2014-03-12" className="h-10 text-sm" />
-              </div>
-              <div>
-                <label className="text-xs font-bold text-muted-foreground mb-1 block">Giới tính</label>
-                <Select defaultValue={mockStudent.gender === "Nữ" ? "female" : "male"}>
+              <Field label="Họ và tên *">
+                <Input value={fullName} onChange={(e) => setFullName(e.target.value)} required className="h-10 text-sm" />
+              </Field>
+              <Field label="Ngày sinh">
+                <Input type="date" value={dateOfBirth} onChange={(e) => setDateOfBirth(e.target.value)} className="h-10 text-sm" />
+              </Field>
+              <Field label="Giới tính">
+                <Select value={gender || undefined} onValueChange={setGender}>
                   <SelectTrigger className="h-10 text-sm">
-                    <SelectValue />
+                    <SelectValue placeholder="Chọn" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="female">Nữ</SelectItem>
-                    <SelectItem value="male">Nam</SelectItem>
-                    <SelectItem value="other">Khác</SelectItem>
+                    <SelectItem value="FEMALE">Nữ</SelectItem>
+                    <SelectItem value="MALE">Nam</SelectItem>
+                    <SelectItem value="OTHER">Khác</SelectItem>
                   </SelectContent>
                 </Select>
-              </div>
+              </Field>
+              <Field label="Số điện thoại">
+                <Input value={phone} onChange={(e) => setPhone(e.target.value)} className="h-10 text-sm" />
+              </Field>
             </div>
+            <p className="mt-3 text-xs text-muted-foreground">
+              Email đăng nhập: <span className="font-semibold">{d?.email}</span> (không đổi tại đây)
+            </p>
           </div>
 
-          {/* 2. Lớp học & Học tập */}
           <div>
-            <div className="flex items-center gap-2 font-bold text-sm border-b border-border pb-2 mb-4">
-              <GraduationCap className="size-4 text-primary" />
-              <span>Học tập & Phân lớp</span>
-            </div>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <label className="text-xs font-bold text-muted-foreground mb-1 block">Lớp học</label>
-                <Select value={className} onValueChange={setClassName}>
-                  <SelectTrigger className="h-10 text-sm">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Lớp 6A">Lớp 6A</SelectItem>
-                    <SelectItem value="Lớp 6C">Lớp 6C</SelectItem>
-                    <SelectItem value="Lớp 7A">Lớp 7A</SelectItem>
-                    <SelectItem value="Lớp 8B">Lớp 8B</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <label className="text-xs font-bold text-muted-foreground mb-1 block">Trạng thái học</label>
-                <Select value={status} onValueChange={(v) => setStatus(v as any)}>
-                  <SelectTrigger className="h-10 text-sm">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Đang học">Đang học</SelectItem>
-                    <SelectItem value="Cần hỗ trợ">Cần hỗ trợ</SelectItem>
-                    <SelectItem value="Tạm nghỉ">Tạm nghỉ</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="mt-4">
-              <label className="text-xs font-bold text-muted-foreground mb-1 block">Ghi chú học tập</label>
-              <Textarea
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                className="min-h-20 text-sm"
-                placeholder="Nhập ghi chú cho giáo viên..."
-              />
-            </div>
-          </div>
-
-          {/* 3. Liên hệ & Phụ huynh */}
-          <div>
-            <div className="flex items-center gap-2 font-bold text-sm border-b border-border pb-2 mb-4">
+            <div className="mb-4 flex items-center gap-2 border-b border-border pb-2 text-sm font-bold">
               <Contact className="size-4 text-primary" />
-              <span>Liên hệ & Phụ huynh</span>
+              <span>Phụ huynh / Người giám hộ</span>
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <label className="text-xs font-bold text-muted-foreground mb-1 block">Email học sinh</label>
-                <Input defaultValue={mockStudent.email} className="h-10 text-sm" />
-              </div>
-              <div>
-                <label className="text-xs font-bold text-muted-foreground mb-1 block">Số điện thoại</label>
-                <Input defaultValue={mockStudent.phone} className="h-10 text-sm" />
-              </div>
-              <div>
-                <label className="text-xs font-bold text-muted-foreground mb-1 block">Họ tên phụ huynh</label>
-                <Input defaultValue={mockStudent.parent} className="h-10 text-sm" />
-              </div>
-              <div>
-                <label className="text-xs font-bold text-muted-foreground mb-1 block">SĐT phụ huynh</label>
-                <Input defaultValue={mockStudent.parentPhone} className="h-10 text-sm" />
-              </div>
+              <Field label="Họ tên">
+                <Input value={guardianName} onChange={(e) => setGuardianName(e.target.value)} className="h-10 text-sm" />
+              </Field>
+              <Field label="Quan hệ">
+                <Select value={guardianRelation} onValueChange={setGuardianRelation}>
+                  <SelectTrigger className="h-10 text-sm">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="MOTHER">Mẹ</SelectItem>
+                    <SelectItem value="FATHER">Bố</SelectItem>
+                    <SelectItem value="GUARDIAN">Người giám hộ</SelectItem>
+                    <SelectItem value="OTHER">Khác</SelectItem>
+                  </SelectContent>
+                </Select>
+              </Field>
+              <Field label="Số điện thoại">
+                <Input value={guardianPhone} onChange={(e) => setGuardianPhone(e.target.value)} className="h-10 text-sm" />
+              </Field>
             </div>
           </div>
         </div>
 
-        {/* Cột phải: Thao tác & Trạng thái tài khoản */}
         <div className="space-y-4">
-          <div className="rounded-lg border border-border bg-card p-4 shadow-sm space-y-3">
-            <h3 className="font-extrabold text-sm">Trạng thái tài khoản</h3>
-            <p className="text-xs text-muted-foreground">Tài khoản hiện đang được kích hoạt sử dụng bình thường.</p>
-            <div className="pt-2">
-              <span className="inline-flex items-center rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-bold text-emerald-600">
-                {mockStudent.accountStatus}
-              </span>
+          <div className="space-y-3 rounded-lg border border-border bg-card p-4 shadow-sm">
+            <h3 className="text-sm font-extrabold">Tài khoản & lớp</h3>
+            <p className="text-xs text-muted-foreground">
+              Không chỉnh trên form này. Dùng danh sách học sinh (khóa tài khoản) hoặc roster lớp
+              (chuyển / gỡ lớp).
+            </p>
+            <div className="space-y-2 text-xs">
+              <div className="flex justify-between gap-2">
+                <span className="text-muted-foreground">Tài khoản</span>
+                <span className="font-bold">{accountStatusLabel(d?.accountStatus)}</span>
+              </div>
+              <div className="flex justify-between gap-2">
+                <span className="text-muted-foreground">Lớp</span>
+                <span className="font-bold">
+                  {d?.membershipStatus === "ACTIVE" && d.className ? d.className : "Chưa có lớp"}
+                </span>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      </form>
     </div>
+  );
+}
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <label className="block text-xs font-bold text-muted-foreground">
+      <span className="mb-1 block">{label}</span>
+      {children}
+    </label>
   );
 }

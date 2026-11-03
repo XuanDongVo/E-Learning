@@ -12,9 +12,6 @@ import {
   relationshipLabel,
 } from "@/mock/mock-student-data";
 import {
-  ASSIGNMENT_STATUS_LABEL,
-  SESSION_MODE_LABEL,
-  SESSION_STATUS_LABEL,
   formatDateTime,
   formatScorePercent,
   type StudentAssignmentStatus,
@@ -32,25 +29,25 @@ export default function StudentOverviewPage() {
     enabled: Number.isFinite(studentId),
   });
   const assignments = useQuery({
-    queryKey: ["teacher-student-assignments", studentId],
-    queryFn: () => teacherStudentService.listAssignments(studentId),
+    queryKey: ["teacher-student-assignments-overview", studentId],
+    queryFn: () => teacherStudentService.listAssignments(studentId, { page: 1, size: 50 }),
     enabled: Number.isFinite(studentId),
   });
   const sessions = useQuery({
-    queryKey: ["teacher-student-sessions", studentId],
-    queryFn: () => teacherStudentService.listActivitySessions(studentId),
+    queryKey: ["teacher-student-sessions-overview", studentId],
+    queryFn: () => teacherStudentService.listActivitySessions(studentId, { page: 1, size: 5 }),
     enabled: Number.isFinite(studentId),
   });
 
   const d = student.data?.data;
   const primary = d?.guardians?.find((g) => g.primary) ?? d?.guardians?.[0];
-  const assignmentItems = assignments.data?.data ?? [];
-  const sessionItems = sessions.data?.data ?? [];
+  const assignmentItems = assignments.data?.data?.items ?? [];
+  const sessionItems = sessions.data?.data?.items ?? [];
 
   const count = (status: StudentAssignmentStatus) =>
     assignmentItems.filter((a) => a.status === status).length;
   const counts = [
-    { label: "Đã giao", val: assignmentItems.length },
+    { label: "Đã giao", val: assignments.data?.data?.totalElements ?? assignmentItems.length },
     { label: "Đã nộp", val: count("SUBMITTED") },
     { label: "Nộp muộn", val: count("LATE") },
     { label: "Hết giờ", val: count("TIMED_OUT") },
@@ -103,7 +100,7 @@ export default function StudentOverviewPage() {
           title="Bài tập"
           description="Theo trạng thái attempt thực tế"
           action={
-            <Button variant="ghost" size="sm" className="gap-1 text-xs font-semibold" >
+            <Button variant="ghost" size="sm" className="gap-1 text-xs font-semibold" asChild>
               <Link href={`${base}/assignments`}>
                 Xem tất cả <ArrowRight className="size-3.5" />
               </Link>
@@ -130,7 +127,7 @@ export default function StudentOverviewPage() {
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] font-bold">
-                    {ASSIGNMENT_STATUS_LABEL[a.status]}
+                    {a.status}
                   </span>
                   <span className="min-w-10 text-right text-sm font-extrabold">
                     {formatScorePercent(a.scorePercent)}
@@ -145,7 +142,7 @@ export default function StudentOverviewPage() {
           title="Luyện tập gần đây"
           description="ActivitySession — practice"
           action={
-            <Button variant="ghost" size="sm" className="gap-1 text-xs font-semibold" >
+            <Button variant="ghost" size="sm" className="gap-1 text-xs font-semibold" asChild>
               <Link href={`${base}/activities`}>
                 Xem lịch sử <ArrowRight className="size-3.5" />
               </Link>
@@ -165,11 +162,9 @@ export default function StudentOverviewPage() {
                   </p>
                 </div>
                 <div className="text-right">
-                  <span className="font-bold text-primary">
-                    {SESSION_MODE_LABEL[s.mode] ?? s.mode}
-                  </span>
+                  <span className="font-bold text-primary">{s.mode}</span>
                   <p className="text-muted-foreground">
-                    {SESSION_STATUS_LABEL[s.status] ?? s.status}
+                    {s.status}
                     {s.status !== "ABANDONED"
                       ? ` · ${s.firstCorrectCount}/${s.totalQuestions}`
                       : ""}

@@ -1,66 +1,71 @@
 "use client";
 
-import { useState } from "react";
-import { mockAssignments } from "@/mock/mock-student-data";
-import { Button } from "@/components/ui/button";
+import { useMemo, useState } from "react";
+import { mockAssignments, type AttemptStatus } from "@/mock/mock-student-data";
 
-const filters = ["Tất cả", "Đã nộp", "Nộp muộn", "Đang làm", "Chưa làm"] as const;
+const FILTERS: Array<"Tất cả" | AttemptStatus> = [
+  "Tất cả",
+  "Đã nộp",
+  "Nộp muộn",
+  "Hết giờ",
+  "Đang làm",
+  "Chưa làm",
+];
 
 export default function StudentAssignmentsPage() {
-  const [filter, setFilter] = useState<(typeof filters)[number]>("Tất cả");
-
-  const rows = mockAssignments.filter((a) => filter === "Tất cả" || a.status === filter);
+  const [filter, setFilter] = useState<(typeof FILTERS)[number]>("Tất cả");
+  const rows = useMemo(
+    () => (filter === "Tất cả" ? mockAssignments : mockAssignments.filter((a) => a.status === filter)),
+    [filter],
+  );
 
   return (
-    <div className="rounded-lg border border-border bg-card shadow-sm overflow-hidden">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-border p-4">
+    <div className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
+      <div className="flex flex-col gap-3 border-b border-border p-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="font-extrabold text-base">Danh sách bài tập</h2>
-          <p className="text-xs text-muted-foreground">Theo dõi tiến độ nộp bài và điểm số của học sinh</p>
+          <h2 className="text-sm font-extrabold">Bài tập</h2>
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            Trạng thái attempt: Chưa làm · Đang làm · Đã nộp · Nộp muộn · Hết giờ. Dữ liệu mẫu đến khi
+            có API theo học sinh.
+          </p>
         </div>
-        <div className="flex flex-wrap gap-1">
-          {filters.map((f) => (
-            <Button
+        <div className="flex flex-wrap gap-1.5">
+          {FILTERS.map((f) => (
+            <button
               key={f}
-              size="sm"
-              variant={filter === f ? "default" : "outline"}
+              type="button"
               onClick={() => setFilter(f)}
-              className="h-8 text-xs font-bold"
+              className={`rounded-full px-3 py-1 text-xs font-bold ${
+                filter === f ? "bg-primary text-primary-foreground" : "border border-border bg-card"
+              }`}
             >
               {f}
-            </Button>
+            </button>
           ))}
         </div>
       </div>
 
-      {/* Bảng bài tập */}
       <div className="overflow-x-auto">
-        <table className="w-full text-left text-xs">
-          <thead className="border-b border-border bg-muted/40 uppercase font-bold text-muted-foreground">
+        <table className="w-full min-w-[640px] text-left text-xs">
+          <thead className="border-b border-border bg-muted/40 text-[11px] font-bold uppercase tracking-wide text-muted-foreground">
             <tr>
-              <th className="p-3 pl-4">Bài tập</th>
-              <th className="p-3">Hạn nộp</th>
-              <th className="p-3">Trạng thái</th>
-              <th className="p-3">Thời gian nộp</th>
-              <th className="p-3 pr-4 text-right">Điểm</th>
+              <th className="px-4 py-3">Bài tập</th>
+              <th className="px-4 py-3">Hạn nộp</th>
+              <th className="px-4 py-3">Trạng thái</th>
+              <th className="px-4 py-3">Nộp lúc</th>
+              <th className="px-4 py-3 text-right">Điểm</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
-            {rows.map((r) => (
-              <tr key={r.assignmentId} className="hover:bg-muted/30 transition-colors">
-                <td className="p-3 pl-4 font-bold text-sm">{r.title}</td>
-                <td className="p-3 text-muted-foreground">{r.due}</td>
-                <td className="p-3">
-                  <span className={`inline-block rounded-full px-2.5 py-0.5 font-bold text-[11px] ${
-                    r.status === "Đã nộp" ? "bg-emerald-500/10 text-emerald-600" :
-                    r.status === "Nộp muộn" ? "bg-amber-500/10 text-amber-600" :
-                    r.status === "Đang làm" ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
-                  }`}>
-                    {r.status}
-                  </span>
+            {rows.map((a) => (
+              <tr key={a.assignmentId} className="hover:bg-muted/30">
+                <td className="px-4 py-3 font-bold text-sm">{a.title}</td>
+                <td className="px-4 py-3 text-muted-foreground">{a.due}</td>
+                <td className="px-4 py-3">
+                  <StatusPill status={a.status} />
                 </td>
-                <td className="p-3 text-muted-foreground">{r.submittedAt ?? "—"}</td>
-                <td className="p-3 pr-4 text-right font-extrabold text-sm">{r.score ?? "—"}</td>
+                <td className="px-4 py-3 text-muted-foreground">{a.submittedAt ?? "—"}</td>
+                <td className="px-4 py-3 text-right font-extrabold">{a.score ?? "—"}</td>
               </tr>
             ))}
           </tbody>
@@ -68,4 +73,16 @@ export default function StudentAssignmentsPage() {
       </div>
     </div>
   );
+}
+
+function StatusPill({ status }: { status: string }) {
+  const color =
+    status === "Đã nộp"
+      ? "bg-emerald-500/10 text-emerald-600"
+      : status === "Nộp muộn" || status === "Hết giờ"
+        ? "bg-amber-500/10 text-amber-600"
+        : status === "Đang làm"
+          ? "bg-primary/10 text-primary"
+          : "bg-muted text-muted-foreground";
+  return <span className={`rounded-full px-2 py-0.5 text-[11px] font-bold ${color}`}>{status}</span>;
 }

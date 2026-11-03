@@ -2,8 +2,6 @@ package e_learning.server.student.controller;
 
 import e_learning.server.common.dto.PageResponse;
 import e_learning.server.common.response.ApiResponse;
-import e_learning.server.question.enums.Difficulty;
-import e_learning.server.question.enums.QuestionType;
 import e_learning.server.student.dto.*;
 import e_learning.server.student.service.StudentManagementService;
 import e_learning.server.student.service.StudentProfileService;
@@ -15,7 +13,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Objects;
 
 @RestController
@@ -40,7 +37,6 @@ public class StudentManagementController {
                 Long.valueOf(Objects.requireNonNull(jwt.getSubject())), search, accountStatus, classId, gradeId, noClass, page, size));
     }
 
-
     @GetMapping("/{studentId}")
     public ApiResponse<StudentDetailResponse> detail(
             @PathVariable Long studentId,
@@ -59,6 +55,21 @@ public class StudentManagementController {
     ) {
         return ApiResponse.success(
                 managementService.create(request, Long.valueOf(Objects.requireNonNull(jwt.getSubject())))
+        );
+    }
+
+    @PatchMapping("/{studentId}/profile")
+    public ApiResponse<StudentDetailResponse> updateProfile(
+            @PathVariable Long studentId,
+            @Valid @RequestBody UpdateStudentProfileRequest request,
+            @AuthenticationPrincipal Jwt jwt
+    ) {
+        return ApiResponse.success(
+                profileService.updateForTeacher(
+                        studentId,
+                        Long.valueOf(Objects.requireNonNull(jwt.getSubject())),
+                        request
+                )
         );
     }
 

@@ -181,12 +181,26 @@
       "accountStatus": "Trạng thái tài khoản"
     },
     "edit": {
+      "backToList": "Danh sách học sinh",
+      "eyebrow": "Chỉnh sửa hồ sơ",
+      "title": "Cập nhật học sinh",
+      "subtitle": "Cập nhật thông tin cá nhân, lớp học và liên hệ phụ huynh.",
       "loading": "Đang tải form…",
-      "title": "Chỉnh sửa hồ sơ",
-      "subtitle": "Cập nhật thông tin cá nhân và phụ huynh.",
       "saving": "Đang lưu…",
-      "save": "Lưu",
-      "accountHint": "Không chỉnh trên form này. Dùng danh sách học sinh (khóa tài khoản) hoặc roster lớp (chuyển / gỡ lớp)."
+      "save": "Lưu cập nhật",
+      "accountHint": "Không chỉnh lớp / trạng thái tài khoản trên form này. Dùng roster lớp hoặc danh sách học sinh.",
+      "privacyTitle": "Quyền riêng tư",
+      "privacyBody": "Thông tin liên hệ chỉ hiển thị cho giáo viên phụ trách và quản trị viên.",
+      "statusActive": "Hồ sơ đang hoạt động",
+      "statusLocked": "Tài khoản đã khóa",
+      "sections": {
+        "student": "Thông tin học sinh",
+        "studentHint": "Thông tin dùng để nhận diện trong lớp học.",
+        "learning": "Thông tin học tập",
+        "learningHint": "Lớp và trạng thái hiện tại (chỉ xem).",
+        "contact": "Liên hệ",
+        "contactHint": "Thông tin học sinh và người giám hộ."
+      }
     },
     "layout": {
       "resetPassword": "Đặt lại mật khẩu",

@@ -37,6 +37,15 @@ public class ClassService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
+    public ClassResponse findByIdForTeacher(Long classId, Long teacherId) {
+        ClassEntity classEntity = ownedClass(classId, teacherId);
+        return ClassResponse.from(
+                classEntity,
+                classMemberRepository.countActiveMembers(classId)
+        );
+    }
+
     @Transactional
     public ClassResponse create(CreateClassRequest request, Long teacherId) {
         String name = request.name().trim();

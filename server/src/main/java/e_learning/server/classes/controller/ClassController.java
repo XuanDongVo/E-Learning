@@ -31,6 +31,18 @@ public class ClassController {
         );
     }
 
+    @GetMapping("/{classId}")
+    public ResponseEntity<ApiResponse<ClassResponse>> get(
+            @PathVariable Long classId,
+            @AuthenticationPrincipal Jwt jwt
+    ) {
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        classService.findByIdForTeacher(classId, Long.valueOf(jwt.getSubject()))
+                )
+        );
+    }
+
     @PostMapping
     public ResponseEntity<ApiResponse<ClassResponse>> create(
             @Valid @RequestBody CreateClassRequest request,

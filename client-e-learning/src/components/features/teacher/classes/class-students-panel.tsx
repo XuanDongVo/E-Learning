@@ -2,8 +2,23 @@
 
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Search, Trash2 } from "lucide-react";
+import { ArrowLeftRight, Eye, Search, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 import { RegionState } from "@/components/feedback";
 import { Button } from "@/components/ui/button";
@@ -26,6 +41,11 @@ export function ClassStudentsPanel({ classId }: { classId: number }) {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
+
+  const [transferStudent, setTransferStudent] = useState<StudentSummary | null>(
+    null,
+  );
+  const [targetClassId, setTargetClassId] = useState<string>("");
 
   const membersQuery = useQuery({
     queryKey: ["class-members", classId, search, page, pageSize],
@@ -80,8 +100,7 @@ export function ClassStudentsPanel({ classId }: { classId: number }) {
   const members = pageData?.items ?? [];
 
   const available = (studentsQuery.data ?? []).filter(
-    (s) =>
-      !s.classes?.some((c) => c.id === classId && c.status === "ACTIVE"),
+    (s) => !s.classes?.some((c) => c.id === classId && c.status === "ACTIVE"),
   );
 
   const handleEnrollmentChange = (studentId: number) => {
@@ -117,7 +136,9 @@ export function ClassStudentsPanel({ classId }: { classId: number }) {
             {getInitials(s.fullName)}
           </span>
           <div>
-            <p className="text-sm font-extrabold text-foreground">{s.fullName}</p>
+            <p className="text-sm font-extrabold text-foreground">
+              {s.fullName}
+            </p>
             <p className="text-[11px] text-muted-foreground">ID: #{s.id}</p>
           </div>
         </div>
@@ -159,20 +180,80 @@ export function ClassStudentsPanel({ classId }: { classId: number }) {
       header: t("columnActions"),
       align: "right",
       cell: (s) => (
-        <Button
-          variant="ghost"
-          size="sm"
-          disabled={remove.isPending}
-          onClick={() => {
-            if (window.confirm(t("removeConfirm", { studentName: s.fullName }))) {
-              remove.mutate(s.id);
-            }
-          }}
-          className="h-8 gap-1 text-xs font-semibold text-rose-600 hover:bg-rose-500/10"
-        >
-          <Trash2 className="size-3.5" />
-          {t("remove")}
-        </Button>
+        <TooltipProvider delay={200}>
+          <div className="flex items-center justify-end gap-1">
+            {/* Xem */}
+            <Tooltip>
+              <TooltipTrigger
+                render={
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="size-8 text-muted-foreground hover:text-foreground"
+                    onClick={() => {
+                      // TODO: xem chi tiết
+                    }}
+                  />
+                }
+              >
+                <Eye className="size-4" />
+                <span className="sr-only">Xem</span>
+              </TooltipTrigger>
+              <TooltipContent side="top">Xem</TooltipContent>
+            </Tooltip>
+
+            {/* Chuyển lớp */}
+            <Tooltip>
+              <TooltipTrigger
+                render={
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="size-8 text-muted-foreground hover:text-foreground"
+                    onClick={() => {
+                      setTransferStudent(s);
+                      setTargetClassId("");
+                    }}
+                  />
+                }
+              >
+                <ArrowLeftRight className="size-4" />
+                <span className="sr-only">Chuyển lớp</span>
+              </TooltipTrigger>
+              <TooltipContent side="top">Chuyển lớp</TooltipContent>
+            </Tooltip>
+
+            {/* Xóa */}
+            <Tooltip>
+              <TooltipTrigger
+                render={
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    disabled={remove.isPending}
+                    className="size-8 text-rose-600 hover:bg-rose-500/10 hover:text-rose-700"
+                    onClick={() => {
+                      if (
+                        window.confirm(
+                          t("removeConfirm", { studentName: s.fullName }),
+                        )
+                      ) {
+                        remove.mutate(s.id);
+                      }
+                    }}
+                  />
+                }
+              >
+                <Trash2 className="size-4" />
+                <span className="sr-only">{t("remove")}</span>
+              </TooltipTrigger>
+              <TooltipContent side="top">{t("remove")}</TooltipContent>
+            </Tooltip>
+          </div>
+        </TooltipProvider>
       ),
     },
   ];
@@ -213,9 +294,7 @@ export function ClassStudentsPanel({ classId }: { classId: number }) {
             return (
               <option key={s.id} value={s.id}>
                 {s.fullName}
-                {active
-                  ? t("transferFrom", { className: active.name })
-                  : ""}
+                {active ? t("transferFrom", { className: active.name }) : ""}
               </option>
             );
           })}

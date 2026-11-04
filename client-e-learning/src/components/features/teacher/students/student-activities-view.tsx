@@ -89,14 +89,14 @@ export function StudentActivitiesView() {
 
   return (
     <div className="space-y-3">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+      <div className="flex flex-col gap-4 rounded-xl border border-border bg-card p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="text-sm font-extrabold">{t("activities.title")}</h2>
-          <p className="mt-0.5 text-xs text-muted-foreground">{t("activities.subtitle")}</p>
+          <p className="mt-0.5 text-sm text-muted-foreground">{t("activities.subtitle")}</p>
         </div>
         <div className="flex flex-wrap gap-2">
           <select
-            className="h-9 rounded-md border border-border bg-card px-2 text-xs font-semibold"
+            className="h-9 rounded-md border border-border bg-card px-2 text-sm font-semibold w-36"
             value={mode}
             onChange={(e) => {
               setMode(e.target.value as typeof mode);
@@ -109,7 +109,7 @@ export function StudentActivitiesView() {
             <option value="TRY_HARD">{t("sessionMode.TRY_HARD")}</option>
           </select>
           <select
-            className="h-9 rounded-md border border-border bg-card px-2 text-xs font-semibold"
+            className="h-9 rounded-md border border-border bg-card px-2 text-sm font-semibold w-36"
             value={status}
             onChange={(e) => {
               setStatus(e.target.value);

@@ -53,10 +53,10 @@ export function ClassCard({ classItem, onEdit, onArchive }: ClassCardProps) {
             </span>
           )}
           <Link
-            href={"/teacher/classes/" + classItem.id + "/students"}
+            href={"/teacher/classes/" + classItem.id }
             className="inline-flex items-center gap-1 font-extrabold text-primary hover:underline"
           >
-            {t("viewStudents")}
+            {t("viewClasses")}
           </Link>
         </div>
       </div>

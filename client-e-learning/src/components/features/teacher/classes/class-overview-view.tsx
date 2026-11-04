@@ -34,9 +34,11 @@ export function ClassOverviewView({ classId }: { classId: number }) {
       (await teacherStudentService.listClassMembers(classId)).data ?? [],
     enabled: Number.isFinite(classId) && classId > 0,
   });
-
+  
   const currentClass = classQuery.data;
-  const members = membersQuery.data ?? [];
+  const members = Array.isArray(membersQuery.data)
+    ? membersQuery.data
+    : membersQuery.data?.items ?? [];
   const recentMembers = members.slice(0, 5);
   const isArchived = currentClass?.status !== "ACTIVE";
 

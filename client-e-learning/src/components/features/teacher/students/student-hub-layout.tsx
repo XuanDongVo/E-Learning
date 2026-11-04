@@ -133,15 +133,14 @@ export function StudentHubLayout({ children }: { children: React.ReactNode }) {
                 : tHub("layout.resetPassword")}
             </Button>
 
-            <Link href={`${base}/edit`}>
-              <Button
-                size="sm"
-                className="gap-1.5 text-sm font-bold h-10"
-                render={<Link href={`${base}/edit`} />}
-              >
-                <Pencil className="size-3.5" /> {tHub("layout.editProfile")}
-              </Button>
-            </Link>
+            <Button
+              size="sm"
+              nativeButton={false}
+              className="gap-1.5 text-sm font-bold h-10"
+              render={<Link href={`${base}/edit`} />}
+            >
+              <Pencil className="size-3.5" /> {tHub("layout.editProfile")}
+            </Button>
           </div>
         </div>
 

@@ -123,11 +123,12 @@ export function CreateClassDialog({
                 id="academic-year"
                 required
                 value={form.academicYear}
-                onChange={(event) =>
-                  onChange({ ...form, academicYear: event.target.value })
-                }
+                // onChange={(event) =>
+                //   onChange({ ...form, academicYear: event.target.value })
+                // }
                 placeholder="2026-2027"
                 className="h-10 text-sm"
+                disabled={editing}
               />
             </div>
           </div>

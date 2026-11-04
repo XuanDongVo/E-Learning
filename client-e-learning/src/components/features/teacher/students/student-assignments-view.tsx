@@ -17,6 +17,7 @@ import {
 import { RegionState } from "@/components/feedback";
 import { SkeletonTable } from "@/components/ui/skeleton/skeleton-table";
 import { Button } from "@/components/ui/button";
+import { StatusBadge } from "@/components/ui/status-badge";
 
 const STATUS_FILTERS: Array<"ALL" | StudentAssignmentStatus> = [
   "ALL",
@@ -73,7 +74,7 @@ export function StudentAssignmentsView() {
         id: "status",
         header: t("assignments.colStatus"),
         cell: (row) => (
-          <StatusPill
+          <StatusBadge
             status={row.status}
             label={t(`assignmentStatus.${row.status}`)}
           />
@@ -173,27 +174,5 @@ export function StudentAssignmentsView() {
         }
       />
     </div>
-  );
-}
-
-function StatusPill({
-  status,
-  label,
-}: {
-  status: StudentAssignmentStatus;
-  label: string;
-}) {
-  const color =
-    status === "SUBMITTED"
-      ? "bg-emerald-500/10 text-emerald-600"
-      : status === "LATE" || status === "TIMED_OUT"
-        ? "bg-amber-500/10 text-amber-600"
-        : status === "IN_PROGRESS"
-          ? "bg-primary/10 text-primary"
-          : "bg-muted text-muted-foreground";
-  return (
-    <span className={`rounded-lg  p-2 text-sm font-bold ${color}`}>
-      {label}
-    </span>
   );
 }

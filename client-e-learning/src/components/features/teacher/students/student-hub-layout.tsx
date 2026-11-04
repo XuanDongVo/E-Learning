@@ -8,6 +8,8 @@ import { useTranslations } from "next-intl";
 import { ChevronRight, KeyRound, Mail, Pencil, School } from "lucide-react";
 import { teacherStudentService } from "@/services/teacher/student.service";
 import { Button } from "@/components/ui/button";
+import { StatusBadge } from "@/components/ui/status-badge";
+import { useConfirmDialog } from "@/components/ui/confirm-dialog";
 import { getInitials } from "@/utils/format";
 import { getAppErrorMessage } from "@/lib/errors/app-error";
 import { FullPageState, PageBanner } from "@/components/feedback";
@@ -20,6 +22,7 @@ export function StudentHubLayout({ children }: { children: React.ReactNode }) {
   const t = useTranslations("teacher.students");
   const tHub = useTranslations("teacher.students.hub");
   const tErrors = useTranslations("errors");
+  const confirm = useConfirmDialog();
 
   const [tempPassword, setTempPassword] = useState<string | null>(null);
   const [resetError, setResetError] = useState<string | null>(null);
@@ -85,15 +88,11 @@ export function StudentHubLayout({ children }: { children: React.ReactNode }) {
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
                 <h1 className="text-2xl font-extrabold">{name}</h1>
-                <span
-                  className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-sm font-bold ${
-                    accountActive
-                      ? "bg-emerald-500/10 text-emerald-600"
-                      : "bg-amber-500/10 text-amber-700"
-                  }`}
-                >
-                  {accountLabel}
-                </span>
+                <StatusBadge
+                  status={accountActive ? "ACTIVE" : "INACTIVE"}
+                  label={accountLabel}
+                  className="px-2.5 text-sm"
+                />
               </div>
               <div className="mt-1 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
                 {detail?.email && (
@@ -121,10 +120,13 @@ export function StudentHubLayout({ children }: { children: React.ReactNode }) {
               size="sm"
               className="gap-1.5 text-sm font-bold h-10"
               disabled={reset.isPending || !Number.isFinite(studentId)}
-              onClick={() => {
-                if (window.confirm(tHub("layout.resetPasswordConfirm"))) {
-                  reset.mutate();
-                }
+              onClick={async () => {
+                const ok = await confirm({
+                  title: tHub("layout.resetPasswordConfirm"),
+                  confirmLabel: tHub("layout.resetPassword"),
+                  tone: "destructive",
+                });
+                if (ok) reset.mutate();
               }}
             >
               <KeyRound className="size-3.5" />{" "}

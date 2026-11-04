@@ -179,7 +179,7 @@ export default function TeacherClassesPage() {
             onClick={() => void load()}
             className="font-bold underline"
           >
-            Retry
+            {t("retry")}
           </button>
         </div>
       )}

@@ -58,7 +58,7 @@ public class ClassController {
     @PutMapping("/{classId}")
     public ResponseEntity<ApiResponse<ClassResponse>> update(
             @PathVariable Long classId,
-            @Valid @RequestBody UpdateClassRequest request,
+            @Valid @Valid @RequestBody UpdateClassRequest request,
             @AuthenticationPrincipal Jwt jwt
     ) {
         return ResponseEntity.ok(
@@ -78,6 +78,19 @@ public class ClassController {
                 ApiResponse.success(
                         "Class archived",
                         classService.archive(classId, Long.valueOf(jwt.getSubject()))
+                )
+        );
+    }
+
+    @PatchMapping("/{classId}/restore")
+    public ResponseEntity<ApiResponse<ClassResponse>> restore(
+            @PathVariable Long classId,
+            @AuthenticationPrincipal Jwt jwt
+    ) {
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        "Class restored",
+                        classService.restore(classId, Long.valueOf(jwt.getSubject()))
                 )
         );
     }

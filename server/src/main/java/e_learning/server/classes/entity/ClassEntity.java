@@ -61,6 +61,10 @@ public class ClassEntity {
         this.status = ClassStatus.ARCHIVED;
     }
 
+    public void restore() {
+        this.status = ClassStatus.ACTIVE;
+    }
+
     @PrePersist
     void onCreate() {
         LocalDateTime now = LocalDateTime.now();

@@ -99,6 +99,16 @@ public class ClassService {
         );
     }
 
+    @Transactional
+    public ClassResponse restore(Long classId, Long teacherId) {
+        ClassEntity classEntity = ownedClass(classId, teacherId);
+        classEntity.restore();
+        return ClassResponse.from(
+                classEntity,
+                classMemberRepository.countActiveMembers(classId)
+        );
+    }
+
     private ClassEntity ownedClass(Long classId, Long teacherId) {
         ClassEntity classEntity = classRepository.findById(classId)
                 .orElseThrow(() -> new AppException(ErrorCode.CLASS_NOT_FOUND));

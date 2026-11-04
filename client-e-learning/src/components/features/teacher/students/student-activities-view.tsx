@@ -10,6 +10,7 @@ import { formatDateTime } from "@/utils/format";
 import { DataTable, type DataTableColumn } from "@/components/ui/data-table/data-table";
 import { RegionState } from "@/components/feedback";
 import { SkeletonTable } from "@/components/ui/skeleton/skeleton-table";
+import { StatusBadge } from "@/components/ui/status-badge";
 
 export function StudentActivitiesView() {
   const params = useParams();
@@ -52,16 +53,17 @@ export function StudentActivitiesView() {
         id: "mode",
         header: t("activities.colMode"),
         cell: (row) => (
-          <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-bold text-primary">
-            {t(`sessionMode.${row.mode}`)}
-          </span>
+          <StatusBadge tone="info" label={t(`sessionMode.${row.mode}`)} />
         ),
       },
       {
         id: "status",
         header: t("activities.colStatus"),
         cell: (row) => (
-          <SessionPill status={row.status} label={t(`sessionStatus.${row.status}`)} />
+          <StatusBadge
+            status={row.status}
+            label={t(`sessionStatus.${row.status}`)}
+          />
         ),
       },
       {
@@ -161,16 +163,4 @@ export function StudentActivitiesView() {
       />
     </div>
   );
-}
-
-function SessionPill({ status, label }: { status: string; label: string }) {
-  const color =
-    status === "COMPLETED"
-      ? "bg-emerald-500/10 text-emerald-600"
-      : status === "GAME_OVER"
-        ? "bg-amber-500/10 text-amber-600"
-        : status === "ABANDONED"
-          ? "bg-muted text-muted-foreground"
-          : "bg-primary/10 text-primary";
-  return <span className={`rounded-full px-2 py-0.5 text-[11px] font-bold ${color}`}>{label}</span>;
 }

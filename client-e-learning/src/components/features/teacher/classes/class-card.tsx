@@ -35,7 +35,7 @@ export function ClassCard({ classItem, onEdit, onArchive }: ClassCardProps) {
                 isArchived ? "text-primary" : "text-destructive hover:bg-destructive/10"
               }`}
             >
-              {isArchived ? t("restore") ?? "Khôi phục" : t("archive")}
+              {isArchived ? t("restore") : t("archive")}
             </button>
           </div>
         </details>

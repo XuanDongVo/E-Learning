@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { Search } from "lucide-react";
 import { useTranslations } from "next-intl";
 
@@ -9,6 +10,8 @@ interface ClassesToolbarProps {
   grades: Grade[];
   onQueryChange: (value: string) => void;
   onGradeChange: (value: string) => void;
+  /** Primary actions (e.g. Create class) — rendered on the right */
+  actions?: ReactNode;
 }
 
 export function ClassesToolbar({
@@ -17,11 +20,12 @@ export function ClassesToolbar({
   grades,
   onQueryChange,
   onGradeChange,
+  actions,
 }: ClassesToolbarProps) {
   const t = useTranslations("teacher.classes");
 
   return (
-    <div className="flex flex-col gap-3 rounded-[var(--radius-md)] border border-border-color bg-card-bg p-4 sm:flex-row">
+    <div className="flex flex-col gap-3 rounded-[var(--radius-md)] border border-border-color bg-card-bg p-4 sm:flex-row sm:items-center">
       <label className="relative flex-1">
         <Search className="absolute left-3 top-3 h-4 w-4 text-neutral-subtle" />
 
@@ -52,6 +56,12 @@ export function ClassesToolbar({
           ))}
         </select>
       </label>
+
+      {actions ? (
+        <div className="flex shrink-0 flex-wrap items-center gap-2 max-sm:w-full max-sm:[&>button]:flex-1">
+          {actions}
+        </div>
+      ) : null}
     </div>
   );
 }

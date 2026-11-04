@@ -1,9 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Search, Trash2 } from "lucide-react";
-import { useTranslations } from "next-intl";
 
 import { RegionState } from "@/components/feedback";
 import { Button } from "@/components/ui/button";
@@ -19,7 +18,6 @@ import type { StudentSummary } from "@/types/student";
 import { getInitials } from "@/utils/format";
 
 export function ClassStudentsPanel({ classId }: { classId: number }) {
-  const t = useTranslations("teacher.classes");
   const qc = useQueryClient();
   const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
@@ -77,13 +75,10 @@ export function ClassStudentsPanel({ classId }: { classId: number }) {
 
   const pageData = membersQuery.data;
   const members = pageData?.items ?? [];
-  const memberIds = useMemo(
-    () => new Set(members.map((s) => s.id)),
-    [members],
-  );
 
   const available = (studentsQuery.data ?? []).filter(
-    (s) => !memberIds.has(s.id),
+    (s) =>
+      !s.classes?.some((c) => c.id === classId && c.status === "ACTIVE"),
   );
 
   const handleEnrollmentChange = (studentId: number) => {
@@ -243,10 +238,16 @@ export function ClassStudentsPanel({ classId }: { classId: number }) {
               variant="error"
               title="Không tải được danh sách"
               description="Thử lại sau."
-              action={{
-                label: "Retry",
-                onClick: () => void membersQuery.refetch(),
-              }}
+              action={
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => void membersQuery.refetch()}
+                >
+                  Retry
+                </Button>
+              }
             />
           ) : undefined
         }

@@ -141,7 +141,8 @@
   --pop: 3px 3px 0 var(--pop-shadow);
 
   /* shadcn semantic tokens */
-  --background: #f8f0e3;
+  /* --background: #f8f0e3; */
+  --background: oklch(98.5% .006 95);
   --foreground: #2b2220;
 
   --card: #ffffff;

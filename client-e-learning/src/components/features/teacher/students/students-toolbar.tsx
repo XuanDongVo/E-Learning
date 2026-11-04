@@ -62,7 +62,7 @@ export function StudentsToolbar({
     noClass;
 
   return (
-    <div className="flex flex-col gap-3 border-b border-border p-5 xl:flex-row xl:items-center bg-card rounded-lg shadow-sm">
+    <div className="flex flex-col gap-3 border-b border-border p-5 xl:flex-row xl:items-center bg-card rounded-lg shadow-sm border-2 border border-ink shadow-pop">
       {/* Search */}
       <div className="relative w-full xl:w-72 xl:shrink-0">
         <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />

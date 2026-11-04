@@ -25,7 +25,7 @@ export function ClassesToolbar({
   const t = useTranslations("teacher.classes");
 
   return (
-    <div className="flex flex-col gap-3 rounded-[var(--radius-md)] border border-border-color bg-card-bg p-4 sm:flex-row sm:items-center">
+    <div className="flex flex-col gap-3 rounded-lg border border-border-color bg-card-bg p-4 sm:flex-row sm:items-center border-2 border-ink shadow-pop">
       <label className="relative flex-1">
         <Search className="absolute left-3 top-3 h-4 w-4 text-neutral-subtle" />
 

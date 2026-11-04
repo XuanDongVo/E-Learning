@@ -67,7 +67,7 @@ export function StudentHubLayout({ children }: { children: React.ReactNode }) {
     <div className="space-y-4">
       <nav
         aria-label="Breadcrumb"
-        className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground"
+        className="flex items-center gap-1.5 text-sm font-semibold text-muted-foreground"
       >
         <Link href="/teacher/students" className="hover:text-foreground">
           {t("title")}
@@ -86,7 +86,7 @@ export function StudentHubLayout({ children }: { children: React.ReactNode }) {
               <div className="flex flex-wrap items-center gap-2">
                 <h1 className="text-2xl font-extrabold">{name}</h1>
                 <span
-                  className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold ${
+                  className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-sm font-bold ${
                     accountActive
                       ? "bg-emerald-500/10 text-emerald-600"
                       : "bg-amber-500/10 text-amber-700"
@@ -95,7 +95,7 @@ export function StudentHubLayout({ children }: { children: React.ReactNode }) {
                   {accountLabel}
                 </span>
               </div>
-              <div className="mt-1 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+              <div className="mt-1 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
                 {detail?.email && (
                   <span className="inline-flex items-center gap-1">
                     <Mail className="size-3.5" />
@@ -119,7 +119,7 @@ export function StudentHubLayout({ children }: { children: React.ReactNode }) {
             <Button
               variant="outline"
               size="sm"
-              className="gap-1.5 text-xs font-bold"
+              className="gap-1.5 text-sm font-bold h-10"
               disabled={reset.isPending || !Number.isFinite(studentId)}
               onClick={() => {
                 if (window.confirm(tHub("layout.resetPasswordConfirm"))) {
@@ -128,13 +128,20 @@ export function StudentHubLayout({ children }: { children: React.ReactNode }) {
               }}
             >
               <KeyRound className="size-3.5" />{" "}
-              {reset.isPending ? tHub("layout.resetting") : tHub("layout.resetPassword")}
+              {reset.isPending
+                ? tHub("layout.resetting")
+                : tHub("layout.resetPassword")}
             </Button>
-            <Button size="sm" className="gap-1.5 text-xs font-bold" render={<Link href={`${base}/edit`} />}>
-              <Link href={`${base}/edit`}>
+
+            <Link href={`${base}/edit`}>
+              <Button
+                size="sm"
+                className="gap-1.5 text-sm font-bold h-10"
+                render={<Link href={`${base}/edit`} />}
+              >
                 <Pencil className="size-3.5" /> {tHub("layout.editProfile")}
-              </Link>
-            </Button>
+              </Button>
+            </Link>
           </div>
         </div>
 
@@ -154,7 +161,7 @@ export function StudentHubLayout({ children }: { children: React.ReactNode }) {
               <Link
                 key={tab.href}
                 href={tab.href}
-                className={`whitespace-nowrap border-b-2 px-3 py-3 text-xs font-bold transition-colors ${
+                className={`whitespace-nowrap border-b-2 px-3 py-3 text-sm font-bold transition-colors ${
                   active
                     ? "border-primary text-primary"
                     : "border-transparent text-muted-foreground hover:text-foreground"
@@ -178,16 +185,14 @@ export function StudentHubLayout({ children }: { children: React.ReactNode }) {
           </p>
           <button
             type="button"
-            className="mt-2 text-xs font-semibold underline"
+            className="mt-2 text-sm font-semibold underline"
             onClick={() => setTempPassword(null)}
           >
             {tHub("layout.dismiss")}
           </button>
         </div>
       )}
-      {resetError && (
-        <PageBanner tone="error" message={resetError} />
-      )}
+      {resetError && <PageBanner tone="error" message={resetError} />}
 
       <div>{children}</div>
     </div>

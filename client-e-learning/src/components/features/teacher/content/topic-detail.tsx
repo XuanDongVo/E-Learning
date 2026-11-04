@@ -20,6 +20,7 @@ import type { Activity } from "@/types/activity";
 import { EntityHeader } from "./components/entity-header";
 import { ContentEditor } from "./components/content-editor";
 import { Badge } from "./components/badge";
+import { StatusBadge } from "@/components/ui/status-badge";
 import { FullPageState, PageBanner, RegionState } from "@/components/feedback";
 import { SkeletonList } from "@/components/ui/skeleton/skeleton-list";
 
@@ -163,14 +164,13 @@ export function TopicDetail({
                   <span className="block truncate text-body font-semibold">{activity.name}</span>
                   <span className="text-body-sm text-muted-foreground">{activity.totalQuestions} questions · {activity.mode}</span>
                 </span>
-                <ContentStatusBadge status={activity.status} />
+                <StatusBadge status={activity.status} label={activity.status} />
               </Link>
             ))}
           </div>
         )}
       </section>
 
-      {/* Modal create QuestionBank */}
       {createBankOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-sm">
           <div className="w-full max-w-md rounded-xl bg-white p-5 shadow-xl">
@@ -310,9 +310,7 @@ export function TopicDetail({
                       <span className="truncate text-sm font-semibold text-slate-800">
                         {bank.name}
                       </span>
-                      <Badge tone={bank.status === "PUBLISHED" ? "green" : "gray"}>
-                        {bank.status}
-                      </Badge>
+                      <StatusBadge status={bank.status} label={bank.status} />
                     </span>
                     <span className="mt-1 block text-xs text-slate-400">
                       {bank.totalQuestions ?? 0} questions ({bank.readyQuestions ?? 0} ready) {bank.description ? `· ${bank.description}` : ""}
@@ -327,9 +325,4 @@ export function TopicDetail({
       </section>
     </>
   );
-}
-
-function ContentStatusBadge({ status }: { status: Activity["status"] }) {
-  const styles = { DRAFT: "bg-warm-soft text-primary", PUBLISHED: "bg-success-soft text-success", ARCHIVED: "bg-muted text-muted-foreground" };
-  return <span className={`rounded-full px-2 py-0.5 text-[0.625rem] font-bold ${styles[status]}`}>{status}</span>;
 }

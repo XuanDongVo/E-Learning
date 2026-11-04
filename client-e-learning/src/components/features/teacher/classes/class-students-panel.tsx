@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Search, Trash2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import { RegionState } from "@/components/feedback";
 import { Button } from "@/components/ui/button";
@@ -18,6 +19,8 @@ import type { StudentSummary } from "@/types/student";
 import { getInitials } from "@/utils/format";
 
 export function ClassStudentsPanel({ classId }: { classId: number }) {
+  const t = useTranslations("teacher.classes.classStudents");
+  const tRoot = useTranslations("teacher.classes");
   const qc = useQueryClient();
   const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
@@ -89,7 +92,11 @@ export function ClassStudentsPanel({ classId }: { classId: number }) {
 
     if (activeClass) {
       const ok = window.confirm(
-        `Chuyển ${selected.fullName} từ "${activeClass.name}" sang "${className ?? "lớp này"}"?`,
+        t("transferConfirm", {
+          studentName: selected.fullName,
+          oldClass: activeClass.name,
+          newClass: className ?? "",
+        }),
       );
       if (ok) transfer.mutate(studentId);
       return;
@@ -103,7 +110,7 @@ export function ClassStudentsPanel({ classId }: { classId: number }) {
   const columns: DataTableColumn<StudentSummary>[] = [
     {
       id: "student",
-      header: "Học sinh",
+      header: t("columnStudent"),
       cell: (s) => (
         <div className="flex items-center gap-3">
           <span className="grid size-9 shrink-0 place-items-center rounded-full bg-primary/10 text-xs font-extrabold text-primary">
@@ -118,14 +125,14 @@ export function ClassStudentsPanel({ classId }: { classId: number }) {
     },
     {
       id: "email",
-      header: "Email",
+      header: t("columnEmail"),
       cell: (s) => (
         <span className="font-medium text-muted-foreground">{s.email}</span>
       ),
     },
     {
       id: "phone",
-      header: "Số điện thoại",
+      header: t("columnPhone"),
       cell: (s) => (
         <span className="font-medium text-muted-foreground">
           {s.phone || "—"}
@@ -134,7 +141,7 @@ export function ClassStudentsPanel({ classId }: { classId: number }) {
     },
     {
       id: "status",
-      header: "Trạng thái",
+      header: t("columnStatus"),
       cell: (s) => (
         <span
           className={`inline-flex rounded-full px-2 py-0.5 text-[11px] font-bold ${
@@ -143,13 +150,13 @@ export function ClassStudentsPanel({ classId }: { classId: number }) {
               : "bg-muted text-muted-foreground"
           }`}
         >
-          {s.accountStatus === "ACTIVE" ? "Đang hoạt động" : "Tạm khóa"}
+          {s.accountStatus === "ACTIVE" ? t("statusActive") : t("statusLocked")}
         </span>
       ),
     },
     {
       id: "actions",
-      header: "Thao tác",
+      header: t("columnActions"),
       align: "right",
       cell: (s) => (
         <Button
@@ -157,14 +164,14 @@ export function ClassStudentsPanel({ classId }: { classId: number }) {
           size="sm"
           disabled={remove.isPending}
           onClick={() => {
-            if (window.confirm(`Xóa ${s.fullName} khỏi lớp?`)) {
+            if (window.confirm(t("removeConfirm", { studentName: s.fullName }))) {
               remove.mutate(s.id);
             }
           }}
           className="h-8 gap-1 text-xs font-semibold text-rose-600 hover:bg-rose-500/10"
         >
           <Trash2 className="size-3.5" />
-          Xóa
+          {t("remove")}
         </Button>
       ),
     },
@@ -185,13 +192,13 @@ export function ClassStudentsPanel({ classId }: { classId: number }) {
           <Input
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
-            placeholder="Tìm theo tên hoặc email..."
+            placeholder={t("search")}
             className="h-10 bg-background pl-9 text-sm"
           />
         </form>
 
         <select
-          aria-label="Thêm hoặc chuyển học sinh"
+          aria-label={t("ariaAddTransfer")}
           value=""
           disabled={pending}
           onChange={(e) => {
@@ -200,13 +207,15 @@ export function ClassStudentsPanel({ classId }: { classId: number }) {
           }}
           className="h-10 rounded-md border border-border bg-background px-3 text-sm sm:w-72"
         >
-          <option value="">Thêm / chuyển học sinh vào lớp</option>
+          <option value="">{t("addOrTransfer")}</option>
           {available.map((s) => {
             const active = s.classes?.find((m) => m.status === "ACTIVE");
             return (
               <option key={s.id} value={s.id}>
                 {s.fullName}
-                {active ? ` (từ ${active.name})` : ""}
+                {active
+                  ? t("transferFrom", { className: active.name })
+                  : ""}
               </option>
             );
           })}
@@ -215,7 +224,7 @@ export function ClassStudentsPanel({ classId }: { classId: number }) {
 
       {(add.isError || transfer.isError || remove.isError) && (
         <p role="alert" className="text-sm text-destructive">
-          Không thể cập nhật thành viên lớp. Thử lại.
+          {t("membershipError")}
         </p>
       )}
 
@@ -228,16 +237,16 @@ export function ClassStudentsPanel({ classId }: { classId: number }) {
         emptyState={
           <RegionState
             variant="empty"
-            title="Không có học sinh"
-            description="Thêm học sinh từ danh sách bên trên."
+            title={t("emptyTitle")}
+            description={t("emptyDescription")}
           />
         }
         errorState={
           membersQuery.isError ? (
             <RegionState
               variant="error"
-              title="Không tải được danh sách"
-              description="Thử lại sau."
+              title={t("loadErrorTitle")}
+              description={t("loadErrorDescription")}
               action={
                 <Button
                   type="button"
@@ -245,7 +254,7 @@ export function ClassStudentsPanel({ classId }: { classId: number }) {
                   size="sm"
                   onClick={() => void membersQuery.refetch()}
                 >
-                  Retry
+                  {tRoot("retry")}
                 </Button>
               }
             />

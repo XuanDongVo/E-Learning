@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { Check, ChevronsUpDown, Search, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 
@@ -43,6 +43,8 @@ export interface StudentsToolbarProps {
   onStatusChange: (value: string) => void;
   onNoClassChange: (value: boolean) => void;
   onClear: () => void;
+  /** Primary actions (e.g. Add student) — rendered on the right */
+  actions?: ReactNode;
 }
 
 export function StudentsToolbar({
@@ -59,6 +61,7 @@ export function StudentsToolbar({
   onStatusChange,
   onNoClassChange,
   onClear,
+  actions,
 }: StudentsToolbarProps) {
   const t = useTranslations("teacher.students");
 
@@ -70,7 +73,7 @@ export function StudentsToolbar({
     noClass;
 
   return (
-    <div className="flex flex-col gap-3 border-b border-border p-5 xl:flex-row xl:items-center bg-card rounded-lg shadow-sm ">
+    <div className="flex flex-col gap-3 border-b border-border p-5 xl:flex-row xl:items-center bg-card rounded-lg shadow-sm">
       {/* Search */}
       <div className="relative w-full xl:w-72 xl:shrink-0">
         <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
@@ -121,7 +124,6 @@ export function StudentsToolbar({
           </SelectContent>
         </Select>
 
-        {/* No class */}
         <label
           className={cn(
             "flex h-10 cursor-pointer items-center gap-2 rounded-md border px-3 text-sm font-semibold transition-colors",
@@ -137,7 +139,6 @@ export function StudentsToolbar({
           <span className="whitespace-nowrap">{t("noActiveClass")}</span>
         </label>
 
-        {/* Clear filters */}
         {hasActiveFilters && (
           <Button
             type="button"
@@ -151,13 +152,16 @@ export function StudentsToolbar({
           </Button>
         )}
       </div>
+
+      {actions ? (
+        <div className="flex shrink-0 flex-wrap items-center gap-2 xl:ml-auto max-sm:w-full max-sm:[&>button]:flex-1">
+          {actions}
+        </div>
+      ) : null}
     </div>
   );
 }
 
-/**
- * Searchable combobox dùng cho danh sách Lớp / Khối.
- */
 function SearchableFilter({
   value,
   onChange,

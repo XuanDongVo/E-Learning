@@ -24,6 +24,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -171,23 +174,32 @@ public class StudentManagementService {
         ownedClass(classId, teacherId);
         String q = search == null ? "" : search.trim().toLowerCase(Locale.ROOT);
 
-        List<StudentSummaryResponse> all = classMemberRepository.findStudentsByClassId(classId).stream()
-                .map(member -> new StudentSummaryResponse(
-                        member.getUser().getId(),
-                        member.getUser().getFullName(),
-                        member.getUser().getEmail(),
-                        null,
-                        List.of(new StudentClassSummary(
-                                member.getClassEntity().getId(),
-                                member.getClassEntity().getName(),
-                                member.getClassEntity().getGrade().getId(),
-                                member.getClassEntity().getGrade().getName(),
-                                member.getClassEntity().getAcademicYear(),
-                                member.getStatus()
-                        )),
-                        null,
-                        member.getUser().getStatus().name()
-                ))
+        List<ClassMember> members = classMemberRepository.findStudentsByClassId(classId);
+        List<Long> userIds = members.stream().map(m -> m.getUser().getId()).toList();
+        Map<Long, StudentProfile> profilesByUserId = profileRepository.findAllByUserIdIn(userIds).stream()
+                .collect(Collectors.toMap(p -> p.getUser().getId(), Function.identity(), (a, b) -> a));
+
+        List<StudentSummaryResponse> all = members.stream()
+                .map(member -> {
+                    User user = member.getUser();
+                    StudentProfile profile = profilesByUserId.get(user.getId());
+                    return new StudentSummaryResponse(
+                            user.getId(),
+                            user.getFullName(),
+                            user.getEmail(),
+                            profile != null ? profile.getPhone() : null,
+                            List.of(new StudentClassSummary(
+                                    member.getClassEntity().getId(),
+                                    member.getClassEntity().getName(),
+                                    member.getClassEntity().getGrade().getId(),
+                                    member.getClassEntity().getGrade().getName(),
+                                    member.getClassEntity().getAcademicYear(),
+                                    member.getStatus()
+                            )),
+                            null,
+                            user.getStatus().name()
+                    );
+                })
                 .filter(row -> {
                     if (q.isEmpty()) return true;
                     String name = row.fullName() == null ? "" : row.fullName().toLowerCase(Locale.ROOT);

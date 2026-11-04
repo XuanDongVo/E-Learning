@@ -32,7 +32,14 @@ import { useTranslations } from "next-intl";
 import { CreateUnitModal } from "./components/create-unit-modal";
 import { PageBanner, RegionState } from "@/components/feedback";
 import { SkeletonList } from "@/components/ui/skeleton/skeleton-list";
-import {TeacherPageHeader} from "@/components/features/teacher/shared/teacher-page-header";
+import { TeacherPageHeader } from "@/components/features/teacher/shared/teacher-page-header";
+import { StatusBadge } from "@/components/ui/status-badge";
+
+const CONTENT_STATUS_LABEL: Record<string, string> = {
+  DRAFT: "Draft",
+  PUBLISHED: "Published",
+  ARCHIVED: "Archived",
+};
 
 export function ContentOverview({
   onNavigate,
@@ -252,7 +259,7 @@ export function ContentOverview({
                 <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-body-sm text-muted-foreground">
                   <span>{activeUnit.totalSection} sections</span>
                   <span>{activeUnit.totalTopic} topics</span>
-                  <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-semibold">{activeUnit.status}</span>
+                  <StatusBadge status={activeUnit.status} label={CONTENT_STATUS_LABEL[activeUnit.status] ?? activeUnit.status} />
                   <span className="sm:ml-auto">{tContent("sectionsAndTopics")}</span>
                 </div>
               </div>
@@ -304,7 +311,7 @@ export function ContentOverview({
                               {section.name}
                             </span>
                           </button>
-                          <StatusBadge status={section.status} />
+                          <StatusBadge status={section.status} label={CONTENT_STATUS_LABEL[section.status] ?? section.status} className="shrink-0 text-[0.625rem]" />
                           <span className="shrink-0 text-body-sm font-semibold text-muted-foreground">
                             {section.totalTopic} topics
                           </span>
@@ -342,7 +349,7 @@ export function ContentOverview({
                                   {topic.name}
                                 </span>
 
-                                <StatusBadge status={topic.status} />
+                                <StatusBadge status={topic.status} label={CONTENT_STATUS_LABEL[topic.status] ?? topic.status} className="shrink-0 text-[0.625rem]" />
                                 <span className="text-body-sm text-muted-foreground">
                                   {topic.totalQuestionBank} {tContent("questionBanks")}
                                 </span>
@@ -417,7 +424,7 @@ function UnitRow({
           {unit.code} · {unit.name}
         </span>
       </button>
-      <StatusBadge status={unit.status} />
+      <StatusBadge status={unit.status} label={CONTENT_STATUS_LABEL[unit.status] ?? unit.status} className="shrink-0 text-[0.625rem]" />
       <button
         type="button"
         onClick={onOpen}
@@ -427,25 +434,5 @@ function UnitRow({
         <ExternalLink className="size-3.5" />
       </button>
     </div>
-  );
-}
-
-function StatusBadge({ status }: { status: ContentUnit["status"] }) {
-  const labels = {
-    DRAFT: "Draft",
-    PUBLISHED: "Published",
-    ARCHIVED: "Archived",
-  };
-  const styles = {
-    DRAFT: "border border-amber/40 bg-accent/15 text-foreground",
-    PUBLISHED: "border border-success/30 bg-success/15 text-success",
-    ARCHIVED: "border border-border bg-muted text-muted-foreground",
-  };
-  return (
-    <span
-      className={`shrink-0 rounded-lg px-2.5 py-0.5 text-[0.625rem] font-extrabold shadow-pop-sm ${styles[status]}`}
-    >
-      {labels[status]}
-    </span>
   );
 }

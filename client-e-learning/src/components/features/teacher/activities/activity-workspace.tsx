@@ -5,7 +5,7 @@ import { useRouter } from "@/i18n/navigation";
 import { useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Search, ChevronDown, Plus } from "lucide-react";
+import { Search, Plus } from "lucide-react";
 import { gradeService } from "@/services/grade.service";
 import { unitService } from "@/services/content/content.unit.service";
 import { activityService } from "@/services/activity.service";
@@ -88,48 +88,72 @@ export function ActivityWorkspace() {
       />
 
       <div className="flex flex-col gap-3 rounded-[var(--radius-md)] border border-border-color bg-card-bg p-4 sm:flex-row sm:flex-wrap sm:items-center">
-        <div className="flex h-9 w-full items-center gap-1.5 rounded-md border border-slate-200 bg-white px-2 text-slate-400 sm:w-[220px]">
-          <Search size={14} />
+        <label className="relative w-full sm:w-[220px] sm:flex-1 sm:max-w-xs">
+          <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <input
-            className="w-full border-0 text-body-sm text-slate-700 outline-none"
             value={search}
             onChange={(e) => {
               setSearch(e.target.value);
               setPage(1);
             }}
             placeholder="Search activities..."
+            aria-label="Search activities"
+            className="h-10 w-full rounded-lg border border-border-input bg-background pl-9 pr-3 text-body outline-none focus:border-primary focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
           />
-        </div>
+        </label>
 
-        <div className="relative w-full sm:w-auto">
-          <select
-            className="h-10 w-full appearance-none rounded-xl border border-slate-200 bg-white pl-3.5 pr-9 text-body-sm font-medium text-slate-600 outline-none transition-colors hover:border-slate-300 focus:border-primary focus:ring-2 focus:ring-primary/10 sm:w-[140px]"
-            value={activeGrade || ""}
-            onChange={(e) => {
-              setGradeId(Number(e.target.value));
-              setUnitId(0);
-              setPage(1);
-            }}
-          >
-            <option value="">Select grade</option>
-            {(grades.data || []).map((g) => (
-              <option key={g.id} value={g.id}>
-                {g.name}
-              </option>
-            ))}
-          </select>
-          <ChevronDown
-            size={15}
-            strokeWidth={2}
-            className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
-          />
-        </div>
+        <select
+          value={activeGrade || ""}
+          onChange={(e) => {
+            setGradeId(Number(e.target.value));
+            setUnitId(0);
+            setPage(1);
+          }}
+          aria-label="Grade"
+          className="h-10 w-full rounded-lg border border-border-input bg-background px-3 text-body outline-none focus:border-primary focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 sm:w-[140px]"
+        >
+          <option value="">Select grade</option>
+          {(grades.data || []).map((g) => (
+            <option key={g.id} value={g.id}>
+              {g.name}
+            </option>
+          ))}
+        </select>
 
-        <div className="ml-auto flex shrink-0 flex-wrap items-center gap-2 max-sm:w-full max-sm:ml-0">
+        <select
+          value={selectedUnit?.id || ""}
+          onChange={(e) => selectUnit(Number(e.target.value))}
+          aria-label="Unit"
+          className="h-10 w-full rounded-lg border border-border-input bg-background px-3 text-body outline-none focus:border-primary focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 sm:w-[180px]"
+        >
+          <option value="">Select unit</option>
+          {(units.data || []).map((u) => (
+            <option key={u.id} value={u.id}>
+              {u.code} · {u.name}
+            </option>
+          ))}
+        </select>
+
+        <select
+          value={status}
+          onChange={(e) => {
+            setStatus(e.target.value as "ALL" | ActivityStatus);
+            setPage(1);
+          }}
+          aria-label="Status"
+          className="h-10 w-full rounded-lg border border-border-input bg-background px-3 text-body outline-none focus:border-primary focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 sm:w-[150px]"
+        >
+          <option value="ALL">All statuses</option>
+          <option value="DRAFT">Draft</option>
+          <option value="PUBLISHED">Published</option>
+          <option value="ARCHIVED">Archived</option>
+        </select>
+
+        <div className="flex shrink-0 flex-wrap items-center gap-2 sm:ml-auto max-sm:w-full">
           {createHref ? (
             <Link
               href={createHref}
-              className="inline-flex h-10 w-full items-center justify-center gap-1.5 rounded-md bg-primary px-3 text-body-sm font-bold text-white shadow-[0_5px_12px_rgba(79,70,229,0.18)] transition-colors hover:bg-primary-hover sm:w-auto"
+              className="inline-flex h-10 w-full items-center justify-center gap-1.5 rounded-md bg-primary px-3 text-body-sm font-bold text-primary-foreground shadow-sm transition-colors hover:bg-primary-hover sm:w-auto"
             >
               <Plus size={15} />
               Create Activity
@@ -138,7 +162,7 @@ export function ActivityWorkspace() {
             <button
               type="button"
               disabled
-              className="inline-flex h-10 w-full cursor-not-allowed items-center justify-center gap-1.5 rounded-md bg-primary/50 px-3 text-body-sm font-bold text-white sm:w-auto"
+              className="inline-flex h-10 w-full cursor-not-allowed items-center justify-center gap-1.5 rounded-md bg-primary/50 px-3 text-body-sm font-bold text-primary-foreground sm:w-auto"
             >
               <Plus size={15} />
               Create Activity
@@ -146,84 +170,6 @@ export function ActivityWorkspace() {
           )}
         </div>
       </div>
-
-      <section className="border-b border-border-color pb-6">
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <label className="hidden lg:block">
-            <span className="mb-2 block text-label font-semibold text-neutral-muted">
-              Grade
-            </span>
-            <select
-              value={activeGrade || ""}
-              onChange={(e) => {
-                setGradeId(Number(e.target.value));
-                setUnitId(0);
-                setPage(1);
-              }}
-              className="h-10 w-full rounded-lg border border-border-input bg-card-bg px-3 text-body outline-none focus:border-primary focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-            >
-              <option value="">Select grade</option>
-              {(grades.data || []).map((g) => (
-                <option key={g.id} value={g.id}>
-                  {g.name}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="hidden lg:block">
-            <span className="mb-2 block text-label font-semibold text-neutral-muted">
-              Unit
-            </span>
-            <select
-              value={selectedUnit?.id || ""}
-              onChange={(e) => selectUnit(Number(e.target.value))}
-              className="h-10 w-full rounded-lg border border-border-input bg-card-bg px-3 text-body outline-none focus:border-primary focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-            >
-              <option value="">Select unit</option>
-              {(units.data || []).map((u) => (
-                <option key={u.id} value={u.id}>
-                  {u.code} · {u.name}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            <span className="mb-2 block text-label font-semibold text-neutral-muted">
-              Status
-            </span>
-            <select
-              value={status}
-              onChange={(e) => {
-                setStatus(e.target.value as "ALL" | ActivityStatus);
-                setPage(1);
-              }}
-              className="h-10 w-full rounded-lg border border-border-input bg-card-bg px-3 text-body outline-none focus:border-primary focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-            >
-              <option value="ALL">All statuses</option>
-              <option value="DRAFT">Draft</option>
-              <option value="PUBLISHED">Published</option>
-              <option value="ARCHIVED">Archived</option>
-            </select>
-          </label>
-          <label className="hidden lg:block">
-            <span className="mb-2 block text-label font-semibold text-neutral-muted">
-              Search
-            </span>
-            <div className="relative">
-              <Search className="absolute left-3 top-2.5 h-4 w-4 text-neutral-muted" />
-              <input
-                value={search}
-                onChange={(e) => {
-                  setSearch(e.target.value);
-                  setPage(1);
-                }}
-                placeholder="Search activities"
-                className="h-10 w-full rounded-lg border border-border-input bg-card-bg pl-9 pr-3 text-body outline-none focus:border-primary focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-              />
-            </div>
-          </label>
-        </div>
-      </section>
 
       {!selectedUnit ? (
         <RegionState variant="empty" />

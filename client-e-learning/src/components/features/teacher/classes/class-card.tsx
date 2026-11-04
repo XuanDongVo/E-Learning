@@ -5,6 +5,7 @@ import type { ClassCardProps } from "@/types/class";
 
 export function ClassCard({ classItem, onEdit, onArchive }: ClassCardProps) {
   const t = useTranslations("teacher.classes");
+  const isArchived = classItem.status === "ARCHIVED";
 
   return (
     <article className="rounded-2xl border-2 border-ink bg-card p-6 shadow-pop transition hover:-translate-y-0.5">
@@ -27,15 +28,15 @@ export function ClassCard({ classItem, onEdit, onArchive }: ClassCardProps) {
             >
               {t("edit")}
             </button>
-            {classItem.status === "ACTIVE" && (
-              <button
-                type="button"
-                onClick={() => onArchive(classItem)}
-                className="block w-full rounded-lg px-3 py-2 text-left text-body-sm font-semibold text-destructive hover:bg-destructive/10"
-              >
-                {t("archive")}
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={() => onArchive(classItem)}
+              className={`block w-full rounded-lg px-3 py-2 text-left text-body-sm font-semibold hover:bg-muted ${
+                isArchived ? "text-primary" : "text-destructive hover:bg-destructive/10"
+              }`}
+            >
+              {isArchived ? t("restore") ?? "Khôi phục" : t("archive")}
+            </button>
           </div>
         </details>
       </div>
@@ -46,7 +47,7 @@ export function ClassCard({ classItem, onEdit, onArchive }: ClassCardProps) {
       <div className="mt-5 flex items-center justify-between border-t-2 border-border/80 pt-4 text-body-sm font-bold text-neutral-muted">
         <span>{classItem.academicYear}</span>
         <div className="flex items-center gap-3">
-          {classItem.status === "ARCHIVED" && (
+          {isArchived && (
             <span className="rounded-lg border border-border bg-muted px-2 py-0.5 text-xs text-neutral-muted">
               {t("archived")}
             </span>

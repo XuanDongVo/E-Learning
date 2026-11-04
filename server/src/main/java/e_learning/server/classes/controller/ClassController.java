@@ -58,7 +58,7 @@ public class ClassController {
     @PutMapping("/{classId}")
     public ResponseEntity<ApiResponse<ClassResponse>> update(
             @PathVariable Long classId,
-            @Valid @Valid @RequestBody UpdateClassRequest request,
+            @Valid @RequestBody UpdateClassRequest request,
             @AuthenticationPrincipal Jwt jwt
     ) {
         return ResponseEntity.ok(

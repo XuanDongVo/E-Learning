@@ -5,6 +5,7 @@ import e_learning.server.classes.entity.ClassMember;
 import e_learning.server.classes.entity.ClassStatus;
 import e_learning.server.classes.repository.ClassMemberRepository;
 import e_learning.server.classes.repository.ClassRepository;
+import e_learning.server.common.dto.PageResponse;
 import e_learning.server.common.exception.AppException;
 import e_learning.server.common.exception.ErrorCode;
 import e_learning.server.student.dto.*;
@@ -22,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Locale;
 
 @Service
 @RequiredArgsConstructor
@@ -159,9 +161,17 @@ public class StudentManagementService {
     }
 
     @Transactional(readOnly = true)
-    public List<StudentSummaryResponse> listClass(Long classId, Long teacherId) {
+    public PageResponse<StudentSummaryResponse> listClass(
+            Long classId,
+            Long teacherId,
+            String search,
+            int page,
+            int size
+    ) {
         ownedClass(classId, teacherId);
-        return classMemberRepository.findStudentsByClassId(classId).stream()
+        String q = search == null ? "" : search.trim().toLowerCase(Locale.ROOT);
+
+        List<StudentSummaryResponse> all = classMemberRepository.findStudentsByClassId(classId).stream()
                 .map(member -> new StudentSummaryResponse(
                         member.getUser().getId(),
                         member.getUser().getFullName(),
@@ -178,7 +188,15 @@ public class StudentManagementService {
                         null,
                         member.getUser().getStatus().name()
                 ))
+                .filter(row -> {
+                    if (q.isEmpty()) return true;
+                    String name = row.fullName() == null ? "" : row.fullName().toLowerCase(Locale.ROOT);
+                    String email = row.email() == null ? "" : row.email().toLowerCase(Locale.ROOT);
+                    return name.contains(q) || email.contains(q);
+                })
                 .toList();
+
+        return PageResponse.fromList(all, page, size);
     }
 
     private User studentForTeacher(Long studentId, Long teacherId) {

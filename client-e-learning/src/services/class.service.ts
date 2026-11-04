@@ -16,4 +16,6 @@ export const classService = {
     }),
   archive: (classId: number) =>
     request<Class>(`/v1/classes/${classId}/archive`, { method: "PATCH" }),
+  restore: (classId: number) =>
+    request<Class>(`/v1/classes/${classId}/restore`, { method: "PATCH" }),
 };

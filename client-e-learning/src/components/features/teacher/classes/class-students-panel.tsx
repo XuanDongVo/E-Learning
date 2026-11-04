@@ -2,22 +2,40 @@
 
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Search, Trash2, UserPlus, Users } from "lucide-react";
-import { teacherStudentService } from "@/services/teacher/student.service";
-import { classService } from "@/services/class.service";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Search, Trash2 } from "lucide-react";
+import { useTranslations } from "next-intl";
+
 import { RegionState } from "@/components/feedback";
-import { SkeletonList } from "@/components/ui/skeleton/skeleton-list";
+import { Button } from "@/components/ui/button";
+import {
+  DataTable,
+  type DataTableColumn,
+} from "@/components/ui/data-table/data-table";
+import { Input } from "@/components/ui/input";
+import { SkeletonTable } from "@/components/ui/skeleton/skeleton-table";
+import { classService } from "@/services/class.service";
+import { teacherStudentService } from "@/services/teacher/student.service";
+import type { StudentSummary } from "@/types/student";
+import { getInitials } from "@/utils/format";
 
 export function ClassStudentsPanel({ classId }: { classId: number }) {
+  const t = useTranslations("teacher.classes");
   const qc = useQueryClient();
+  const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
 
   const membersQuery = useQuery({
-    queryKey: ["class-members", classId],
-    queryFn: async () =>
-      (await teacherStudentService.listClassMembers(classId)).data ?? [],
+    queryKey: ["class-members", classId, search, page, pageSize],
+    queryFn: async () => {
+      const res = await teacherStudentService.listClassMembers(classId, {
+        search: search || undefined,
+        page,
+        size: pageSize,
+      });
+      return res.data;
+    },
   });
 
   const studentsQuery = useQuery({
@@ -57,18 +75,12 @@ export function ClassStudentsPanel({ classId }: { classId: number }) {
     onSuccess: refresh,
   });
 
-  const members = membersQuery.data ?? [];
-  const memberIds = new Set(members.map((s) => s.id));
-
-  const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    return members.filter(
-      (s) =>
-        !q ||
-        s.fullName.toLowerCase().includes(q) ||
-        s.email.toLowerCase().includes(q),
-    );
-  }, [members, search]);
+  const pageData = membersQuery.data;
+  const members = pageData?.items ?? [];
+  const memberIds = useMemo(
+    () => new Set(members.map((s) => s.id)),
+    [members],
+  );
 
   const available = (studentsQuery.data ?? []).filter(
     (s) => !memberIds.has(s.id),
@@ -78,9 +90,7 @@ export function ClassStudentsPanel({ classId }: { classId: number }) {
     const selected = available.find((s) => s.id === studentId);
     if (!selected) return;
 
-    const activeClass = selected.classes?.find(
-      (m) => m.status === "ACTIVE",
-    );
+    const activeClass = selected.classes?.find((m) => m.status === "ACTIVE");
 
     if (activeClass) {
       const ok = window.confirm(
@@ -95,18 +105,95 @@ export function ClassStudentsPanel({ classId }: { classId: number }) {
 
   const pending = add.isPending || transfer.isPending || remove.isPending;
 
+  const columns: DataTableColumn<StudentSummary>[] = [
+    {
+      id: "student",
+      header: "Học sinh",
+      cell: (s) => (
+        <div className="flex items-center gap-3">
+          <span className="grid size-9 shrink-0 place-items-center rounded-full bg-primary/10 text-xs font-extrabold text-primary">
+            {getInitials(s.fullName)}
+          </span>
+          <div>
+            <p className="text-sm font-extrabold text-foreground">{s.fullName}</p>
+            <p className="text-[11px] text-muted-foreground">ID: #{s.id}</p>
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: "email",
+      header: "Email",
+      cell: (s) => (
+        <span className="font-medium text-muted-foreground">{s.email}</span>
+      ),
+    },
+    {
+      id: "phone",
+      header: "Số điện thoại",
+      cell: (s) => (
+        <span className="font-medium text-muted-foreground">
+          {s.phone || "—"}
+        </span>
+      ),
+    },
+    {
+      id: "status",
+      header: "Trạng thái",
+      cell: (s) => (
+        <span
+          className={`inline-flex rounded-full px-2 py-0.5 text-[11px] font-bold ${
+            s.accountStatus === "ACTIVE"
+              ? "bg-emerald-500/10 text-emerald-600"
+              : "bg-muted text-muted-foreground"
+          }`}
+        >
+          {s.accountStatus === "ACTIVE" ? "Đang hoạt động" : "Tạm khóa"}
+        </span>
+      ),
+    },
+    {
+      id: "actions",
+      header: "Thao tác",
+      align: "right",
+      cell: (s) => (
+        <Button
+          variant="ghost"
+          size="sm"
+          disabled={remove.isPending}
+          onClick={() => {
+            if (window.confirm(`Xóa ${s.fullName} khỏi lớp?`)) {
+              remove.mutate(s.id);
+            }
+          }}
+          className="h-8 gap-1 text-xs font-semibold text-rose-600 hover:bg-rose-500/10"
+        >
+          <Trash2 className="size-3.5" />
+          Xóa
+        </Button>
+      ),
+    },
+  ];
+
   return (
     <div className="space-y-4">
       <div className="flex flex-col gap-3 rounded-lg border border-border bg-card p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
-        <div className="relative max-w-md flex-1">
+        <form
+          className="relative max-w-md flex-1"
+          onSubmit={(e) => {
+            e.preventDefault();
+            setPage(1);
+            setSearch(searchInput.trim());
+          }}
+        >
           <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
             placeholder="Tìm theo tên hoặc email..."
             className="h-10 bg-background pl-9 text-sm"
           />
-        </div>
+        </form>
 
         <select
           aria-label="Thêm hoặc chuyển học sinh"
@@ -137,103 +224,44 @@ export function ClassStudentsPanel({ classId }: { classId: number }) {
         </p>
       )}
 
-      <div className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
-        {membersQuery.isLoading ? (
-          <div className="p-4">
-            <SkeletonList count={5} />
-          </div>
-        ) : filtered.length === 0 ? (
-          <div className="p-12 text-center">
-            <Users className="mx-auto size-10 text-muted-foreground opacity-30" />
-            <h3 className="mt-3 text-sm font-extrabold">Không có học sinh</h3>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Thêm học sinh từ danh sách bên trên.
-            </p>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="border-b border-border bg-muted/40 font-bold uppercase text-muted-foreground">
-                <tr>
-                  <th className="p-3.5 pl-4">Học sinh</th>
-                  <th className="p-3.5">Email</th>
-                  <th className="p-3.5">Số điện thoại</th>
-                  <th className="p-3.5">Trạng thái</th>
-                  <th className="p-3.5 pr-4 text-right">Thao tác</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {filtered.map((s) => {
-                  const initials = s.fullName
-                    .split(" ")
-                    .slice(-2)
-                    .map((n) => n[0])
-                    .join("")
-                    .toUpperCase();
-                  return (
-                    <tr key={s.id} className="transition-colors hover:bg-muted/30">
-                      <td className="p-3.5 pl-4">
-                        <div className="flex items-center gap-3">
-                          <span className="grid size-9 shrink-0 place-items-center rounded-full bg-primary/10 text-xs font-extrabold text-primary">
-                            {initials}
-                          </span>
-                          <div>
-                            <p className="text-sm font-extrabold text-foreground">
-                              {s.fullName}
-                            </p>
-                            <p className="text-[11px] text-muted-foreground">
-                              ID: #{s.id}
-                            </p>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="p-3.5 font-medium text-muted-foreground">
-                        {s.email}
-                      </td>
-                      <td className="p-3.5 font-medium text-muted-foreground">
-                        {s.phone || "—"}
-                      </td>
-                      <td className="p-3.5">
-                        <span
-                          className={`inline-flex rounded-full px-2 py-0.5 text-[11px] font-bold ${
-                            s.accountStatus === "ACTIVE"
-                              ? "bg-emerald-500/10 text-emerald-600"
-                              : "bg-muted text-muted-foreground"
-                          }`}
-                        >
-                          {s.accountStatus === "ACTIVE"
-                            ? "Đang hoạt động"
-                            : "Tạm khóa"}
-                        </span>
-                      </td>
-                      <td className="p-3.5 pr-4 text-right">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          disabled={remove.isPending}
-                          onClick={() => {
-                            if (
-                              window.confirm(
-                                `Xóa ${s.fullName} khỏi lớp?`,
-                              )
-                            ) {
-                              remove.mutate(s.id);
-                            }
-                          }}
-                          className="h-8 gap-1 text-xs font-semibold text-rose-600 hover:bg-rose-500/10"
-                        >
-                          <Trash2 className="size-3.5" />
-                          Xóa
-                        </Button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
+      <DataTable
+        data={members}
+        columns={columns}
+        getRowKey={(s) => s.id}
+        isLoading={membersQuery.isLoading}
+        loadingState={<SkeletonTable columns={5} />}
+        emptyState={
+          <RegionState
+            variant="empty"
+            title="Không có học sinh"
+            description="Thêm học sinh từ danh sách bên trên."
+          />
+        }
+        errorState={
+          membersQuery.isError ? (
+            <RegionState
+              variant="error"
+              title="Không tải được danh sách"
+              description="Thử lại sau."
+              action={{
+                label: "Retry",
+                onClick: () => void membersQuery.refetch(),
+              }}
+            />
+          ) : undefined
+        }
+        pagination={{
+          page: pageData?.page ?? page,
+          totalPages: pageData?.totalPages ?? 0,
+          totalElements: pageData?.totalElements ?? 0,
+          pageSize,
+          onPageChange: setPage,
+          onPageSizeChange: (size) => {
+            setPageSize(size);
+            setPage(1);
+          },
+        }}
+      />
     </div>
   );
 }

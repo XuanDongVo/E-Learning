@@ -70,7 +70,16 @@ export const teacherStudentService = {
       method: "PATCH",
       body: JSON.stringify(payload),
     }),
-  listClassMembers: (classId: number) => request<StudentSummary[]>(`/v1/classes/${classId}/members`),
+  listClassMembers: (
+    classId: number,
+    params: { search?: string; page?: number; size?: number } = {},
+  ) => {
+    const query = new URLSearchParams();
+    if (params.search) query.set("search", params.search);
+    query.set("page", String(params.page ?? 1));
+    query.set("size", String(params.size ?? 20));
+    return request<StudentPageResponse>(`/v1/classes/${classId}/members?${query.toString()}`);
+  },
   addToClass: (classId: number, payload: AddClassMemberRequest) =>
     request<void>(`/v1/classes/${classId}/members`, { method: "POST", body: JSON.stringify(payload) }),
   transferToClass: (classId: number, studentId: number) =>

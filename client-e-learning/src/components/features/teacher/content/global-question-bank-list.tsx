@@ -16,6 +16,7 @@ import { QUERY_KEYS } from "@/services/query-keys";
 import type { GlobalQuestionBankFilters } from "@/types/content";
 import { RegionState } from "@/components/feedback";
 import { SkeletonList } from "@/components/ui/skeleton/skeleton-list";
+import { TeacherPageHeader } from "@/components/features/teacher/shared/teacher-page-header";
 
 function numericParam(value: string | null): number | undefined {
   if (!value) return undefined;
@@ -102,17 +103,24 @@ export function GlobalQuestionBankList() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <div className="mb-2 flex items-center gap-2 text-xs text-muted-foreground">
-            <Link href="/teacher/content" className="hover:text-foreground">{t("breadcrumbExplorer")}</Link>
-            <span>/</span><span className="text-foreground">{t("breadcrumbBanks")}</span>
-          </div>
-          <h1 className="text-2xl font-bold tracking-tight">{t("title")}</h1>
-          <p className="mt-1 text-sm text-muted-foreground">{t("subtitle")}</p>
-        </div>
-        <div className="text-sm text-muted-foreground">{t("totalBanks", { count: pageData?.totalElements ?? 0 })}</div>
-      </div>
+      <nav aria-label="Breadcrumb" className="mb-3 flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
+        <Link href="/teacher/content" className="hover:text-foreground">{t("breadcrumbExplorer")}</Link>
+        <span>/</span>
+        <span className="text-foreground">{t("breadcrumbBanks")}</span>
+      </nav>
+      <TeacherPageHeader
+        title={t("title")}
+        description={
+          <>
+            {t("subtitle")}{" "}
+            <span className="font-semibold text-foreground">
+              {t("totalBanks", { count: pageData?.totalElements ?? 0 })}
+            </span>
+          </>
+        }
+        pipoMood="wave"
+        pipoSize={100}
+      />
 
       <section className="rounded-xl border-2 border-ink bg-card p-4 sm:p-5">
         <form onSubmit={onSearch} className="mb-4 flex flex-col gap-2 sm:flex-row">

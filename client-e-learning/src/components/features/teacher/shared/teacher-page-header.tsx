@@ -23,7 +23,7 @@ export function TeacherPageHeader({
   title,
   description,
   pipoMood = "wave",
-  pipoSize = 100,
+  pipoSize = 280,
   className,
 }: TeacherPageHeaderProps) {
   return (
@@ -45,9 +45,9 @@ export function TeacherPageHeader({
         ) : null}
       </div>
 
-      <div className="shrink-0 self-end sm:self-center">
+      {/* <div className="shrink-0 self-end sm:self-center">
         <Pipo mood={pipoMood} size={pipoSize} stage={2} />
-      </div>
+      </div> */}
     </div>
   );
 }

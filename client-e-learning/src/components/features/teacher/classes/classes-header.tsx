@@ -11,7 +11,6 @@ export function ClassesHeader() {
       title={t("title")}
       description={t("subtitle")}
       pipoMood="wave"
-      pipoSize={100}
     />
   );
 }

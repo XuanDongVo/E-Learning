@@ -84,7 +84,6 @@ export function ActivityWorkspace() {
         title="Activities"
         description="Create and manage learning activities for your units."
         pipoMood="wave"
-        pipoSize={100}
       />
 
       <div className="flex flex-col gap-3 rounded-[var(--radius-md)] border border-border-color bg-card-bg p-4 sm:flex-row sm:flex-wrap sm:items-center">

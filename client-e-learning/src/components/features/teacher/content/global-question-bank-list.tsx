@@ -119,7 +119,6 @@ export function GlobalQuestionBankList() {
           </>
         }
         pipoMood="wave"
-        pipoSize={100}
       />
 
       <section className="rounded-xl border-2 border-ink bg-card p-4 sm:p-5">

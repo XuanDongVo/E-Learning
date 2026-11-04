@@ -120,7 +120,6 @@ export default function TeacherAssignmentsPage() {
         title="Assignments"
         description="Track due dates, submissions to grade, and progress across classes."
         pipoMood="wave"
-        pipoSize={100}
       />
 
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">

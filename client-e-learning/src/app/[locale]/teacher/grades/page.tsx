@@ -152,7 +152,6 @@ export default function TeacherGradesPage() {
         title="Grade management"
         description="Manage grade codes, labels, and ordering for classes and student grouping."
         pipoMood="wave"
-        pipoSize={100}
       />
 
       {error && (

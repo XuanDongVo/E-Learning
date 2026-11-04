@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { QueryProvider } from "@/lib/query-provider";
 import { AuthProvider } from "@/components/auth/auth-provider";
+import { ConfirmDialogProvider } from "@/components/ui/confirm-dialog";
 import { Toaster } from "@/components/layout/toast";
 import { getMessages, setRequestLocale } from "next-intl/server";
 import { routing } from "@/i18n/routing";
@@ -38,7 +39,9 @@ export default async function RootLayout({
       <body className="min-h-full flex flex-col bg-[#F8FAFC]">
         <NextIntlClientProvider messages={messages}>
           <QueryProvider>
-            <AuthProvider>{children}</AuthProvider>
+            <AuthProvider>
+              <ConfirmDialogProvider>{children}</ConfirmDialogProvider>
+            </AuthProvider>
           </QueryProvider>
           <Toaster />
         </NextIntlClientProvider>

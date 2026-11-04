@@ -5,16 +5,16 @@ import { useRouter } from "@/i18n/navigation";
 import { useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Search, ChevronDown } from "lucide-react";
+import { Search, ChevronDown, Plus } from "lucide-react";
 import { gradeService } from "@/services/grade.service";
 import { unitService } from "@/services/content/content.unit.service";
 import { activityService } from "@/services/activity.service";
 import { QUERY_KEYS } from "@/services/query-keys";
 import type { ActivityStatus } from "@/types/activity";
-import { ContentToolbar } from "@/components/features/teacher/content/components/content-toolbar";
 import { ActivityTable } from "./activity-table";
 import { RegionState } from "@/components/feedback";
 import { SkeletonTable } from "@/components/ui/skeleton/skeleton-table";
+import { TeacherPageHeader } from "@/components/features/teacher/shared/teacher-page-header";
 
 export function ActivityWorkspace() {
   const params = useSearchParams();
@@ -74,22 +74,22 @@ export function ActivityWorkspace() {
     router.replace(`/teacher/activities?${q.toString()}`);
   };
 
+  const createHref = selectedUnit
+    ? `/teacher/activities/new?unitId=${selectedUnit.id}`
+    : undefined;
+
   return (
     <div className="space-y-6">
-      <ContentToolbar
+      <TeacherPageHeader
         title="Activities"
         description="Create and manage learning activities for your units."
-        action="Create Activity"
-        actionHref={
-          selectedUnit
-            ? `/teacher/activities/new?unitId=${selectedUnit.id}`
-            : undefined
-        }
-      >
-        {/* Search */}
+        pipoMood="wave"
+        pipoSize={100}
+      />
+
+      <div className="flex flex-col gap-3 rounded-[var(--radius-md)] border border-border-color bg-card-bg p-4 sm:flex-row sm:flex-wrap sm:items-center">
         <div className="flex h-9 w-full items-center gap-1.5 rounded-md border border-slate-200 bg-white px-2 text-slate-400 sm:w-[220px]">
           <Search size={14} />
-
           <input
             className="w-full border-0 text-body-sm text-slate-700 outline-none"
             value={search}
@@ -101,21 +101,9 @@ export function ActivityWorkspace() {
           />
         </div>
 
-        {/* Mobile Grade Select */}
         <div className="relative w-full sm:w-auto">
           <select
-            className="
-              h-10 w-full appearance-none rounded-xl
-              border border-slate-200 bg-white
-              pl-3.5 pr-9
-              text-body-sm font-medium text-slate-600
-              outline-none
-              transition-colors
-              hover:border-slate-300
-              focus:border-primary
-              focus:ring-2 focus:ring-primary/10
-              sm:w-[140px]
-            "
+            className="h-10 w-full appearance-none rounded-xl border border-slate-200 bg-white pl-3.5 pr-9 text-body-sm font-medium text-slate-600 outline-none transition-colors hover:border-slate-300 focus:border-primary focus:ring-2 focus:ring-primary/10 sm:w-[140px]"
             value={activeGrade || ""}
             onChange={(e) => {
               setGradeId(Number(e.target.value));
@@ -130,14 +118,34 @@ export function ActivityWorkspace() {
               </option>
             ))}
           </select>
-
           <ChevronDown
             size={15}
             strokeWidth={2}
             className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
           />
         </div>
-      </ContentToolbar>
+
+        <div className="ml-auto flex shrink-0 flex-wrap items-center gap-2 max-sm:w-full max-sm:ml-0">
+          {createHref ? (
+            <Link
+              href={createHref}
+              className="inline-flex h-10 w-full items-center justify-center gap-1.5 rounded-md bg-primary px-3 text-body-sm font-bold text-white shadow-[0_5px_12px_rgba(79,70,229,0.18)] transition-colors hover:bg-primary-hover sm:w-auto"
+            >
+              <Plus size={15} />
+              Create Activity
+            </Link>
+          ) : (
+            <button
+              type="button"
+              disabled
+              className="inline-flex h-10 w-full cursor-not-allowed items-center justify-center gap-1.5 rounded-md bg-primary/50 px-3 text-body-sm font-bold text-white sm:w-auto"
+            >
+              <Plus size={15} />
+              Create Activity
+            </button>
+          )}
+        </div>
+      </div>
 
       <section className="border-b border-border-color pb-6">
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -237,7 +245,6 @@ export function ActivityWorkspace() {
         />
       ) : (
         <section className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
-          {/* Table Toolbar */}
           <div className="flex flex-col gap-2 border-b border-border px-6 py-4.5 sm:flex-row sm:items-center sm:justify-between">
             <div className="min-w-0">
               <div className="flex items-center gap-2.5">
@@ -256,7 +263,6 @@ export function ActivityWorkspace() {
             </div>
           </div>
 
-          {/* Table */}
           <ActivityTable
             activities={visible}
             page={page}

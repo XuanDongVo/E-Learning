@@ -11,15 +11,6 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
-
 import { RegionState } from "@/components/feedback";
 import { Button } from "@/components/ui/button";
 import {
@@ -28,6 +19,8 @@ import {
 } from "@/components/ui/data-table/data-table";
 import { Input } from "@/components/ui/input";
 import { SkeletonTable } from "@/components/ui/skeleton/skeleton-table";
+import { StatusBadge } from "@/components/ui/status-badge";
+import { useConfirmDialog } from "@/components/ui/confirm-dialog";
 import { classService } from "@/services/class.service";
 import { teacherStudentService } from "@/services/teacher/student.service";
 import type { StudentSummary } from "@/types/student";
@@ -36,6 +29,7 @@ import { getInitials } from "@/utils/format";
 export function ClassStudentsPanel({ classId }: { classId: number }) {
   const t = useTranslations("teacher.classes.classStudents");
   const tRoot = useTranslations("teacher.classes");
+  const confirm = useConfirmDialog();
   const qc = useQueryClient();
   const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
@@ -103,20 +97,21 @@ export function ClassStudentsPanel({ classId }: { classId: number }) {
     (s) => !s.classes?.some((c) => c.id === classId && c.status === "ACTIVE"),
   );
 
-  const handleEnrollmentChange = (studentId: number) => {
+  const handleEnrollmentChange = async (studentId: number) => {
     const selected = available.find((s) => s.id === studentId);
     if (!selected) return;
 
     const activeClass = selected.classes?.find((m) => m.status === "ACTIVE");
 
     if (activeClass) {
-      const ok = window.confirm(
-        t("transferConfirm", {
+      const ok = await confirm({
+        title: t("transferConfirm", {
           studentName: selected.fullName,
           oldClass: activeClass.name,
           newClass: className ?? "",
         }),
-      );
+        confirmLabel: tRoot("saveChanges"),
+      });
       if (ok) transfer.mutate(studentId);
       return;
     }
@@ -164,15 +159,12 @@ export function ClassStudentsPanel({ classId }: { classId: number }) {
       id: "status",
       header: t("columnStatus"),
       cell: (s) => (
-        <span
-          className={`inline-flex rounded-full px-2 py-0.5 text-[11px] font-bold ${
-            s.accountStatus === "ACTIVE"
-              ? "bg-emerald-500/10 text-emerald-600"
-              : "bg-muted text-muted-foreground"
-          }`}
-        >
-          {s.accountStatus === "ACTIVE" ? t("statusActive") : t("statusLocked")}
-        </span>
+        <StatusBadge
+          status={s.accountStatus === "ACTIVE" ? "ACTIVE" : "INACTIVE"}
+          label={
+            s.accountStatus === "ACTIVE" ? t("statusActive") : t("statusLocked")
+          }
+        />
       ),
     },
     {
@@ -180,75 +172,65 @@ export function ClassStudentsPanel({ classId }: { classId: number }) {
       header: t("columnActions"),
       align: "right",
       cell: (s) => (
-        <TooltipProvider delay={200}>
+        <TooltipProvider delayDuration={200}>
           <div className="flex items-center justify-end gap-1">
-            {/* Xem */}
             <Tooltip>
-              <TooltipTrigger
-                render={
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="size-8 text-muted-foreground hover:text-foreground"
-                    onClick={() => {
-                      // TODO: xem chi tiết
-                    }}
-                  />
-                }
-              >
-                <Eye className="size-4" />
-                <span className="sr-only">Xem</span>
+              <TooltipTrigger asChild>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="size-8 text-muted-foreground hover:text-foreground"
+                  onClick={() => {
+                    // TODO: student detail
+                  }}
+                >
+                  <Eye className="size-4" />
+                  <span className="sr-only">Xem</span>
+                </Button>
               </TooltipTrigger>
               <TooltipContent side="top">Xem</TooltipContent>
             </Tooltip>
 
-            {/* Chuyển lớp */}
             <Tooltip>
-              <TooltipTrigger
-                render={
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="size-8 text-muted-foreground hover:text-foreground"
-                    onClick={() => {
-                      setTransferStudent(s);
-                      setTargetClassId("");
-                    }}
-                  />
-                }
-              >
-                <ArrowLeftRight className="size-4" />
-                <span className="sr-only">Chuyển lớp</span>
+              <TooltipTrigger asChild>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="size-8 text-muted-foreground hover:text-foreground"
+                  onClick={() => {
+                    setTransferStudent(s);
+                    setTargetClassId("");
+                  }}
+                >
+                  <ArrowLeftRight className="size-4" />
+                  <span className="sr-only">Chuyển lớp</span>
+                </Button>
               </TooltipTrigger>
               <TooltipContent side="top">Chuyển lớp</TooltipContent>
             </Tooltip>
 
-            {/* Xóa */}
             <Tooltip>
-              <TooltipTrigger
-                render={
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    disabled={remove.isPending}
-                    className="size-8 text-rose-600 hover:bg-rose-500/10 hover:text-rose-700"
-                    onClick={() => {
-                      if (
-                        window.confirm(
-                          t("removeConfirm", { studentName: s.fullName }),
-                        )
-                      ) {
-                        remove.mutate(s.id);
-                      }
-                    }}
-                  />
-                }
-              >
-                <Trash2 className="size-4" />
-                <span className="sr-only">{t("remove")}</span>
+              <TooltipTrigger asChild>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  disabled={remove.isPending}
+                  className="size-8 text-rose-600 hover:bg-rose-500/10 hover:text-rose-700"
+                  onClick={async () => {
+                    const ok = await confirm({
+                      title: t("removeConfirm", { studentName: s.fullName }),
+                      confirmLabel: t("remove"),
+                      tone: "destructive",
+                    });
+                    if (ok) remove.mutate(s.id);
+                  }}
+                >
+                  <Trash2 className="size-4" />
+                  <span className="sr-only">{t("remove")}</span>
+                </Button>
               </TooltipTrigger>
               <TooltipContent side="top">{t("remove")}</TooltipContent>
             </Tooltip>
@@ -283,7 +265,7 @@ export function ClassStudentsPanel({ classId }: { classId: number }) {
           value=""
           disabled={pending}
           onChange={(e) => {
-            if (e.target.value) handleEnrollmentChange(Number(e.target.value));
+            if (e.target.value) void handleEnrollmentChange(Number(e.target.value));
             e.target.value = "";
           }}
           className="h-10 rounded-md border border-border bg-background px-3 text-sm sm:w-72"

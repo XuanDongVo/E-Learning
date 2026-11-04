@@ -17,6 +17,7 @@ import { gradeService } from "@/services/grade.service";
 import type { CreateGradeRequest, Grade } from "@/types/grade";
 import { PageBanner, RegionState } from "@/components/feedback";
 import { SkeletonList } from "@/components/ui/skeleton/skeleton-list";
+import { TeacherPageHeader } from "@/components/features/teacher/shared/teacher-page-header";
 
 const emptyForm = {
   code: "",
@@ -37,9 +38,9 @@ export default function TeacherGradesPage() {
   const [form, setForm] = useState<CreateGradeRequest>(emptyForm);
 
   const grades = useMemo(
-  () => gradesQuery.data ?? [],
-  [gradesQuery.data]
-);
+    () => gradesQuery.data ?? [],
+    [gradesQuery.data],
+  );
 
   const activeGrades = useMemo(
     () => grades.filter((grade) => grade.status !== "INACTIVE"),
@@ -125,7 +126,9 @@ export default function TeacherGradesPage() {
   };
 
   const handleDelete = async (gradeId: number) => {
-    const confirmed = window.confirm("Delete this grade? This action cannot be undone.");
+    const confirmed = window.confirm(
+      "Delete this grade? This action cannot be undone.",
+    );
     if (!confirmed) {
       return;
     }
@@ -145,33 +148,18 @@ export default function TeacherGradesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <p className="text-body-sm font-extrabold uppercase tracking-[0.16em] text-primary">
-            Settings
-          </p>
-          <h1 className="mt-2 text-ui-3xl font-extrabold tracking-tight">
-            Grade management
-          </h1>
-          <p className="mt-2 text-body text-neutral-muted">
-            Manage grade codes, labels, and ordering for classes and student grouping.
-          </p>
-        </div>
-        <Button
-          type="button"
-          variant="default"
-          onClick={() => {
-            resetForm();
-            setError(null);
-          }}
-        >
-          <Plus className="mr-2 h-4 w-4" />
-          {editingId !== null ? "New grade" : "Add grade"}
-        </Button>
-      </div>
+      <TeacherPageHeader
+        title="Grade management"
+        description="Manage grade codes, labels, and ordering for classes and student grouping."
+        pipoMood="wave"
+      />
 
       {error && (
-        <PageBanner tone="error" message={error} onDismiss={() => setError(null)} />
+        <PageBanner
+          tone="error"
+          message={error}
+          onDismiss={() => setError(null)}
+        />
       )}
 
       <div className="grid gap-6 lg:grid-cols-[380px_minmax(0,1fr)]">
@@ -183,15 +171,31 @@ export default function TeacherGradesPage() {
             <h2 className="text-ui-xl font-extrabold">
               {editingId !== null ? "Update grade" : "Create grade"}
             </h2>
-            {editingId !== null && (
-              <button
-                type="button"
-                onClick={resetForm}
-                className="inline-flex items-center gap-1 text-body font-bold text-neutral-muted hover:text-neutral-dark"
-              >
-                <XCircle className="h-4 w-4" /> Cancel
-              </button>
-            )}
+            <div className="flex items-center gap-2">
+              {editingId !== null && (
+                <button
+                  type="button"
+                  onClick={resetForm}
+                  className="inline-flex items-center gap-1 text-body font-bold text-neutral-muted hover:text-neutral-dark"
+                >
+                  <XCircle className="h-4 w-4" /> Cancel
+                </button>
+              )}
+              {editingId !== null && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    resetForm();
+                    setError(null);
+                  }}
+                >
+                  <Plus className="mr-1.5 h-3.5 w-3.5" />
+                  New grade
+                </Button>
+              )}
+            </div>
           </div>
 
           <div className="space-y-4">
@@ -200,7 +204,9 @@ export default function TeacherGradesPage() {
               <input
                 required
                 value={form.code}
-                onChange={(event) => setForm({ ...form, code: event.target.value })}
+                onChange={(event) =>
+                  setForm({ ...form, code: event.target.value })
+                }
                 placeholder="GRADE_6"
                 className="mt-2 h-10 w-full rounded-xl border border-border-color bg-background-app px-3 text-body outline-none focus:border-primary"
               />
@@ -211,7 +217,9 @@ export default function TeacherGradesPage() {
               <input
                 required
                 value={form.name}
-                onChange={(event) => setForm({ ...form, name: event.target.value })}
+                onChange={(event) =>
+                  setForm({ ...form, name: event.target.value })
+                }
                 placeholder="Grade 6"
                 className="mt-2 h-10 w-full rounded-xl border border-border-color bg-background-app px-3 text-body outline-none focus:border-primary"
               />
@@ -225,7 +233,10 @@ export default function TeacherGradesPage() {
                 min={1}
                 value={form.displayOrder}
                 onChange={(event) =>
-                  setForm({ ...form, displayOrder: Number(event.target.value || 1) })
+                  setForm({
+                    ...form,
+                    displayOrder: Number(event.target.value || 1),
+                  })
                 }
                 className="mt-2 h-10 w-full rounded-xl border border-border-color bg-background-app px-3 text-body outline-none focus:border-primary"
               />
@@ -237,7 +248,11 @@ export default function TeacherGradesPage() {
               Reset
             </Button>
             <Button type="submit" disabled={isSaving}>
-              {isSaving ? "Saving..." : editingId !== null ? "Update" : "Create"}
+              {isSaving
+                ? "Saving..."
+                : editingId !== null
+                  ? "Update"
+                  : "Create"}
             </Button>
           </div>
         </form>
@@ -249,7 +264,9 @@ export default function TeacherGradesPage() {
                 <p className="text-body-sm font-extrabold uppercase tracking-[0.16em] text-primary">
                   Active
                 </p>
-                <h2 className="mt-1 text-ui-xl font-extrabold">Current grades</h2>
+                <h2 className="mt-1 text-ui-xl font-extrabold">
+                  Current grades
+                </h2>
               </div>
               <span className="rounded-full bg-green-100 px-2.5 py-1 text-body-sm font-bold text-green-700">
                 {activeGrades.length} active
@@ -285,14 +302,29 @@ export default function TeacherGradesPage() {
                     </div>
 
                     <div className="flex flex-wrap items-center gap-2">
-                      <Button type="button" variant="secondary" size="sm" onClick={() => handleEdit(grade)}>
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => handleEdit(grade)}
+                      >
                         <Pencil className="mr-1.5 h-3.5 w-3.5" />
                         Edit
                       </Button>
-                      <Button type="button" variant="outline" size="sm" onClick={() => handleDeactivate(grade.id)}>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleDeactivate(grade.id)}
+                      >
                         Inactive
                       </Button>
-                      <Button type="button" variant="destructive" size="sm" onClick={() => handleDelete(grade.id)}>
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => handleDelete(grade.id)}
+                      >
                         <Trash2 className="mr-1.5 h-3.5 w-3.5" />
                         Delete
                       </Button>
@@ -309,7 +341,9 @@ export default function TeacherGradesPage() {
                 <p className="text-body-sm font-extrabold uppercase tracking-[0.16em] text-primary">
                   Inactive
                 </p>
-                <h2 className="mt-1 text-ui-xl font-extrabold">Archived grades</h2>
+                <h2 className="mt-1 text-ui-xl font-extrabold">
+                  Archived grades
+                </h2>
               </div>
               <span className="rounded-full bg-slate-100 px-2.5 py-1 text-body-sm font-bold text-slate-700">
                 {inactiveGrades.length} hidden
@@ -326,10 +360,19 @@ export default function TeacherGradesPage() {
                     className="flex items-center justify-between rounded-xl border border-border-color bg-background-app p-3"
                   >
                     <div>
-                      <p className="font-bold text-neutral-muted">{grade.name}</p>
-                      <p className="text-body-sm text-neutral-subtle">{grade.code}</p>
+                      <p className="font-bold text-neutral-muted">
+                        {grade.name}
+                      </p>
+                      <p className="text-body-sm text-neutral-subtle">
+                        {grade.code}
+                      </p>
                     </div>
-                    <Button type="button" variant="secondary" size="sm" onClick={() => handleActivate(grade.id)}>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => handleActivate(grade.id)}
+                    >
                       Reactivate
                     </Button>
                   </div>

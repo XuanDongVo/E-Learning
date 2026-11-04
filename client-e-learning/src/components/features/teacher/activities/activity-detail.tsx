@@ -2,6 +2,7 @@
 
 import { Link } from "@/i18n/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useLocale } from "next-intl";
 import { activityService } from "@/services/activity.service";
 import { QUERY_KEYS } from "@/services/query-keys";
 import type {
@@ -11,6 +12,7 @@ import type {
 } from "@/types/activity";
 import { ACTIVITY_DIFFICULTY_LABELS } from "@/types/activity";
 import { FullPageState } from "@/components/feedback";
+import { formatDate } from "@/utils/format";
 
 const modeLabels: Record<ActivityMode, string> = {
   LEARNING: "Practice",
@@ -33,6 +35,7 @@ const btnOutline = `${btnBase} border border-border-input bg-card-bg hover:bg-ba
 const btnPrimary = `${btnBase} bg-primary text-primary-foreground hover:opacity-90`;
 
 export function ActivityDetail({ activityId }: { activityId: number }) {
+  const locale = useLocale();
   const qc = useQueryClient();
   const query = useQuery({
     queryKey: QUERY_KEYS.activity(activityId),
@@ -334,18 +337,18 @@ export function ActivityDetail({ activityId }: { activityId: number }) {
               <TimelineItem
                 done
                 label="Created"
-                value={formatDate(a.createdAt)}
+                value={formatDate(a.createdAt, locale)}
               />
               <TimelineItem
                 done={a.updatedAt !== a.createdAt}
                 label="Last updated"
-                value={formatDate(a.updatedAt)}
+                value={formatDate(a.updatedAt, locale)}
               />
               <TimelineItem
                 done={!!a.publishedAt}
                 label="Published"
                 value={
-                  a.publishedAt ? formatDate(a.publishedAt) : "Not published"
+                  a.publishedAt ? formatDate(a.publishedAt, locale) : "Not published"
                 }
                 last
               />
@@ -462,9 +465,4 @@ function Readiness({ ready }: { ready: boolean }) {
 
 function formatSeconds(s: number) {
   return s % 60 === 0 ? `${s / 60} min` : `${s}s`;
-}
-function formatDate(v: string) {
-  return new Intl.DateTimeFormat("en", { dateStyle: "medium" }).format(
-    new Date(v),
-  );
 }

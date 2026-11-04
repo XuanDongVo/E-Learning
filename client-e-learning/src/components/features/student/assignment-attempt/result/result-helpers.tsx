@@ -107,25 +107,6 @@ export function formatAnswerKey(answerKey: AttemptResultAnswerKey | null): strin
   return [];
 }
 
-export function formatWhen(value: string | null | undefined, locale: string): string {
-  if (!value) return "—";
-  try {
-    return new Intl.DateTimeFormat(locale, { dateStyle: "short", timeStyle: "short" }).format(
-      new Date(value),
-    );
-  } catch {
-    return value;
-  }
-}
-
-export function formatDuration(start: string | null | undefined, end: string | null | undefined): string {
-  if (!start || !end) return "—";
-  const diffSeconds = Math.max(0, Math.round((new Date(end).getTime() - new Date(start).getTime()) / 1000));
-  const minutes = Math.floor(diffSeconds / 60);
-  const seconds = diffSeconds % 60;
-  return minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`;
-}
-
 export function points(value: number | null | undefined): string {
   if (value == null || Number.isNaN(Number(value))) return "—";
   const number = Number(value);

@@ -1,7 +1,11 @@
+"use client";
+
 import { ChevronRight } from "lucide-react";
 import { Link } from "@/i18n/navigation";
+import { useLocale } from "next-intl";
 import { RegionState } from "@/components/feedback";
 import { SkeletonList } from "@/components/ui/skeleton/skeleton-list";
+import { formatDate } from "@/utils/format";
 
 import { AssignmentStatusBadge } from "./AssignmentStatusBadge";
 
@@ -23,6 +27,7 @@ export function AssignmentList({
   assignments,
   isLoading,
 }: Props) {
+  const locale = useLocale();
   if (isLoading) {
     return <SkeletonList count={5} />;
   }
@@ -56,7 +61,7 @@ export function AssignmentList({
           </span>
 
           <span className="text-body-sm text-muted-foreground">
-            {new Date(assignment.dueAt).toLocaleDateString("en-US")}
+            {formatDate(assignment.dueAt, locale)}
           </span>
 
           <div className="flex flex-wrap items-center gap-2 text-body-sm">

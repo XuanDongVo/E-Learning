@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
+import { Plus } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { getAppErrorMessage } from "@/lib/errors/app-error";
 import { classService } from "@/services/class.service";
@@ -15,6 +16,7 @@ import { CreateClassDialog } from "@/components/features/teacher/classes/create-
 const emptyForm = { name: "", gradeId: "", academicYear: "2026 - 2027" };
 
 export default function ClassesPage() {
+  const t = useTranslations("teacher.classes");
   const tErrors = useTranslations("errors");
   const [classes, setClasses] = useState<Class[]>([]);
   const [grades, setGrades] = useState<Grade[]>([]);
@@ -56,7 +58,7 @@ export default function ClassesPage() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [tErrors]);
 
   const filteredClasses = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
@@ -154,13 +156,23 @@ export default function ClassesPage() {
 
   return (
     <div className="space-y-6">
-      <ClassesHeader onCreate={openCreate} />
+      <ClassesHeader />
       <ClassesToolbar
         query={query}
         gradeFilter={gradeFilter}
         grades={grades}
         onQueryChange={setQuery}
         onGradeChange={setGradeFilter}
+        actions={
+          <button
+            type="button"
+            onClick={openCreate}
+            className="inline-flex h-10 items-center justify-center gap-2 rounded-[var(--radius-md)] bg-primary px-4 text-body font-extrabold text-primary-foreground shadow-sm transition hover:bg-primary-hover"
+          >
+            <Plus className="h-4 w-4" />
+            {t("createClass")}
+          </button>
+        }
       />
       {error && (
         <div

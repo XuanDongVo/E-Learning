@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { getAppErrorMessage } from "@/lib/errors/app-error";
 import { Button } from "@/components/ui/button";
 import {
@@ -32,6 +32,7 @@ import { cn } from "@/lib/utils";
 import { useBuilder, useIsDirty } from "@/components/features/teacher/assignments/builder/store";
 import { useIssues } from "./Canvas";
 import { updateAssignmentStatus } from "@/services/assignment.service";
+import { formatDateTime } from "@/utils/format";
 
 // ─── Management status badge ─────────────────────────────────────────────────
 const MGMT_BADGE: Record<
@@ -85,6 +86,7 @@ function ManagementStatusBadge({
 
 // ─── Save status badge ────────────────────────────────────────────────────────
 export function StatusBadge() {
+  const locale = useLocale();
   const dirty = useIsDirty();
   const status = useBuilder((s) => s.saveStatus);
   const lastSavedAt = useBuilder((s) => s.lastSavedAt);
@@ -116,7 +118,7 @@ export function StatusBadge() {
     return (
       <span
         className={cn(base, "border-success/30 bg-success/10 text-success")}
-        title={new Date(lastSavedAt).toLocaleString()}
+        title={formatDateTime(lastSavedAt, locale)}
       >
         <span className="h-1.5 w-1.5 rounded-full bg-success" /> Saved
       </span>

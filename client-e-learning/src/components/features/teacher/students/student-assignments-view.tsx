@@ -5,12 +5,11 @@ import { useParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { useLocale, useTranslations } from "next-intl";
 import { teacherStudentService } from "@/services/teacher/student.service";
-import {
-  formatDateTime,
-  formatScorePercent,
-  type StudentAssignmentItem,
-  type StudentAssignmentStatus,
+import type {
+  StudentAssignmentItem,
+  StudentAssignmentStatus,
 } from "@/types/teacher/student-learning";
+import { formatDateTime, formatScorePercent } from "@/utils/format";
 import { DataTable, type DataTableColumn } from "@/components/ui/data-table/data-table";
 import { RegionState } from "@/components/feedback";
 import { SkeletonTable } from "@/components/ui/skeleton/skeleton-table";

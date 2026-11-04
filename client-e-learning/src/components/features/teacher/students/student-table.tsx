@@ -13,6 +13,7 @@ import type { StudentTableProps } from "@/types/student";
 import type { StudentSummary } from "@/types/student";
 import { RegionState } from "@/components/feedback";
 import { SkeletonTable } from "@/components/ui/skeleton/skeleton-table";
+import { getInitials } from "@/utils/format";
 
 export function StudentTable({
   students,
@@ -68,12 +69,7 @@ export function StudentTable({
           className="flex items-center gap-3 rounded-md outline-none hover:text-primary focus-visible:ring-2 focus-visible:ring-primary/40"
         >
           <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary-light font-extrabold text-primary">
-            {student.fullName
-              .split(" ")
-              .map((part) => part[0])
-              .join("")
-              .slice(-2)
-              .toUpperCase()}
+            {getInitials(student.fullName)}
           </div>
 
           <p className="text-body-sm">{student.fullName}</p>

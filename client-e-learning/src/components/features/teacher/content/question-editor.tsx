@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { getAppErrorMessage } from "@/lib/errors/app-error";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -21,6 +21,7 @@ import {
 
 import { contentService } from "@/services/content.service";
 import { QUERY_KEYS } from "@/services/query-keys";
+import { formatDateTime } from "@/utils/format";
 import { QuestionForm, makeDraftQuestion } from "./components/question-form";
 
 const NAVIGATE_AFTER_SAVE_MS = 900;
@@ -417,14 +418,7 @@ function getCompletionItems(draft: ReturnType<typeof makeDraftQuestion>) {
 
 // Sidebar: metadata — read-only reference info, not editable here.
 function MetadataCard({ question, bankName }: { question: QuestionResponse; bankName?: string }) {
-  const formatDate = (value?: string) => {
-    if (!value) return "—";
-    try {
-      return new Date(value).toLocaleString();
-    } catch {
-      return value;
-    }
-  };
+  const locale = useLocale();
 
   return (
     <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-[0_5px_18px_rgba(94,134,173,0.04)]">
@@ -444,11 +438,11 @@ function MetadataCard({ question, bankName }: { question: QuestionResponse; bank
         )}
         <div className="flex justify-between gap-3">
           <dt className="text-slate-400">Created</dt>
-          <dd className="font-medium text-slate-700">{formatDate(question.createdAt)}</dd>
+          <dd className="font-medium text-slate-700">{formatDateTime(question.createdAt, locale)}</dd>
         </div>
         <div className="flex justify-between gap-3">
           <dt className="text-slate-400">Last updated</dt>
-          <dd className="font-medium text-slate-700">{formatDate(question.updatedAt)}</dd>
+          <dd className="font-medium text-slate-700">{formatDateTime(question.updatedAt, locale)}</dd>
         </div>
       </dl>
     </section>

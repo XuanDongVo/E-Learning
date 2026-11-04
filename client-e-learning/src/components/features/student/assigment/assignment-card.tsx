@@ -1,4 +1,6 @@
 import { Link } from "@/i18n/navigation";
+import { useLocale } from "next-intl";
+import { formatDueAt } from "@/utils/format";
 import {
   ArrowRight,
   CalendarDays,
@@ -40,22 +42,8 @@ function getCardTone(assignmentId: number | string, index = 0) {
   return CARD_TONES[seed % CARD_TONES.length];
 }
 
-function formatDueAt(dueAt: string | null) {
-  if (!dueAt) return "No due date";
-
-  const date = new Date(dueAt);
-  if (Number.isNaN(date.getTime())) return "No due date";
-
-  return new Intl.DateTimeFormat(undefined, {
-    weekday: "short",
-    day: "numeric",
-    month: "short",
-    hour: "numeric",
-    minute: "2-digit",
-  }).format(date);
-}
-
 export function AssignmentCard({ assignment, index = 0 }: AssignmentCardProps) {
+  const locale = useLocale();
   const done = assignment.status === "SUBMITTED";
   const urgent =
     !done &&
@@ -154,7 +142,7 @@ export function AssignmentCard({ assignment, index = 0 }: AssignmentCardProps) {
           </span>
           <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-1 font-semibold text-muted-foreground">
             <CalendarDays size={13} />
-            {formatDueAt(assignment.dueAt)}
+            {formatDueAt(assignment.dueAt, locale, "short")}
           </span>
         </div>
 

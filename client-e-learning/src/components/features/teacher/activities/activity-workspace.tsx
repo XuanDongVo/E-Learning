@@ -5,16 +5,112 @@ import { useRouter } from "@/i18n/navigation";
 import { useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Search, ChevronDown } from "lucide-react";
+import { Check, ChevronsUpDown, Plus, Search } from "lucide-react";
 import { gradeService } from "@/services/grade.service";
 import { unitService } from "@/services/content/content.unit.service";
 import { activityService } from "@/services/activity.service";
 import { QUERY_KEYS } from "@/services/query-keys";
 import type { ActivityStatus } from "@/types/activity";
-import { ContentToolbar } from "@/components/features/teacher/content/components/content-toolbar";
 import { ActivityTable } from "./activity-table";
 import { RegionState } from "@/components/feedback";
 import { SkeletonTable } from "@/components/ui/skeleton/skeleton-table";
+import { TeacherPageHeader } from "@/components/features/teacher/shared/teacher-page-header";
+import { Button } from "@/components/ui/button";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import { cn } from "@/lib/utils";
+
+function SearchableSelect({
+  value,
+  onChange,
+  placeholder,
+  searchPlaceholder,
+  emptyText,
+  items,
+  className,
+  disabled,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  placeholder: string;
+  searchPlaceholder: string;
+  emptyText: string;
+  items: Array<{ id: string | number; label: string }>;
+  className?: string;
+  disabled?: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+
+  const selectedLabel =
+    items.find((item) => String(item.id) === String(value))?.label ?? placeholder;
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          type="button"
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          disabled={disabled}
+          className={cn(
+            "h-10 justify-between bg-background px-3 text-left font-normal",
+            !value && "text-muted-foreground",
+            className,
+          )}
+        >
+          <span className="truncate">{selectedLabel}</span>
+          <ChevronsUpDown className="ml-2 size-4 shrink-0 text-muted-foreground opacity-60" />
+        </Button>
+      </PopoverTrigger>
+
+      <PopoverContent className="w-[var(--radix-popover-trigger-width)] min-w-[200px] p-0" align="start">
+        <Command>
+          <CommandInput placeholder={searchPlaceholder} className="h-9" />
+          <CommandList className="max-h-56">
+            <CommandEmpty className="p-3 text-center text-xs text-muted-foreground">
+              {emptyText}
+            </CommandEmpty>
+            <CommandGroup>
+              {items.map((item) => (
+                <CommandItem
+                  key={item.id}
+                  value={item.label}
+                  onSelect={() => {
+                    onChange(String(item.id));
+                    setOpen(false);
+                  }}
+                  className="cursor-pointer text-sm"
+                >
+                  <Check
+                    className={cn(
+                      "mr-2 size-4",
+                      String(value) === String(item.id)
+                        ? "text-primary opacity-100"
+                        : "opacity-0",
+                    )}
+                  />
+                  <span className="truncate">{item.label}</span>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
+}
 
 export function ActivityWorkspace() {
   const params = useSearchParams();
@@ -66,6 +162,24 @@ export function ActivityWorkspace() {
   const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
   const visible = filtered.slice((page - 1) * pageSize, page * pageSize);
 
+  const gradeItems = useMemo(
+    () =>
+      (grades.data || []).map((g) => ({
+        id: g.id,
+        label: g.name,
+      })),
+    [grades.data],
+  );
+
+  const unitItems = useMemo(
+    () =>
+      (units.data || []).map((u) => ({
+        id: u.id,
+        label: `${u.code} · ${u.name}`,
+      })),
+    [units.data],
+  );
+
   const selectUnit = (id: number) => {
     setUnitId(id);
     setPage(1);
@@ -74,148 +188,94 @@ export function ActivityWorkspace() {
     router.replace(`/teacher/activities?${q.toString()}`);
   };
 
+  const createHref = selectedUnit
+    ? `/teacher/activities/new?unitId=${selectedUnit.id}`
+    : undefined;
+
   return (
     <div className="space-y-6">
-      <ContentToolbar
+      <TeacherPageHeader
         title="Activities"
         description="Create and manage learning activities for your units."
-        action="Create Activity"
-        actionHref={
-          selectedUnit
-            ? `/teacher/activities/new?unitId=${selectedUnit.id}`
-            : undefined
-        }
-      >
-        {/* Search */}
-        <div className="flex h-9 w-full items-center gap-1.5 rounded-md border border-slate-200 bg-white px-2 text-slate-400 sm:w-[220px]">
-          <Search size={14} />
+        pipoMood="wave"
+      />
 
+      <div className="flex flex-col gap-3 rounded-[var(--radius-md)] border border-border-color bg-card-bg p-4 sm:flex-row sm:flex-wrap sm:items-center">
+        <label className="relative w-full sm:w-[220px] sm:flex-1 sm:max-w-xs">
+          <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <input
-            className="w-full border-0 text-body-sm text-slate-700 outline-none"
             value={search}
             onChange={(e) => {
               setSearch(e.target.value);
               setPage(1);
             }}
             placeholder="Search activities..."
+            aria-label="Search activities"
+            className="h-10 w-full rounded-lg border border-border-input bg-background pl-9 pr-3 text-body outline-none focus:border-primary focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
           />
-        </div>
+        </label>
 
-        {/* Mobile Grade Select */}
-        <div className="relative w-full sm:w-auto">
-          <select
-            className="
-              h-10 w-full appearance-none rounded-xl
-              border border-slate-200 bg-white
-              pl-3.5 pr-9
-              text-body-sm font-medium text-slate-600
-              outline-none
-              transition-colors
-              hover:border-slate-300
-              focus:border-primary
-              focus:ring-2 focus:ring-primary/10
-              sm:w-[140px]
-            "
-            value={activeGrade || ""}
-            onChange={(e) => {
-              setGradeId(Number(e.target.value));
-              setUnitId(0);
-              setPage(1);
-            }}
-          >
-            <option value="">Select grade</option>
-            {(grades.data || []).map((g) => (
-              <option key={g.id} value={g.id}>
-                {g.name}
-              </option>
-            ))}
-          </select>
+        <SearchableSelect
+          value={activeGrade ? String(activeGrade) : ""}
+          onChange={(next) => {
+            setGradeId(Number(next));
+            setUnitId(0);
+            setPage(1);
+          }}
+          placeholder="Select grade"
+          searchPlaceholder="Tìm khối..."
+          emptyText="Không tìm thấy khối"
+          items={gradeItems}
+          className="w-full sm:w-[160px]"
+        />
 
-          <ChevronDown
-            size={15}
-            strokeWidth={2}
-            className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
-          />
-        </div>
-      </ContentToolbar>
+        <SearchableSelect
+          value={selectedUnit ? String(selectedUnit.id) : ""}
+          onChange={(next) => selectUnit(Number(next))}
+          placeholder="Select unit"
+          searchPlaceholder="Tìm unit..."
+          emptyText="Không tìm thấy unit"
+          items={unitItems}
+          disabled={!activeGrade}
+          className="w-full sm:w-[220px]"
+        />
 
-      <section className="border-b border-border-color pb-6">
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <label className="hidden lg:block">
-            <span className="mb-2 block text-label font-semibold text-neutral-muted">
-              Grade
-            </span>
-            <select
-              value={activeGrade || ""}
-              onChange={(e) => {
-                setGradeId(Number(e.target.value));
-                setUnitId(0);
-                setPage(1);
-              }}
-              className="h-10 w-full rounded-lg border border-border-input bg-card-bg px-3 text-body outline-none focus:border-primary focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+        <select
+          value={status}
+          onChange={(e) => {
+            setStatus(e.target.value as "ALL" | ActivityStatus);
+            setPage(1);
+          }}
+          aria-label="Status"
+          className="h-10 w-full rounded-lg border border-border-input bg-background px-3 text-body outline-none focus:border-primary focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 sm:w-[150px]"
+        >
+          <option value="ALL">All statuses</option>
+          <option value="DRAFT">Draft</option>
+          <option value="PUBLISHED">Published</option>
+          <option value="ARCHIVED">Archived</option>
+        </select>
+
+        <div className="flex shrink-0 flex-wrap items-center gap-2 max-sm:w-full sm:ml-auto">
+          {createHref ? (
+            <Link
+              href={createHref}
+              className="inline-flex h-10 w-full items-center justify-center gap-1.5 rounded-md bg-primary px-3 text-body-sm font-bold text-primary-foreground shadow-sm transition-colors hover:bg-primary-hover sm:w-auto"
             >
-              <option value="">Select grade</option>
-              {(grades.data || []).map((g) => (
-                <option key={g.id} value={g.id}>
-                  {g.name}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="hidden lg:block">
-            <span className="mb-2 block text-label font-semibold text-neutral-muted">
-              Unit
-            </span>
-            <select
-              value={selectedUnit?.id || ""}
-              onChange={(e) => selectUnit(Number(e.target.value))}
-              className="h-10 w-full rounded-lg border border-border-input bg-card-bg px-3 text-body outline-none focus:border-primary focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+              <Plus size={15} />
+              Create Activity
+            </Link>
+          ) : (
+            <button
+              type="button"
+              disabled
+              className="inline-flex h-10 w-full cursor-not-allowed items-center justify-center gap-1.5 rounded-md bg-primary/50 px-3 text-body-sm font-bold text-primary-foreground sm:w-auto"
             >
-              <option value="">Select unit</option>
-              {(units.data || []).map((u) => (
-                <option key={u.id} value={u.id}>
-                  {u.code} · {u.name}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            <span className="mb-2 block text-label font-semibold text-neutral-muted">
-              Status
-            </span>
-            <select
-              value={status}
-              onChange={(e) => {
-                setStatus(e.target.value as "ALL" | ActivityStatus);
-                setPage(1);
-              }}
-              className="h-10 w-full rounded-lg border border-border-input bg-card-bg px-3 text-body outline-none focus:border-primary focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-            >
-              <option value="ALL">All statuses</option>
-              <option value="DRAFT">Draft</option>
-              <option value="PUBLISHED">Published</option>
-              <option value="ARCHIVED">Archived</option>
-            </select>
-          </label>
-          <label className="hidden lg:block">
-            <span className="mb-2 block text-label font-semibold text-neutral-muted">
-              Search
-            </span>
-            <div className="relative">
-              <Search className="absolute left-3 top-2.5 h-4 w-4 text-neutral-muted" />
-              <input
-                value={search}
-                onChange={(e) => {
-                  setSearch(e.target.value);
-                  setPage(1);
-                }}
-                placeholder="Search activities"
-                className="h-10 w-full rounded-lg border border-border-input bg-card-bg pl-9 pr-3 text-body outline-none focus:border-primary focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-              />
-            </div>
-          </label>
+              <Plus size={15} />
+              Create Activity
+            </button>
+          )}
         </div>
-      </section>
+      </div>
 
       {!selectedUnit ? (
         <RegionState variant="empty" />
@@ -237,7 +297,6 @@ export function ActivityWorkspace() {
         />
       ) : (
         <section className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
-          {/* Table Toolbar */}
           <div className="flex flex-col gap-2 border-b border-border px-6 py-4.5 sm:flex-row sm:items-center sm:justify-between">
             <div className="min-w-0">
               <div className="flex items-center gap-2.5">
@@ -256,7 +315,6 @@ export function ActivityWorkspace() {
             </div>
           </div>
 
-          {/* Table */}
           <ActivityTable
             activities={visible}
             page={page}

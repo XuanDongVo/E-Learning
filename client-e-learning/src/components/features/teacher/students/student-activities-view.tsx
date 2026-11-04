@@ -5,10 +5,8 @@ import { useParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { useLocale, useTranslations } from "next-intl";
 import { teacherStudentService } from "@/services/teacher/student.service";
-import {
-  formatDateTime,
-  type StudentActivitySessionItem,
-} from "@/types/teacher/student-learning";
+import type { StudentActivitySessionItem } from "@/types/teacher/student-learning";
+import { formatDateTime } from "@/utils/format";
 import { DataTable, type DataTableColumn } from "@/components/ui/data-table/data-table";
 import { RegionState } from "@/components/feedback";
 import { SkeletonTable } from "@/components/ui/skeleton/skeleton-table";

@@ -98,7 +98,8 @@ export interface UpdateStudentStatusRequest { status: StudentAccountStatus; }
 export interface AddClassMemberRequest { studentId: number; }
 export type StudentApiResponse<T> = ApiResponse<T>;
 
-export interface StudentsHeaderProps { onCreate: () => void; }
+/** @deprecated Header is prop-less; create action lives on StudentsToolbar */
+export type StudentsHeaderProps = Record<string, never>;
 export interface StudentsToolbarProps {
   search: string;
   classFilter: string;
@@ -113,6 +114,7 @@ export interface StudentsToolbarProps {
   onStatusChange: (value: string) => void;
   onNoClassChange: (value: boolean) => void;
   onClear: () => void;
+  actions?: React.ReactNode;
 }
 export interface StudentTableProps {
   students: StudentSummary[];

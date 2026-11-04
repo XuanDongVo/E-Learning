@@ -29,6 +29,7 @@ import type { Gender, GuardianRelationship } from "@/types/student";
 import { cn } from "@/lib/utils";
 import { SkeletonCard } from "@/components/ui/skeleton/skeleton-card";
 import { PageBanner } from "@/components/feedback";
+import { getInitials } from "@/utils/format";
 
 export function StudentEditForm() {
   const params = useParams();
@@ -101,13 +102,7 @@ export function StudentEditForm() {
     onError: (err) => setError(getAppErrorMessage(err, tErrors)),
   });
 
-  const initials = (d?.fullName ?? "")
-    .split(" ")
-    .filter(Boolean)
-    .map((p) => p[0])
-    .join("")
-    .slice(-2)
-    .toUpperCase();
+  const initials = getInitials(d?.fullName);
 
   const accountActive = d?.accountStatus !== "INACTIVE";
   const classLabel =

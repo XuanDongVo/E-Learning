@@ -32,6 +32,7 @@ import { useTranslations } from "next-intl";
 import { CreateUnitModal } from "./components/create-unit-modal";
 import { PageBanner, RegionState } from "@/components/feedback";
 import { SkeletonList } from "@/components/ui/skeleton/skeleton-list";
+import {TeacherPageHeader} from "@/components/features/teacher/shared/teacher-page-header";
 
 export function ContentOverview({
   onNavigate,
@@ -134,24 +135,11 @@ export function ContentOverview({
 
   return (
     <>
-      <header className="mb-5 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
-        <div>
-          <p className="text-body-sm font-bold text-primary">{tContent("content")}</p>
-          <h1 className="mt-1 text-page-title font-extrabold tracking-tight">
-            {tContent("content")}
-          </h1>
-          <p className="mt-1 text-body text-neutral-muted">
-            {tContent("contentDescription")}
-          </p>
-        </div>
-        <button
-          type="button"
-          onClick={openCreate}
-          className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-primary bg-primary px-4 text-body-sm font-bold text-primary-foreground shadow-pop-sm transition hover:bg-primary-hover active:translate-y-0.5"
-        >
-          <Plus className="size-4" /> {tContent("createUnit")}
-        </button>
-      </header>
+      <TeacherPageHeader
+        title={tContent("content")}
+        description={tContent("contentDescription")}
+        pipoMood="wave"
+      />
 
       {grades.isLoading && <RegionState variant="loading" className="mb-3" minHeight={96} />}
       {grades.isError && (

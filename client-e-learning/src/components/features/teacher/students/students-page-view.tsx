@@ -2,9 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { UserPlus } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { classService } from "@/services/class.service";
 import { gradeService } from "@/services/grade.service";
 import { teacherStudentService } from "@/services/teacher/student.service";
+import { Button } from "@/components/ui/button";
 import { StudentsHeader } from "./students-header";
 import { StudentsToolbar } from "./students-toolbar";
 import { StudentTable } from "./student-table";
@@ -13,6 +16,7 @@ import { StudentDetailModal } from "./student-detail-modal";
 import type { StudentSummary } from "@/types/teacher/student";
 
 export function StudentsPageView() {
+  const t = useTranslations("teacher.students");
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -60,6 +64,7 @@ export function StudentsPageView() {
     queryKey: ["classes"],
     queryFn: classService.list,
   });
+
   const grades = useQuery({ queryKey: ["grades"], queryFn: gradeService.list });
   const pageData = students.data?.data;
   const studentRows = pageData?.items ?? [];
@@ -108,7 +113,7 @@ export function StudentsPageView() {
 
   return (
     <div className="space-y-5">
-      <StudentsHeader onCreate={() => setCreating(true)} />
+      <StudentsHeader />
       <StudentsToolbar
         search={search}
         classFilter={classFilter}
@@ -140,6 +145,16 @@ export function StudentsPageView() {
           setPage(1);
         }}
         onClear={clearFilters}
+        actions={
+          <Button
+            type="button"
+            onClick={() => setCreating(true)}
+            className="h-10 gap-2 px-4 font-bold shadow-sm"
+          >
+            <UserPlus className="size-4" />
+            {t("addStudent")}
+          </Button>
+        }
       />
       <StudentTable
         students={studentRows}

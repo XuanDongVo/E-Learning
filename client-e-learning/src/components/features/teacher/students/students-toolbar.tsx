@@ -7,19 +7,8 @@ import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
+import { SearchableSelect } from "@/components/ui/searchable-select";
+
 import {
   Select,
   SelectContent,
@@ -89,23 +78,29 @@ export function StudentsToolbar({
 
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-2">
-        <SearchableFilter
+        <SearchableSelect
           value={classFilter}
           onChange={onClassChange}
-          allLabel={t("allClasses")}
+          allOption={{
+            value: "all",
+            label: t("allClasses"),
+          }}
           searchPlaceholder="Tìm kiếm lớp..."
           emptyText="Không tìm thấy lớp học"
-          items={classes}
+          items={classes.map((c) => ({ id: c.id, label: c.name }))}
           className="w-full sm:w-40"
         />
 
-        <SearchableFilter
+        <SearchableSelect
           value={gradeFilter}
           onChange={onGradeChange}
-          allLabel={t("allGrades")}
+          allOption={{
+            value: "all",
+            label: t("allGrades"),
+          }}
           searchPlaceholder="Tìm kiếm khối..."
           emptyText="Không tìm thấy khối học"
-          items={grades}
+          items={grades.map((g) => ({ id: g.id, label: g.name }))}
           className="w-full sm:w-40"
         />
 
@@ -159,107 +154,5 @@ export function StudentsToolbar({
         </div>
       ) : null}
     </div>
-  );
-}
-
-function SearchableFilter({
-  value,
-  onChange,
-  allLabel,
-  searchPlaceholder,
-  emptyText,
-  items,
-  className,
-}: {
-  value: string;
-  onChange: (value: string) => void;
-  allLabel: string;
-  searchPlaceholder: string;
-  emptyText: string;
-  items: Array<{ id: string | number; name: string }>;
-  className?: string;
-}) {
-  const [open, setOpen] = useState(false);
-
-  const selectedName =
-    value === "all"
-      ? allLabel
-      : (items.find((item) => String(item.id) === String(value))?.name ??
-        allLabel);
-
-  return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          type="button"
-          variant="outline"
-          role="combobox"
-          aria-expanded={open}
-          className={cn(
-            "h-10 justify-between bg-background px-3 text-left font-normal",
-            className,
-          )}
-        >
-          <span className="truncate">{selectedName}</span>
-
-          <ChevronsUpDown className="ml-2 size-4 shrink-0 text-muted-foreground opacity-60" />
-        </Button>
-      </PopoverTrigger>
-
-      <PopoverContent className="w-[220px] p-0" align="start">
-        <Command>
-          <CommandInput placeholder={searchPlaceholder} className="h-9" />
-
-          <CommandList className="max-h-56">
-            <CommandEmpty className="p-3 text-center text-xs text-muted-foreground">
-              {emptyText}
-            </CommandEmpty>
-
-            <CommandGroup>
-              <CommandItem
-                value={allLabel}
-                onSelect={() => {
-                  onChange("all");
-                  setOpen(false);
-                }}
-                className="cursor-pointer text-sm"
-              >
-                <Check
-                  className={cn(
-                    "mr-2 size-4",
-                    value === "all" ? "text-primary opacity-100" : "opacity-0",
-                  )}
-                />
-
-                {allLabel}
-              </CommandItem>
-
-              {items.map((item) => (
-                <CommandItem
-                  key={item.id}
-                  value={item.name}
-                  onSelect={() => {
-                    onChange(String(item.id));
-                    setOpen(false);
-                  }}
-                  className="cursor-pointer text-sm"
-                >
-                  <Check
-                    className={cn(
-                      "mr-2 size-4",
-                      String(value) === String(item.id)
-                        ? "text-primary opacity-100"
-                        : "opacity-0",
-                    )}
-                  />
-
-                  {item.name}
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          </CommandList>
-        </Command>
-      </PopoverContent>
-    </Popover>
   );
 }

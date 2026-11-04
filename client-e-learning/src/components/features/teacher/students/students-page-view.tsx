@@ -64,6 +64,7 @@ export function StudentsPageView() {
     queryKey: ["classes"],
     queryFn: classService.list,
   });
+
   const grades = useQuery({ queryKey: ["grades"], queryFn: gradeService.list });
   const pageData = students.data?.data;
   const studentRows = pageData?.items ?? [];

@@ -176,8 +176,9 @@ export default function TeacherAssignmentsPage() {
               </label>
               <button
                 type="button"
-                onClick={() => setImportOpen(true)}
-                className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border-2 border-border bg-card px-4 text-body-sm font-bold shadow-pop-sm transition hover:bg-muted active:translate-y-0.5"
+                // onClick={() => setImportOpen(true)}
+                disabled
+                className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border-2 border-border bg-card px-4 text-body-sm font-bold shadow-pop-sm transition hover:bg-muted active:translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <Upload className="size-4" /> Import questions
               </button>

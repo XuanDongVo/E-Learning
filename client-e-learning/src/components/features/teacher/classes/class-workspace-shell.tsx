@@ -116,13 +116,13 @@ export function ClassWorkspaceShell({
           </div>
 
           <div className="flex flex-wrap gap-2 px-1 py-1 sm:px-5 sm:py-4">
-            <Button size="sm" className="h-10 text-sm" asChild>
-              <Link href={`${base}/students`}>
+            <Link href={`${base}/students`}>
+              <Button size="sm" className="h-10 gap-1.5 text-sm">
                 <Plus className="size-4" />
                 Thêm học sinh
-              </Link>
-            </Button>
-            <Button size="sm" variant="outline" className="h-10 text-sm" disabled>
+              </Button>
+            </Link>
+            <Button size="sm" variant="outline" className="h-10 gap-1.5 text-sm" disabled>
               <Pencil className="size-4" />
               Chỉnh sửa lớp
             </Button>

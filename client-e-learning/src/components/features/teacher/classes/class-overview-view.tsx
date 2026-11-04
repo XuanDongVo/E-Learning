@@ -113,9 +113,11 @@ export function ClassOverviewView({ classId }: { classId: number }) {
                 {members.length} học sinh trong lớp.
               </p>
             </div>
-            <Button size="sm" variant="outline" className="h-8 text-xs font-bold" asChild>
-              <Link href={`/teacher/classes/${classId}/students`}>Xem tất cả</Link>
-            </Button>
+            <Link href={`/teacher/classes/${classId}/students`}>
+              <Button size="sm" variant="outline" className="h-8 text-xs font-bold">
+                Xem tất cả
+              </Button>
+            </Link>
           </div>
 
           {membersQuery.isLoading ? (
@@ -124,7 +126,10 @@ export function ClassOverviewView({ classId }: { classId: number }) {
             </div>
           ) : recentMembers.length === 0 ? (
             <div className="p-6">
-              <RegionState variant="empty" description="Chưa có học sinh trong lớp." />
+              <RegionState
+                variant="empty"
+                description="Chưa có học sinh trong lớp."
+              />
             </div>
           ) : (
             <div className="divide-y divide-border">
@@ -152,17 +157,16 @@ export function ClassOverviewView({ classId }: { classId: number }) {
                       ? "Đang hoạt động"
                       : "Tạm khóa"}
                   </span>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="h-8 shrink-0 text-xs font-bold text-muted-foreground hover:text-foreground"
-                    asChild
-                  >
-                    <Link href={`/teacher/students/${m.id}`}>
+                  <Link href={`/teacher/students/${m.id}`}>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-8 shrink-0 gap-1 text-xs font-bold text-muted-foreground hover:text-foreground"
+                    >
                       Xem hồ sơ
-                      <ArrowUpRight className="ml-1 size-3.5" />
-                    </Link>
-                  </Button>
+                      <ArrowUpRight className="size-3.5" />
+                    </Button>
+                  </Link>
                 </div>
               ))}
             </div>
@@ -201,22 +205,21 @@ export function ClassOverviewView({ classId }: { classId: number }) {
             </p>
           </div>
           <div className="grid gap-2 p-5">
-            <Button className="h-12 w-full justify-start gap-2.5 text-xs font-bold" asChild>
-              <Link href={`/teacher/classes/${classId}/students`}>
+            <Link href={`/teacher/classes/${classId}/students`} className="block">
+              <Button className="h-12 w-full justify-start gap-2.5 text-xs font-bold">
                 <Users className="size-4" />
                 Danh sách học sinh
-              </Link>
-            </Button>
-            <Button
-              variant="outline"
-              className="h-12 w-full justify-start gap-2.5 text-xs font-bold"
-              asChild
-            >
-              <Link href={`/teacher/classes/${classId}/ranking`}>
+              </Button>
+            </Link>
+            <Link href={`/teacher/classes/${classId}/ranking`} className="block">
+              <Button
+                variant="outline"
+                className="h-12 w-full justify-start gap-2.5 text-xs font-bold"
+              >
                 <BarChart3 className="size-4 text-muted-foreground" />
                 Xếp hạng XP
-              </Link>
-            </Button>
+              </Button>
+            </Link>
             <Button
               variant="outline"
               className="h-12 w-full justify-start gap-2.5 text-xs font-bold"

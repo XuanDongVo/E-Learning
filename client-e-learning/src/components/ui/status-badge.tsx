@@ -11,29 +11,34 @@ const TONE_CLASS: Record<StatusTone, string> = {
   info: "bg-primary/10 text-primary",
 };
 
-/** Map common domain statuses to a visual tone. */
+/**
+ * Domain statuses grouped by visual tone.
+ * Add a new status to the matching list — no switch cases to touch.
+ * Comparison is case-insensitive.
+ */
+const STATUS_BY_TONE: Record<StatusTone, readonly string[]> = {
+  success: ["COMPLETED", "SUBMITTED", "ACTIVE", "PUBLISHED"],
+  warning: ["GAME_OVER", "LATE", "TIMED_OUT", "DRAFT", "INACTIVE"],
+  danger: [],
+  neutral: ["ABANDONED", "ARCHIVED", "NOT_STARTED"],
+  info: ["IN_PROGRESS"],
+};
+
+const STATUS_TONE_LOOKUP: Map<string, StatusTone> = (() => {
+  const map = new Map<string, StatusTone>();
+  (Object.entries(STATUS_BY_TONE) as [StatusTone, readonly string[]][]).forEach(
+    ([tone, statuses]) => {
+      statuses.forEach((status) => {
+        map.set(status.toUpperCase(), tone);
+      });
+    },
+  );
+  return map;
+})();
+
+/** Resolve a domain status code to a visual tone. */
 export function toneForStatus(status: string): StatusTone {
-  switch (status) {
-    case "COMPLETED":
-    case "SUBMITTED":
-    case "ACTIVE":
-    case "PUBLISHED":
-      return "success";
-    case "GAME_OVER":
-    case "LATE":
-    case "TIMED_OUT":
-    case "DRAFT":
-    case "INACTIVE":
-      return "warning";
-    case "ABANDONED":
-    case "ARCHIVED":
-    case "NOT_STARTED":
-      return "neutral";
-    case "IN_PROGRESS":
-      return "info";
-    default:
-      return "neutral";
-  }
+  return STATUS_TONE_LOOKUP.get(status.trim().toUpperCase()) ?? "neutral";
 }
 
 export type StatusBadgeProps = {
@@ -41,6 +46,7 @@ export type StatusBadgeProps = {
   status?: string;
   /** Explicit tone overrides status mapping. */
   tone?: StatusTone;
+  /** Display text — keep i18n at the call site. */
   label: React.ReactNode;
   className?: string;
 };

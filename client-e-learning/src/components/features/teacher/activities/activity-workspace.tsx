@@ -5,7 +5,7 @@ import { useRouter } from "@/i18n/navigation";
 import { useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Search, Plus } from "lucide-react";
+import { Check, ChevronsUpDown, Plus, Search } from "lucide-react";
 import { gradeService } from "@/services/grade.service";
 import { unitService } from "@/services/content/content.unit.service";
 import { activityService } from "@/services/activity.service";
@@ -15,6 +15,102 @@ import { ActivityTable } from "./activity-table";
 import { RegionState } from "@/components/feedback";
 import { SkeletonTable } from "@/components/ui/skeleton/skeleton-table";
 import { TeacherPageHeader } from "@/components/features/teacher/shared/teacher-page-header";
+import { Button } from "@/components/ui/button";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import { cn } from "@/lib/utils";
+
+function SearchableSelect({
+  value,
+  onChange,
+  placeholder,
+  searchPlaceholder,
+  emptyText,
+  items,
+  className,
+  disabled,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  placeholder: string;
+  searchPlaceholder: string;
+  emptyText: string;
+  items: Array<{ id: string | number; label: string }>;
+  className?: string;
+  disabled?: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+
+  const selectedLabel =
+    items.find((item) => String(item.id) === String(value))?.label ?? placeholder;
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          type="button"
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          disabled={disabled}
+          className={cn(
+            "h-10 justify-between bg-background px-3 text-left font-normal",
+            !value && "text-muted-foreground",
+            className,
+          )}
+        >
+          <span className="truncate">{selectedLabel}</span>
+          <ChevronsUpDown className="ml-2 size-4 shrink-0 text-muted-foreground opacity-60" />
+        </Button>
+      </PopoverTrigger>
+
+      <PopoverContent className="w-[var(--radix-popover-trigger-width)] min-w-[200px] p-0" align="start">
+        <Command>
+          <CommandInput placeholder={searchPlaceholder} className="h-9" />
+          <CommandList className="max-h-56">
+            <CommandEmpty className="p-3 text-center text-xs text-muted-foreground">
+              {emptyText}
+            </CommandEmpty>
+            <CommandGroup>
+              {items.map((item) => (
+                <CommandItem
+                  key={item.id}
+                  value={item.label}
+                  onSelect={() => {
+                    onChange(String(item.id));
+                    setOpen(false);
+                  }}
+                  className="cursor-pointer text-sm"
+                >
+                  <Check
+                    className={cn(
+                      "mr-2 size-4",
+                      String(value) === String(item.id)
+                        ? "text-primary opacity-100"
+                        : "opacity-0",
+                    )}
+                  />
+                  <span className="truncate">{item.label}</span>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
+}
 
 export function ActivityWorkspace() {
   const params = useSearchParams();
@@ -66,6 +162,24 @@ export function ActivityWorkspace() {
   const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
   const visible = filtered.slice((page - 1) * pageSize, page * pageSize);
 
+  const gradeItems = useMemo(
+    () =>
+      (grades.data || []).map((g) => ({
+        id: g.id,
+        label: g.name,
+      })),
+    [grades.data],
+  );
+
+  const unitItems = useMemo(
+    () =>
+      (units.data || []).map((u) => ({
+        id: u.id,
+        label: `${u.code} · ${u.name}`,
+      })),
+    [units.data],
+  );
+
   const selectUnit = (id: number) => {
     setUnitId(id);
     setPage(1);
@@ -101,37 +215,30 @@ export function ActivityWorkspace() {
           />
         </label>
 
-        <select
-          value={activeGrade || ""}
-          onChange={(e) => {
-            setGradeId(Number(e.target.value));
+        <SearchableSelect
+          value={activeGrade ? String(activeGrade) : ""}
+          onChange={(next) => {
+            setGradeId(Number(next));
             setUnitId(0);
             setPage(1);
           }}
-          aria-label="Grade"
-          className="h-10 w-full rounded-lg border border-border-input bg-background px-3 text-body outline-none focus:border-primary focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 sm:w-[140px]"
-        >
-          <option value="">Select grade</option>
-          {(grades.data || []).map((g) => (
-            <option key={g.id} value={g.id}>
-              {g.name}
-            </option>
-          ))}
-        </select>
+          placeholder="Select grade"
+          searchPlaceholder="Tìm khối..."
+          emptyText="Không tìm thấy khối"
+          items={gradeItems}
+          className="w-full sm:w-[160px]"
+        />
 
-        <select
-          value={selectedUnit?.id || ""}
-          onChange={(e) => selectUnit(Number(e.target.value))}
-          aria-label="Unit"
-          className="h-10 w-full rounded-lg border border-border-input bg-background px-3 text-body outline-none focus:border-primary focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 sm:w-[180px]"
-        >
-          <option value="">Select unit</option>
-          {(units.data || []).map((u) => (
-            <option key={u.id} value={u.id}>
-              {u.code} · {u.name}
-            </option>
-          ))}
-        </select>
+        <SearchableSelect
+          value={selectedUnit ? String(selectedUnit.id) : ""}
+          onChange={(next) => selectUnit(Number(next))}
+          placeholder="Select unit"
+          searchPlaceholder="Tìm unit..."
+          emptyText="Không tìm thấy unit"
+          items={unitItems}
+          disabled={!activeGrade}
+          className="w-full sm:w-[220px]"
+        />
 
         <select
           value={status}
@@ -148,7 +255,7 @@ export function ActivityWorkspace() {
           <option value="ARCHIVED">Archived</option>
         </select>
 
-        <div className="flex shrink-0 flex-wrap items-center gap-2 sm:ml-auto max-sm:w-full">
+        <div className="flex shrink-0 flex-wrap items-center gap-2 max-sm:w-full sm:ml-auto">
           {createHref ? (
             <Link
               href={createHref}

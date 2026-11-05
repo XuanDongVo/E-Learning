@@ -79,7 +79,7 @@ export function StudentHubLayout({ children }: { children: React.ReactNode }) {
         <span className="text-foreground">{name}</span>
       </nav>
 
-      <section className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
+      <section className="overflow-hidden rounded-lg border border-2 border-ink shadow-pop bg-card shadow-sm">
         <div className="flex flex-col gap-4 p-5 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-4">
             <span className="grid size-14 shrink-0 place-items-center rounded-lg bg-primary/10 text-lg font-extrabold text-primary">
@@ -118,15 +118,9 @@ export function StudentHubLayout({ children }: { children: React.ReactNode }) {
             <Button
               variant="outline"
               size="sm"
-              className="gap-1.5 text-sm font-bold h-10"
+              className="gap-1.5 text-sm font-bold h-10 cursor-not-allowed"
               disabled={reset.isPending || !Number.isFinite(studentId)}
               onClick={async () => {
-                const ok = await confirm({
-                  title: tHub("layout.resetPasswordConfirm"),
-                  confirmLabel: tHub("layout.resetPassword"),
-                  tone: "destructive",
-                });
-                if (ok) reset.mutate();
               }}
             >
               <KeyRound className="size-3.5" />{" "}
@@ -146,7 +140,7 @@ export function StudentHubLayout({ children }: { children: React.ReactNode }) {
           </div>
         </div>
 
-        <div className="flex gap-1 overflow-x-auto border-t border-border px-3">
+        <div className="flex gap-1 overflow-x-auto border-t border-border px-3 py-2">
           {tabs.map((tab) => {
             const segment = tab.href.split("/").pop();
             const active = tab.exact
@@ -162,7 +156,7 @@ export function StudentHubLayout({ children }: { children: React.ReactNode }) {
               <Link
                 key={tab.href}
                 href={tab.href}
-                className={`whitespace-nowrap border-b-2 px-3 py-3 text-sm font-bold transition-colors ${
+                className={`whitespace-nowrap border-b-2 px-3 py-1 text-sm font-bold transition-colors ${
                   active
                     ? "border-primary text-primary"
                     : "border-transparent text-muted-foreground hover:text-foreground"

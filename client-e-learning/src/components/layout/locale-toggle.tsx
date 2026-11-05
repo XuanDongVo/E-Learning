@@ -15,31 +15,39 @@ export function LocaleToggle() {
     }
   }
 
-  return (
-    <div
-      className="flex h-9 items-center rounded-lg border border-border bg-card p-0.5"
-      aria-label="Language selector"
+
+return (
+  <div
+    role="group"
+    aria-label="Language selector"
+    className="inline-flex h-8 items-center rounded-lg border border-border/80 bg-muted/60 p-0.5 text-xs select-none"
+  >
+    <button
+      type="button"
+      onClick={() => switchLocale("vi")}
+      aria-pressed={locale === "vi"}
+      className={`relative inline-flex h-7 items-center justify-center rounded-md px-2.5 font-semibold transition-all duration-200 ${
+        locale === "vi"
+          ? "bg-primary text-card shadow-xs"
+          : "text-muted-foreground hover:text-foreground"
+      }`}
     >
-      <button
-        type="button"
-        onClick={() => switchLocale("vi")}
-        className={`rounded-md px-2 text-[0.6875rem] font-bold ${
-          locale === "vi" ? "bg-primary text-primary-foreground" : "text-muted-foreground"
-        }`}
-        aria-pressed={locale === "vi"}
-      >
-        VI
-      </button>
-      <button
-        type="button"
-        onClick={() => switchLocale("en")}
-        className={`rounded-md px-2 text-[0.6875rem] font-bold ${
-          locale === "en" ? "bg-primary text-primary-foreground" : "text-muted-foreground"
-        }`}
-        aria-pressed={locale === "en"}
-      >
-        EN
-      </button>
-    </div>
-  );
+      VI
+    </button>
+    <button
+      type="button"
+      onClick={() => switchLocale("en")}
+      aria-pressed={locale === "en"}
+      className={`relative inline-flex h-7 items-center justify-center rounded-md px-2.5 font-semibold transition-all duration-200 ${
+        locale === "en"
+          ? "bg-primary text-card shadow-xs"
+          : "text-muted-foreground hover:text-foreground"
+      }`}
+    >
+      EN
+    </button>
+  </div>
+);
+
+
 }

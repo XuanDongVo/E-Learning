@@ -28,7 +28,7 @@ export const teacherStudentService = {
     if (params.gradeId && params.gradeId !== "all") query.set("gradeId", params.gradeId);
     if (params.noClass) query.set("noClass", "true");
     query.set("page", String(params.page ?? 1));
-    query.set("size", String(params.size ?? 8));
+    query.set("size", String(params.size ?? 20));
     return request<StudentPageResponse>(`${BASE}?${query.toString()}`);
   },
   get: (studentId: number) => request<StudentDetail>(`${BASE}/${studentId}`),

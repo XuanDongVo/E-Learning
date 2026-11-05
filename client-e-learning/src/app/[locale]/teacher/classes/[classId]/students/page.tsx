@@ -1,4 +1,4 @@
-import { ClassStudentsPanel } from "@/components/features/teacher/classes/class-students-panel";
+import { ClassStudentsPanel } from "@/components/features/teacher/classes/class-students/class-students-panel";
 
 export default async function ClassStudentsPage({
   params,

@@ -30,12 +30,17 @@ export function StudentOverviewView() {
   });
   const assignments = useQuery({
     queryKey: ["teacher-student-assignments-preview", studentId],
-    queryFn: () => teacherStudentService.listAssignments(studentId, { page: 1, size: 3 }),
+    queryFn: () =>
+      teacherStudentService.listAssignments(studentId, { page: 1, size: 3 }),
     enabled: Number.isFinite(studentId),
   });
   const sessions = useQuery({
     queryKey: ["teacher-student-sessions-preview", studentId],
-    queryFn: () => teacherStudentService.listActivitySessions(studentId, { page: 1, size: 3 }),
+    queryFn: () =>
+      teacherStudentService.listActivitySessions(studentId, {
+        page: 1,
+        size: 3,
+      }),
     enabled: Number.isFinite(studentId),
   });
 
@@ -54,12 +59,11 @@ export function StudentOverviewView() {
           ? tForm("genderOther")
           : "—";
 
-  const membership =
-    !d?.className
-      ? t("labels.membership.NONE")
-      : d.membershipStatus === "ACTIVE"
-        ? t("labels.membership.ACTIVE")
-        : t("labels.membership.LEFT");
+  const membership = !d?.className
+    ? t("labels.membership.NONE")
+    : d.membershipStatus === "ACTIVE"
+      ? t("labels.membership.ACTIVE")
+      : t("labels.membership.LEFT");
 
   const relationKey =
     primary?.relationship === "MOTHER"
@@ -84,7 +88,10 @@ export function StudentOverviewView() {
       <div className="grid content-start gap-5">
         <Panel title={t("overview.personal")}>
           <dl className="divide-y divide-border px-5 py-2 text-sm">
-            <Row label={tDetail("dob")} value={formatDate(d?.dateOfBirth, locale)} />
+            <Row
+              label={tDetail("dob")}
+              value={formatDate(d?.dateOfBirth, locale)}
+            />
             <Row label={tDetail("gender")} value={gender} />
             <Row label={tDetail("phone")} value={d?.phone || "—"} />
             <Row label={t("profile.grade")} value={d?.gradeName || "—"} />
@@ -102,8 +109,14 @@ export function StudentOverviewView() {
               }
             />
             <Row label={t("overview.membershipStatus")} value={membership} />
-            <Row label={t("overview.academicYear")} value={d?.academicYear || "—"} />
-            <Row label={t("overview.joinedAt")} value={formatDate(d?.joinedAt, locale)} />
+            <Row
+              label={t("overview.academicYear")}
+              value={d?.academicYear || "—"}
+            />
+            <Row
+              label={t("overview.joinedAt")}
+              value={formatDate(d?.joinedAt, locale)}
+            />
           </dl>
         </Panel>
 
@@ -111,11 +124,16 @@ export function StudentOverviewView() {
           <dl className="divide-y divide-border px-5 py-2 text-sm">
             {primary ? (
               <>
-                <Row label={t(`labels.relationship.${relationKey}`)} value={primary.fullName} />
+                <Row
+                  label={t(`labels.relationship.${relationKey}`)}
+                  value={primary.fullName}
+                />
                 <Row label={tDetail("phone")} value={primary.phone || "—"} />
               </>
             ) : (
-              <p className="py-3 text-sm text-muted-foreground">{tDetail("noGuardians")}</p>
+              <p className="py-3 text-sm text-muted-foreground">
+                {tDetail("noGuardians")}
+              </p>
             )}
           </dl>
         </Panel>
@@ -126,16 +144,23 @@ export function StudentOverviewView() {
           title={t("assignments.title")}
           description={t("overview.assignmentDesc")}
           action={
-            <Button variant="ghost" size="sm" className="gap-1 text-xs font-semibold" >
-              <Link href={`${base}/assignments`}>
+            <Link href={`${base}/assignments`}>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="gap-1 text-xs font-semibold"
+              >
                 {t("overview.viewAll")} <ArrowRight className="size-3.5" />
-              </Link>
-            </Button>
+              </Button>
+            </Link>
           }
         >
           <div className="grid grid-cols-2 border-b border-border sm:grid-cols-3 lg:grid-cols-6">
             {counts.map((item) => (
-              <div key={item.key} className="border-r border-border p-3 last:border-r-0">
+              <div
+                key={item.key}
+                className="border-r border-border p-3 last:border-r-0"
+              >
                 <p className="text-[11px] font-semibold text-muted-foreground">
                   {t(`overview.counts.${item.key}`)}
                 </p>
@@ -145,13 +170,20 @@ export function StudentOverviewView() {
           </div>
           <div className="divide-y divide-border">
             {assignmentItems.length === 0 && (
-              <p className="p-4 text-sm text-muted-foreground">{t("overview.noAssignments")}</p>
+              <p className="p-4 text-sm text-muted-foreground">
+                {t("overview.noAssignments")}
+              </p>
             )}
             {assignmentItems.map((a) => (
-              <div key={a.assignmentId} className="flex items-center justify-between p-4 text-xs">
+              <div
+                key={a.assignmentId}
+                className="flex items-center justify-between p-4 text-xs"
+              >
                 <div>
                   <p className="text-sm font-bold">{a.title}</p>
-                  <p className="mt-0.5 text-muted-foreground">{formatDateTime(a.dueAt, locale)}</p>
+                  <p className="mt-0.5 text-muted-foreground">
+                    {formatDateTime(a.dueAt, locale)}
+                  </p>
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] font-bold">
@@ -170,27 +202,42 @@ export function StudentOverviewView() {
           title={t("overview.recentPractice")}
           description={t("activities.subtitle")}
           action={
-            <Button variant="ghost" size="sm" className="gap-1 text-xs font-semibold" >
-              <Link href={`${base}/activities`}>
+            <Link href={`${base}/activities`}>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="gap-1 text-xs font-semibold h-10"
+              >
                 {t("overview.viewHistory")} <ArrowRight className="size-3.5" />
-              </Link>
-            </Button>
+              </Button>
+            </Link>
           }
         >
           <div className="divide-y divide-border">
             {sessionItems.length === 0 && (
-              <p className="p-4 text-sm text-muted-foreground">{t("overview.noSessions")}</p>
+              <p className="p-4 text-sm text-muted-foreground">
+                {t("overview.noSessions")}
+              </p>
             )}
             {sessionItems.map((sItem) => (
-              <div key={sItem.sessionId} className="flex items-center justify-between p-4 text-xs">
+              <div
+                key={sItem.sessionId}
+                className="flex items-center justify-between p-4 text-xs"
+              >
                 <div>
                   <p className="text-sm font-bold">{sItem.activityName}</p>
                   <p className="mt-0.5 text-muted-foreground">
-                    {sItem.unitLabel} · {formatDateTime(sItem.completedAt ?? sItem.startedAt, locale)}
+                    {sItem.unitLabel} ·{" "}
+                    {formatDateTime(
+                      sItem.completedAt ?? sItem.startedAt,
+                      locale,
+                    )}
                   </p>
                 </div>
                 <div className="text-right">
-                  <span className="font-bold text-primary">{t(`sessionMode.${sItem.mode}`)}</span>
+                  <span className="font-bold text-primary">
+                    {t(`sessionMode.${sItem.mode}`)}
+                  </span>
                   <p className="text-muted-foreground">
                     {t(`sessionStatus.${sItem.status}`)}
                     {sItem.status !== "ABANDONED"
@@ -223,7 +270,11 @@ function Panel({
       <div className="flex items-center justify-between border-b border-border p-4">
         <div>
           <h2 className="text-sm font-extrabold">{title}</h2>
-          {description && <p className="mt-0.5 text-xs text-muted-foreground">{description}</p>}
+          {description && (
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              {description}
+            </p>
+          )}
         </div>
         {action}
       </div>

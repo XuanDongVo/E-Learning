@@ -91,7 +91,7 @@ export function StudentActivitiesView() {
 
   return (
     <div className="space-y-3">
-      <div className="flex flex-col gap-4 rounded-xl border border-border bg-card p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-4 rounded-xl border-2 border-ink shadow-pop bg-card p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="text-sm font-extrabold">{t("activities.title")}</h2>
           <p className="mt-0.5 text-sm text-muted-foreground">{t("activities.subtitle")}</p>

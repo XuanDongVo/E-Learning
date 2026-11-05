@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { UserPlus } from "lucide-react";
+import { Link, UserPlus } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { classService } from "@/services/class.service";
 import { gradeService } from "@/services/grade.service";
@@ -11,9 +11,8 @@ import { Button } from "@/components/ui/button";
 import { StudentsHeader } from "./students-header";
 import { StudentsToolbar } from "./students-toolbar";
 import { StudentTable } from "./student-table";
-import { StudentForm } from "./student-form";
-import { StudentDetailModal } from "./student-detail-modal";
 import type { StudentSummary } from "@/types/teacher/student";
+import { useRouter } from "@/i18n/navigation";
 
 export function StudentsPageView() {
   const t = useTranslations("teacher.students");
@@ -24,11 +23,10 @@ export function StudentsPageView() {
   const [gradeFilter, setGradeFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [noClass, setNoClass] = useState(false);
-  const [creating, setCreating] = useState(false);
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
-  const [viewingStudentId, setViewingStudentId] = useState<number | null>(null);
   const [pageSize, setPageSize] = useState(10);
   const [page, setPage] = useState(1);
+  const router = useRouter();
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -64,6 +62,7 @@ export function StudentsPageView() {
     queryKey: ["classes"],
     queryFn: classService.list,
   });
+  
 
   const grades = useQuery({ queryKey: ["grades"], queryFn: gradeService.list });
   const pageData = students.data?.data;
@@ -99,17 +98,6 @@ export function StudentsPageView() {
     });
     await queryClient.invalidateQueries({ queryKey: ["students"] });
   };
-
-  if (creating)
-    return (
-      <StudentForm
-        onCancel={() => setCreating(false)}
-        onSuccess={() => {
-          setCreating(false);
-          void queryClient.invalidateQueries({ queryKey: ["students"] });
-        }}
-      />
-    );
 
   return (
     <div className="space-y-5">
@@ -148,7 +136,7 @@ export function StudentsPageView() {
         actions={
           <Button
             type="button"
-            onClick={() => setCreating(true)}
+            onClick={() => router.push("/teacher/students/new")}
             className="h-10 gap-2 px-4 font-bold shadow-sm"
           >
             <UserPlus className="size-4" />
@@ -167,19 +155,13 @@ export function StudentsPageView() {
         onToggle={toggle}
         onToggleAll={toggleAll}
         onStatusChange={changeStatus}
-        onView={(student) => setViewingStudentId(student.id)}
+        onView={(student) => router.push(`/teacher/students/${student.id}`)}
         onPageChange={setPage}
         onPageSizeChange={(nextPageSize) => {
           setPageSize(nextPageSize);
           setPage(1);
         }}
       />
-      {viewingStudentId !== null && (
-        <StudentDetailModal
-          studentId={viewingStudentId}
-          onClose={() => setViewingStudentId(null)}
-        />
-      )}
     </div>
   );
 }

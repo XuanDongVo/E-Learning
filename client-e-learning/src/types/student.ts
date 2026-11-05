@@ -132,6 +132,5 @@ export interface StudentTableProps {
   onPageSizeChange: (pageSize: number) => void;
 }
 export interface StudentFormProps { onSuccess: () => void; onCancel: () => void; }
-export interface StudentDetailViewProps { studentId: number; }
 export type StudentProfileFormProps = Record<string, never>;
 export interface ClassStudentsViewProps { classId: number; }

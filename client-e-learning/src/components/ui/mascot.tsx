@@ -101,7 +101,7 @@ export function PipoProvider({ children }: { children: ReactNode }) {
 
 export function Pipo({
   mood,
-  size = 160,
+  size = 280,
   stage = 2,
   color = "primary",
 }: {
@@ -206,12 +206,12 @@ export function Pipo({
           "animate-[pipo-bounce_0.4s_ease-in-out_3]",
       )}
     >
-      <Button
+      {/* <Button
         variant="ghost"
         className="h-auto w-auto min-h-[44px] min-w-[44px] p-0 bg-transparent hover:bg-transparent"
         aria-label="Say hello to Pipo"
         onClick={poke}
-      >
+      > */}
         <svg
           aria-hidden="true"
           width={size}
@@ -333,7 +333,7 @@ export function Pipo({
             </text>
           )}
         </svg>
-      </Button>
+      {/* </Button> */}
     </div>
   );
 }

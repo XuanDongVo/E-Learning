@@ -1,14 +1,13 @@
 "use client";
 
 import { usePathname } from "@/i18n/navigation";
-import { StudentSidebar } from "@/components/layout/student-sidebar";
-import { StudentBottomNav } from "@/components/layout/student-bottom-nav";
-import { StudentHeader } from "@/components/layout/student-header";
+import { StudentNavbar } from "@/components/layout/student-navbar"; 
 
 export function StudentShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+
   const immersiveActivity = /^\/student\/units\/[^/]+\/activities\/[^/]+$/.test(pathname);
-  const immersiveAssignmentAttempt = /^\/student\/assignments\/[^/]+$/.test(pathname);
+  const immersiveAssignmentAttempt = /^\/student\/assignments\/[^/]+\/attempt$/.test(pathname);
 
   if (immersiveActivity || immersiveAssignmentAttempt) {
     return (
@@ -19,15 +18,12 @@ export function StudentShell({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="flex min-h-screen bg-background-app pb-16 lg:pb-0">
-      <StudentSidebar />
-      <div className="flex min-w-0 flex-1 flex-col">
-        <StudentHeader />
-        <main className="mx-auto w-full max-w-[1440px] p-4 sm:p-5 lg:p-6">
-          {children}
-        </main>
-        <StudentBottomNav />
-      </div>
+    // Sửa flex -> flex flex-col, bỏ pb-16 thừa
+    <div className="flex min-h-screen flex-col bg-background-app">
+      <StudentNavbar />
+      <main className="mx-auto w-full max-w-[1440px] flex-1 p-4 sm:p-5 lg:p-6">
+        {children}
+      </main>
     </div>
   );
 }

@@ -105,6 +105,10 @@
   --shadow-pop: var(--elevation-md);
   --shadow-pop-lg: var(--elevation-lg);
   --shadow-pop-accent: var(--pop);
+
+  --color-rank-1: var(--rank-1);
+  --color-rank-2: var(--rank-2);
+  --color-rank-3: var(--rank-3);
 }
 
 /* =========================================================
@@ -142,7 +146,7 @@
 
   /* shadcn semantic tokens */
   /* --background: #f8f0e3; */
-  --background: oklch(98.5% .006 95);
+  --background: oklch(98.5% 0.006 95);
   --foreground: #2b2220;
 
   --card: #ffffff;
@@ -224,6 +228,10 @@
 
   /* Brand */
   --brand-soft: #f0652f1f;
+
+  --rank-1: oklch(0.83 0.17 92);
+  --rank-2: oklch(0.71 0.02 250);
+  --rank-3: oklch(0.64 0.14 66);
 }
 
 /* =========================================================
@@ -296,6 +304,10 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+
+  --rank-1: oklch(0.86 0.16 92);
+  --rank-2: oklch(0.78 0.02 250);
+  --rank-3: oklch(0.75 0.12 66);
 }
 
 /* =========================================================
@@ -380,11 +392,15 @@
 }
 
 @utility shadow-pop-ink {
-  box-shadow: 3px 3px 0 var(--pop-shadow), 0 0 0 1.5px var(--ink);
+  box-shadow:
+    3px 3px 0 var(--pop-shadow),
+    0 0 0 1.5px var(--ink);
 }
 
 @utility shadow-pop-lg {
-  box-shadow: 5px 5px 0 var(--pop-shadow), 0 0 0 2px var(--ink);
+  box-shadow:
+    5px 5px 0 var(--pop-shadow),
+    0 0 0 2px var(--ink);
 }
 
 @utility card-pop {
@@ -396,19 +412,18 @@
 
 @utility grid-paper {
   background-color: var(--card, #ffffff);
-  background-image: 
+  background-image:
     linear-gradient(to right, rgb(0 0 0 / 0.06) 1px, transparent 1px),
     linear-gradient(to bottom, rgb(0 0 0 / 0.06) 1px, transparent 1px);
-  background-size: 20px 20px; 
+  background-size: 20px 20px;
 }
 
 /* Hỗ trợ chế độ Dark Mode (nếu có) */
 :is(.dark .grid-paper) {
-  background-image: 
+  background-image:
     linear-gradient(to right, rgb(255 255 255 / 0.08) 1px, transparent 1px),
     linear-gradient(to bottom, rgb(255 255 255 / 0.08) 1px, transparent 1px);
 }
-
 
 /* =========================================================
    ACCESSIBILITY

@@ -1,14 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import {
-  Flame,
-  Megaphone,
-  Trophy,
-  Sparkles,
-} from "lucide-react";
+import { useMemo, useState } from "react";
+import { Flame, Megaphone, Trophy, Sparkles } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
+import { LeaderboardPodium } from "@/components/ui/leaderboard-podium";
+import { LeaderboardRankings } from "@/components/ui/leaderboard-rankings";
 import {
   avatarUrlFromKey,
   mockCurrentGamificationProfile,
@@ -25,18 +22,40 @@ const TABS: { id: LeaderboardTab; label: string }[] = [
   { id: "share", label: "Chia sẻ" },
 ];
 
-function podiumRingClass(rank: number) {
-  if (rank === 1) return "ring-4 ring-amber-400 scale-110";
-  if (rank === 2) return "ring-4 ring-violet-300";
-  return "ring-4 ring-emerald-300";
+/** Map mock data → shape của Trophy UI */
+function toTrophyRanking(entry: (typeof mockStreakLeaderboard)[number]) {
+  // valueLabel thường dạng "15 ngày" → lấy số ngày
+  const numericValue =
+    typeof (entry as any).value === "number"
+      ? (entry as any).value
+      : parseInt(String(entry.valueLabel).replace(/\D/g, ""), 10) || 0;
+
+  return {
+    userId: entry.studentId,
+    userName: entry.fullName,
+    rank: entry.rank,
+    value: numericValue,
+    avatarUrl: avatarUrlFromKey(entry.avatarKey),
+    byline: entry.valueLabel, // hiển thị "15 ngày" dưới tên
+    displayed: true,
+  };
 }
 
 export function StudentRewardsLeaderboard() {
   const [tab, setTab] = useState<LeaderboardTab>("streak");
-  const podium = mockStreakLeaderboard.slice(0, 3);
-  // Display order: 2nd, 1st, 3rd
-  const podiumOrder = [podium[1], podium[0], podium[2]].filter(Boolean);
-  const list = mockStreakLeaderboard.slice(3);
+
+  // Hiện tại mock chỉ có streak → sau này có thể switch theo tab
+  const allEntries = mockStreakLeaderboard;
+
+  const podiumRankings = useMemo(
+    () => allEntries.slice(0, 3).map(toTrophyRanking),
+    [allEntries],
+  );
+
+  const rankings = useMemo(() => allEntries.map(toTrophyRanking), [allEntries]);
+
+  const currentUserId =
+    allEntries.find((e) => e.isCurrentUser)?.studentId ?? undefined;
 
   return (
     <div className="mx-auto max-w-[1440px] space-y-6 px-4 py-6 sm:px-6">
@@ -81,119 +100,30 @@ export function StudentRewardsLeaderboard() {
             ))}
           </div>
 
-          {/* Podium */}
-          <div className="rounded-2xl border border-border-color bg-card-bg p-6">
-            <div className="flex items-end justify-center gap-4 sm:gap-8">
-              {podiumOrder.map((entry) => {
-                if (!entry) return null;
-                const isFirst = entry.rank === 1;
-                return (
-                  <div
-                    key={entry.studentId}
-                    className={cn(
-                      "flex flex-col items-center text-center",
-                      isFirst ? "order-2" : entry.rank === 2 ? "order-1" : "order-3",
-                    )}
-                  >
-                    <div className="relative">
-                      <Avatar
-                        className={cn(
-                          "h-16 w-16 sm:h-20 sm:w-20",
-                          podiumRingClass(entry.rank),
-                        )}
-                      >
-                        <AvatarImage
-                          src={avatarUrlFromKey(entry.avatarKey)}
-                          alt={entry.fullName}
-                        />
-                        <AvatarFallback>
-                          {entry.fullName.slice(0, 1)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <span
-                        className={cn(
-                          "absolute -bottom-1 left-1/2 flex h-6 w-6 -translate-x-1/2 items-center justify-center rounded-full text-xs font-bold text-white",
-                          entry.rank === 1
-                            ? "bg-amber-500"
-                            : entry.rank === 2
-                              ? "bg-violet-500"
-                              : "bg-emerald-500",
-                        )}
-                      >
-                        {entry.rank}
-                      </span>
-                    </div>
-                    <p
-                      className={cn(
-                        "mt-3 max-w-[7rem] truncate text-sm font-bold",
-                        entry.isCurrentUser ? "text-amber-600" : "text-neutral-dark",
-                      )}
-                    >
-                      {entry.fullName}
-                    </p>
-                    <p
-                      className={cn(
-                        "text-sm font-semibold",
-                        entry.rank === 1 ? "text-amber-600" : "text-neutral-muted",
-                      )}
-                    >
-                      {entry.valueLabel}
-                    </p>
-                  </div>
-                );
-              })}
-            </div>
+          {/* Podium – Trophy UI */}
+          <div className="rounded-2xl border border-border-color bg-card-bg p-4 sm:p-6">
+            <LeaderboardPodium
+              rankings={podiumRankings}
+              spacing="normal" 
+              size="default" 
+              valueUnit="XP"
+            />
           </div>
 
-          {/* Ranked list */}
+          {/* Rankings list – Trophy UI */}
           <div className="overflow-hidden rounded-2xl border border-border-color bg-card-bg">
-            <div className="grid grid-cols-[48px_1fr_100px] border-b border-border-color bg-background-app/60 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-neutral-muted">
-              <span>Hạng</span>
-              <span>Học viên</span>
-              <span className="text-right">Streak</span>
-            </div>
-            <ul className="divide-y divide-border-color">
-              {list.map((entry) => (
-                <li
-                  key={entry.studentId}
-                  className={cn(
-                    "grid grid-cols-[48px_1fr_100px] items-center px-4 py-3",
-                    entry.isCurrentUser && "bg-primary-light/40",
-                  )}
-                >
-                  <span className="text-sm font-semibold text-neutral-muted">
-                    {entry.rank}
-                  </span>
-                  <div className="flex min-w-0 items-center gap-3">
-                    <Avatar className="h-9 w-9 shrink-0">
-                      <AvatarImage
-                        src={avatarUrlFromKey(entry.avatarKey)}
-                        alt={entry.fullName}
-                      />
-                      <AvatarFallback>{entry.fullName.slice(0, 1)}</AvatarFallback>
-                    </Avatar>
-                    <span className="truncate text-sm font-semibold text-neutral-dark">
-                      {entry.fullName}
-                    </span>
-                  </div>
-                  <span className="text-right text-sm font-bold text-emerald-600">
-                    {entry.valueLabel}
-                  </span>
-                </li>
-              ))}
-            </ul>
-            <div className="border-t border-border-color px-4 py-3 text-center">
-              <button
-                type="button"
-                className="text-sm font-semibold text-primary hover:underline"
-              >
-                Xem thêm 40 học viên khác
-              </button>
-            </div>
+            <LeaderboardRankings
+              rankings={rankings}
+              currentUserId={currentUserId}
+              showPagination={false}
+              // Có thể bật pagination sau:
+              // showPagination
+              // defaultPageSize={10}
+            />
           </div>
         </div>
 
-        {/* Side column */}
+        {/* Side column – giữ nguyên brand */}
         <div className="space-y-4">
           {/* Hall of Fame */}
           <div className="rounded-2xl border border-border-color bg-card-bg p-4">
@@ -212,7 +142,9 @@ export function StudentRewardsLeaderboard() {
                       src={avatarUrlFromKey(item.avatarKey)}
                       alt={item.studentName}
                     />
-                    <AvatarFallback>{item.studentName.slice(0, 1)}</AvatarFallback>
+                    <AvatarFallback>
+                      {item.studentName.slice(0, 1)}
+                    </AvatarFallback>
                   </Avatar>
                   <div className="min-w-0 flex-1">
                     <p className="text-[11px] font-semibold uppercase tracking-wide text-neutral-muted">
@@ -267,13 +199,17 @@ export function StudentRewardsLeaderboard() {
             </ul>
           </div>
 
-          {/* Current user summary (sample) */}
+          {/* Current user summary */}
           <div className="rounded-2xl border border-dashed border-primary/40 bg-primary-light/30 p-4 text-sm">
-            <p className="font-semibold text-primary">Dữ liệu mẫu (presentation)</p>
+            <p className="font-semibold text-primary">
+              Dữ liệu mẫu (presentation)
+            </p>
             <p className="mt-1 text-neutral-muted">
               Level {mockCurrentGamificationProfile.currentLevel} ·{" "}
-              {mockCurrentGamificationProfile.lifetimeXp.toLocaleString("vi-VN")} XP ·{" "}
-              Streak {mockCurrentGamificationProfile.currentStreak} ngày
+              {mockCurrentGamificationProfile.lifetimeXp.toLocaleString(
+                "vi-VN",
+              )}{" "}
+              XP · Streak {mockCurrentGamificationProfile.currentStreak} ngày
             </p>
           </div>
         </div>

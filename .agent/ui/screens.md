@@ -19,7 +19,16 @@
 
 ## Student routes
 
-Student dashboard, units, assignments and progress have historically contained mock/placeholder areas. Do not label them fully implemented without a current source and browser audit. ActivitySession runner/result/review is separate from the not-yet-implemented formal AssessmentAttempt runner.
+- `/student`: Learning Hub entry; uses live Student Units list to offer navigable Units, not a KPI dashboard.
+- `/student/units`: searchable Unit explorer.
+- `/student/units/:unitId`: Sections/Topics and published Activity choices.
+- `/student/assignments`: independent teacher-assigned work.
+- `/student/progress`: placeholder; not a live analytics page.
+- `/student/rewards`: gamification presentation with mock data, not live awards.
+- `/student/profile`: student profile.
+
+See `ui/STUDENT_LEARNING_HUB_BLUEPRINT.md` for the active Home/Units/Unit Detail contract.
+ActivitySession runner/result/review is separate from the formal AssessmentAttempt runtime.
 
 ## Cross-screen contracts
 

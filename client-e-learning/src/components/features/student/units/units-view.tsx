@@ -3,13 +3,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
-import {
-  Search,
-  Sparkles,
-  Trophy,
-  RefreshCw,
-  Compass,
-} from "lucide-react";
+import { Search, RefreshCw } from "lucide-react";
 import { getAppErrorMessage } from "@/lib/errors/app-error";
 import { studentUnitService } from "@/services/student/student-unit.service";
 import { QUERY_KEYS } from "@/services/query-keys";
@@ -40,59 +34,34 @@ export function UnitsView() {
     u.name.toLowerCase().includes(searchTerm.toLowerCase().trim()),
   );
 
-  const totalActivities = units.reduce(
-    (sum, u) => sum + (u.activityCount || 0),
-    0,
-  );
-
   return (
-    <div className="space-y-6">
-      {/* ─── Hero Banner Gamification (Dùng tokens bg-card, border-border, shadow-pop) ─── */}
-      <header className="relative overflow-hidden rounded-3xl border-2 border-border bg-card p-5 sm:p-6 shadow-pop">
-        <div className="flex flex-col-reverse items-center justify-between gap-4 md:flex-row md:items-center">
-          <Pipo mood="cheer" size={115} color="pink" stage={3} />
-          <div className="flex-1 space-y-2 text-center md:text-left">
-            <div className="inline-flex items-center gap-1.5 rounded-full border border-border bg-secondary px-3 py-1 text-xs font-extrabold uppercase tracking-wider text-primary shadow-pop-sm">
-              <Sparkles className="h-3.5 w-3.5 text-warning" />
-              Góc học tập của bạn
-            </div>
-
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
-              Danh sách Unit bài học 📚
-            </h1>
-
-            <p className="max-w-xl text-sm font-semibold text-muted-foreground">
-              Chọn một Unit để khám phá các bài giảng, từ vựng và thử thách bài
-              tập hấp dẫn!
-            </p>
-
-            {/* Quick Stats Chips */}
-            {units.length > 0 && (
-              <div className="flex flex-wrap items-center justify-center gap-2 pt-1 md:justify-start">
-                <span className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-secondary px-3 py-1 text-xs font-bold text-foreground shadow-pop-sm">
-                  <Compass className="h-4 w-4 text-primary" />
-                  {units.length} Unit bài học
-                </span>
-                <span className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-secondary px-3 py-1 text-xs font-bold text-foreground shadow-pop-sm">
-                  <Trophy className="h-4 w-4 text-warning" />
-                  {totalActivities} hoạt động luyện tập
-                </span>
-              </div>
-            )}
-          </div>
+    <div className="mx-auto max-w-6xl space-y-6 pb-8">
+      <header className="flex items-center justify-between gap-4 border-b border-border pb-6">
+        <div className="space-y-2">
+          <p className="text-sm font-semibold text-primary">Learning</p>
+          <h1 className="text-3xl font-extrabold text-foreground">Chọn Unit để học</h1>
+          <p className="max-w-xl text-base text-muted-foreground">
+            Khám phá phần học và hoạt động luyện tập do giáo viên công bố.
+          </p>
+        </div>
+        <div className="hidden shrink-0 sm:block" aria-hidden="true">
+          <Pipo mood="happy" size={92} color="primary" stage={2} />
         </div>
       </header>
 
-      {/* ─── Ô tìm kiếm bài học Tactile ─── */}
       {units.length > 0 && (
         <div className="relative max-w-md">
-          <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <label htmlFor="student-unit-search" className="mb-2 block text-base font-semibold text-foreground">
+            Tìm bài học
+          </label>
+          <Search className="absolute bottom-3 left-3.5 h-4 w-4 text-muted-foreground" aria-hidden="true" />
           <input
+            id="student-unit-search"
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Tìm kiếm Unit bài học..."
-            className="h-11 w-full rounded-2xl border-2 border-border bg-card pl-10 pr-4 text-sm font-bold text-foreground placeholder:font-medium placeholder:text-muted-foreground shadow-pop-sm focus:border-primary focus:outline-none"
+            placeholder="Nhập tên Unit..."
+            className="h-11 w-full rounded-xl border border-input bg-card pl-10 pr-4 text-base text-foreground placeholder:text-muted-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
           />
         </div>
       )}
@@ -133,7 +102,7 @@ export function UnitsView() {
             <button
               type="button"
               onClick={() => setSearchTerm("")}
-              className="text-xs font-bold text-primary hover:underline"
+              className="text-base font-semibold text-primary hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
             >
               Xóa tìm kiếm
             </button>
@@ -143,9 +112,9 @@ export function UnitsView() {
 
       {/* ─── Lưới Unit Cards ─── */}
       {filteredUnits.length > 0 && (
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
-          {filteredUnits.map((unit, index) => (
-            <UnitCard key={unit.id} unit={unit} index={index} />
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+          {filteredUnits.map((unit) => (
+            <UnitCard key={unit.id} unit={unit} />
           ))}
         </div>
       )}

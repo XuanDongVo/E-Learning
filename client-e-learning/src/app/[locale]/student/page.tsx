@@ -1,5 +1,5 @@
-import { DashboardView } from "@/components/features/student/dashboard/dashboard-view";
+import { LearningHubHome } from "@/components/features/student/learning-hub/learning-hub-home";
 
-export default function StudentDashboardPage() {
-  return <DashboardView />;
+export default function StudentHomePage() {
+  return <LearningHubHome />;
 }

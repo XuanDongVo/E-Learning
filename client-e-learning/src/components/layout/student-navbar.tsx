@@ -20,7 +20,7 @@ import { useAuth } from "@/components/auth/auth-provider";
 
 export const NAV_ITEMS = [
   { label: "Home", href: "/student", icon: Home },
-  { label: "Units", href: "/student/units", icon: BookOpen },
+  { label: "Learning", href: "/student/units", icon: BookOpen },
   { label: "Assignments", href: "/student/assignments", icon: ClipboardList },
   { label: "Progress", href: "/student/progress", icon: BarChart2 },
   { label: "Rewards", href: "/student/rewards", icon: Trophy },

@@ -108,10 +108,13 @@ Insights     Reports
 ### 2.3.1 Student navigation (target)
 
 ```text
-Home · Learning · Practice · Activities · Progress · Profile
+Home · Learning · Assignments · Progress · Rewards · Profile
 ```
 
-Student navigation uses the same shell grid as Teacher (Section 5.1) and the same active-state rules.
+Student navigation uses the same brand/tokens and route-derived active-state rules.
+Its Home is a **Learning Hub** focused on choosing real Unit content, not an
+analytics dashboard. See `ui/STUDENT_LEARNING_HUB_BLUEPRINT.md` for the active
+Student screen and route contract; Profile remains reachable from the account area.
 
 ---
 
@@ -568,9 +571,9 @@ outside earned milestones. Reuse current mascot/art direction where available.
 
 ### 8.2 Screen patterns and tasks
 
-- **Dashboard:** one clear welcome/context, next learning action, meaningful
-  progress, then assignments/results/rewards. Avoid six equally competing cards.
-  No fabricated XP, progress, locks, ranks or assignment state.
+- **Home / Learning Hub:** welcome, one clear Learning action, available Units,
+  and a secondary route to teacher Assignments. No dashboard KPI wall,
+  fabricated resume/progress, locks, ranks or assignment state.
 - **Learning/activity:** one task at a time, 48px dominant action, progress
   visible, hints/feedback based on the accepted activity rules.
 - **Rewards/leaderboard:** celebrate achievement without obscuring the metric.

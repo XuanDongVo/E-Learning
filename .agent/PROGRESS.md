@@ -6,6 +6,8 @@
 
 ## Current stage
 
+- **Student Learning Hub stages 1–3:** brief/nav contract, Home replacement,
+  and Units/Unit Detail UI refinement on `feature/student-gamification`.
 - Phase 7 Scope B AssessmentAttempt: on `main` (finalize path present).
 - **Phase 8 Teacher Assignment Analysis: implementation code complete on this branch.**
 
@@ -16,6 +18,23 @@
 - FE modular analysis UI + review sheet + Results entry from list.
 - Removed sample result view; cleaned legacy DTO names.
 - Docs synced (`CURRENT_STATE`, this file, `PHASES`, plan 11).
+
+## Student Learning Hub work log (2026-11-05)
+
+- Added `ui/STUDENT_LEARNING_HUB_BLUEPRINT.md` with Screen Briefs and real-API boundaries.
+- Replaced `/student` DashboardView entry with a Learning Hub driven by
+  `/v1/student/units`. No fictitious progress, recommendations or resume.
+- Updated Student `Units` navigation label to `Learning` without changing URL.
+- Simplified Unit explorer and Unit Detail hierarchy; preserved Section/Topic
+  filtering and Activity routes; removed index-based Unit accent rotation.
+- No backend endpoint, DTO, auth, Assignment runtime or Rewards contract changed.
+- Validation in the local branch snapshot: `npm run build` passed;
+  `npm run lint` passed with 53 pre-existing warnings (0 errors); focused
+  changed-file lint had 0 errors (Navbar retains its existing effect warning);
+  `git diff --check` passed. Standalone `npx tsc --noEmit` is blocked by
+  missing Practice illustration imports (`practice-garden.jpg`,
+  `practice-mascot.png`) outside this change. Authenticated browser/API E2E
+  and viewport screenshot review remain open.
 
 ## Verification
 

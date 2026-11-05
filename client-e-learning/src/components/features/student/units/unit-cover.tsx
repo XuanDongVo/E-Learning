@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import { useState } from "react";
-import { Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface UnitCoverProps {
@@ -14,8 +13,8 @@ export interface UnitCoverProps {
   labelClassName?: string;
 }
 
-/** 
- * Ảnh bìa Unit; không có ảnh (hoặc ảnh lỗi) thì hiển thị khung bìa số bài học phong cách Tactile.
+/**
+ * Ảnh bìa Unit; không có ảnh (hoặc ảnh lỗi) thì hiển thị số Unit rõ ràng.
  */
 export function UnitCover({
   label,
@@ -42,28 +41,20 @@ export function UnitCover({
     );
   }
 
-  // Khung bìa dự phòng thiết kế dạng khối chữ số lớn vui tươi
+  // Bìa dự phòng trung tính, không ngụ ý có hình minh họa thật.
   return (
     <div
       className={cn(
-        "relative flex select-none flex-col items-center justify-center overflow-hidden border-b-2 border-border bg-gradient-to-br from-primary-soft via-secondary to-primary-soft/40",
+        "relative flex select-none flex-col items-center justify-center overflow-hidden bg-learning-soft",
         className
       )}
       aria-hidden="true"
     >
-      {/* Hoạ tiết vòng tròn mờ trang trí nền */}
-      <div className="absolute -right-6 -top-6 h-28 w-28 rounded-full border-2 border-primary/15 bg-primary/5" />
-      <div className="absolute -bottom-8 -left-8 h-32 w-32 rounded-full border-2 border-primary/10 bg-primary/5" />
-
-      {/* Số thứ tự Unit nổi bật */}
-      <div className="relative z-10 flex flex-col items-center">
-        <span className="flex items-center gap-1 text-[11px] font-black uppercase tracking-widest text-primary/80">
-          <Sparkles className="h-3 w-3" />
-          Unit
-        </span>
+      <div className="flex flex-col items-center gap-1">
+        <span className="text-sm font-semibold text-learning">Unit</span>
         <span
           className={cn(
-            "text-5xl sm:text-6xl font-black tracking-tight text-primary drop-shadow-xs",
+            "text-5xl font-extrabold tracking-tight text-learning",
             labelClassName
           )}
         >

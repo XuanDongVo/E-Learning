@@ -1,11 +1,16 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { Flame, Megaphone, Trophy, Sparkles } from "lucide-react";
+import {
+  Clock3,
+  Flame,
+  Megaphone,
+  Sparkles,
+  Trophy,
+} from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { cn } from "@/lib/utils";
 import { LeaderboardPodium } from "@/components/ui/leaderboard-podium";
 import { LeaderboardRankings } from "@/components/ui/leaderboard-rankings";
+import { cn } from "@/lib/utils";
 import {
   avatarUrlFromKey,
   mockCurrentGamificationProfile,
@@ -13,207 +18,350 @@ import {
   mockRecentActivities,
   mockStreakLeaderboard,
 } from "@/mock/gamification";
-import type { LeaderboardTab } from "@/types/gamification";
+import type { HallOfFameItem, LeaderboardTab } from "@/types/gamification";
 
-const TABS: { id: LeaderboardTab; label: string }[] = [
-  { id: "xp", label: "XP" },
-  { id: "time", label: "Time" },
-  { id: "streak", label: "Streak" },
-  { id: "share", label: "Chia sẻ" },
+const TABS: {
+  id: LeaderboardTab;
+  label: string;
+  available: boolean;
+}[] = [
+  { id: "xp", label: "XP", available: false },
+  { id: "time", label: "Thời gian", available: false },
+  { id: "streak", label: "Chuỗi ngày", available: true },
+  { id: "share", label: "Lan tỏa", available: false },
 ];
 
-/** Map mock data → shape của Trophy UI */
-function toTrophyRanking(entry: (typeof mockStreakLeaderboard)[number]) {
-  // valueLabel thường dạng "15 ngày" → lấy số ngày
-  const numericValue =
-    typeof (entry as any).value === "number"
-      ? (entry as any).value
-      : parseInt(String(entry.valueLabel).replace(/\D/g, ""), 10) || 0;
+const HALL_OF_FAME_ICON: Record<HallOfFameItem["icon"], typeof Trophy> = {
+  trophy: Trophy,
+  fire: Flame,
+  megaphone: Megaphone,
+};
 
+const HALL_OF_FAME_ICON_STYLE: Record<HallOfFameItem["icon"], string> = {
+  trophy: "bg-warning-soft text-warning",
+  fire: "bg-primary-soft text-primary",
+  megaphone: "bg-info-soft text-info",
+};
+
+function toTrophyRanking(entry: (typeof mockStreakLeaderboard)[number]) {
   return {
     userId: entry.studentId,
     userName: entry.fullName,
     rank: entry.rank,
-    value: numericValue,
+    value: entry.value,
     avatarUrl: avatarUrlFromKey(entry.avatarKey),
-    byline: entry.valueLabel, // hiển thị "15 ngày" dưới tên
+    byline: entry.valueLabel,
     displayed: true,
   };
 }
 
 export function StudentRewardsLeaderboard() {
-  const [tab, setTab] = useState<LeaderboardTab>("streak");
-
-  // Hiện tại mock chỉ có streak → sau này có thể switch theo tab
-  const allEntries = mockStreakLeaderboard;
-
-  const podiumRankings = useMemo(
-    () => allEntries.slice(0, 3).map(toTrophyRanking),
-    [allEntries],
-  );
-
-  const rankings = useMemo(() => allEntries.map(toTrophyRanking), [allEntries]);
-
-  const currentUserId =
-    allEntries.find((e) => e.isCurrentUser)?.studentId ?? undefined;
+  const podiumRankings = mockStreakLeaderboard.slice(0, 3).map(toTrophyRanking);
+  const rankings = mockStreakLeaderboard.map(toTrophyRanking);
+  const currentEntry = mockStreakLeaderboard.find((entry) => entry.isCurrentUser);
 
   return (
-    <div className="mx-auto max-w-[1440px] space-y-6 px-4 py-6 sm:px-6">
-      {/* Header */}
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <div className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-primary-light px-3 py-1 text-xs font-semibold text-primary">
-            <Sparkles className="h-3.5 w-3.5" />
-            Hall of Fame
+    <div className="space-y-6">
+      <header className="flex flex-col gap-4 border-b border-border pb-5 sm:flex-row sm:items-end sm:justify-between">
+        <div className="max-w-2xl">
+          <div className="mb-2 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-primary">
+            <Sparkles className="h-4 w-4" aria-hidden="true" />
+            Khu vực thi đua
           </div>
-          <h1 className="text-2xl font-extrabold tracking-tight text-neutral-dark sm:text-3xl">
+          <h1 className="text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl">
             Bảng xếp hạng
           </h1>
-          <p className="mt-1 text-sm text-neutral-muted">
-            Vinh danh học viên kiên trì, chăm chỉ và lan tỏa tri thức mỗi ngày.
+          <p className="mt-2 text-sm leading-6 text-muted-foreground sm:text-base">
+            Cùng nhìn lại những nỗ lực nổi bật và duy trì nhịp học đều đặn
+            mỗi ngày.
           </p>
         </div>
-        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-md">
-          <Trophy className="h-6 w-6" />
+
+        <div className="flex items-center gap-3 rounded-xl border border-border bg-card px-4 py-3 shadow-pop-sm">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary-soft text-primary">
+            <Flame className="h-5 w-5" aria-hidden="true" />
+          </div>
+          <div>
+            <p className="text-xs font-semibold text-muted-foreground">
+              Chuỗi hiện tại của bạn
+            </p>
+            <p className="font-extrabold tabular-nums text-foreground">
+              {mockCurrentGamificationProfile.currentStreak} ngày
+            </p>
+          </div>
         </div>
-      </div>
+      </header>
 
-      <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
-        {/* Main column */}
-        <div className="space-y-4">
-          {/* Tabs */}
-          <div className="flex flex-wrap gap-1 rounded-full bg-background-app p-1">
-            {TABS.map((t) => (
-              <button
-                key={t.id}
-                type="button"
-                onClick={() => setTab(t.id)}
-                className={cn(
-                  "rounded-full px-4 py-2 text-sm font-semibold transition-colors",
-                  tab === t.id
-                    ? "bg-primary text-primary-foreground shadow-sm"
-                    : "text-neutral-muted hover:text-neutral-dark",
-                )}
-              >
-                {t.label}
-              </button>
-            ))}
-          </div>
-
-          {/* Podium – Trophy UI */}
-          <div className="rounded-2xl border border-border-color bg-card-bg p-4 sm:p-6">
-            <LeaderboardPodium
-              rankings={podiumRankings}
-              spacing="normal" 
-              size="default" 
-              valueUnit="XP"
+      <section
+        aria-labelledby="current-student-heading"
+        className="grid gap-4 rounded-2xl border border-ink bg-card p-4 shadow-pop sm:grid-cols-3 sm:p-5"
+      >
+        <div className="flex items-center gap-3 sm:col-span-1">
+          <Avatar className="h-12 w-12 shrink-0 border border-border">
+            <AvatarImage
+              src={avatarUrlFromKey(
+                mockCurrentGamificationProfile.activeAvatarKey ??
+                  mockCurrentGamificationProfile.studentId,
+              )}
+              alt="Ảnh đại diện của bạn"
             />
+            <AvatarFallback>Bạn</AvatarFallback>
+          </Avatar>
+          <div className="min-w-0">
+            <p
+              id="current-student-heading"
+              className="text-xs font-semibold text-muted-foreground"
+            >
+              Thành tích của bạn
+            </p>
+            <p className="truncate text-base font-extrabold text-foreground">
+              {currentEntry?.fullName ?? "Học viên"}
+            </p>
           </div>
+        </div>
 
-          {/* Rankings list – Trophy UI */}
-          <div className="overflow-hidden rounded-2xl border border-border-color bg-card-bg">
+        <div className="grid grid-cols-3 gap-2 sm:col-span-2">
+          <StudentMetric
+            label="Hạng"
+            value={currentEntry ? `#${currentEntry.rank}` : "—"}
+          />
+          <StudentMetric
+            label="Tổng XP"
+            value={mockCurrentGamificationProfile.lifetimeXp.toLocaleString(
+              "vi-VN",
+            )}
+          />
+          <StudentMetric
+            label="Cấp độ"
+            value={String(mockCurrentGamificationProfile.currentLevel)}
+          />
+        </div>
+      </section>
+
+      <div className="grid gap-6 lg:grid-cols-3">
+        <div className="min-w-0 space-y-5 lg:col-span-2">
+          <section aria-labelledby="ranking-filter-heading">
+            <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
+              <div>
+                <h2
+                  id="ranking-filter-heading"
+                  className="font-bold text-foreground"
+                >
+                  Xếp hạng theo
+                </h2>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Các tiêu chí khác sẽ xuất hiện khi có dữ liệu.
+                </p>
+              </div>
+              <span className="rounded-full bg-secondary px-3 py-1 text-xs font-semibold text-secondary-foreground">
+                Top {rankings.length}
+              </span>
+            </div>
+
+            <div
+              role="tablist"
+              aria-label="Tiêu chí xếp hạng"
+              className="grid grid-cols-2 gap-2 rounded-xl border border-border bg-card p-2 sm:grid-cols-4"
+            >
+              {TABS.map((tab) => (
+                <button
+                  key={tab.id}
+                  id={`${tab.id}-ranking-tab`}
+                  type="button"
+                  role="tab"
+                  aria-selected={tab.available}
+                  aria-controls={tab.available ? "streak-leaderboard" : undefined}
+                  disabled={!tab.available}
+                  title={tab.available ? undefined : "Sắp ra mắt"}
+                  className={cn(
+                    "min-h-10 rounded-lg px-3 py-2 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                    tab.available
+                      ? "bg-primary text-primary-foreground shadow-pop-sm"
+                      : "cursor-not-allowed text-muted-foreground opacity-60",
+                  )}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+          </section>
+
+          <section
+            id="streak-leaderboard"
+            role="tabpanel"
+            aria-labelledby="streak-ranking-tab"
+            className="overflow-hidden rounded-2xl border border-border bg-card"
+          >
+            <div className="flex items-center justify-between gap-4 border-b border-border px-4 py-4 sm:px-5">
+              <div>
+                <h2
+                  id="streak-ranking-heading"
+                  className="font-extrabold text-foreground"
+                >
+                  Chuỗi học tập dài nhất
+                </h2>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Số ngày học liên tiếp của các học viên.
+                </p>
+              </div>
+              <Flame
+                className="h-6 w-6 shrink-0 text-primary"
+                aria-hidden="true"
+              />
+            </div>
+
+            <div className="bg-secondary/40 px-3 pb-0 pt-8 sm:px-6 sm:pt-10">
+              <LeaderboardPodium
+                rankings={podiumRankings}
+                spacing="normal"
+                size="default"
+                valueUnit="ngày"
+              />
+            </div>
+
+            <div className="border-t border-border px-4 py-3 sm:px-5">
+              <h3 className="text-sm font-bold text-foreground">
+                Toàn bộ thứ hạng
+              </h3>
+            </div>
             <LeaderboardRankings
               rankings={rankings}
-              currentUserId={currentUserId}
+              currentUserId={currentEntry?.studentId}
               showPagination={false}
-              // Có thể bật pagination sau:
-              // showPagination
-              // defaultPageSize={10}
+              className="rounded-none border-0"
             />
-          </div>
+          </section>
         </div>
 
-        {/* Side column – giữ nguyên brand */}
-        <div className="space-y-4">
-          {/* Hall of Fame */}
-          <div className="rounded-2xl border border-border-color bg-card-bg p-4">
-            <h2 className="mb-3 flex items-center gap-2 text-sm font-bold text-neutral-dark">
-              <Trophy className="h-4 w-4 text-amber-500" />
-              Đại sảnh danh vọng
-            </h2>
-            <ul className="space-y-3">
-              {mockHallOfFame.map((item) => (
-                <li
-                  key={item.title}
-                  className="flex items-center gap-3 rounded-xl border border-border-color bg-background-app/50 p-3"
+        <aside className="space-y-5">
+          <section
+            aria-labelledby="hall-of-fame-heading"
+            className="rounded-2xl border border-border bg-card p-4"
+          >
+            <div className="mb-4 flex items-center gap-3">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-warning-soft text-warning">
+                <Trophy className="h-5 w-5" aria-hidden="true" />
+              </div>
+              <div>
+                <h2
+                  id="hall-of-fame-heading"
+                  className="font-extrabold text-foreground"
                 >
-                  <Avatar className="h-10 w-10 shrink-0">
-                    <AvatarImage
-                      src={avatarUrlFromKey(item.avatarKey)}
-                      alt={item.studentName}
-                    />
-                    <AvatarFallback>
-                      {item.studentName.slice(0, 1)}
-                    </AvatarFallback>
-                  </Avatar>
+                  Dấu ấn nổi bật
+                </h2>
+                <p className="text-xs text-muted-foreground">
+                  Thành tích đáng nhớ của cộng đồng
+                </p>
+              </div>
+            </div>
+
+            <ul className="divide-y divide-border">
+              {mockHallOfFame.map((item) => {
+                const Icon = HALL_OF_FAME_ICON[item.icon];
+
+                return (
+                  <li key={item.title} className="flex items-center gap-3 py-3">
+                    <Avatar className="h-10 w-10 shrink-0 border border-border">
+                      <AvatarImage
+                        src={avatarUrlFromKey(item.avatarKey)}
+                        alt={`Ảnh đại diện của ${item.studentName}`}
+                      />
+                      <AvatarFallback>
+                        {item.studentName.slice(0, 1).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-xs font-semibold text-muted-foreground">
+                        {item.title}
+                      </p>
+                      <p className="truncate text-sm font-bold text-foreground">
+                        {item.studentName}
+                      </p>
+                      <p className="text-sm font-extrabold tabular-nums text-primary">
+                        {item.valueLabel}
+                      </p>
+                    </div>
+                    <span
+                      className={cn(
+                        "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg",
+                        HALL_OF_FAME_ICON_STYLE[item.icon],
+                      )}
+                    >
+                      <Icon className="h-4 w-4" aria-hidden="true" />
+                    </span>
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+
+          <section
+            aria-labelledby="recent-activity-heading"
+            className="rounded-2xl border border-border bg-card p-4"
+          >
+            <div className="mb-4 flex items-center gap-3">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-info-soft text-info">
+                <Clock3 className="h-5 w-5" aria-hidden="true" />
+              </div>
+              <div>
+                <h2
+                  id="recent-activity-heading"
+                  className="font-extrabold text-foreground"
+                >
+                  Nhịp học gần đây
+                </h2>
+                <p className="text-xs text-muted-foreground">
+                  Cập nhật mới từ các học viên
+                </p>
+              </div>
+            </div>
+
+            <ul className="space-y-3">
+              {mockRecentActivities.map((activity) => (
+                <li
+                  key={activity.id}
+                  className="flex gap-3 border-b border-border pb-3 last:border-0 last:pb-0"
+                >
+                  <span
+                    className="mt-2 h-2 w-2 shrink-0 rounded-full bg-primary"
+                    aria-hidden="true"
+                  />
                   <div className="min-w-0 flex-1">
-                    <p className="text-[11px] font-semibold uppercase tracking-wide text-neutral-muted">
-                      {item.title}
+                    <p className="text-sm leading-5 text-foreground">
+                      <span className="font-bold">{activity.actorName}</span>{" "}
+                      {activity.message}
+                      {activity.badgeLabel ? (
+                        <span className="ml-1 inline-flex rounded-md bg-primary-soft px-1.5 py-0.5 text-xs font-bold text-primary">
+                          {activity.badgeLabel}
+                        </span>
+                      ) : null}
                     </p>
-                    <p className="truncate text-sm font-bold text-neutral-dark">
-                      {item.studentName}
-                    </p>
-                    <p className="text-sm font-semibold text-primary">
-                      {item.valueLabel}
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {activity.minutesAgo} phút trước
                     </p>
                   </div>
-                  {item.icon === "trophy" && (
-                    <Trophy className="h-5 w-5 shrink-0 text-amber-500" />
-                  )}
-                  {item.icon === "fire" && (
-                    <Flame className="h-5 w-5 shrink-0 text-orange-500" />
-                  )}
-                  {item.icon === "megaphone" && (
-                    <Megaphone className="h-5 w-5 shrink-0 text-sky-500" />
-                  )}
                 </li>
               ))}
             </ul>
-          </div>
+          </section>
 
-          {/* Recent activity */}
-          <div className="rounded-2xl border border-border-color bg-card-bg p-4">
-            <h2 className="mb-3 text-sm font-bold text-neutral-dark">
-              Hoạt động học tập gần đây
-            </h2>
-            <ul className="space-y-2">
-              {mockRecentActivities.map((act) => (
-                <li
-                  key={act.id}
-                  className="rounded-xl border border-border-color bg-background-app/40 px-3 py-2"
-                >
-                  <p className="text-sm text-neutral-dark">
-                    <span className="font-semibold">{act.actorName}</span>{" "}
-                    {act.message}
-                    {act.badgeLabel && (
-                      <span className="ml-1 inline-flex rounded-md bg-primary-light px-1.5 py-0.5 text-xs font-bold text-primary">
-                        {act.badgeLabel}
-                      </span>
-                    )}
-                  </p>
-                  <p className="mt-0.5 text-xs text-neutral-muted">
-                    {act.minutesAgo} phút trước
-                  </p>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Current user summary */}
-          <div className="rounded-2xl border border-dashed border-primary/40 bg-primary-light/30 p-4 text-sm">
-            <p className="font-semibold text-primary">
-              Dữ liệu mẫu (presentation)
-            </p>
-            <p className="mt-1 text-neutral-muted">
-              Level {mockCurrentGamificationProfile.currentLevel} ·{" "}
-              {mockCurrentGamificationProfile.lifetimeXp.toLocaleString(
-                "vi-VN",
-              )}{" "}
-              XP · Streak {mockCurrentGamificationProfile.currentStreak} ngày
-            </p>
-          </div>
-        </div>
+          <p className="rounded-xl border border-dashed border-border px-4 py-3 text-xs leading-5 text-muted-foreground">
+            Đây là bản xem trước bằng dữ liệu trình bày. Thành tích thực sẽ
+            được cập nhật khi dịch vụ xếp hạng được kết nối.
+          </p>
+        </aside>
       </div>
+    </div>
+  );
+}
+
+function StudentMetric({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-xl bg-secondary px-2 py-3 text-center sm:px-3">
+      <p className="text-xs font-semibold text-muted-foreground">{label}</p>
+      <p className="mt-1 text-base font-extrabold tabular-nums text-foreground sm:text-lg">
+        {value}
+      </p>
     </div>
   );
 }

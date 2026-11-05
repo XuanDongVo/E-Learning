@@ -1,6 +1,6 @@
 # Project Progress
 
-**Updated:** 2026-11-01  
+**Updated:** 2026-11-05
 **Branch:** `feature/teacher-assignment-analysis`  
 **Canonical state:** `.agent/CURRENT_STATE.md`
 
@@ -20,6 +20,8 @@
 ## Verification
 
 - Frontend global page layout refactor completed on this branch: TeacherLayout and StudentShell now own the standard `1440px` page container; only the two Student runtime routes use immersive `h-dvh` rendering.
+- Student rewards leaderboard presentation was refined with a clearer streak-first hierarchy, responsive current-student summary, accessible disabled states for unavailable ranking criteria, and token-only feature styling. It remains explicitly backed by presentation-only mock gamification data.
+- Leaderboard UI static checks and `git diff --check` pass; focused ESLint, TypeScript, build, and browser-width verification could not be run because this shell has no Node.js runtime in `PATH`.
 - `client-e-learning`: TypeScript and production build pass. Full ESLint remains blocked by pre-existing errors in the assignment result page and autosave hook; focused changed-file lint has no errors.
 - Owner should run local E2E against graded attempts and visually verify 375px, 768px, and 1440px layouts.
 - Teacher DataTable refactor added a generic React/TypeScript core at `client-e-learning/src/components/ui/data-table/data-table.tsx`.

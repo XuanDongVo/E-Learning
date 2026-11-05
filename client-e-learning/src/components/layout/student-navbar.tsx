@@ -10,6 +10,7 @@ import {
   Home,
   LogOut,
   Menu,
+  Trophy,
   X,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -22,6 +23,7 @@ export const NAV_ITEMS = [
   { label: "Units", href: "/student/units", icon: BookOpen },
   { label: "Assignments", href: "/student/assignments", icon: ClipboardList },
   { label: "Progress", href: "/student/progress", icon: BarChart2 },
+  { label: "Rewards", href: "/student/rewards", icon: Trophy },
 ];
 
 export function StudentNavbar() {

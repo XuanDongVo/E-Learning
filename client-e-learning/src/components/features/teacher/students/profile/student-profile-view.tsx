@@ -36,14 +36,14 @@ export function StudentProfileView() {
           ? tForm("genderOther")
           : "—";
 
-  const accountLabel = d?.accountStatus === "INACTIVE" ? t("locked") : t("active");
+  const accountLabel =
+    d?.accountStatus === "INACTIVE" ? t("locked") : t("active");
 
-  const membership =
-    !d?.className
-      ? tHub("labels.membership.NONE")
-      : d.membershipStatus === "ACTIVE"
-        ? tHub("labels.membership.ACTIVE")
-        : tHub("labels.membership.LEFT");
+  const membership = !d?.className
+    ? tHub("labels.membership.NONE")
+    : d.membershipStatus === "ACTIVE"
+      ? tHub("labels.membership.ACTIVE")
+      : tHub("labels.membership.LEFT");
 
   const relationKey =
     primary?.relationship === "MOTHER"
@@ -63,11 +63,15 @@ export function StudentProfileView() {
       <ProfileCard
         title={tDetail("personal")}
         action={
-          <Button variant="outline" size="sm" className="h-7 gap-1 text-xs font-bold" >
-            <Link href={`/teacher/students/${studentId}/edit`}>
+          <Link href={`/teacher/students/${studentId}/edit`}>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 gap-1 text-sm font-bold "
+            >
               <Pencil className="size-3" /> {t("table.edit")}
-            </Link>
-          </Button>
+            </Button>
+          </Link>
         }
         items={[
           [tForm("fullName"), d?.fullName ?? "—"],
@@ -90,9 +94,14 @@ export function StudentProfileView() {
           primary
             ? [
                 [tForm("fullName"), primary.fullName],
-                [tDetail("relationship"), tHub(`labels.relationship.${relationKey}`)],
+                [
+                  tDetail("relationship"),
+                  tHub(`labels.relationship.${relationKey}`),
+                ],
                 [tDetail("phone"), primary.phone || "—"],
-                ...(primary.email ? [[tDetail("email"), primary.email] as [string, string]] : []),
+                ...(primary.email
+                  ? [[tDetail("email"), primary.email] as [string, string]]
+                  : []),
               ]
             : [["", tDetail("noGuardians")]]
         }
@@ -103,7 +112,9 @@ export function StudentProfileView() {
         items={[
           [
             tHub("overview.class"),
-            d?.membershipStatus === "ACTIVE" && d.className ? d.className : t("noActiveClass"),
+            d?.membershipStatus === "ACTIVE" && d.className
+              ? d.className
+              : t("noActiveClass"),
           ],
           [tHub("overview.membershipStatus"), membership],
           [tHub("profile.grade"), d?.gradeName || "—"],
@@ -133,7 +144,10 @@ function ProfileCard({
       <dl className="divide-y divide-border px-4 py-1 text-sm">
         {items.map(([label, value], i) =>
           label ? (
-            <div key={`${label}-${i}`} className="flex justify-between gap-4 py-2.5">
+            <div
+              key={`${label}-${i}`}
+              className="flex justify-between gap-4 py-2.5"
+            >
               <dt className="text-muted-foreground">{label}</dt>
               <dd className="text-right font-semibold">{value}</dd>
             </div>

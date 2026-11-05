@@ -16,6 +16,7 @@ import { QUERY_KEYS } from "@/services/query-keys";
 import type { GlobalQuestionBankFilters } from "@/types/content";
 import { RegionState } from "@/components/feedback";
 import { SkeletonList } from "@/components/ui/skeleton/skeleton-list";
+import { StatusBadge } from "@/components/ui/status-badge";
 import { TeacherPageHeader } from "@/components/features/teacher/shared/teacher-page-header";
 
 function numericParam(value: string | null): number | undefined {
@@ -97,9 +98,6 @@ export function GlobalQuestionBankList() {
 
   const statusLabel = (status: string) =>
     status === "PUBLISHED" ? t("status.published") : status === "ARCHIVED" ? t("status.archived") : t("status.draft");
-  const statusClass = (status: string) => status === "PUBLISHED"
-    ? "bg-emerald-50 text-emerald-700"
-    : status === "ARCHIVED" ? "bg-slate-100 text-slate-600" : "bg-amber-50 text-amber-700";
 
   return (
     <div className="space-y-6">
@@ -202,7 +200,7 @@ export function GlobalQuestionBankList() {
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
                       <h2 className="font-semibold">{bank.name}</h2>
-                      <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${statusClass(bank.status)}`}>{statusLabel(bank.status)}</span>
+                      <StatusBadge status={bank.status} label={statusLabel(bank.status)} />
                     </div>
                     {bank.description && <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{bank.description}</p>}
                     <p className="mt-2 text-xs text-muted-foreground">Grade {bank.gradeName} <span className="px-1">/</span> {bank.unitCode} · {bank.unitName} <span className="px-1">/</span> {bank.sectionName} <span className="px-1">/</span> {bank.topicName}</p>

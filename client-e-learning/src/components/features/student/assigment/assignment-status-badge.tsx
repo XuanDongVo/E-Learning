@@ -1,5 +1,6 @@
 import { CheckCircle2, Clock3, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { toneForStatus, type StatusTone } from "@/components/ui/status-badge";
 import type { StudentAssignmentItem } from "./types";
 import { ASSIGNMENT_STATUS_LABEL } from "./constants";
 
@@ -8,7 +9,20 @@ interface AssignmentStatusBadgeProps {
   className?: string;
 }
 
-export function AssignmentStatusBadge({ status, className }: AssignmentStatusBadgeProps) {
+/** Soft surface styles aligned with shared StatusTone (keeps icon layout). */
+const TONE_SOFT: Record<StatusTone, string> = {
+  success: "bg-success-soft text-foreground",
+  warning: "bg-amber-500/10 text-foreground",
+  danger: "bg-rose-500/10 text-foreground",
+  neutral: "bg-muted text-foreground",
+  info: "bg-info-soft text-foreground",
+};
+
+export function AssignmentStatusBadge({
+  status,
+  className,
+}: AssignmentStatusBadgeProps) {
+  const tone = toneForStatus(status);
   const isSubmitted = status === "SUBMITTED";
   const isInProgress = status === "IN_PROGRESS";
 
@@ -16,9 +30,7 @@ export function AssignmentStatusBadge({ status, className }: AssignmentStatusBad
     <span
       className={cn(
         "inline-flex items-center gap-1.5 whitespace-nowrap rounded-md px-2 py-1 text-xs font-semibold",
-        isSubmitted && "bg-success-soft text-foreground",
-        isInProgress && "bg-info-soft text-foreground",
-        !isSubmitted && !isInProgress && "bg-primary-soft text-foreground",
+        TONE_SOFT[tone],
         className,
       )}
     >
@@ -33,4 +45,3 @@ export function AssignmentStatusBadge({ status, className }: AssignmentStatusBad
     </span>
   );
 }
-

@@ -29,8 +29,8 @@ export function TeacherPageHeader({
   return (
     <div
       className={cn(
-        "grid-paper relative isolate mb-6 flex min-h-32 items-center justify-between gap-4 overflow-hidden rounded-2xl border-2 border-foreground/90 bg-card px-6 py-5 shadow-xs",
-        "max-sm:flex-wrap max-sm:px-4 max-sm:py-4",
+        "grid-paper relative isolate mb-6 flex min-h-32 items-center justify-between gap-4 overflow-hidden rounded-2xl border-2 border-ink bg-card px-6 py-5 shadow-pop",
+        "max-sm:flex-wrap max-sm:px-4 max-sm:py-4 ",
         className,
       )}
     >

@@ -1,100 +1,89 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { Plus } from "lucide-react";
 import { useTranslations } from "next-intl";
+
+import { CreateClassDialog } from "@/components/features/teacher/classes/create-class-dialog";
+import { ClassesGrid } from "@/components/features/teacher/classes/classes-grid";
+import { ClassesHeader } from "@/components/features/teacher/classes/classes-header";
+import { ClassesToolbar } from "@/components/features/teacher/classes/classes-toolbar";
 import { getAppErrorMessage } from "@/lib/errors/app-error";
 import { classService } from "@/services/class.service";
 import { gradeService } from "@/services/grade.service";
 import type { Class } from "@/types/class";
 import type { Grade } from "@/types/grade";
-import { ClassesGrid } from "@/components/features/teacher/classes/classes-grid";
-import { ClassesHeader } from "@/components/features/teacher/classes/classes-header";
-import { ClassesToolbar } from "@/components/features/teacher/classes/classes-toolbar";
-import { CreateClassDialog } from "@/components/features/teacher/classes/create-class-dialog";
 
-const emptyForm = { name: "", gradeId: "", academicYear: "2026 - 2027" };
-
-export default function ClassesPage() {
+export default function TeacherClassesPage() {
   const t = useTranslations("teacher.classes");
   const tErrors = useTranslations("errors");
+
   const [classes, setClasses] = useState<Class[]>([]);
   const [grades, setGrades] = useState<Grade[]>([]);
-  const [query, setQuery] = useState("");
-  const [gradeFilter, setGradeFilter] = useState("all");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isCreating, setIsCreating] = useState(false);
+
+  const [query, setQuery] = useState("");
+  const [gradeFilter, setGradeFilter] = useState("all");
+
   const [editingClass, setEditingClass] = useState<Class | null>(null);
+  const [isCreating, setIsCreating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [form, setForm] = useState(emptyForm);
+  const [formData, setFormData] = useState({
+    name: "",
+    gradeId: 0,
+    academicYear: "2026-2027",
+  });
 
-  useEffect(() => {
-    let active = true;
-    const load = async () => {
-      try {
-        const [classesResponse, gradesResponse] = await Promise.all([
-          classService.list(),
-          gradeService.list(),
-        ]);
-        if (!active) return;
-        const availableGrades = gradesResponse.data ?? [];
-        setClasses(classesResponse.data ?? []);
-        setGrades(availableGrades);
-        setForm((current) => ({
-          ...current,
-          gradeId: current.gradeId || String(availableGrades[0]?.id ?? ""),
-        }));
-      } catch (loadError) {
-        if (active)
-          setError(
-            getAppErrorMessage(loadError, tErrors as (key: string) => string),
-          );
-      } finally {
-        if (active) setIsLoading(false);
-      }
-    };
-    void load();
-    return () => {
-      active = false;
-    };
-  }, [tErrors]);
-
-  const filteredClasses = useMemo(() => {
-    const normalizedQuery = query.trim().toLowerCase();
-    return classes.filter(
-      (item) =>
-        item.name.toLowerCase().includes(normalizedQuery) &&
-        (gradeFilter === "all" || String(item.grade.id) === gradeFilter),
-    );
-  }, [classes, query, gradeFilter]);
-
-  const loadClasses = async () => {
+  const load = useCallback(async () => {
     setIsLoading(true);
     try {
-      const response = await classService.list();
-      setClasses(response.data ?? []);
+      const [classesRes, gradesRes] = await Promise.all([
+        classService.list(),
+        gradeService.list(),
+      ]);
+      setClasses(classesRes.data ?? []);
+      setGrades(gradesRes.data ?? []);
       setError(null);
     } catch (loadError) {
-      setError(
-        getAppErrorMessage(loadError, tErrors as (key: string) => string),
-      );
+      setError(getAppErrorMessage(loadError, tErrors as (key: string) => string));
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [tErrors]);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return classes.filter((item) => {
+      const matchSearch =
+        !q ||
+        item.name.toLowerCase().includes(q) ||
+        item.grade.name.toLowerCase().includes(q);
+      const matchGrade =
+        gradeFilter === "all" || String(item.grade.id) === gradeFilter;
+      return matchSearch && matchGrade;
+    });
+  }, [classes, query, gradeFilter]);
 
   const openCreate = () => {
     setEditingClass(null);
-    setForm({ ...emptyForm, gradeId: String(grades[0]?.id ?? "") });
+    setFormData({
+      name: "",
+      gradeId: Number(grades[0]?.id ?? 0),
+      academicYear: "2026-2027",
+    });
     setIsCreating(true);
   };
 
   const openEdit = (classItem: Class) => {
     setEditingClass(classItem);
-    setForm({
+    setFormData({
       name: classItem.name,
-      gradeId: String(classItem.grade.id),
+      gradeId: Number(classItem.grade.id),
       academicYear: classItem.academicYear,
     });
   };
@@ -105,48 +94,51 @@ export default function ClassesPage() {
     try {
       if (editingClass) {
         const response = await classService.update(editingClass.id, {
-          name: form.name,
-          gradeId: Number(form.gradeId),
-          academicYear: form.academicYear,
+          name: formData.name,
+          gradeId: Number(formData.gradeId),
+          academicYear: formData.academicYear,
         });
+        const updated = response.data as Class;
         setClasses((current) =>
-          current.map((item) =>
-            item.id === editingClass.id ? (response.data as Class) : item,
-          ),
+          current.map((item) => (item.id === editingClass.id ? updated : item)),
         );
       } else {
         const response = await classService.create({
-          name: form.name,
-          gradeId: Number(form.gradeId),
-          academicYear: form.academicYear,
+          name: formData.name,
+          gradeId: Number(formData.gradeId),
+          academicYear: formData.academicYear,
         });
+        const created = response.data as Class;
         setClasses((current) =>
-          [...current, response.data as Class].sort((a, b) =>
-            a.name.localeCompare(b.name),
-          ),
+          [...current, created].sort((a, b) => a.name.localeCompare(b.name)),
         );
       }
       setIsCreating(false);
       setEditingClass(null);
       setError(null);
     } catch (saveError) {
-      setError(
-        getAppErrorMessage(saveError, tErrors as (key: string) => string),
-      );
+      setError(getAppErrorMessage(saveError, tErrors as (key: string) => string));
     } finally {
       setIsSaving(false);
     }
   }
 
-  const archiveClass = async (classItem: Class) => {
-    if (!window.confirm("Archive " + classItem.name + "?")) return;
+  const handleArchive = async (classItem: Class) => {
     try {
-      const response = await classService.archive(classItem.id);
-      setClasses((current) =>
-        current.map((item) =>
-          item.id === classItem.id ? (response.data as Class) : item,
-        ),
-      );
+      if (classItem.status === "ARCHIVED") {
+        const response = await classService.restore(classItem.id);
+        const restored = response.data as Class;
+        setClasses((current) =>
+          current.map((item) => (item.id === classItem.id ? restored : item)),
+        );
+      } else {
+        const response = await classService.archive(classItem.id);
+        const archived = response.data as Class;
+        setClasses((current) =>
+          current.map((item) => (item.id === classItem.id ? archived : item)),
+        );
+      }
+      setError(null);
     } catch (archiveError) {
       setError(
         getAppErrorMessage(archiveError, tErrors as (key: string) => string),
@@ -154,9 +146,12 @@ export default function ClassesPage() {
     }
   };
 
+  console.log("classes", classes);
+
   return (
     <div className="space-y-6">
       <ClassesHeader />
+
       <ClassesToolbar
         query={query}
         gradeFilter={gradeFilter}
@@ -174,6 +169,7 @@ export default function ClassesPage() {
           </button>
         }
       />
+
       {error && (
         <div
           role="alert"
@@ -181,26 +177,29 @@ export default function ClassesPage() {
         >
           <span>{error}</span>
           <button
-            onClick={() => void loadClasses()}
+            type="button"
+            onClick={() => void load()}
             className="font-bold underline"
           >
-            Retry
+            {t("retry")}
           </button>
         </div>
       )}
+
       <ClassesGrid
-        classes={filteredClasses}
+        classes={filtered}
         isLoading={isLoading}
         onEdit={openEdit}
-        onArchive={archiveClass}
+        onArchive={handleArchive}
       />
+
       {(isCreating || editingClass) && (
         <CreateClassDialog
           grades={grades}
-          form={form}
+          form={formData}
           mode={editingClass ? "edit" : "create"}
           isSaving={isSaving}
-          onChange={setForm}
+          onChange={setFormData}
           onSubmit={handleSubmit}
           onClose={() => {
             setIsCreating(false);

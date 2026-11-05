@@ -6,7 +6,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import {
-  ArrowLeft,
   GraduationCap,
   Mail,
   Phone,
@@ -30,6 +29,22 @@ import { cn } from "@/lib/utils";
 import { SkeletonCard } from "@/components/ui/skeleton/skeleton-card";
 import { PageBanner } from "@/components/feedback";
 import { getInitials } from "@/utils/format";
+
+const GUARDIAN_RELATIONSHIPS: readonly GuardianRelationship[] = [
+  "FATHER",
+  "MOTHER",
+  "GUARDIAN",
+  "OTHER",
+];
+
+function normalizeRelationship(
+  value: string | null | undefined,
+): GuardianRelationship {
+  const normalized = (value ?? "").trim().toUpperCase();
+  return GUARDIAN_RELATIONSHIPS.includes(normalized as GuardianRelationship)
+    ? (normalized as GuardianRelationship)
+    : "MOTHER";
+}
 
 export function StudentEditForm() {
   const params = useParams();
@@ -69,32 +84,38 @@ export function StudentEditForm() {
     if (primary) {
       setGuardianName(primary.fullName ?? "");
       setGuardianPhone(primary.phone ?? "");
-      setGuardianRelation(
-        (primary.relationship as GuardianRelationship) || "MOTHER",
-      );
+      setGuardianRelation(normalizeRelationship(primary.relationship));
+    } else {
+      setGuardianName("");
+      setGuardianPhone("");
+      setGuardianRelation("MOTHER");
     }
   }, [d, primary]);
 
   const save = useMutation({
-    mutationFn: () =>
-      teacherStudentService.updateProfile(studentId, {
+    mutationFn: () => {
+      const name = guardianName.trim();
+      const relation = normalizeRelationship(guardianRelation);
+
+      return teacherStudentService.updateProfile(studentId, {
         fullName: fullName.trim(),
         phone: phone.trim() || undefined,
         dateOfBirth: dateOfBirth || undefined,
         gender: (gender as Gender) || undefined,
-        guardians: guardianName.trim()
+        guardians: name
           ? [
               {
-                id: primary?.id,
-                fullName: guardianName.trim(),
+                ...(primary?.id != null ? { id: primary.id } : {}),
+                fullName: name,
                 phone: guardianPhone.trim() || "-",
-                relationship: guardianRelation,
+                relationship: relation,
                 email: primary?.email ?? undefined,
                 primary: true,
               },
             ]
           : [],
-      }),
+      });
+    },
     onSuccess: async () => {
       await qc.invalidateQueries({ queryKey: ["teacher-student", studentId] });
       router.push(`/teacher/students/${studentId}/profile`);
@@ -115,32 +136,19 @@ export function StudentEditForm() {
   }
 
   return (
-    <div className="mx-auto max-w-6xl space-y-5">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+    <>
+      <div className="mb-4 flex flex-col gap-4 rounded-xl border border-border bg-card p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
         <div className="space-y-1">
-          <Link
-            href={`/teacher/students/${studentId}/profile`}
-            className="inline-flex items-center gap-1 text-xs font-semibold text-muted-foreground hover:text-foreground"
-          >
-            <ArrowLeft className="size-3.5" />
-            {tHub("edit.backToList")}
-          </Link>
-          <p className="text-xs font-bold uppercase tracking-wide text-primary">
-            {tHub("edit.eyebrow")}
-          </p>
           <h2 className="text-2xl font-extrabold tracking-tight">
             {tHub("edit.title")}
           </h2>
-          <p className="text-sm text-muted-foreground">{tHub("edit.subtitle")}</p>
+          <p className="text-sm text-muted-foreground">
+            {tHub("edit.subtitle")}
+          </p>
         </div>
-        <Button variant="outline" size="sm" >
-          <Link href={`/teacher/students/${studentId}/profile`}>
-            {tForm("cancel")}
-          </Link>
-        </Button>
       </div>
 
-      {error && <PageBanner tone="error" message={error} />}
+      <div className="mb-4">{error && <PageBanner tone="error" message={error} />}</div>
 
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_280px]">
         <form
@@ -180,8 +188,12 @@ export function StudentEditForm() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="MALE">{tForm("genderMale")}</SelectItem>
-                    <SelectItem value="FEMALE">{tForm("genderFemale")}</SelectItem>
-                    <SelectItem value="OTHER">{tForm("genderOther")}</SelectItem>
+                    <SelectItem value="FEMALE">
+                      {tForm("genderFemale")}
+                    </SelectItem>
+                    <SelectItem value="OTHER">
+                      {tForm("genderOther")}
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </Field>
@@ -202,7 +214,11 @@ export function StudentEditForm() {
           >
             <div className="grid gap-4 sm:grid-cols-2">
               <Field label={tHub("overview.class")}>
-                <Input value={classLabel} disabled className="h-10 bg-muted/40" />
+                <Input
+                  value={classLabel}
+                  disabled
+                  className="h-10 bg-muted/40"
+                />
               </Field>
               <Field label={tHub("profile.accountStatus")}>
                 <Input
@@ -255,7 +271,7 @@ export function StudentEditForm() {
                 <Select
                   value={guardianRelation}
                   onValueChange={(v) =>
-                    setGuardianRelation(v as GuardianRelationship)
+                    setGuardianRelation(normalizeRelationship(v))
                   }
                 >
                   <SelectTrigger className="h-10">
@@ -267,7 +283,9 @@ export function StudentEditForm() {
                     <SelectItem value="GUARDIAN">
                       {tForm("relGuardian")}
                     </SelectItem>
-                    <SelectItem value="OTHER">{tForm("genderOther")}</SelectItem>
+                    <SelectItem value="OTHER">
+                      {tForm("genderOther")}
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </Field>
@@ -275,10 +293,8 @@ export function StudentEditForm() {
           </Section>
 
           <div className="flex justify-end gap-2 border-t border-border pt-4">
-            <Button variant="outline" type="button" >
-              <Link href={`/teacher/students/${studentId}/profile`}>
-                {tForm("cancel")}
-              </Link>
+            <Button variant="outline" type="button" nativeButton={false} render={<Link href={`/teacher/students/${studentId}/profile`} />}>
+              {tForm("cancel")}
             </Button>
             <Button type="submit" disabled={save.isPending} className="gap-1.5">
               {save.isPending ? tHub("edit.saving") : tHub("edit.save")}
@@ -339,7 +355,7 @@ export function StudentEditForm() {
           </div>
         </aside>
       </div>
-    </div>
+    </>
   );
 }
 

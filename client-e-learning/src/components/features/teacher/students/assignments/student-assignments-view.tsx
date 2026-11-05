@@ -10,9 +10,14 @@ import type {
   StudentAssignmentStatus,
 } from "@/types/teacher/student-learning";
 import { formatDateTime, formatScorePercent } from "@/utils/format";
-import { DataTable, type DataTableColumn } from "@/components/ui/data-table/data-table";
+import {
+  DataTable,
+  type DataTableColumn,
+} from "@/components/ui/data-table/data-table";
 import { RegionState } from "@/components/feedback";
 import { SkeletonTable } from "@/components/ui/skeleton/skeleton-table";
+import { Button } from "@/components/ui/button";
+import { StatusBadge } from "@/components/ui/status-badge";
 
 const STATUS_FILTERS: Array<"ALL" | StudentAssignmentStatus> = [
   "ALL",
@@ -34,7 +39,13 @@ export function StudentAssignmentsView() {
   const [pageSize, setPageSize] = useState(20);
 
   const query = useQuery({
-    queryKey: ["teacher-student-assignments", studentId, status, page, pageSize],
+    queryKey: [
+      "teacher-student-assignments",
+      studentId,
+      status,
+      page,
+      pageSize,
+    ],
     queryFn: () =>
       teacherStudentService.listAssignments(studentId, {
         status: status === "ALL" ? undefined : status,
@@ -63,7 +74,10 @@ export function StudentAssignmentsView() {
         id: "status",
         header: t("assignments.colStatus"),
         cell: (row) => (
-          <StatusPill status={row.status} label={t(`assignmentStatus.${row.status}`)} />
+          <StatusBadge
+            status={row.status}
+            label={t(`assignmentStatus.${row.status}`)}
+          />
         ),
       },
       {
@@ -77,7 +91,9 @@ export function StudentAssignmentsView() {
         header: t("assignments.colScore"),
         align: "right",
         cell: (row) => (
-          <span className="font-extrabold">{formatScorePercent(row.scorePercent)}</span>
+          <span className="font-extrabold">
+            {formatScorePercent(row.scorePercent)}
+          </span>
         ),
       },
     ],
@@ -86,27 +102,37 @@ export function StudentAssignmentsView() {
 
   return (
     <div className="space-y-3">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+      <div className="flex flex-col gap-4 rounded-xl border-2 border-ink shadow-pop bg-card p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-sm font-extrabold">{t("assignments.title")}</h2>
-          <p className="mt-0.5 text-xs text-muted-foreground">{t("assignments.subtitle")}</p>
+          <h2 className="text-base font-extrabold text-foreground tracking-tight">
+            {t("assignments.title")}
+          </h2>
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            {t("assignments.subtitle")}
+          </p>
         </div>
-        <div className="flex flex-wrap gap-1.5">
-          {STATUS_FILTERS.map((f) => (
-            <button
-              key={f}
-              type="button"
-              onClick={() => {
-                setStatus(f);
-                setPage(1);
-              }}
-              className={`rounded-full px-3 py-1 text-xs font-bold ${
-                status === f ? "bg-primary text-primary-foreground" : "border border-border bg-card"
-              }`}
-            >
-              {f === "ALL" ? t("assignments.filterAll") : t(`assignmentStatus.${f}`)}
-            </button>
-          ))}
+
+        <div className="flex flex-wrap items-center gap-1.5">
+          {STATUS_FILTERS.map((f) => {
+            const isActive = status === f;
+            return (
+              <Button
+                key={f}
+                type="button"
+                size="sm"
+                variant={isActive ? "default" : "outline"}
+                onClick={() => {
+                  setStatus(f);
+                  setPage(1);
+                }}
+                className="h-8 rounded-lg px-3 text-xs font-bold"
+              >
+                {f === "ALL"
+                  ? t("assignments.filterAll")
+                  : t(`assignmentStatus.${f}`)}
+              </Button>
+            );
+          })}
         </div>
       </div>
 
@@ -121,7 +147,9 @@ export function StudentAssignmentsView() {
             <RegionState variant="error" description={t("assignments.error")} />
           ) : undefined
         }
-        emptyState={<RegionState variant="empty" description={t("assignments.empty")} />}
+        emptyState={
+          <RegionState variant="empty" description={t("assignments.empty")} />
+        }
         pagination={
           pageData
             ? {
@@ -129,7 +157,9 @@ export function StudentAssignmentsView() {
                 totalPages: Math.max(1, pageData.totalPages),
                 totalElements: pageData.totalElements,
                 pageSize: pageData.size,
-                totalLabel: tTable("totalStudents", { total: pageData.totalElements }),
+                totalLabel: tTable("totalStudents", {
+                  total: pageData.totalElements,
+                }),
                 showLabel: tTable("show"),
                 perPageLabel: tTable("perPage"),
                 previousLabel: tTable("previous"),
@@ -145,16 +175,4 @@ export function StudentAssignmentsView() {
       />
     </div>
   );
-}
-
-function StatusPill({ status, label }: { status: StudentAssignmentStatus; label: string }) {
-  const color =
-    status === "SUBMITTED"
-      ? "bg-emerald-500/10 text-emerald-600"
-      : status === "LATE" || status === "TIMED_OUT"
-        ? "bg-amber-500/10 text-amber-600"
-        : status === "IN_PROGRESS"
-          ? "bg-primary/10 text-primary"
-          : "bg-muted text-muted-foreground";
-  return <span className={`rounded-full px-2 py-0.5 text-[11px] font-bold ${color}`}>{label}</span>;
 }

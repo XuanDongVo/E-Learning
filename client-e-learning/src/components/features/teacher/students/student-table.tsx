@@ -185,7 +185,7 @@ export function StudentTable({
                   {t("table.viewDetails")}
                 </button>
                 <Link
-                  href={`/teacher/students/${student.id}?edit=1`}
+                  href={`/teacher/students/${student.id}/edit`}
                   className="block rounded px-3 py-2 text-body-sm hover:bg-background-app"
                 >
                   {t("table.edit")}

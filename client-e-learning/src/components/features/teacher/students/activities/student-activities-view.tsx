@@ -10,6 +10,7 @@ import { formatDateTime } from "@/utils/format";
 import { DataTable, type DataTableColumn } from "@/components/ui/data-table/data-table";
 import { RegionState } from "@/components/feedback";
 import { SkeletonTable } from "@/components/ui/skeleton/skeleton-table";
+import { StatusBadge } from "@/components/ui/status-badge";
 
 export function StudentActivitiesView() {
   const params = useParams();
@@ -52,16 +53,17 @@ export function StudentActivitiesView() {
         id: "mode",
         header: t("activities.colMode"),
         cell: (row) => (
-          <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-bold text-primary">
-            {t(`sessionMode.${row.mode}`)}
-          </span>
+          <StatusBadge tone="info" label={t(`sessionMode.${row.mode}`)} />
         ),
       },
       {
         id: "status",
         header: t("activities.colStatus"),
         cell: (row) => (
-          <SessionPill status={row.status} label={t(`sessionStatus.${row.status}`)} />
+          <StatusBadge
+            status={row.status}
+            label={t(`sessionStatus.${row.status}`)}
+          />
         ),
       },
       {
@@ -89,14 +91,14 @@ export function StudentActivitiesView() {
 
   return (
     <div className="space-y-3">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+      <div className="flex flex-col gap-4 rounded-xl border-2 border-ink shadow-pop bg-card p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="text-sm font-extrabold">{t("activities.title")}</h2>
-          <p className="mt-0.5 text-xs text-muted-foreground">{t("activities.subtitle")}</p>
+          <p className="mt-0.5 text-sm text-muted-foreground">{t("activities.subtitle")}</p>
         </div>
         <div className="flex flex-wrap gap-2">
           <select
-            className="h-9 rounded-md border border-border bg-card px-2 text-xs font-semibold"
+            className="h-9 rounded-md border border-border bg-card px-2 text-sm font-semibold w-36"
             value={mode}
             onChange={(e) => {
               setMode(e.target.value as typeof mode);
@@ -109,7 +111,7 @@ export function StudentActivitiesView() {
             <option value="TRY_HARD">{t("sessionMode.TRY_HARD")}</option>
           </select>
           <select
-            className="h-9 rounded-md border border-border bg-card px-2 text-xs font-semibold"
+            className="h-9 rounded-md border border-border bg-card px-2 text-sm font-semibold w-36"
             value={status}
             onChange={(e) => {
               setStatus(e.target.value);
@@ -161,16 +163,4 @@ export function StudentActivitiesView() {
       />
     </div>
   );
-}
-
-function SessionPill({ status, label }: { status: string; label: string }) {
-  const color =
-    status === "COMPLETED"
-      ? "bg-emerald-500/10 text-emerald-600"
-      : status === "GAME_OVER"
-        ? "bg-amber-500/10 text-amber-600"
-        : status === "ABANDONED"
-          ? "bg-muted text-muted-foreground"
-          : "bg-primary/10 text-primary";
-  return <span className={`rounded-full px-2 py-0.5 text-[11px] font-bold ${color}`}>{label}</span>;
 }

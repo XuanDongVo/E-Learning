@@ -28,3 +28,4 @@
 - Shared frontend formatting utilities now live under `client-e-learning/src/utils/format/`; date/time, score, duration, and initials consumers use the barrel exports instead of local/type/mock helpers.
 - StudentTable, ActivityWorkspace, Assignment Analysis class comparison/classes/sections/students tables now use the shared column/pagination presentation while retaining feature-owned renderers and behavior.
 - Expandable question analysis rows and content import preview remain specialized tables because their nested row interaction is not representable by the minimal DataTable column contract without changing behavior.
+- Teacher class student management is now split into a query/mutation hook, roster table, and add/transfer/remove dialogs. The add-student query uses `noClass=true` with a fixed fetch size and intentionally has no pagination UI.

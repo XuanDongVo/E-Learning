@@ -146,11 +146,11 @@ function DataTablePaginationBar({
       <div className="flex items-center gap-3">
         <b>{totalLabel ?? `Total: ${totalElements}`}</b>
         <label className="flex items-center gap-2">
-          <span className="text-xs text-slate-400">{showLabel ?? "Show"}</span>
+          <span className="text-sm text-slate-400">{showLabel ?? "Show"}</span>
           <select
             value={pageSize}
             onChange={(event) => onPageSizeChange(Number(event.target.value))}
-            className="h-7 rounded-md border border-slate-200 bg-white px-2 text-xs font-medium text-slate-600 outline-none transition hover:border-slate-300 focus:border-primary focus:ring-2 focus:ring-primary/10"
+            className="h-7 rounded-md border border-slate-200 bg-white px-2 text-sm font-medium text-slate-600 outline-none transition hover:border-slate-300 focus:border-primary focus:ring-2 focus:ring-primary/10"
           >
             {pageSizeOptions.map((option) => (
               <option key={option} value={option}>
@@ -158,7 +158,7 @@ function DataTablePaginationBar({
               </option>
             ))}
           </select>
-          <span className="text-xs text-slate-400">{perPageLabel ?? "per page"}</span>
+          <span className="text-sm text-slate-400">{perPageLabel ?? "per page"}</span>
         </label>
       </div>
       <div className="flex items-center gap-1">

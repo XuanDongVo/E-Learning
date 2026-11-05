@@ -2,8 +2,29 @@ import type { FormEvent } from "react";
 import { useTranslations } from "next-intl";
 import type { Grade } from "@/types/grade";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Check } from "lucide-react";
 
-interface ClassForm { name: string; gradeId: string; academicYear: string; }
+interface ClassForm {
+  name: string;
+  gradeId: number;
+  academicYear: string;
+}
 
 interface CreateClassDialogProps {
   grades: Grade[];
@@ -15,39 +36,131 @@ interface CreateClassDialogProps {
   onClose: () => void;
 }
 
-export function CreateClassDialog({ grades, form, isSaving, mode = "create", onChange, onSubmit, onClose }: CreateClassDialogProps) {
+export function CreateClassDialog({
+  grades,
+  form,
+  isSaving,
+  mode = "create",
+  onChange,
+  onSubmit,
+  onClose,
+}: CreateClassDialogProps) {
   const t = useTranslations("teacher.classes");
   const editing = mode === "edit";
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-dark/30 p-5">
-      <form onSubmit={onSubmit} className="w-full max-w-md rounded-[var(--radius-lg)] bg-card-bg p-6 shadow-2xl">
-        <div className="flex items-start justify-between">
-          <div>
-            <h2 className="text-ui-xl font-extrabold">{editing ? t("editClass") : t("createClass")}</h2>
-            <p className="mt-1 text-body text-neutral-muted">{editing ? t("editClassSubtitle") : t("createClassSubtitle")}</p>
+    <Dialog
+      open
+      onOpenChange={(open) => {
+        if (!open) onClose();
+      }}
+    >
+      <DialogContent className="sm:max-w-[425px]">
+        <form onSubmit={onSubmit}>
+          <DialogHeader>
+            <DialogTitle className="text-lg font-extrabold">
+              {editing ? t("editClass") : t("createClass")}
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground">
+              {editing
+                ? t("editClassSubtitle")
+                : t("createClassSubtitle")}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-5 text-xs font-bold">
+            <div>
+              <label
+                htmlFor="class-name"
+                className="mb-1.5 block text-muted-foreground"
+              >
+                {t("className")} *
+              </label>
+              <Input
+                id="class-name"
+                required
+                value={form.name}
+                onChange={(event) =>
+                  onChange({ ...form, name: event.target.value })
+                }
+                placeholder="Ví dụ: Lớp 6A"
+                className="h-10 text-sm"
+              />
+            </div>
+
+            <div>
+              <label className="mb-1.5 block text-muted-foreground">
+                {t("grade")} *
+              </label>
+              <Select
+                value={form.gradeId ? String(form.gradeId) : undefined}
+                onValueChange={(value) =>
+                  onChange({ ...form, gradeId: Number(value) })
+                }
+                disabled={grades.length === 0}
+              >
+                <SelectTrigger className="h-10 w-full text-sm">
+                  <SelectValue placeholder={t("selectGrade")} />
+                </SelectTrigger>
+                <SelectContent>
+                  {grades.map((grade) => (
+                    <SelectItem key={grade.id} value={String(grade.id)}>
+                      {grade.name} ({grade.code})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <label
+                htmlFor="academic-year"
+                className="mb-1.5 block text-muted-foreground"
+              >
+                {t("academicYear")} *
+              </label>
+              <Input
+                id="academic-year"
+                required
+                value={form.academicYear}
+                // onChange={(event) =>
+                //   onChange({ ...form, academicYear: event.target.value })
+                // }
+                placeholder="2026-2027"
+                className="h-10 text-sm"
+                disabled={editing}
+              />
+            </div>
           </div>
-          <button type="button" onClick={onClose} aria-label={t("cancel")} className="text-ui-xl text-neutral-muted">×</button>
-        </div>
-        <div className="mt-6 space-y-4">
-          <label className="block text-body font-bold">{t("className")}
-            <input required value={form.name} onChange={(event) => onChange({ ...form, name: event.target.value })} className="mt-2 h-10 w-full rounded-[var(--radius-md)] border border-border-color px-3 text-body outline-none focus:border-primary" placeholder="6A" />
-          </label>
-          <label className="block text-body font-bold">{t("grade")}
-            <select required value={form.gradeId} onChange={(event) => onChange({ ...form, gradeId: event.target.value })} disabled={grades.length === 0} className="mt-2 h-10 w-full rounded-[var(--radius-md)] border border-border-color bg-card-bg px-3 text-body outline-none focus:border-primary">
-              <option value="" disabled>{t("selectGrade")}</option>
-              {grades.map((grade) => <option key={grade.id} value={grade.id}>{grade.name}</option>)}
-            </select>
-          </label>
-          <label className="block text-body font-bold">{t("academicYear")}
-            <input required value={form.academicYear} onChange={(event) => onChange({ ...form, academicYear: event.target.value })} className="mt-2 h-10 w-full rounded-[var(--radius-md)] border border-border-color px-3 text-body outline-none focus:border-primary" />
-          </label>
-        </div>
-        <div className="mt-6 flex justify-end gap-3">
-          <Button type="button" variant="outline" onClick={onClose}>{t("cancel")}</Button>
-          <Button type="submit" disabled={isSaving}>{isSaving ? (editing ? t("saving") : t("creating")) : (editing ? t("saveChanges") : t("createClass"))}</Button>
-        </div>
-      </form>
-    </div>
+
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onClose}
+              disabled={isSaving}
+              className="text-xs font-bold"
+            >
+              {t("cancel")}
+            </Button>
+
+            <Button
+              type="submit"
+              disabled={isSaving || grades.length === 0}
+              className="text-xs font-bold"
+            >
+              <Check className="mr-1 size-3.5" />
+              {isSaving
+                ? editing
+                  ? t("saving")
+                  : t("creating")
+                : editing
+                  ? t("saveChanges")
+                  : t("createClass")}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }

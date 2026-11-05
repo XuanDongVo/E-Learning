@@ -5,6 +5,7 @@ import e_learning.server.classes.entity.ClassMember;
 import e_learning.server.classes.entity.ClassStatus;
 import e_learning.server.classes.repository.ClassMemberRepository;
 import e_learning.server.classes.repository.ClassRepository;
+import e_learning.server.common.dto.PageResponse;
 import e_learning.server.common.exception.AppException;
 import e_learning.server.common.exception.ErrorCode;
 import e_learning.server.student.dto.*;
@@ -22,6 +23,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -159,26 +164,51 @@ public class StudentManagementService {
     }
 
     @Transactional(readOnly = true)
-    public List<StudentSummaryResponse> listClass(Long classId, Long teacherId) {
+    public PageResponse<StudentSummaryResponse> listClass(
+            Long classId,
+            Long teacherId,
+            String search,
+            int page,
+            int size
+    ) {
         ownedClass(classId, teacherId);
-        return classMemberRepository.findStudentsByClassId(classId).stream()
-                .map(member -> new StudentSummaryResponse(
-                        member.getUser().getId(),
-                        member.getUser().getFullName(),
-                        member.getUser().getEmail(),
-                        null,
-                        List.of(new StudentClassSummary(
-                                member.getClassEntity().getId(),
-                                member.getClassEntity().getName(),
-                                member.getClassEntity().getGrade().getId(),
-                                member.getClassEntity().getGrade().getName(),
-                                member.getClassEntity().getAcademicYear(),
-                                member.getStatus()
-                        )),
-                        null,
-                        member.getUser().getStatus().name()
-                ))
+        String q = search == null ? "" : search.trim().toLowerCase(Locale.ROOT);
+
+        List<ClassMember> members = classMemberRepository.findStudentsByClassId(classId);
+        List<Long> userIds = members.stream().map(m -> m.getUser().getId()).toList();
+        Map<Long, StudentProfile> profilesByUserId = profileRepository.findAllByUserIdIn(userIds).stream()
+                .collect(Collectors.toMap(p -> p.getUser().getId(), Function.identity(), (a, b) -> a));
+
+        List<StudentSummaryResponse> all = members.stream()
+                .map(member -> {
+                    User user = member.getUser();
+                    StudentProfile profile = profilesByUserId.get(user.getId());
+                    return new StudentSummaryResponse(
+                            user.getId(),
+                            user.getFullName(),
+                            user.getEmail(),
+                            profile != null ? profile.getPhone() : null,
+                            List.of(new StudentClassSummary(
+                                    member.getClassEntity().getId(),
+                                    member.getClassEntity().getName(),
+                                    member.getClassEntity().getGrade().getId(),
+                                    member.getClassEntity().getGrade().getName(),
+                                    member.getClassEntity().getAcademicYear(),
+                                    member.getStatus()
+                            )),
+                            null,
+                            user.getStatus().name()
+                    );
+                })
+                .filter(row -> {
+                    if (q.isEmpty()) return true;
+                    String name = row.fullName() == null ? "" : row.fullName().toLowerCase(Locale.ROOT);
+                    String email = row.email() == null ? "" : row.email().toLowerCase(Locale.ROOT);
+                    return name.contains(q) || email.contains(q);
+                })
                 .toList();
+
+        return PageResponse.fromList(all, page, size);
     }
 
     private User studentForTeacher(Long studentId, Long teacherId) {

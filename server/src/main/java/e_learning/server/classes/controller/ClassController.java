@@ -31,6 +31,18 @@ public class ClassController {
         );
     }
 
+    @GetMapping("/{classId}")
+    public ResponseEntity<ApiResponse<ClassResponse>> get(
+            @PathVariable Long classId,
+            @AuthenticationPrincipal Jwt jwt
+    ) {
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        classService.findByIdForTeacher(classId, Long.valueOf(jwt.getSubject()))
+                )
+        );
+    }
+
     @PostMapping
     public ResponseEntity<ApiResponse<ClassResponse>> create(
             @Valid @RequestBody CreateClassRequest request,
@@ -66,6 +78,19 @@ public class ClassController {
                 ApiResponse.success(
                         "Class archived",
                         classService.archive(classId, Long.valueOf(jwt.getSubject()))
+                )
+        );
+    }
+
+    @PatchMapping("/{classId}/restore")
+    public ResponseEntity<ApiResponse<ClassResponse>> restore(
+            @PathVariable Long classId,
+            @AuthenticationPrincipal Jwt jwt
+    ) {
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        "Class restored",
+                        classService.restore(classId, Long.valueOf(jwt.getSubject()))
                 )
         );
     }

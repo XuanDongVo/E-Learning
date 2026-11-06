@@ -13,7 +13,6 @@ import { LeaderboardRankings } from "@/components/ui/leaderboard-rankings";
 import { cn } from "@/lib/utils";
 import {
   avatarUrlFromKey,
-  mockCurrentGamificationProfile,
   mockHallOfFame,
   mockRecentActivities,
   mockStreakLeaderboard,
@@ -58,7 +57,6 @@ function toTrophyRanking(entry: (typeof mockStreakLeaderboard)[number]) {
 export function StudentRewardsLeaderboard() {
   const podiumRankings = mockStreakLeaderboard.slice(0, 3).map(toTrophyRanking);
   const rankings = mockStreakLeaderboard.map(toTrophyRanking);
-  const currentEntry = mockStreakLeaderboard.find((entry) => entry.isCurrentUser);
 
   return (
     <div className="space-y-6">
@@ -68,75 +66,14 @@ export function StudentRewardsLeaderboard() {
             <Sparkles className="h-4 w-4" aria-hidden="true" />
             Khu vực thi đua
           </div>
-          <h1 className="text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl">
-            Bảng xếp hạng
-          </h1>
+          <h2 className="text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl">
+            Bảng xếp hạng (bản xem trước)
+          </h2>
           <p className="mt-2 text-sm leading-6 text-muted-foreground sm:text-base">
-            Cùng nhìn lại những nỗ lực nổi bật và duy trì nhịp học đều đặn
-            mỗi ngày.
+            Dữ liệu cộng đồng dưới đây là minh họa; chưa phải thứ hạng thực tế.
           </p>
         </div>
-
-        <div className="flex items-center gap-3 rounded-xl border border-border bg-card px-4 py-3 shadow-pop-sm">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary-soft text-primary">
-            <Flame className="h-5 w-5" aria-hidden="true" />
-          </div>
-          <div>
-            <p className="text-xs font-semibold text-muted-foreground">
-              Chuỗi hiện tại của bạn
-            </p>
-            <p className="font-extrabold tabular-nums text-foreground">
-              {mockCurrentGamificationProfile.currentStreak} ngày
-            </p>
-          </div>
-        </div>
       </header>
-
-      <section
-        aria-labelledby="current-student-heading"
-        className="grid gap-4 rounded-2xl border border-ink bg-card p-4 shadow-pop sm:grid-cols-3 sm:p-5"
-      >
-        <div className="flex items-center gap-3 sm:col-span-1">
-          <Avatar className="h-12 w-12 shrink-0 border border-border">
-            <AvatarImage
-              src={avatarUrlFromKey(
-                mockCurrentGamificationProfile.activeAvatarKey ??
-                  mockCurrentGamificationProfile.studentId,
-              )}
-              alt="Ảnh đại diện của bạn"
-            />
-            <AvatarFallback>Bạn</AvatarFallback>
-          </Avatar>
-          <div className="min-w-0">
-            <p
-              id="current-student-heading"
-              className="text-xs font-semibold text-muted-foreground"
-            >
-              Thành tích của bạn
-            </p>
-            <p className="truncate text-base font-extrabold text-foreground">
-              {currentEntry?.fullName ?? "Học viên"}
-            </p>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-3 gap-2 sm:col-span-2">
-          <StudentMetric
-            label="Hạng"
-            value={currentEntry ? `#${currentEntry.rank}` : "—"}
-          />
-          <StudentMetric
-            label="Tổng XP"
-            value={mockCurrentGamificationProfile.lifetimeXp.toLocaleString(
-              "vi-VN",
-            )}
-          />
-          <StudentMetric
-            label="Cấp độ"
-            value={String(mockCurrentGamificationProfile.currentLevel)}
-          />
-        </div>
-      </section>
 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="min-w-0 space-y-5 lg:col-span-2">
@@ -226,7 +163,6 @@ export function StudentRewardsLeaderboard() {
             </div>
             <LeaderboardRankings
               rankings={rankings}
-              currentUserId={currentEntry?.studentId}
               showPagination={false}
               className="rounded-none border-0"
             />
@@ -351,17 +287,6 @@ export function StudentRewardsLeaderboard() {
           </p>
         </aside>
       </div>
-    </div>
-  );
-}
-
-function StudentMetric({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-xl bg-secondary px-2 py-3 text-center sm:px-3">
-      <p className="text-xs font-semibold text-muted-foreground">{label}</p>
-      <p className="mt-1 text-base font-extrabold tabular-nums text-foreground sm:text-lg">
-        {value}
-      </p>
     </div>
   );
 }

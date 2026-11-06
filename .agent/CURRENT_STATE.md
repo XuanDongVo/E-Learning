@@ -28,6 +28,14 @@
 | Phase 7 Scope B AssessmentAttempt | Code on `main`; E2E + hard-lock open |
 | **Phase 8 Teacher Assignment Analysis** | **Code complete on this branch; local E2E not claimed** |
 | **Activity XP Engine Phases 1–4** | **Implemented behind default-off rollout; Phase 5 validation/enablement open** |
+| **Student Streak / Level v1** | **Service/API and Rewards UI source added; tests/build/E2E pending verification** |
+
+### Student Streak / Level v1
+
+- `COMPLETED` ActivitySession invokes one-per-day qualification in `Asia/Ho_Chi_Minh`; replays in the same day do not advance the run. Milestones 3/7/14/30 award separate STREAK_BONUS ledger amounts 10/20/40/80, updating Lifetime XP and derived Level.
+- Existing V49 profile/day/ledger schema reused; no migration required for the accepted no-Freeze/no-backfill policy. Session → profile lock order is preserved. No historical Streak backfill.
+- Authenticated read-only `GET /v1/student/gamification/profile` and `/streak`; Student Rewards shows live Streak/Level in a separate panel while Leaderboard/Hall of Fame/feed stay labeled mock.
+- PostgreSQL concurrency and authenticated E2E not yet verified. See `.agent/plans/STUDENT_STREAK_LEVEL_IMPLEMENTATION.md`.
 
 ### Activity XP Engine
 

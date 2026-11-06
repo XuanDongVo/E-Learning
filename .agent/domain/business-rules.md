@@ -78,3 +78,9 @@
 - Every new eligible replay ActivitySession receives normal XP; no replay penalty, per-Activity cap or daily cap. Random Question selection does not promise nonrepetition.
 - No XP backfill for historical sessions missing official XP Level/policy or immutable Question difficulty snapshots. Phase-1 UI exposes committed XP on Activity Result only, never as an in-progress earned award.
 - Rules are accepted; the XP Engine is still NOT active. See `.agent/domain/ACTIVITY_XP_V2_2_SPEC.md` and `.agent/plans/ACTIVITY_XP_ENGINE_IMPLEMENTATION.md`.
+
+## Student Streak and milestone rewards (ADR 0030)
+- One `COMPLETED` ActivitySession on a `Asia/Ho_Chi_Minh` calendar day qualifies that day once; repeat completions still receive normal Activity XP but cannot increase Streak or milestone awards. GAME_OVER, ABANDONED and formal Assignments never qualify.
+- Consecutive days extend Streak; a missed day ends the run, and the next completion starts a new run at 1. Yesterday's run remains display-active until today ends. `longestStreak` never decreases.
+- At days 3/7/14/30 award fixed 10/20/40/80 STREAK_BONUS XP once per run/milestone. New runs can earn the same milestones again; no further bonus beyond day 30 and no Streak Freeze in v1.
+- Streak rewards update Lifetime XP and derived Level under the same protected transaction and keep separate idempotent ledger entries. No Level-up XP and no Activity multiplier on Streak reward. Frontend must not award XP.

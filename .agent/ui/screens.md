@@ -24,7 +24,7 @@
 - `/student/units/:unitId`: Sections/Topics and published Activity choices.
 - `/student/assignments`: independent teacher-assigned work.
 - `/student/progress`: placeholder; not a live analytics page.
-- `/student/rewards`: gamification presentation with mock data, not live awards.
+- `/student/rewards`: live student Streak/Level overview (loading/error/empty states) above a separately labeled mock leaderboard/Hall of Fame/feed. Rankings are not live.
 - `/student/profile`: student profile.
 
 See `ui/STUDENT_LEARNING_HUB_BLUEPRINT.md` for the active Home/Units/Unit Detail contract.

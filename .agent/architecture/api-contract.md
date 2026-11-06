@@ -76,6 +76,13 @@ as answer history.
 
 The Activity start response returns the complete selected question set. Correct answers are never included before the runtime flow permits them.
 
+## Student Gamification (Streak / Level)
+
+GET /v1/student/gamification/profile — own Lifetime XP, Level, XP-to-next, current effective Streak, longest Streak and qualification status.
+GET /v1/student/gamification/streak — own run dates, timezone and four milestone amounts/ledger-awarded indicators.
+
+Both endpoints require `ROLE_STUDENT`; student id comes only from the JWT, never a request parameter. There is no Streak claim/write API. XP and Streak are committed by the Activity completion workflow. Leaderboard remains demo-only until its own implementation phase.
+
 
 ## Question contract / security boundary
 

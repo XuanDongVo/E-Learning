@@ -73,6 +73,7 @@ public enum ErrorCode {
     ACTIVITY_SESSION_NOT_ACCESSIBLE(HttpStatus.FORBIDDEN, "ACTIVITY_SESSION_NOT_ACCESSIBLE", "The student cannot access this activity"),
     ACTIVITY_SESSION_NOT_ACTIVE(HttpStatus.CONFLICT, "ACTIVITY_SESSION_NOT_ACTIVE", "The activity session is not in progress"),
     ACTIVITY_SESSION_QUESTION_NOT_FOUND(HttpStatus.NOT_FOUND, "ACTIVITY_SESSION_QUESTION_NOT_FOUND", "The session question was not found"),
+    ACTIVITY_SESSION_QUESTION_OUT_OF_ORDER(HttpStatus.CONFLICT, "ACTIVITY_SESSION_QUESTION_OUT_OF_ORDER", "Only the current Try Hard question can be answered or timed out"),
     ACTIVITY_SESSION_ANSWER_INVALID(HttpStatus.BAD_REQUEST, "ACTIVITY_SESSION_ANSWER_INVALID", "The answer is invalid for this question"),
     ACTIVITY_SESSION_RETRY_EXHAUSTED(HttpStatus.CONFLICT, "ACTIVITY_SESSION_RETRY_EXHAUSTED", "No retry is available for this question"),
     ACTIVITY_SESSION_HINT_UNAVAILABLE(HttpStatus.CONFLICT, "ACTIVITY_SESSION_HINT_UNAVAILABLE", "A hint is not available for this question"),

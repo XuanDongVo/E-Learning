@@ -101,6 +101,17 @@ export function PracticeRunner({
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [background, setBackground] = useState("garden");
   const [now, setNow] = useState(() => Date.now());
+  const [clockOffsetMs, setClockOffsetMs] = useState(0);
+  const [timeoutNotice, setTimeoutNotice] = useState<string | null>(null);
+  const lastTimeoutPollAt = useRef(0);
+
+  // The server is authoritative. Offset keeps countdown accurate even on
+  // devices with an incorrect system clock; deadlineAt includes a time zone.
+  const syncServerClock = useCallback((data: ActivitySession) => {
+    if (!data.serverNow) return;
+    const serverMs = Date.parse(data.serverNow);
+    if (Number.isFinite(serverMs)) setClockOffsetMs(serverMs - Date.now());
+  }, []);
 
   const options = useQuery({
     queryKey: ["activity-session-options", activityId],
@@ -127,6 +138,9 @@ export function PracticeRunner({
     onSuccess: (result) => {
       const data = result.data;
       if (!data) return;
+      syncServerClock(data);
+      lastTimeoutPollAt.current = 0;
+      setTimeoutNotice(null);
       setSession(data);
       setCurrentId(
         (data.questions.find((q) => !q.resolved) ?? data.questions[0])?.id,
@@ -148,6 +162,8 @@ export function PracticeRunner({
     onSuccess: (result, v) => {
       const data = result.data;
       if (!data) return;
+      syncServerClock(data.session);
+      setTimeoutNotice(null);
       setSession(data.session);
       setFeedbacks((f) => ({
         ...f,
@@ -188,10 +204,43 @@ export function PracticeRunner({
   const finish = useMutation({
     mutationFn: () => activitySessionService.finish(session!.id),
     onSuccess: (result) => {
-      if (result.data) setSession(result.data);
+      if (result.data) {
+        syncServerClock(result.data);
+        setSession(result.data);
+      }
       setShowResult(true);
     },
   });
+
+  const timeoutMutation = useMutation({
+    mutationFn: (v: { sessionId: number; questionId: number }) =>
+      activitySessionService.timeout(v.sessionId, v.questionId),
+    onSuccess: (result, v) => {
+      const data = result.data;
+      if (!data) return;
+      syncServerClock(data);
+      setSession((previous) => {
+        if (previous?.id !== v.sessionId) return previous;
+        // Don't roll back a newer answer response received while a timeout
+        // synchronization request was in flight.
+        const oldResolved = previous.questions.filter((q) => q.resolved).length;
+        const freshResolved = data.questions.filter((q) => q.resolved).length;
+        return freshResolved >= oldResolved ? data : previous;
+      });
+      if (data.questions.some((q) => q.id === v.questionId && q.resolutionReason === "TIMEOUT")) {
+        setTimeoutNotice("Câu vừa rồi hết giờ. Bạn không bị trừ mạng.");
+        setDrafts((drafts) => ({ ...drafts, [v.questionId]: [] }));
+        if (data.status === "IN_PROGRESS") {
+          setCurrentId((currentId) =>
+            currentId === v.questionId
+              ? (data.questions.find((q) => !q.resolved)?.id ?? currentId)
+              : currentId,
+          );
+        }
+      }
+    },
+  });
+  const { mutate: sendTimeout, isPending: timeoutPending } = timeoutMutation;
   const startSlow = useSlow(start.isPending),
     answerSlow = useSlow(answering),
     hintSlow = useSlow(hinting);
@@ -210,12 +259,22 @@ export function PracticeRunner({
   );
   const feedback = question ? feedbacks[question.id] : undefined;
   const locked = !!question?.resolved;
+  const deadlineExpired =
+    !!tryHard &&
+    !!question?.deadlineAt &&
+    !locked &&
+    Date.parse(question.deadlineAt) <= now + clockOffsetMs;
+  const timeoutError =
+    deadlineExpired &&
+    timeoutMutation.isError &&
+    timeoutMutation.variables?.sessionId === session?.id &&
+    timeoutMutation.variables?.questionId === question?.id;
   const hasDraft = question
     ? isChoice(question) || question.type === "TRUE_FALSE"
       ? draft.length > 0
       : (draft[0] ?? "").trim().length > 0
     : false;
-  const canSubmit = !!question && !locked && !over && hasDraft && !answering;
+  const canSubmit = !!question && !locked && !over && hasDraft && !answering && !deadlineExpired && !timeoutPending;
   const hintAvailable =
     !!question &&
     session?.mode === "LEARNING" &&
@@ -237,7 +296,7 @@ export function PracticeRunner({
     question?.deadlineAt && !locked
       ? Math.max(
           0,
-          Math.ceil((new Date(question.deadlineAt).getTime() - now) / 1000),
+          Math.ceil((Date.parse(question.deadlineAt) - now - clockOffsetMs) / 1000),
         )
       : undefined;
   const statuses: NavStatus[] = questions.map((q) =>
@@ -264,7 +323,7 @@ export function PracticeRunner({
   );
   const pick = useCallback(
     (key: string) => {
-      if (!question || locked || answering) return;
+      if (!question || locked || answering || deadlineExpired || timeoutPending) return;
       setDraft(question.id, (cur) =>
         question.type === "MULTIPLE_CHOICE"
           ? cur.includes(key)
@@ -273,7 +332,7 @@ export function PracticeRunner({
           : [key],
       );
     },
-    [question, locked, answering, setDraft],
+    [question, locked, answering, deadlineExpired, timeoutPending, setDraft],
   );
   const submit = useCallback(() => {
     if (!question || !canSubmit) return;
@@ -284,9 +343,9 @@ export function PracticeRunner({
     });
   }, [question, canSubmit, sendAnswer, draft]);
   const reset = useCallback(() => {
-    if (!question || locked || answering) return;
+    if (!question || locked || answering || deadlineExpired) return;
     setDraft(question.id, () => []);
-  }, [question, locked, answering, setDraft]);
+  }, [question, locked, answering, deadlineExpired, setDraft]);
   const requestHint = useCallback(() => {
     if (!question || !hintAvailable || hinting) return;
     if (hints[question.id]) {
@@ -309,7 +368,7 @@ export function PracticeRunner({
   };
   const answeredCount = questions.filter((q) => q.resolved).length;
   const submitEarly = () => {
-    if (!session || over || complete || answering || finish.isPending) return;
+    if (!session || over || complete || answering || finish.isPending || deadlineExpired || timeoutPending) return;
     setConfirmOpen(true);
   };
   const confirmSubmit = () => {
@@ -325,6 +384,9 @@ export function PracticeRunner({
     setFeedbacks({});
     setHints({});
     setHintOpenFor(null);
+    setTimeoutNotice(null);
+    lastTimeoutPollAt.current = 0;
+    timeoutMutation.reset();
     start.reset();
     answerMutation.reset();
     hintMutation.reset();
@@ -332,9 +394,36 @@ export function PracticeRunner({
   };
   useEffect(() => {
     if (!tryHard || over || complete) return;
-    const timer = window.setInterval(() => setNow(Date.now()), 1000);
-    return () => window.clearInterval(timer);
+    const tick = () => setNow(Date.now());
+    const timer = window.setInterval(tick, 1000);
+    document.addEventListener("visibilitychange", tick);
+    window.addEventListener("focus", tick);
+    return () => {
+      window.clearInterval(timer);
+      document.removeEventListener("visibilitychange", tick);
+      window.removeEventListener("focus", tick);
+    };
   }, [tryHard, over, complete]);
+
+  // On deadline, ask the server to adjudicate the timeout. It may return
+  // unresolved during the existing 5-second network grace; poll at most once
+  // per second. A network error pauses automatic polling and exposes Retry.
+  useEffect(() => {
+    if (!session || !question || !tryHard || over || locked ||
+        secondsLeft === undefined || secondsLeft > 0 ||
+        timeoutPending || timeoutError || answering) return;
+    const currentTime = Date.now();
+    if (currentTime - lastTimeoutPollAt.current < 900) return;
+    lastTimeoutPollAt.current = currentTime;
+    sendTimeout({ sessionId: session.id, questionId: question.id });
+  }, [now, session, question, tryHard, over, locked, secondsLeft,
+      timeoutPending, timeoutError, answering, sendTimeout]);
+
+  const retryTimeout = () => {
+    if (!session || !question || timeoutPending) return;
+    lastTimeoutPollAt.current = Date.now();
+    sendTimeout({ sessionId: session.id, questionId: question.id });
+  };
   const requestedDeadline = useRef<Set<number>>(new Set());
   const sessionId = session?.id,
     questionId = question?.id;
@@ -351,6 +440,7 @@ export function PracticeRunner({
     activitySessionService
       .get(sessionId)
       .then((result) => {
+        if (result.data) syncServerClock(result.data);
         const fresh = result.data?.questions.find((q) => q.id === questionId);
         if (!fresh?.deadlineAt) return;
         setSession(
@@ -366,7 +456,7 @@ export function PracticeRunner({
         );
       })
       .catch(() => requestedDeadline.current.delete(questionId));
-  }, [needsDeadline, sessionId, questionId]);
+  }, [needsDeadline, sessionId, questionId, syncServerClock]);
   useEffect(() => {
     function onKey(event: KeyboardEvent) {
       if (!session || settings || complete || navOpen || confirmOpen) return;
@@ -491,7 +581,7 @@ export function PracticeRunner({
       if (target) goTo(target.id);
     },
   };
-  const showCheck = !locked && !over && hasDraft;
+  const showCheck = !locked && !over && hasDraft && !deadlineExpired;
   const retryLabel = feedback?.retryAvailable ? "Thử lại" : "Kiểm tra";
   return (
     <section
@@ -588,6 +678,27 @@ export function PracticeRunner({
             <SlidersHorizontal size={19} />
           </Button>
         </header>
+        {tryHard && deadlineExpired && !over && (
+          <div role="status" aria-live="polite"
+            className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border-2 border-practice-yellow bg-practice-paper p-3 text-sm font-bold">
+            <span>
+              {timeoutError
+                ? "Không thể đồng bộ hết giờ với máy chủ. Hãy thử lại."
+                : "Hết giờ! Đang xác nhận kết quả với máy chủ…"}
+            </span>
+            {timeoutError && (
+              <Button type="button" variant="outline" className={paperBtn}
+                disabled={timeoutPending} onClick={retryTimeout}>
+                <RefreshCw size={15} /> Thử lại
+              </Button>
+            )}
+          </div>
+        )}
+        {timeoutNotice && !deadlineExpired && !complete && (
+          <p role="status" className="mt-3 rounded-xl bg-practice-paper px-3 py-2 text-sm font-bold text-practice-ink">
+            {timeoutNotice}
+          </p>
+        )}
         <div
           className={
             complete
@@ -836,7 +947,7 @@ export function PracticeRunner({
               <Button
                 variant="outline"
                 className={`${paperBtn} px-3`}
-                disabled={locked || answering || draft.length === 0}
+                disabled={locked || answering || deadlineExpired || draft.length === 0}
                 onClick={reset}
               >
                 Làm lại
@@ -845,14 +956,21 @@ export function PracticeRunner({
                 <Button
                   variant="outline"
                   className={`${paperBtn} px-3`}
-                  disabled={answering || finish.isPending}
+                  disabled={answering || finish.isPending || deadlineExpired || timeoutPending}
                   onClick={submitEarly}
                 >
                   <Send size={14} />
                   {finish.isPending ? "Đang nộp…" : "Nộp bài"}
                 </Button>
               )}
-              {showCheck ? (
+              {deadlineExpired && !over ? (
+                <Button className={nextBtn} type="button"
+                  disabled={!timeoutError || timeoutPending}
+                  onClick={retryTimeout}>
+                  {timeoutError ? "Thử lại" : "Đang xử lý hết giờ…"}
+                  <RefreshCw size={16} />
+                </Button>
+              ) : showCheck ? (
                 <Button
                   className={nextBtn}
                   disabled={!canSubmit}

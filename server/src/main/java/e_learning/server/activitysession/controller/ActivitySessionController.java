@@ -40,6 +40,13 @@ public class ActivitySessionController {
         return ApiResponse.success(service.answer(sessionId, questionId, studentId(jwt), request));
     }
 
+    @PostMapping("/v1/activity-sessions/{sessionId}/questions/{questionId}/timeout")
+    public ApiResponse<ActivitySessionResponse> timeout(
+            @PathVariable Long sessionId, @PathVariable Long questionId,
+            @AuthenticationPrincipal Jwt jwt) {
+        return ApiResponse.success(service.timeout(sessionId, questionId, studentId(jwt)));
+    }
+
     @PostMapping("/v1/activity-sessions/{sessionId}/questions/{questionId}/hint")
     public ApiResponse<ActivitySessionHintResponse> hint(
             @PathVariable Long sessionId, @PathVariable Long questionId,

@@ -26,6 +26,8 @@ public class ActivitySessionQuestion {
     @Column(name = "hint_used", nullable = false) private boolean hintUsed;
     @Column(nullable = false) private boolean resolved;
     @Enumerated(EnumType.STRING)
+    @Column(name = "resolution_reason", length = 20) private ActivityQuestionResolution resolutionReason;
+    @Enumerated(EnumType.STRING)
     @Column(name = "xp_outcome", length = 40) private XpQuestionOutcome xpOutcome;
     @Column(name = "xp_base") private Integer xpBase;
     @Column(name = "xp_final") private Integer xpFinal;

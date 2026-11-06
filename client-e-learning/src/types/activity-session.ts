@@ -23,8 +23,10 @@ export type ActivitySessionQuestion = {
   type: "SINGLE_CHOICE" | "MULTIPLE_CHOICE" | "TRUE_FALSE" | "FILL_IN_BLANK" | "TYPE_ANSWER";
   content: string;
   options: { key: string; content: string }[];
-  deadlineAt?: string;
+  // ISO-8601 timestamp with server offset; never an unzoned local time.
+  deadlineAt?: string | null;
   resolved: boolean;
+  resolutionReason?: "CORRECT" | "WRONG" | "TIMEOUT" | null;
   answerAttempts: number;
   firstCorrect?: boolean;
   finalCorrect?: boolean;
@@ -46,6 +48,7 @@ export type ActivitySession = {
   score?: number;
   lives?: number;
   questions: ActivitySessionQuestion[];
+  serverNow?: string;
 };
 
 export type ActivitySessionAnswerFeedback = {
@@ -59,5 +62,5 @@ export type ActivitySessionAnswerFeedback = {
 
 export type ActivitySessionResult = Omit<
   ActivitySession,
-  "questions" | "startedAt" | "completedAt"
+  "questions" | "startedAt" | "completedAt" | "serverNow"
 >;

@@ -5,6 +5,7 @@ import e_learning.server.activity.enums.SelectionStrategy;
 import e_learning.server.activitysession.enums.ActivitySessionStatus;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 
 public record ActivitySessionResponse(
@@ -12,4 +13,4 @@ public record ActivitySessionResponse(
         SelectionStrategy selectionStrategy, LocalDateTime startedAt,
         LocalDateTime completedAt, int totalQuestions, int firstCorrectCount,
         int finalCorrectCount, int hintUsedCount, BigDecimal score, Integer lives,
-        List<ActivitySessionQuestionResponse> questions) {}
+        List<ActivitySessionQuestionResponse> questions, OffsetDateTime serverNow) {}

@@ -26,6 +26,8 @@ import tools.jackson.databind.JsonNode;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.util.*;
 
 @Service
@@ -87,7 +89,7 @@ public class ActivitySessionService {
 
     @Transactional
     public ActivitySessionResponse get(Long sessionId, Long studentId) {
-        ActivitySession session = ownSession(sessionId, studentId);
+        ActivitySession session = ownSessionForUpdate(sessionId, studentId);
         if (session.getStatus() == ActivitySessionStatus.IN_PROGRESS) {
             requireCurrentGradeAccess(session, studentId);
             serveCurrent(session);
@@ -98,15 +100,22 @@ public class ActivitySessionService {
     @Transactional
     public ActivitySessionAnswerResponse answer(Long sessionId, Long questionId, Long studentId,
                                                 ActivitySessionAnswerRequest request) {
-        ActivitySession session = ownSession(sessionId, studentId);
+        ActivitySession session = ownSessionForUpdate(sessionId, studentId);
         requireActive(session);
         requireCurrentGradeAccess(session, studentId);
         ActivitySessionQuestion item = question(sessionId, questionId);
         if (item.isResolved()) throw new AppException(ErrorCode.ACTIVITY_SESSION_RETRY_EXHAUSTED);
-        serve(item);
-        boolean timedOut = isTimedOut(item);
+        requireCurrentTryHardQuestion(session, item);
+        serveCurrent(session);
         ActivityQuestionSnapshot snapshot = snapshotAssembler.read(item);
-        boolean correct = !timedOut && isCorrect(snapshot, request.answer());
+        if (session.getMode() == ActivityMode.TRY_HARD && isTimedOut(item)) {
+            // A late answer is a timeout, not a wrong submitted answer: no life lost.
+            resolveTimedOutQuestion(session, item);
+            sessionRepository.save(session);
+            return new ActivitySessionAnswerResponse(toResponse(session), false, false, true,
+                    correctAnswer(snapshot), snapshot.explanation());
+        }
+        boolean correct = isCorrect(snapshot, request.answer());
         int attempt = item.getAnswerAttempts() + 1;
         item.setAnswerAttempts(attempt);
         boolean retry = session.getMode() == ActivityMode.LEARNING && !correct && attempt == 1;
@@ -115,6 +124,7 @@ public class ActivitySessionService {
             item.setFirstCorrect(true);
             item.setFinalCorrect(true);
             item.setResolved(true);
+            item.setResolutionReason(ActivityQuestionResolution.CORRECT);
             session.setFirstCorrectCount(session.getFirstCorrectCount() + 1);
             session.setFinalCorrectCount(session.getFinalCorrectCount() + 1);
         } else if (retry) {
@@ -122,6 +132,7 @@ public class ActivitySessionService {
         } else {
             item.setFinalCorrect(correct);
             item.setResolved(true);
+            item.setResolutionReason(correct ? ActivityQuestionResolution.CORRECT : ActivityQuestionResolution.WRONG);
             reveal = !correct;
             if (Boolean.FALSE.equals(item.getFirstCorrect())) {
                 // A correct retry is final-correct but is not first-correct.
@@ -129,7 +140,7 @@ public class ActivitySessionService {
             } else if (correct) {
                 session.setFinalCorrectCount(session.getFinalCorrectCount() + 1);
             }
-            if (session.getMode() == ActivityMode.TRY_HARD && !correct && !timedOut) {
+            if (session.getMode() == ActivityMode.TRY_HARD && !correct) {
                 session.setLives(session.getLives() - 1);
                 if (session.getLives() <= 0) {
                     session.setStatus(ActivitySessionStatus.GAME_OVER);
@@ -138,12 +149,39 @@ public class ActivitySessionService {
                 }
             }
         }
-        if (session.getStatus() == ActivitySessionStatus.IN_PROGRESS
-                && session.getQuestions().stream().allMatch(ActivitySessionQuestion::isResolved)) complete(session);
+        advanceAfterResolution(session);
         sessionRepository.save(session);
         String correctAnswer = reveal ? correctAnswer(snapshot) : null;
         String explanation = reveal ? snapshot.explanation() : null;
         return new ActivitySessionAnswerResponse(toResponse(session), correct, retry, reveal, correctAnswer, explanation);
+    }
+
+    /**
+     * Idempotent synchronization endpoint for the current Try Hard question.
+     * The deadline + network grace is enforced by the server, not the browser.
+     * A call before expiry returns an unchanged session so the client can poll.
+     */
+    @Transactional
+    public ActivitySessionResponse timeout(Long sessionId, Long questionId, Long studentId) {
+        ActivitySession session = ownSessionForUpdate(sessionId, studentId);
+        if (session.getMode() != ActivityMode.TRY_HARD) {
+            throw new AppException(ErrorCode.ACTIVITY_SESSION_INVALID_MODE);
+        }
+        if (session.getStatus() != ActivitySessionStatus.IN_PROGRESS) {
+            return toResponse(session);
+        }
+        requireCurrentGradeAccess(session, studentId);
+        ActivitySessionQuestion item = question(sessionId, questionId);
+        if (item.isResolved()) {
+            return toResponse(session);
+        }
+        requireCurrentTryHardQuestion(session, item);
+        serveCurrent(session);
+        if (isTimedOut(item)) {
+            resolveTimedOutQuestion(session, item);
+            sessionRepository.save(session);
+        }
+        return toResponse(session);
     }
 
     @Transactional
@@ -168,7 +206,7 @@ public class ActivitySessionService {
 
     @Transactional
     public ActivitySessionResponse finish(Long sessionId, Long studentId) {
-        ActivitySession session = ownSession(sessionId, studentId);
+        ActivitySession session = ownSessionForUpdate(sessionId, studentId);
         requireActive(session);
         requireCurrentGradeAccess(session, studentId);
         if (session.getQuestions().stream().allMatch(ActivitySessionQuestion::isResolved)) complete(session);
@@ -238,6 +276,37 @@ public class ActivitySessionService {
         return item.getDeadlineAt() != null && LocalDateTime.now().isAfter(item.getDeadlineAt().plusSeconds(NETWORK_GRACE_SECONDS));
     }
 
+    /** Try Hard only accepts the first unresolved question, not a future ID supplied by a client. */
+    private void requireCurrentTryHardQuestion(ActivitySession session, ActivitySessionQuestion item) {
+        if (session.getMode() != ActivityMode.TRY_HARD) return;
+        ActivitySessionQuestion current = session.getQuestions().stream()
+                .filter(q -> !q.isResolved())
+                .findFirst()
+                .orElseThrow(() -> new AppException(ErrorCode.ACTIVITY_SESSION_NOT_ACTIVE));
+        if (!Objects.equals(current.getId(), item.getId())) {
+            throw new AppException(ErrorCode.ACTIVITY_SESSION_QUESTION_OUT_OF_ORDER);
+        }
+    }
+
+    private void resolveTimedOutQuestion(ActivitySession session, ActivitySessionQuestion item) {
+        item.setFirstCorrect(false);
+        item.setFinalCorrect(false);
+        item.setResolved(true);
+        item.setResolutionReason(ActivityQuestionResolution.TIMEOUT);
+        // Timeout does NOT increment answerAttempts and does NOT deduct a life.
+        advanceAfterResolution(session);
+    }
+
+    /** Start the next question's server timer immediately after the previous one is resolved. */
+    private void advanceAfterResolution(ActivitySession session) {
+        if (session.getStatus() != ActivitySessionStatus.IN_PROGRESS) return;
+        if (session.getQuestions().stream().allMatch(ActivitySessionQuestion::isResolved)) {
+            complete(session);
+        } else {
+            serveCurrent(session);
+        }
+    }
+
     private boolean isCorrect(ActivityQuestionSnapshot snapshot, JsonNode node) {
         if (node == null) return false;
         if (snapshot.type() == e_learning.server.question.enums.QuestionType.MULTIPLE_CHOICE) {
@@ -287,6 +356,13 @@ public class ActivitySessionService {
         return session;
     }
 
+    private ActivitySession ownSessionForUpdate(Long id, Long studentId) {
+        ActivitySession session = sessionRepository.findByIdForUpdate(id)
+                .orElseThrow(() -> new AppException(ErrorCode.ACTIVITY_SESSION_NOT_FOUND));
+        if (!session.getStudent().getId().equals(studentId)) throw new AppException(ErrorCode.FORBIDDEN);
+        return session;
+    }
+
     private ActivitySessionQuestion question(Long sessionId, Long questionId) {
         return sessionQuestionRepository.findByIdAndSessionId(questionId, sessionId)
                 .orElseThrow(() -> new AppException(ErrorCode.ACTIVITY_SESSION_QUESTION_NOT_FOUND));
@@ -313,7 +389,8 @@ public class ActivitySessionService {
         return new ActivitySessionResponse(session.getId(), session.getStatus(), session.getMode(), session.getSelectionStrategy(),
                 session.getStartedAt(), session.getCompletedAt(), session.getTotalQuestions(), session.getFirstCorrectCount(),
                 session.getFinalCorrectCount(), session.getHintUsedCount(), session.getScore(), session.getLives(),
-                session.getQuestions().stream().map(this::toQuestionResponse).toList());
+                session.getQuestions().stream().map(this::toQuestionResponse).toList(),
+                OffsetDateTime.now());
     }
 
     private ActivitySessionQuestionResponse toQuestionResponse(ActivitySessionQuestion item) {
@@ -321,8 +398,11 @@ public class ActivitySessionService {
         List<ActivitySessionQuestionResponse.Option> options = snapshot.options().stream()
                 .map(o -> new ActivitySessionQuestionResponse.Option(o.key(), o.content())).toList();
         return new ActivitySessionQuestionResponse(item.getId(), item.getPosition(), snapshot.type(),
-                snapshot.content(), options, item.getDeadlineAt(), item.isResolved(),
-                item.getAnswerAttempts(), item.getFirstCorrect(), item.getFinalCorrect(), item.isHintUsed(),
-                snapshot.hint() != null && !snapshot.hint().isBlank());
+                snapshot.content(), options,
+                item.getDeadlineAt() == null ? null :
+                        item.getDeadlineAt().atZone(ZoneId.systemDefault()).toOffsetDateTime(),
+                item.isResolved(), item.getAnswerAttempts(), item.getFirstCorrect(),
+                item.getFinalCorrect(), item.isHintUsed(),
+                snapshot.hint() != null && !snapshot.hint().isBlank(), item.getResolutionReason());
     }
 }

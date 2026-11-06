@@ -1,9 +1,18 @@
 import { Link } from "@/i18n/navigation";
-import { Clock3, Flame, Heart, Lightbulb, Play, Sparkles, Zap } from "lucide-react";
+import {
+  Clock3,
+  Flame,
+  Heart,
+  Lightbulb,
+  Play,
+  Sparkles,
+  Zap,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { StudentActivity } from "@/types/student-unit";
 
-const metaItem = "inline-flex items-center gap-1.5 text-xs font-bold text-muted-foreground";
+const metaItem =
+  "inline-flex items-center gap-1.5 text-xs font-bold text-muted-foreground";
 
 export function ActivityCard({
   unitId,
@@ -12,7 +21,7 @@ export function ActivityCard({
 }: {
   unitId: number;
   activity: StudentActivity;
-  topicNames: string[] 
+  topicNames: string[];
 }) {
   const hasPractice = activity.mode !== "TRY_HARD";
   const hasTryHard = activity.mode !== "LEARNING";
@@ -87,20 +96,31 @@ export function ActivityCard({
           <>
             {activity.timeLimitSeconds ? (
               <span className={metaItem}>
-                <Clock3 className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
+                <Clock3
+                  className="h-3.5 w-3.5 text-muted-foreground"
+                  aria-hidden="true"
+                />
                 <span>{activity.timeLimitSeconds}s / câu</span>
               </span>
             ) : null}
             {activity.lives ? (
               <span className={metaItem}>
-                <Heart className="h-3.5 w-3.5 fill-pink text-pink" aria-hidden="true" />
-                <span className="text-pink font-extrabold">{activity.lives} mạng</span>
+                <Heart
+                  className="h-3.5 w-3.5 fill-pink text-pink"
+                  aria-hidden="true"
+                />
+                <span className="text-pink font-extrabold">
+                  {activity.lives} mạng
+                </span>
               </span>
             ) : null}
           </>
         ) : (
           <span className={metaItem}>
-            <Lightbulb className="h-3.5 w-3.5 text-warning" aria-hidden="true" />
+            <Lightbulb
+              className="h-3.5 w-3.5 text-warning"
+              aria-hidden="true"
+            />
             <span>Có gợi ý & 1 lượt thử lại</span>
           </span>
         )}
@@ -108,15 +128,12 @@ export function ActivityCard({
 
       {/* ─── Nút hành động 3D Tactile CTA ─── */}
       <div className="mt-auto border-t border-border pt-3">
-        <Button
-          
-          className="h-11 w-full gap-2 rounded-2xl border-2 border-ink bg-primary text-sm font-extrabold text-primary-foreground shadow-pop transition-all hover:bg-primary-hover active:translate-y-0.5 active:shadow-pop-sm"
-        >
-          <Link href={`/student/units/${unitId}/activities/${activity.id}`}>
+        <Link href={`/student/units/${unitId}/activities/${activity.id}`}>
+          <Button className="h-11 w-full gap-2 rounded-2xl border-2 border-ink bg-primary text-sm font-extrabold text-primary-foreground shadow-pop transition-all hover:bg-primary-hover active:translate-y-0.5 active:shadow-pop-sm">
             <span>Bắt đầu</span>
             <Play className="h-4 w-4 fill-current" aria-hidden="true" />
-          </Link>
-        </Button>
+          </Button>
+        </Link>
       </div>
     </article>
   );

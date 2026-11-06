@@ -1,6 +1,6 @@
 -- Grade 7: 20 published Activities, ALL support both Learning and Try Hard.
 -- Try Hard: 20 seconds PER QUESTION, 3 lives. No MATCHING/CLOZE in bank sources.
--- Requires 00_foundation.sql and 01_questions.sql. PostgreSQL / Flyway V52+.
+-- Requires 01_foundation.sql and 02_questions.sql. PostgreSQL / Flyway V52+.
 BEGIN;
 CREATE TEMP TABLE g7activity(unit_code text,name text,display_order integer,difficulty text,total_questions integer,distribution_mode text) ON COMMIT DROP;
 INSERT INTO g7activity VALUES

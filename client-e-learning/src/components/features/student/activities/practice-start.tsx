@@ -110,12 +110,12 @@ export function PracticeStart(p: Props) {
       />
       <div className="relative mx-auto flex min-h-svh max-w-[640px] flex-col px-4 pb-6 pt-7">
         <div>
+           <Link href={`/student/units/${p.unitId}`}>
           <Button  variant="outline" className={`${glassBtn} px-3`}>
-            <Link href={`/student/units/${p.unitId}`}>
               <ArrowLeft size={16} />
               <span>Quay lại</span>
-            </Link>
           </Button>
+           </Link>
         </div>
 
         <div className={`${card} mt-6 rounded-[24px] p-5`}>

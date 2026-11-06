@@ -1,5 +1,5 @@
--- Run after 00_reset_legacy_demo.sql, 00_foundation.sql,
--- 01_questions.sql, 02_activities.sql and 03_assignments.sql.
+-- Run after 00_reset_legacy_demo.sql, 01_foundation.sql,
+-- 02_questions.sql, 03_activities.sql and 04_assignments.sql.
 -- Failure raises an exception; read-only checks should not mutate data.
 DO $assert$
 DECLARE n INTEGER;

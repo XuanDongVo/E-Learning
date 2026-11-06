@@ -39,15 +39,15 @@ The legacy seed migrations (`V6`, `V9`, `V16`, `V20`, `V22`, `V39`) are intentio
 From the repository root, after Spring Boot has successfully migrated a **disposable dev database**, set the connection string for the **same database**:
 
 ```powershell
-$env:PGURL = "postgresql://postgres:YOUR_PASSWORD@localhost:5432/e_learning_grade7_dev"
+$env:PGURL = "postgresql://postgres:123456@localhost:5432/e_learning"
 
 $root = "server/src/test/resources/db/seed/grade7"
 $files = @(
   "00_reset_legacy_demo.sql",
-  "00_foundation.sql",
-  "01_questions.sql",
-  "02_activities.sql",
-  "03_assignments.sql",
+  "01_foundation.sql",
+  "02_questions.sql",
+  "03_activities.sql",
+  "04_assignments.sql",
   "99_assertions.sql"
 )
 foreach ($name in $files) {

@@ -72,3 +72,42 @@ export interface RecentActivityItem {
   minutesAgo: number;
   kind: "level" | "streak" | "xp" | "quiz";
 }
+
+export type LeaderboardMetric = "XP" | "STREAK";
+export type LeaderboardPeriod = "TODAY" | "WEEK" | "MONTH" | "ALL";
+
+export interface LeaderboardRanking {
+  studentId: number;
+  fullName: string;
+  rank: number;
+  value: number;
+  level: number;
+  currentStudent: boolean;
+}
+
+export interface LiveLeaderboard {
+  metric: LeaderboardMetric;
+  period: LeaderboardPeriod;
+  top: LeaderboardRanking[];
+  currentStudent: LeaderboardRanking | null;
+  currentStudentInTop: boolean;
+  totalStudents: number;
+}
+
+export interface LeaderboardHonors {
+  xpChampion: LeaderboardRanking | null;
+  streakChampion: LeaderboardRanking | null;
+}
+
+export interface LiveLearningActivity {
+  sessionId: number;
+  studentId: number;
+  fullName: string;
+  activityName: string;
+  status: "COMPLETED" | "GAME_OVER";
+  completedAt: string;
+  earnedXp: number | null;
+}
+export interface LearningActivityFeed {
+  items: LiveLearningActivity[];
+}

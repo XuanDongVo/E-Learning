@@ -55,3 +55,11 @@ The student id always comes from the JWT subject. Client has no Streak/XP mutati
 ## Delivery safety
 
 This implementation in source is **not** proof of production deployment or concurrency testing. Do not activate/claim release before PostgreSQL integration and application E2E verification. The Activity XP rollout guard stays default off until its own release gate passes.
+
+## Leaderboard integration (2026-11-06)
+
+- Student Rewards now loads XP and Streak leaderboards from new read-only server endpoints; XP has TODAY/WEEK/MONTH/ALL, Streak has no interval.
+- Rank top 50 by metric value descending and student ID ascending, deterministic even at zero; show the authenticated student's rank outside the top 50 in an independent card, or distinguish their table row if present.
+- Honors contain lifetime XP and longest Streak only. Recent activity comes only from completed/terminal ActivitySessions and optional committed PRACTICE ledger XP.
+- No mock ranking data or Social Ambassador; no new XP/Streak settlement behavior.
+- Verify in PostgreSQL: time boundaries, ties, empty/zero scores, exact rank 50/51, user isolation, terminal feed status, and pagination/limit. Backend and frontend build/E2E still required.

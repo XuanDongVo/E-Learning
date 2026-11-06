@@ -44,3 +44,7 @@ there is no in-progress XP counter.
 - GameTemplate and Topic formula/reference sheet remain deferred.
 
 Use `ui/QUESTION_BANK_QUESTION_MANAGEMENT_BLUEPRINT.md` for Content UI behavior and `ui/UI_ARCHITECTURE_GUIDELINES.md` for shared design/accessibility rules.
+
+### Leaderboard UI (2026-11-06)
+
+Two tabs only (XP, Streak). XP supports today/current Monday–Sunday week/current calendar month/all time; Streak has no interval filter. Top 3 podium and top 50 table use live results; highlight the signed-in student in the table if within top 50, or show a separate truthful personal rank card if outside. Hall of Fame contains lifetime XP champion and longest Streak only. Recent feed is server-backed ActivitySessions only. Ink border + pop shadow; no mock fallback.

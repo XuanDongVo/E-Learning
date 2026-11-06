@@ -1,7 +1,7 @@
 # Current Implementation State
 
-**Audit date:** 2026-11-01  
-**Branch:** `feature/teacher-assignment-analysis`  
+**Audit date:** 2026-11-06
+**Branch:** `feature/student-gamification`
 **Baseline:** `main` after merge of `feature/student-assignment-attempt` (PR #30)
 
 ## 1. Authority model
@@ -27,6 +27,21 @@
 | Phase 7 Scope A ActivitySession | Implemented; E2E open |
 | Phase 7 Scope B AssessmentAttempt | Code on `main`; E2E + hard-lock open |
 | **Phase 8 Teacher Assignment Analysis** | **Code complete on this branch; local E2E not claimed** |
+| **Activity XP Engine Phases 1–4** | **Implemented behind default-off rollout; Phase 5 validation/enablement open** |
+
+### Activity XP Engine
+
+- New eligible ActivitySessions freeze policy/Level/multiplier and persist a
+  validated per-question XP audit.
+- COMPLETED/GAME_OVER settlement atomically writes the immutable session
+  receipt, one positive PRACTICE ledger row when applicable, and profile
+  Lifetime XP/Level; ABANDONED and zero awards finalize without a reward row.
+- `GET /v1/activity-sessions/{sessionId}/result` is read-only and exposes the
+  committed receipt plus optional question audit. The Activity Result UI shows
+  XP totals and Level change and handles loading/error/legacy states.
+- V52 adds immutable `xp_lifetime_after` and `xp_level_after` receipt fields.
+  `ACTIVITY_XP_ENABLED` remains false by default. Phase 3/4 validation was
+  explicitly skipped for this task and remains required before rollout.
 
 ## 4. Teacher Assignment Analysis (this branch)
 

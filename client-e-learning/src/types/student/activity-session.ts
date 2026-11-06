@@ -5,5 +5,8 @@ export type {
   ActivitySessionResult,
   ActivitySessionOptions,
   SelectionStrategy,
-  ActivitySessionQuestion
+  ActivitySessionQuestion,
+  ActivityXpRewardReceipt,
+  ActivityXpQuestionReceipt,
+  ActivityXpQuestionOutcome,
 } from "@/types/activity-session";

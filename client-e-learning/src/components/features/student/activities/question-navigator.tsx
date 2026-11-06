@@ -15,14 +15,14 @@ export type NavigatorProps = {
   onSelect: (i: number) => void;
 };
 
-const card = "bg-practice-paper shadow-[0_6px_0_var(--color-practice-shadow)]";
+const card = "bg-card-bg shadow-pop-lg";
 const stateCorrect =
-  "bg-practice-good-soft border-practice-good shadow-[0_3px_0_var(--color-practice-good)]";
+  "border-success bg-success-soft shadow-pop-sm";
 const stateWrong =
-  "bg-practice-bad-soft border-practice-bad shadow-[0_3px_0_var(--color-practice-bad)]";
+  "border-destructive bg-destructive-soft shadow-pop-sm";
 const stateCurrent =
-  "bg-practice-hint border-practice-blue shadow-[0_3px_0_var(--color-practice-blue-dark)]";
-const statePicked = "bg-practice-hint border-practice-blue";
+  "border-learning bg-learning-soft shadow-pop-sm";
+const statePicked = "border-learning bg-learning-soft";
 
 const STATUS_LABEL: Record<NavStatus, string> = {
   correct: "đúng",
@@ -65,7 +65,7 @@ function Grid(p: NavigatorProps & { onPick?: () => void }) {
             disabled={locked}
             aria-current={i === p.index ? "step" : undefined}
             aria-label={`Câu ${i + 1}, ${STATUS_LABEL[status]}${locked ? ", đang khoá" : ""}`}
-            className={`relative h-11 w-full rounded-xl font-extrabold ${cls} ${i === p.index ? "outline-2 outline-offset-2 outline-practice-blue" : ""}`}
+            className={`relative h-11 w-full rounded-xl font-extrabold ${cls} ${i === p.index ? "outline-2 outline-offset-2 outline-learning" : ""}`}
             onClick={() => {
               p.onSelect(i);
               p.onPick?.();
@@ -84,19 +84,19 @@ function Legend() {
   return (
     <ul className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1.5 text-xs font-semibold">
       <li className="flex items-center gap-1.5">
-        <span className={`${dot} border-practice-blue bg-practice-hint`} />
+        <span className={`${dot} border-learning bg-learning-soft`} />
         Hiện tại
       </li>
       <li className="flex items-center gap-1.5">
-        <span className={`${dot} border-practice-good bg-practice-good-soft`} />
+        <span className={`${dot} border-success bg-success-soft`} />
         Đúng
       </li>
       <li className="flex items-center gap-1.5">
-        <span className={`${dot} border-practice-bad bg-practice-bad-soft`} />
+        <span className={`${dot} border-destructive bg-destructive-soft`} />
         Sai
       </li>
       <li className="flex items-center gap-1.5">
-        <span className={`${dot} border-practice-border bg-practice-light`} />
+        <span className={`${dot} border-border bg-background`} />
         Chưa làm
       </li>
     </ul>
@@ -161,7 +161,7 @@ export function QuestionNavigatorSheet(
     <div className="lg:hidden">
       <Button
         variant="outline"
-        className="text-practice-ink bg-practice-paper border-2 border-practice-border shadow-[0_2px_0_var(--color-practice-border)] px-3"
+        className="border-2 border-border bg-card-bg px-3 text-foreground shadow-pop-sm"
         aria-haspopup="dialog"
         onClick={() => set(true)}
       >
@@ -176,7 +176,7 @@ export function QuestionNavigatorSheet(
           aria-label="Danh sách câu hỏi"
         >
           <button
-            className="absolute inset-0 bg-practice-ink/50"
+            className="absolute inset-0 bg-foreground/50"
             aria-label="Đóng"
             onClick={() => set(false)}
           />

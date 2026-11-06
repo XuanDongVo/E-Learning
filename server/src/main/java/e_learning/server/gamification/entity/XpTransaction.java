@@ -106,6 +106,10 @@ public class XpTransaction {
         return earnedAt;
     }
 
+    public void setEarnedAt(LocalDateTime earnedAt) {
+        this.earnedAt = earnedAt;
+    }
+
     public String getPolicyVersion() { return policyVersion; }
     public void setPolicyVersion(String policyVersion) { this.policyVersion = policyVersion; }
     public Integer getLevelSnapshot() { return levelSnapshot; }

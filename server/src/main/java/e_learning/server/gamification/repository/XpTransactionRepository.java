@@ -5,7 +5,7 @@ import e_learning.server.gamification.entity.XpTransaction;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 
-/** Query surface for future finalization; no XP writer is enabled yet. */
+/** Durable XP ledger access used by the atomic Activity reward workflow. */
 public interface XpTransactionRepository extends JpaRepository<XpTransaction, Long> {
     Optional<XpTransaction> findBySourceTypeAndActivitySessionId(
             XpSourceType sourceType, Long activitySessionId);

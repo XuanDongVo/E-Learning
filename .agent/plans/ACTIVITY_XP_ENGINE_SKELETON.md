@@ -1,14 +1,16 @@
 # Activity XP Engine — skeleton contracts and activation plan
 **Branch:** feature/student-gamification  
-**Status:** Interface, DTO, repository scaffolding only; NOT ACTIVE.  
+**Status:** Superseded as a skeleton: Phases 1–4 are implemented behind the default-off rollout flag; Phase 5 verification remains.
 **Authority:** ADR 0029 + domain/ACTIVITY_XP_V2_2_SPEC.md.
 
 ## Method responsibility matrix
 
 | Contract method | When called (future) | Writes | Invariant |
 |---|---|---|---|
-| captureStartSnapshot(studentId) | start() after eligibility, before saving session | Session XP snapshot (via future orchestration) | Official level/version/multiplier frozen at start |
-| onQuestionResolved(sessionQuestionId) | answer()/server timeout when resolved | per-question XP outcome/base/final/resolvedAt | Use frozen difficulty, never live Question |
+| mapResolvedOutcome(...) | resolved-question evaluator | none | Reject missing/inconsistent adjudication; Hint precedes retry |
+| levelMultiplier(level) / xpToNext(level) | snapshot/Level policy | none | BigDecimal group floor and overflow-safe thresholds |
+| captureStartSnapshot(studentId, questions) | eligible start behind rollout flag | profile create-if-missing + Session snapshot via orchestration | Freeze official Level/version/multiplier only with schema-v2 Difficulty |
+| auditResolvedQuestion(item, snapshot) | answer/server timeout after final resolution | per-question XP outcome/base/final/resolvedAt | Use frozen Difficulty/multiplier once; legacy sessions stay ineligible |
 | evaluateQuestion(...) | resolved-question evaluator | none | Deterministic pure calculation; ambiguous outcomes block activation |
 | completionBonus(...) | terminal reward calculation | none | >0 only for COMPLETED |
 | preview(sessionId) | answer/hint/get display | none | Provisional only; never ledger/account |
@@ -19,14 +21,17 @@
 | lifetimeXpRequiredForLevel(level) | calculator | none | Threshold formula validated |
 | levelForLifetimeXp(xp) | reward finalization | none | Monotonic level |
 
-## Proposed future wiring (NOT PART OF THIS COMMIT)
-1. In `ActivitySessionService.start()`: get official profile (create safe if absent); capture XP policy Level; store Session XP snapshot; capture per-question difficulty already in QuestionSnapshot v2.
-2. On answer/hint/timer: server adjudicates first; only on resolved question persist stable enum outcome + XP breakdown. Use V51 resolution_reason plus Hint/attempts; TIMEOUT is always 0 XP. Hint overrides retry for correct answers.
+## Implemented runtime wiring
+1. Implemented in `ActivitySessionService.start()`: create/load and lock the official profile; capture XP policy Level; store Session XP snapshot; require per-question Difficulty in QuestionSnapshot v2 when rollout is enabled.
+2. Implemented on answer/server timeout: adjudicate first and persist stable enum outcome + XP breakdown only when resolved. V51 resolution_reason plus Hint/attempts is authoritative; TIMEOUT is always 0 XP and Hint overrides retry for correct answers.
 3. Provisional XP remains server-only/internal for the first release; display committed XP only on Activity Result. No client-authored amounts.
-4. On state transition to COMPLETED: sum resolved question XP plus scaled Completion Bonus; GAME_OVER: question XP only. ABANDONED: no award.
-5. Lock Session reward transition and profile row in consistent order; create or fetch the stable single PRACTICE ledger transaction idempotently. The DB partial unique index and key are defense-in-depth, not a substitute for profile consistency.
-6. Within the SAME transaction: finalize session XP fields, insert one ledger entry for positive award, increment lifetime XP and derive current Level. Persist zero XP finalization without ledger.
-7. Read old receipt on retry; never re-evaluate from mutable Question/policy. `finish()` currently rejects terminal sessions; must preserve endpoint semantics or explicitly introduce a retry-safe reward response before activation.
+4. Terminal transitions now settle COMPLETED with bonus, GAME_OVER without bonus,
+   and ABANDONED as a durable forfeited receipt.
+5. Reward settlement locks Session then profile and uses the PRACTICE partial
+   unique index plus idempotency key as defense-in-depth.
+6. Session receipt, positive ledger entry, Lifetime XP and derived Level commit
+   in one transaction; zero awards persist without a positive ledger row.
+7. Result reads the immutable stored receipt; it never recalculates or awards.
 8. Explicitly handle existing v1 Question snapshots as not eligible for backfill/award. Streak remains separate and only COMPLETED qualifies.
 
 ## Business rules locked; remaining implementation gates
@@ -39,13 +44,13 @@ The outcome table, Hint precedence, Level scaling, Completion Bonus N, all-wrong
 - Implement and test profile creation/snapshot locking against concurrent Session start + finalize and UNIQUE(student_id).
 - Enforce legacy ineligibility: a pre-activation session without required snapshots must not be awarded, even if its status is terminal. Do not synthesize Level or Difficulty snapshots from mutable state.
 - Ensure ledger + profile + Session reward finalization are committed together; zero-XP receipt is durable and retry-safe.
-- Add result-only XP receipt API and FE display; no provisional XP display in initial release.
+- Result-only XP receipt API and FE display are implemented; no provisional XP display is exposed.
 - Run migrations V50/V51 and new changes only on an approved deployed environment; verify via Flyway, Maven, FE build and end-to-end tests.
 
 ## Migration deployment checklist
-- Verify the actual applied Flyway history: repository foundation is V49, XP groundwork is V50 and timeout resolution is V51. Do not assume that committed SQL has already run in any database.
+- Verify the actual applied Flyway history: repository foundation is V49, XP groundwork is V50, timeout resolution is V51 and immutable receipt snapshots are V52. Do not assume that committed SQL has already run in any database.
 - Run duplicate PRACTICE session preflight query from domain spec; reconcile any duplicates before applying V50.
 - Apply V50 with configured PostgreSQL via Flyway; verify schema and index.
 - Compile Java 21 / Spring Boot code with Maven; test old/new snapshot deserialize.
 - Test concurrent answer/finalize/profile inserts, zero-XP terminal, retries, ABANDONED and GAME_OVER.
-- No controller/ActivitySessionService/FE endpoint modifications in this skeleton. No claim of passing integration tests without running them.
+- Phase 3/4 validation was skipped by explicit request; do not claim release readiness until the mandatory matrix is run.

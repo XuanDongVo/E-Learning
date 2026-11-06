@@ -29,6 +29,10 @@
 
 See `ui/STUDENT_LEARNING_HUB_BLUEPRINT.md` for the active Home/Units/Unit Detail contract.
 ActivitySession runner/result/review is separate from the formal AssessmentAttempt runtime.
+The Activity Result reward receipt is server-authored and shows committed XP
+only: Question XP, Completion Bonus, total earned, Lifetime XP and Level change.
+It has explicit loading, retryable error, abandoned and legacy/no-reward states;
+there is no in-progress XP counter.
 
 ## Cross-screen contracts
 

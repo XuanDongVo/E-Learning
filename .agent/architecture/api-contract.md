@@ -62,6 +62,13 @@ POST /v1/activity-sessions/{sessionId}/questions/{sessionQuestionId}/hint
 POST /v1/activity-sessions/{sessionId}/finish
 GET /v1/activity-sessions/{sessionId}/result
 
+The terminal Activity Result includes nullable `xpReward` and `xpQuestions`.
+`xpReward` is an immutable server receipt (`questionXp`, `completionBonus`,
+`committedXp`, `levelBefore`, `lifetimeXpAfter`, `levelAfter`, `finalizedAt`). It
+is `null` for legacy or rollout-disabled sessions; reading this endpoint never
+calculates or commits XP. `xpQuestions` contains only persisted resolved-question
+audit values and is empty when no finalized reward exists.
+
 ActivitySession start accepts optional `mode` and `selectionStrategy`; both are required only when the
 Activity exposes more than one choice. The start response includes the complete selected question set without
 correct answers, accepted answers or explanations. Activity answers are evaluated server-side and are not persisted

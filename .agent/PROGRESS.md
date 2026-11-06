@@ -1,15 +1,64 @@
 # Project Progress
 
-**Updated:** 2026-11-05
-**Branch:** `feature/teacher-assignment-analysis`  
+**Updated:** 2026-11-06
+**Branch:** `feature/student-gamification`
 **Canonical state:** `.agent/CURRENT_STATE.md`
 
 ## Current stage
+
+- **Activity XP Engine Phases 1–4:** calculator, session audit, atomic terminal
+  settlement, persisted result receipt and Activity Result UI implemented
+  behind the default-off new-session rollout flag. Phase 5 deployment and
+  release verification remain pending.
 
 - **Student Learning Hub stages 1–3:** brief/nav contract, Home replacement,
   and Units/Unit Detail UI refinement on `feature/student-gamification`.
 - Phase 7 Scope B AssessmentAttempt: on `main` (finalize path present).
 - **Phase 8 Teacher Assignment Analysis: implementation code complete on this branch.**
+
+## Activity XP work log (2026-11-06)
+
+- Implemented the pure `ActivityXpCalculator` for the accepted v2.2 outcome
+  matrix, strict resolved-outcome mapping, Level multiplier, per-award HALF_UP
+  scaling, completion bonus and Level thresholds.
+- Normalized the stored timeout outcome to `TIMEOUT`; legacy interaction-based
+  timeout variants were never active and are superseded by ADR 0029.
+- Added deterministic, database-free unit coverage for the complete matrix,
+  Hint precedence, invalid outcome states, bonus/Level boundaries, overflow and
+  per-question rounding.
+- Validation: focused calculator suite passes (11/11). Full backend suite runs
+  56 tests with 51 passing; five pre-existing
+  `AssignmentServicePublishReadinessTest` cases fail because their test
+  `service` fixture is null, outside this Phase 1 change.
+- Phase 2 captures `ACTIVITY_XP_V2_2`, official Level and multiplier only for
+  newly eligible sessions when `ACTIVITY_XP_ENABLED=true`; default remains off.
+- New selected questions must have schema-v2 frozen Difficulty. Resolved
+  questions persist outcome/base/final XP once; unresolved Learning retries and
+  legacy sessions remain unaudited. Hint now shares the Session write lock used
+  by Answer/Timeout.
+- Profile first-create uses conflict-safe insert plus row lock; concurrent starts
+  serialize on the Student and lock active Sessions before the profile to match
+  the Phase 3 lock order.
+- Phase 2 focused validation passes 30/30 across calculator, snapshot eligibility,
+  profile/policy capture, question audit and ActivitySession wiring. Full suite
+  was intentionally not run for this phase.
+- Phase 3 now settles eligible `COMPLETED`/`GAME_OVER` sessions atomically under
+  Session → profile locks, persists one positive PRACTICE ledger entry, updates
+  Lifetime XP/Level, and durably finalizes zero/ABANDONED receipts without a
+  reward row. V52 stores immutable Lifetime XP/Level-after receipt snapshots.
+- Phase 4 extends the existing read-only Activity Result response with the
+  persisted reward receipt and optional question audit. The student result UI
+  displays committed question XP, completion bonus, total XP and Level change;
+  loading, network error, abandoned and legacy/no-reward states are explicit.
+- Restored the complete Practice runtime palette by replacing orphaned
+  `practice-*` utilities in the runner and its directly rendered components
+  with shared global semantic tokens (`learning`, `accent`, status, surface,
+  border and elevation tokens). Layout and behavior are unchanged.
+- The rollout remains disabled by default, so only sessions started with
+  `ACTIVITY_XP_ENABLED=true` become eligible; historical sessions are not
+  backfilled. Phase 5 migration preflight, rollout and operational checks remain.
+- Per explicit request, no Phase 3/4 tests, build or lint were run. These phases
+  are implemented but require the Phase 5 validation matrix before release.
 
 ## Teacher Analysis work log
 

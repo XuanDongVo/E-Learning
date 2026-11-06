@@ -13,7 +13,7 @@ import tools.jackson.databind.ObjectMapper;
 @Component
 @RequiredArgsConstructor
 public class ActivityQuestionSnapshotAssembler {
-    private static final int SNAPSHOT_SCHEMA_VERSION = 2;
+    public static final int SNAPSHOT_SCHEMA_VERSION = 2;
     private final QuestionOptionRepository optionRepository;
     private final QuestionAnswerRepository answerRepository;
     private final QuestionSpecMapper questionSpecMapper;
@@ -45,6 +45,16 @@ public class ActivityQuestionSnapshotAssembler {
                     value.content(), value.explanation(), value.hint(), value.matchingMode(), value.options(), value.answers(), item.getSnapshotPayload());
         } catch (Exception e) {
             throw new QuestionEngineException("Unable to read activity question snapshot", e);
+        }
+    }
+
+    /** XP v2.2 requires immutable schema-v2 difficulty; live Question fallback is forbidden. */
+    public void requireXpEligible(ActivityQuestionSnapshot snapshot) {
+        if (snapshot == null
+                || snapshot.schemaVersion() != SNAPSHOT_SCHEMA_VERSION
+                || snapshot.difficulty() == null) {
+            throw new QuestionEngineException(
+                    "Activity XP requires a schema-v2 Question snapshot with difficulty");
         }
     }
 }

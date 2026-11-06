@@ -21,6 +21,11 @@ public interface UserRepository
     @Query("select user from User user where user.id = :userId")
     Optional<User> findByIdForMembershipUpdate(@Param("userId") Long userId);
 
+    /** Serializes concurrent ActivitySession starts for one student. */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select user from User user where user.id = :userId")
+    Optional<User> findByIdForGamificationUpdate(@Param("userId") Long userId);
+
     List<User> findAllByRoleOrderByFullNameAsc(Role role);
 
 }

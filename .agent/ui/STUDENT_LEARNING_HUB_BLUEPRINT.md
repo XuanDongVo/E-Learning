@@ -7,8 +7,8 @@
 ## Product direction
 
 Student is a **learning workspace, not an analytics dashboard**. The first screen helps a
-Grade 6–8 learner choose a real Unit and begin an Activity. XP, streak, rankings,
-charts and formal assignments live in their respective destinations. Do not
+Grade 6–8 learner choose a real Unit and begin an Activity. A compact Streak/Level motivation region may appear on Home using authoritative gamification APIs; rankings,
+charts and formal assignments stay in their respective destinations. Do not
 replace the home with a KPI wall or fabricate a learning path.
 
 ## Screen briefs
@@ -31,7 +31,7 @@ States covered:  Unit loading, empty, error/retry, successful list; links stay u
 - Never label a Unit **Resume / Continue** or show a progress percentage,
   due date, XP, locked state, or recommendation without an authoritative API
   contract for that data. The current Units summary does **not** expose resume.
-- Rewards/leaderboard do not appear as a competing Home dashboard widget.
+- A compact **Streak calendar (Monday–Sunday)** and **XP-to-next-Level** panel appear near the welcome/learning entry, with live loading/error states. No leaderboard appears on Home; Learning remains the primary action. The week calendar is server-authored in Asia/Ho_Chi_Minh, with no Freeze or five-minute pseudo-goal.
 
 ### Unit list (`/student/units`)
 
@@ -76,7 +76,7 @@ States covered:  Loading, error/retry, no matching Activities, successful list
 | Learning | `/student/units` | Unit/Section/Topic/Activity exploration |
 | Assignments | `/student/assignments` | Teacher-assigned formal work |
 | Progress | `/student/progress` | Deferred; currently placeholder |
-| Rewards | `/student/rewards` | Gamification; currently presentation mock |
+| Leaderboard | `/student/rewards` | Ranking preview (sample data until ranking API ships) |
 | Profile | `/student/profile` | Account/profile route |
 
 This stage changes the label **Units → Learning**, not the URL or the

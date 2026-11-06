@@ -67,10 +67,10 @@ export function StudentRewardsLeaderboard() {
             Khu vực thi đua
           </div>
           <h2 className="text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl">
-            Bảng xếp hạng (bản xem trước)
+            Bảng xếp hạng
           </h2>
           <p className="mt-2 text-sm leading-6 text-muted-foreground sm:text-base">
-            Dữ liệu cộng đồng dưới đây là minh họa; chưa phải thứ hạng thực tế.
+            Bản xem trước · Dữ liệu xếp hạng và thành tích cộng đồng bên dưới chỉ để minh họa.
           </p>
         </div>
       </header>
@@ -98,7 +98,7 @@ export function StudentRewardsLeaderboard() {
             <div
               role="tablist"
               aria-label="Tiêu chí xếp hạng"
-              className="grid grid-cols-2 gap-2 rounded-xl border border-border bg-card p-2 sm:grid-cols-4"
+              className="grid grid-cols-2 gap-2 rounded-xl border-2 border-ink bg-card p-2 shadow-pop sm:grid-cols-4"
             >
               {TABS.map((tab) => (
                 <button
@@ -127,7 +127,7 @@ export function StudentRewardsLeaderboard() {
             id="streak-leaderboard"
             role="tabpanel"
             aria-labelledby="streak-ranking-tab"
-            className="overflow-hidden rounded-2xl border border-border bg-card"
+            className="overflow-hidden rounded-2xl border-2 border-ink bg-card shadow-pop"
           >
             <div className="flex items-center justify-between gap-4 border-b border-border px-4 py-4 sm:px-5">
               <div>
@@ -172,7 +172,7 @@ export function StudentRewardsLeaderboard() {
         <aside className="space-y-5">
           <section
             aria-labelledby="hall-of-fame-heading"
-            className="rounded-2xl border border-border bg-card p-4"
+            className="rounded-2xl border-2 border-ink bg-card p-4 shadow-pop"
           >
             <div className="mb-4 flex items-center gap-3">
               <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-warning-soft text-warning">

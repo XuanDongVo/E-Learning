@@ -9,6 +9,7 @@ import { Pipo } from "@/components/ui/mascot";
 import { QUERY_KEYS } from "@/services/query-keys";
 import { studentUnitService } from "@/services/student/student-unit.service";
 import { unitLabel } from "@/components/features/student/units/unit-cover";
+import { StudentStreakOverview } from "@/features/student/gamification/student-streak-overview";
 
 export function LearningHubHome() {
   const { data, isLoading, isError, refetch } = useQuery({
@@ -46,6 +47,8 @@ export function LearningHubHome() {
           <Pipo mood="wave" color="primary" size={112} stage={2} />
         </div>
       </header>
+
+      <StudentStreakOverview />
 
       <section aria-labelledby="learning-hub-units" className="space-y-4">
         <div className="flex flex-wrap items-end justify-between gap-3">
@@ -91,7 +94,7 @@ export function LearningHubHome() {
             description="Khi giáo viên công bố Unit, các bài học sẽ xuất hiện tại đây."
           />
         ) : (
-          <div className="divide-y divide-border overflow-hidden rounded-2xl border border-border bg-card">
+          <div className="divide-y divide-border overflow-hidden rounded-2xl border-2 border-ink bg-card shadow-pop">
             {units.slice(0, 3).map((unit) => (
               <Link
                 key={unit.id}

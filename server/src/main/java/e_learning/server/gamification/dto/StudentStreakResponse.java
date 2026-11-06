@@ -10,7 +10,10 @@ public record StudentStreakResponse(
         LocalDate runStartDate,
         LocalDate lastQualifiedDate,
         String timezone,
-        List<Milestone> milestones) {
+        List<Milestone> milestones,
+        LocalDate todayDate,
+        LocalDate weekStartDate,
+        List<LocalDate> qualifiedDates) {
 
     public record Milestone(int days, int xp, boolean awarded) {
     }

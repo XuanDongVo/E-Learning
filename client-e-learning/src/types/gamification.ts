@@ -28,6 +28,9 @@ export interface StudentStreakOverview {
   lastQualifiedDate: string | null;
   timezone: string;
   milestones: { days: number; xp: number; awarded: boolean }[];
+  todayDate: string;
+  weekStartDate: string;
+  qualifiedDates: string[];
 }
 
 export interface StudentGamificationProfile {

@@ -29,7 +29,7 @@
 | `StudentStreakService.profile(studentId)` | Read official Lifetime XP/Level and display-effective Streak |
 | `StudentStreakService.streak(studentId)` | Read current run and milestone award states from ledger |
 | `GET /v1/student/gamification/profile` | Authenticated student profile, Level progress and Streak counters |
-| `GET /v1/student/gamification/streak` | Authenticated current run, `qualifiedToday`, milestone XP/awarded indicators |
+| `GET /v1/student/gamification/streak` | Authenticated current run, `qualifiedToday`, milestone XP/awarded indicators, server-local today/week start and qualified dates for the current Mon–Sun week |
 
 The student id always comes from the JWT subject. Client has no Streak/XP mutation route.
 
@@ -38,7 +38,7 @@ The student id always comes from the JWT subject. Client has no Streak/XP mutati
 1. S1: wire completion transition to one-per-day qualification and locked Streak profile updates.
 2. S2: add milestone XP ledger idempotency and recompute Level in the same transaction.
 3. L1: read-only profile/streak APIs and Level progress contract.
-4. UI: token-based Streak + Level panel on Student Rewards with live API data and explicit loading/error/empty states. Keep leaderboard, Hall of Fame and activity feed clearly marked mock; do not display mocked current student XP/Streak as official.
+4. UI (revised 2026-11-06): server-backed seven-day Streak calendar and a separate minimal XP-to-next-Level panel on Student Home; Rewards route becomes a dedicated Leaderboard preview with explicit mock labeling. All raised panels use border-ink + shadow-pop. No fictitious Freeze count or 5-minute target.
 5. Verify: focused policy/service unit tests; backend compile/test; FE lint/type/build; PostgreSQL transaction/concurrency and authenticated mobile/desktop E2E before production rollout.
 
 ## Required acceptance cases

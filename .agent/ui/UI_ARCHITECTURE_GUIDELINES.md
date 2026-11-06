@@ -1,6 +1,6 @@
 # UI Architecture Guidelines
 
-**Status:** Source of truth for UI structure, color, typography, spacing and components (Tactify-style ink-border refinement 2026-11-06; Playful Classroom palette retained)  
+**Status:** Source of truth for UI structure, color, typography, spacing and components (Ink-border + shadow-pop correction 2026-11-06; Playful Classroom palette retained)  
 **Applies to:** Teacher UI and Student UI  
 **Audience:** Developers and AI agents who create or modify any screen
 
@@ -845,33 +845,30 @@ The Teacher shell follows the warm Playful Classroom family as its restrained **
 - Mobile navigation is a drawer; desktop navigation must expose the active route clearly.
 
 
-## 18. Ink-border / offset-shadow visual language (2026-11-06)
+## 18. Ink border + pop shadow visual language (2026-11-06, owner correction)
 
-**Scope: the entire application, Teacher and Student, including dashboards, learning flows, gamification, assignments, forms and dialogs.** This is a cross-product refinement of the existing Playful Classroom system, not a separate Gamification theme. Preserve all semantic color roles, typography, spacing and accessible interaction rules above. When older sections prefer flat cards or discourage borders, this section governs the visual treatment of *meaningful* card surfaces; it does not authorize wrapping every text block in a card.
+**Applies to the full application (Teacher and Student).** The approved visual language is Tactify-like *outlined, warm, hard-offset* surfaces using existing **`border-ink` + `shadow-pop`**, NOT `shadow-ink`. This corrects the prior Section 18 wording; the established Playful Classroom palette, typography and accessibility contract remain in force.
 
-### Required styling
-
-- Main page panels, actionable cards and prominent summary surfaces: use `border-2 border-ink shadow-ink` with a semantic background (`bg-card`, `bg-secondary`, etc.). Apply consistent radius from the established scale.
-- Nested panels, dense tables, form controls and repeated compact items: prefer `border border-ink` or `border-2 border-ink` without a second heavy shadow. Maintain a clear hierarchy of elevation.
-- Primary buttons and clickable tiles may use `shadow-ink` with small hover/active translation; keep visible focus rings, keyboard behavior and reduced-motion support. Disabled controls must not look clickable.
-- Dialogs and popovers should have strong ink outlines and a restrained offset shadow; overlays, stacking and focus trapping remain unchanged.
-- Use existing semantic accents: orange for primary action, blue for learning, amber for streak/XP, green for success. Do not introduce hard-coded black, raw palette utilities or random bright card colors.
-- Keep teacher screens denser and more restrained than student rewards screens, but use the same ink border and offset-shadow vocabulary across both.
-- Use `shadow-ink` as the canonical heavy shadow utility. Do not mistake `shadow-pop-ink` or `shadow-pop` for the canonical class; older classes may remain during incremental migration.
-
-### Implementation and migration
-
-- `client-e-learning/src/app/globals.css` defines `--ink` and `shadow-ink`; ensure the shadow token works in light and dark themes. Prefer a hard offset shadow rather than a blurred floating shadow.
-- Reuse shared Card, Button, Dialog, Input and Table primitives; migrate shared primitives first, then shells and feature screens. Avoid broad one-off replacements that break spacing or state styles.
-- Every touched screen must pass responsive (360px), light/dark, keyboard focus, hover/active, reduced-motion and visual overflow checks. Check contrast after strengthening outlines.
-- Existing flat/soft-shadow components are migration debt, not an alternative approved visual language. Track migration by module; do not claim the entire application is updated until screens are audited.
-
-### Example
+- **Meaningful raised surfaces** (primary cards, activity tiles, key metrics, dialogs): `border-2 border-ink bg-card shadow-pop` with existing radius tokens. Prefer shared Card primitives where their API supports the variant.
+- **Secondary/nested surfaces**: `border border-ink` or `border-2 border-ink` without another shadow. Do not place a strong shadow on each child of a shadowed parent.
+- **Buttons/interactions**: primary CTAs may use `border-2 border-ink shadow-pop`, subtle pressed translation and visible focus rings; preserve disabled and reduced-motion behavior.
+- **Tables/inputs/dense teacher content**: ink boundary where it communicates grouping, restrained background and elevation. Preserve focus, readability, density, and semantic error/selection states.
+- **Navigation**: preserve shell dimensions, hierarchy and keyboard behavior; use ink outlines and pop elevation purposefully, not on every link.
+- **Color**: keep LearnUp orange for primary actions, learning blue for learning, amber for XP/Streak and semantic success/error colors; no raw black, hex or random palettes in features.
+- **Token truth**: `border-ink` and `shadow-pop` are already implemented in `client-e-learning/src/app/globals.css`; do **not** introduce a `shadow-ink` alias or replace `shadow-pop` with `shadow-pop-ink` without an explicit new decision. Verify light/dark, contrast and responsive behavior as screens migrate.
+- **Migration**: update shared primitives first, then touched routes; old low-contrast/soft-only cards are migration debt, not an alternate design. This guideline change does not imply all old screens were already migrated.
 
 ```tsx
-<Card className="rounded-xl border-2 border-ink bg-card shadow-ink">
-  {/* meaningful content */}
-</Card>
+<div className="rounded-2xl border-2 border-ink bg-card p-5 shadow-pop">
+  {/* Primary content */}
+</div>
 ```
 
-**Updated design rule:** prioritize readability and workflow first, then emphasize the primary meaningful surfaces with visible ink borders and hard offset shadows. Avoid shadow-on-shadow nesting.
+**Information hierarchy wins over decoration:** one dominant region per page and no nested shadow wall. Teacher remains restrained; Student may use larger playful emphasis.
+
+### Student Gamification page ownership
+
+- **Student Home** hosts the server-backed seven-day Streak widget (Monday–Sunday, Ho Chi Minh calendar), today indicator, longest streak and a separate minimal Level progress card. Home's main CTA stays Learning.
+- **`/student/rewards`** is a **Leaderboard** page, not a Streak/Level dashboard. Until a real ranking API exists, leaderboards, Hall of Fame and activity feed must be prominently labeled sample content.
+- No fake Freeze balance or five-minute learning target: Freeze is deferred, and a qualified day requires `ActivitySession.COMPLETED`, not elapsed learning minutes.
+- Level is only the current XP-derived level and progress to the next threshold. No new level privileges, inventory or level-up XP.

@@ -34,6 +34,7 @@ An accepted ADR overrides lower-level documents. Never delete an ADR; supersede 
 | 0028 | AssessmentAttempt draft answer on AssessmentAttemptQuestion | **Accepted; drops 1–1 Answer entity (V47)** |
 | 0029 | Activity XP lifecycle, outcome, scaling, replay and result visibility | **Accepted; runtime not yet enabled** |
 | 0030 | Activity Streak day qualification, milestone XP and Level integration | **Accepted; source implementation under verification** |
+| 0031 | Student Home Streak/Level placement and border-ink + shadow-pop | **Accepted; UI implementation under verification** |
 
 ## Current decision chain
 

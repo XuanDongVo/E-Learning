@@ -23,7 +23,7 @@ export const NAV_ITEMS = [
   { label: "Learning", href: "/student/units", icon: BookOpen },
   { label: "Assignments", href: "/student/assignments", icon: ClipboardList },
   { label: "Progress", href: "/student/progress", icon: BarChart2 },
-  { label: "Rewards", href: "/student/rewards", icon: Trophy },
+  { label: "Leaderboard", href: "/student/rewards", icon: Trophy },
 ];
 
 export function StudentNavbar() {

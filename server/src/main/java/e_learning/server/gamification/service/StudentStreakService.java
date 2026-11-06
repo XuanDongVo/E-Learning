@@ -15,6 +15,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Clock;
 import java.time.LocalDate;
+import java.time.temporal.TemporalAdjusters;
+import java.time.DayOfWeek;
 import java.util.List;
 
 /** Student Streak v1: first COMPLETED Activity per calendar day qualifies. */
@@ -106,8 +108,13 @@ public class StudentStreakService {
                         start != null && transactionRepository.findByIdempotencyKey(
                                 policy.awardKey(studentId, start, days)).isPresent()))
                 .toList();
+        LocalDate weekStart = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+        List<LocalDate> qualifiedDates = dayRepository
+                .findAllByStudentIdAndLearningDateBetween(studentId, weekStart, weekStart.plusDays(6))
+                .stream().map(StudentLearningDay::getLearningDate).sorted().toList();
         return new StudentStreakResponse(
                 effective, profile.getLongestStreak(), today.equals(profile.getLastQualifiedDate()),
-                start, profile.getLastQualifiedDate(), StudentStreakPolicy.ZONE.getId(), milestones);
+                start, profile.getLastQualifiedDate(), StudentStreakPolicy.ZONE.getId(), milestones,
+                today, weekStart, qualifiedDates);
     }
 }

@@ -4,6 +4,10 @@
 **Branch:** `feature/student-gamification`
 **Canonical state:** `.agent/CURRENT_STATE.md`
 
+## UI correction (2026-11-06)
+
+- Owner selected **border-ink + shadow-pop** (not shadow-ink) as the application-wide outlined visual pattern. Student Home now owns a compact real-data weekly Streak calendar and simple XP-based Level card; Rewards is Leaderboard-only preview. Week dates are delivered by the Streak API. Freeze and minute-based goals remain deferred. Verification pending.
+
 ## Current stage
 
 - **Student Streak/Level v1 source:** accepted milestone policy (3/7/14/30 → 10/20/40/80 XP), daily completion service, ledger/Level integration, authenticated read APIs, and live Rewards overview added. No Leaderboard live data or Streak Freeze. Validation pending.

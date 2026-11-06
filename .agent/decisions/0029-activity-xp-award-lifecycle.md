@@ -23,5 +23,19 @@
 - Preserves ADR 0012: abandoned sessions are not resumable and do not award XP.
 - No modifications to the gameplay answer service's existing semantics are authorized by this foundation milestone.
 
-## Deferred / explicitly not approved
-Full outcome mapping (wrong/timeout/hint), replay XP farming limits, level-scaling economy and automatic timeout resolution require separate approval before wiring runtime XP.
+## Business-policy addendum — accepted 2026-11-06
+
+The owner also locked all previously deferred reward policy choices:
+- Base correct XP: EASY/MEDIUM/HARD = 8/10/12 on first attempt without Hint; 6/8/10 on retry without Hint; 4/5/6 whenever a correct answer follows Hint use (Hint **takes precedence** over retry). Incorrect, unanswered and TRY_HARD TIMEOUT all earn 0 XP; timeout never costs a life. Legacy v2.1 “timeout after interaction = 2 XP” is superseded.
+- Level scaling uses the v2.1 rule: multiplier `max(0.20, 1 - 0.10*floor((L-1)/5))` from **Session-start Level**; per-question HALF_UP with positive minimum 1; completion bonus is rounded/scaled separately.
+- `COMPLETED` earns completion bonus **even if all questions were answered incorrectly**; bonus `min(10, 2*ceil(N/5))` with `N = ActivitySession.totalQuestions` selected at start.
+- Replay receives normal XP for each eligible new Session; **no replay penalty, decay, daily cap or replay-specific restriction**. Random selection may repeat prior questions.
+- Historical Sessions missing required XP snapshots are never automatically backfilled/rewarded.
+- First UI release shows committed XP **on Activity Result only**, not during question answering.
+- `GAME_OVER` keeps earned Question XP but does not qualify for streak. Only `COMPLETED` qualifies for streak.
+
+These are **accepted business rules**, not evidence of deployed code. The V50/V51 foundations and XP service interfaces remain non-awarding. The canonical matrix and exact invariants are in `.agent/domain/ACTIVITY_XP_V2_2_SPEC.md`; execution plan is `.agent/plans/ACTIVITY_XP_ENGINE_IMPLEMENTATION.md`.
+
+## Technical activation gates (not open business decisions)
+
+Implement race-safe profile creation and start snapshot, serialize Hint with answer/timeout mutations, produce an authoritative resolved-question XP outcome, finalize in one database transaction across Session + profile + ledger, handle zero-XP finalization, and prove idempotency/concurrent Session correctness. Run full Flyway, backend, FE and E2E tests before activation.

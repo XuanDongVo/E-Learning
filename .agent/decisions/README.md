@@ -32,7 +32,7 @@ An accepted ADR overrides lower-level documents. Never delete an ADR; supersede 
 | 0026 | Assignment automatic scoring and score visibility | Accepted; automatic scoring, default/custom points, independent score and answer visibility |
 | 0027 | Single Active Tab with Resumable AssessmentAttempt | **Accepted; Phase 7B session ownership** |
 | 0028 | AssessmentAttempt draft answer on AssessmentAttemptQuestion | **Accepted; drops 1–1 Answer entity (V47)** |
-| 0029 | Activity XP award lifecycle, snapshot and ledger | **Accepted; runtime not yet enabled** |
+| 0029 | Activity XP lifecycle, outcome, scaling, replay and result visibility | **Accepted; runtime not yet enabled** |
 
 ## Current decision chain
 
@@ -50,7 +50,11 @@ ADR 0023 accepts Question Engine D1–D8. ADR 0025 governs Assignment hard-lock 
 ADR 0027 defines the Phase 7B single-active-tab/resumable session policy: Web Locks provides same-browser exclusive tab coordination, a stable session credential is persisted for recovery, another tab is rejected immediately, and there is no heartbeat-driven stale takeover in MVP.
 ADR 0028 stores the AssessmentAttempt draft answer on AssessmentAttemptQuestion (answer_payload, revision, saved_at) and removes the separate AssessmentAttemptAnswer table; Mutation idempotency remains; normalized values are not stored on draft save.
 
+ADR 0029 also locks the Activity XP v2.2 outcome matrix, Hint precedence, Level scaling, Completion Bonus eligibility, replay without penalty, legacy no-backfill and Result-only first release; approved policy is not deployed engine code.
+
 ## Canonical implementation plan
+
+For Activity XP, the canonical policy is `.agent/domain/ACTIVITY_XP_V2_2_SPEC.md` and the staged plan is `.agent/plans/ACTIVITY_XP_ENGINE_IMPLEMENTATION.md`; the skeleton remains in `.agent/plans/ACTIVITY_XP_ENGINE_SKELETON.md`.
 
 For Student Assignment Attempt, the historical implementation plan is `.agent/plans/08-STUDENT_ASSIGNMENT_ATTEMPT_SPEC.md` and UI/runtime blueprint `.agent/plans/09-STUDENT_ASSIGNMENT_ATTEMPT_UI_RUNTIME_BLUEPRINT.md`. ADR 0027 remains authoritative for session ownership.
 

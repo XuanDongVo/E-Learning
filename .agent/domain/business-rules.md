@@ -72,4 +72,9 @@
 - Each terminal Session has at most one PRACTICE reward transaction (if positive amount); zero-amount sessions are finalized durably without positive ledger entry.
 - Concurrent requests may occur but must never cause duplicate or lost committed XP. Atomic reward ledger/profile update and database uniqueness are mandatory; this does not authorize a broad refactor of answer handling.
 - Older Question snapshots missing difficulty cannot be repriced from current Question state. No retroactive XP backfill.
-- No XP engine runtime is wired in the V50 foundation; see `.agent/domain/ACTIVITY_XP_V2_2_SPEC.md` for open balance and outcome questions.
+- Accepted base Question XP (EASY/MEDIUM/HARD): correct first no Hint 8/10/12; correct retry no Hint 6/8/10; correct with Hint 4/5/6 regardless of retry; all wrong, unanswered and Try Hard timeout = 0 XP. Hint takes precedence over retry. No timeout interaction/effort reward.
+- Level scaling is fixed at Session start: 10% reduction per 5 Level group, minimum multiplier 20%; HALF_UP per positive Question award and Completion Bonus separately; 0 remains 0.
+- Completion Bonus base = min(10, 2*ceil(totalQuestions/5)) where totalQuestions is the selected number at start. COMPLETED receives it even when every Question was wrong/timeout. GAME_OVER receives none and is not streak-qualified; only COMPLETED is streak-qualified.
+- Every new eligible replay ActivitySession receives normal XP; no replay penalty, per-Activity cap or daily cap. Random Question selection does not promise nonrepetition.
+- No XP backfill for historical sessions missing official XP Level/policy or immutable Question difficulty snapshots. Phase-1 UI exposes committed XP on Activity Result only, never as an in-progress earned award.
+- Rules are accepted; the XP Engine is still NOT active. See `.agent/domain/ACTIVITY_XP_V2_2_SPEC.md` and `.agent/plans/ACTIVITY_XP_ENGINE_IMPLEMENTATION.md`.

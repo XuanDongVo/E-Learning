@@ -1,6 +1,6 @@
 # UI Architecture Guidelines
 
-**Status:** Source of truth for UI structure, color, typography, spacing and components (Playful Classroom decision 2026-11-05)  
+**Status:** Source of truth for UI structure, color, typography, spacing and components (Tactify-style ink-border refinement 2026-11-06; Playful Classroom palette retained)  
 **Applies to:** Teacher UI and Student UI  
 **Audience:** Developers and AI agents who create or modify any screen
 
@@ -843,3 +843,35 @@ The Teacher shell follows the warm Playful Classroom family as its restrained **
 - Dashboard cards should answer one question each: classes, units, assignments and completion.
 - Vietnamese labels are preferred in the Teacher workspace and use sentence case.
 - Mobile navigation is a drawer; desktop navigation must expose the active route clearly.
+
+
+## 18. Ink-border / offset-shadow visual language (2026-11-06)
+
+**Scope: the entire application, Teacher and Student, including dashboards, learning flows, gamification, assignments, forms and dialogs.** This is a cross-product refinement of the existing Playful Classroom system, not a separate Gamification theme. Preserve all semantic color roles, typography, spacing and accessible interaction rules above. When older sections prefer flat cards or discourage borders, this section governs the visual treatment of *meaningful* card surfaces; it does not authorize wrapping every text block in a card.
+
+### Required styling
+
+- Main page panels, actionable cards and prominent summary surfaces: use `border-2 border-ink shadow-ink` with a semantic background (`bg-card`, `bg-secondary`, etc.). Apply consistent radius from the established scale.
+- Nested panels, dense tables, form controls and repeated compact items: prefer `border border-ink` or `border-2 border-ink` without a second heavy shadow. Maintain a clear hierarchy of elevation.
+- Primary buttons and clickable tiles may use `shadow-ink` with small hover/active translation; keep visible focus rings, keyboard behavior and reduced-motion support. Disabled controls must not look clickable.
+- Dialogs and popovers should have strong ink outlines and a restrained offset shadow; overlays, stacking and focus trapping remain unchanged.
+- Use existing semantic accents: orange for primary action, blue for learning, amber for streak/XP, green for success. Do not introduce hard-coded black, raw palette utilities or random bright card colors.
+- Keep teacher screens denser and more restrained than student rewards screens, but use the same ink border and offset-shadow vocabulary across both.
+- Use `shadow-ink` as the canonical heavy shadow utility. Do not mistake `shadow-pop-ink` or `shadow-pop` for the canonical class; older classes may remain during incremental migration.
+
+### Implementation and migration
+
+- `client-e-learning/src/app/globals.css` defines `--ink` and `shadow-ink`; ensure the shadow token works in light and dark themes. Prefer a hard offset shadow rather than a blurred floating shadow.
+- Reuse shared Card, Button, Dialog, Input and Table primitives; migrate shared primitives first, then shells and feature screens. Avoid broad one-off replacements that break spacing or state styles.
+- Every touched screen must pass responsive (360px), light/dark, keyboard focus, hover/active, reduced-motion and visual overflow checks. Check contrast after strengthening outlines.
+- Existing flat/soft-shadow components are migration debt, not an alternative approved visual language. Track migration by module; do not claim the entire application is updated until screens are audited.
+
+### Example
+
+```tsx
+<Card className="rounded-xl border-2 border-ink bg-card shadow-ink">
+  {/* meaningful content */}
+</Card>
+```
+
+**Updated design rule:** prioritize readability and workflow first, then emphasize the primary meaningful surfaces with visible ink borders and hard offset shadows. Avoid shadow-on-shadow nesting.

@@ -3,7 +3,7 @@
 Spring Boot, Java 21, Spring Data JPA, Flyway, PostgreSQL, Spring Security/JWT.
 
 ## Feature layout
-Current feature areas include activity, assignment, assessmentattempt, content, question, classes, grades, user, auth and common.
+Current feature areas include activity, assignment, assessmentattempt, content, question, classes, grades, user, auth, common and gamification. Gamification is split into `xp`, `streak`, `level`, `leaderboard` and `profile` packages; each owns its controllers, services, repositories, entities and DTOs where applicable.
 
 ## Rules
 - Controllers use services, not another feature's repositories.

@@ -10,6 +10,8 @@
 
 ## Current stage
 
+- Student leaderboard read queries now use Spring Data JPA native-query projections; the previous JDBC template dependency was removed from this service. Backend compilation is pending a Java-enabled environment.
+- Gamification backend code is organized by feature packages: `xp`, `streak`, `level`, `leaderboard`, and `profile`; profile, streak, level, and leaderboard endpoints now have separate controllers/services while preserving existing routes.
 - **Student Streak/Level v1 source:** accepted milestone policy (3/7/14/30 → 10/20/40/80 XP), daily completion service, ledger/Level integration, authenticated read APIs, and live Rewards overview added. No Leaderboard live data or Streak Freeze. Validation pending.
 
 - **Activity XP Engine Phases 1–4:** calculator, session audit, atomic terminal

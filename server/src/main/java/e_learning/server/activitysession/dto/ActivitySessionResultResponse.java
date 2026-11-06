@@ -3,8 +3,8 @@ package e_learning.server.activitysession.dto;
 import e_learning.server.activity.enums.ActivityMode;
 import e_learning.server.activity.enums.SelectionStrategy;
 import e_learning.server.activitysession.enums.ActivitySessionStatus;
-import e_learning.server.gamification.dto.ActivityXpQuestionReceipt;
-import e_learning.server.gamification.dto.ActivityXpRewardReceipt;
+import e_learning.server.gamification.xp.dto.ActivityXpQuestionReceipt;
+import e_learning.server.gamification.xp.dto.ActivityXpRewardReceipt;
 import java.math.BigDecimal;
 import java.util.List;
 

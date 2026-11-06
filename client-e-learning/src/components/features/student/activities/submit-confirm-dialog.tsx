@@ -5,9 +5,9 @@ import { AlertTriangle, Send, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const paperBtn =
-  "text-practice-ink bg-practice-paper border-2 border-practice-border shadow-[0_2px_0_var(--color-practice-border)] hover:bg-practice-light hover:text-practice-ink";
+  "border-2 border-border bg-card-bg text-foreground shadow-pop-sm hover:bg-secondary hover:text-foreground";
 const blueBtn =
-  "text-practice-light bg-practice-blue shadow-[0_2px_0_var(--color-practice-blue-dark)] hover:text-practice-light hover:bg-practice-blue-dark";
+  "bg-learning text-primary-foreground shadow-pop-sm hover:bg-learning/90 hover:text-primary-foreground";
 
 export function SubmitConfirmDialog({
   open,
@@ -32,8 +32,8 @@ export function SubmitConfirmDialog({
   return (
     <Dialog.Root open={open} onOpenChange={(v) => !pending && onOpenChange(v)}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-[60] bg-practice-overlay backdrop-blur-sm" />
-        <Dialog.Content className="fixed left-1/2 top-1/2 z-[61] w-[calc(100%-32px)] max-w-[440px] -translate-x-1/2 -translate-y-1/2 rounded-[20px] border border-practice-border bg-practice-paper p-5 text-practice-ink shadow-[0_18px_60px_var(--color-practice-overlay)] sm:p-6">
+        <Dialog.Overlay className="fixed inset-0 z-[60] bg-foreground/50 backdrop-blur-sm" />
+        <Dialog.Content className="fixed left-1/2 top-1/2 z-[61] w-[calc(100%-32px)] max-w-[440px] -translate-x-1/2 -translate-y-1/2 rounded-[20px] border border-border bg-card-bg p-5 text-foreground shadow-pop-lg sm:p-6">
           <Dialog.Close asChild>
             <Button
               variant="outline"
@@ -46,14 +46,14 @@ export function SubmitConfirmDialog({
             </Button>
           </Dialog.Close>
 
-          <span className="grid size-10 place-items-center rounded-full bg-amber-100 text-amber-600">
+          <span className="grid size-10 place-items-center rounded-full bg-warning-soft text-warning">
             <AlertTriangle size={20} />
           </span>
 
           <Dialog.Title className="mt-4 text-lg font-extrabold">
             Nộp bài ngay?
           </Dialog.Title>
-          <Dialog.Description className="mt-1.5 text-sm leading-6 text-practice-subtle">
+          <Dialog.Description className="mt-1.5 text-sm leading-6 text-muted-foreground">
             {unanswered > 0
               ? `Em còn ${unanswered} câu chưa trả lời. Các câu này sẽ được tính là bỏ qua khi nộp bài.`
               : "Em đã trả lời tất cả các câu. Nộp bài để xem kết quả nhé!"}
@@ -61,18 +61,18 @@ export function SubmitConfirmDialog({
               " Câu đang chọn chưa được kiểm tra sẽ không được tính."}
           </Dialog.Description>
 
-          <div className="mt-4 grid grid-cols-2 divide-x divide-practice-border rounded-xl border-2 border-practice-border bg-practice-light py-3 text-center">
+          <div className="mt-4 grid grid-cols-2 divide-x divide-border rounded-xl border-2 border-border bg-background py-3 text-center">
             <div>
-              <p className="text-xl font-extrabold text-practice-good">
+              <p className="text-xl font-extrabold text-success">
                 {answered}
               </p>
-              <p className="text-[11px] text-practice-subtle">Đã trả lời</p>
+              <p className="text-[11px] text-muted-foreground">Đã trả lời</p>
             </div>
             <div>
-              <p className="text-xl font-extrabold text-practice-bad">
+              <p className="text-xl font-extrabold text-destructive">
                 {unanswered}
               </p>
-              <p className="text-[11px] text-practice-subtle">Chưa trả lời</p>
+              <p className="text-[11px] text-muted-foreground">Chưa trả lời</p>
             </div>
           </div>
 

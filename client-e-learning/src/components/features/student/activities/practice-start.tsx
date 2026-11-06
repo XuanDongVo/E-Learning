@@ -14,10 +14,10 @@ import { RegionState } from "@/components/feedback";
 import { SkeletonCard } from "@/components/ui/skeleton/skeleton-card";
 
 const blueBtn =
-  "text-practice-light bg-practice-blue shadow-[0_2px_0_var(--color-practice-blue-dark)] hover:text-practice-light hover:bg-practice-blue-dark";
+  "bg-learning text-primary-foreground shadow-pop-sm hover:bg-learning/90 hover:text-primary-foreground";
 const glassBtn =
-  "text-practice-light bg-practice-blue/28 border-practice-light/30 hover:bg-practice-blue/65 hover:text-practice-light";
-const card = "bg-practice-paper shadow-[0_6px_0_var(--color-practice-shadow)]";
+  "border-card/30 bg-card/15 text-primary-foreground hover:bg-card/25 hover:text-primary-foreground";
+const card = "bg-card-bg shadow-pop-lg";
 
 const MODES: Record<ActivitySessionMode, { title: string; desc: string }> = {
   LEARNING: {
@@ -72,15 +72,15 @@ function Choice({
       type="button"
       aria-pressed={active}
       onClick={onClick}
-      className={`flex min-h-[72px] w-full items-center justify-between gap-4 rounded-2xl border-2 px-4 py-3 text-left transition-colors ${
+      className={`flex min-h-[72px] w-full items-center justify-between border-2 border-ink shadow-pop gap-4 rounded-2xl border-2 px-4 py-3 text-left transition-colors ${
         active
-          ? "border-practice-blue bg-practice-hint shadow-[0_3px_0_var(--color-practice-blue-dark)]"
-          : "border-practice-border bg-practice-light shadow-[0_3px_0_var(--color-practice-border)] hover:border-practice-blue"
+          ? "border-learning bg-learning-soft shadow-pop-sm"
+          : "border-border bg-background shadow-pop-sm hover:border-learning"
       }`}
     >
       <span>
         <span className="block text-base font-extrabold">{title}</span>
-        <span className="block text-sm text-practice-subtle">{desc}</span>
+        <span className="block text-sm text-muted-foreground">{desc}</span>
       </span>
       {icon}
     </button>
@@ -97,7 +97,7 @@ export function PracticeStart(p: Props) {
 
   return (
     <section
-      className="fixed inset-0 z-[45] overflow-y-auto bg-practice-blue text-practice-ink"
+      className="fixed inset-0 z-[45] overflow-y-auto bg-learning text-foreground"
       aria-label="Bắt đầu luyện tập"
     >
       <Image
@@ -136,14 +136,14 @@ export function PracticeStart(p: Props) {
 
           {p.options && (
             <>
-              <div className="mt-4 rounded-xl border-2 border-practice-border bg-practice-light px-4 py-3">
-                <p className="text-xs font-bold uppercase tracking-wide text-practice-subtle">Độ khó câu hỏi</p>
+              <div className="mt-4 rounded-xl border-2 border-ink shadow-pop bg-background px-4 py-3">
+                <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Độ khó câu hỏi</p>
                 <p className="mt-1 text-base font-extrabold">{difficultyLabels[p.options.questionDifficulty]}</p>
-                <p className="mt-1 text-sm text-practice-subtle">Độ khó do giáo viên thiết lập cho hoạt động này.</p>
+                <p className="mt-1 text-sm text-muted-foreground">Độ khó do giáo viên thiết lập cho hoạt động này.</p>
               </div>
-              <div className="mt-4 grid gap-3">
+              <div className="mt-4 grid gap-3 ">
                 {modes.map((m) => (
-                  <Choice
+                  <Choice 
                     key={m}
                     active={p.mode === m}
                     title={MODES[m].title}
@@ -162,9 +162,9 @@ export function PracticeStart(p: Props) {
                     }
                     icon={
                       m === "LEARNING" ? (
-                        <Sparkles size={20} className="shrink-0 text-practice-blue" />
+                        <Sparkles size={20} className="shrink-0 text-learning" />
                       ) : (
-                        <span className="flex shrink-0 gap-1 text-practice-subtle">
+                        <span className="flex shrink-0 gap-1 text-muted-foreground">
                           <Clock3 size={20} />
                           <Heart size={20} />
                         </span>
@@ -200,7 +200,7 @@ export function PracticeStart(p: Props) {
             </p>
           )}
           {p.startError && (
-            <p role="alert" className="mt-4 text-sm font-semibold text-practice-bad">
+            <p role="alert" className="mt-4 text-sm font-semibold text-destructive">
               {p.startError}
             </p>
           )}

@@ -22,20 +22,20 @@ export function HintPanel({ open, text, onClose }: Props) {
       {open && (
         <div
           ref={ref}
-          className="mb-4 flex items-start gap-3 rounded-2xl border-2 border-practice-blue bg-practice-hint p-3.5 shadow-[0_3px_0_var(--color-practice-blue-dark)]"
+          className="mb-4 flex items-start gap-3 rounded-2xl border-2 border-learning bg-learning-soft p-3.5 shadow-pop-sm"
         >
-          <span className="grid size-9 shrink-0 place-items-center rounded-full bg-practice-blue text-practice-light">
+          <span className="grid size-9 shrink-0 place-items-center rounded-full bg-learning text-primary-foreground">
             <Lightbulb size={18} />
           </span>
           <div className="min-w-0 flex-1">
-            <p className="text-xs font-extrabold text-practice-blue">Gợi ý từ Việt Cường</p>
-            <p className="mt-0.5 text-sm font-semibold leading-6 text-practice-ink">{text}</p>
+            <p className="text-xs font-extrabold text-learning">Gợi ý từ Việt Cường</p>
+            <p className="mt-0.5 text-sm font-semibold leading-6 text-foreground">{text}</p>
           </div>
           <button
             type="button"
             aria-label="Đóng gợi ý"
             onClick={onClose}
-            className="grid size-8 shrink-0 place-items-center rounded-full text-practice-subtle transition-colors hover:bg-practice-light hover:text-practice-ink"
+            className="grid size-8 shrink-0 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-background hover:text-foreground"
           >
             <X size={16} />
           </button>
@@ -61,7 +61,7 @@ export function HintStatus({
     <div
       role={error && !pending ? "alert" : "status"}
       aria-live="polite"
-      className="mb-4 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-2xl border-2 border-practice-border bg-practice-light px-3.5 py-2.5 text-sm font-semibold text-practice-ink"
+      className="mb-4 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-2xl border-2 border-border bg-background px-3.5 py-2.5 text-sm font-semibold text-foreground"
     >
       {pending ? (
         <span>
@@ -71,11 +71,11 @@ export function HintStatus({
         </span>
       ) : (
         <>
-          <span className="text-practice-bad">{error}</span>
+          <span className="text-destructive">{error}</span>
           <button
             type="button"
             onClick={onRetry}
-            className="font-extrabold text-practice-blue underline underline-offset-2 hover:text-practice-blue-dark"
+            className="font-extrabold text-learning underline underline-offset-2 hover:text-learning/80"
           >
             Thử lại
           </button>

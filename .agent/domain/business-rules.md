@@ -63,3 +63,24 @@
 - Every submission/timeout is intended to be graded server-side from the immutable AssessmentAttempt snapshot.
 - show_score_after_submit controls whether students see the calculated score immediately; show_answers_after_submit independently controls answers/explanations.
 - Composition position, not question ID, determines rendered item order. question_id ASC is only the legacy backfill order.
+
+## Activity XP v2.2 reward lifecycle (ADR 0029)
+- Activity only; Assignment and AssessmentAttempt never receive Activity XP.
+- Per-question difficulty is snapshotted from each Question when ActivitySession starts, as are official Level and XP policy/multiplier.
+- During IN_PROGRESS, XP is provisional: no XP ledger entry or Lifetime XP update.
+- COMPLETED awards eligible Question XP + Completion Bonus; GAME_OVER awards eligible Question XP but no Completion Bonus; ABANDONED awards nothing.
+- Each terminal Session has at most one PRACTICE reward transaction (if positive amount); zero-amount sessions are finalized durably without positive ledger entry.
+- Concurrent requests may occur but must never cause duplicate or lost committed XP. Atomic reward ledger/profile update and database uniqueness are mandatory; this does not authorize a broad refactor of answer handling.
+- Older Question snapshots missing difficulty cannot be repriced from current Question state. No retroactive XP backfill.
+- Accepted base Question XP (EASY/MEDIUM/HARD): correct first no Hint 8/10/12; correct retry no Hint 6/8/10; correct with Hint 4/5/6 regardless of retry; all wrong, unanswered and Try Hard timeout = 0 XP. Hint takes precedence over retry. No timeout interaction/effort reward.
+- Level scaling is fixed at Session start: 10% reduction per 5 Level group, minimum multiplier 20%; HALF_UP per positive Question award and Completion Bonus separately; 0 remains 0.
+- Completion Bonus base = min(10, 2*ceil(totalQuestions/5)) where totalQuestions is the selected number at start. COMPLETED receives it even when every Question was wrong/timeout. GAME_OVER receives none and is not streak-qualified; only COMPLETED is streak-qualified.
+- Every new eligible replay ActivitySession receives normal XP; no replay penalty, per-Activity cap or daily cap. Random Question selection does not promise nonrepetition.
+- No XP backfill for historical sessions missing official XP Level/policy or immutable Question difficulty snapshots. Phase-1 UI exposes committed XP on Activity Result only, never as an in-progress earned award.
+- Rules are accepted; the XP Engine is still NOT active. See `.agent/domain/ACTIVITY_XP_V2_2_SPEC.md` and `.agent/plans/ACTIVITY_XP_ENGINE_IMPLEMENTATION.md`.
+
+## Student Streak and milestone rewards (ADR 0030)
+- One `COMPLETED` ActivitySession on a `Asia/Ho_Chi_Minh` calendar day qualifies that day once; repeat completions still receive normal Activity XP but cannot increase Streak or milestone awards. GAME_OVER, ABANDONED and formal Assignments never qualify.
+- Consecutive days extend Streak; a missed day ends the run, and the next completion starts a new run at 1. Yesterday's run remains display-active until today ends. `longestStreak` never decreases.
+- At days 3/7/14/30 award fixed 10/20/40/80 STREAK_BONUS XP once per run/milestone. New runs can earn the same milestones again; no further bonus beyond day 30 and no Streak Freeze in v1.
+- Streak rewards update Lifetime XP and derived Level under the same protected transaction and keep separate idempotent ledger entries. No Level-up XP and no Activity multiplier on Streak reward. Frontend must not award XP.

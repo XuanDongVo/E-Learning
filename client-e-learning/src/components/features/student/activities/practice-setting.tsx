@@ -14,13 +14,13 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import garden from "../../../../../public/assets/practice-garden.jpg";
 
-/* ---------- Tailwind class tokens (thay cho các class .practice-* trong CSS) ---------- */
+/* ---------- Shared global color tokens ---------- */
 const blueBtn =
-  "text-practice-light bg-practice-blue shadow-[0_2px_0_var(--color-practice-blue-dark)] hover:text-practice-light hover:bg-practice-blue-dark";
+  "bg-learning text-primary-foreground shadow-pop-sm hover:bg-learning/90 hover:text-primary-foreground";
 const paperBtn =
-  "text-practice-ink bg-practice-paper border-2 border-practice-border shadow-[0_2px_0_var(--color-practice-border)] hover:bg-practice-light hover:text-practice-ink";
-const keyRow = "border-practice-border bg-practice-light text-practice-ink";
-const hintRow = "bg-practice-hint border-practice-blue";
+  "border-2 border-border bg-card-bg text-foreground shadow-pop-sm hover:bg-secondary hover:text-foreground";
+const keyRow = "border-border bg-background text-foreground";
+const hintRow = "border-learning bg-learning-soft";
 
 export function PracticeSettings({
   open,
@@ -44,8 +44,8 @@ export function PracticeSettings({
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-[60] bg-practice-overlay backdrop-blur-sm" />
-        <Dialog.Content className="fixed left-1/2 top-1/2 z-[61] w-[calc(100%-32px)] max-w-[650px] -translate-x-1/2 -translate-y-1/2 rounded-[20px] border border-practice-border bg-practice-paper p-5 text-practice-ink shadow-[0_18px_60px_var(--color-practice-overlay)] max-sm:max-h-[calc(100svh-32px)] max-sm:overflow-y-auto sm:p-6">
+        <Dialog.Overlay className="fixed inset-0 z-[60] bg-foreground/50 backdrop-blur-sm" />
+        <Dialog.Content className="fixed left-1/2 top-1/2 z-[61] w-[calc(100%-32px)] max-w-[650px] -translate-x-1/2 -translate-y-1/2 rounded-[20px] border border-border bg-card-bg p-5 text-foreground shadow-pop-lg max-sm:max-h-[calc(100svh-32px)] max-sm:overflow-y-auto sm:p-6">
           <div className="flex items-start gap-3 pr-8">
             <span
               className={`${blueBtn} grid size-10 shrink-0 place-items-center rounded-xl`}
@@ -56,7 +56,7 @@ export function PracticeSettings({
               <Dialog.Title className="text-lg font-extrabold">
                 Cài đặt trò chơi
               </Dialog.Title>
-              <Dialog.Description className="mt-1 text-xs text-practice-subtle">
+              <Dialog.Description className="mt-1 text-xs text-muted-foreground">
                 Loại game, ảnh nền và phím tắt.
               </Dialog.Description>
             </div>
@@ -86,7 +86,7 @@ export function PracticeSettings({
                 role="tab"
                 aria-selected={tab === id}
                 onClick={() => setTab(id)}
-                className={`min-w-0 flex-1 px-1 text-xs sm:text-sm ${tab === id ? blueBtn : "text-practice-subtle hover:text-practice-subtle"}`}
+                className={`min-w-0 flex-1 px-1 text-xs sm:text-sm ${tab === id ? blueBtn : "text-muted-foreground hover:text-foreground"}`}
               >
                 <Icon size={15} />
                 <span>{label}</span>
@@ -97,7 +97,7 @@ export function PracticeSettings({
             {tab === "keys" && (
               <>
                 <h3 className="text-sm font-extrabold">Phím tắt khi chơi</h3>
-                <p className="mt-1 text-[11px] text-practice-subtle">
+                <p className="mt-1 text-[11px] text-muted-foreground">
                   Dùng trên laptop; Ctrl + H vẫn hoạt động khi đang nhập đáp án.
                 </p>
                 <div className="mt-3 space-y-2">
@@ -114,7 +114,7 @@ export function PracticeSettings({
                         {row.keys.map((key) => (
                           <kbd
                             key={key}
-                            className="grid min-w-6 place-items-center rounded-md border border-practice-border bg-practice-paper px-1.5 py-1 text-[10px] font-bold text-practice-ink shadow-[0_2px_0_var(--color-practice-border)]"
+                            className="grid min-w-6 place-items-center rounded-md border border-border bg-card-bg px-1.5 py-1 text-[10px] font-bold text-foreground shadow-pop-sm"
                           >
                             {key}
                           </kbd>
@@ -123,7 +123,7 @@ export function PracticeSettings({
                     </div>
                   ))}
                 </div>
-                <p className="mt-3 text-center text-[10px] text-practice-subtle">
+                <p className="mt-3 text-center text-[10px] text-muted-foreground">
                   Trên mobile, dùng trực tiếp các nút ở thanh trên và thanh
                   dưới.
                 </p>
@@ -137,7 +137,7 @@ export function PracticeSettings({
                     <Button
                       key={item}
                       variant="outline"
-                      className={`relative h-36 overflow-hidden p-0 ${background === item ? "outline-[3px] outline-offset-2 outline-practice-blue" : ""}`}
+                      className={`relative h-36 overflow-hidden p-0 ${background === item ? "outline-[3px] outline-offset-2 outline-learning" : ""}`}
                       onClick={() => onBackgroundChange(item)}
                     >
                       <NextImage
@@ -151,14 +151,14 @@ export function PracticeSettings({
                         width={1920}
                         height={1024}
                       />
-                      <span className="absolute bottom-2 left-2 rounded-md bg-practice-paper px-2 py-1 text-xs text-practice-ink">
+                      <span className="absolute bottom-2 left-2 rounded-md bg-card-bg px-2 py-1 text-xs text-foreground">
                         {item === "garden"
                           ? "Vườn mộng mơ"
                           : "Bầu trời yên bình"}
                       </span>
                       {background === item && (
                         <Check
-                          className="absolute right-2 top-2 rounded-full bg-practice-paper p-1 text-practice-ink"
+                          className="absolute right-2 top-2 rounded-full bg-card-bg p-1 text-foreground"
                           size={24}
                         />
                       )}

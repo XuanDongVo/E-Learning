@@ -1,13 +1,77 @@
 # Project Progress
 
-**Updated:** 2026-11-01  
-**Branch:** `feature/teacher-assignment-analysis`  
+**Updated:** 2026-11-06
+**Branch:** `feature/student-gamification`
 **Canonical state:** `.agent/CURRENT_STATE.md`
+
+## UI correction (2026-11-06)
+
+- Owner selected **border-ink + shadow-pop** (not shadow-ink) as the application-wide outlined visual pattern. Student Home now owns a compact real-data weekly Streak calendar and simple XP-based Level card; Rewards is Leaderboard-only preview. Week dates are delivered by the Streak API. Freeze and minute-based goals remain deferred. Verification pending.
 
 ## Current stage
 
+- **Student Streak/Level v1 source:** accepted milestone policy (3/7/14/30 → 10/20/40/80 XP), daily completion service, ledger/Level integration, authenticated read APIs, and live Rewards overview added. No Leaderboard live data or Streak Freeze. Validation pending.
+
+- **Activity XP Engine Phases 1–4:** calculator, session audit, atomic terminal
+  settlement, persisted result receipt and Activity Result UI implemented
+  behind the default-off new-session rollout flag. Phase 5 deployment and
+  release verification remain pending.
+
+- **Student Learning Hub stages 1–3:** brief/nav contract, Home replacement,
+  and Units/Unit Detail UI refinement on `feature/student-gamification`.
 - Phase 7 Scope B AssessmentAttempt: on `main` (finalize path present).
 - **Phase 8 Teacher Assignment Analysis: implementation code complete on this branch.**
+
+## Streak/Level work log (2026-11-06)
+
+- Added ADR 0030 and implementation plan; reused V49 Streak/ledger tables without schema changes.
+- New `StudentStreakPolicy` and `StudentStreakService` attach `COMPLETED` transitions to one-per-day qualification and fixed STREAK_BONUS ledger. UI reads own profile and Streak from authenticated API; leaderboard remains mock and is visibly labeled.
+- Added pure calendar/milestone unit tests and service tests for same-day idempotency, three-day bonus/Level advancement, and reset. PostgreSQL concurrency and authenticated E2E are outstanding.
+- Maven test attempt blocked before compilation: Spring Boot 4.1.1 parent POM unavailable due Maven Central DNS/network restrictions. Frontend project dependencies are not installed in this shell; lint/type/build remain unverified.
+
+## Activity XP work log (2026-11-06)
+
+- Implemented the pure `ActivityXpCalculator` for the accepted v2.2 outcome
+  matrix, strict resolved-outcome mapping, Level multiplier, per-award HALF_UP
+  scaling, completion bonus and Level thresholds.
+- Normalized the stored timeout outcome to `TIMEOUT`; legacy interaction-based
+  timeout variants were never active and are superseded by ADR 0029.
+- Added deterministic, database-free unit coverage for the complete matrix,
+  Hint precedence, invalid outcome states, bonus/Level boundaries, overflow and
+  per-question rounding.
+- Validation: focused calculator suite passes (11/11). Full backend suite runs
+  56 tests with 51 passing; five pre-existing
+  `AssignmentServicePublishReadinessTest` cases fail because their test
+  `service` fixture is null, outside this Phase 1 change.
+- Phase 2 captures `ACTIVITY_XP_V2_2`, official Level and multiplier only for
+  newly eligible sessions when `ACTIVITY_XP_ENABLED=true`; default remains off.
+- New selected questions must have schema-v2 frozen Difficulty. Resolved
+  questions persist outcome/base/final XP once; unresolved Learning retries and
+  legacy sessions remain unaudited. Hint now shares the Session write lock used
+  by Answer/Timeout.
+- Profile first-create uses conflict-safe insert plus row lock; concurrent starts
+  serialize on the Student and lock active Sessions before the profile to match
+  the Phase 3 lock order.
+- Phase 2 focused validation passes 30/30 across calculator, snapshot eligibility,
+  profile/policy capture, question audit and ActivitySession wiring. Full suite
+  was intentionally not run for this phase.
+- Phase 3 now settles eligible `COMPLETED`/`GAME_OVER` sessions atomically under
+  Session → profile locks, persists one positive PRACTICE ledger entry, updates
+  Lifetime XP/Level, and durably finalizes zero/ABANDONED receipts without a
+  reward row. V52 stores immutable Lifetime XP/Level-after receipt snapshots.
+- Phase 4 extends the existing read-only Activity Result response with the
+  persisted reward receipt and optional question audit. The student result UI
+  displays committed question XP, completion bonus, total XP and Level change;
+  loading, network error, abandoned and legacy/no-reward states are explicit.
+- Restored the complete Practice runtime palette by replacing orphaned
+  `practice-*` utilities in the runner and its directly rendered components
+  with shared global semantic tokens (`learning`, `accent`, status, surface,
+  border and elevation tokens). Layout and behavior are unchanged.
+- The rollout remains disabled by default, so only sessions started with
+  `ACTIVITY_XP_ENABLED=true` become eligible; historical sessions are not
+  backfilled. Phase 5 migration preflight, rollout and operational checks remain.
+- Per explicit request, no Phase 3/4 tests, build or lint were run. These phases
+  are implemented but require the Phase 5 validation matrix before release.
 
 ## Teacher Analysis work log
 
@@ -17,9 +81,28 @@
 - Removed sample result view; cleaned legacy DTO names.
 - Docs synced (`CURRENT_STATE`, this file, `PHASES`, plan 11).
 
+## Student Learning Hub work log (2026-11-05)
+
+- Added `ui/STUDENT_LEARNING_HUB_BLUEPRINT.md` with Screen Briefs and real-API boundaries.
+- Replaced `/student` DashboardView entry with a Learning Hub driven by
+  `/v1/student/units`. No fictitious progress, recommendations or resume.
+- Updated Student `Units` navigation label to `Learning` without changing URL.
+- Simplified Unit explorer and Unit Detail hierarchy; preserved Section/Topic
+  filtering and Activity routes; removed index-based Unit accent rotation.
+- No backend endpoint, DTO, auth, Assignment runtime or Rewards contract changed.
+- Validation in the local branch snapshot: `npm run build` passed;
+  `npm run lint` passed with 53 pre-existing warnings (0 errors); focused
+  changed-file lint had 0 errors (Navbar retains its existing effect warning);
+  `git diff --check` passed. Standalone `npx tsc --noEmit` is blocked by
+  missing Practice illustration imports (`practice-garden.jpg`,
+  `practice-mascot.png`) outside this change. Authenticated browser/API E2E
+  and viewport screenshot review remain open.
+
 ## Verification
 
 - Frontend global page layout refactor completed on this branch: TeacherLayout and StudentShell now own the standard `1440px` page container; only the two Student runtime routes use immersive `h-dvh` rendering.
+- Student rewards leaderboard presentation was refined with a clearer streak-first hierarchy, responsive current-student summary, accessible disabled states for unavailable ranking criteria, and token-only feature styling. It remains explicitly backed by presentation-only mock gamification data.
+- Leaderboard UI static checks and `git diff --check` pass; focused ESLint, TypeScript, build, and browser-width verification could not be run because this shell has no Node.js runtime in `PATH`.
 - `client-e-learning`: TypeScript and production build pass. Full ESLint remains blocked by pre-existing errors in the assignment result page and autosave hook; focused changed-file lint has no errors.
 - Owner should run local E2E against graded attempts and visually verify 375px, 768px, and 1440px layouts.
 - Teacher DataTable refactor added a generic React/TypeScript core at `client-e-learning/src/components/ui/data-table/data-table.tsx`.

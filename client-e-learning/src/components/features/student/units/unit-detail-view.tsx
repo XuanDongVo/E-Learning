@@ -3,17 +3,7 @@
 import { Link } from "@/i18n/navigation";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import {
-  ArrowLeft,
-  BookOpen,
-  Compass,
-  Lightbulb,
-  ListTree,
-  RotateCcw,
-  Sparkles,
-  Tag,
-  Zap,
-} from "lucide-react";
+import { ArrowLeft, BookOpen, ListTree, RotateCcw, Tag, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FullPageState } from "@/components/feedback";
 import { studentUnitService } from "@/services/student-unit.service";
@@ -106,68 +96,55 @@ export function UnitDetailView({ unitId, mascotSlot }: UnitDetailViewProps) {
   const topicCount = unit.sections.reduce((sum, s) => sum + s.topics.length, 0);
 
   return (
-    <div className="space-y-6">
-      {/* ─── Back Action ─── */}
+    <div className="mx-auto max-w-6xl space-y-6 pb-8">
       <Link
         href="/student/units"
-        className="inline-flex items-center gap-2 rounded-xl border-2 border-border bg-card px-3.5 py-2 text-xs font-extrabold text-foreground shadow-pop-sm transition-all hover:border-primary hover:text-primary active:scale-95"
+        className="inline-flex min-h-11 items-center gap-2 text-base font-semibold text-muted-foreground hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
       >
         <ArrowLeft className="h-4 w-4" aria-hidden="true" />
         <span>Tất cả bài học</span>
       </Link>
 
-      {/* ─── Hero Unit Detail Card ─── */}
-      <section className="relative overflow-hidden rounded-3xl border-2 border-border bg-card p-4 sm:p-6 shadow-pop">
+      <section className="border-b border-border pb-6">
         <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
-          {/* Cover Unit */}
-          <div className="relative shrink-0 overflow-hidden rounded-2xl border-2 border-border shadow-pop-sm sm:w-56">
+          <div className="relative shrink-0 overflow-hidden rounded-xl border border-border sm:w-48">
             <UnitCover
               label={label}
               name={unit.name}
               coverUrl={unit.coverUrl}
-              className="h-36 w-full object-cover sm:h-44"
+              className="h-32 w-full object-cover sm:h-36"
             />
-            <span className="absolute left-2.5 top-2.5 inline-flex items-center gap-1 rounded-full border border-border bg-secondary px-2.5 py-0.5 text-xs font-extrabold uppercase text-foreground shadow-pop-sm">
-              <Sparkles className="h-3 w-3 text-warning" />
+            <span className="absolute left-2.5 top-2.5 rounded-lg bg-card px-2.5 py-1 text-sm font-bold text-foreground">
               Unit {label}
             </span>
           </div>
 
-          {/* Description & Chips */}
           <div className="flex flex-1 flex-col gap-2.5">
-            <div className="inline-flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-wider text-primary">
-              <BookOpen className="h-3.5 w-3.5" />
-              Chi tiết bài học
-            </div>
-
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
+            <h1 className="text-3xl font-extrabold text-foreground">
               {unit.name}
             </h1>
 
             {unit.description ? (
-              <p className="line-clamp-2 text-sm font-semibold text-muted-foreground">
+              <p className="max-w-prose text-base text-muted-foreground">
                 {unit.description}
               </p>
             ) : (
-              <p className="text-sm italic text-muted-foreground/70">
-                Luyện tập các kỹ năng và hoàn thành các hoạt động bên dưới để tích lũy kiến thức!
+              <p className="text-base text-muted-foreground">
+                Chọn phần học bên dưới để xem hoạt động luyện tập.
               </p>
             )}
 
-            {/* Quick Stats Chips */}
-            <div className="mt-1 flex flex-wrap gap-2 text-xs font-bold text-foreground">
-              <span className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-secondary px-3 py-1.5 shadow-pop-sm">
-                <ListTree className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+            <div className="mt-1 flex flex-wrap gap-x-4 gap-y-2 text-sm text-muted-foreground">
+              <span className="inline-flex items-center gap-1.5">
+                <ListTree className="h-4 w-4" aria-hidden="true" />
                 <span>{unit.sections.length} phần học</span>
               </span>
-
-              <span className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-secondary px-3 py-1.5 shadow-pop-sm">
-                <Tag className="h-4 w-4 text-teal" aria-hidden="true" />
+              <span className="inline-flex items-center gap-1.5">
+                <Tag className="h-4 w-4" aria-hidden="true" />
                 <span>{topicCount} chủ đề</span>
               </span>
-
-              <span className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-secondary px-3 py-1.5 shadow-pop-sm">
-                <Lightbulb className="h-4 w-4 text-warning" aria-hidden="true" />
+              <span className="inline-flex items-center gap-1.5">
+                <BookOpen className="h-4 w-4" aria-hidden="true" />
                 <span>{unit.activities.length} hoạt động</span>
               </span>
             </div>
@@ -182,12 +159,8 @@ export function UnitDetailView({ unitId, mascotSlot }: UnitDetailViewProps) {
         </div>
       </section>
 
-      {/* ─── Section Filter Pills (Tactile 3D Buttons) ─── */}
       <div className="space-y-3">
-        <div className="flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-wider text-muted-foreground">
-          <Compass className="h-3.5 w-3.5 text-primary" />
-          <span>Chọn phần học (Section)</span>
-        </div>
+        <h2 className="text-xl font-bold text-foreground">Chọn phần học</h2>
 
         <div className="flex flex-wrap gap-2.5" role="group" aria-label="Sections">
           {/* Nút Overview */}
@@ -195,17 +168,17 @@ export function UnitDetailView({ unitId, mascotSlot }: UnitDetailViewProps) {
             type="button"
             aria-pressed={sectionId === "all"}
             onClick={() => pickSection("all")}
-            className={`inline-flex items-center gap-2 rounded-2xl border-2 px-4 py-2 text-sm font-extrabold transition-all ${
+            className={`inline-flex min-h-11 items-center gap-2 rounded-xl border px-4 py-2 text-base font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${
               sectionId === "all"
-                ? "border-ink bg-primary text-primary-foreground shadow-pop translate-y-0.5"
-                : "border-border bg-card text-foreground shadow-pop hover:border-primary active:translate-y-0.5 active:shadow-pop-sm"
+                ? "border-primary bg-primary-soft text-primary"
+                : "border-border bg-card text-foreground hover:border-primary"
             }`}
           >
             <span>Tất cả</span>
             <span
-              className={`rounded-full px-2 py-0.5 text-xs font-extrabold ${
+              className={`rounded-full px-2 py-0.5 text-sm font-bold ${
                 sectionId === "all"
-                  ? "bg-primary-foreground/20 text-primary-foreground"
+                  ? "bg-card text-primary"
                   : "bg-muted text-muted-foreground"
               }`}
             >
@@ -223,17 +196,17 @@ export function UnitDetailView({ unitId, mascotSlot }: UnitDetailViewProps) {
                 type="button"
                 aria-pressed={isSelected}
                 onClick={() => pickSection(section.id)}
-                className={`inline-flex items-center gap-2 rounded-2xl border-2 px-4 py-2 text-sm font-extrabold transition-all ${
+                className={`inline-flex min-h-11 items-center gap-2 rounded-xl border px-4 py-2 text-base font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${
                   isSelected
-                    ? "border-ink bg-primary text-primary-foreground shadow-pop translate-y-0.5"
-                    : "border-border bg-card text-foreground shadow-pop hover:border-primary active:translate-y-0.5 active:shadow-pop-sm"
+                    ? "border-primary bg-primary-soft text-primary"
+                    : "border-border bg-card text-foreground hover:border-primary"
                 }`}
               >
                 <span>{section.name}</span>
                 <span
-                  className={`rounded-full px-2 py-0.5 text-xs font-extrabold ${
+                  className={`rounded-full px-2 py-0.5 text-sm font-bold ${
                     isSelected
-                      ? "bg-primary-foreground/20 text-primary-foreground"
+                      ? "bg-card text-primary"
                       : "bg-muted text-muted-foreground"
                   }`}
                 >
@@ -245,15 +218,14 @@ export function UnitDetailView({ unitId, mascotSlot }: UnitDetailViewProps) {
         </div>
       </div>
 
-      {/* ─── Topic Sub-filter Chips ─── */}
       {selectedSection && selectedSection.topics.length > 0 && (
         <div
-          className="flex flex-wrap items-center gap-2 rounded-2xl border border-border bg-secondary/50 p-3 shadow-pop-sm"
+          className="flex flex-wrap items-center gap-2 rounded-xl bg-secondary p-3"
           role="group"
           aria-label="Topics"
         >
-          <span className="inline-flex items-center gap-1 text-xs font-extrabold uppercase text-muted-foreground">
-            <Tag className="h-3.5 w-3.5 text-teal" />
+          <span className="inline-flex items-center gap-1 text-sm font-semibold text-muted-foreground">
+            <Tag className="h-4 w-4" />
             Chủ đề:
           </span>
 
@@ -266,9 +238,9 @@ export function UnitDetailView({ unitId, mascotSlot }: UnitDetailViewProps) {
                 type="button"
                 aria-pressed={on}
                 onClick={() => setTopicId(id)}
-                className={`rounded-xl border px-3 py-1 text-xs font-bold transition-all active:scale-95 ${
+                className={`min-h-10 rounded-lg border px-3 py-2 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${
                   on
-                    ? "border-ink bg-primary text-primary-foreground shadow-pop-sm"
+                    ? "border-primary bg-primary-soft text-primary"
                     : "border-border bg-card text-foreground hover:border-primary"
                 }`}
               >
@@ -294,8 +266,8 @@ export function UnitDetailView({ unitId, mascotSlot }: UnitDetailViewProps) {
         </div>
 
         {visible.length === 0 ? (
-          <div className="flex flex-col items-center justify-center gap-2 rounded-3xl border-2 border-border bg-card p-12 text-center shadow-pop">
-            <span className="text-4xl">🎯</span>
+          <div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-border bg-card p-8 text-center">
+            <BookOpen className="h-8 w-8 text-learning" aria-hidden="true" />
             <p className="text-base font-extrabold text-foreground">
               Chưa có hoạt động nào trong phần này
             </p>

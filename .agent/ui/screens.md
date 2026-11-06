@@ -19,7 +19,20 @@
 
 ## Student routes
 
-Student dashboard, units, assignments and progress have historically contained mock/placeholder areas. Do not label them fully implemented without a current source and browser audit. ActivitySession runner/result/review is separate from the not-yet-implemented formal AssessmentAttempt runner.
+- `/student`: Learning Hub with live Student Units and a compact seven-day Streak + XP Level progress region. Not a leaderboard/KPI wall.
+- `/student/units`: searchable Unit explorer.
+- `/student/units/:unitId`: Sections/Topics and published Activity choices.
+- `/student/assignments`: independent teacher-assigned work.
+- `/student/progress`: placeholder; not a live analytics page.
+- `/student/rewards`: dedicated Leaderboard preview with clearly labeled mock ranking/Hall of Fame/feed. Streak/Level move to Student Home; rankings are not live.
+- `/student/profile`: student profile.
+
+See `ui/STUDENT_LEARNING_HUB_BLUEPRINT.md` for the active Home/Units/Unit Detail contract.
+ActivitySession runner/result/review is separate from the formal AssessmentAttempt runtime.
+The Activity Result reward receipt is server-authored and shows committed XP
+only: Question XP, Completion Bonus, total earned, Lifetime XP and Level change.
+It has explicit loading, retryable error, abandoned and legacy/no-reward states;
+there is no in-progress XP counter.
 
 ## Cross-screen contracts
 

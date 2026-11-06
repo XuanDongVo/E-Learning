@@ -1,7 +1,7 @@
 # Current Implementation State
 
-**Audit date:** 2026-11-01  
-**Branch:** `feature/teacher-assignment-analysis`  
+**Audit date:** 2026-11-06
+**Branch:** `feature/student-gamification`
 **Baseline:** `main` after merge of `feature/student-assignment-attempt` (PR #30)
 
 ## 1. Authority model
@@ -27,6 +27,29 @@
 | Phase 7 Scope A ActivitySession | Implemented; E2E open |
 | Phase 7 Scope B AssessmentAttempt | Code on `main`; E2E + hard-lock open |
 | **Phase 8 Teacher Assignment Analysis** | **Code complete on this branch; local E2E not claimed** |
+| **Activity XP Engine Phases 1–4** | **Implemented behind default-off rollout; Phase 5 validation/enablement open** |
+| **Student Streak / Level v1** | **Service/API and Rewards UI source added; tests/build/E2E pending verification** |
+
+### Student Streak / Level v1
+
+- `COMPLETED` ActivitySession invokes one-per-day qualification in `Asia/Ho_Chi_Minh`; replays in the same day do not advance the run. Milestones 3/7/14/30 award separate STREAK_BONUS ledger amounts 10/20/40/80, updating Lifetime XP and derived Level.
+- Existing V49 profile/day/ledger schema reused; no migration required for the accepted no-Freeze/no-backfill policy. Session → profile lock order is preserved. No historical Streak backfill.
+- Authenticated read-only `GET /v1/student/gamification/profile` and `/streak`; Student Rewards shows live Streak/Level in a separate panel while Leaderboard/Hall of Fame/feed stay labeled mock.
+- PostgreSQL concurrency and authenticated E2E not yet verified. See `.agent/plans/STUDENT_STREAK_LEVEL_IMPLEMENTATION.md`.
+
+### Activity XP Engine
+
+- New eligible ActivitySessions freeze policy/Level/multiplier and persist a
+  validated per-question XP audit.
+- COMPLETED/GAME_OVER settlement atomically writes the immutable session
+  receipt, one positive PRACTICE ledger row when applicable, and profile
+  Lifetime XP/Level; ABANDONED and zero awards finalize without a reward row.
+- `GET /v1/activity-sessions/{sessionId}/result` is read-only and exposes the
+  committed receipt plus optional question audit. The Activity Result UI shows
+  XP totals and Level change and handles loading/error/legacy states.
+- V52 adds immutable `xp_lifetime_after` and `xp_level_after` receipt fields.
+  `ACTIVITY_XP_ENABLED` remains false by default. Phase 3/4 validation was
+  explicitly skipped for this task and remains required before rollout.
 
 ## 4. Teacher Assignment Analysis (this branch)
 

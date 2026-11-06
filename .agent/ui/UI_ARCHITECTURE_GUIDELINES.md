@@ -1,6 +1,6 @@
 # UI Architecture Guidelines
 
-**Status:** Source of truth for UI structure, color, typography, spacing and components  
+**Status:** Source of truth for UI structure, color, typography, spacing and components (Ink-border + shadow-pop correction 2026-11-06; Playful Classroom palette retained)  
 **Applies to:** Teacher UI and Student UI  
 **Audience:** Developers and AI agents who create or modify any screen
 
@@ -108,10 +108,13 @@ Insights     Reports
 ### 2.3.1 Student navigation (target)
 
 ```text
-Home · Learning · Practice · Activities · Progress · Profile
+Home · Learning · Assignments · Progress · Rewards · Profile
 ```
 
-Student navigation uses the same shell grid as Teacher (Section 5.1) and the same active-state rules.
+Student navigation uses the same brand/tokens and route-derived active-state rules.
+Its Home is a **Learning Hub** focused on choosing real Unit content, not an
+analytics dashboard. See `ui/STUDENT_LEARNING_HUB_BLUEPRINT.md` for the active
+Student screen and route contract; Profile remains reachable from the account area.
 
 ---
 
@@ -121,118 +124,97 @@ Tokens live in `globals.css`. **Raw palette utilities are forbidden in feature c
 (`text-slate-400`, `bg-emerald-50`, `border-rose-300`, `#hex`, `rgb()`), as are arbitrary sizes
 (`text-[11px]`, `h-[37px]`). Use a token or propose a new one (3.8).
 
-### 3.1 Color roles
+### 3.1 Color roles — Playful Classroom (current implementation)
 
-| Token | Value | Role | Use for |
+**Brand decision (2026-11-05): Playful Classroom.** Teacher and Student are one LearnUp
+product with a warm classroom identity. The live `client-e-learning/src/app/globals.css`
+is the value source of truth; the old indigo/cyan palette and measured contrast claims
+in previous versions of Sections 3.1–3.3 are superseded. Do not reintroduce them.
+
+| Current CSS variable | Current value (light theme) | Meaning | Usage |
 |---|---|---|---|
-| `primary` | `#4F46E5` | Action | Primary buttons, links, selected state, focus ring, progress |
-| `primary-hover` | `#4338CA` | Action (hover/pressed) | Hover/active of primary |
-| `primary-light` | `#EEF2FF` | Action (tint) | Selected row/option background, subtle emphasis |
-| `secondary` | `#06B6D4` | Learning identity | Student Learning mode and limited product identity |
-| `secondary-light` | `#ECFEFF` | Secondary tint | Student Learning-mode tint and rare informational emphasis |
-| `accent` | `#F59E0B` | Reward / attention | XP, streaks, timers, warnings, "needs attention" |
-| `accent-light` | `#FEF3B7` | Accent tint | Warning banners and reward surfaces |
-| `neutral-dark` | `#0F172A` | Text | Headings, body text |
-| `neutral-muted` | `#64748B` | Text | Secondary text, meta, table headers |
-| `neutral-subtle` | `#94A3B8` | Decoration | Placeholder, disabled, decorative icons. **Never meaningful text** |
-| `border-color` | `#E2E8F0` | Structure | Dividers and structural borders |
-| `background-app` | `#F8FAFC` | Surface (page) | App background |
-| `card-bg` | `#FFFFFF` | Surface | Controls, dialogs, genuinely self-contained cards |
+| `--primary` | `#F0652F` | Shared LearnUp orange | Primary actions, active navigation, focus |
+| `--primary-hover` | `#DE5523` | Orange interaction | Hover/pressed |
+| `--primary-soft` | `#F0652F1F` | Orange tint | Selected state, low-emphasis emphasis |
+| `--background` | `oklch(98.5% 0.006 95)` | Warm page background | Both workspaces |
+| `--card` | `#FFFFFF` | Content surface | Self-contained content |
+| `--foreground` | `#2B2220` | Warm ink | Primary text |
+| `--muted-foreground` | `#6F625B` | Supporting ink | Secondary text |
+| `--secondary` | `#FFF5E9` | Warm cream surface | Secondary actions/surfaces, **not Learning mode** |
+| `--accent` | `#F0A81C` | Reward amber | XP, streak, reward milestones, attention |
+| `--learning` | `#2F7FE0` | Learning blue | Student learning context and progress |
+| `--learning-soft` | `#2F7FE01F` | Learning tint | Contextual student surfaces |
+| `--success` | `#2F9A5E` | Success | Correct/completed |
+| `--warning` | `#F0A81C` | Warning | Warnings and Try Hard timer attention |
+| `--destructive` | `#D93F3F` | Destructive/error | Invalid, incorrect, destructive |
+| `--info` | `#2F7FE0` | Information | Informational feedback |
+| `--border` | `#462D142B` | Structural border | Separators, cards |
+| `--input` | `#462D1433` | Control boundary | Form controls |
 
-**Color budget for Teacher UI**
+Use the registered Tailwind semantic aliases in `globals.css` (e.g. `bg-primary`,
+`bg-primary-soft`, `bg-learning`, `text-foreground`, `text-muted-foreground`,
+`bg-card`, `border-border`). Compatibility aliases such as `primary-light`,
+`neutral-dark`, `neutral-muted`, `background-app`, `card-bg`, and
+`border-color` resolve through the same theme and may be migrated gradually.
+Do **not** assume `secondary` means cyan: its current role is warm cream.
 
-- `primary` is the only saturated action color.
-- `accent` appears only when attention or reward has semantic meaning.
-- `secondary` is not used for ordinary Teacher actions or navigation.
-- Most of the screen should remain neutral. Do not use multiple colored fills in the same region.
-- A status should not become a colorful pill merely because a color exists.
+**Color budget**
+- Both: orange is the common brand/action color; neutral ink and cream dominate.
+- Teacher: mostly neutral; orange only for actions/selection; semantic status colors only
+  when communicating status. No game styling.
+- Student: same orange brand/navigation; blue specifically communicates learning;
+  amber specifically communicates XP, streak, reward and warning; a success/error
+  color only when the outcome calls for it.
+- Never use blue or amber as a competing primary CTA color. Never assign random
+  bright colors by list index or screen.
 
-**Do not solve hierarchy with color.** First use position, typography, whitespace, divider and alignment;
-use color only for action, state or attention.
+### 3.2 Contrast and accessibility
 
-### 3.2 Contrast (measured, WCAG 2.1)
+Use WCAG 2.1 AA: text ≥ 4.5:1 (large text ≥ 3:1); meaningful UI boundaries
+and non-text indicators ≥ 3:1. **Recalculate contrast for the current computed
+token values, including light/dark themes and overlays.** Historical contrast
+ratios measured against the superseded indigo/cyan theme are not valid evidence.
 
-Text needs ≥ 4.5:1 (≥ 3:1 only for text ≥ 24px or ≥ 18.66px bold). UI component boundaries and icons need ≥ 3:1.
+- Use `primary-foreground`, `secondary-foreground`, `accent-foreground`
+  and other matching foreground tokens on filled surfaces; verify the rendered pair.
+- Never assume amber/blue/green text on white, or white text on a status fill,
+  automatically passes.
+- Muted text remains meaningful: test contrast rather than using decorative
+  opacity for instructions, scores, dates or errors.
+- Control boundaries and keyboard focus must remain visible. A divider's contrast
+  requirement is different from an input's.
+- Never communicate correctness, rank changes or warnings by color alone:
+  pair color with a label/icon and accessible text.
 
-| Pair | Ratio | Verdict |
-|---|---:|---|
-| white on `primary` | 6.29 | Pass |
-| `primary` on `primary-light` | 5.62 | Pass |
-| `neutral-muted` on white / on background | 4.76 / 4.55 | Pass |
-| `neutral-dark` on `accent` | 8.31 | Pass |
-| `neutral-dark` on `secondary` | 7.35 | Pass |
-| **white on `secondary`** | **2.43** | **Fail** |
-| **white on `accent`** | **2.15** | **Fail** |
-| `secondary-hover` on white / on `secondary-light` | 3.68 / 3.54 | Fail for body-size text |
-| **`neutral-subtle` on white** | **2.56** | **Fail** (decoration only) |
-| **`border-color` on white** | **1.23** | Fail as a control boundary (fine as a divider) |
+### 3.3 Tokens and naming (existing, not proposed)
 
-Rules that follow:
+`globals.css` already defines semantic status colors, foreground pairs,
+soft variants, chart colors and the warm brand. **Do not copy the former
+indigo/cyan token proposal from this document into CSS.**
 
-- Text on a filled `secondary` or `accent` surface is **`neutral-dark`**, never white.
-- Colored text uses the text variants in 3.3 (`secondary-text`, `accent-text`), never the fill color.
-- Form controls use `border-input` (3.3), not `border-color`.
-- Never convey meaning by color alone: pair it with an icon or a word (✓ Correct, ✗ Incorrect).
-
-### 3.3 Proposed additions (add once, then use everywhere)
-
-The current tokens have no semantic status colors, no readable text variants for `secondary`/`accent`,
-and no control border. Feature code compensates with raw `slate/emerald/rose` utilities (Section 13).
-Add the following to `globals.css`, with every value verified above or below.
-
-```css
-:root {
-  /* Foreground on filled secondary/accent: dark text (white = 2.43 / 2.15, fails) */
-  --secondary-foreground: #0F172A;
-  --accent-foreground: #0F172A;
-
-  /* Readable colored text on white / on *-light backgrounds */
-  --secondary-text: #0E7490;   /* 5.36 on white, 5.15 on secondary-light */
-  --accent-text: #92400E;      /* 7.09 on white, 6.37 on accent-light   */
-
-  /* Semantic status */
-  --success: #047857;          /* 5.48 on white, 5.21 on success-light; white on it 5.48 */
-  --success-light: #ECFDF5;
-  --danger: #DC2626;           /* 4.83 on white; white on it 4.83 */
-  --danger-hover: #B91C1C;     /* 6.47 on white */
-  --danger-light: #FEF2F2;
-  --danger-text: #B91C1C;      /* 5.91 on danger-light */
-
-  /* Form control boundary (>= 3:1 on card-bg and background-app) */
-  --border-input: #8091A7;     /* 3.22 on white, 3.08 on #F8FAFC */
-}
-
-@theme {
-  --color-secondary-text: var(--secondary-text);
-  --color-accent-text: var(--accent-text);
-  --color-success: var(--success);
-  --color-success-light: var(--success-light);
-  --color-danger: var(--danger);
-  --color-danger-hover: var(--danger-hover);
-  --color-danger-light: var(--danger-light);
-  --color-danger-text: var(--danger-text);
-  --color-border-input: var(--border-input);
-}
-```
-
-`warning` is expressed with `accent-light` + `accent-text`. `info` is `primary-light` + `primary`.
+- Prefer existing `primary[-soft|-hover|-foreground]`, `learning[-soft]`,
+  `accent[-foreground]`, `success[-soft]`, `warning[-soft]`,
+  `destructive[-soft|-foreground]`, `info[-soft]` and form/border tokens.
+- Add missing semantic aliases only through a separate token-governance change
+  with contrast evidence, usage examples and dark-mode behavior.
+- Raw hex colors and Tailwind palette utilities are not a feature-level styling API.
+- Current code containing older indigo/raw colors is **migration debt**, not an
+  alternative Student theme.
 
 ### 3.4 Status vocabulary (one meaning, one color)
 
-| Meaning | Where it appears | Fill/tint | Text | Icon |
-|---|---|---|---|---|
-| Draft | Content, Activity, Assignment | neutral | `neutral-muted` | `FileEdit` |
-| Published / Ready / Correct | lifecycle, readiness, answers | `success-light` only when a filled status surface is useful | `success` | `CheckCircle2` |
-| Archived | lifecycle | neutral | `neutral-muted` | `Archive` |
-| Needs attention | **derived readiness**, not a lifecycle status | `accent-light` only for warning callouts | `accent-text` | `AlertTriangle` |
-| Error / Blocked / Incorrect | validation, failures | `danger-light` for alerts | `danger-text` | `XCircle` |
-| Selected / Info | selection, informational notes | `primary-light` | `primary` | `Info` |
+| Meaning | Surface | Text/icon strategy |
+|---|---|---|
+| Draft / Archived | Neutral | Muted text + explicit lifecycle label |
+| Published / Ready / Correct | `success-soft` if useful | `success` plus check icon/label; verify contrast |
+| Needs attention / timer warning | `warning-soft` | Warning label/icon; separate from lifecycle |
+| Error / Blocked / Incorrect | `destructive-soft` | Error label/icon, actionable explanation |
+| Selected / Primary action | `primary-soft` or `primary` | Shared orange, visible focus |
+| Learning context | `learning-soft` | Blue used only as learning cue |
+| XP / Streak / Reward | `accent` or a suitable soft surface | Amber plus numerical/unit label |
 
-For ordinary list/detail metadata, prefer **text + icon** over a filled badge. Use filled status chips only
-when the status must be scanned quickly across comparable items.
-
-`Needs attention` must never appear in the same slot as `Draft/Published/Archived`: lifecycle and readiness
-are shown as separate pieces of information.
+Status must never substitute for lifecycle, and reward must not resemble an error
+or teacher operational warning. Use text/icon first; avoid redundant badge walls.
 
 ### 3.5 Typography
 
@@ -357,19 +339,19 @@ Breakpoints are Tailwind defaults: `sm 640`, `md 768`, `lg 1024`, `xl 1280`.
 ┌────────────┬───────────────────────────────────────────┐
 │            │ Header  64px  (context · user menu)       │
 │ Sidebar    ├───────────────────────────────────────────┤
-│ 256px      │ Main    padding 24px (16px below md)      │
+│ 240px      │ Main    padding 24px (16px below md)      │
 │ (≥ lg)     │   centered content                        │
 └────────────┴───────────────────────────────────────────┘
 ```
 
-- Sidebar: 256px, `card-bg`, 1px right border, 16px inner padding. Logo at top, grouped nav, account/switch at bottom.
+- Sidebar: 240px, `card-bg`, 1px right border, 16px inner padding. Logo at top, grouped nav, account/switch at bottom.
 - Header: 64px, `card-bg`, 1px bottom border.
 - Main: `background-app`. The layout owns page padding; pages do not add a second outer padding.
 - Content container: `max-w-7xl`, centered, with clear vertical spacing between regions.
 - Navigation is flat: no pill-shaped nav groups. Active Teacher navigation uses `primary-light` + `primary`
   and may use a 2px leading border; inactive items stay neutral.
-- Teacher uses `primary` as its only saturated action/active color. `secondary` is reserved for Student
-  Learning identity or other explicitly defined semantic uses.
+- Teacher uses `primary` as its only saturated action/active color. `learning` is reserved for Student
+  Learning context; `secondary` is a warm neutral surface, never a cyan brand.
 - Structural containers do not need rounded corners. Use spacing, dividers and alignment to establish hierarchy.
 
 ### 5.2 Page anatomy
@@ -480,12 +462,12 @@ Fills for `teal`/`amber` use dark text (3.3).
 One `Badge` primitive, tones taken **only** from 3.4: `neutral`, `success`, `warning`, `danger`, `info`,
 plus mode tones below. Text is `label` (11px, 600), `rounded-full`, `px-2 py-0.5`, optional 12px icon.
 
-Activity mode tones: **Learning** → `secondary-light` + `secondary-text`; **Try Hard** → `accent-light` + `accent-text`.
+Activity mode tones: **Learning** → `learning-soft` + a verified readable foreground; **Try Hard** → `warning-soft` + a verified readable foreground.
 An Activity that offers both modes shows **two chips** (`Learning` `Try Hard`), not a third color or a "Both" chip.
 
 ### 6.3 Form controls
 
-- Structure: label (`body`, 600) above the control, optional helper (`body-sm`, muted) below, error (`body-sm`, `danger-text`, with an icon) replacing the helper.
+- Structure: label (`body`, 600) above the control, optional helper (`body-sm`, muted) below, error (`body-sm`, a contrast-verified destructive foreground, with an icon) replacing the helper.
 - Control: 40px tall, `radius-md`, `card-bg`, 1px `border-input`, `px-3`, `body`. Placeholder uses `neutral-subtle` and never carries required information.
 - Focus: **visible ring** (`focus-visible:ring-2 ring-primary ring-offset-2`) in addition to the border change. Do not remove the outline without replacing it.
 - Disabled: `neutral-subtle` text, `background-app` fill, and a reason when it is not obvious.
@@ -563,48 +545,81 @@ Teacher UI is an **LMS / management system**. It should feel calm, editorial and
 - It must never look like a game: no confetti, mascots, big gradients, animated backgrounds or XP-style visuals.
 - A Teacher screen should pass the three-second scan test: purpose, main action and important state are obvious.
 
-## 8. Student UI
+## 8. Student UI — Playful Learning
 
-Student UI may be **more engaging** than Teacher UI. It uses the **same tokens, same shell grid and same components**, and spends a bounded *expressiveness budget*.
+**Vibe:** a modern, warm, motivating classroom for Grades 6–8; approachable,
+not childish, not a SaaS admin dashboard and not a full-screen arcade.
+Teacher is **Calm Classroom**; Student is **Playful Learning**. They share
+the same brand, Plus Jakarta Sans, semantic tokens, component primitives,
+spacing grammar, accessibility behavior, and navigation identity.
 
-### 8.1 What may differ
+### 8.1 Expressiveness budget
 
-| Allowed in Student UI | Not allowed |
+| Same across Teacher and Student | Student-specific expression |
 |---|---|
-| Larger type steps (`ui-2xl`, `display`) for scores and results | New fonts or type scales |
-| `radius-lg` / `radius-xl` surfaces, 48px buttons | New radii |
-| `accent` for XP, streaks, timers, rewards | New palette colors |
-| Progress rings/bars, level and streak indicators | Decorative blobs, random gradients |
-| Feedback animation (correct, wrong, XP gain, life lost) | Entrance animation on every element |
-| Illustration in empty/result states | Stock-art backgrounds behind content |
+| Orange CTA/brand, cream background, warm ink | Blue learning cues and progress |
+| Buttons, fields, tabs, dialogs, toasts and states | Amber XP, streak, achievements, celebratory moments |
+| Typography system, spacing and consistent shell ownership | Larger key figures, more breathable task surfaces |
+| Semantic success/error/warning rules | Mascot/illustration in suitable learning, empty, or result moments |
+| Keyboard/focus and mobile behavior | Short feedback animation tied to a learner action |
 
-Gradients: none in Teacher UI. In Student UI only on result/hero surfaces, built from palette tokens, never behind body text.
+Use one memorable visual focus per Student screen (e.g. the current learning
+step, a progress path, or a meaningful award). Keep the rest restrained.
+No stock-photo wallpaper, decorative gradients behind text, random colored
+cards, competing call-to-actions, perpetual bouncing crowns or confetti
+outside earned milestones. Reuse current mascot/art direction where available.
 
-### 8.2 Flow rules
+### 8.2 Screen patterns and tasks
 
-- **One task per screen**, one dominant action (48px), progress always visible.
-- Mobile-first; thumb-reachable primary action at the bottom.
-- Feedback is immediate, specific and kind. Explanations appear after answering in Learning Mode.
-- Show *what to do next* at the end of every activity: Retry · Next activity · Back to topic.
-- It must never look like an admin panel: no dense tables or filter bars on core learning screens.
+- **Home / Learning Hub:** welcome, one clear Learning action, available Units,
+  and a secondary route to teacher Assignments. No dashboard KPI wall,
+  fabricated resume/progress, locks, ranks or assignment state.
+- **Learning/activity:** one task at a time, 48px dominant action, progress
+  visible, hints/feedback based on the accepted activity rules.
+- **Rewards/leaderboard:** celebrate achievement without obscuring the metric.
+  A ranking shows metric, unit, timeframe, current-user position and data state;
+  tabs genuinely change the metric and announce selection accessibly.
+- **Progress:** show trends and next improvement steps, not merely decorative
+  numbers. If not implemented, mark the route as coming soon rather than making
+  a navigation promise to a placeholder.
+- **Student navigation:** shared orange LearnUp brand, clear active state,
+  thumb-accessible mobile controls and an accessible drawer. Do not mix a
+  blue/indigo alternate brand header with the orange Teacher brand.
+- Every data view handles loading, empty, error, disabled and success;
+  sample data must be explicitly identified and cannot masquerade as results.
+- For 360–375px screens, keep buttons ≥44px touch target and avoid sideways
+  scroll. Shared shell owns outer page padding and width; child pages do not
+  add duplicate `max-width`/outer padding.
 
 ### 8.3 Learning vs. Try Hard (same shell, different HUD)
 
 | | Learning | Try Hard |
 |---|---|---|
 | Intent | Understand and repeat | Challenge |
-| Tone color | `secondary` family | `accent` family |
-| HUD | Progress only | Progress + timer chip + lives (hearts) |
+| Tone color | `learning` / `learning-soft` | `warning` / `accent` for timer pressure |
+| HUD | Progress only | Progress + timer chip + lives where required |
 | Hints / explanation | Available | Hidden |
 | Failure | Not a formal event | Wrong answer costs a life; zero lives ends the run |
 
-The page chrome, buttons, dialogs and result screen are identical; only the HUD and tone color change.
-When an Activity offers both modes, the student chooses **before** starting, using two selectable option rows that state what each mode means. If only one mode is offered, skip the choice and show the mode as a chip.
+The shell, buttons, dialogs and result screen remain the same; the HUD
+and context-specific color differ. When both modes are offered, choose before
+starting using clear selectable rows.
 
-### 8.4 Games
+### 8.4 Games and motion
 
-A game is an **experience layer on the Activity**, rendered inside a bounded game viewport.
-Game art may use its own assets, but everything around it (start, pause, result, errors, buttons, dialogs) uses system components and tokens. A game never introduces its own question or result model.
+Game artwork is an experience layer within Activity, not a second design
+system. Outside the game viewport, reuse shared components. Animate responses
+to learning actions (correct answer, milestone earned, transition to next
+step) rather than continuous decorative motion. Respect
+`prefers-reduced-motion`.
+
+### 8.5 Teacher/Student consistency review
+
+Before approving either UI, compare a Teacher and a Student screen side by
+side: logo, header/navigation, primary button, form controls, dialog, status,
+typography, width/padding and focus state must be recognizable as one product.
+Different density and illustration are expected, **different brand systems
+are not**.
 
 ---
 
@@ -721,9 +736,12 @@ hierarchy, then render it with our tokens and components. Do not copy a product'
 
 ---
 
-## 13. Known deviations in the current code (measured)
+## 13. Historical deviations and migration backlog
 
-Measured on the current `client-e-learning/src`. These are the reasons screens look inconsistent today.
+**Historical audit snapshot, not a fresh measurement on this branch.** Counts, contrast ratios,
+legacy token names and navigation findings below predate the warm palette refresh;
+re-audit before claiming any item still exists. In particular, mappings to
+`danger-text`, `secondary-text`, or `secondary-light` are superseded by Section 3.
 
 | Issue | Evidence | Fix |
 |---|---|---|
@@ -745,7 +763,7 @@ Measured on the current `client-e-learning/src`. These are the reasons screens l
 
 ### 13.1 Migration plan
 
-1. **Tokens PR:** add 3.3, fix the two foreground tokens. No component changes.
+1. **Token audit PR:** inventory current light/dark tokens and verify computed contrast; Section 3.3 is no longer a proposed CSS patch.
 2. **Primitives PR:** `Badge`, `Input`, `Select`, `Textarea`, `Dialog`, `Alert`, `Table`, `PageHeader`, `EmptyState`, `Skeleton`, drawer nav, built only from tokens.
 3. **Boy-scout rule:** any PR that touches a screen migrates that screen's raw colors, sizes and radii to tokens before merging.
 4. **Guard:** add a CI check that fails on new raw palette utilities and arbitrary text sizes in `src/components` and `src/app`:
@@ -815,13 +833,42 @@ The result must feel like **one coherent E-Learning platform** across Teacher an
 
 ## 17. Teacher refresh (October 2026)
 
-The Teacher shell follows the current ClassRoom reference direction:
+The Teacher shell follows the warm Playful Classroom family as its restrained **Calm Classroom** variant:
 
-- Use a compact 240px sidebar, a 65px top bar and a warm neutral page surface.
+- Use a compact 240px sidebar, a 64px top bar and a warm neutral page surface.
 - Keep body copy at 14px, supporting text at 12px and page titles between 22px and 26px.
 - Use Plus Jakarta Sans throughout the app. Headings are bold, but never oversized.
-- The primary action color is orange. Use pale orange, blue, yellow and green surfaces only for
-  meaningful metric states.
+- The primary action color is shared LearnUp orange (`primary`). Use learning blue,
+  reward amber and success green only for their documented semantic roles.
 - Dashboard cards should answer one question each: classes, units, assignments and completion.
 - Vietnamese labels are preferred in the Teacher workspace and use sentence case.
 - Mobile navigation is a drawer; desktop navigation must expose the active route clearly.
+
+
+## 18. Ink border + pop shadow visual language (2026-11-06, owner correction)
+
+**Applies to the full application (Teacher and Student).** The approved visual language is Tactify-like *outlined, warm, hard-offset* surfaces using existing **`border-ink` + `shadow-pop`**, NOT `shadow-ink`. This corrects the prior Section 18 wording; the established Playful Classroom palette, typography and accessibility contract remain in force.
+
+- **Meaningful raised surfaces** (primary cards, activity tiles, key metrics, dialogs): `border-2 border-ink bg-card shadow-pop` with existing radius tokens. Prefer shared Card primitives where their API supports the variant.
+- **Secondary/nested surfaces**: `border border-ink` or `border-2 border-ink` without another shadow. Do not place a strong shadow on each child of a shadowed parent.
+- **Buttons/interactions**: primary CTAs may use `border-2 border-ink shadow-pop`, subtle pressed translation and visible focus rings; preserve disabled and reduced-motion behavior.
+- **Tables/inputs/dense teacher content**: ink boundary where it communicates grouping, restrained background and elevation. Preserve focus, readability, density, and semantic error/selection states.
+- **Navigation**: preserve shell dimensions, hierarchy and keyboard behavior; use ink outlines and pop elevation purposefully, not on every link.
+- **Color**: keep LearnUp orange for primary actions, learning blue for learning, amber for XP/Streak and semantic success/error colors; no raw black, hex or random palettes in features.
+- **Token truth**: `border-ink` and `shadow-pop` are already implemented in `client-e-learning/src/app/globals.css`; do **not** introduce a `shadow-ink` alias or replace `shadow-pop` with `shadow-pop-ink` without an explicit new decision. Verify light/dark, contrast and responsive behavior as screens migrate.
+- **Migration**: update shared primitives first, then touched routes; old low-contrast/soft-only cards are migration debt, not an alternate design. This guideline change does not imply all old screens were already migrated.
+
+```tsx
+<div className="rounded-2xl border-2 border-ink bg-card p-5 shadow-pop">
+  {/* Primary content */}
+</div>
+```
+
+**Information hierarchy wins over decoration:** one dominant region per page and no nested shadow wall. Teacher remains restrained; Student may use larger playful emphasis.
+
+### Student Gamification page ownership
+
+- **Student Home** hosts the server-backed seven-day Streak widget (Monday–Sunday, Ho Chi Minh calendar), today indicator, longest streak and a separate minimal Level progress card. Home's main CTA stays Learning.
+- **`/student/rewards`** is a **Leaderboard** page, not a Streak/Level dashboard. Until a real ranking API exists, leaderboards, Hall of Fame and activity feed must be prominently labeled sample content.
+- No fake Freeze balance or five-minute learning target: Freeze is deferred, and a qualified day requires `ActivitySession.COMPLETED`, not elapsed learning minutes.
+- Level is only the current XP-derived level and progress to the next threshold. No new level privileges, inventory or level-up XP.

@@ -62,12 +62,26 @@ POST /v1/activity-sessions/{sessionId}/questions/{sessionQuestionId}/hint
 POST /v1/activity-sessions/{sessionId}/finish
 GET /v1/activity-sessions/{sessionId}/result
 
+The terminal Activity Result includes nullable `xpReward` and `xpQuestions`.
+`xpReward` is an immutable server receipt (`questionXp`, `completionBonus`,
+`committedXp`, `levelBefore`, `lifetimeXpAfter`, `levelAfter`, `finalizedAt`). It
+is `null` for legacy or rollout-disabled sessions; reading this endpoint never
+calculates or commits XP. `xpQuestions` contains only persisted resolved-question
+audit values and is empty when no finalized reward exists.
+
 ActivitySession start accepts optional `mode` and `selectionStrategy`; both are required only when the
 Activity exposes more than one choice. The start response includes the complete selected question set without
 correct answers, accepted answers or explanations. Activity answers are evaluated server-side and are not persisted
 as answer history.
 
 The Activity start response returns the complete selected question set. Correct answers are never included before the runtime flow permits them.
+
+## Student Gamification (Streak / Level)
+
+GET /v1/student/gamification/profile — own Lifetime XP, Level, XP-to-next, current effective Streak, longest Streak and qualification status.
+GET /v1/student/gamification/streak — own run dates, timezone, four milestone amounts/ledger-awarded indicators, plus todayDate, weekStartDate and qualifiedDates (server-local Monday–Sunday dates).
+
+Both endpoints require `ROLE_STUDENT`; student id comes only from the JWT, never a request parameter. There is no Streak claim/write API. XP and Streak are committed by the Activity completion workflow. Leaderboard remains demo-only until its own implementation phase.
 
 
 ## Question contract / security boundary

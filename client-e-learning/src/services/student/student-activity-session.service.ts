@@ -6,6 +6,8 @@ export const activitySessionService = {
   start: (activityId: number, mode?: ActivitySessionMode, selectionStrategy?: SelectionStrategy) => request<ActivitySession>(`/v1/activities/${activityId}/sessions`, { method: "POST", body: JSON.stringify({ mode, selectionStrategy }) }),
   get: (sessionId: number) => request<ActivitySession>(`/v1/activity-sessions/${sessionId}`),
   answer: (sessionId: number, questionId: number, answer: string | string[]) => request<ActivitySessionAnswerFeedback>(`/v1/activity-sessions/${sessionId}/questions/${questionId}/answer`, { method: "POST", body: JSON.stringify({ answer }) }),
+  // Server confirms TIMEOUT only after deadline + network grace.
+  timeout: (sessionId: number, questionId: number) => request<ActivitySession>(`/v1/activity-sessions/${sessionId}/questions/${questionId}/timeout`, { method: "POST" }),
   hint: (sessionId: number, questionId: number) => request<{ session: ActivitySession; hint: string }>(`/v1/activity-sessions/${sessionId}/questions/${questionId}/hint`, { method: "POST" }),
   finish: (sessionId: number) => request<ActivitySession>(`/v1/activity-sessions/${sessionId}/finish`, { method: "POST" }),
   result: (sessionId: number) => request<ActivitySessionResult>(`/v1/activity-sessions/${sessionId}/result`),

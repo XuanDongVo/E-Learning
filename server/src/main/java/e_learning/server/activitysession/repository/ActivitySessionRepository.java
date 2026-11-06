@@ -20,7 +20,15 @@ public interface ActivitySessionRepository extends JpaRepository<ActivitySession
     @Query("select s from ActivitySession s where s.id = :id")
     java.util.Optional<ActivitySession> findByIdForUpdate(@Param("id") Long id);
 
-    List<ActivitySession> findAllByStudentIdAndStatusIn(Long studentId, Collection<ActivitySessionStatus> statuses);
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("""
+            select s from ActivitySession s
+            where s.student.id = :studentId and s.status in :statuses
+            order by s.id
+            """)
+    List<ActivitySession> findAllByStudentIdAndStatusInForUpdate(
+            @Param("studentId") Long studentId,
+            @Param("statuses") Collection<ActivitySessionStatus> statuses);
 
     @Query("""
             select s from ActivitySession s

@@ -14,7 +14,8 @@ import {
   Lightbulb,
   Send,
   SlidersHorizontal,
-  RefreshCw, X 
+  RefreshCw,
+  X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -47,21 +48,29 @@ import {
 import garden from "../../../../../public/assets/practice-garden.jpg";
 import mascot from "../../../../../public/assets/practice-mascot.png";
 
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from "@/components/ui/alert-dialog";
+
 const glassBtn =
-  "text-practice-light bg-practice-blue/28 border-practice-light/30 hover:bg-practice-blue/65 hover:text-practice-light";
+  "border-card/30 bg-card/15 text-primary-foreground hover:bg-card/25 hover:text-primary-foreground";
 const paperBtn =
-  "text-practice-ink bg-practice-paper border-2 border-practice-border shadow-[0_2px_0_var(--color-practice-border)] hover:bg-practice-light hover:text-practice-ink";
+  "border-2 border-border bg-card-bg text-foreground shadow-pop-sm hover:bg-secondary hover:text-foreground";
 const nextBtn =
-  "text-practice-ink bg-practice-yellow shadow-[0_3px_0_var(--color-practice-border)] hover:text-practice-ink hover:bg-[color-mix(in_oklch,var(--color-practice-yellow)_85%,var(--color-practice-light))]";
-const card = "bg-practice-paper shadow-[0_6px_0_var(--color-practice-shadow)]";
+  "bg-accent text-accent-foreground shadow-pop-sm hover:bg-warning hover:text-accent-foreground";
+const card = "bg-card-bg shadow-pop-lg";
 const answerBase =
-  "h-auto text-practice-ink bg-practice-light border-2 border-practice-border shadow-[0_3px_0_var(--color-practice-border)] enabled:hover:bg-practice-hint enabled:hover:border-practice-blue enabled:hover:shadow-[0_3px_0_var(--color-practice-blue-dark)] disabled:opacity-100";
-const answerSelected =
-  "bg-practice-hint border-practice-blue shadow-[0_3px_0_var(--color-practice-blue-dark)]";
-const answerCorrect =
-  "bg-practice-good-soft border-practice-good shadow-[0_3px_0_var(--color-practice-good)]";
-const answerWrong =
-  "bg-practice-bad-soft border-practice-bad shadow-[0_3px_0_var(--color-practice-bad)]";
+  "h-auto border-2 border-border bg-card text-foreground shadow-pop-sm enabled:hover:border-learning enabled:hover:bg-learning-soft enabled:hover:shadow-pop disabled:opacity-100";
+const answerSelected = "border-learning bg-learning-soft shadow-pop-sm";
+const answerCorrect = "border-success bg-success-soft shadow-pop-sm";
+const answerWrong = "border-destructive bg-destructive-soft shadow-pop-sm";
 
 type Feedback = {
   correct: boolean;
@@ -104,6 +113,7 @@ export function PracticeRunner({
   const [clockOffsetMs, setClockOffsetMs] = useState(0);
   const [timeoutNotice, setTimeoutNotice] = useState<string | null>(null);
   const lastTimeoutPollAt = useRef(0);
+  const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
 
   // The server is authoritative. Offset keeps countdown accurate even on
   // devices with an incorrect system clock; deadlineAt includes a time zone.
@@ -211,6 +221,12 @@ export function PracticeRunner({
       setShowResult(true);
     },
   });
+  const resultQuery = useQuery({
+    queryKey: ["activity-session-result", session?.id],
+    queryFn: () => activitySessionService.result(session!.id),
+    enabled: showResult && !!session && session.status !== "IN_PROGRESS",
+    staleTime: Number.POSITIVE_INFINITY,
+  });
 
   const timeoutMutation = useMutation({
     mutationFn: (v: { sessionId: number; questionId: number }) =>
@@ -227,7 +243,11 @@ export function PracticeRunner({
         const freshResolved = data.questions.filter((q) => q.resolved).length;
         return freshResolved >= oldResolved ? data : previous;
       });
-      if (data.questions.some((q) => q.id === v.questionId && q.resolutionReason === "TIMEOUT")) {
+      if (
+        data.questions.some(
+          (q) => q.id === v.questionId && q.resolutionReason === "TIMEOUT",
+        )
+      ) {
         setTimeoutNotice("Câu vừa rồi hết giờ. Bạn không bị trừ mạng.");
         setDrafts((drafts) => ({ ...drafts, [v.questionId]: [] }));
         if (data.status === "IN_PROGRESS") {
@@ -274,7 +294,14 @@ export function PracticeRunner({
       ? draft.length > 0
       : (draft[0] ?? "").trim().length > 0
     : false;
-  const canSubmit = !!question && !locked && !over && hasDraft && !answering && !deadlineExpired && !timeoutPending;
+  const canSubmit =
+    !!question &&
+    !locked &&
+    !over &&
+    hasDraft &&
+    !answering &&
+    !deadlineExpired &&
+    !timeoutPending;
   const hintAvailable =
     !!question &&
     session?.mode === "LEARNING" &&
@@ -287,7 +314,10 @@ export function PracticeRunner({
     !!question && !!hintText && hintOpenFor === question.id && !locked;
   const hintError =
     hintMutation.isError && hintMutation.variables?.questionId === question?.id
-      ? getAppErrorMessage(hintMutation.error, tErrors as (key: string) => string)
+      ? getAppErrorMessage(
+          hintMutation.error,
+          tErrors as (key: string) => string,
+        )
       : undefined;
   const nextOpen =
     questions.find((q, i) => i > index && !q.resolved) ??
@@ -296,7 +326,9 @@ export function PracticeRunner({
     question?.deadlineAt && !locked
       ? Math.max(
           0,
-          Math.ceil((Date.parse(question.deadlineAt) - now - clockOffsetMs) / 1000),
+          Math.ceil(
+            (Date.parse(question.deadlineAt) - now - clockOffsetMs) / 1000,
+          ),
         )
       : undefined;
   const statuses: NavStatus[] = questions.map((q) =>
@@ -323,7 +355,8 @@ export function PracticeRunner({
   );
   const pick = useCallback(
     (key: string) => {
-      if (!question || locked || answering || deadlineExpired || timeoutPending) return;
+      if (!question || locked || answering || deadlineExpired || timeoutPending)
+        return;
       setDraft(question.id, (cur) =>
         question.type === "MULTIPLE_CHOICE"
           ? cur.includes(key)
@@ -354,21 +387,39 @@ export function PracticeRunner({
     }
     sendHint({ questionId: question.id });
   }, [question, hintAvailable, hinting, hints, sendHint]);
+
   const leave = () => {
     if (!session || over || complete) {
       router.push(unitHref);
       return;
     }
-    if (
-      window.confirm(
-        "Rời khỏi hoạt động? Lượt luyện tập hiện tại sẽ không được lưu hoặc tiếp tục.",
-      )
-    )
-      finish.mutate();
+
+    setLeaveDialogOpen(true);
   };
+
+  const confirmLeave = () => {
+    if (finish.isPending) return;
+
+    finish.mutate(undefined, {
+      onSuccess: () => {
+        setLeaveDialogOpen(false);
+        router.push(unitHref);
+      },
+    });
+  };
+
   const answeredCount = questions.filter((q) => q.resolved).length;
   const submitEarly = () => {
-    if (!session || over || complete || answering || finish.isPending || deadlineExpired || timeoutPending) return;
+    if (
+      !session ||
+      over ||
+      complete ||
+      answering ||
+      finish.isPending ||
+      deadlineExpired ||
+      timeoutPending
+    )
+      return;
     setConfirmOpen(true);
   };
   const confirmSubmit = () => {
@@ -409,15 +460,36 @@ export function PracticeRunner({
   // unresolved during the existing 5-second network grace; poll at most once
   // per second. A network error pauses automatic polling and exposes Retry.
   useEffect(() => {
-    if (!session || !question || !tryHard || over || locked ||
-        secondsLeft === undefined || secondsLeft > 0 ||
-        timeoutPending || timeoutError || answering) return;
+    if (
+      !session ||
+      !question ||
+      !tryHard ||
+      over ||
+      locked ||
+      secondsLeft === undefined ||
+      secondsLeft > 0 ||
+      timeoutPending ||
+      timeoutError ||
+      answering
+    )
+      return;
     const currentTime = Date.now();
     if (currentTime - lastTimeoutPollAt.current < 900) return;
     lastTimeoutPollAt.current = currentTime;
     sendTimeout({ sessionId: session.id, questionId: question.id });
-  }, [now, session, question, tryHard, over, locked, secondsLeft,
-      timeoutPending, timeoutError, answering, sendTimeout]);
+  }, [
+    now,
+    session,
+    question,
+    tryHard,
+    over,
+    locked,
+    secondsLeft,
+    timeoutPending,
+    timeoutError,
+    answering,
+    sendTimeout,
+  ]);
 
   const retryTimeout = () => {
     if (!session || !question || timeoutPending) return;
@@ -513,7 +585,14 @@ export function PracticeRunner({
         unitId={unitId}
         options={sessionOptions}
         loading={options.isLoading}
-        loadError={options.isError ? getAppErrorMessage(options.error, tErrors as (key: string) => string) : undefined}
+        loadError={
+          options.isError
+            ? getAppErrorMessage(
+                options.error,
+                tErrors as (key: string) => string,
+              )
+            : undefined
+        }
         onReload={() => options.refetch()}
         mode={effectiveMode}
         onModeChange={setMode}
@@ -521,7 +600,14 @@ export function PracticeRunner({
         onStrategyChange={setStrategy}
         starting={start.isPending}
         slow={startSlow}
-        startError={start.isError ? getAppErrorMessage(start.error, tErrors as (key: string) => string) : undefined}
+        startError={
+          start.isError
+            ? getAppErrorMessage(
+                start.error,
+                tErrors as (key: string) => string,
+              )
+            : undefined
+        }
         onStart={() => start.mutate()}
       />
     );
@@ -585,7 +671,7 @@ export function PracticeRunner({
   const retryLabel = feedback?.retryAvailable ? "Thử lại" : "Kiểm tra";
   return (
     <section
-      className="fixed inset-0 z-[45] overflow-y-auto bg-practice-blue text-practice-ink"
+      className="fixed inset-0 z-[45] overflow-y-auto bg-learning text-foreground"
       aria-label="Luyện tập tiếng Anh"
     >
       <Image
@@ -608,7 +694,7 @@ export function PracticeRunner({
             <span>{finish.isPending ? "Đang thoát…" : "Quay lại"}</span>
           </Button>
           <div
-            className="h-2.5 min-w-6 flex-1 overflow-hidden rounded-full bg-practice-light/22"
+            className="h-2.5 min-w-6 flex-1 overflow-hidden rounded-full bg-primary-foreground/25"
             role="progressbar"
             aria-label="Tiến độ luyện tập"
             aria-valuenow={index + 1}
@@ -616,7 +702,7 @@ export function PracticeRunner({
             aria-valuemax={questions.length}
           >
             <div
-              className="h-full rounded-full bg-practice-green transition-all"
+              className="h-full rounded-full bg-success transition-all"
               style={{ width: `${((index + 1) / questions.length) * 100}%` }}
             />
           </div>
@@ -626,7 +712,7 @@ export function PracticeRunner({
               aria-pressed={hintOpen}
               aria-busy={hinting}
               disabled={hinting}
-              className={`${hintOpen ? "bg-practice-yellow text-practice-ink border-practice-yellow hover:bg-practice-yellow hover:text-practice-ink" : glassBtn} px-3`}
+              className={`${hintOpen ? "border-accent bg-accent text-accent-foreground hover:bg-accent hover:text-accent-foreground" : glassBtn} px-3`}
               onClick={requestHint}
             >
               <Lightbulb size={16} />
@@ -636,10 +722,10 @@ export function PracticeRunner({
             </Button>
           )}
           {tryHard && !complete && (
-            <div className="flex shrink-0 items-center gap-3 rounded-full bg-practice-blue-dark px-3 py-1.5 text-sm font-extrabold text-practice-light">
+            <div className="flex shrink-0 items-center gap-3 rounded-full bg-foreground/25 px-3 py-1.5 text-sm font-extrabold text-primary-foreground">
               {secondsLeft !== undefined && (
                 <span
-                  className={`flex items-center gap-1 ${secondsLeft <= 5 ? "text-practice-yellow" : ""}`}
+                  className={`flex items-center gap-1 ${secondsLeft <= 5 ? "text-accent" : ""}`}
                 >
                   <Clock3 size={14} /> {secondsLeft}s
                 </span>
@@ -654,7 +740,7 @@ export function PracticeRunner({
             </div>
           )}
           <span
-            className="grid size-11 shrink-0 place-items-center rounded-full border-2 border-practice-yellow bg-practice-blue-dark text-lg font-extrabold text-practice-light ring-3 ring-practice-ink/40"
+            className="grid size-11 shrink-0 place-items-center rounded-full border-2 border-accent bg-foreground/25 text-lg font-extrabold text-primary-foreground ring-3 ring-foreground/40"
             title="Số câu trả lời đúng"
           >
             {session.finalCorrectCount}
@@ -671,7 +757,7 @@ export function PracticeRunner({
           <Button
             variant="outline"
             size="icon"
-            className={`${glassBtn} shrink-0 outline-2 outline-offset-[3px] outline-practice-light/65`}
+            className={`${glassBtn} shrink-0 outline-2 outline-offset-[3px] outline-primary-foreground/65`}
             aria-label="Cài đặt trò chơi"
             onClick={() => setSettings(true)}
           >
@@ -679,23 +765,34 @@ export function PracticeRunner({
           </Button>
         </header>
         {tryHard && deadlineExpired && !over && (
-          <div role="status" aria-live="polite"
-            className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border-2 border-practice-yellow bg-practice-paper p-3 text-sm font-bold">
+          <div
+            role="status"
+            aria-live="polite"
+            className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border-2 border-warning bg-card-bg p-3 text-sm font-bold"
+          >
             <span>
               {timeoutError
                 ? "Không thể đồng bộ hết giờ với máy chủ. Hãy thử lại."
                 : "Hết giờ! Đang xác nhận kết quả với máy chủ…"}
             </span>
             {timeoutError && (
-              <Button type="button" variant="outline" className={paperBtn}
-                disabled={timeoutPending} onClick={retryTimeout}>
+              <Button
+                type="button"
+                variant="outline"
+                className={paperBtn}
+                disabled={timeoutPending}
+                onClick={retryTimeout}
+              >
                 <RefreshCw size={15} /> Thử lại
               </Button>
             )}
           </div>
         )}
         {timeoutNotice && !deadlineExpired && !complete && (
-          <p role="status" className="mt-3 rounded-xl bg-practice-paper px-3 py-2 text-sm font-bold text-practice-ink">
+          <p
+            role="status"
+            className="mt-3 rounded-xl bg-card-bg px-3 py-2 text-sm font-bold text-foreground"
+          >
             {timeoutNotice}
           </p>
         )}
@@ -715,7 +812,7 @@ export function PracticeRunner({
           >
             {!complete && (
               <aside className="flex items-center gap-3 max-sm:order-2 max-sm:justify-center sm:mt-11 sm:flex-col sm:gap-2">
-                <div className="relative rounded-[18px] bg-practice-paper px-3 py-3 text-center text-xs leading-5 shadow-[0_4px_0_var(--color-practice-border)]">
+                <div className="relative rounded-[18px] bg-card-bg px-3 py-3 text-center text-xs leading-5 shadow-pop">
                   {mascotText}
                 </div>
                 <Image
@@ -732,6 +829,17 @@ export function PracticeRunner({
                 <PracticeResult
                   unitId={unitId}
                   session={session}
+                  xpReward={resultQuery.data?.data?.xpReward}
+                  xpRewardPending={resultQuery.isLoading}
+                  xpRewardError={
+                    resultQuery.isError
+                      ? getAppErrorMessage(
+                          resultQuery.error,
+                          tErrors as (key: string) => string,
+                        )
+                      : undefined
+                  }
+                  onRetryXpReward={() => void resultQuery.refetch()}
                   picks={picks}
                   revealed={Object.fromEntries(
                     Object.entries(feedbacks).map(([id, f]) => [
@@ -784,7 +892,7 @@ export function PracticeRunner({
                           aria-pressed={draft.includes(option.key)}
                           onClick={() => pick(option.key)}
                         >
-                          <span className="grid size-7 shrink-0 place-items-center rounded-lg border border-practice-border bg-practice-light text-sm text-practice-subtle">
+                          <span className="grid size-7 shrink-0 place-items-center rounded-lg border border-border bg-background text-sm text-muted-foreground">
                             {locked &&
                             correctKeys.includes(option.key.toUpperCase()) ? (
                               <Check size={16} />
@@ -805,7 +913,7 @@ export function PracticeRunner({
                       }
                       aria-label="Đáp án của bạn"
                       placeholder="Nhập đáp án"
-                      className="h-14 w-full rounded-2xl border-2 border-practice-border bg-practice-light px-4 text-base font-semibold shadow-[0_3px_0_var(--color-practice-border)] outline-none transition-colors focus:border-practice-blue disabled:opacity-70"
+                      className="h-14 w-full rounded-2xl border-2 border-border bg-background px-4 text-base font-semibold text-foreground shadow-pop-sm outline-none transition-colors focus:border-learning focus:ring-2 focus:ring-learning/30 disabled:opacity-70"
                     />
                   )}
                   <div aria-live="polite">
@@ -818,18 +926,25 @@ export function PracticeRunner({
                     {answerMutation.isError && !answering && (
                       <p
                         role="alert"
-                        className="mt-4 text-sm font-bold text-practice-bad"
+                        className="mt-4 text-sm font-bold text-destructive"
                       >
-                        {getAppErrorMessage(answerMutation.error, tErrors as (key: string) => string)} Đáp án của bạn vẫn được
-                        giữ, hãy bấm Kiểm tra để thử lại.
+                        {getAppErrorMessage(
+                          answerMutation.error,
+                          tErrors as (key: string) => string,
+                        )}{" "}
+                        Đáp án của bạn vẫn được giữ, hãy bấm Kiểm tra để thử
+                        lại.
                       </p>
                     )}
                     {finish.isError && (
                       <p
                         role="alert"
-                        className="mt-4 text-sm font-bold text-practice-bad"
+                        className="mt-4 text-sm font-bold text-destructive"
                       >
-                        {getAppErrorMessage(finish.error, tErrors as (key: string) => string)}
+                        {getAppErrorMessage(
+                          finish.error,
+                          tErrors as (key: string) => string,
+                        )}
                       </p>
                     )}
                     {feedback && (
@@ -838,26 +953,26 @@ export function PracticeRunner({
                         aria-live="polite"
                         className={cn(
                           "mt-4 flex items-start gap-3 rounded-2xl border-2 p-3.5",
-                          feedback.correct &&
-                            "border-practice-good bg-practice-good/10",
+                          feedback.correct && "border-success bg-success-soft",
                           !feedback.correct &&
                             feedback.retryAvailable &&
-                            "border-amber-400 bg-amber-50",
+                            "border-warning bg-warning-soft",
                           !feedback.correct &&
                             !feedback.retryAvailable &&
-                            "border-practice-bad bg-practice-bad/10",
+                            "border-destructive bg-destructive-soft",
                         )}
                       >
                         <span
                           className={cn(
-                            "grid size-9 shrink-0 place-items-center rounded-full text-white",
-                            feedback.correct && "bg-practice-good",
+                            "grid size-9 shrink-0 place-items-center rounded-full",
+                            feedback.correct &&
+                              "bg-success text-primary-foreground",
                             !feedback.correct &&
                               feedback.retryAvailable &&
-                              "bg-amber-500",
+                              "bg-warning text-accent-foreground",
                             !feedback.correct &&
                               !feedback.retryAvailable &&
-                              "bg-practice-bad",
+                              "bg-destructive text-destructive-foreground",
                           )}
                         >
                           {feedback.correct ? (
@@ -873,13 +988,13 @@ export function PracticeRunner({
                           <p
                             className={cn(
                               "text-sm font-extrabold",
-                              feedback.correct && "text-practice-good",
+                              feedback.correct && "text-success",
                               !feedback.correct &&
                                 feedback.retryAvailable &&
-                                "text-amber-800",
+                                "text-warning",
                               !feedback.correct &&
                                 !feedback.retryAvailable &&
-                                "text-practice-bad",
+                                "text-destructive",
                             )}
                           >
                             {feedback.correct
@@ -889,7 +1004,7 @@ export function PracticeRunner({
                                 : "Chưa chính xác"}
                           </p>
 
-                          <p className="mt-0.5 text-sm font-semibold leading-6 text-practice-ink">
+                          <p className="mt-0.5 text-sm font-semibold leading-6 text-foreground">
                             {feedback.correct
                               ? "Bạn làm tốt lắm. Tiếp tục phát huy nhé!"
                               : feedback.retryAvailable
@@ -901,10 +1016,10 @@ export function PracticeRunner({
 
                           {feedback.answerRevealed && feedback.explanation && (
                             <div className="mt-2 border-t border-current/15 pt-2">
-                              <p className="text-xs font-extrabold text-practice-subtle">
+                              <p className="text-xs font-extrabold text-muted-foreground">
                                 GIẢI THÍCH
                               </p>
-                              <p className="mt-1 text-sm leading-6 text-practice-subtle">
+                              <p className="mt-1 text-sm leading-6 text-muted-foreground">
                                 {feedback.explanation}
                               </p>
                             </div>
@@ -915,7 +1030,7 @@ export function PracticeRunner({
                     {finished && (
                       <div
                         role="status"
-                        className="mt-4 rounded-2xl border-2 border-practice-blue bg-practice-hint px-3.5 py-3 text-sm font-extrabold text-practice-ink"
+                        className="mt-4 rounded-2xl border-2 border-learning bg-learning-soft px-3.5 py-3 text-sm font-extrabold text-foreground"
                       >
                         {gameOver
                           ? "Bạn đã hết mạng. Bấm “Xem kết quả” để xem bài làm của mình."
@@ -947,7 +1062,9 @@ export function PracticeRunner({
               <Button
                 variant="outline"
                 className={`${paperBtn} px-3`}
-                disabled={locked || answering || deadlineExpired || draft.length === 0}
+                disabled={
+                  locked || answering || deadlineExpired || draft.length === 0
+                }
                 onClick={reset}
               >
                 Làm lại
@@ -956,7 +1073,12 @@ export function PracticeRunner({
                 <Button
                   variant="outline"
                   className={`${paperBtn} px-3`}
-                  disabled={answering || finish.isPending || deadlineExpired || timeoutPending}
+                  disabled={
+                    answering ||
+                    finish.isPending ||
+                    deadlineExpired ||
+                    timeoutPending
+                  }
                   onClick={submitEarly}
                 >
                   <Send size={14} />
@@ -964,9 +1086,12 @@ export function PracticeRunner({
                 </Button>
               )}
               {deadlineExpired && !over ? (
-                <Button className={nextBtn} type="button"
+                <Button
+                  className={nextBtn}
+                  type="button"
                   disabled={!timeoutError || timeoutPending}
-                  onClick={retryTimeout}>
+                  onClick={retryTimeout}
+                >
                   {timeoutError ? "Thử lại" : "Đang xử lý hết giờ…"}
                   <RefreshCw size={16} />
                 </Button>
@@ -998,6 +1123,45 @@ export function PracticeRunner({
           )}
         </footer>
       </div>
+      <AlertDialog
+        open={leaveDialogOpen}
+        onOpenChange={(open) => {
+          if (!finish.isPending) {
+            setLeaveDialogOpen(open);
+          }
+        }}
+      >
+        <AlertDialogContent className="z-[70] max-w-[440px] rounded-[20px] border-practice-border bg-practice-paper text-practice-ink">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-lg font-extrabold">
+              Rời khỏi hoạt động?
+            </AlertDialogTitle>
+
+            <AlertDialogDescription className="text-sm leading-6 text-practice-subtle">
+              Lượt luyện tập hiện tại sẽ không được lưu hoặc tiếp tục. Bạn có
+              chắc chắn muốn rời khỏi hoạt động?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={finish.isPending} className={paperBtn}>
+              Tiếp tục làm bài
+            </AlertDialogCancel>
+
+            <AlertDialogAction
+              disabled={finish.isPending}
+              onClick={(event) => {
+                event.preventDefault();
+                confirmLeave();
+              }}
+              className="bg-practice-bad text-white hover:bg-practice-bad/90"
+            >
+              {finish.isPending ? "Đang thoát..." : "Xác nhận rời"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <SubmitConfirmDialog
         open={confirmOpen}
         onOpenChange={setConfirmOpen}

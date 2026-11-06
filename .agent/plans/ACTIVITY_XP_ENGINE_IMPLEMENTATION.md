@@ -1,8 +1,8 @@
-# Activity XP Engine — implementation plan (approved policy, code not active)
+# Activity XP Engine — implementation plan
 
 **Branch:** `feature/student-gamification`  
 **Date:** 2026-11-06  
-**Status:** PLANNED; do not activate XP reward as part of this documentation-only change.  
+**Status:** PHASES 1–4 IMPLEMENTED behind a default-off rollout flag; Phase 5 release verification pending.
 **Authority:** ADR 0029, `.agent/domain/ACTIVITY_XP_V2_2_SPEC.md`; maintain gameplay decisions ADR 0012/0015/0022 and timeout changes in `.agent/plans/TRY_HARD_TIMEOUT_BACKEND_FE_IMPLEMENTATION.md`.
 
 ## Scope and non-goals
@@ -13,9 +13,13 @@ Deliver server-authoritative XP for ActivitySession only, with per-question audi
 
 - V49 profiles + ledger; V50 nullable Level/XP snapshot, per-question breakdown and PRACTICE Session partial unique index; V51 `resolution_reason` for CORRECT/WRONG/TIMEOUT. Migration scripts in source do not prove deployment.
 - QuestionSnapshot schema v2 includes Difficulty. Legacy schema v1 may still be readable but is **never retroactively awarded**.
-- `ActivityXpCalculator`, `ActivityXpRewardWorkflow`, repository and DTO types are interface/skeleton only. `ActivitySessionService` does not yet write XP ledger.
-- `ActivitySessionService.answer()/get()/timeout()/finish()` use a Session lock; **hint() still needs to use that lock**. `start()` abandons old IN_PROGRESS Sessions and needs safe ordering around active Session mutation.
-- FE currently runs Try Hard countdown/timeout and Activity Result UI, but no authoritative committed XP receipt.
+- `ActivityXpCalculator`, session audit and terminal reward workflow are wired.
+  Eligible terminal transitions persist the receipt, ledger and profile update
+  atomically; rollout-disabled/legacy sessions remain untouched.
+- `ActivitySessionService.answer()/get()/timeout()/hint()/finish()` use a Session
+  write lock where they mutate runtime state. `start()` serializes per Student and
+  locks active Sessions before profile snapshot capture.
+- FE Activity Result reads and renders the authoritative committed XP receipt.
 
 ## Phase 0 — policy sync and enablement guard (documentation here; code later)
 
@@ -26,7 +30,7 @@ Deliver server-authoritative XP for ActivitySession only, with per-question audi
 
 **Gate:** documentation signed off; current Flyway history verified on deployment DB; no reward side effects while disabled.
 
-## Phase 1 — pure calculator + characterization tests
+## Phase 1 — pure calculator + characterization tests (implemented 2026-11-06)
 
 **Files:** `gamification/service/ActivityXpCalculator` and implementation; `XpQuestionOutcome` mapping; JUnit unit tests.
 
@@ -36,9 +40,14 @@ Deliver server-authoritative XP for ActivitySession only, with per-question audi
 4. Compute `baseCompletionBonus=min(10,2*ceil(totalQuestions/5))` from **start-selected totalQuestions**, regardless of accuracy; scale/round bonus separately for COMPLETED only.
 5. Derive `currentLevel` using threshold `100*(L-1)+10*(L-1)*(L-2)` and new Lifetime XP, including multiple-level jumps; protect arithmetic overflow and invalid input.
 
-**Gate / tests:** full outcome × difficulty matrix; Hint+retry; timeout; all-wrong completed; N boundaries (5/6/10/11/20/21); positive minimum and HALF_UP; Levels 5/6, 10/11, 40/41; threshold examples L20=5320, L30=11020, L50=28420; mixed difficulty and round-per-question regression. No database dependency.
+**Gate / tests:** implemented database-free coverage for the full outcome ×
+difficulty matrix; Hint+retry; timeout; all-wrong completed; N boundaries
+(5/6/10/11/20/21); positive minimum and HALF_UP; Levels 5/6, 10/11, 40/41;
+threshold examples L20=5320, L30=11020, L50=28420; overflow and mixed
+round-per-question regression. Focused calculator suite passes. No runtime reward
+or persistence was activated.
 
-## Phase 2 — snapshot capture and per-question audit
+## Phase 2 — snapshot capture and per-question audit (implemented 2026-11-06)
 
 **Files:** `ActivitySessionService.start()/answer()/timeout()/hint()`, `ActivityQuestionSnapshotAssembler`, Session and SessionQuestion XP fields, reward workflow implementation.
 
@@ -48,9 +57,14 @@ Deliver server-authoritative XP for ActivitySession only, with per-question audi
 4. Serialize Hint and Answer on the same Session lock. For races, define the order as the database's acquired mutation order; a Hint accepted after question resolution must be rejected and must not retroactively lower XP.
 5. Keep timeout+answer under the same Session lock; TIMEOUT -> 0 XP, no lives deduction. Protect from request replay/duplicate resolve.
 
-**Gate / tests:** difficulty edited after start; Level changed in another Session after start; concurrent Hint vs Answer; timeout vs Answer; duplicate submission; try-hard wrong/game-over; zero-XP resolved outcome; legacy session remains ineligible. All previous gameplay tests pass.
+**Gate / tests:** focused tests cover frozen Difficulty and multiplier, default-off
+rollout, conflict-safe profile create/load, lock routing for start/Hint/Answer/
+Timeout, unresolved retry, duplicate audit, Try Hard wrong/timeout, zero-XP and
+legacy ineligibility. The Phase 1–2 focused suite passes 30/30. PostgreSQL
+contention/load verification remains part of Phase 3/release validation; no full
+backend suite was run for this phase.
 
-## Phase 3 — atomic and idempotent reward finalization
+## Phase 3 — atomic and idempotent reward finalization (implemented 2026-11-06)
 
 **Files:** `ActivityXpRewardWorkflow` implementation, `XpTransactionRepository`, profile repository, `ActivitySessionService` terminal paths.
 
@@ -61,9 +75,14 @@ Deliver server-authoritative XP for ActivitySession only, with per-question audi
 5. Atomically increment profile Lifetime XP and derive Level from total; rollback ALL writes on any failure. Ledger amount = session total = sum(question XP)+bonus.
 6. Set `earned_at` at server-confirmed terminal reward time. Never recalculate a committed award from mutable Question or future XP policy. Do not add streak for GAME_OVER.
 
-**Gate / tests (PostgreSQL required):** same Session concurrent finalization creates one reward; two Sessions same student cannot lose update; profile first-create race; retry after failure/transaction rollback; terminal path via GAME_OVER without finish; all-wrong COMPLETED bonus; ABANDONED after partial questions; zero-XP GAME_OVER; duplicate idempotency key; concurrent start vs finalization.
+**Gate / tests (PostgreSQL required):** implementation is complete, but these
+checks were explicitly skipped for this task: same Session concurrent
+finalization creates one reward; two Sessions same student cannot lose update;
+profile first-create race; retry after rollback; GAME_OVER without finish;
+all-wrong COMPLETED bonus; partial ABANDONED; zero-XP GAME_OVER; duplicate key;
+concurrent start vs finalization. They remain mandatory before rollout.
 
-## Phase 4 — read-only committed XP Result API and FE
+## Phase 4 — read-only committed XP Result API and FE (implemented 2026-11-06)
 
 **Files:** Result DTO/service/controller and student Activity Result component/FE types. No in-progress XP display.
 
@@ -72,7 +91,9 @@ Deliver server-authoritative XP for ActivitySession only, with per-question audi
 3. Handle old/no-reward Sessions honestly: no fabricated 0-earned-success notification for a legacy session not processed by XP Engine.
 4. Do not touch formal Assignment Result or change Activity correctness/score semantics.
 
-**Gate / tests:** read-only endpoint cannot award XP; result retry stable, refresh stable; screen sizes 375/768/1440; null legacy state; loss/retry of network; correct status/Level/XP display.
+**Gate / tests:** code handles the read-only, retry, legacy and network states,
+but test/build/lint and 375/768/1440 visual verification were explicitly skipped
+for this task and remain mandatory before rollout.
 
 ## Phase 5 — release verification and rollout
 

@@ -60,7 +60,38 @@ export type ActivitySessionAnswerFeedback = {
   explanation?: string;
 };
 
+export type ActivityXpQuestionOutcome =
+  | "CORRECT_FIRST_TRY"
+  | "CORRECT_RETRY"
+  | "CORRECT_WITH_HINT"
+  | "WRONG_EXHAUSTED"
+  | "TRY_HARD_WRONG"
+  | "TIMEOUT"
+  | "NO_INTERACTION";
+
+export type ActivityXpRewardReceipt = {
+  sessionId: number;
+  status: ActivitySessionStatus;
+  questionXp: number;
+  completionBonus: number;
+  committedXp: number;
+  levelBefore: number;
+  lifetimeXpAfter: number;
+  levelAfter: number;
+  finalizedAt: string;
+};
+
+export type ActivityXpQuestionReceipt = {
+  sessionQuestionId: number;
+  outcome: ActivityXpQuestionOutcome;
+  baseXp: number;
+  finalXp: number;
+};
+
 export type ActivitySessionResult = Omit<
   ActivitySession,
   "questions" | "startedAt" | "completedAt" | "serverNow"
->;
+> & {
+  xpReward: ActivityXpRewardReceipt | null;
+  xpQuestions: ActivityXpQuestionReceipt[];
+};

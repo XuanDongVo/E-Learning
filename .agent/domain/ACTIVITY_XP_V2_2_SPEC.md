@@ -1,7 +1,9 @@
-# Activity XP Rules v2.2 — accepted policy, implementation pending
+# Activity XP Rules v2.2 — accepted policy, Phases 1–4 implemented
 
 **Decision date:** 2026-11-06  
-**Status:** Business rules ACCEPTED (ADR 0029). XP Engine is NOT IMPLEMENTED / NOT ACTIVE.  
+**Status:** Business rules ACCEPTED (ADR 0029). Calculator, snapshot/audit,
+atomic reward finalization and read-only Result UI are implemented behind the
+default-off new-session rollout flag; release verification/enablement is pending.
 **Scope:** ActivitySession (LEARNING/Practice and TRY_HARD) only; never Assignment or AssessmentAttempt.  
 **Implementation roadmap:** `.agent/plans/ACTIVITY_XP_ENGINE_IMPLEMENTATION.md`.
 
@@ -89,7 +91,7 @@ Activity question selection can be randomized; this does not guarantee a disjoin
 ## 6. XP ledger, profile and Level
 
 - Exactly **one positive PRACTICE `XpTransaction` per awarded ActivitySession** (unique `activity_session_id` partial index in V50 plus stable `idempotency_key = ACTIVITY_SESSION_REWARD:<sessionId>`).
-- The Session stores immutable Question breakdown (`xp_outcome`, `xp_base`, `xp_final`, `xp_resolved_at`), aggregate (`xp_question_total`, `xp_completion_bonus`, `xp_total`) and `xp_finalized_at`. The transaction stores policy/Level/multiplier audit data; `earned_at` reflects terminal award, not Session start.
+- The Session stores immutable Question breakdown (`xp_outcome`, `xp_base`, `xp_final`, `xp_resolved_at`), aggregate (`xp_question_total`, `xp_completion_bonus`, `xp_total`), receipt snapshots (`xp_lifetime_after`, `xp_level_after`) and `xp_finalized_at`. The transaction stores policy/Level/multiplier audit data; `earned_at` reflects terminal award, not Session start.
 - All money-like XP numbers are nonnegative integral values; scaled positive values have a minimum of 1. The transaction amount equals persisted Session XP total and total question breakdown plus completion bonus. For ABANDONED, the eligible committed amount is zero regardless of provisional breakdown.
 - In the **same database transaction**, serialize the reward-critical Session transition and student's profile update; insert ledger, update Lifetime XP, derive Current Level and persist finalization. Distinct concurrent Sessions for one student must not overwrite each other's Lifetime XP. The unique key/index alone is **not** protection against lost profile increments.
 - If a profile is absent, create safely against the existing unique student constraint before reward/Level snapshot; address first-create races. Never update a student's profile based on a client-provided XP/Level.
@@ -122,10 +124,14 @@ The first XP UI surfaces the **committed** XP only on Activity Result, with Sess
 
 ## 9. Persistence status, versioning and deployment
 
-- V49: initial profile and XP ledger; V50: nullable XP snapshot/audit/breakdown columns and PRACTICE Session unique index; V51: `resolution_reason` for gameplay TIMEOUT. They are committed source migrations, **not proof of execution on a given database**.
+- V49: initial profile and XP ledger; V50: nullable XP snapshot/audit/breakdown columns and PRACTICE Session unique index; V51: `resolution_reason` for gameplay TIMEOUT; V52: immutable Lifetime XP/Level-after reward receipt snapshots. They are committed source migrations, **not proof of execution on a given database**.
 - QuestionSnapshot v2 includes Difficulty; old schema v1 can remain readable for gameplay but cannot earn retroactive v2.2 XP.
 - An immutable policy identifier (proposed literal `ACTIVITY_XP_V2_2`) is stamped for each eligible newly started session. Future policy changes require a new policy version.
-- Existing skeleton interfaces are intentionally not injected into the runtime. **No Activity XP reward is active until phases and acceptance tests pass.**
+- Phases 1–4 are implemented. New-session policy binding is guarded by
+  `gamification.activity-xp.enabled` (environment `ACTIVITY_XP_ENABLED`) and is
+  disabled by default. Eligible terminal sessions atomically persist the reward
+  receipt, ledger/profile mutation and Result API data; legacy sessions remain
+  ineligible. Production enablement waits for Phase 5 acceptance validation.
 - Deployment requires duplicate-ledger preflight, database Flyway verification, Maven/FE validation, concurrency tests and end-to-end gameplay/result tests.
 
 ## 10. Acceptance examples

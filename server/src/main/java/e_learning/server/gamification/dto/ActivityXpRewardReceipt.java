@@ -10,6 +10,7 @@ public record ActivityXpRewardReceipt(
         int questionXp,
         int completionBonus,
         int committedXp,
+        int levelBefore,
         long lifetimeXpAfter,
         int levelAfter,
         LocalDateTime finalizedAt

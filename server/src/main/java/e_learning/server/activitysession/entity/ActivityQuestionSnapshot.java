@@ -1,6 +1,7 @@
 package e_learning.server.activitysession.entity;
 
 import e_learning.server.question.enums.QuestionType;
+import e_learning.server.question.enums.Difficulty;
 
 import java.util.List;
 
@@ -9,6 +10,7 @@ public record ActivityQuestionSnapshot(
         int schemaVersion,
         long contentRevision,
         QuestionType type,
+        Difficulty difficulty,
         String content,
         String explanation,
         String hint,
@@ -25,7 +27,7 @@ public record ActivityQuestionSnapshot(
     public record Option(String key, String content, boolean correct) {}
 
     public ActivityQuestionSnapshot withoutPayload() {
-        return new ActivityQuestionSnapshot(schemaVersion, contentRevision, type, content, explanation, hint,
+        return new ActivityQuestionSnapshot(schemaVersion, contentRevision, type, difficulty, content, explanation, hint,
                 matchingMode, options, answers, null);
     }
 }

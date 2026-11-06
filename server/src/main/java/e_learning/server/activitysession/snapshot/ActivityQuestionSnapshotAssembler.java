@@ -13,7 +13,7 @@ import tools.jackson.databind.ObjectMapper;
 @Component
 @RequiredArgsConstructor
 public class ActivityQuestionSnapshotAssembler {
-    private static final int SNAPSHOT_SCHEMA_VERSION = 1;
+    private static final int SNAPSHOT_SCHEMA_VERSION = 2;
     private final QuestionOptionRepository optionRepository;
     private final QuestionAnswerRepository answerRepository;
     private final QuestionSpecMapper questionSpecMapper;
@@ -24,10 +24,10 @@ public class ActivityQuestionSnapshotAssembler {
         var options = optionRepository.findByQuestionId(question.getId()).stream()
                 .map(o -> new ActivityQuestionSnapshot.Option(o.getOptionKey(), o.getContent(), o.isCorrect())).toList();
         var answers = answerRepository.findByQuestionId(question.getId()).stream().map(a -> a.getRawValue()).toList();
-        var snapshot = new ActivityQuestionSnapshot(SNAPSHOT_SCHEMA_VERSION, question.getContentRevision(), question.getType(),
+        var snapshot = new ActivityQuestionSnapshot(SNAPSHOT_SCHEMA_VERSION, question.getContentRevision(), question.getType(), question.getDifficulty(),
                 spec.content(), question.getExplanation(), question.getHint(), question.getMatchingMode(), options, answers, null);
         try {
-            return new ActivityQuestionSnapshot(snapshot.schemaVersion(), snapshot.contentRevision(), snapshot.type(),
+            return new ActivityQuestionSnapshot(snapshot.schemaVersion(), snapshot.contentRevision(), snapshot.type(), snapshot.difficulty(),
                     snapshot.content(), snapshot.explanation(), snapshot.hint(), snapshot.matchingMode(), snapshot.options(),
                     snapshot.answers(), objectMapper.writeValueAsString(snapshot.withoutPayload()));
         } catch (Exception e) {
@@ -41,7 +41,7 @@ public class ActivityQuestionSnapshotAssembler {
         }
         try {
             ActivityQuestionSnapshot value = objectMapper.readValue(item.getSnapshotPayload(), ActivityQuestionSnapshot.class);
-            return new ActivityQuestionSnapshot(item.getSnapshotSchemaVersion(), item.getSnapshotContentRevision(), value.type(),
+            return new ActivityQuestionSnapshot(item.getSnapshotSchemaVersion(), item.getSnapshotContentRevision(), value.type(), value.difficulty(),
                     value.content(), value.explanation(), value.hint(), value.matchingMode(), value.options(), value.answers(), item.getSnapshotPayload());
         } catch (Exception e) {
             throw new QuestionEngineException("Unable to read activity question snapshot", e);

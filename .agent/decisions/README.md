@@ -32,6 +32,7 @@ An accepted ADR overrides lower-level documents. Never delete an ADR; supersede 
 | 0026 | Assignment automatic scoring and score visibility | Accepted; automatic scoring, default/custom points, independent score and answer visibility |
 | 0027 | Single Active Tab with Resumable AssessmentAttempt | **Accepted; Phase 7B session ownership** |
 | 0028 | AssessmentAttempt draft answer on AssessmentAttemptQuestion | **Accepted; drops 1–1 Answer entity (V47)** |
+| 0029 | Activity XP award lifecycle, snapshot and ledger | **Accepted; runtime not yet enabled** |
 
 ## Current decision chain
 

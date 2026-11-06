@@ -63,3 +63,13 @@
 - Every submission/timeout is intended to be graded server-side from the immutable AssessmentAttempt snapshot.
 - show_score_after_submit controls whether students see the calculated score immediately; show_answers_after_submit independently controls answers/explanations.
 - Composition position, not question ID, determines rendered item order. question_id ASC is only the legacy backfill order.
+
+## Activity XP v2.2 reward lifecycle (ADR 0029)
+- Activity only; Assignment and AssessmentAttempt never receive Activity XP.
+- Per-question difficulty is snapshotted from each Question when ActivitySession starts, as are official Level and XP policy/multiplier.
+- During IN_PROGRESS, XP is provisional: no XP ledger entry or Lifetime XP update.
+- COMPLETED awards eligible Question XP + Completion Bonus; GAME_OVER awards eligible Question XP but no Completion Bonus; ABANDONED awards nothing.
+- Each terminal Session has at most one PRACTICE reward transaction (if positive amount); zero-amount sessions are finalized durably without positive ledger entry.
+- Concurrent requests may occur but must never cause duplicate or lost committed XP. Atomic reward ledger/profile update and database uniqueness are mandatory; this does not authorize a broad refactor of answer handling.
+- Older Question snapshots missing difficulty cannot be repriced from current Question state. No retroactive XP backfill.
+- No XP engine runtime is wired in the V50 foundation; see `.agent/domain/ACTIVITY_XP_V2_2_SPEC.md` for open balance and outcome questions.

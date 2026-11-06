@@ -43,6 +43,14 @@ public class ActivitySession {
      */
     @Column(name = "time_limit_seconds")
     private Integer timeLimitSeconds;
+    // XP v2.2 groundwork, all nullable until the reward engine is activated.
+    @Column(name = "xp_level_snapshot") private Integer xpLevelSnapshot;
+    @Column(name = "xp_policy_version", length = 40) private String xpPolicyVersion;
+    @Column(name = "xp_multiplier", precision = 4, scale = 2) private BigDecimal xpMultiplier;
+    @Column(name = "xp_question_total") private Integer xpQuestionTotal;
+    @Column(name = "xp_completion_bonus") private Integer xpCompletionBonus;
+    @Column(name = "xp_total") private Integer xpTotal;
+    @Column(name = "xp_finalized_at") private LocalDateTime xpFinalizedAt;
     @OneToMany(mappedBy = "session", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("position ASC") private List<ActivitySessionQuestion> questions = new ArrayList<>();
 

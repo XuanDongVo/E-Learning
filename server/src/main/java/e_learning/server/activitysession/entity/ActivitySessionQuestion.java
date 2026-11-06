@@ -1,6 +1,7 @@
 package e_learning.server.activitysession.entity;
 
 import e_learning.server.question.entity.Question;
+import e_learning.server.gamification.entity.XpQuestionOutcome;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
@@ -24,6 +25,11 @@ public class ActivitySessionQuestion {
     @Column(name = "final_correct") private Boolean finalCorrect;
     @Column(name = "hint_used", nullable = false) private boolean hintUsed;
     @Column(nullable = false) private boolean resolved;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "xp_outcome", length = 40) private XpQuestionOutcome xpOutcome;
+    @Column(name = "xp_base") private Integer xpBase;
+    @Column(name = "xp_final") private Integer xpFinal;
+    @Column(name = "xp_resolved_at") private LocalDateTime xpResolvedAt;
     public ActivitySessionQuestion(Question question, int position) { this.question = question; this.position = position; }
 
     public ActivitySessionQuestion(Question question, int position, ActivityQuestionSnapshot snapshot) {

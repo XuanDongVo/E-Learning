@@ -11,6 +11,7 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 
 import java.time.LocalDateTime;
+import java.math.BigDecimal;
 
 @Entity
 @Table(name = "xp_transactions")
@@ -35,6 +36,10 @@ public class XpTransaction {
 
     @Column(nullable = false)
     private int amount;
+
+    @Column(name = "policy_version", length = 40) private String policyVersion;
+    @Column(name = "level_snapshot") private Integer levelSnapshot;
+    @Column(name = "xp_multiplier", precision = 4, scale = 2) private BigDecimal xpMultiplier;
 
     @Column(name = "earned_at", nullable = false)
     private LocalDateTime earnedAt;
@@ -100,6 +105,13 @@ public class XpTransaction {
     public LocalDateTime getEarnedAt() {
         return earnedAt;
     }
+
+    public String getPolicyVersion() { return policyVersion; }
+    public void setPolicyVersion(String policyVersion) { this.policyVersion = policyVersion; }
+    public Integer getLevelSnapshot() { return levelSnapshot; }
+    public void setLevelSnapshot(Integer levelSnapshot) { this.levelSnapshot = levelSnapshot; }
+    public BigDecimal getXpMultiplier() { return xpMultiplier; }
+    public void setXpMultiplier(BigDecimal xpMultiplier) { this.xpMultiplier = xpMultiplier; }
 
     public String getIdempotencyKey() {
         return idempotencyKey;

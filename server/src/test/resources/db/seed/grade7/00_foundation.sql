@@ -45,7 +45,7 @@ JOIN classes c ON c.name = CASE
   WHEN substring(u.email from 'student([0-9]+)')::int <=40 THEN 'G7-SEED-7A2'
   ELSE 'G7-SEED-7A3'
 END AND c.academic_year='2026-2027'
-WHERE u.email ~ '^g7[.]seed[.]student[0-9]{2}@example[.]test
+WHERE u.email ~ '^g7[.]seed[.]student[0-9]{2}@example[.]test$'
 ON CONFLICT(class_id,user_id) DO UPDATE SET status='ACTIVE';
 
 -- Three additional edge-case users: inactive, without class, and an inactive membership.

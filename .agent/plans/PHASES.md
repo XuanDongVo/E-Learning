@@ -1,6 +1,6 @@
 # Implementation Phases
 
-**Current branch:** `feature/teacher-assignment-analysis`  
+**Current branch:** `feature/student-gamification`
 **Current implementation baseline:** `.agent/CURRENT_STATE.md`
 
 ## Phase 0–6
@@ -25,5 +25,11 @@ FEATURE MERGED (PR #30). Finalize path on `main`. Remaining: hard-lock, exact-HE
 
 Deferred vs full spec: answer-option distributions, question detail endpoint, score-range filter, export.
 
-## Phase 9–11
-XP/ranking, teacher dashboard, reports — not started.
+## Student Gamification — current branch
+
+- Activity XP Engine v2.2 Phases 1–4: source implemented behind default-off rollout, Phase 5 verification/open.
+- Streak/Level v1: source service, read APIs and Rewards UI added; backend/FE checks, PostgreSQL concurrency and authenticated E2E remain open. See `STUDENT_STREAK_LEVEL_IMPLEMENTATION.md`.
+- Leaderboard live data: **deferred**; existing UI uses explicitly labeled sample data.
+
+## Remaining Phase 9–11 work
+Live ranking, teacher dashboard and reports are not implemented under this Streak slice.

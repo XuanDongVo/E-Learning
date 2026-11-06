@@ -33,6 +33,8 @@ An accepted ADR overrides lower-level documents. Never delete an ADR; supersede 
 | 0027 | Single Active Tab with Resumable AssessmentAttempt | **Accepted; Phase 7B session ownership** |
 | 0028 | AssessmentAttempt draft answer on AssessmentAttemptQuestion | **Accepted; drops 1–1 Answer entity (V47)** |
 | 0029 | Activity XP lifecycle, outcome, scaling, replay and result visibility | **Accepted; runtime not yet enabled** |
+| 0030 | Activity Streak day qualification, milestone XP and Level integration | **Accepted; source implementation under verification** |
+| 0031 | Student Home Streak/Level placement and border-ink + shadow-pop | **Accepted; UI implementation under verification** |
 
 ## Current decision chain
 
@@ -51,6 +53,7 @@ ADR 0027 defines the Phase 7B single-active-tab/resumable session policy: Web Lo
 ADR 0028 stores the AssessmentAttempt draft answer on AssessmentAttemptQuestion (answer_payload, revision, saved_at) and removes the separate AssessmentAttemptAnswer table; Mutation idempotency remains; normalized values are not stored on draft save.
 
 ADR 0029 also locks the Activity XP v2.2 outcome matrix, Hint precedence, Level scaling, Completion Bonus eligibility, replay without penalty, legacy no-backfill and Result-only first release; approved policy is not deployed engine code.
+ADR 0030 locks the Activity completion-only daily Streak, calendar timezone, 3/7/14/30 milestone bonuses and per-run re-award policy. See `.agent/plans/STUDENT_STREAK_LEVEL_IMPLEMENTATION.md`.
 
 ## Canonical implementation plan
 

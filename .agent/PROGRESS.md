@@ -4,7 +4,13 @@
 **Branch:** `feature/student-gamification`
 **Canonical state:** `.agent/CURRENT_STATE.md`
 
+## UI correction (2026-11-06)
+
+- Owner selected **border-ink + shadow-pop** (not shadow-ink) as the application-wide outlined visual pattern. Student Home now owns a compact real-data weekly Streak calendar and simple XP-based Level card; Rewards is Leaderboard-only preview. Week dates are delivered by the Streak API. Freeze and minute-based goals remain deferred. Verification pending.
+
 ## Current stage
+
+- **Student Streak/Level v1 source:** accepted milestone policy (3/7/14/30 → 10/20/40/80 XP), daily completion service, ledger/Level integration, authenticated read APIs, and live Rewards overview added. No Leaderboard live data or Streak Freeze. Validation pending.
 
 - **Activity XP Engine Phases 1–4:** calculator, session audit, atomic terminal
   settlement, persisted result receipt and Activity Result UI implemented
@@ -15,6 +21,13 @@
   and Units/Unit Detail UI refinement on `feature/student-gamification`.
 - Phase 7 Scope B AssessmentAttempt: on `main` (finalize path present).
 - **Phase 8 Teacher Assignment Analysis: implementation code complete on this branch.**
+
+## Streak/Level work log (2026-11-06)
+
+- Added ADR 0030 and implementation plan; reused V49 Streak/ledger tables without schema changes.
+- New `StudentStreakPolicy` and `StudentStreakService` attach `COMPLETED` transitions to one-per-day qualification and fixed STREAK_BONUS ledger. UI reads own profile and Streak from authenticated API; leaderboard remains mock and is visibly labeled.
+- Added pure calendar/milestone unit tests and service tests for same-day idempotency, three-day bonus/Level advancement, and reset. PostgreSQL concurrency and authenticated E2E are outstanding.
+- Maven test attempt blocked before compilation: Spring Boot 4.1.1 parent POM unavailable due Maven Central DNS/network restrictions. Frontend project dependencies are not installed in this shell; lint/type/build remain unverified.
 
 ## Activity XP work log (2026-11-06)
 

@@ -40,5 +40,7 @@ export const QUERY_KEYS = {
   activity: (id: number) => ["activity", id] as const,
   activitySources: (unitId: number) => ["activitySources", unitId] as const,
   leaderboard: ["leaderboard"] as const,
+  studentGamificationProfile: ["student", "gamification", "profile"] as const,
+  studentStreak: ["student", "gamification", "streak"] as const,
   recentResults: ["recentResults"] as const,
 };

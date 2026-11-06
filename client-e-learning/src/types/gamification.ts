@@ -7,6 +7,32 @@ export type XpSourceType =
 
 export type LeaderboardTab = "xp" | "time" | "streak" | "share";
 
+export interface StudentGamificationOverview {
+  lifetimeXp: number;
+  currentLevel: number;
+  currentLevelStartXp: number;
+  nextLevelRequiredXp: number;
+  xpIntoCurrentLevel: number;
+  xpToNextLevel: number;
+  currentStreak: number;
+  longestStreak: number;
+  lastQualifiedDate: string | null;
+  qualifiedToday: boolean;
+}
+
+export interface StudentStreakOverview {
+  currentStreak: number;
+  longestStreak: number;
+  qualifiedToday: boolean;
+  runStartDate: string | null;
+  lastQualifiedDate: string | null;
+  timezone: string;
+  milestones: { days: number; xp: number; awarded: boolean }[];
+  todayDate: string;
+  weekStartDate: string;
+  qualifiedDates: string[];
+}
+
 export interface StudentGamificationProfile {
   id: string;
   studentId: string;

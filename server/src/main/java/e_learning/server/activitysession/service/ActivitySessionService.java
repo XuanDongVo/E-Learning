@@ -19,6 +19,7 @@ import e_learning.server.gamification.dto.ActivityXpQuestionReceipt;
 import e_learning.server.gamification.dto.ActivityXpRewardReceipt;
 import e_learning.server.gamification.service.ActivityXpRewardWorkflow;
 import e_learning.server.gamification.service.ActivityXpSessionAuditService;
+import e_learning.server.gamification.service.StudentStreakService;
 import e_learning.server.question.entity.*;
 import e_learning.server.question.repository.*;
 import e_learning.server.user.entity.User;
@@ -51,6 +52,7 @@ public class ActivitySessionService {
     private final ActivityQuestionSelectionService questionSelectionService;
     private final ActivityXpSessionAuditService activityXpAuditService;
     private final ActivityXpRewardWorkflow activityXpRewardWorkflow;
+    private final StudentStreakService studentStreakService;
 
     @Transactional(readOnly = true)
     public ActivitySessionOptionsResponse options(Long activityId, Long studentId) {
@@ -389,16 +391,20 @@ public class ActivitySessionService {
     }
 
     private void settleXpIfTerminal(ActivitySession session) {
-        if (session.getXpPolicyVersion() == null
-                && session.getXpLevelSnapshot() == null
-                && session.getXpMultiplier() == null) {
-            return;
+        boolean xpEligible = session.getXpPolicyVersion() != null
+                || session.getXpLevelSnapshot() != null
+                || session.getXpMultiplier() != null;
+        if (xpEligible) {
+            if (session.getStatus() == ActivitySessionStatus.ABANDONED) {
+                activityXpRewardWorkflow.forfeitAbandonedSession(session.getId());
+            } else if (session.getStatus() == ActivitySessionStatus.COMPLETED
+                    || session.getStatus() == ActivitySessionStatus.GAME_OVER) {
+                activityXpRewardWorkflow.finalizeTerminalSession(session.getId());
+            }
         }
-        if (session.getStatus() == ActivitySessionStatus.ABANDONED) {
-            activityXpRewardWorkflow.forfeitAbandonedSession(session.getId());
-        } else if (session.getStatus() == ActivitySessionStatus.COMPLETED
-                || session.getStatus() == ActivitySessionStatus.GAME_OVER) {
-            activityXpRewardWorkflow.finalizeTerminalSession(session.getId());
+        // Streak requires completion, not eligibility for the separate XP rollout.
+        if (session.getStatus() == ActivitySessionStatus.COMPLETED) {
+            studentStreakService.recordCompletedActivity(session.getStudent().getId());
         }
     }
 

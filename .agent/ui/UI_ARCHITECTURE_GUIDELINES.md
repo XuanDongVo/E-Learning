@@ -1,6 +1,6 @@
 # UI Architecture Guidelines
 
-**Status:** Source of truth for UI structure, color, typography, spacing and components (Playful Classroom decision 2026-11-05)  
+**Status:** Source of truth for UI structure, color, typography, spacing and components (Ink-border + shadow-pop correction 2026-11-06; Playful Classroom palette retained)  
 **Applies to:** Teacher UI and Student UI  
 **Audience:** Developers and AI agents who create or modify any screen
 
@@ -843,3 +843,32 @@ The Teacher shell follows the warm Playful Classroom family as its restrained **
 - Dashboard cards should answer one question each: classes, units, assignments and completion.
 - Vietnamese labels are preferred in the Teacher workspace and use sentence case.
 - Mobile navigation is a drawer; desktop navigation must expose the active route clearly.
+
+
+## 18. Ink border + pop shadow visual language (2026-11-06, owner correction)
+
+**Applies to the full application (Teacher and Student).** The approved visual language is Tactify-like *outlined, warm, hard-offset* surfaces using existing **`border-ink` + `shadow-pop`**, NOT `shadow-ink`. This corrects the prior Section 18 wording; the established Playful Classroom palette, typography and accessibility contract remain in force.
+
+- **Meaningful raised surfaces** (primary cards, activity tiles, key metrics, dialogs): `border-2 border-ink bg-card shadow-pop` with existing radius tokens. Prefer shared Card primitives where their API supports the variant.
+- **Secondary/nested surfaces**: `border border-ink` or `border-2 border-ink` without another shadow. Do not place a strong shadow on each child of a shadowed parent.
+- **Buttons/interactions**: primary CTAs may use `border-2 border-ink shadow-pop`, subtle pressed translation and visible focus rings; preserve disabled and reduced-motion behavior.
+- **Tables/inputs/dense teacher content**: ink boundary where it communicates grouping, restrained background and elevation. Preserve focus, readability, density, and semantic error/selection states.
+- **Navigation**: preserve shell dimensions, hierarchy and keyboard behavior; use ink outlines and pop elevation purposefully, not on every link.
+- **Color**: keep LearnUp orange for primary actions, learning blue for learning, amber for XP/Streak and semantic success/error colors; no raw black, hex or random palettes in features.
+- **Token truth**: `border-ink` and `shadow-pop` are already implemented in `client-e-learning/src/app/globals.css`; do **not** introduce a `shadow-ink` alias or replace `shadow-pop` with `shadow-pop-ink` without an explicit new decision. Verify light/dark, contrast and responsive behavior as screens migrate.
+- **Migration**: update shared primitives first, then touched routes; old low-contrast/soft-only cards are migration debt, not an alternate design. This guideline change does not imply all old screens were already migrated.
+
+```tsx
+<div className="rounded-2xl border-2 border-ink bg-card p-5 shadow-pop">
+  {/* Primary content */}
+</div>
+```
+
+**Information hierarchy wins over decoration:** one dominant region per page and no nested shadow wall. Teacher remains restrained; Student may use larger playful emphasis.
+
+### Student Gamification page ownership
+
+- **Student Home** hosts the server-backed seven-day Streak widget (Monday–Sunday, Ho Chi Minh calendar), today indicator, longest streak and a separate minimal Level progress card. Home's main CTA stays Learning.
+- **`/student/rewards`** is a **Leaderboard** page, not a Streak/Level dashboard. Until a real ranking API exists, leaderboards, Hall of Fame and activity feed must be prominently labeled sample content.
+- No fake Freeze balance or five-minute learning target: Freeze is deferred, and a qualified day requires `ActivitySession.COMPLETED`, not elapsed learning minutes.
+- Level is only the current XP-derived level and progress to the next threshold. No new level privileges, inventory or level-up XP.

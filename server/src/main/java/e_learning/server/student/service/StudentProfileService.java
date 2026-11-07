@@ -1,5 +1,9 @@
 package e_learning.server.student.service;
 
+import e_learning.server.activitysession.repository.ActivitySessionRepository;
+import e_learning.server.gamification.profile.repository.StudentGamificationProfileRepository;
+import e_learning.server.activitysession.enums.ActivitySessionStatus;
+import org.springframework.data.domain.Sort;
 import e_learning.server.classes.entity.ClassMember;
 import e_learning.server.classes.repository.ClassMemberRepository;
 import e_learning.server.common.dto.PageResponse;
@@ -39,6 +43,8 @@ public class StudentProfileService {
     private final UserRepository userRepository;
     private final StudentProfileRepository profileRepository;
     private final StudentGuardianRepository guardianRepository;
+    private final ActivitySessionRepository activitySessionRepository;
+    private final StudentGamificationProfileRepository gamificationProfileRepository;
     private final ClassMemberRepository classMemberRepository;
 
     @Transactional(readOnly = true)
@@ -67,6 +73,46 @@ public class StudentProfileService {
         }
 
         return toProfileResponse(user, profile);
+    }
+
+    /** Avatar update is deliberately separate from PUT profile, which replaces guardians. */
+    @Transactional
+    public StudentProfileResponse updateOwnAvatar(Long userId, UpdateStudentAvatarRequest request) {
+        User user = student(userId);
+        StudentProfile profile = profile(userId);
+        profile.setAvatarKey(request.avatarKey());
+        // Keep the pre-existing gamification avatar reference consistent if present.
+        gamificationProfileRepository.findByStudentId(userId)
+                .ifPresent(gamification -> gamification.setActiveAvatarKey(request.avatarKey()));
+        return toProfileResponse(user, profile);
+    }
+
+    /** Returns only the authenticated student's activity sessions, never global activity. */
+    @Transactional(readOnly = true)
+    public StudentLearningOverviewResponse getOwnLearningOverview(Long userId) {
+        student(userId);
+        var recent = activitySessionRepository.searchByStudent(
+                userId, null, null,
+                PageRequest.of(0, 12, Sort.by(Sort.Direction.DESC, "startedAt"))
+        ).getContent();
+        var items = recent.stream()
+                .map(session -> new StudentLearningOverviewResponse.RecentSession(
+                        session.getId(),
+                        session.getActivity().getName(),
+                        session.getActivity().getUnit().getName(),
+                        session.getMode().name(),
+                        session.getStatus().name(),
+                        session.getFinalCorrectCount(),
+                        session.getTotalQuestions(),
+                        session.getCompletedAt() != null ? session.getCompletedAt() : session.getStartedAt(),
+                        session.getXpTotal()
+                ))
+                .toList();
+        return new StudentLearningOverviewResponse(
+                activitySessionRepository.countByStudentId(userId),
+                activitySessionRepository.countByStudentIdAndStatus(userId, ActivitySessionStatus.COMPLETED),
+                items
+        );
     }
 
     @Transactional(readOnly = true)
@@ -461,7 +507,8 @@ public class StudentProfileService {
                 profile.getPhone(),
                 guardians(profile),
                 current,
-                user.getStatus().name()
+                user.getStatus().name(),
+                profile.getAvatarKey()
         );
     }
 }

@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { QUERY_KEYS } from "@/services/query-keys";
 import { studentGamificationService } from "@/services/student/student-gamification.service";
 import { cn } from "@/lib/utils";
+import { SketchProgress } from "@/components/student-ui/sketch-progress";
 
 const WEEK_DAYS = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
 // JavaScript UTC weekdays for a Monday-based, seven-day calendar.
@@ -67,7 +68,7 @@ export function StudentStreakOverview() {
 
   return (
     <section aria-label="Thành tích học tập của bạn" className="grid gap-5 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
-      <div className="min-w-0 rounded-2xl border-2 border-ink bg-card p-4 shadow-pop sm:p-5">
+      <div className="student-paper student-streak-card min-w-0 p-4 sm:p-5">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h2 className="text-sm font-extrabold uppercase tracking-wide text-foreground">
             Chuỗi ngày học
@@ -124,15 +125,8 @@ export function StudentStreakOverview() {
             {run.qualifiedToday ? "Hẹn gặp bạn ngày mai!" : "Hoàn thành 1 Activity để ghi nhận hôm nay"}
           </span>
         </div>
-        <div
-          className="mt-2 h-2.5 overflow-hidden rounded-full bg-secondary"
-          role="progressbar"
-          aria-label="Số ngày học trong tuần"
-          aria-valuemin={0}
-          aria-valuemax={7}
-          aria-valuenow={weeklyCount}
-        >
-          <div className="h-full rounded-full bg-accent transition-[width]" style={{ width: `${weeklyCount / 7 * 100}%` }} />
+        <div className="mt-2">
+          <SketchProgress value={weeklyCount} max={7} label="Số ngày học trong tuần" />
         </div>
         <p className="mt-3 text-xs text-muted-foreground">
           Mỗi ngày chỉ cần hoàn thành một Activity để giữ chuỗi.
@@ -140,8 +134,8 @@ export function StudentStreakOverview() {
         </p>
       </div>
 
-      <div className="min-w-0 rounded-2xl border-2 border-ink bg-card p-4 shadow-pop sm:p-5">
-        <div className="flex items-center gap-2 text-sm font-extrabold uppercase tracking-wide text-foreground">
+      <div className="student-paper student-streak-card min-w-0 p-4 sm:p-5">
+        <div className="student-streak-heading flex items-center gap-2 text-sm font-extrabold uppercase tracking-wide text-foreground">
           <Sparkles className="h-5 w-5 text-accent" aria-hidden="true" />
           Cấp độ học tập
         </div>
@@ -156,15 +150,8 @@ export function StudentStreakOverview() {
             Đạt mốc XP tiếp theo để lên Level {level.currentLevel + 1}.
           </p>
         </div>
-        <div
-          className="mt-5 h-3 overflow-hidden rounded-full border border-ink bg-secondary"
-          role="progressbar"
-          aria-label="Tiến độ XP lên cấp"
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-valuenow={Math.round(progress)}
-        >
-          <div className="h-full rounded-full bg-learning transition-[width]" style={{ width: `${progress}%` }} />
+        <div className="mt-5">
+          <SketchProgress value={Math.round(progress)} max={100} label="Tiến độ XP lên cấp" tone="denim" />
         </div>
         <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-xs font-semibold text-muted-foreground">
           <span>{level.xpIntoCurrentLevel.toLocaleString("vi-VN")} / {totalForLevel.toLocaleString("vi-VN")} XP</span>

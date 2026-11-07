@@ -6,6 +6,17 @@ license: Complete terms in LICENSE.txt
 
 # Frontend Design
 
+## Project identity is already decided — mandatory precedence
+
+For E-Learning UI tasks, read repository `AGENTS.md`, the active `.agent/ui/UI_ARCHITECTURE_GUIDELINES.md` and the relevant screen blueprint **before** choosing an aesthetic. If the task touches Student UI (including shared components used by Student), also read `.agent/ui/INDIE_ILLUSTRATED_SCRAPBOOK_DESIGN_SYSTEM.md` and ADR 0032.
+
+- **Student:** Indie Illustrated Scrapbook (Hand Drawn × Hipness Purgatory) is the **only** approved visual direction. Do not invent a competing palette, font pairing, border language, visual metaphor or design-system identity. Creativity is allowed **inside** its rules, with existing product tokens and components.
+- **Teacher:** Retain the existing Teacher appearance, component conventions and tokens; never inherit Student decorative changes unintentionally.
+- **Shared:** Preserve interaction, accessibility and data integrity; isolate Student visual variants. Verify portal/theme behavior when relevant.
+- Any instruction below to brainstorm a palette/typography or take aesthetic risk applies **only where the project has not established those decisions**. Canonical project docs and accepted ADRs take precedence.
+
+
+
 Approach this as the design lead at a design studio known for giving every client a distinct visual identity that is not mistaken for anyone else's. This client has already rejected proposals that felt cliché or templated, and is paying for a distinctive point of view: make deliberate, opinionated choices about palette, typography, and layout that are specific to this brief, and take aesthetic risk if justified.
 
 ## Ground your designs in the subject matter

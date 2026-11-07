@@ -10,6 +10,7 @@ import e_learning.server.common.exception.ErrorCode;
 import e_learning.server.content.question.entity.ContentQuestion;
 import e_learning.server.content.question.repository.ContentQuestionRepository;
 import e_learning.server.question.entity.Question;
+import e_learning.server.question.enums.QuestionType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -29,6 +30,14 @@ public class ActivityQuestionSelectionService {
     private final ActivityBankRepository activityBankRepository;
     private final ContentQuestionRepository contentQuestionRepository;
 
+    private boolean isActivitySupportedType(QuestionType type) {
+        return type == QuestionType.SINGLE_CHOICE
+                || type == QuestionType.MULTIPLE_CHOICE
+                || type == QuestionType.TRUE_FALSE
+                || type == QuestionType.FILL_IN_BLANK
+                || type == QuestionType.TYPE_ANSWER;
+    }
+
     public List<Question> selectQuestions(Activity activity) {
         List<ActivityBank> banks = activityBankRepository.findByActivityIdOrderByDisplayOrderAsc(activity.getId());
         Map<Long, Integer> allocations = ActivityDistributionCalculator.calculate(activity, banks);
@@ -37,6 +46,7 @@ public class ActivityQuestionSelectionService {
             List<Question> pool = contentQuestionRepository
                     .findAllByQuestionBankIdAndQuestionCompleteTrueOrderByQuestionIdAsc(bank.getQuestionBank().getId())
                     .stream().map(ContentQuestion::getQuestion)
+                    .filter(question -> isActivitySupportedType(question.getType()))
                     .filter(question -> activity.getQuestionDifficulty() == ActivityDifficulty.MIXED
                             || question.getDifficulty().name().equals(activity.getQuestionDifficulty().name()))
                     .collect(Collectors.toCollection(ArrayList::new));

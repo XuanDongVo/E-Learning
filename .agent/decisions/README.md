@@ -34,7 +34,9 @@ An accepted ADR overrides lower-level documents. Never delete an ADR; supersede 
 | 0028 | AssessmentAttempt draft answer on AssessmentAttemptQuestion | **Accepted; drops 1–1 Answer entity (V47)** |
 | 0029 | Activity XP lifecycle, outcome, scaling, replay and result visibility | **Accepted; runtime not yet enabled** |
 | 0030 | Activity Streak day qualification, milestone XP and Level integration | **Accepted; source implementation under verification** |
-| 0031 | Student Home Streak/Level placement and border-ink + shadow-pop | **Accepted; UI implementation under verification** |
+| 0031 | Student Home Streak/Level placement and border-ink + shadow-pop | **Accepted; visual decision 1 superseded for Student by 0032; behavior retained** |
+| 0032 | Student Indie Illustrated Scrapbook visual system | **Accepted; scoped theme implemented, route migration in progress** |
+| 0032 | XP/Streak Leaderboard, Top 50, honors and ActivitySession feed | **Accepted; source under verification** |
 
 ## Current decision chain
 
@@ -54,6 +56,8 @@ ADR 0028 stores the AssessmentAttempt draft answer on AssessmentAttemptQuestion 
 
 ADR 0029 also locks the Activity XP v2.2 outcome matrix, Hint precedence, Level scaling, Completion Bonus eligibility, replay without penalty, legacy no-backfill and Result-only first release; approved policy is not deployed engine code.
 ADR 0030 locks the Activity completion-only daily Streak, calendar timezone, 3/7/14/30 milestone bonuses and per-run re-award policy. See `.agent/plans/STUDENT_STREAK_LEVEL_IMPLEMENTATION.md`.
+
+ADR 0032 replaces the Student Playful Classroom visual direction with Indie Illustrated Scrapbook. The older ADR 0031 Streak/Level and rewards requirements remain in effect; Teacher visual identity stays unchanged. The canonical aesthetic is `.agent/ui/INDIE_ILLUSTRATED_SCRAPBOOK_DESIGN_SYSTEM.md`.
 
 ## Canonical implementation plan
 

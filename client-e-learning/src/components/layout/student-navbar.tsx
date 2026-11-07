@@ -15,7 +15,8 @@ import {
   X,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { mockCurrentUser } from "@/mock/db";
+import { useQuery } from "@tanstack/react-query";
+import { studentProfileService } from "@/services/student/student-profile.service";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/components/auth/auth-provider";
 
@@ -32,6 +33,18 @@ export function StudentNavbar() {
   const pathname = usePathname();
   const { user, logout } = useAuth();
   const [open, setOpen] = useState(false);
+  const ownProfile = useQuery({
+    queryKey: ["student-profile"],
+    queryFn: studentProfileService.get,
+    enabled: Boolean(user),
+  });
+  const avatarKey = ownProfile.data?.data?.avatarKey;
+  const avatarMatch = avatarKey?.match(
+    /^dicebear:(adventurer|bottts|lorelei|pixel-art|fun-emoji|big-smile|notionists|open-peeps|micah|thumbs):(.{1,40})$/,
+  );
+  const avatarUrl = avatarMatch
+    ? `https://api.dicebear.com/9.x/${avatarMatch[1]}/svg?seed=${encodeURIComponent(avatarMatch[2])}`
+    : undefined;
 
   // Đóng menu khi đổi trang
   useEffect(() => setOpen(false), [pathname]);
@@ -53,13 +66,12 @@ export function StudentNavbar() {
   const isItemActive = (href: string) =>
     href === "/student" ? pathname === "/student" : pathname.startsWith(href);
 
-  const displayName = user?.fullName || mockCurrentUser.name;
-  const displayRole = user?.role === "STUDENT" ? "Học sinh" : user?.role || mockCurrentUser.className;
-  const initials = displayName.slice(0, 2).toUpperCase();
+  const displayName = user.fullName || user.email;
+  const initials = displayName.trim().split(/\s+/).slice(-2).map((part) => part[0]).join("").toUpperCase();
 
   return (
     <>
-      <header className="sticky top-0 z-40 w-full border-b-1 border-ink shadow-pop bg-card-bg/95 backdrop-blur">
+      <header className="student-navbar sticky top-0 z-40 w-full border-b-1 border-ink shadow-pop bg-card-bg/95 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-[1440px] items-center gap-6 px-4 sm:px-6">
           {/* Brand */}
           <Link href="/student" className="flex shrink-0 items-center gap-2.5">
@@ -85,7 +97,7 @@ export function StudentNavbar() {
                   href={item.href}
                   aria-current={active ? "page" : undefined}
                   className={cn(
-                    "flex min-h-10 items-center gap-2 rounded-full px-4 text-sm font-semibold transition-colors",
+                    "student-nav-item flex min-h-11 items-center gap-2 rounded-full px-4 text-sm font-semibold transition-colors",
                     active
                       ? "bg-primary-light text-primary"
                       : "text-neutral-muted hover:bg-background-app hover:text-neutral-dark",
@@ -105,7 +117,7 @@ export function StudentNavbar() {
               className="flex items-center gap-2.5 rounded-full py-1 pl-1 pr-3 transition-colors hover:bg-background-app"
             >
               <Avatar className="h-9 w-9">
-                <AvatarImage src={mockCurrentUser.avatarUrl} alt={displayName} />
+                <AvatarImage src={avatarUrl} alt="" />
                 <AvatarFallback>{initials}</AvatarFallback>
               </Avatar>
               <div className="max-w-36 leading-tight">
@@ -113,7 +125,7 @@ export function StudentNavbar() {
                   {displayName}
                 </span>
                 <span className="block truncate text-xs text-neutral-muted">
-                  {displayRole}
+                  {user.email}
                 </span>
               </div>
             </Link>
@@ -163,7 +175,7 @@ export function StudentNavbar() {
           aria-modal="true"
           aria-label="Student menu"
           className={cn(
-            "absolute right-0 top-0 flex h-full w-[82%] max-w-80 flex-col border-l border-border-color bg-card-bg shadow-xl transition-transform duration-300 ease-out",
+            "student-nav-drawer absolute right-0 top-0 flex h-full w-[82%] max-w-80 flex-col border-l border-border-color bg-card-bg shadow-xl transition-transform duration-300 ease-out",
             open ? "translate-x-0" : "translate-x-full",
           )}
         >
@@ -191,7 +203,7 @@ export function StudentNavbar() {
                   href={item.href}
                   aria-current={active ? "page" : undefined}
                   className={cn(
-                    "flex min-h-12 items-center gap-3 rounded-lg px-4 text-base font-semibold transition-colors",
+                    "student-nav-item flex min-h-12 items-center gap-3 rounded-lg px-4 text-base font-semibold transition-colors",
                     active
                       ? "bg-primary-light text-primary"
                       : "text-neutral-muted hover:bg-background-app hover:text-neutral-dark",
@@ -210,7 +222,7 @@ export function StudentNavbar() {
               className="flex min-w-0 flex-1 items-center gap-3 rounded-lg p-2 hover:bg-background-app"
             >
               <Avatar className="h-10 w-10 shrink-0">
-                <AvatarImage src={mockCurrentUser.avatarUrl} alt={displayName} />
+                <AvatarImage src={avatarUrl} alt="" />
                 <AvatarFallback>{initials}</AvatarFallback>
               </Avatar>
               <div className="min-w-0 flex-1">

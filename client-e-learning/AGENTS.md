@@ -1,9 +1,23 @@
-<!-- BEGIN:nextjs-agent-rules -->
+# Frontend agent guide
 
-# This is NOT the Next.js you know
+This directory uses Next.js 16 App Router, React 19, TypeScript and Tailwind CSS 4.
+Inherit all repository rules from [`../AGENTS.md`](../AGENTS.md).
 
-This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+Before changing frontend code:
 
-This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+- Read the matching guide in `node_modules/next/dist/docs/01-app/`. For styling and
+  fonts, use `01-getting-started/11-css.md` and `01-getting-started/13-fonts.md`.
+- Follow [`.agent/architecture/frontend.md`](../.agent/architecture/frontend.md)
+  and [`.agent/ui/UI_ARCHITECTURE_GUIDELINES.md`](../.agent/ui/UI_ARCHITECTURE_GUIDELINES.md).
+- For every Student route or shared component rendered by Student, also follow
+  [`.agent/ui/INDIE_ILLUSTRATED_SCRAPBOOK_DESIGN_SYSTEM.md`](../.agent/ui/INDIE_ILLUSTRATED_SCRAPBOOK_DESIGN_SYSTEM.md)
+  and ADR 0032.
 
-<!-- END:nextjs-agent-rules -->
+Student feature code must use scoped semantic tokens, typography roles and
+`components/student-ui` recipes. Raw colors, arbitrary type sizes and page-local
+copies of shared paper/control/progress/dialog treatments are migration defects.
+The Student shell owns outer width and padding; immersive runtimes are the only
+documented exception.
+
+Validate affected files with ESLint, then run the production build when the
+environment supports Node.js. Check Student layouts at 375, 768, 1024 and 1440px.

@@ -59,13 +59,10 @@ import {
   AlertDialogAction,
 } from "@/components/ui/alert-dialog";
 
-const glassBtn =
-  "border-card/30 bg-card/15 text-primary-foreground hover:bg-card/25 hover:text-primary-foreground";
-const paperBtn =
-  "border-2 border-border bg-card-bg text-foreground shadow-pop-sm hover:bg-secondary hover:text-foreground";
-const nextBtn =
-  "bg-accent text-accent-foreground shadow-pop-sm hover:bg-warning hover:text-accent-foreground";
-const card = "bg-card-bg shadow-pop-lg";
+const glassBtn = "student-control student-control--quiet";
+const paperBtn = "student-control student-control--quiet";
+const nextBtn = "student-control student-control--accent";
+const card = "student-paper";
 const answerBase =
   "h-auto border-2 border-border bg-card text-foreground shadow-pop-sm enabled:hover:border-learning enabled:hover:bg-learning-soft enabled:hover:shadow-pop disabled:opacity-100";
 const answerSelected = "border-learning bg-learning-soft shadow-pop-sm";
@@ -671,7 +668,7 @@ export function PracticeRunner({
   const retryLabel = feedback?.retryAvailable ? "Thử lại" : "Kiểm tra";
   return (
     <section
-      className="fixed inset-0 z-[45] overflow-y-auto bg-learning text-foreground"
+      className="student-practice-runtime fixed inset-0 z-[45] overflow-y-auto bg-learning text-foreground"
       aria-label="Luyện tập tiếng Anh"
     >
       <Image

@@ -30,6 +30,10 @@ public class StudentProfile {
     @Column(length = 30)
     private String phone;
 
+    /** Profile's public-facing avatar selection (DiceBear key, never an arbitrary URL). */
+    @Column(name = "avatar_key", length = 255)
+    private String avatarKey;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -50,6 +54,10 @@ public class StudentProfile {
         this.dateOfBirth = dateOfBirth;
         this.gender = gender;
         this.phone = phone;
+    }
+
+    public void setAvatarKey(String avatarKey) {
+        this.avatarKey = avatarKey;
     }
 
     @PrePersist

@@ -13,6 +13,7 @@
 7. `plans/PHASES.md` and the active phase specification.
 8. One active task plan, if one exists.
 9. Relevant UI blueprint and Definition of Done checklist.
+10. For Student UI, always read `ui/INDIE_ILLUSTRATED_SCRAPBOOK_DESIGN_SYSTEM.md` and ADR 0032; frontend design skill cannot override these decisions.
 
 ## Authority rules
 
@@ -23,6 +24,12 @@
 - Dated audits and superseded plans are historical evidence, not active instructions.
 - When a decision changes, add a later ADR; do not rewrite history or renumber existing ADRs.
 - Never claim build/test/browser validation passed unless it was run against the exact commit being reported.
+
+## Visual design governance
+
+- Student: only Indie Illustrated Scrapbook (Hand Drawn × Hipness Purgatory), established by ADR 0032.
+- Teacher: preserves existing Teacher visual identity; shared accessibility and functionality remain mandatory.
+- The canonical visual document contains aesthetic rules only. Theme/CSS rollout is separate implementation work.
 
 ## Current canonical decisions
 

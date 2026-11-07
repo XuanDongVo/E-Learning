@@ -1,12 +1,12 @@
 import { ActivityHub } from "@/components/features/student/activities/activity-hub";
 
 export default async function StudentActivitiesPage({
-  searchParams,
+  params,
 }: {
-  searchParams: Promise<{ unitId?: string }>;
+  params: Promise<{ unitId: string }>;
 }) {
-  const params = await searchParams;
-  const unitId = params.unitId ? Number(params.unitId) : undefined;
+  const { unitId: rawUnitId } = await params;
+  const unitId = Number(rawUnitId);
 
   return <ActivityHub unitId={Number.isFinite(unitId) ? unitId : undefined} />;
 }

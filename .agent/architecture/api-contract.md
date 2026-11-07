@@ -101,3 +101,10 @@ Canonical model: .agent/architecture/assignment-composition-v1.md. Phase 7B resp
 ## Assignment score visibility
 
 The server calculates and persists the Assignment score on submit/timeout regardless of `show_score_after_submit`. That boolean controls whether the student is shown the score immediately. `show_answers_after_submit` is a separate switch for correct answers and explanations. These are two independent response-projection policies. Scored questions default to 1 point; a teacher may customize possible points per Assignment item. Compound parts default to equal allocation with editable per-part points that must sum to the aggregate question points.
+
+## Leaderboard (implemented read-only contract)
+
+- `GET /v1/student/gamification/leaderboard?metric=XP&period=TODAY|WEEK|MONTH|ALL`: leaderboard XP aggregated from `xp_transactions` for the selected Ho Chi Minh calendar interval. For `metric=STREAK`, period is always ALL and the ranking uses effective current Streak. Sort value descending then student ID ascending; return top 50 + currentStudent rank even outside top 50. `totalStudents` includes active students, even with zero score.
+- `GET /v1/student/gamification/leaderboard/honors`: all-time lifetime XP champion and longest-ever Streak champion among active students; no influencer/ambassador badge.
+- `GET /v1/student/gamification/leaderboard/recent-activity?limit=8`: latest terminal `ActivitySession` rows (COMPLETED or GAME_OVER), status, Activity name, optional earned PRACTICE XP; no fabricated level-up or share events.
+- Authenticated student only. Student ID from JWT for self rank; no client mutation or XP claims. No new migration.

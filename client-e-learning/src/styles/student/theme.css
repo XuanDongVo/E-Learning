@@ -1,0 +1,143 @@
+@import url("https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Courier+Prime:wght@400;700&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,400&family=Patrick+Hand&family=Special+Elite&display=swap");
+
+/*
+ * ADR 0032 — Indie Illustrated Scrapbook Design Tokens.
+ * Áp dụng CÔ LẬP khi route chứa .student-theme.
+ * :has() đảm bảo Radix Dialog, Popover, Select và Sonner portal kế thừa toàn vẹn.
+ */
+.student-theme,
+body:has(.student-theme) {
+  color-scheme: light;
+
+  /* ========================================================================
+     1. BẢNG MÀU CHẤT LIỆU CỐT LÕI (Scrapbook Craft Materials)
+     Không dùng #fff tinh khôi hay #000 tuyệt đối để tránh cảm giác số vô trùng.
+     ======================================================================== */
+  --student-canvas: #f7f4eb;         /* Giấy ngà ấm (Nền app) */
+  --student-paper: #fffdf9;          /* Giấy phác thảo mộc (Nền card) */
+  --student-kraft: #e8dec8;          /* Bìa carton kraft nâu sáng */
+  --student-kraft-dark: #d5c8ab;     /* Bìa kraft sẫm (Đổ bóng nền) */
+  --student-ink: #2d2b2a;            /* Mực than chì tự nhiên */
+  --student-pencil: #6e6863;         /* Chì than mờ (Ghi chú/Muted text) */
+  --student-washi: rgba(243, 232, 142, 0.82); /* Băng keo washi vàng mờ */
+  --student-washi-edge: rgba(220, 205, 105, 0.95);
+
+  /* Bảng màu điểm nhấn Retro Twee / Wes Anderson Palette */
+  --student-mustard: #d99b26;        /* Vàng mù tạt */
+  --student-clay: #c85a32;           /* Cam đất nung (Dùng trang trí) */
+  --student-clay-dark: #a44724;      /* Cam đất sẫm (Đạt chuẩn tương phản AA cho CTA) */
+  --student-sage: #6b8e67;           /* Xanh rêu xô thơm */
+  --student-denim: #4a6b82;          /* Xanh chàm cũ */
+
+  /* ========================================================================
+     2. MAPPING BIẾN SEMANTIC (Tương thích Shadcn UI / Radix)
+     ======================================================================== */
+  --background: var(--student-canvas);
+  --foreground: var(--student-ink);
+
+  --card: var(--student-paper);
+  --card-bg: var(--student-paper);
+  --card-foreground: var(--student-ink);
+
+  --popover: var(--student-paper);
+  --popover-foreground: var(--student-ink);
+
+  /* Nút bấm chính: Dùng màu clay sẫm để chữ trắng luôn đạt WCAG AA */
+  --primary: var(--student-clay-dark);
+  --primary-foreground: #fffdf9;
+  --primary-hover: #883516;
+  --primary-soft: rgba(200, 90, 50, 0.14);
+
+  --secondary: var(--student-kraft);
+  --secondary-foreground: var(--student-ink);
+  --secondary-hover: #dbccb0;
+
+  --muted: #eee7d8;
+  --muted-foreground: #5e554b;       /* Tương phản cao trên cả nền giấy ngà và kraft */
+
+  --accent: var(--student-mustard);
+  --accent-foreground: var(--student-ink);
+
+  /* Trạng thái học tập */
+  --learning: #36566f;
+  --learning-soft: rgba(74, 107, 130, 0.12);
+  --success: #35623b;
+  --success-soft: rgba(107, 142, 103, 0.16);
+  --warning: #926009;
+  --warning-soft: rgba(217, 155, 38, 0.16);
+  --info: #36566f;
+  --info-soft: rgba(74, 107, 130, 0.12);
+  --destructive: #a33d32;
+  --destructive-soft: rgba(200, 90, 50, 0.15);
+  --destructive-foreground: #fffdf9;
+
+  /* Đường viền & Tiêu điểm */
+  --border: rgba(45, 43, 42, 0.38);
+  --input: rgba(45, 43, 42, 0.55);
+  --border-input: rgba(45, 43, 42, 0.55);
+  --ring: var(--student-clay-dark);
+  --ink: var(--student-ink);
+  --ink-fg: #fffdf9;
+  --pop-shadow: var(--student-kraft-dark);
+  --marker: var(--student-mustard);
+  --radius: 0.75rem;
+
+  /* Sidebar Component */
+  --sidebar: var(--student-canvas);
+  --sidebar-foreground: var(--student-ink);
+  --sidebar-primary: var(--student-clay-dark);
+  --sidebar-primary-foreground: #fffdf9;
+  --sidebar-accent: var(--student-kraft);
+  --sidebar-accent-foreground: var(--student-ink);
+  --sidebar-border: rgba(45, 43, 42, 0.38);
+  --sidebar-ring: var(--student-clay-dark);
+  --brand-soft: rgba(200, 90, 50, 0.14);
+
+  /* ========================================================================
+     3. HỆ THỐNG NGHỆ THUẬT CHỮ (Typography System)
+     ======================================================================== */
+  --student-font-body: "Nunito", "Segoe UI", sans-serif;
+  --student-font-hand: "Patrick Hand", "Caveat", cursive;
+  --student-font-note: "Caveat", "Patrick Hand", cursive;
+  --student-font-mono: "Courier Prime", "Special Elite", monospace;
+
+  /* ========================================================================
+     4. BÓNG ĐỔ ĐẶC PHẲNG (Handmade Woodblock Drop Shadows)
+     ======================================================================== */
+  --elevation-sm: 2px 2px 0 var(--student-ink);
+  --elevation-md: 4px 4px 0 var(--student-ink);
+  --elevation-lg: 6px 7px 0 var(--student-ink);
+
+  font-family: var(--student-font-body);
+}
+
+/* ==========================================================================
+   GHI ĐÈ AN TOÀN CHO TOÀN BỘ PORTAL / TOAST / DIALOG
+   ========================================================================== */
+body:has(.student-theme) {
+  background-color: var(--student-canvas);
+  color: var(--student-ink);
+}
+
+.student-theme .font-sans,
+body:has(.student-theme) .font-sans {
+  font-family: var(--student-font-body);
+}
+
+.student-theme [data-slot="button"] {
+  min-height: 44px;
+}
+
+.student-theme :focus-visible {
+  outline: 2.5px solid var(--primary);
+  outline-offset: 2.5px;
+}
+
+body:has(.student-theme) [data-sonner-toast] {
+  font-family: var(--student-font-body);
+  border: 2px solid var(--student-ink);
+  border-radius: 14px 4px 16px 5px / 4px 16px 5px 14px;
+  background-color: var(--student-paper);
+  color: var(--student-ink);
+  box-shadow: 4px 5px 0 var(--student-ink);
+}

@@ -1,106 +1,143 @@
-@import url("https://fonts.googleapis.com/css2?family=Caveat:wght@400;600&family=Courier+Prime:wght@400;700&family=Nunito:wght@400;500;600;700;800&family=Patrick+Hand&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Courier+Prime:wght@400;700&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,400&family=Patrick+Hand&family=Special+Elite&display=swap");
 
 /*
- * ADR 0032 — Indie Illustrated Scrapbook.
- * Student style is active ONLY while .student-theme exists in the route.
- * Extending semantic variables to body with :has() ensures dialogs,
- * select popups and Sonner portals inherit the Student palette.
- * No :root token or Teacher component is altered.
+ * ADR 0032 — Indie Illustrated Scrapbook Design Tokens.
+ * Áp dụng CÔ LẬP khi route chứa .student-theme.
+ * :has() đảm bảo Radix Dialog, Popover, Select và Sonner portal kế thừa toàn vẹn.
  */
 .student-theme,
 body:has(.student-theme) {
   color-scheme: light;
-  --background: #f7f4eb;
-  --foreground: #2d2b2a;
-  --card: #fffdf9;
-  --card-bg: #fffdf9;
-  --card-foreground: #2d2b2a;
-  --popover: #fffdf9;
-  --popover-foreground: #2d2b2a;
 
-  /* The clay reference #C85A32 is decorative; darken interactive text/CTA for AA. */
-  --primary: #a44724;
+  /* ========================================================================
+     1. BẢNG MÀU CHẤT LIỆU CỐT LÕI (Scrapbook Craft Materials)
+     Không dùng #fff tinh khôi hay #000 tuyệt đối để tránh cảm giác số vô trùng.
+     ======================================================================== */
+  --student-canvas: #f7f4eb;         /* Giấy ngà ấm (Nền app) */
+  --student-paper: #fffdf9;          /* Giấy phác thảo mộc (Nền card) */
+  --student-kraft: #e8dec8;          /* Bìa carton kraft nâu sáng */
+  --student-kraft-dark: #d5c8ab;     /* Bìa kraft sẫm (Đổ bóng nền) */
+  --student-ink: #2d2b2a;            /* Mực than chì tự nhiên */
+  --student-pencil: #6e6863;         /* Chì than mờ (Ghi chú/Muted text) */
+  --student-washi: rgba(243, 232, 142, 0.82); /* Băng keo washi vàng mờ */
+  --student-washi-edge: rgba(220, 205, 105, 0.95);
+
+  /* Bảng màu điểm nhấn Retro Twee / Wes Anderson Palette */
+  --student-mustard: #d99b26;        /* Vàng mù tạt */
+  --student-clay: #c85a32;           /* Cam đất nung (Dùng trang trí) */
+  --student-clay-dark: #a44724;      /* Cam đất sẫm (Đạt chuẩn tương phản AA cho CTA) */
+  --student-sage: #6b8e67;           /* Xanh rêu xô thơm */
+  --student-denim: #4a6b82;          /* Xanh chàm cũ */
+
+  /* ========================================================================
+     2. MAPPING BIẾN SEMANTIC (Tương thích Shadcn UI / Radix)
+     ======================================================================== */
+  --background: var(--student-canvas);
+  --foreground: var(--student-ink);
+
+  --card: var(--student-paper);
+  --card-bg: var(--student-paper);
+  --card-foreground: var(--student-ink);
+
+  --popover: var(--student-paper);
+  --popover-foreground: var(--student-ink);
+
+  /* Nút bấm chính: Dùng màu clay sẫm để chữ trắng luôn đạt WCAG AA */
+  --primary: var(--student-clay-dark);
   --primary-foreground: #fffdf9;
-  --primary-hover: #893719;
-  --primary-soft: #c85a3220;
-  --secondary: #e8dec8;
-  --secondary-foreground: #2d2b2a;
-  --secondary-hover: #dbccb0;
-  --muted: #eee7d8;
-  --muted-foreground: #62594f; /* contrast-safe on kraft paper */
-  --accent: #d99b26;
-  --accent-foreground: #2d2b2a;
+  --primary-hover: #883516;
+  --primary-soft: rgba(200, 90, 50, 0.14);
 
+  --secondary: var(--student-kraft);
+  --secondary-foreground: var(--student-ink);
+  --secondary-hover: #dbccb0;
+
+  --muted: #eee7d8;
+  --muted-foreground: #5e554b;       /* Tương phản cao trên cả nền giấy ngà và kraft */
+
+  --accent: var(--student-mustard);
+  --accent-foreground: var(--student-ink);
+
+  /* Trạng thái học tập */
   --learning: #36566f;
-  --learning-soft: #4a6b821c;
-  --success: #3f6b45;
-  --success-soft: #6b8e6722;
+  --learning-soft: rgba(74, 107, 130, 0.12);
+  --success: #35623b;
+  --success-soft: rgba(107, 142, 103, 0.16);
   --warning: #926009;
-  --warning-soft: #d99b2622;
+  --warning-soft: rgba(217, 155, 38, 0.16);
   --info: #36566f;
-  --info-soft: #4a6b821c;
+  --info-soft: rgba(74, 107, 130, 0.12);
   --destructive: #a33d32;
-  --destructive-soft: #c85a3220;
+  --destructive-soft: rgba(200, 90, 50, 0.15);
   --destructive-foreground: #fffdf9;
 
-  --border: #2d2b2a52;
-  --input: #2d2b2a72;
-  --border-input: #2d2b2a72;
-  --ring: #a44724;
-  --ink: #2d2b2a;
+  /* Đường viền & Tiêu điểm */
+  --border: rgba(45, 43, 42, 0.38);
+  --input: rgba(45, 43, 42, 0.55);
+  --border-input: rgba(45, 43, 42, 0.55);
+  --ring: var(--student-clay-dark);
+  --ink: var(--student-ink);
   --ink-fg: #fffdf9;
-  --pop-shadow: #d6c7ab;
-  --marker: #d99b26;
+  --pop-shadow: var(--student-kraft-dark);
+  --marker: var(--student-mustard);
   --radius: 0.75rem;
 
-  --sidebar: #f7f4eb;
-  --sidebar-foreground: #2d2b2a;
-  --sidebar-primary: #a44724;
+  /* Sidebar Component */
+  --sidebar: var(--student-canvas);
+  --sidebar-foreground: var(--student-ink);
+  --sidebar-primary: var(--student-clay-dark);
   --sidebar-primary-foreground: #fffdf9;
-  --sidebar-accent: #e8dec8;
-  --sidebar-accent-foreground: #2d2b2a;
-  --sidebar-border: #2d2b2a52;
-  --sidebar-ring: #a44724;
-  --brand-soft: #c85a3220;
+  --sidebar-accent: var(--student-kraft);
+  --sidebar-accent-foreground: var(--student-ink);
+  --sidebar-border: rgba(45, 43, 42, 0.38);
+  --sidebar-ring: var(--student-clay-dark);
+  --brand-soft: rgba(200, 90, 50, 0.14);
 
-  --student-paper: #fffdf9;
-  --student-canvas: #f7f4eb;
-  --student-kraft: #e8dec8;
-  --student-ink: #2d2b2a;
-  --student-pencil: #6e6863;
-  --student-clay: #c85a32;
-  --student-mustard: #d99b26;
-  --student-sage: #6b8e67;
-  --student-denim: #4a6b82;
-  --student-washi: #f3e88eb3;
-
+  /* ========================================================================
+     3. HỆ THỐNG NGHỆ THUẬT CHỮ (Typography System)
+     ======================================================================== */
   --student-font-body: "Nunito", "Segoe UI", sans-serif;
-  --student-font-hand: "Patrick Hand", "Segoe Print", cursive;
-  --student-font-note: "Caveat", "Segoe Print", cursive;
-  --student-font-mono: "Courier Prime", "Courier New", monospace;
+  --student-font-hand: "Caveat", "Patrick Hand", cursive;
+  --student-font-note: "Patrick Hand", cursive;
+  --student-font-mono: "Special Elite", "Courier Prime", monospace;
 
-  --elevation-sm: 2px 2px 0 var(--pop-shadow);
-  --elevation-md: 3px 4px 0 var(--pop-shadow), 0 0 0 1px var(--ink);
-  --elevation-lg: 5px 6px 0 var(--pop-shadow), 0 0 0 1px var(--ink);
+  /* ========================================================================
+     4. BÓNG ĐỔ ĐẶC PHẲNG (Handmade Woodblock Drop Shadows)
+     ======================================================================== */
+  --elevation-sm: 2px 2px 0 var(--student-ink);
+  --elevation-md: 4px 4px 0 var(--student-ink);
+  --elevation-lg: 6px 7px 0 var(--student-ink);
 
   font-family: var(--student-font-body);
 }
 
-/* Locale root still uses a literal background. Override only on Student route. */
+/* ==========================================================================
+   GHI ĐÈ AN TOÀN CHO TOÀN BỘ PORTAL / TOAST / DIALOG
+   ========================================================================== */
 body:has(.student-theme) {
   background-color: var(--student-canvas);
   color: var(--student-ink);
 }
 
-/* Tailwind v4 @theme inline makes font-sans a fixed Jakarta value. */
 .student-theme .font-sans,
 body:has(.student-theme) .font-sans {
   font-family: var(--student-font-body);
 }
 
-.student-theme [data-slot="button"] { min-height: 44px; }
-.student-theme :focus-visible { outline-color: var(--primary); }
+.student-theme [data-slot="button"] {
+  min-height: 44px;
+}
+
+.student-theme :focus-visible {
+  outline: 2.5px solid var(--primary);
+  outline-offset: 2.5px;
+}
+
 body:has(.student-theme) [data-sonner-toast] {
   font-family: var(--student-font-body);
-  border-color: var(--border);
+  border: 2px solid var(--student-ink);
+  border-radius: 14px 4px 16px 5px / 4px 16px 5px 14px;
+  background-color: var(--student-paper);
+  color: var(--student-ink);
+  box-shadow: 4px 5px 0 var(--student-ink);
 }

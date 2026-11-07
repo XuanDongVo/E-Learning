@@ -45,4 +45,6 @@ export const QUERY_KEYS = {
   recentResults: ["recentResults"] as const,
   gameGrades: ["student", "game", "grades"] as const,
   gameUnits: (gradeId: number) => ["student", "game", "units", gradeId] as const,
+  contentVocabulary: (unitId: number, params?: Record<string, unknown>) =>
+    ["content", "vocabulary", unitId, params] as const,
 };

@@ -7,7 +7,7 @@ export default function StudentDashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <AuthGuard>
+    <AuthGuard requiredRole="STUDENT">
       <StudentShell>{children}</StudentShell>
     </AuthGuard>
   );

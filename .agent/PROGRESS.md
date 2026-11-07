@@ -1,5 +1,16 @@
 # Project Progress
 
+## Student Profile + typography consistency (2026-11-07)
+
+- Aligned Student Home display typography to the calmer visual scale used by the Student Profile reference (30–36px page headings; 22–26px section headings).
+- Codified Student-specific typography roles in `.agent/ui/INDIE_ILLUSTRATED_SCRAPBOOK_DESIGN_SYSTEM.md` and `styles/student/typography.css`; restored canonical Patrick Hand/Caveat/Nunito/Courier Prime roles while preserving the latest CSS material updates.
+- Added a server-backed Student Profile at `/student/profile`. The old `/student/profile/[id]` demo route now renders the same real profile instead of mock data.
+- Guardian details are hidden by default behind an accessible eye toggle. A single primary/first guardian is exposed for editing; all other stored guardians are preserved in the PUT payload because the backend performs collection replacement.
+- Saving updates the existing student-profile endpoint; the view is refreshed from the server. Email and class data remain read-only.
+- Authenticated browser and full frontend build/E2E checks remain pending.
+
+
+
 ## Indie Scrapbook Student theme + Home preview (2026-11-07)
 
 - Introduced Student-only scoped semantic tokens, paper/ink texture, typography, visual primitives and reduced-motion rules; Teacher base palette/components remain unchanged.

@@ -97,9 +97,9 @@ body:has(.student-theme) {
      3. HỆ THỐNG NGHỆ THUẬT CHỮ (Typography System)
      ======================================================================== */
   --student-font-body: "Nunito", "Segoe UI", sans-serif;
-  --student-font-hand: "Caveat", "Patrick Hand", cursive;
-  --student-font-note: "Patrick Hand", cursive;
-  --student-font-mono: "Special Elite", "Courier Prime", monospace;
+  --student-font-hand: "Patrick Hand", "Caveat", cursive;
+  --student-font-note: "Caveat", "Patrick Hand", cursive;
+  --student-font-mono: "Courier Prime", "Special Elite", monospace;
 
   /* ========================================================================
      4. BÓNG ĐỔ ĐẶC PHẲNG (Handmade Woodblock Drop Shadows)

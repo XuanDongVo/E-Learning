@@ -63,10 +63,27 @@ Giữ grain thật mịn, không phủ texture lên chữ. Tránh chồng grid, 
 
 | Vai trò | Font tham chiếu | Cách dùng |
 |---|---|---|
-| Display handwriting | Patrick Hand | Tiêu đề và lời chào ngắn |
-| Decorative handwriting | Caveat | Ghi chú hoặc caption ảnh |
+| Display handwriting | Patrick Hand | Tiêu đề và lời chào ngắn, mặc định không quá 36px |
+| Decorative handwriting | Caveat | Ghi chú hoặc caption ảnh, không dùng cho input |
 | Body/UI | Nunito | Văn bản, form, điều hướng, thông tin quan trọng |
-| Typewriter | Courier Prime | Nhãn/metadata ngắn, seed, ngày tháng |
+| Typewriter | Courier Prime | Nhãn/metadata ngắn, seed, ngày tháng; không dùng cho đoạn văn dài |
+
+### Quy chuẩn font-size (Student, rút từ nhịp Profile)
+
+| Vai trò | Mobile | Desktop | Quy tắc |
+|---|---:|---:|---|
+| Page title | 30px | 36px | Handwriting/serif phù hợp; độ cao dòng 1.15 |
+| Section title | 22px | 26px | Một tiêu điểm rõ ràng, không vượt page title |
+| Card title | 18px | 20px | Nunito đậm hoặc Patrick Hand ngắn |
+| Body | 14px | 16px | Nunito; tránh Typewriter cho văn bản thông thường |
+| Field label / navigation | 13–14px | 13–14px | Nunito semibold; không dùng Caveat |
+| Metadata | 11–12px | 11–12px | Courier Prime; chữ ngắn, giữ độ tương phản |
+| Stats / numeric emphasis | 24px | 28px | Tabular nums, không dùng chữ viết tay cho số |
+
+- Trang Profile là **mốc tham chiếu mật độ nội dung**. Home không được phóng đại heading chỉ để giống giao diện game.
+- Dùng `student-page-title`, `student-section-title`, `student-card-title` thay cho tổ hợp `text-5xl` / `text-6xl` tự phát.
+- Điều chỉnh kiểu chữ theo vai trò qua `styles/student/typography.css`, không sửa `:root` hoặc font Teacher.
+- Phần profile và form cần rõ, thẳng hàng và cỡ chữ ổn định. Trang Activity có thể có scale riêng nhưng phải có lý do chức năng.
 
 - Không dùng chữ viết tay cho đoạn văn dài, dữ liệu và biểu mẫu.
 - Chỉ một font handwriting chủ đạo trong một khu vực.

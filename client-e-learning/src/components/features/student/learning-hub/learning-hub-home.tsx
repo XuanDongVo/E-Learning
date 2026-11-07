@@ -33,7 +33,7 @@ export function LearningHubHome() {
             <Star className="h-4 w-4 text-primary" aria-hidden="true" />
             NHẬT KÝ HỌC TẬP / LEARNUP
           </p>
-          <ScrapbookHeading as="h1" className="text-5xl leading-[1.05] text-foreground sm:text-6xl">
+          <ScrapbookHeading as="h1" className="student-page-title text-foreground">
             Hôm nay mình học gì?
           </ScrapbookHeading>
           <p className="max-w-xl text-base leading-relaxed text-foreground">
@@ -62,7 +62,7 @@ export function LearningHubHome() {
             <p className="student-typewriter text-xs font-bold text-muted-foreground">
               CHAPTER / 01
             </p>
-            <ScrapbookHeading as="h2" id="learning-hub-units" className="text-4xl leading-tight text-foreground">
+            <ScrapbookHeading as="h2" id="learning-hub-units" className="student-section-title text-foreground">
               Bài học của bạn
             </ScrapbookHeading>
             <p className="text-sm text-muted-foreground">

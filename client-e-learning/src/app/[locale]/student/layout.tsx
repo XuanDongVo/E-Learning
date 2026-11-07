@@ -2,6 +2,7 @@ import { AuthGuard } from "@/components/auth/auth-guard";
 import { StudentShell } from "@/components/layout/student-shell";
 import "@/styles/student/theme.css";
 import "@/styles/student/surfaces.css";
+import "@/styles/student/typography.css";
 
 export default function StudentDashboardLayout({
   children,

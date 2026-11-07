@@ -13,8 +13,7 @@ import {
   Trophy,
   X,
 } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { mockCurrentUser } from "@/mock/db";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/components/auth/auth-provider";
 
@@ -51,7 +50,8 @@ export function StudentNavbar() {
   const isItemActive = (href: string) =>
     href === "/student" ? pathname === "/student" : pathname.startsWith(href);
 
-  const initials = mockCurrentUser.name.slice(0, 2);
+  const displayName = user.fullName || user.email;
+  const initials = displayName.trim().split(/\s+/).slice(-2).map((part) => part[0]).join("").toUpperCase();
 
   return (
     <>
@@ -101,15 +101,14 @@ export function StudentNavbar() {
               className="flex items-center gap-2.5 rounded-full py-1 pl-1 pr-3 transition-colors hover:bg-background-app"
             >
               <Avatar className="h-9 w-9">
-                <AvatarImage src={mockCurrentUser.avatarUrl} alt={mockCurrentUser.name} />
                 <AvatarFallback>{initials}</AvatarFallback>
               </Avatar>
               <div className="max-w-36 leading-tight">
                 <span className="block truncate text-sm font-bold text-neutral-dark">
-                  {mockCurrentUser.name}
+                  {displayName}
                 </span>
                 <span className="block truncate text-xs text-neutral-muted">
-                  {mockCurrentUser.className}
+                  {user.email}
                 </span>
               </div>
             </Link>
@@ -206,15 +205,14 @@ export function StudentNavbar() {
               className="flex min-w-0 flex-1 items-center gap-3 rounded-lg p-2 hover:bg-background-app"
             >
               <Avatar className="h-10 w-10 shrink-0">
-                <AvatarImage src={mockCurrentUser.avatarUrl} alt={mockCurrentUser.name} />
                 <AvatarFallback>{initials}</AvatarFallback>
               </Avatar>
               <div className="min-w-0 flex-1">
                 <span className="block truncate text-sm font-bold text-neutral-dark">
-                  {mockCurrentUser.name}
+                  {displayName}
                 </span>
                 <span className="block truncate text-xs text-neutral-muted">
-                  {mockCurrentUser.className}
+                  {user.email}
                 </span>
               </div>
             </Link>

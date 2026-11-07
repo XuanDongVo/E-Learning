@@ -1,5 +1,5 @@
--- Run after 00_reset_legacy_demo.sql, 01_foundation.sql,
--- 02_questions.sql, 03_activities.sql and 04_assignments.sql.
+-- Run after 01_foundation.sql, 02_questions.sql, 03_activities.sql,
+-- 04_assignments.sql, 05_gamification_xp.sql, 06_streak_history.sql and 07_vocabulary.sql.
 -- Failure raises an exception; read-only checks should not mutate data.
 DO $assert$
 DECLARE n INTEGER;
@@ -110,3 +110,104 @@ SELECT 'activities_grade7',count(*) FROM activities a JOIN content_units u ON u.
 UNION ALL
 SELECT 'assignment_questions',count(*) FROM assignment_questions aq JOIN assignments a ON a.id=aq.assignment_id
  WHERE a.name='G7-SEED Integrated Assessment';
+
+
+-- Additional post-V54 checks for optional Grade 7 gamification/vocabulary fixtures.
+-- Execute only after 05, 06 and 07 have all completed.
+DO $g7_game_assert$
+DECLARE
+  n integer;
+  hcm_day date := (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Ho_Chi_Minh')::date;
+BEGIN
+  SELECT COUNT(*) INTO n FROM student_gamification_profiles p JOIN users u ON u.id=p.student_id
+  WHERE u.email ~ '^g7[.]seed[.]student[0-9]{2}@example[.]test$';
+  IF n<>55 THEN RAISE EXCEPTION 'Expected 55 Grade 7 gamification profiles; got %',n; END IF;
+
+  IF EXISTS (
+    SELECT 1 FROM student_gamification_profiles p
+    JOIN users u ON u.id=p.student_id
+    WHERE u.email ~ '^g7[.]seed[.]student[0-9]{2}@example[.]test$'
+      AND p.lifetime_xp <> COALESCE(
+        (SELECT SUM(x.amount) FROM xp_transactions x WHERE x.student_id=p.student_id),0)
+  ) THEN RAISE EXCEPTION 'Grade 7 XP profile/transaction ledger mismatch'; END IF;
+
+  IF EXISTS (
+    SELECT 1 FROM student_gamification_profiles p JOIN users u ON u.id=p.student_id
+    WHERE u.email ~ '^g7[.]seed[.]student[0-9]{2}@example[.]test$'
+      AND p.current_level <> (
+        SELECT MAX(lvl) FROM generate_series(1,100) AS lvl
+        WHERE 10::bigint*(lvl-1)*(lvl+8) <= p.lifetime_xp
+      )
+  ) THEN RAISE EXCEPTION 'Grade 7 Level calculation mismatch'; END IF;
+
+  IF EXISTS (
+    SELECT 1 FROM student_gamification_profiles p JOIN users u ON u.id=p.student_id
+    WHERE u.email ~ '^g7[.]seed[.]student[0-9]{2}@example[.]test$'
+      AND (
+        p.longest_streak < p.current_streak
+        OR p.current_streak <> (
+          SELECT count(*)::integer FROM student_learning_days d WHERE d.student_id=p.student_id
+        )
+        OR (p.last_qualified_date IS DISTINCT FROM (
+          SELECT max(d.learning_date) FROM student_learning_days d WHERE d.student_id=p.student_id
+        ))
+      )
+  ) THEN RAISE EXCEPTION 'Grade 7 Streak profile/day mismatch'; END IF;
+
+  SELECT COUNT(*) INTO n FROM student_gamification_profiles p JOIN users u ON u.id=p.student_id
+  WHERE u.email ~ '^g7[.]seed[.]student[0-9]{2}@example[.]test$'
+    AND p.current_streak > 0 AND p.last_qualified_date < hcm_day-1;
+  IF n<>10 THEN RAISE EXCEPTION 'Expected 10 expired Streak fixtures; got %',n; END IF;
+
+  SELECT COUNT(*) INTO n FROM student_gamification_profiles p JOIN users u ON u.id=p.student_id
+  WHERE u.email ~ '^g7[.]seed[.]student[0-9]{2}@example[.]test$'
+    AND p.current_streak=0;
+  IF n<>5 THEN RAISE EXCEPTION 'Expected 5 never-qualified Streak fixtures; got %',n; END IF;
+
+  IF EXISTS (
+    SELECT 1 FROM xp_transactions x JOIN users u ON u.id=x.student_id
+    WHERE u.email ~ '^g7[.]seed[.]student[0-9]{2}@example[.]test$'
+      AND x.source_type='STREAK_BONUS' AND x.note='G7-SEED fixture: synthetic streak milestone'
+      AND NOT EXISTS (
+        SELECT 1 FROM student_learning_days d
+        WHERE d.student_id=x.student_id
+      )
+  ) THEN RAISE EXCEPTION 'Streak milestone without learning days'; END IF;
+
+  SELECT COUNT(*) INTO n
+  FROM vocabulary_words v JOIN content_units cu ON cu.id=v.unit_id
+  WHERE cu.code LIKE 'G7-SEED-U%';
+  IF n<>120 THEN RAISE EXCEPTION 'Expected exactly 120 Grade 7 vocabulary words; got %',n; END IF;
+
+  IF EXISTS (
+    SELECT 1 FROM content_units cu
+    WHERE cu.code LIKE 'G7-SEED-U%'
+      AND (SELECT COUNT(*) FROM vocabulary_words v
+           WHERE v.unit_id=cu.id AND v.status='ACTIVE')<>20
+  ) THEN RAISE EXCEPTION 'Expected 20 ACTIVE vocabulary words per Grade 7 unit'; END IF;
+
+  IF EXISTS (
+    SELECT 1 FROM vocabulary_words v JOIN content_units cu ON cu.id=v.unit_id
+    WHERE cu.code LIKE 'G7-SEED-U%'
+    GROUP BY v.unit_id,lower(v.word) HAVING COUNT(*)>1
+  ) THEN RAISE EXCEPTION 'Duplicate Grade 7 vocabulary word within unit'; END IF;
+
+  IF EXISTS (
+    SELECT 1 FROM xp_transactions x JOIN users u ON u.id=x.student_id
+    WHERE u.email ~ '^g7[.]seed[.]student[0-9]{2}@example[.]test$'
+    GROUP BY x.idempotency_key HAVING COUNT(*)>1
+  ) THEN RAISE EXCEPTION 'Duplicate fixture idempotency key'; END IF;
+END $g7_game_assert$;
+
+SELECT 'g7_gamification_profiles' AS metric,COUNT(*) AS value FROM student_gamification_profiles p
+JOIN users u ON u.id=p.student_id
+WHERE u.email ~ '^g7[.]seed[.]student[0-9]{2}@example[.]test$'
+UNION ALL
+SELECT 'g7_xp_transactions',COUNT(*) FROM xp_transactions x JOIN users u ON u.id=x.student_id
+WHERE u.email ~ '^g7[.]seed[.]student[0-9]{2}@example[.]test$'
+UNION ALL
+SELECT 'g7_learning_days',COUNT(*) FROM student_learning_days d JOIN users u ON u.id=d.student_id
+WHERE u.email ~ '^g7[.]seed[.]student[0-9]{2}@example[.]test$'
+UNION ALL
+SELECT 'g7_vocabulary',COUNT(*) FROM vocabulary_words v JOIN content_units cu ON cu.id=v.unit_id
+WHERE cu.code LIKE 'G7-SEED-U%';

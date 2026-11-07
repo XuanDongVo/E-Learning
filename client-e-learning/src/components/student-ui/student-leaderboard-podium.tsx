@@ -29,8 +29,6 @@ export function StudentLeaderboardPodium({
               `student-podium__place--rank-${entry.rank}`,
             )}
           >
-            {/* Washi tape dán thẻ Hạng 1 */}
-            {isFirst && <span className="student-washi student-washi--center" aria-hidden="true" />}
 
             {/* Cụm Avatar + Icon Sticker + Ring + Rank Badge */}
             <div className={cn("student-podium__avatar-wrap", `student-podium__avatar-wrap--rank-${entry.rank}`)}>

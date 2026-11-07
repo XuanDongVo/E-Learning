@@ -23,10 +23,9 @@ import { useAuth } from "@/components/auth/auth-provider";
 export const NAV_ITEMS = [
   { label: "Home", href: "/student", icon: Home },
   { label: "Learning", href: "/student/units", icon: BookOpen },
-  { label: "Game", href: "/student/game", icon: Gamepad2 },
   { label: "Assignments", href: "/student/assignments", icon: ClipboardList },
-  { label: "Progress", href: "/student/progress", icon: BarChart2 },
-  { label: "Leaderboard", href: "/student/rewards", icon: Trophy },
+  { label: "Game", href: "/student/game", icon: Gamepad2 },
+  { label: "Leaderboard", href: "/student/leaderboard", icon: Trophy },
 ];
 
 export function StudentNavbar() {
@@ -67,7 +66,13 @@ export function StudentNavbar() {
     href === "/student" ? pathname === "/student" : pathname.startsWith(href);
 
   const displayName = user.fullName || user.email;
-  const initials = displayName.trim().split(/\s+/).slice(-2).map((part) => part[0]).join("").toUpperCase();
+  const initials = displayName
+    .trim()
+    .split(/\s+/)
+    .slice(-2)
+    .map((part) => part[0])
+    .join("")
+    .toUpperCase();
 
   return (
     <>
@@ -193,7 +198,10 @@ export function StudentNavbar() {
             </button>
           </div>
 
-          <nav className="flex-1 space-y-1 overflow-y-auto p-3" aria-label="Student navigation">
+          <nav
+            className="flex-1 space-y-1 overflow-y-auto p-3"
+            aria-label="Student navigation"
+          >
             {NAV_ITEMS.map((item) => {
               const active = isItemActive(item.href);
               const Icon = item.icon;
@@ -230,7 +238,7 @@ export function StudentNavbar() {
                   {displayName}
                 </span>
                 <span className="block truncate text-xs text-neutral-muted">
-                  {displayRole}
+                  {user?.email || ""}
                 </span>
               </div>
             </Link>

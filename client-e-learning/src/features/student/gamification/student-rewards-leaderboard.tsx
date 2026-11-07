@@ -16,6 +16,8 @@ import type {
   LeaderboardRanking,
 } from "@/types/gamification";
 
+const INITIAL_VISIBLE_RANKINGS = 10;
+
 const PERIODS: { key: LeaderboardPeriod; text: string }[] = [
   { key: "TODAY", text: "Hôm nay" },
   { key: "WEEK", text: "Tuần này" },
@@ -91,6 +93,7 @@ function HonorCard({
 export function StudentRewardsLeaderboard() {
   const [metric, setMetric] = useState<LeaderboardMetric>("XP");
   const [period, setPeriod] = useState<LeaderboardPeriod>("TODAY");
+  const [showAllRankings, setShowAllRankings] = useState(false);
   const effectivePeriod = metric === "XP" ? period : "ALL";
 
   const ranking = useQuery({
@@ -110,6 +113,11 @@ export function StudentRewardsLeaderboard() {
   const selfOutside = data?.currentStudent && !data.currentStudentInTop ? data.currentStudent : null;
   const honorData = honors.data?.data;
   const activities = recent.data?.data?.items ?? [];
+  const totalRankings = data?.top.length ?? 0;
+  const hiddenRankingsCount = Math.max(0, totalRankings - INITIAL_VISIBLE_RANKINGS);
+  const visibleRankings = showAllRankings
+    ? (data?.top ?? [])
+    : (data?.top.slice(0, INITIAL_VISIBLE_RANKINGS) ?? []);
 
   return (
     <section aria-labelledby="leaderboard-page-title" className="student-rewards space-y-6 pb-8">
@@ -135,7 +143,10 @@ export function StudentRewardsLeaderboard() {
                   key={value}
                   type="button"
                   aria-pressed={metric === value}
-                  onClick={() => setMetric(value)}
+                  onClick={() => {
+                    setMetric(value);
+                    setShowAllRankings(false);
+                  }}
                   className={cn("student-control px-5", metric === value ? "student-filter-active" : "student-control--quiet")}
                 >
                   {value === "XP" ? "XP" : "Streak"}
@@ -149,7 +160,10 @@ export function StudentRewardsLeaderboard() {
                     key={key}
                     type="button"
                     aria-pressed={period === key}
-                    onClick={() => setPeriod(key)}
+                    onClick={() => {
+                      setPeriod(key);
+                      setShowAllRankings(false);
+                    }}
                     className={cn("student-control px-3", period === key ? "student-filter-active" : "student-control--quiet")}
                   >
                     {text}
@@ -181,17 +195,31 @@ export function StudentRewardsLeaderboard() {
                   <StudentLeaderboardPodium entries={data.top.slice(0, 3)} metric={metric} />
                 </div>
                 <h2 className="student-card-title border-t-2 border-ink px-4 py-3 text-foreground">
-                  Danh sách Top {data.top.length}
+                  Danh sách Top {showAllRankings ? totalRankings : visibleRankings.length}
                 </h2>
-                <div role="table" aria-label="Bảng xếp hạng 50 học viên">
+                <div role="table" aria-label="Bảng xếp hạng học viên">
                   <div role="row" className="student-ranking-row student-ranking-header">
                     <span role="columnheader">Hạng</span>
                     <span role="columnheader">Học viên</span>
                     <span role="columnheader" className="hidden sm:block">Level</span>
                     <span role="columnheader" className="text-right">{metric === "XP" ? "XP" : "Streak"}</span>
                   </div>
-                  {data.top.map((entry) => <RankRow key={entry.studentId} entry={entry} metric={metric} />)}
+                  {visibleRankings.map((entry) => (
+                    <RankRow key={entry.studentId} entry={entry} metric={metric} />
+                  ))}
                 </div>
+                {hiddenRankingsCount > 0 && (
+                  <button
+                    type="button"
+                    aria-expanded={showAllRankings}
+                    onClick={() => setShowAllRankings((current) => !current)}
+                    className="student-control student-control--quiet flex min-h-11 w-full items-center justify-center border-t-2 border-ink px-4 py-3 text-center"
+                  >
+                    {showAllRankings
+                      ? "Thu gọn về Top 10"
+                      : `Hiển thị thêm ${hiddenRankingsCount} người`}
+                  </button>
+                )}
               </PaperSurface>
 
               {selfOutside && (

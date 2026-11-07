@@ -32,7 +32,7 @@ AssessmentAttempt is a separate Assignment runtime contract.
 
 Follow `ui/UI_ARCHITECTURE_GUIDELINES.md` for shared UI architecture, accessibility and responsive behavior. ADR 0032 establishes the exclusive Student visual language in `ui/INDIE_ILLUSTRATED_SCRAPBOOK_DESIGN_SYSTEM.md`; Teacher retains its existing visual language.
 
-**Theme isolation contract (for a future implementation change):** Student semantic CSS variables, font families, surface effects and component variants must be scoped to the Student layout subtree; do not change Teacher defaults as a side effect. Review Radix portals/popovers/selects, shared toast containers, dark mode and root/body styles that may escape the scope. This documentation decision does not implement the new theme.
+**Implemented theme isolation contract:** `app/[locale]/student/layout.tsx` activates the scoped Student theme from `styles/student/`; Teacher/base variables remain unchanged. Student feature code uses semantic aliases, typography roles and `components/student-ui` recipes instead of page-local colors or geometry. Root-mounted dialogs and Sonner are covered through the active Student body scope. Any new portal/popover/select must still be checked for scope escape, focus, contrast and reduced motion.
 
 
 ## Question authoring synchronization

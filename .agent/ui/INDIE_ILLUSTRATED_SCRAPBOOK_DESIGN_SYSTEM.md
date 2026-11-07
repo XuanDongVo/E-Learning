@@ -91,6 +91,22 @@ Giữ grain thật mịn, không phủ texture lên chữ. Tránh chồng grid, 
 - Đảm bảo fallback cho tiếng Việt/Anh, không tự động thay font khi thiếu dấu.
 - Các heading có thể dùng gạch mực, nét bút sáp hoặc marker nhẹ, không lạm dụng.
 
+### Implementation contract
+
+- `styles/student/theme.css` is the only Student palette/token declaration layer.
+  Literal color values belong in token declarations, not feature components or
+  surface recipes.
+- `styles/student/typography.css` owns the role scale. Feature code uses
+  `student-page-title`, `student-section-title`, `student-card-title`,
+  `student-body`, `student-label`, `student-meta`, `student-caption` and
+  `student-stat`; it does not compose `text-xs`/`text-3xl` or arbitrary sizes.
+- `components/student-ui` and `styles/student/surfaces.css` own repeatable paper,
+  tape, control, field, progress, polaroid and dialog treatments. Fixed geometry
+  is allowed inside these shared recipes; feature TSX must not copy it.
+- Student Home, Profile, the complete Units branch and Rewards are standardized reference routes. Use
+  their shared primitives for later route migration, not their page-specific
+  composition or data layout.
+
 ## 6. Linework & geometry
 
 **Wobbly border:** dùng đường viền mực hơi không đều hoặc SVG path cho các hình minh họa/khung đặc trưng, không cho tất cả input, table và divider.

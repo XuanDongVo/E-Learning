@@ -26,6 +26,7 @@ match your task before changing anything.
 | Activities (Phase 4) | [`plans/E-LEARNING_PHASE_4_ACTIVITIES_SPEC.md`](./.agent/plans/E-LEARNING_PHASE_4_ACTIVITIES_SPEC.md) |
 | Any UI, layout, color, component | [`ui/UI_ARCHITECTURE_GUIDELINES.md`](./.agent/ui/UI_ARCHITECTURE_GUIDELINES.md), [`ui/screens.md`](./.agent/ui/screens.md) |
 | **Any Student UI or Student-related shared component** | **Also read** [`ui/INDIE_ILLUSTRATED_SCRAPBOOK_DESIGN_SYSTEM.md`](./.agent/ui/INDIE_ILLUSTRATED_SCRAPBOOK_DESIGN_SYSTEM.md) and [ADR 0032](./.agent/decisions/0032-student-indie-scrapbook-visual-system.md) before designing or editing |
+| Student Profile | [`ui/STUDENT_PROFILE_BLUEPRINT.md`](./.agent/ui/STUDENT_PROFILE_BLUEPRINT.md) |
 | Frontend code | [`architecture/frontend.md`](./.agent/architecture/frontend.md) |
 | Backend code, database, migrations | [`architecture/backend.md`](./.agent/architecture/backend.md) |
 | An API call or a new endpoint | [`architecture/api-contract.md`](./.agent/architecture/api-contract.md) |

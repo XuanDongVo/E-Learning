@@ -10,6 +10,8 @@ import { studentUnitService } from "@/services/student-unit.service";
 import { QUERY_KEYS } from "@/services/query-keys";
 import { ActivityCard } from "./activity-card";
 import { UnitCover, unitLabel } from "./unit-cover";
+import { PaperSurface } from "@/components/student-ui/paper-surface";
+import { ScrapbookHeading } from "@/components/student-ui/scrapbook-heading";
 
 type Filter = number | "all";
 
@@ -82,7 +84,7 @@ export function UnitDetailView({ unitId, mascotSlot }: UnitDetailViewProps) {
             </Button>
             <Link
               href="/student/units"
-              className="inline-flex h-10 items-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium hover:bg-accent"
+              className="student-control student-control--quiet inline-flex items-center px-4"
             >
               Quay về danh sách
             </Link>
@@ -96,45 +98,45 @@ export function UnitDetailView({ unitId, mascotSlot }: UnitDetailViewProps) {
   const topicCount = unit.sections.reduce((sum, s) => sum + s.topics.length, 0);
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6 pb-8">
+    <div className="student-unit-detail space-y-6 pb-8">
       <Link
         href="/student/units"
-        className="inline-flex min-h-11 items-center gap-2 text-base font-semibold text-muted-foreground hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+        className="student-label inline-flex min-h-11 items-center gap-2 text-muted-foreground hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
       >
         <ArrowLeft className="h-4 w-4" aria-hidden="true" />
         <span>Tất cả bài học</span>
       </Link>
 
-      <section className="border-b border-border pb-6">
+      <PaperSurface as="section" variant="kraft" tape tapePosition="right" className="student-unit-detail-hero">
         <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
-          <div className="relative shrink-0 overflow-hidden rounded-xl border border-border sm:w-48">
+          <div className="student-unit-cover-frame relative shrink-0 overflow-hidden sm:w-48">
             <UnitCover
               label={label}
               name={unit.name}
               coverUrl={unit.coverUrl}
               className="h-32 w-full object-cover sm:h-36"
             />
-            <span className="absolute left-2.5 top-2.5 rounded-lg bg-card px-2.5 py-1 text-sm font-bold text-foreground">
+            <span className="student-chip absolute left-2.5 top-2.5">
               Unit {label}
             </span>
           </div>
 
           <div className="flex flex-1 flex-col gap-2.5">
-            <h1 className="text-3xl font-extrabold text-foreground">
+            <ScrapbookHeading as="h1" className="student-page-title text-foreground">
               {unit.name}
-            </h1>
+            </ScrapbookHeading>
 
             {unit.description ? (
-              <p className="max-w-prose text-base text-muted-foreground">
+              <p className="student-body max-w-prose text-muted-foreground">
                 {unit.description}
               </p>
             ) : (
-              <p className="text-base text-muted-foreground">
+              <p className="student-body text-muted-foreground">
                 Chọn phần học bên dưới để xem hoạt động luyện tập.
               </p>
             )}
 
-            <div className="mt-1 flex flex-wrap gap-x-4 gap-y-2 text-sm text-muted-foreground">
+            <div className="student-meta mt-1 flex flex-wrap gap-x-4 gap-y-2 text-muted-foreground">
               <span className="inline-flex items-center gap-1.5">
                 <ListTree className="h-4 w-4" aria-hidden="true" />
                 <span>{unit.sections.length} phần học</span>
@@ -157,10 +159,12 @@ export function UnitDetailView({ unitId, mascotSlot }: UnitDetailViewProps) {
             </div>
           )}
         </div>
-      </section>
+      </PaperSurface>
 
       <div className="space-y-3">
-        <h2 className="text-xl font-bold text-foreground">Chọn phần học</h2>
+        <ScrapbookHeading as="h2" className="student-section-title text-foreground">
+          Chọn phần học
+        </ScrapbookHeading>
 
         <div className="flex flex-wrap gap-2.5" role="group" aria-label="Sections">
           {/* Nút Overview */}
@@ -168,15 +172,15 @@ export function UnitDetailView({ unitId, mascotSlot }: UnitDetailViewProps) {
             type="button"
             aria-pressed={sectionId === "all"}
             onClick={() => pickSection("all")}
-            className={`inline-flex min-h-11 items-center gap-2 rounded-xl border px-4 py-2 text-base font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${
+            className={`student-control inline-flex items-center gap-2 px-4 ${
               sectionId === "all"
-                ? "border-primary bg-primary-soft text-primary"
-                : "border-border bg-card text-foreground hover:border-primary"
+                ? "student-filter-active"
+                : "student-control--quiet"
             }`}
           >
             <span>Tất cả</span>
             <span
-              className={`rounded-full px-2 py-0.5 text-sm font-bold ${
+              className={`student-filter-count ${
                 sectionId === "all"
                   ? "bg-card text-primary"
                   : "bg-muted text-muted-foreground"
@@ -196,15 +200,15 @@ export function UnitDetailView({ unitId, mascotSlot }: UnitDetailViewProps) {
                 type="button"
                 aria-pressed={isSelected}
                 onClick={() => pickSection(section.id)}
-                className={`inline-flex min-h-11 items-center gap-2 rounded-xl border px-4 py-2 text-base font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${
+                className={`student-control inline-flex items-center gap-2 px-4 ${
                   isSelected
-                    ? "border-primary bg-primary-soft text-primary"
-                    : "border-border bg-card text-foreground hover:border-primary"
+                    ? "student-filter-active"
+                    : "student-control--quiet"
                 }`}
               >
                 <span>{section.name}</span>
                 <span
-                  className={`rounded-full px-2 py-0.5 text-sm font-bold ${
+                  className={`student-filter-count ${
                     isSelected
                       ? "bg-card text-primary"
                       : "bg-muted text-muted-foreground"
@@ -220,11 +224,11 @@ export function UnitDetailView({ unitId, mascotSlot }: UnitDetailViewProps) {
 
       {selectedSection && selectedSection.topics.length > 0 && (
         <div
-          className="flex flex-wrap items-center gap-2 rounded-xl bg-secondary p-3"
+          className="student-soft-panel flex flex-wrap items-center gap-2 p-3"
           role="group"
           aria-label="Topics"
         >
-          <span className="inline-flex items-center gap-1 text-sm font-semibold text-muted-foreground">
+          <span className="student-label inline-flex items-center gap-1 text-muted-foreground">
             <Tag className="h-4 w-4" />
             Chủ đề:
           </span>
@@ -238,10 +242,10 @@ export function UnitDetailView({ unitId, mascotSlot }: UnitDetailViewProps) {
                 type="button"
                 aria-pressed={on}
                 onClick={() => setTopicId(id)}
-                className={`min-h-10 rounded-lg border px-3 py-2 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${
+                className={`student-control px-3 ${
                   on
-                    ? "border-primary bg-primary-soft text-primary"
-                    : "border-border bg-card text-foreground hover:border-primary"
+                    ? "student-filter-active"
+                    : "student-control--quiet"
                 }`}
               >
                 {t === "all" ? "Tất cả chủ đề" : t.name}
@@ -256,25 +260,25 @@ export function UnitDetailView({ unitId, mascotSlot }: UnitDetailViewProps) {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Zap className="h-5 w-5 text-warning" />
-            <h2 className="text-lg font-extrabold text-foreground">
+            <h2 className="student-card-title text-foreground">
               {selectedSection ? `${selectedSection.name}` : "Tất cả hoạt động"}
             </h2>
-            <span className="rounded-full bg-secondary border border-border px-2.5 py-0.5 text-xs font-extrabold text-muted-foreground">
+            <span className="student-chip text-muted-foreground">
               {visible.length} bài
             </span>
           </div>
         </div>
 
         {visible.length === 0 ? (
-          <div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-border bg-card p-8 text-center">
+          <PaperSurface className="flex flex-col items-center justify-center gap-2 p-8 text-center">
             <BookOpen className="h-8 w-8 text-learning" aria-hidden="true" />
-            <p className="text-base font-extrabold text-foreground">
+            <p className="student-card-title text-foreground">
               Chưa có hoạt động nào trong phần này
             </p>
-            <p className="max-w-md text-sm font-medium text-muted-foreground">
+            <p className="student-body max-w-md text-muted-foreground">
               Giáo viên chưa cập nhật hoạt động cho chủ đề đã chọn. Bạn hãy thử chọn chủ đề khác nhé!
             </p>
-          </div>
+          </PaperSurface>
         ) : (
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
             {visible.map((activity) => (

@@ -22,10 +22,12 @@
 - `/student`: Learning Hub with live Student Units and a compact seven-day Streak + XP Level progress region. Not a leaderboard/KPI wall.
 - `/student/units`: searchable Unit explorer.
 - `/student/units/:unitId`: Sections/Topics and published Activity choices.
+- `/student/units/:unitId/activities`: published Activity list scoped by the path Unit.
+- `/student/units/:unitId/activities/:activityId`: immersive Activity start/runtime/result; domain timing and scoring rules remain unchanged.
 - `/student/assignments`: independent teacher-assigned work.
 - `/student/progress`: placeholder; not a live analytics page.
-- `/student/rewards`: dedicated Leaderboard preview with clearly labeled mock ranking/Hall of Fame/feed. Streak/Level move to Student Home; rankings are not live.
-- `/student/profile`: student profile.
+- `/student/rewards`: live XP/Streak Leaderboard, Hall of Fame and terminal Activity feed; see `ui/STUDENT_REWARDS_BLUEPRINT.md`.
+- `/student/profile`: server-backed student profile notebook; see `ui/STUDENT_PROFILE_BLUEPRINT.md`.
 
 See `ui/STUDENT_LEARNING_HUB_BLUEPRINT.md` for the active Home/Units/Unit Detail contract.
 ActivitySession runner/result/review is separate from the formal AssessmentAttempt runtime.

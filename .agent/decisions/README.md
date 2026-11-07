@@ -35,7 +35,7 @@ An accepted ADR overrides lower-level documents. Never delete an ADR; supersede 
 | 0029 | Activity XP lifecycle, outcome, scaling, replay and result visibility | **Accepted; runtime not yet enabled** |
 | 0030 | Activity Streak day qualification, milestone XP and Level integration | **Accepted; source implementation under verification** |
 | 0031 | Student Home Streak/Level placement and border-ink + shadow-pop | **Accepted; visual decision 1 superseded for Student by 0032; behavior retained** |
-| 0032 | Student Indie Illustrated Scrapbook visual system | **Accepted; documentation adopted, scoped theme implementation pending** |
+| 0032 | Student Indie Illustrated Scrapbook visual system | **Accepted; scoped theme implemented, route migration in progress** |
 | 0032 | XP/Streak Leaderboard, Top 50, honors and ActivitySession feed | **Accepted; source under verification** |
 
 ## Current decision chain

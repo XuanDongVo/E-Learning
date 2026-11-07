@@ -1,7 +1,7 @@
 # Spec Status — Current Contract vs Implementation
 
-**Audit date:** 2026-10-23  
-**Branch:** `refactor/teacher-content-ui-routing`  
+**Audit date:** 2026-11-07
+**Branch:** `feature/student-gamification`
 **Canonical implementation state:** `.agent/CURRENT_STATE.md`
 
 This file is a drift register, not a historical audit. Accepted ADRs define intended product behavior; this table records whether the current branch actually implements or verifies each contract.
@@ -20,6 +20,15 @@ This file is a drift register, not a historical audit. Accepted ADRs define inte
 | D-10 | Topic formula/reference sheet deferred | No active implementation requirement | Implemented as deferral |
 | D-11 | Question hint is optional | Hint exists and Activity Practice hint endpoint uses it | Implemented; full authoring round-trip still requires verification |
 | D-12 | No fabricated dashboard metrics | Dashboard work uses real/future data boundary | Implemented baseline |
+
+## Student visual system
+
+| ID | Contract | Current implementation | Status |
+|---|---|---|---|
+| S-UI-01 | Indie Illustrated Scrapbook is exclusive to Student | Student layout activates scoped semantic tokens, typography and surfaces; Teacher/base remains unchanged | Implemented |
+| S-UI-02 | Feature code uses roles/primitives, not page-local palette or sizing | Home, Profile, Units and Rewards use semantic aliases, Student typography roles and `components/student-ui` recipes; immersive Activity runtime retains its documented functional scale | Implemented for standardized routes; remaining Student routes are migration debt |
+| S-UI-03 | Shell owns outer page width/padding | Home, Profile, Units and Rewards render inside `StudentShell` without duplicate outer page padding; Activity runtime is the documented immersive exception | Implemented for standardized routes |
+| S-UI-04 | Portal dialogs preserve theme and accessibility | Profile avatar selector uses the shared Dialog primitive and active Student body scope | Implemented; authenticated browser verification pending |
 
 ## Question Engine
 

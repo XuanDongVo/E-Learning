@@ -1,8 +1,8 @@
 # Student Learning Hub — Screen Brief and UI Contract
 
 **Decision:** 2026-11-05, `feature/student-gamification`  
-**Scope:** Student Home, Units list and Unit Detail (implementation stages 1–3).  
-**Visual identity:** Indie Illustrated Scrapbook; see `INDIE_ILLUSTRATED_SCRAPBOOK_DESIGN_SYSTEM.md` and ADR 0032. Current code may still show legacy styles pending theme implementation.
+**Scope:** Student Home and the complete Units route branch, including Unit Detail, Activity list and immersive runtime entry.
+**Visual identity:** Indie Illustrated Scrapbook; see `INDIE_ILLUSTRATED_SCRAPBOOK_DESIGN_SYSTEM.md` and ADR 0032. The Student layout activates the scoped theme. Home, Profile, the complete Units branch and Rewards are standardized reference routes; other Student routes may still contain migration debt.
 
 ## Product direction
 
@@ -76,7 +76,7 @@ States covered:  Loading, error/retry, no matching Activities, successful list
 | Learning | `/student/units` | Unit/Section/Topic/Activity exploration |
 | Assignments | `/student/assignments` | Teacher-assigned formal work |
 | Progress | `/student/progress` | Deferred; currently placeholder |
-| Leaderboard | `/student/rewards` | Ranking preview (sample data until ranking API ships) |
+| Leaderboard | `/student/rewards` | Live XP/Streak ranking and honors |
 | Profile | `/student/profile` | Account/profile route |
 
 This stage changes the label **Units → Learning**, not the URL or the
@@ -86,13 +86,18 @@ underlying domain model. Do not expose a top-level Games route.
 
 - Follow the canonical [Indie Illustrated Scrapbook design rules](./INDIE_ILLUSTRATED_SCRAPBOOK_DESIGN_SYSTEM.md) for Student appearance, rather than legacy Playful Classroom values.
 - Preserve the product's current Unit/Activity hierarchy, verified data, screen states, primary action and readability.
-- Semantic tokens and shared components must be reused or scoped through the approved Student theme. The design rule does not imply that theme code is already implemented.
+- Semantic tokens and shared components must be reused through the implemented scoped Student theme. Feature files must not re-declare the palette, typography scale, paper geometry or control treatment.
 - Student touch targets ≥44px; visible focus, clear labels, reduced motion and responsive layouts at 375/768/1024/1440px.
 - Validate lint/build and browser visual QA when applicable; do not claim runtime/API verification unless run.
 
-## Future dependencies (not included in stages 1–3)
+### Activity list and runtime routes
+
+- `/student/units/:unitId/activities` resolves `unitId` from the path, never from an optional duplicate query parameter.
+- Activity lists show only server-published records and handle loading, error and empty states.
+- `/student/units/:unitId/activities/:activityId` remains the immersive runtime. Its explicit functional type scale is allowed by the Student design system; its wrapper uses the scoped Student material treatment without changing mode choice, per-question timing, hints, lives, scoring or result data.
+
+## Future dependencies
 
 - Resume-learning requires authoritative per-student progress/session data.
 - Progress charts require a verified analytics API and domain definitions.
-- Rewards requires server-backed XP/streak/leaderboard data; current mock is
-  strictly for presentation.
+- Additional progress charts require verified analytics contracts; the Units branch must not infer them from Unit or Activity counts.

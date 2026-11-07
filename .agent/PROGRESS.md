@@ -1,5 +1,24 @@
 # Project Progress
 
+## Student UI standardization — Units branch + Rewards (2026-11-07)
+
+- Standardized `/student/units`, `/student/units/:unitId`, `/student/units/:unitId/activities`, the immersive Activity route wrapper, and `/student/rewards` with the scoped Indie Illustrated Scrapbook roles and shared Student recipes.
+- Corrected the nested Activity list route to read `unitId` from its path parameter rather than an optional duplicate query parameter; Activity APIs, mode selection, runtime scoring and result behavior are unchanged.
+- Units and Activity discovery preserve live data, filters and loading/error/empty states without invented progress, lock, duration or recommendation data.
+- Rewards retains the authenticated XP/Streak Top 50, personal standing, honors and terminal ActivitySession feed. Its Student-only podium derives from the same ranking data; generated third-party avatars were removed and honor loading/error/empty states were added.
+- Centralized Units/Rewards layout, filters, cards, podium and ranking geometry in `styles/student/`; feature files contain no raw palette utilities, arbitrary sizes or default Tailwind type scale.
+- Updated the active route/design contracts and added `ui/STUDENT_REWARDS_BLUEPRINT.md` so documentation no longer describes live Rewards as mock/sample data.
+- Validation: TypeScript passes; focused ESLint passes with zero findings; full ESLint passes with zero errors and 56 existing warnings; static feature token/type guard and `git diff --check` are clean.
+
+## Student UI standardization — Home + Profile reference routes (2026-11-07)
+
+- Standardized `/student` and `/student/profile` as the first Indie Illustrated Scrapbook reference routes without changing their APIs, queries, Profile tabs or server-authored data.
+- Consolidated Student typography roles, paper/tape variants, controls, fields, progress and portal dialog treatment under `styles/student/` and `components/student-ui`.
+- Removed page-local raw colors and arbitrary type/radius/shadow values from both reference routes; StudentShell remains the owner of outer page padding.
+- Profile avatar selection now uses the shared accessible Dialog primitive; the existing guardian email validation and Home shared SkeletonList change were preserved.
+- Aligned active UI/frontend documentation with the implemented scoped theme. Remaining Student routes are explicitly migration debt, not an alternate visual system.
+- TypeScript (`tsc --noEmit`) passes. Focused ESLint passes with zero errors and three DiceBear `<img>` optimization warnings; full ESLint passes with zero errors and 59 existing warnings. Production build is blocked before application compilation by the environment's unavailable SWC native binding/cache permissions, and authenticated viewport/browser verification remains pending because browser-control access was not granted.
+
 ## Student profile fidelity restoration and avatar persistence (2026-11-07)
 
 - Restored all four originally designed Profile tabs (`overview | learning | streak | personal`), polaroid avatar picker, KPI cards, calendar, activity history and private guardian editing.

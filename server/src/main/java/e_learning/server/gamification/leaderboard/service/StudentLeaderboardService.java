@@ -26,8 +26,6 @@ public class StudentLeaderboardService {
     private final StudentLeaderboardQueryRepository leaderboardRepository;
 
     private LocalDateTime boundary(LocalDate day) {
-        // Existing xp_transactions.earned_at is LocalDateTime.now() in server local time.
-        // Convert the Vietnam calendar boundary to that same wall-clock convention.
         ZonedDateTime hcmMidnight = day.atStartOfDay(StudentStreakPolicy.ZONE);
         return hcmMidnight.withZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime();
     }
@@ -66,7 +64,7 @@ public class StudentLeaderboardService {
                         me);
         List<StudentLeaderboardResponse.Ranking> entries = rows.stream()
                 .map(row -> new StudentLeaderboardResponse.Ranking(
-                        row.getStudentId(), row.getFullName(), row.getPosition(), row.getScore(),
+                        row.getStudentId(), row.getFullName(),null, row.getPosition(), row.getScore(),
                         row.getStudentLevel(), row.getStudentId() == me))
                 .toList();
         long total = leaderboardRepository.countActiveStudents();
@@ -108,7 +106,7 @@ public class StudentLeaderboardService {
     private StudentLeaderboardResponse.Ranking toHonorRanking(
             StudentLeaderboardQueryRepository.HonorProjection row, long me) {
         return new StudentLeaderboardResponse.Ranking(
-                row.getStudentId(), row.getFullName(), 1, row.getValue(),
+                row.getStudentId(), row.getFullName(), null,1, row.getValue(),
                 row.getStudentLevel(), row.getStudentId() == me);
     }
 }

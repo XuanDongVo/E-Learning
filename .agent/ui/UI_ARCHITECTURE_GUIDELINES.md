@@ -124,9 +124,9 @@ Tokens live in `globals.css`. **Raw palette utilities are forbidden in feature c
 (`text-slate-400`, `bg-emerald-50`, `border-rose-300`, `#hex`, `rgb()`), as are arbitrary sizes
 (`text-[11px]`, `h-[37px]`). Use a token or propose a new one (3.8).
 
-### 3.1 Current implemented semantic colors — Teacher/base; Student legacy until scoped theme implementation
+### 3.1 Current implemented semantic colors — Teacher/base and Student-scoped overrides
 
-**Implementation note:** This table describes the currently implemented global/Teacher palette. It is **not** the target Student visual contract. ADR 0032 assigns Student a separate Indie Illustrated Scrapbook identity; until scoped CSS is delivered, current Student screens may still inherit legacy values. The live `client-e-learning/src/app/globals.css` is the evidence of current values. Avoid reintroducing older indigo/cyan palette claims.
+**Implementation note:** This table describes the global/Teacher palette in `client-e-learning/src/app/globals.css`. Student routes override the same semantic roles inside `styles/student/theme.css` under `.student-theme`/the active Student body scope. ADR 0032 and the Indie Illustrated Scrapbook specification decide Student appearance; feature code in either workspace consumes semantic aliases and must not copy either palette as raw values.
 
 | Current CSS variable | Current value (light theme) | Meaning | Usage |
 |---|---|---|---|
@@ -156,12 +156,11 @@ Use the registered Tailwind semantic aliases in `globals.css` (e.g. `bg-primary`
 Do **not** assume `secondary` means cyan: its current role is warm cream.
 
 **Color budget**
-- Both: orange is the common brand/action color; neutral ink and cream dominate.
-- Teacher: mostly neutral; orange only for actions/selection; semantic status colors only
+- Teacher: mostly neutral; LearnUp orange only for actions/selection; semantic status colors only
   when communicating status. No game styling.
-- Student: same orange brand/navigation; blue specifically communicates learning;
-  amber specifically communicates XP, streak, reward and warning; a success/error
-  color only when the outcome calls for it.
+- Student: warm paper and graphite ink dominate; clay is the primary action,
+  faded denim communicates learning, mustard communicates XP/streak/reward, and
+  success/error colors appear only when the outcome calls for them.
 - Never use blue or amber as a competing primary CTA color. Never assign random
   bright colors by list index or screen.
 
@@ -215,7 +214,7 @@ or teacher operational warning. Use text/icon first; avoid redundant badge walls
 
 ### 3.5 Typography — current Teacher/base implementation
 
-The **current Teacher/base** uses **Plus Jakarta Sans** (`--font-jakarta`). Student target typography is defined exclusively by the Indie Illustrated Scrapbook visual specification; it is not yet implemented as a scoped theme. One scale: the semantic names below are current shared references, not a restriction against approved Student-specific visual type tokens.
+The **current Teacher/base** uses **Plus Jakarta Sans** (`--font-jakarta`). Student typography is implemented as scoped roles in `styles/student/typography.css` and defined exclusively by the Indie Illustrated Scrapbook visual specification. The table below remains the Teacher/base reference; Student feature code uses `student-page-title`, `student-section-title`, `student-card-title`, `student-body`, `student-label`, `student-meta`, `student-caption` and `student-stat` rather than Tailwind default or arbitrary type sizes.
 Do not use Tailwind defaults (`text-xs`, `text-sm`, `text-base`) or arbitrary pixel sizes in feature code.
 
 | Token | Size / line-height | Weight | Use |
@@ -550,14 +549,14 @@ Teacher UI is an **LMS / management system**. It should feel calm, editorial and
 
 - Applies to Student visual presentation regardless of route or screen type; do not maintain a hard-coded screen list inside the aesthetic document.
 - Teacher keeps existing design. Shared interaction, accessibility, auth, domain, responsive and state requirements remain binding.
-- Student visual tokens and variants must be scoped; no global Teacher visual changes as a side effect. Portal overlays and themes require particular care when implementing.
-- This documentation update is not the completed Student CSS/theme rollout. See current code for implementation truth.
+- Student visual tokens and variants are scoped by the Student layout; no global Teacher visual changes are allowed as a side effect. Portal overlays, toasts, popovers and themes still require verification whenever their implementation changes.
+- Student Home, Profile, the complete Units branch and Rewards are standardized reference routes. Other Student routes may contain migration debt; debt is not an alternative visual contract.
 
 ### 8.2 Student product behavior
 
 - Home remains a learning hub focused on real Units, not a KPI wall; do not invent resume/progress, rank, due-date or completion metrics.
 - Learning/activity remains one task at a time; Learning and Try Hard use their accepted interaction rules and server-supported data.
-- Rewards/ranking show actual source, unit and timeframe, with mock states clearly labeled; never present sample data as official results.
+- Rewards/ranking use authenticated live XP/Streak, honors and terminal ActivitySession data. No sample or generated social data is allowed.
 - All data views handle loading, empty, error, disabled and success. Student touch controls remain ≥44px; keyboard focus and reduced motion are required.
 - App shell owns outer padding and container width; child pages do not add duplicate page-level padding.
 
@@ -795,16 +794,16 @@ The Teacher shell follows the warm Playful Classroom family as its restrained **
 
 ## 18. Ink border + pop shadow visual language (2026-11-06, owner correction)
 
-**Applies to the full application (Teacher and Student).** The approved visual language is Tactify-like *outlined, warm, hard-offset* surfaces using existing **`border-ink` + `shadow-pop`**, NOT `shadow-ink`. This corrects the prior Section 18 wording; the established Playful Classroom palette, typography and accessibility contract remain in force.
+**Applies directly to Teacher and to legacy shared primitives.** ADR 0032 supersedes this as an app-wide Student identity. Student may still resolve shared `border-ink` and `shadow-pop` aliases through its scoped theme, but its geometry, palette, typography and material recipes come from Indie Illustrated Scrapbook and `components/student-ui`, not from the Teacher/Tactify direction. Never introduce `shadow-ink`.
 
 - **Meaningful raised surfaces** (primary cards, activity tiles, key metrics, dialogs): `border-2 border-ink bg-card shadow-pop` with existing radius tokens. Prefer shared Card primitives where their API supports the variant.
 - **Secondary/nested surfaces**: `border border-ink` or `border-2 border-ink` without another shadow. Do not place a strong shadow on each child of a shadowed parent.
 - **Buttons/interactions**: primary CTAs may use `border-2 border-ink shadow-pop`, subtle pressed translation and visible focus rings; preserve disabled and reduced-motion behavior.
 - **Tables/inputs/dense teacher content**: ink boundary where it communicates grouping, restrained background and elevation. Preserve focus, readability, density, and semantic error/selection states.
 - **Navigation**: preserve shell dimensions, hierarchy and keyboard behavior; use ink outlines and pop elevation purposefully, not on every link.
-- **Color**: keep LearnUp orange for primary actions, learning blue for learning, amber for XP/Streak and semantic success/error colors; no raw black, hex or random palettes in features.
-- **Token truth**: `border-ink` and `shadow-pop` are already implemented in `client-e-learning/src/app/globals.css`; do **not** introduce a `shadow-ink` alias or replace `shadow-pop` with `shadow-pop-ink` without an explicit new decision. Verify light/dark, contrast and responsive behavior as screens migrate.
-- **Migration**: update shared primitives first, then touched routes; old low-contrast/soft-only cards are migration debt, not an alternate design. This guideline change does not imply all old screens were already migrated.
+- **Color**: Teacher keeps LearnUp orange for primary actions, learning blue for learning, amber for XP/Streak and semantic success/error colors. Student uses its scoped semantic mappings. No raw black, hex or random palettes in feature code.
+- **Token truth**: `border-ink` and `shadow-pop` aliases are registered in `client-e-learning/src/app/globals.css` and resolve through the active workspace variables; do **not** introduce `shadow-ink` or `shadow-pop-ink`. Verify contrast and responsive behavior as screens migrate.
+- **Migration**: update shared primitives first, then touched routes. Student Home, Profile, Units and Rewards follow the scoped system; remaining old Student styling is migration debt, not an alternate design.
 
 ```tsx
 <div className="rounded-2xl border-2 border-ink bg-card p-5 shadow-pop">
@@ -817,6 +816,6 @@ The Teacher shell follows the warm Playful Classroom family as its restrained **
 ### Student Gamification page ownership
 
 - **Student Home** hosts the server-backed seven-day Streak widget (Monday–Sunday, Ho Chi Minh calendar), today indicator, longest streak and a separate minimal Level progress card. Home's main CTA stays Learning.
-- **`/student/rewards`** is a **Leaderboard** page, not a Streak/Level dashboard. Until a real ranking API exists, leaderboards, Hall of Fame and activity feed must be prominently labeled sample content.
+- **`/student/rewards`** is a live **Leaderboard** page, not a Streak/Level dashboard. XP/Streak rankings, Hall of Fame and recent terminal ActivitySessions come from authenticated read APIs; there is no mock fallback.
 - No fake Freeze balance or five-minute learning target: Freeze is deferred, and a qualified day requires `ActivitySession.COMPLETED`, not elapsed learning minutes.
 - Level is only the current XP-derived level and progress to the next threshold. No new level privileges, inventory or level-up XP.

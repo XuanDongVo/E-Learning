@@ -2,7 +2,7 @@
 
 **Branch:** `feature/student-gamification`
 **Policy accepted:** 2026-11-06
-**Scope:** Activity completion Streak, milestone XP and Level/profile UI. The public leaderboard remains a presentation-only mock.
+**Scope:** Activity completion Streak, milestone XP and Level/profile UI. The later accepted live leaderboard contract is defined by `decisions/0032-student-xp-streak-leaderboard.md`; presentation-only mock language in the historical steps below is superseded.
 
 ## Agreed rules
 
@@ -38,7 +38,7 @@ The student id always comes from the JWT subject. Client has no Streak/XP mutati
 1. S1: wire completion transition to one-per-day qualification and locked Streak profile updates.
 2. S2: add milestone XP ledger idempotency and recompute Level in the same transaction.
 3. L1: read-only profile/streak APIs and Level progress contract.
-4. UI (revised 2026-11-06): server-backed seven-day Streak calendar and a separate minimal XP-to-next-Level panel on Student Home; Rewards route becomes a dedicated Leaderboard preview with explicit mock labeling. All raised panels use border-ink + shadow-pop. No fictitious Freeze count or 5-minute target.
+4. UI (revised 2026-11-07): server-backed seven-day Streak calendar and a separate minimal XP-to-next-Level panel remain on Student Home; Rewards is a dedicated live XP/Streak Leaderboard using the accepted leaderboard read APIs. No fictitious Freeze count or 5-minute target.
 5. Verify: focused policy/service unit tests; backend compile/test; FE lint/type/build; PostgreSQL transaction/concurrency and authenticated mobile/desktop E2E before production rollout.
 
 ## Required acceptance cases

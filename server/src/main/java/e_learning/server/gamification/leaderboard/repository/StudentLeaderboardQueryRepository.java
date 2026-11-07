@@ -110,6 +110,8 @@ public interface StudentLeaderboardQueryRepository extends Repository<User, Long
 
         String getFullName();
 
+        String getAvatarKey();
+
         Integer getStudentLevel();
 
         Long getScore();

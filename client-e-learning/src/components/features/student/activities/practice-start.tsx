@@ -12,12 +12,11 @@ import type {
 } from "@/types/activity-session";
 import { RegionState } from "@/components/feedback";
 import { SkeletonCard } from "@/components/ui/skeleton/skeleton-card";
+import { PaperSurface } from "@/components/student-ui/paper-surface";
+import { ScrapbookHeading } from "@/components/student-ui/scrapbook-heading";
 
-const blueBtn =
-  "bg-learning text-primary-foreground shadow-pop-sm hover:bg-learning/90 hover:text-primary-foreground";
-const glassBtn =
-  "border-card/30 bg-card/15 text-primary-foreground hover:bg-card/25 hover:text-primary-foreground";
-const card = "bg-card-bg shadow-pop-lg";
+const blueBtn = "student-control student-control--action";
+const glassBtn = "student-control student-control--quiet";
 
 const MODES: Record<ActivitySessionMode, { title: string; desc: string }> = {
   LEARNING: {
@@ -72,15 +71,15 @@ function Choice({
       type="button"
       aria-pressed={active}
       onClick={onClick}
-      className={`flex min-h-[72px] w-full items-center justify-between border-2 border-ink shadow-pop gap-4 rounded-2xl border-2 px-4 py-3 text-left transition-colors ${
+      className={`student-practice-choice ${
         active
-          ? "border-learning bg-learning-soft shadow-pop-sm"
-          : "border-border bg-background shadow-pop-sm hover:border-learning"
+          ? "student-practice-choice--active"
+          : ""
       }`}
     >
       <span>
-        <span className="block text-base font-extrabold">{title}</span>
-        <span className="block text-sm text-muted-foreground">{desc}</span>
+        <span className="student-label block">{title}</span>
+        <span className="student-body block text-muted-foreground">{desc}</span>
       </span>
       {icon}
     </button>
@@ -97,7 +96,7 @@ export function PracticeStart(p: Props) {
 
   return (
     <section
-      className="fixed inset-0 z-[45] overflow-y-auto bg-learning text-foreground"
+      className="student-practice-runtime fixed inset-0 z-[45] overflow-y-auto bg-learning text-foreground"
       aria-label="Bắt đầu luyện tập"
     >
       <Image
@@ -108,7 +107,7 @@ export function PracticeStart(p: Props) {
         priority
         className="fixed inset-0 h-full w-full object-cover"
       />
-      <div className="relative mx-auto flex min-h-svh max-w-[640px] flex-col px-4 pb-6 pt-7">
+      <div className="student-practice-start-layout relative mx-auto flex min-h-svh flex-col px-4 pb-6 pt-7">
         <div>
            <Link href={`/student/units/${p.unitId}`}>
           <Button  variant="outline" className={`${glassBtn} px-3`}>
@@ -118,8 +117,8 @@ export function PracticeStart(p: Props) {
            </Link>
         </div>
 
-        <div className={`${card} mt-6 rounded-[24px] p-5`}>
-          <h1 className="text-xl font-extrabold">Chọn cách luyện tập</h1>
+        <PaperSurface as="section" tape tapePosition="right" className="student-practice-start-card mt-6 p-5">
+          <ScrapbookHeading as="h1" className="student-section-title">Chọn cách luyện tập</ScrapbookHeading>
 
           {p.loading && (
             <SkeletonCard className="mt-4" lines={4} />
@@ -136,10 +135,10 @@ export function PracticeStart(p: Props) {
 
           {p.options && (
             <>
-              <div className="mt-4 rounded-xl border-2 border-ink shadow-pop bg-background px-4 py-3">
-                <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Độ khó câu hỏi</p>
-                <p className="mt-1 text-base font-extrabold">{difficultyLabels[p.options.questionDifficulty]}</p>
-                <p className="mt-1 text-sm text-muted-foreground">Độ khó do giáo viên thiết lập cho hoạt động này.</p>
+              <div className="student-soft-panel mt-4 px-4 py-3">
+                <p className="student-meta text-muted-foreground">Độ khó câu hỏi</p>
+                <p className="student-label mt-1">{difficultyLabels[p.options.questionDifficulty]}</p>
+                <p className="student-body mt-1 text-muted-foreground">Độ khó do giáo viên thiết lập cho hoạt động này.</p>
               </div>
               <div className="mt-4 grid gap-3 ">
                 {modes.map((m) => (
@@ -177,7 +176,7 @@ export function PracticeStart(p: Props) {
 
               {strategies.length > 1 && (
                 <>
-                  <h2 className="mt-6 text-base font-extrabold">Trọng tâm câu hỏi</h2>
+                  <h2 className="student-card-title mt-6">Trọng tâm câu hỏi</h2>
                   <div className="mt-3 grid gap-3">
                     {strategies.map((s) => (
                       <Choice
@@ -195,12 +194,12 @@ export function PracticeStart(p: Props) {
           )}
 
           {p.starting && p.slow && (
-            <p role="status" className="mt-4 text-sm font-semibold">
+            <p role="status" className="student-label mt-4">
               Máy chủ phản hồi chậm, vui lòng chờ thêm chút…
             </p>
           )}
           {p.startError && (
-            <p role="alert" className="mt-4 text-sm font-semibold text-destructive">
+            <p role="alert" className="student-label mt-4 text-destructive">
               {p.startError}
             </p>
           )}
@@ -214,7 +213,7 @@ export function PracticeStart(p: Props) {
               {p.starting ? "Đang bắt đầu…" : p.startError ? "Thử lại" : "Bắt đầu luyện tập"}
             </Button>
           </div>
-        </div>
+        </PaperSurface>
       </div>
     </section>
   );

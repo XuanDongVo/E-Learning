@@ -6,24 +6,24 @@
  * Canonical fonts: Nunito (body), Patrick Hand (short headings),
  * Caveat (decorative notes), Courier Prime (short metadata).
  */
-.student-theme .student-handwriting {
+:is(.student-theme, body:has(.student-theme)) .student-handwriting {
   font-family: var(--student-font-hand);
   font-weight: 400;
   letter-spacing: 0;
   line-height: 1.15;
 }
 
-.student-theme .student-note {
+:is(.student-theme, body:has(.student-theme)) .student-note {
   font-family: var(--student-font-note);
   font-weight: 500;
 }
 
-.student-theme .student-typewriter {
+:is(.student-theme, body:has(.student-theme)) .student-typewriter {
   font-family: var(--student-font-mono);
   letter-spacing: 0.025em;
 }
 
-.student-theme .student-page-title {
+:is(.student-theme, body:has(.student-theme)) .student-page-title {
   font-family: var(--student-font-hand);
   font-size: 1.875rem; /* 30px */
   line-height: 1.15;
@@ -31,7 +31,7 @@
   font-weight: 400;
 }
 
-.student-theme .student-section-title {
+:is(.student-theme, body:has(.student-theme)) .student-section-title {
   font-family: var(--student-font-hand);
   font-size: 1.375rem; /* 22px */
   line-height: 1.2;
@@ -39,15 +39,53 @@
   font-weight: 400;
 }
 
-.student-theme .student-card-title {
+:is(.student-theme, body:has(.student-theme)) .student-card-title {
   font-family: var(--student-font-body);
   font-size: 1.125rem;
   font-weight: 800;
   line-height: 1.3;
 }
 
-.student-theme .student-streak-card h2,
-.student-theme .student-streak-card .student-streak-heading {
+:is(.student-theme, body:has(.student-theme)) .student-body {
+  font-family: var(--student-font-body);
+  font-size: 0.875rem;
+  line-height: 1.55;
+  font-weight: 400;
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-label {
+  font-family: var(--student-font-body);
+  font-size: 0.875rem;
+  line-height: 1.4;
+  font-weight: 700;
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-meta {
+  font-family: var(--student-font-mono);
+  font-size: 0.75rem;
+  line-height: 1.45;
+  font-weight: 600;
+  letter-spacing: 0.015em;
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-caption {
+  font-family: var(--student-font-mono);
+  font-size: 0.6875rem;
+  line-height: 1.4;
+  font-weight: 700;
+  letter-spacing: 0.015em;
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-stat {
+  font-family: var(--student-font-body);
+  font-size: 1.5rem;
+  line-height: 1.15;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-streak-card h2,
+:is(.student-theme, body:has(.student-theme)) .student-streak-card .student-streak-heading {
   font-family: var(--student-font-hand);
   font-size: 1.375rem;
   line-height: 1.2;
@@ -55,13 +93,15 @@
   text-transform: none;
 }
 
-.student-theme .student-profile {
+:is(.student-theme, body:has(.student-theme)) .student-profile {
   font-family: var(--student-font-body);
   font-size: 0.875rem;
   line-height: 1.55;
 }
 
 @media (min-width: 640px) {
-  .student-theme .student-page-title { font-size: 2.25rem; } /* 36px */
-  .student-theme .student-section-title { font-size: 1.625rem; } /* 26px */
+  :is(.student-theme, body:has(.student-theme)) .student-page-title { font-size: 2.25rem; } /* 36px */
+  :is(.student-theme, body:has(.student-theme)) .student-section-title { font-size: 1.625rem; } /* 26px */
+  :is(.student-theme, body:has(.student-theme)) .student-body { font-size: 1rem; }
+  :is(.student-theme, body:has(.student-theme)) .student-stat { font-size: 1.75rem; }
 }

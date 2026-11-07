@@ -5,6 +5,8 @@ type PaperSurfaceProps = HTMLAttributes<HTMLElement> & {
   as?: "div" | "section" | "article";
   variant?: "plain" | "lined" | "kraft";
   tape?: boolean;
+  tapePosition?: "left" | "center" | "right";
+  interactive?: boolean;
   children: ReactNode;
 };
 
@@ -13,6 +15,8 @@ export function PaperSurface({
   as: Element = "div",
   variant = "plain",
   tape = false,
+  tapePosition = "left",
+  interactive = false,
   className,
   children,
   ...props
@@ -25,9 +29,19 @@ export function PaperSurface({
         variant === "kraft" && "student-paper--kraft",
         className,
       )}
+      data-interactive={interactive || undefined}
       {...props}
     >
-      {tape && <span aria-hidden="true" className="student-washi" />}
+      {tape && (
+        <span
+          aria-hidden="true"
+          className={cn(
+            "student-washi",
+            tapePosition === "center" && "student-washi--center",
+            tapePosition === "right" && "student-washi--right",
+          )}
+        />
+      )}
       {children}
     </Element>
   );

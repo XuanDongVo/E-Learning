@@ -3,6 +3,8 @@
 **Status:** Accepted (owner decision 2026-11-07)  
 **Scope:** Visual governance. This ADR does not itself implement CSS, components or screens.
 
+**Implementation note (2026-11-07):** The later scoped-theme change has now landed in the Student layout, `styles/student/` and `components/student-ui/`. Student Home, Profile, the complete Units route branch and Rewards are standardized reference routes; remaining Student routes are migration work. This note records implementation state without changing the historical decision below.
+
 ## Context
 
 Student visual direction changes from Playful Classroom to Indie Illustrated Scrapbook (Hand Drawn × Hipness Purgatory). Teacher appearance must remain unchanged. Shared aesthetic requirements in prior UI rules conflict with this decision.

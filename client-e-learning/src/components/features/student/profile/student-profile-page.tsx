@@ -2,16 +2,36 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Eye, EyeOff, LockKeyhole } from "lucide-react";
-import type { StudentProfile, StudentRecentSession } from "@/types/student/profile";
-import type { Gender, GuardianRelationship, StudentGuardianRequest } from "@/types/student";
-import type { StudentGamificationOverview, StudentStreakOverview } from "@/types/gamification";
+import type {
+  StudentProfile,
+  StudentRecentSession,
+} from "@/types/student/profile";
+import type {
+  Gender,
+  GuardianRelationship,
+  StudentGuardianRequest,
+} from "@/types/student";
+import type {
+  StudentGamificationOverview,
+  StudentStreakOverview,
+} from "@/types/gamification";
 import { studentProfileService } from "@/services/student/student-profile.service";
 import { studentGamificationService } from "@/services/student/student-gamification.service";
 import { studentAssignmentService } from "@/services/student/student-assignment.service";
 import { QUERY_KEYS } from "@/services/query-keys";
 import { FullPageState, RegionState } from "@/components/feedback";
+import { PaperSurface } from "@/components/student-ui/paper-surface";
+import { SketchProgress } from "@/components/student-ui/sketch-progress";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { toAppError } from "@/lib/errors/app-error";
+import { formatDate } from "@/utils/format";
 import { toast } from "sonner";
 
 import {
@@ -27,11 +47,12 @@ import {
   CircleHelp,
   ClipboardCheck,
   Clock3,
+  Eye,
+  EyeOff,
   Flame,
   GraduationCap,
-  Mail,
+  LockKeyhole,
   Pencil,
-  Phone,
   RefreshCw,
   Save,
   Search,
@@ -46,38 +67,60 @@ import {
   Zap,
 } from "lucide-react";
 
-
 type Profile = StudentProfile & {
-  dateOfBirth: string; gender: Gender; phone: string; avatarKey: string;
+  dateOfBirth: string;
+  gender: Gender;
+  phone: string;
+  avatarKey: string;
   currentClass: NonNullable<StudentProfile["currentClass"]>;
 };
 type Tab = "overview" | "learning" | "streak" | "personal";
 type LearningData = {
-  sessionTotal: number; sessionsCompleted: number;
+  sessionTotal: number;
+  sessionsCompleted: number;
   assignments: {
-    assigned: number; submitted: number; late: number;
-    notStarted: number; inProgress: number; timedOut: number;
+    assigned: number;
+    submitted: number;
+    late: number;
+    notStarted: number;
+    inProgress: number;
+    timedOut: number;
   };
   activities: StudentRecentSession[];
 };
 function toViewProfile(raw: StudentProfile): Profile {
   return {
-    ...raw, dateOfBirth: raw.dateOfBirth ?? "",
-    gender: raw.gender ?? "OTHER", phone: raw.phone ?? "",
+    ...raw,
+    dateOfBirth: raw.dateOfBirth ?? "",
+    gender: raw.gender ?? "OTHER",
+    phone: raw.phone ?? "",
     avatarKey: raw.avatarKey ?? `dicebear:adventurer:${raw.userId}`,
     currentClass: raw.currentClass ?? {
-      id: 0, name: "—", gradeId: 0, gradeName: "—",
-      academicYear: "—", status: "INACTIVE",
+      id: 0,
+      name: "—",
+      gradeId: 0,
+      gradeName: "—",
+      academicYear: "—",
+      status: "INACTIVE",
     },
   };
 }
 const RELATIONSHIPS: Record<GuardianRelationship, string> = {
-  FATHER: "Bố", MOTHER: "Mẹ", GUARDIAN: "Người giám hộ", OTHER: "Khác",
+  FATHER: "Bố",
+  MOTHER: "Mẹ",
+  GUARDIAN: "Người giám hộ",
+  OTHER: "Khác",
 };
-function guardianPayload(g: Profile["guardians"][number]): StudentGuardianRequest {
+function guardianPayload(
+  g: Profile["guardians"][number],
+): StudentGuardianRequest {
   return {
-    id: g.id, relationship: g.relationship, fullName: g.fullName,
-    phone: g.phone, email: g.email ?? "", primary: g.primary,
+    id: g.id,
+    relationship: g.relationship,
+    fullName: g.fullName,
+    phone: g.phone,
+    email: g.email ?? "",
+    primary: g.primary,
   };
 }
 
@@ -94,7 +137,6 @@ const AVATAR_STYLES = [
   { id: "thumbs", name: "Thumbs" },
 ] as const;
 
-
 const cx = (...parts: Array<string | false | undefined | null>) =>
   parts.filter(Boolean).join(" ");
 
@@ -106,17 +148,6 @@ const parseAvatar = (key: string) => {
   return source === "dicebear" && AVATAR_STYLES.some((s) => s.id === style)
     ? { style, seed: seed.join(":") || "alice" }
     : { style: "adventurer", seed: "alice" };
-};
-
-const formatDate = (value: string | null | undefined) => {
-  if (!value) return "Chưa cập nhật";
-  const [y, m, d] = value.split("-").map(Number);
-  if (!y || !m || !d) return value;
-  return new Intl.DateTimeFormat("vi-VN", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  }).format(new Date(y, m - 1, d));
 };
 
 const genderLabel = (gender: string) =>
@@ -136,30 +167,15 @@ function PaperCard({
   hasTape?: boolean;
   tapePosition?: "left" | "center" | "right";
 }) {
-  const tapeOffsets = {
-    left: "left-8 -rotate-2",
-    center: "left-1/2 -translate-x-1/2 rotate-1",
-    right: "right-8 rotate-2",
-  };
-
   return (
-    <section
-      className={cx(
-        "relative rounded-[255px_15px_225px_15px/15px_225px_15px_255px] border-2 border-[#2d2b2a] bg-[#fffdf9] shadow-[4px_5px_0_#2d2b2a]",
-        className
-      )}
+    <PaperSurface
+      as="section"
+      tape={hasTape}
+      tapePosition={tapePosition}
+      className={className}
     >
-      {hasTape && (
-        <div
-          className={cx(
-            "pointer-events-none absolute -top-3.5 z-10 h-6 w-24 rounded-[2px] bg-[#f3e88e]/85 shadow-[0_1px_2px_rgba(0,0,0,0.15)]",
-            tapeOffsets[tapePosition]
-          )}
-          aria-hidden="true"
-        />
-      )}
       {children}
-    </section>
+    </PaperSurface>
   );
 }
 
@@ -173,15 +189,15 @@ function SectionHeading({
   note?: string;
 }) {
   return (
-    <div className="flex flex-wrap items-center justify-between gap-2 border-b-2 border-dashed border-[#e8dec8] pb-3">
-      <h2 className="flex items-center gap-2.5 font-serif text-xl font-black tracking-tight text-[#2d2b2a]">
-        <span className="flex h-7 w-7 items-center justify-center rounded-[6px] border border-[#2d2b2a] bg-[#f7f4eb] shadow-[1px_1px_0_#2d2b2a]">
+    <div className="flex flex-wrap items-center justify-between gap-5 border-b-2 border-dashed border-secondary pb-3">
+      <h2 className="student-section-title flex items-center gap-3 text-foreground">
+        <span className="flex h-7 w-7 items-center justify-center rounded-lg border border-ink bg-background shadow-pop-sm">
           <Icon size={16} />
         </span>
         {title}
       </h2>
       {note && (
-        <span className="font-mono text-xs font-semibold text-[#8c827a]">
+        <span className=" student-meta font-semibold text-muted-foreground">
           ~ {note} ~
         </span>
       )}
@@ -207,21 +223,19 @@ function Kpi({
   return (
     <div
       className={cx(
-        "relative rounded-[20px_5px_18px_6px/5px_18px_6px_20px] border-2 border-[#2d2b2a] p-4.5 shadow-[3px_4px_0_#2d2b2a] transition hover:-translate-y-0.5",
+        "relative rounded-2xl border-2 border-ink p-5 shadow-pop",
         color,
-        rotation
+        rotation,
       )}
     >
-      <div className="mb-2 flex items-center justify-between font-mono">
-        <span className="text-[11px] font-bold uppercase tracking-wider text-[#544d47]">
+      <div className="mb-2 flex items-center justify-between ">
+        <span className="student-meta font-bold text-muted-foreground">
           {label}
         </span>
-        <Icon size={18} className="text-[#2d2b2a]" />
+        <Icon size={16} className="text-foreground" />
       </div>
-      <div className="font-serif text-xl font-black tracking-tight text-[#2d2b2a] sm:text-2xl">
-        {value}
-      </div>
-      <div className="mt-1 font-mono text-[11px] font-semibold text-[#6e6863]">
+      <div className="student-stat text-foreground">{value}</div>
+      <div className="mt-1 student-meta font-semibold text-muted-foreground">
         {hint}
       </div>
     </div>
@@ -230,11 +244,9 @@ function Kpi({
 
 function Info({ label, value }: { label: string; value?: string | null }) {
   return (
-    <div className="min-w-0 border-b border-dashed border-[#e8dec8] py-2.5 last:border-0">
-      <dt className="font-mono text-[11px] font-bold uppercase tracking-wider text-[#8c827a]">
-        {label}
-      </dt>
-      <dd className="mt-0.5 break-words font-mono text-sm font-bold text-[#2d2b2a]">
+    <div className="min-w-0 border-b border-dashed border-secondary py-3 last:border-0">
+      <dt className=" student-meta font-bold text-muted-foreground">{label}</dt>
+      <dd className="mt-1 break-words student-body font-bold text-foreground">
         {value || "Chưa cập nhật"}
       </dd>
     </div>
@@ -259,57 +271,47 @@ function AvatarDialog({
   useEffect(() => {
     const timeout = window.setTimeout(
       () => setSeed(draftSeed.trim().slice(0, 40) || "alice"),
-      300
+      300,
     );
     return () => window.clearTimeout(timeout);
   }, [draftSeed]);
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-[#1f1a17]/70 p-3 backdrop-blur-[2px] sm:p-6"
-      role="presentation"
-      onMouseDown={(e) => {
-        if (e.target === e.currentTarget) onClose();
-      }}
-    >
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-label="Đổi hình đại diện"
-        className="relative max-h-[94vh] w-full max-w-3xl overflow-y-auto rounded-[255px_15px_225px_15px/15px_225px_15px_255px] border-3 border-[#2d2b2a] bg-[#fffdf9] p-5 shadow-[8px_10px_0_#2d2b2a] sm:p-7"
-      >
-        <div
-          className="absolute -top-3 left-12 h-6 w-28 -rotate-1 rounded-[2px] bg-[#f3e88e] shadow-[0_1px_3px_rgba(0,0,0,0.12)]"
-          aria-hidden="true"
-        />
-
-        <div className="flex items-start justify-between gap-3 border-b-2 border-dashed border-[#e8dec8] pb-4">
-          <div>
-            <div className="font-mono text-xs font-bold uppercase tracking-widest text-[#c85a32]">
-              ✂ Xưởng phác thảo chân dung
+    <Dialog open onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="student-avatar-dialog" showCloseButton={false}>
+        <span className="student-washi" aria-hidden="true" />
+        <DialogHeader className="border-b-2 border-dashed border-secondary pb-4">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="student-meta text-primary">
+                Xưởng phác thảo chân dung
+              </p>
+              <DialogTitle className="student-section-title mt-1 text-foreground">
+                Chọn avatar của bạn{" "}
+                <Sparkles className="inline text-accent" size={22} />
+              </DialogTitle>
+              <DialogDescription className="student-body mt-1 text-muted-foreground">
+                Gõ từ khóa để xem avatar thay đổi qua 10 phong cách.
+              </DialogDescription>
             </div>
-            <h2 className="mt-1 font-serif text-2xl font-black text-[#2d2b2a]">
-              Chọn Avatar Của Bạn <Sparkles className="inline text-[#d99b26]" size={22} />
-            </h2>
-            <p className="mt-1 font-mono text-xs text-[#6e6863]">
-              Gõ từ khóa bất kỳ để quan sát nét vẽ biến đổi qua 10 phong cách.
-            </p>
+            <DialogClose
+              className="student-control student-control--quiet grid size-11 shrink-0 place-items-center rounded-full shadow-pop-sm"
+              aria-label="Đóng"
+            >
+              <X size={16} />
+            </DialogClose>
           </div>
-          <button
-            aria-label="Đóng"
-            onClick={onClose}
-            className="rounded-full border-2 border-[#2d2b2a] bg-[#fffdf9] p-1.5 text-[#2d2b2a] shadow-[2px_2px_0_#2d2b2a] transition hover:bg-[#e8dec8]"
-          >
-            <X size={18} />
-          </button>
-        </div>
+        </DialogHeader>
 
-        <div className="mt-5 flex flex-col gap-2.5 sm:flex-row">
-          <label className="flex flex-1 items-center gap-2 rounded-[14px_4px_16px_5px/4px_16px_5px_14px] border-2 border-[#2d2b2a] bg-[#fdfbf7] px-3.5 shadow-inner">
-            <Search size={18} className="text-[#8c827a]" />
+        <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+          <label className="relative flex-1">
+            <Search
+              size={16}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+            />
             <input
               aria-label="Từ khóa avatar"
-              className="h-11 w-full min-w-0 bg-transparent font-mono text-sm font-bold text-[#2d2b2a] outline-none"
+              className="student-field pl-10"
               value={draftSeed}
               maxLength={40}
               placeholder="Thử gõ: alice, luna, robot..."
@@ -317,10 +319,13 @@ function AvatarDialog({
             />
           </label>
           <button
-            onClick={() => setDraftSeed(Math.random().toString(36).slice(2, 10))}
-            className="inline-flex h-11 items-center justify-center gap-2 rounded-[12px_4px_14px_4px/4px_14px_4px_12px] border-2 border-[#2d2b2a] bg-[#d99b26] px-4 font-mono text-xs font-bold text-white shadow-[2px_2px_0_#2d2b2a] hover:-translate-y-0.5 active:translate-y-0"
+            type="button"
+            onClick={() =>
+              setDraftSeed(Math.random().toString(36).slice(2, 10))
+            }
+            className="student-control student-control--secondary px-4"
           >
-            <RefreshCw size={15} /> Xúc xắc hạt giống
+            <RefreshCw size={16} /> Xúc xắc hạt giống
           </button>
         </div>
 
@@ -331,14 +336,14 @@ function AvatarDialog({
               onClick={() => setStyle(s.id)}
               aria-pressed={style === s.id}
               className={cx(
-                "group relative rounded-[16px_4px_18px_5px/5px_18px_5px_16px] border-2 p-2.5 text-center transition hover:-translate-y-0.5",
-                idx % 2 === 0 ? "rotate-[-1deg]" : "rotate-[1deg]",
+                "group relative rounded-2xl border-2 p-3 text-center transition hover:-translate-y-0.5",
+                idx % 2 === 0 ? "-rotate-1" : "rotate-1",
                 style === s.id
-                  ? "border-[#2d2b2a] bg-[#fff3db] shadow-[3px_3px_0_#2d2b2a]"
-                  : "border-[#2d2b2a]/30 bg-[#fffdf9] hover:border-[#2d2b2a]"
+                  ? "border-ink bg-warning-soft shadow-pop"
+                  : "border-border bg-card hover:border-ink",
               )}
             >
-              <div className="overflow-hidden rounded-[8px] border border-[#2d2b2a]/20 bg-[#f7f4eb] p-1.5">
+              <div className="overflow-hidden rounded-lg border border-border bg-background p-2">
                 <img
                   src={avatarSrc(s.id, seed)}
                   alt={`${s.name} avatar`}
@@ -348,20 +353,20 @@ function AvatarDialog({
               </div>
               {style === s.id && (
                 <CheckCircle2
-                  size={17}
-                  className="absolute right-1.5 top-1.5 rounded-full bg-[#c85a32] text-white"
+                  size={16}
+                  className="absolute right-2 top-2 rounded-full bg-primary text-primary-foreground"
                 />
               )}
-              <span className="mt-2 block truncate font-serif text-xs font-bold text-[#2d2b2a]">
+              <span className="mt-2 block truncate student-handwriting student-meta font-bold text-foreground">
                 {s.name}
               </span>
             </button>
           ))}
         </div>
 
-        <div className="mt-6 flex flex-col items-start justify-between gap-3 rounded-[16px_5px_18px_4px/4px_18px_4px_16px] border-2 border-[#2d2b2a] bg-[#e8dec8] p-3.5 sm:flex-row sm:items-center">
+        <div className="mt-6 flex flex-col items-start justify-between gap-3 rounded-2xl border-2 border-ink bg-secondary p-4 sm:flex-row sm:items-center">
           <div className="flex items-center gap-3">
-            <div className="h-14 w-14 overflow-hidden rounded-[10px] border-2 border-[#2d2b2a] bg-[#fffdf9] p-1 shadow-[2px_2px_0_#2d2b2a]">
+            <div className="h-14 w-14 overflow-hidden rounded-xl border-2 border-ink bg-card p-1 shadow-pop-sm">
               <img
                 src={avatarSrc(style, seed)}
                 alt="Avatar đã chọn"
@@ -369,32 +374,36 @@ function AvatarDialog({
               />
             </div>
             <div>
-              <div className="font-mono text-[11px] uppercase text-[#6e6863]">
+              <div className=" student-meta text-muted-foreground">
                 Lựa chọn hiện tại
               </div>
-              <div className="font-serif text-sm font-black text-[#2d2b2a]">
+              <div className="student-handwriting student-body font-black text-foreground">
                 {AVATAR_STYLES.find((s) => s.id === style)?.name}
               </div>
-              <div className="max-w-[200px] truncate font-mono text-xs text-[#6e6863]">
+              <div className="max-w-48 truncate student-meta text-muted-foreground">
                 seed: {seed}
               </div>
             </div>
           </div>
           <button
+            type="button"
             onClick={() => onSave(`dicebear:${style}:${seed}`)}
-            className="inline-flex w-full items-center justify-center gap-2 rounded-[12px_4px_14px_4px/4px_14px_4px_12px] border-2 border-[#2d2b2a] bg-[#6b8e67] px-5 py-2.5 font-mono text-xs font-bold text-white shadow-[3px_3px_0_#2d2b2a] transition hover:-translate-y-0.5 active:translate-y-0 sm:w-auto"
+            className="student-control student-control--action w-full px-5 sm:w-auto"
           >
             <Check size={16} /> Dán vào hồ sơ
           </button>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 
 /** Lịch học tập tem đóng dấu */
 function Calendar({
-  month, move, qualifiedDates, todayDate,
+  month,
+  move,
+  qualifiedDates,
+  todayDate,
 }: {
   month: Date;
   move: (delta: number) => void;
@@ -417,28 +426,28 @@ function Calendar({
 
   return (
     <div>
-      <div className="flex items-center justify-between gap-2 border-b-2 border-dashed border-[#e8dec8] pb-3">
-        <h3 className="font-serif text-lg font-black capitalize text-[#2d2b2a]">
+      <div className="flex items-center justify-between gap-2 border-b-2 border-dashed border-secondary pb-3">
+        <h3 className="student-handwriting student-card-title font-black capitalize text-foreground">
           {label}
         </h3>
         <div className="flex gap-2">
           <button
             aria-label="Tháng trước"
             onClick={() => move(-1)}
-            className="rounded-[6px] border-2 border-[#2d2b2a] bg-[#fffdf9] p-1.5 shadow-[2px_2px_0_#2d2b2a] transition hover:bg-[#e8dec8]"
+            className="student-control student-control--quiet grid size-11 place-items-center shadow-pop-sm"
           >
             <ChevronLeft size={16} />
           </button>
           <button
             aria-label="Tháng sau"
             onClick={() => move(1)}
-            className="rounded-[6px] border-2 border-[#2d2b2a] bg-[#fffdf9] p-1.5 shadow-[2px_2px_0_#2d2b2a] transition hover:bg-[#e8dec8]"
+            className="student-control student-control--quiet grid size-11 place-items-center shadow-pop-sm"
           >
             <ChevronRight size={16} />
           </button>
         </div>
       </div>
-      <div className="mt-4 grid grid-cols-7 gap-2 text-center font-mono text-xs font-bold text-[#8c827a]">
+      <div className="mt-4 grid grid-cols-7 gap-2 text-center student-meta font-bold text-muted-foreground">
         {["T2", "T3", "T4", "T5", "T6", "T7", "CN"].map((d) => (
           <span key={d}>{d}</span>
         ))}
@@ -452,13 +461,13 @@ function Calendar({
             <div
               key={`${i}-${day ?? "empty"}`}
               className={cx(
-                "flex aspect-square items-center justify-center rounded-[8px_3px_7px_3px/3px_7px_3px_8px] border-2 font-mono text-xs font-bold sm:text-sm",
+                "flex aspect-square items-center justify-center rounded-lg border-2 student-meta font-bold ",
                 day === null
                   ? "border-transparent"
                   : isQualified
-                  ? "border-[#2d2b2a] bg-[#d9e8d4] text-[#2c5332] shadow-[2px_2px_0_#2d2b2a]"
-                  : "border-[#2d2b2a]/20 bg-[#fbf6ed] text-[#8c827a]",
-                isToday && "ring-2 ring-[#c85a32] ring-offset-1 font-black"
+                    ? "border-ink bg-success-soft text-success shadow-pop-sm"
+                    : "border-border bg-muted text-muted-foreground",
+                isToday && "ring-2 ring-primary ring-offset-1 font-black",
               )}
               title={isQualified ? "Ngày học đạt chuẩn streak" : undefined}
             >
@@ -467,13 +476,13 @@ function Calendar({
           );
         })}
       </div>
-      <div className="mt-4 flex flex-wrap items-center gap-4 font-mono text-xs font-semibold text-[#6e6863]">
+      <div className="mt-4 flex flex-wrap items-center gap-4 student-meta font-semibold text-muted-foreground">
         <span className="flex items-center gap-2">
-          <span className="h-3 w-3 rounded border border-[#2d2b2a] bg-[#d9e8d4] shadow-[1px_1px_0_#2d2b2a]" />
+          <span className="h-3 w-3 rounded border border-ink bg-success-soft shadow-pop-sm" />
           Đã đạt chuẩn streak
         </span>
         <span className="flex items-center gap-2">
-          <span className="h-3 w-3 rounded border border-[#2d2b2a]/20 bg-[#fbf6ed]" />
+          <span className="h-3 w-3 rounded border border-border bg-muted" />
           Chưa có bài học
         </span>
       </div>
@@ -482,17 +491,27 @@ function Calendar({
 }
 
 function StudentProfileContent({
-  initialProfile, game, streak, learn,
+  initialProfile,
+  game,
+  streak,
+  learn,
 }: {
-  initialProfile: StudentProfile; game: StudentGamificationOverview;
-  streak: StudentStreakOverview; learn: LearningData;
+  initialProfile: StudentProfile;
+  game: StudentGamificationOverview;
+  streak: StudentStreakOverview;
+  learn: LearningData;
 }) {
   const queryClient = useQueryClient();
-  const [profile, setProfile] = useState<Profile>(() => toViewProfile(initialProfile));
+  const [profile, setProfile] = useState<Profile>(() =>
+    toViewProfile(initialProfile),
+  );
+
   const [tab, setTab] = useState<Tab>("overview");
   const [avatarOpen, setAvatarOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
-  const [draft, setDraft] = useState<Profile>(() => toViewProfile(initialProfile));
+  const [draft, setDraft] = useState<Profile>(() =>
+    toViewProfile(initialProfile),
+  );
   const [month, setMonth] = useState(() => {
     const [year, m] = streak.todayDate.split("-").map(Number);
     return new Date(year, m - 1, 1);
@@ -501,19 +520,36 @@ function StudentProfileContent({
   const [saving, setSaving] = useState(false);
   const [guardianVisible, setGuardianVisible] = useState(false);
   const [guardianEditing, setGuardianEditing] = useState(false);
-  const selectedGuardian = profile.guardians.find((g) => g.primary) ?? profile.guardians[0];
+  const selectedGuardian =
+    profile.guardians.find((g) => g.primary) ?? profile.guardians[0];
   const [guardianDraft, setGuardianDraft] = useState<StudentGuardianRequest>(
-    selectedGuardian ? guardianPayload(selectedGuardian) :
-      { relationship: "GUARDIAN", fullName: "", phone: "", email: "", primary: true }
+    selectedGuardian
+      ? guardianPayload(selectedGuardian)
+      : {
+          relationship: "GUARDIAN",
+          fullName: "",
+          phone: "",
+          email: "",
+          primary: true,
+        },
   );
-  const qualifiedDates = useMemo(() => new Set(streak.qualifiedDates), [streak.qualifiedDates]);
+  const email = guardianDraft.email?.trim() ?? "";
+
+  const isEmailValid = email === "" || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+  const qualifiedDates = useMemo(
+    () => new Set(streak.qualifiedDates),
+    [streak.qualifiedDates],
+  );
   const milestones = streak.milestones;
-  const avatar = useMemo(() => parseAvatar(profile.avatarKey), [profile.avatarKey]);
-  const levelRange = Math.max(0, game.nextLevelRequiredXp - game.currentLevelStartXp);
-  const progressPct =
-    levelRange > 0
-      ? Math.min(100, Math.max(0, (game.xpIntoCurrentLevel / levelRange) * 100))
-      : 0;
+  const avatar = useMemo(
+    () => parseAvatar(profile.avatarKey),
+    [profile.avatarKey],
+  );
+  const levelRange = Math.max(
+    0,
+    game.nextLevelRequiredXp - game.currentLevelStartXp,
+  );
 
   const tabList: {
     id: Tab;
@@ -531,8 +567,10 @@ function StudentProfileContent({
     setSaving(true);
     try {
       const response = await studentProfileService.update({
-        fullName: draft.fullName.trim(), dateOfBirth: draft.dateOfBirth || undefined,
-        gender: draft.gender, phone: draft.phone.trim(),
+        fullName: draft.fullName.trim(),
+        dateOfBirth: draft.dateOfBirth || undefined,
+        gender: draft.gender,
+        phone: draft.phone.trim(),
       });
       if (!response.data) throw new Error("Không thể lấy hồ sơ vừa lưu.");
       const updated = toViewProfile(response.data);
@@ -541,8 +579,11 @@ function StudentProfileContent({
       setEditMode(false);
       setNotice("Đã cập nhật hồ sơ cá nhân.");
       void queryClient.invalidateQueries({ queryKey: ["student-profile"] });
-    } catch (error) { setNotice(toAppError(error).message); }
-    finally { setSaving(false); }
+    } catch (error) {
+      setNotice(toAppError(error).message);
+    } finally {
+      setSaving(false);
+    }
   };
 
   const saveGuardian = async () => {
@@ -553,12 +594,19 @@ function StudentProfileContent({
       setNotice("Vui lòng nhập họ tên và số điện thoại người bảo hộ.");
       return;
     }
+    if (!isEmailValid) {
+      setNotice("Vui lòng nhập email hợp lệ.");
+      return;
+    }
     // Existing backend PUT replaces guardians; preserve every non-selected record.
     const guardians = profile.guardians.map(guardianPayload);
     const index = selectedGuardian
-      ? guardians.findIndex((item) => item.id === selectedGuardian.id) : -1;
+      ? guardians.findIndex((item) => item.id === selectedGuardian.id)
+      : -1;
     const modified = {
-      ...guardianDraft, fullName, phone,
+      ...guardianDraft,
+      fullName,
+      phone,
       email: guardianDraft.email?.trim() ?? "",
       primary: selectedGuardian?.primary ?? true,
     };
@@ -581,8 +629,11 @@ function StudentProfileContent({
       setGuardianVisible(false);
       setNotice("Đã lưu thông tin người bảo hộ.");
       void queryClient.invalidateQueries({ queryKey: ["student-profile"] });
-    } catch (error) { setNotice(toAppError(error).message); }
-    finally { setSaving(false); }
+    } catch (error) {
+      setNotice(toAppError(error).message);
+    } finally {
+      setSaving(false);
+    }
   };
 
   const saveAvatar = async (avatarKey: string) => {
@@ -601,43 +652,49 @@ function StudentProfileContent({
     } catch (error) {
       setNotice(toAppError(error).message);
       toast.error("Không thể lưu ảnh đại diện.");
-    } finally { setSaving(false); }
+    } finally {
+      setSaving(false);
+    }
   };
   return (
-    <main className="min-h-screen bg-[#f7f4eb] text-[#2d2b2a] selection:bg-[#f3e88e]">
-      <div className="mx-auto max-w-[1140px] px-4 pb-20 pt-8 sm:px-7 sm:pt-12">
+    <div className="student-profile text-foreground selection:bg-marker">
+      <div className="mx-auto max-w-6xl pb-12">
         {/* HEADER: Scrapbook Tag & Title */}
         <header className="mb-8 flex flex-wrap items-start justify-between gap-4">
           <div>
-            <div className="mb-2 inline-flex items-center gap-1.5 -rotate-1 rounded-sm border-2 border-[#2d2b2a] bg-[#e8dec8] px-3 py-1 font-mono text-[11px] font-bold uppercase tracking-wider shadow-[2px_2px_0_#2d2b2a]">
-              <Star size={13} fill="currentColor" className="text-[#d99b26]" />
+            <div className="mb-2 inline-flex items-center gap-2 -rotate-1 rounded-sm border-2 border-ink bg-secondary px-3 py-1 student-meta font-bold shadow-pop-sm">
+              <Star size={16} fill="currentColor" className="text-accent" />
               <span>Góc học tập</span>
-              <span className="text-[#c85a32]">✦</span>
+              <span className="text-primary">✦</span>
               <span>Hồ sơ học sinh</span>
             </div>
-            <h1 className="student-page-title font-serif font-black tracking-tight">
+            <h1 className="student-page-title">
               Nhật ký của{" "}
-              <span className="relative inline-block text-[#c85a32]">
+              <span className="relative inline-block text-primary">
                 {profile.fullName}
-                <span className="absolute -bottom-1 left-0 -z-10 h-3 w-full -rotate-1 rounded-sm bg-[#f3e88e]/80" />
+                <span className="absolute -bottom-1 left-0 -z-10 h-3 w-full -rotate-1 rounded-sm bg-marker/80" />
               </span>
             </h1>
-            <p className="mt-1 font-mono text-xs text-[#6e6863]">
+            <p className="mt-1 student-meta text-muted-foreground">
               ~ Nơi lưu lại từng trang hành trình rèn luyện mỗi ngày ~
             </p>
           </div>
-          <span className="-rotate-1 rounded-[14px_4px_16px_5px/4px_16px_5px_14px] border-2 border-[#2d2b2a] bg-[#fff3db] px-3.5 py-1.5 font-mono text-xs font-bold text-[#c85a32] shadow-[2px_2px_0_#2d2b2a]">
-            ✦ SỔ TAY CỦA BẠN
+          <span className="-rotate-1 rounded-xl border-2 border-ink bg-warning-soft px-4 py-2 student-meta font-bold text-primary shadow-pop-sm">
+            ✦ Sổ tay của bạn
           </span>
         </header>
 
         {notice && (
           <div
             role="status"
-            className="mb-5 flex items-center justify-between gap-3 rounded-[12px_4px_14px_4px/4px_14px_4px_12px] border-2 border-[#2d2b2a] bg-[#d9e8d4] px-4 py-3 font-mono text-xs font-bold text-[#2c5332] shadow-[3px_3px_0_#2d2b2a]"
+            className="mb-5 flex items-center justify-between gap-3 rounded-xl border-2 border-ink bg-success-soft px-4 py-3 student-meta font-bold text-success shadow-pop"
           >
             <span>{notice}</span>
-            <button aria-label="Đóng thông báo" onClick={() => setNotice("")}>
+            <button
+              className="grid size-11 place-items-center"
+              aria-label="Đóng thông báo"
+              onClick={() => setNotice("")}
+            >
               <X size={16} />
             </button>
           </div>
@@ -650,19 +707,19 @@ function StudentProfileContent({
             <div className="relative mx-auto w-fit md:mx-0">
               {/* Paperclip top right */}
               <div
-                className="absolute -right-2 -top-3 z-10 h-8 w-4 rotate-12 rounded-full border-2 border-[#2d2b2a] bg-transparent"
+                className="absolute -right-2 -top-3 z-10 h-8 w-4 rotate-12 rounded-full border-2 border-ink bg-transparent"
                 aria-hidden="true"
               />
 
-              <div className="w-36 rotate-[-1.5deg] rounded-[4px] border-2 border-[#2d2b2a] bg-[#fffdf9] p-2.5 pb-5 shadow-[4px_4px_0_#2d2b2a] transition hover:rotate-0 sm:w-40">
-                <div className="aspect-square overflow-hidden rounded-[2px] border border-[#2d2b2a]/20 bg-[#f7f4eb] p-2">
+              <div className="w-36 -rotate-1 rounded-sm border-2 border-ink bg-card p-3 pb-5 shadow-pop transition hover:rotate-0 sm:w-40">
+                <div className="aspect-square overflow-hidden rounded-sm border border-border bg-background p-2">
                   <img
                     src={avatarSrc(avatar.style, avatar.seed)}
                     alt="Ảnh đại diện học sinh"
                     className="h-full w-full object-contain"
                   />
                 </div>
-                <div className="mt-2 truncate text-center font-mono text-[11px] text-[#6e6863]">
+                <div className="mt-2 truncate text-center student-meta text-muted-foreground">
                   {avatar.seed}
                 </div>
               </div>
@@ -671,48 +728,48 @@ function StudentProfileContent({
                 onClick={() => setAvatarOpen(true)}
                 aria-label="Đổi ảnh đại diện"
                 title="Đổi avatar"
-                className="absolute -bottom-2 -right-2 rounded-full border-2 border-[#2d2b2a] bg-[#d99b26] p-2 text-white shadow-[2px_2px_0_#2d2b2a] transition hover:scale-105"
+                className="student-control student-control--accent absolute -bottom-2 -right-2 grid size-11 place-items-center rounded-full shadow-pop-sm"
               >
-                <Pencil size={15} />
+                <Pencil size={16} />
               </button>
             </div>
 
             {/* STUDENT CORE INFO */}
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="rounded-[4px] border border-[#2d2b2a] bg-[#d9e8d4] px-2.5 py-0.5 font-mono text-[10px] font-bold text-[#2c5332]">
+                <span className="rounded-sm border border-ink bg-success-soft px-3 py-1 student-caption font-bold text-success">
                   ✓ {profile.accountStatus}
                 </span>
-                <span className="rounded-[4px] border border-[#2d2b2a] bg-[#e8dec8] px-2.5 py-0.5 font-mono text-[10px] font-bold text-[#2d2b2a]">
+                <span className="rounded-sm border border-ink bg-secondary px-3 py-1 student-caption font-bold text-foreground">
                   Học sinh
                 </span>
               </div>
 
-              <h2 className="mt-2.5 font-serif text-2xl font-black tracking-tight text-[#2d2b2a] sm:text-3xl">
+              <h2 className="student-section-title mt-3 text-foreground">
                 {profile.fullName}
               </h2>
 
-              <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 font-mono text-xs text-[#6e6863]">
-                <span className="flex items-center gap-1.5">
-                  <GraduationCap size={15} /> Lớp {profile.currentClass.name} ·{" "}
+              <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 student-meta text-muted-foreground">
+                <span className="flex items-center gap-2">
+                  <GraduationCap size={16} /> Lớp {profile.currentClass.name} ·{" "}
                   {profile.currentClass.gradeName}
                 </span>
-                <span className="flex items-center gap-1.5">
-                  <CalendarDays size={15} /> Năm học{" "}
+                <span className="flex items-center gap-2">
+                  <CalendarDays size={16} /> Năm học{" "}
                   {profile.currentClass.academicYear}
                 </span>
               </div>
 
-              <div className="mt-4 flex flex-wrap gap-2.5">
-                <span className="inline-flex items-center gap-1.5 rounded-[12px_4px_14px_4px/4px_14px_4px_12px] border-2 border-[#2d2b2a] bg-[#fff3db] px-3 py-1 font-mono text-xs font-bold shadow-[2px_2px_0_#2d2b2a]">
-                  <Star size={13} className="text-[#d99b26]" /> Cấp độ{" "}
+              <div className="mt-4 flex flex-wrap gap-3">
+                <span className="inline-flex items-center gap-2 rounded-xl border-2 border-ink bg-warning-soft px-3 py-1 student-meta font-bold shadow-pop-sm">
+                  <Star size={16} className="text-accent" /> Cấp độ{" "}
                   {game.currentLevel}
                 </span>
-                <span className="inline-flex items-center gap-1.5 rounded-[12px_4px_14px_4px/4px_14px_4px_12px] border-2 border-[#2d2b2a] bg-[#ffe3d6] px-3 py-1 font-mono text-xs font-bold text-[#c85a32] shadow-[2px_2px_0_#2d2b2a]">
-                  <Zap size={13} /> {number(game.lifetimeXp)} XP
+                <span className="inline-flex items-center gap-2 rounded-xl border-2 border-ink bg-primary-soft px-3 py-1 student-meta font-bold text-primary shadow-pop-sm">
+                  <Zap size={16} /> {number(game.lifetimeXp)} XP
                 </span>
-                <span className="inline-flex items-center gap-1.5 rounded-[12px_4px_14px_4px/4px_14px_4px_12px] border-2 border-[#2d2b2a] bg-[#e8dec8] px-3 py-1 font-mono text-xs font-bold shadow-[2px_2px_0_#2d2b2a]">
-                  <Flame size={13} className="text-[#c85a32]" /> Chuỗi{" "}
+                <span className="inline-flex items-center gap-2 rounded-xl border-2 border-ink bg-secondary px-3 py-1 student-meta font-bold shadow-pop-sm">
+                  <Flame size={16} className="text-primary" /> Chuỗi{" "}
                   {game.currentStreak} ngày
                 </span>
               </div>
@@ -724,30 +781,31 @@ function StudentProfileContent({
                 setEditMode(true);
                 setDraft(profile);
               }}
-              className="inline-flex items-center justify-center gap-1.5 self-start rounded-[12px_4px_14px_4px/4px_14px_4px_12px] border-2 border-[#2d2b2a] bg-[#fffdf9] px-4 py-2 font-mono text-xs font-bold shadow-[3px_3px_0_#2d2b2a] transition hover:-translate-y-0.5 active:translate-y-0"
+              className="student-control student-control--secondary self-start px-4 inline-flex flex-row items-center justify-center gap-1.5"
             >
-              <Pencil size={14} /> Chỉnh sửa
+              <Pencil size={16} className="shrink-0" />
+              <span>Chỉnh sửa</span>
             </button>
           </div>
 
           {/* LEVEL ROADMAP BAR (Hand-drawn look) */}
-          <div className="relative mt-6 rounded-[16px_5px_18px_4px/4px_18px_4px_16px] border-2 border-[#2d2b2a] bg-[#fbf6ed] p-4 shadow-[2px_2px_0_#2d2b2a]">
-            <div className="flex flex-wrap items-center justify-between gap-2 font-mono">
-              <span className="flex items-center gap-2 text-xs font-black text-[#2d2b2a]">
-                <TrendingUp size={16} className="text-[#c85a32]" />
+          <div className="relative mt-6 rounded-2xl border-2 border-ink bg-muted p-4 shadow-pop-sm">
+            <div className="flex flex-wrap items-center justify-between gap-2 ">
+              <span className="flex items-center gap-2 student-meta font-black text-foreground">
+                <TrendingUp size={16} className="text-primary" />
                 Tiến trình lên Cấp {game.currentLevel + 1}
               </span>
-              <span className="text-xs font-bold text-[#8c827a]">
+              <span className="student-meta font-bold text-muted-foreground">
                 {number(game.xpIntoCurrentLevel)} / {number(levelRange)} XP
               </span>
             </div>
-            <div className="mt-2.5 h-3.5 overflow-hidden rounded-[8px] border-2 border-[#2d2b2a] bg-[#fffdf9]">
-              <div
-                style={{ width: `${progressPct}%` }}
-                className="h-full rounded-r-[4px] bg-[#d99b26] transition-all"
-              />
-            </div>
-            <p className="mt-2 font-mono text-[11px] text-[#6e6863]">
+            <SketchProgress
+              className="mt-3"
+              value={game.xpIntoCurrentLevel}
+              max={levelRange}
+              label={`Tiến trình lên Cấp ${game.currentLevel + 1}`}
+            />
+            <p className="mt-2 student-meta text-muted-foreground">
               Cần thêm <strong>{number(game.xpToNextLevel)} XP</strong> để thăng
               cấp · Mốc kế tiếp: {number(game.nextLevelRequiredXp)} XP tích lũy
             </p>
@@ -755,45 +813,49 @@ function StudentProfileContent({
         </PaperCard>
 
         {/* 4 SCRAPBOOK KPI CARDS */}
-        <div className="mt-6 grid grid-cols-2 gap-3.5 lg:grid-cols-4">
+        <div className="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
           <Kpi
             icon={Zap}
             label="Tổng tích lũy"
             value={`${number(game.lifetimeXp)} XP`}
             hint="Điểm rèn luyện trọn đời"
-            color="bg-[#fff3db]"
-            rotation="rotate-[-0.8deg]"
+            color="bg-warning-soft"
+            rotation="-rotate-1"
           />
           <Kpi
             icon={Flame}
             label="Chuỗi liên tục"
             value={`${game.currentStreak} ngày`}
-            hint={game.qualifiedToday ? "✓ Hôm nay đã đạt" : "Chưa hoàn thành hôm nay"}
-            color="bg-[#ffe3d6]"
-            rotation="rotate-[0.8deg]"
+            hint={
+              game.qualifiedToday
+                ? "✓ Hôm nay đã đạt"
+                : "Chưa hoàn thành hôm nay"
+            }
+            color="bg-primary-soft"
+            rotation="rotate-1"
           />
           <Kpi
             icon={Activity}
             label="Phiên luyện tập"
             value={number(learn.sessionTotal)}
             hint="Bài tập đã thực hiện"
-            color="bg-[#d9e8d4]"
-            rotation="rotate-[-0.5deg]"
+            color="bg-success-soft"
+            rotation="-rotate-1"
           />
           <Kpi
             icon={ClipboardCheck}
             label="Nhiệm vụ nộp"
             value={`${learn.assignments.submitted}/${learn.assignments.assigned}`}
             hint="Tiến độ bài tập giao"
-            color="bg-[#e8dec8]"
-            rotation="rotate-[0.7deg]"
+            color="bg-secondary"
+            rotation="rotate-1"
           />
         </div>
 
         {/* NAVIGATION TABS (Notebook Bookmarks) */}
         <nav
           aria-label="Phần hồ sơ"
-          className="mt-8 flex gap-2 overflow-x-auto border-b-2 border-dashed border-[#2d2b2a] pb-3"
+          className="mt-8 flex gap-2 overflow-x-auto border-b-2 border-dashed border-ink pb-3"
         >
           {tabList.map(({ id, label, icon: Icon }) => (
             <button
@@ -801,13 +863,13 @@ function StudentProfileContent({
               onClick={() => setTab(id)}
               aria-current={tab === id ? "page" : undefined}
               className={cx(
-                "inline-flex shrink-0 items-center gap-2 rounded-[14px_4px_16px_5px/4px_16px_5px_14px] px-4 py-2 font-mono text-xs font-bold transition",
+                "inline-flex min-h-11 shrink-0 items-center gap-2 rounded-xl px-4 py-2 student-meta font-bold transition",
                 tab === id
-                  ? "border-2 border-[#2d2b2a] bg-[#d99b26] text-white shadow-[3px_3px_0_#2d2b2a]"
-                  : "border-2 border-transparent text-[#6e6863] hover:border-[#2d2b2a]/30 hover:bg-[#fffdf9]"
+                  ? "border-2 border-ink bg-accent text-accent-foreground shadow-pop"
+                  : "border-2 border-transparent text-muted-foreground hover:border-border hover:bg-card",
               )}
             >
-              <Icon size={15} />
+              <Icon size={16} />
               {label}
             </button>
           ))}
@@ -824,68 +886,68 @@ function StudentProfileContent({
                   note="Tổng quan nhiệm vụ"
                 />
                 <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3">
-                  <div className="rounded-[12px_4px_14px_4px/4px_14px_4px_12px] border border-[#2d2b2a]/40 bg-[#fbf6ed] p-3.5">
-                    <div className="font-serif text-2xl font-black text-[#2d2b2a]">
+                  <div className="rounded-xl border border-border bg-muted p-4">
+                    <div className="student-stat text-foreground">
                       {learn.sessionTotal}
                     </div>
-                    <div className="mt-1 font-mono text-xs font-bold text-[#8c827a]">
+                    <div className="mt-1 student-meta font-bold text-muted-foreground">
                       Tổng số bài
                     </div>
                   </div>
-                  <div className="rounded-[12px_4px_14px_4px/4px_14px_4px_12px] border border-[#2d2b2a]/40 bg-[#fbf6ed] p-3.5">
-                    <div className="font-serif text-2xl font-black text-[#6b8e67]">
+                  <div className="rounded-xl border border-border bg-muted p-4">
+                    <div className="student-stat text-success">
                       {learn.sessionsCompleted}
                     </div>
-                    <div className="mt-1 font-mono text-xs font-bold text-[#8c827a]">
+                    <div className="mt-1 student-meta font-bold text-muted-foreground">
                       Đã hoàn thành
                     </div>
                   </div>
-                  <div className="col-span-2 rounded-[12px_4px_14px_4px/4px_14px_4px_12px] border border-[#2d2b2a]/40 bg-[#fbf6ed] p-3.5 sm:col-span-1">
-                    <div className="font-serif text-2xl font-black text-[#c85a32]">
+                  <div className="col-span-2 rounded-xl border border-border bg-muted p-4 sm:col-span-1">
+                    <div className="student-stat text-primary">
                       {learn.assignments.assigned}
                     </div>
-                    <div className="mt-1 font-mono text-xs font-bold text-[#8c827a]">
+                    <div className="mt-1 student-meta font-bold text-muted-foreground">
                       Bài tập giao
                     </div>
                   </div>
                 </div>
 
-                <div className="mt-6 space-y-3 font-mono">
+                <div className="mt-6 space-y-3 ">
                   {[
                     {
                       label: "Đã nộp",
                       count: learn.assignments.submitted,
-                      color: "bg-[#6b8e67]",
+                      color: "bg-success",
                     },
                     {
                       label: "Chưa bắt đầu",
                       count: learn.assignments.notStarted,
-                      color: "bg-[#d99b26]",
+                      color: "bg-accent",
                     },
                     {
                       label: "Đang làm",
                       count: learn.assignments.inProgress,
-                      color: "bg-[#4a6b82]",
+                      color: "bg-learning",
                     },
                     {
                       label: "Nộp muộn / Quá hạn",
-                      count:
-                        learn.assignments.late,
-                      color: "bg-[#c85a32]",
+                      count: learn.assignments.late,
+                      color: "bg-primary",
                     },
                   ].map((entry) => (
                     <div key={entry.label}>
-                      <div className="mb-1 flex justify-between text-xs font-bold">
+                      <div className="mb-1 flex justify-between student-meta font-bold">
                         <span>{entry.label}</span>
                         <span>{entry.count}</span>
                       </div>
-                      <div className="h-2.5 overflow-hidden rounded-full border border-[#2d2b2a] bg-[#f7f4eb]">
+                      <div className="h-2.5 overflow-hidden rounded-full border border-ink bg-background">
                         <div
                           className={cx("h-full", entry.color)}
                           style={{
                             width: `${Math.min(
                               100,
-                              (100 * entry.count) / Math.max(1, learn.assignments.assigned)
+                              (100 * entry.count) /
+                                Math.max(1, learn.assignments.assigned),
                             )}%`,
                           }}
                         />
@@ -896,9 +958,9 @@ function StudentProfileContent({
 
                 <button
                   onClick={() => setTab("learning")}
-                  className="mt-5 inline-flex items-center gap-1 font-mono text-xs font-bold text-[#c85a32] hover:underline"
+                  className="mt-5 inline-flex min-h-11 items-center gap-1 student-label text-primary hover:underline"
                 >
-                  Xem chi tiết học tập <ArrowRight size={14} />
+                  Xem chi tiết học tập <ArrowRight size={16} />
                 </button>
               </PaperCard>
 
@@ -909,28 +971,30 @@ function StudentProfileContent({
                   title="Nhật ký gần đây"
                   note="Phiên rèn luyện"
                 />
-                <div className="mt-4 divide-y border-dashed border-[#e8dec8]">
+                <div className="mt-4 divide-y border-dashed border-secondary">
                   {learn.activities.length === 0 && (
-                    <p className="text-sm text-[#6e6863]">Chưa có phiên luyện tập nào.</p>
+                    <p className="student-body text-muted-foreground">
+                      Chưa có phiên luyện tập nào.
+                    </p>
                   )}
                   {learn.activities.slice(0, 3).map((item) => (
                     <div key={item.id} className="flex items-center gap-3 py-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-[8px] border-2 border-[#2d2b2a] bg-[#fff3db] shadow-[1px_1px_0_#2d2b2a]">
-                        <BookOpen size={17} />
+                      <div className="flex h-10 w-10 items-center justify-center rounded-lg border-2 border-ink bg-warning-soft shadow-pop-sm">
+                        <BookOpen size={16} />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <div className="truncate font-serif text-sm font-black text-[#2d2b2a]">
+                        <div className="truncate student-handwriting student-body font-black text-foreground">
                           {item.name}
                         </div>
-                        <div className="truncate font-mono text-[11px] text-[#8c827a]">
+                        <div className="truncate student-meta text-muted-foreground">
                           {item.unit} · {formatDate(item.date)}
                         </div>
                       </div>
-                      <div className="text-right font-mono">
-                        <div className="text-xs font-black text-[#2d2b2a]">
+                      <div className="text-right ">
+                        <div className="student-meta font-black text-foreground">
                           {item.correct}/{item.total} đúng
                         </div>
-                        <div className="text-[11px] font-bold text-[#c85a32]">
+                        <div className="student-meta font-bold text-primary">
                           {item.xp ? `+${item.xp} XP` : "Đang làm..."}
                         </div>
                       </div>
@@ -944,29 +1008,29 @@ function StudentProfileContent({
             <div className="space-y-6 lg:col-span-2">
               <PaperCard className="p-6" hasTape={true} tapePosition="right">
                 <SectionHeading icon={Flame} title="Độ chăm chỉ" />
-                <div className="mt-4 flex items-end gap-3 font-serif">
-                  <span className="text-5xl font-black text-[#c85a32]">
+                <div className="mt-4 flex items-end gap-3 student-handwriting">
+                  <span className="student-stat font-black text-primary">
                     {game.currentStreak}
                   </span>
-                  <div className="pb-1 font-mono text-xs font-bold text-[#6e6863]">
+                  <div className="pb-1 student-meta font-bold text-muted-foreground">
                     ngày liên tiếp{" "}
-                    <Flame size={15} className="inline text-[#c85a32]" />
+                    <Flame size={16} className="inline text-primary" />
                   </div>
                 </div>
-                <p className="mt-2 font-mono text-xs text-[#8c827a]">
+                <p className="mt-2 student-meta text-muted-foreground">
                   Kỷ lục dài nhất:{" "}
-                  <strong className="text-[#2d2b2a]">
+                  <strong className="text-foreground">
                     {game.longestStreak} ngày
                   </strong>
                 </p>
-                <div className="mt-4 flex items-center gap-2 rounded-[10px] border border-[#2d2b2a] bg-[#d9e8d4] p-2.5 font-mono text-xs font-bold text-[#2c5332]">
+                <div className="mt-4 flex items-center gap-2 rounded-xl border border-ink bg-success-soft p-3 student-meta font-bold text-success">
                   <CheckCircle2 size={16} /> Hôm nay đã hoàn thành mục tiêu
                 </div>
                 <button
                   onClick={() => setTab("streak")}
-                  className="mt-4 inline-flex items-center gap-1 font-mono text-xs font-bold text-[#c85a32] hover:underline"
+                  className="mt-4 inline-flex min-h-11 items-center gap-1 student-label text-primary hover:underline"
                 >
-                  Mở lịch chuỗi ngày học <ArrowRight size={14} />
+                  Mở lịch chuỗi ngày học <ArrowRight size={16} />
                 </button>
               </PaperCard>
 
@@ -986,9 +1050,9 @@ function StudentProfileContent({
                 </dl>
                 <button
                   onClick={() => setTab("personal")}
-                  className="mt-3 inline-flex items-center gap-1 font-mono text-xs font-bold text-[#c85a32] hover:underline"
+                  className="mt-3 inline-flex min-h-11 items-center gap-1 student-label text-primary hover:underline"
                 >
-                  Xem thông tin chi tiết <ArrowRight size={14} />
+                  Xem thông tin chi tiết <ArrowRight size={16} />
                 </button>
               </PaperCard>
             </div>
@@ -1011,25 +1075,25 @@ function StudentProfileContent({
                   { label: "Đang làm", val: learn.assignments.inProgress },
                   { label: "Chưa bắt đầu", val: learn.assignments.notStarted },
                   { label: "Nộp muộn", val: learn.assignments.late },
-                    ].map((item, idx) => (
+                ].map((item, idx) => (
                   <div
                     key={item.label}
                     className={cx(
-                      "rounded-[14px_4px_16px_5px/4px_16px_5px_14px] border-2 border-[#2d2b2a] bg-[#fbf6ed] p-4 shadow-[2px_2px_0_#2d2b2a]",
-                      idx % 2 === 0 ? "rotate-[-0.6deg]" : "rotate-[0.6deg]"
+                      "rounded-xl border-2 border-ink bg-muted p-4 shadow-pop-sm",
+                      idx % 2 === 0 ? "-rotate-1" : "rotate-1",
                     )}
                   >
-                    <div className="font-serif text-2xl font-black text-[#2d2b2a]">
+                    <div className="student-stat text-foreground">
                       {item.val}
                     </div>
-                    <div className="mt-1 font-mono text-xs font-bold text-[#8c827a]">
+                    <div className="mt-1 student-meta font-bold text-muted-foreground">
                       {item.label}
                     </div>
                   </div>
                 ))}
               </div>
-              <p className="mt-4 flex items-start gap-2 font-mono text-xs text-[#8c827a]">
-                <CircleHelp size={16} className="shrink-0 text-[#d99b26]" />
+              <p className="mt-4 flex items-start gap-2 student-meta text-muted-foreground">
+                <CircleHelp size={16} className="shrink-0 text-accent" />
                 Thống kê bài được giao của học sinh.
               </p>
             </PaperCard>
@@ -1044,37 +1108,37 @@ function StudentProfileContent({
                 {learn.activities.map((item) => (
                   <div
                     key={item.id}
-                    className="flex flex-wrap items-center gap-3.5 rounded-[12px_4px_14px_4px/4px_14px_4px_12px] border-2 border-[#2d2b2a] bg-[#fffdf9] p-4 shadow-[2px_2px_0_#2d2b2a]"
+                    className="flex flex-wrap items-center gap-4 rounded-xl border-2 border-ink bg-card p-4 shadow-pop-sm"
                   >
-                    <div className="flex h-11 w-11 items-center justify-center rounded-[8px] border-2 border-[#2d2b2a] bg-[#e8dec8]">
+                    <div className="flex h-11 w-11 items-center justify-center rounded-lg border-2 border-ink bg-secondary">
                       <BookOpen size={20} />
                     </div>
-                    <div className="min-w-[170px] flex-1">
-                      <div className="font-serif text-sm font-black text-[#2d2b2a]">
+                    <div className="min-w-44 flex-1">
+                      <div className="student-handwriting student-body font-black text-foreground">
                         {item.name}
                       </div>
-                      <div className="font-mono text-xs text-[#8c827a]">
+                      <div className=" student-meta text-muted-foreground">
                         {item.unit}
                       </div>
-                      <div className="font-mono text-[11px] text-[#8c827a]">
+                      <div className=" student-meta text-muted-foreground">
                         {formatDate(item.date)} · {item.mode}
                       </div>
                     </div>
-                    <div className="flex flex-col items-end gap-1 font-mono">
+                    <div className="flex flex-col items-end gap-1 ">
                       <span
                         className={cx(
-                          "rounded-[4px] border border-[#2d2b2a] px-2 py-0.5 text-[10px] font-bold",
+                          "rounded-sm border border-ink px-2 py-1 student-caption font-bold",
                           item.status === "COMPLETED"
-                            ? "bg-[#d9e8d4] text-[#2c5332]"
-                            : "bg-[#fff3db] text-[#966c31]"
+                            ? "bg-success-soft text-success"
+                            : "bg-warning-soft text-warning",
                         )}
                       >
                         {item.status === "COMPLETED" ? "Đã xong" : "Đang làm"}
                       </span>
-                      <span className="text-xs font-black">
+                      <span className="student-meta font-black">
                         {item.correct}/{item.total} câu đúng
                       </span>
-                      <span className="text-xs font-bold text-[#c85a32]">
+                      <span className="student-meta font-bold text-primary">
                         {item.xp != null ? `+${item.xp} XP` : "—"}
                       </span>
                     </div>
@@ -1101,12 +1165,12 @@ function StudentProfileContent({
                   todayDate={streak.todayDate}
                   move={(delta) =>
                     setMonth(
-                      (m) => new Date(m.getFullYear(), m.getMonth() + delta, 1)
+                      (m) => new Date(m.getFullYear(), m.getMonth() + delta, 1),
                     )
                   }
                 />
               </div>
-              <p className="mt-4 font-mono text-xs text-[#8c827a]">
+              <p className="mt-4 student-meta text-muted-foreground">
                 * Các ô đóng dấu xanh thể hiện ngày bạn có bài tập hợp lệ được
                 tính vào chuỗi liên tục.
               </p>
@@ -1126,7 +1190,11 @@ function StudentProfileContent({
                   />
                   <Info
                     label="Hôm nay đạt chuẩn?"
-                    value={game.qualifiedToday ? "Đã hoàn thành ✓" : "Chưa hoàn thành"}
+                    value={
+                      game.qualifiedToday
+                        ? "Đã hoàn thành ✓"
+                        : "Chưa hoàn thành"
+                    }
                   />
                   <Info
                     label="Ngày hoàn thành gần nhất"
@@ -1142,36 +1210,38 @@ function StudentProfileContent({
                   title="Mốc huy hiệu chuỗi"
                   note="Tem kỷ niệm"
                 />
-                <div className="mt-4 space-y-3 font-mono">
+                <div className="mt-4 space-y-3 ">
                   {milestones.map((m) => (
                     <div
                       key={m.days}
-                      className="flex items-center justify-between gap-3 rounded-[12px_4px_14px_4px/4px_14px_4px_12px] border-2 border-[#2d2b2a] bg-[#fbf6ed] p-3 shadow-[2px_2px_0_#2d2b2a]"
+                      className="flex items-center justify-between gap-3 rounded-xl border-2 border-ink bg-muted p-3 shadow-pop-sm"
                     >
                       <div className="flex items-center gap-3">
                         <span
                           className={cx(
-                            "flex h-9 w-9 items-center justify-center rounded-[8px] border-2 border-[#2d2b2a]",
-                            m.awarded ? "bg-[#d99b26] text-white" : "bg-[#e8dec8] text-[#8c827a]"
+                            "flex h-9 w-9 items-center justify-center rounded-lg border-2 border-ink",
+                            m.awarded
+                              ? "bg-accent text-accent-foreground"
+                              : "bg-secondary text-muted-foreground",
                           )}
                         >
-                          <Award size={18} />
+                          <Award size={16} />
                         </span>
                         <div>
-                          <div className="text-xs font-black text-[#2d2b2a]">
+                          <div className="student-meta font-black text-foreground">
                             Mốc {m.days} ngày
                           </div>
-                          <div className="text-[11px] font-bold text-[#c85a32]">
+                          <div className="student-meta font-bold text-primary">
                             +{m.xp} XP thưởng
                           </div>
                         </div>
                       </div>
                       {m.awarded ? (
-                        <span className="rounded-[4px] border border-[#2d2b2a] bg-[#d9e8d4] px-2 py-0.5 text-[10px] font-bold text-[#2c5332]">
+                        <span className="rounded-sm border border-ink bg-success-soft px-2 py-1 student-caption font-bold text-success">
                           Đã mở khóa
                         </span>
                       ) : (
-                        <span className="font-mono text-[10px] font-bold text-[#8c827a]">
+                        <span className=" student-caption font-bold text-muted-foreground">
                           Chưa mở
                         </span>
                       )}
@@ -1187,57 +1257,57 @@ function StudentProfileContent({
         {tab === "personal" && (
           <div className="mt-6 grid gap-6 lg:grid-cols-2">
             <PaperCard className="p-6" hasTape={true} tapePosition="left">
-              <div className="flex flex-wrap items-center justify-between gap-2 border-b-2 border-dashed border-[#e8dec8] pb-3">
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b-2 border-dashed border-secondary pb-3">
                 <SectionHeading icon={UserRound} title="Thông tin cá nhân" />
                 <button
                   onClick={() => {
                     setDraft(profile);
                     setEditMode(!editMode);
                   }}
-                  className="inline-flex items-center gap-1 rounded-[6px] border-2 border-[#2d2b2a] bg-[#fff3db] px-2.5 py-1 font-mono text-xs font-bold shadow-[2px_2px_0_#2d2b2a] transition hover:bg-[#d99b26] hover:text-white"
+                  className="student-control student-control--secondary px-3"
                 >
-                  <Pencil size={12} />
+                  <Pencil size={16} />
                   {editMode ? "Hủy" : "Sửa"}
                 </button>
               </div>
 
               {editMode ? (
-                <div className="mt-4 space-y-3.5 font-mono text-xs font-bold">
-                  <label className="block">
+                <div className="mt-4 space-y-4">
+                  <label className="student-label block">
                     Họ và tên
                     <input
-                      className="mt-1 w-full rounded-[10px_3px_12px_4px/3px_12px_4px_10px] border-2 border-[#2d2b2a] bg-white px-3 py-2 outline-none focus:ring-2 focus:ring-[#d99b26]"
+                      className="student-field mt-1"
                       value={draft.fullName}
                       onChange={(e) =>
                         setDraft({ ...draft, fullName: e.target.value })
                       }
                     />
                   </label>
-                  <label className="block">
+                  <label className="student-label block">
                     Số điện thoại
                     <input
-                      className="mt-1 w-full rounded-[10px_3px_12px_4px/3px_12px_4px_10px] border-2 border-[#2d2b2a] bg-white px-3 py-2 outline-none focus:ring-2 focus:ring-[#d99b26]"
+                      className="student-field mt-1"
                       value={draft.phone}
                       onChange={(e) =>
                         setDraft({ ...draft, phone: e.target.value })
                       }
                     />
                   </label>
-                  <label className="block">
+                  <label className="student-label block">
                     Ngày sinh
                     <input
                       type="date"
-                      className="mt-1 w-full rounded-[10px_3px_12px_4px/3px_12px_4px_10px] border-2 border-[#2d2b2a] bg-white px-3 py-2 outline-none focus:ring-2 focus:ring-[#d99b26]"
+                      className="student-field mt-1"
                       value={draft.dateOfBirth}
                       onChange={(e) =>
                         setDraft({ ...draft, dateOfBirth: e.target.value })
                       }
                     />
                   </label>
-                  <label className="block">
+                  <label className="student-label block">
                     Giới tính
                     <select
-                      className="mt-1 w-full rounded-[10px_3px_12px_4px/3px_12px_4px_10px] border-2 border-[#2d2b2a] bg-white px-3 py-2 outline-none focus:ring-2 focus:ring-[#d99b26]"
+                      className="student-field mt-1"
                       value={draft.gender}
                       onChange={(e) =>
                         setDraft({
@@ -1254,9 +1324,9 @@ function StudentProfileContent({
                   <button
                     onClick={() => void saveDraft()}
                     disabled={!draft.fullName.trim() || saving}
-                    className="inline-flex items-center gap-1.5 rounded-[12px_4px_14px_4px/4px_14px_4px_12px] border-2 border-[#2d2b2a] bg-[#6b8e67] px-4 py-2 font-mono text-xs font-bold text-white shadow-[2px_2px_0_#2d2b2a] transition hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50"
+                    className="student-control student-control--action px-4"
                   >
-                    <Save size={14} /> Lưu thay đổi
+                    <Save size={16} /> Lưu thay đổi
                   </button>
                 </div>
               ) : (
@@ -1284,10 +1354,7 @@ function StudentProfileContent({
                   title="Thông tin trường học"
                 />
                 <dl className="mt-3 grid grid-cols-1 gap-x-4 sm:grid-cols-2">
-                  <Info
-                    label="Lớp học"
-                    value={profile.currentClass.name}
-                  />
+                  <Info label="Lớp học" value={profile.currentClass.name} />
                   <Info label="Khối" value={profile.currentClass.gradeName} />
                   <Info
                     label="Năm học"
@@ -1303,82 +1370,214 @@ function StudentProfileContent({
               {/* PRIVATE GUARDIAN: one displayed, server collection preserved on update */}
               <PaperCard className="p-6">
                 <div className="flex flex-wrap items-center justify-between gap-3">
-                  <SectionHeading icon={Users} title="Phụ huynh / Người bảo hộ" note="Riêng tư" />
-                  <button type="button" aria-pressed={guardianVisible}
-                    aria-label={guardianVisible ? "Ẩn thông tin người bảo hộ" : "Hiện thông tin người bảo hộ"}
-                    onClick={() => { setGuardianVisible((old) => !old); setGuardianEditing(false); }}
-                    className="inline-flex min-h-11 items-center gap-2 rounded-lg border-2 border-[#2d2b2a] bg-[#e8dec8] px-3 font-mono text-xs font-bold">
+                  <SectionHeading
+                    icon={Users}
+                    title="Người bảo hộ"
+                    note="Riêng tư"
+                  />
+                  <button
+                    type="button"
+                    aria-pressed={guardianVisible}
+                    aria-label={
+                      guardianVisible
+                        ? "Ẩn thông tin người bảo hộ"
+                        : "Hiện thông tin người bảo hộ"
+                    }
+                    onClick={() => {
+                      setGuardianVisible((old) => !old);
+                      setGuardianEditing(false);
+                    }}
+                    className="student-control student-control--secondary px-3 inline-flex flex-row items-center justify-center gap-1.5 "
+                  >
                     {guardianVisible ? <EyeOff size={16} /> : <Eye size={16} />}
                     {guardianVisible ? "Ẩn" : "Hiện"}
                   </button>
                 </div>
                 {!guardianVisible ? (
-                  <div className="mt-4 flex items-center gap-3 rounded-lg border border-dashed border-[#2d2b2a] bg-[#fbf6ed] p-4">
-                    <LockKeyhole size={18} aria-hidden="true" />
-                    <span className="text-sm font-semibold">Thông tin đang ẩn. Nhấn nút mắt để xem.</span>
+                  <div className="mt-4 flex items-center gap-3 rounded-lg border border-dashed border-ink bg-muted p-4">
+                    <LockKeyhole size={16} aria-hidden="true" />
+                    <span className="student-body font-semibold">
+                      Thông tin đang ẩn. Nhấn nút mắt để xem.
+                    </span>
                   </div>
                 ) : (
                   <div className="mt-4 space-y-3">
                     {!guardianEditing && (
                       <div className="space-y-3">
                         {selectedGuardian && (
-                          <div className="rounded-lg border border-[#2d2b2a] bg-[#fbf6ed] p-4">
-                            <h3 className="font-serif text-base font-black">{selectedGuardian.fullName}</h3>
-                            <p className="text-xs">{RELATIONSHIPS[selectedGuardian.relationship]}</p>
-                            <p className="mt-2 text-sm">Điện thoại: {selectedGuardian.phone}</p>
-                            <p className="text-sm">Email: {selectedGuardian.email || "Chưa cập nhật"}</p>
+                          <div className="rounded-xl border-2 border-ink bg-panel p-4 shadow-[2px_2px_0px_var(--student-ink,#18181b)]">
+                            <div className="flex items-center justify-between gap-2 border-b border-ink/15 pb-2.5">
+                              <h3 className="student-body">
+                                {selectedGuardian.fullName}
+                              </h3>
+                              <span className="rounded-md border border-ink bg-mustard px-2 py-0.5 text-meta font-bold text-ink shadow-[1px_1px_0px_var(--student-ink,#18181b)]">
+                                {RELATIONSHIPS[selectedGuardian.relationship]}
+                              </span>
+                            </div>
+
+                            {/* Thông tin liên hệ */}
+                            <div className="mt-2.5 space-y-1.5 text-sm">
+                              <div className="flex items-center justify-between ">
+                                <span className="student-body">
+                                  Điện thoại:
+                                </span>
+                                <span className="student-body">
+                                  {selectedGuardian.phone}
+                                </span>
+                              </div>
+                              <div className="flex items-center justify-between">
+                                <span className="student-body">
+                                  Email:
+                                </span>
+                                <span className="text-ink font-medium">
+                                  {selectedGuardian.email || (
+                                    <span className="student-body">
+                                      Chưa cập nhật
+                                    </span>
+                                  )}
+                                </span>
+                              </div>
+                            </div>
                           </div>
                         )}
-                        <button type="button" onClick={() => {
-                          setGuardianDraft(selectedGuardian ? guardianPayload(selectedGuardian) :
-                            { relationship: "GUARDIAN", fullName: "", phone: "", email: "", primary: true });
-                          setGuardianEditing(true);
-                        }} className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-[#2d2b2a] bg-[#fff3db] px-3 text-sm font-bold">
-                          <Pencil size={14} /> {selectedGuardian ? "Chỉnh sửa người bảo hộ" : "Thêm người bảo hộ"}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setGuardianDraft(
+                              selectedGuardian
+                                ? guardianPayload(selectedGuardian)
+                                : {
+                                    relationship: "GUARDIAN",
+                                    fullName: "",
+                                    phone: "",
+                                    email: "",
+                                    primary: true,
+                                  },
+                            );
+                            setGuardianEditing(true);
+                          }}
+                          className="student-control student-control--secondary inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-sm font-bold"
+                        >
+                          <Pencil size={15} className="shrink-0" />
+                          <span>
+                            {selectedGuardian
+                              ? "Chỉnh sửa người bảo hộ"
+                              : "Thêm người bảo hộ"}
+                          </span>
                         </button>
                       </div>
                     )}
                     {guardianEditing && (
-                      <div className="space-y-3 rounded-lg border border-[#2d2b2a] bg-[#fffdf9] p-4">
-                        <label className="block text-sm font-bold">Quan hệ
-                          <select className="mt-1 min-h-11 w-full rounded-md border border-[#2d2b2a] bg-white px-3"
+                      <div className="space-y-3 rounded-lg border border-ink bg-card p-4">
+                        <label className="student-label block">
+                          Quan hệ
+                          <select
+                            className="student-field mt-1"
                             value={guardianDraft.relationship}
-                            onChange={(e) => setGuardianDraft({ ...guardianDraft, relationship: e.target.value as GuardianRelationship })}>
-                            {Object.entries(RELATIONSHIPS).map(([key, label]) => (
-                              <option key={key} value={key}>{label}</option>
-                            ))}
+                            onChange={(e) =>
+                              setGuardianDraft({
+                                ...guardianDraft,
+                                relationship: e.target
+                                  .value as GuardianRelationship,
+                              })
+                            }
+                          >
+                            {Object.entries(RELATIONSHIPS).map(
+                              ([key, label]) => (
+                                <option key={key} value={key}>
+                                  {label}
+                                </option>
+                              ),
+                            )}
                           </select>
                         </label>
-                        <label className="block text-sm font-bold">Họ và tên
-                          <input maxLength={150} required className="mt-1 min-h-11 w-full rounded-md border border-[#2d2b2a] bg-white px-3"
+                        <label className="student-label block">
+                          Họ và tên
+                          <input
+                            maxLength={150}
+                            required
+                            className="student-field mt-1"
                             value={guardianDraft.fullName}
-                            onChange={(e) => setGuardianDraft({ ...guardianDraft, fullName: e.target.value })} />
+                            onChange={(e) =>
+                              setGuardianDraft({
+                                ...guardianDraft,
+                                fullName: e.target.value,
+                              })
+                            }
+                          />
                         </label>
-                        <label className="block text-sm font-bold">Điện thoại
-                          <input type="tel" maxLength={30} required className="mt-1 min-h-11 w-full rounded-md border border-[#2d2b2a] bg-white px-3"
+                        <label className="student-label block">
+                          Điện thoại
+                          <input
+                            type="tel"
+                            maxLength={30}
+                            required
+                            className="student-field mt-1"
                             value={guardianDraft.phone}
-                            onChange={(e) => setGuardianDraft({ ...guardianDraft, phone: e.target.value })} />
+                            onChange={(e) =>
+                              setGuardianDraft({
+                                ...guardianDraft,
+                                phone: e.target.value,
+                              })
+                            }
+                          />
                         </label>
-                        <label className="block text-sm font-bold">Email (tùy chọn)
-                          <input type="email" maxLength={255} className="mt-1 min-h-11 w-full rounded-md border border-[#2d2b2a] bg-white px-3"
+                        <label className="student-label block">
+                          Email (tùy chọn)
+                          <input
+                            type="email"
+                            maxLength={255}
+                            className="student-field mt-1"
                             value={guardianDraft.email ?? ""}
-                            onChange={(e) => setGuardianDraft({ ...guardianDraft, email: e.target.value })} />
+                            onChange={(e) =>
+                              setGuardianDraft({
+                                ...guardianDraft,
+                                email: e.target.value,
+                              })
+                            }
+                            aria-invalid={!isEmailValid}
+                            aria-describedby={
+                              !isEmailValid ? "guardian-email-error" : undefined
+                            }
+                          />
+                          {!isEmailValid && (
+                            <span
+                              id="guardian-email-error"
+                              role="alert"
+                              className="mt-1 block student-meta font-medium text-destructive"
+                            >
+                              Email không hợp lệ. Ví dụ: parent@gmail.com
+                            </span>
+                          )}
                         </label>
                         <div className="flex flex-wrap gap-2">
-                          <button type="button" disabled={saving || !guardianDraft.fullName.trim() || !guardianDraft.phone.trim()}
+                          <button
+                            type="button"
+                            disabled={
+                              saving ||
+                              !guardianDraft.fullName.trim() ||
+                              !guardianDraft.phone.trim()
+                            }
                             onClick={() => void saveGuardian()}
-                            className="min-h-11 rounded-lg border border-[#2d2b2a] bg-[#6b8e67] px-4 text-sm font-bold text-white disabled:opacity-50">
+                            className="student-control student-control--action px-4"
+                          >
                             {saving ? "Đang lưu" : "Lưu người bảo hộ"}
                           </button>
-                          <button type="button" disabled={saving} onClick={() => setGuardianEditing(false)}
-                            className="min-h-11 rounded-lg border border-[#2d2b2a] bg-[#e8dec8] px-4 text-sm font-bold">Hủy</button>
+                          <button
+                            type="button"
+                            disabled={saving}
+                            onClick={() => setGuardianEditing(false)}
+                            className="student-control student-control--secondary px-4"
+                          >
+                            Hủy
+                          </button>
                         </div>
                       </div>
                     )}
                   </div>
                 )}
-                <div className="mt-3 flex items-start gap-1.5 font-mono text-[11px] text-[#6e6863]">
-                  <ShieldCheck size={14} className="shrink-0 text-[#6b8e67]" />
+                <div className="mt-3 flex items-start gap-2 student-meta text-muted-foreground">
+                  <ShieldCheck size={16} className="shrink-0 text-success" />
                   Thông tin riêng tư. Chỉ hiển thị sau khi bạn bật nút mắt.
                 </div>
               </PaperCard>
@@ -1387,7 +1586,7 @@ function StudentProfileContent({
         )}
 
         {/* FOOTER */}
-        <footer className="mt-12 flex flex-wrap items-center justify-between gap-3 border-t-2 border-dashed border-[#2d2b2a] pt-5 font-mono text-xs font-semibold text-[#8c827a]">
+        <footer className="mt-12 flex flex-wrap items-center justify-between gap-3 border-t-2 border-dashed border-ink pt-5 student-meta font-semibold text-muted-foreground">
           <span>✂ Nhật ký học tập · Hồ sơ học sinh</span>
           <span>~ Dữ liệu học tập cá nhân ~</span>
         </footer>
@@ -1401,7 +1600,7 @@ function StudentProfileContent({
           onSave={(avatarKey) => void saveAvatar(avatarKey)}
         />
       )}
-    </main>
+    </div>
   );
 }
 
@@ -1434,18 +1633,37 @@ export default function StudentProfilePage() {
     queryKey: ["student", "profile", "assignments", "SUBMITTED"],
     queryFn: () => studentAssignmentService.getAssignments("SUBMITTED"),
   });
-  const queries = [identity, level, streak, learning, todo, inProgress, submitted];
+  const queries = [
+    identity,
+    level,
+    streak,
+    learning,
+    todo,
+    inProgress,
+    submitted,
+  ];
   if (queries.some((q) => q.isPending)) {
-    return <FullPageState variant="loading" title="Đang mở sổ tay học tập..." />;
+    return (
+      <FullPageState variant="loading" title="Đang mở sổ tay học tập..." />
+    );
   }
   const profile = identity.data?.data;
   const game = level.data?.data;
   const run = streak.data?.data;
   const learningData = learning.data?.data;
-  if (queries.some((q) => q.isError) || !profile || !game || !run || !learningData) {
+  if (
+    queries.some((q) => q.isError) ||
+    !profile ||
+    !game ||
+    !run ||
+    !learningData
+  ) {
     return (
-      <RegionState variant="error" title="Chưa thể tải đầy đủ hồ sơ"
-        description="Thông tin được lấy từ dữ liệu thật, không thay bằng số liệu demo." />
+      <RegionState
+        variant="error"
+        title="Chưa thể tải đầy đủ hồ sơ"
+        description="Thông tin được lấy từ dữ liệu thật, không thay bằng số liệu demo."
+      />
     );
   }
   const todos = todo.data ?? [];
@@ -1466,7 +1684,12 @@ export default function StudentProfilePage() {
     activities: learningData.activities,
   };
   return (
-    <StudentProfileContent key={profile.userId}
-      initialProfile={profile} game={game} streak={run} learn={learn} />
+    <StudentProfileContent
+      key={profile.userId}
+      initialProfile={profile}
+      game={game}
+      streak={run}
+      learn={learn}
+    />
   );
 }

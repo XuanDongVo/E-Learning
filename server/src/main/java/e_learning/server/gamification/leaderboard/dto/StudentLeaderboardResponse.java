@@ -10,6 +10,6 @@ public record StudentLeaderboardResponse(
         boolean currentStudentInTop,
         long totalStudents) {
 
-    public record Ranking(long studentId, String fullName, long rank, long value, int level, boolean currentStudent) {
+    public record Ranking(long studentId, String fullName,String avatarKey, long rank, long value, int level, boolean currentStudent) {
     }
 }

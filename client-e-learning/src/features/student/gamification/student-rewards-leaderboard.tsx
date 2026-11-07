@@ -9,7 +9,7 @@ import { PaperSurface } from "@/components/student-ui/paper-surface";
 import { ScrapbookHeading } from "@/components/student-ui/scrapbook-heading";
 import { StudentLeaderboardPodium } from "@/components/student-ui/student-leaderboard-podium";
 import { studentGamificationService } from "@/services/student/student-gamification.service";
-import { getInitials } from "@/utils/format";
+import { StudentAvatar } from "@/components/student-ui/student-avatar";
 import type {
   LeaderboardMetric,
   LeaderboardPeriod,
@@ -42,9 +42,7 @@ function RankRow({ entry, metric }: { entry: LeaderboardRanking; metric: Leaderb
         #{entry.rank}
       </span>
       <span role="cell" className="flex min-w-0 items-center gap-2">
-        <span className="student-ranking-avatar" aria-hidden="true">
-          {getInitials(entry.fullName, 1) || "?"}
-        </span>
+        <StudentAvatar className="student-ranking-avatar" fullName={entry.fullName} avatarKey={entry.avatarKey} />
         <span className="min-w-0">
           <span className="student-label block truncate text-foreground">{entry.fullName}</span>
           {entry.currentStudent && <span className="student-meta text-primary">Bạn</span>}
@@ -74,9 +72,7 @@ function HonorCard({
   return (
     <PaperSurface className="student-honor-card flex items-center justify-between gap-4 p-4">
       <div className="flex min-w-0 items-center gap-3">
-        <span className="student-ranking-avatar" aria-hidden="true">
-          {getInitials(entry.fullName, 1) || "?"}
-        </span>
+        <StudentAvatar className="student-ranking-avatar" fullName={entry.fullName} avatarKey={entry.avatarKey} />
         <div className="min-w-0">
           <p className="student-meta text-primary">{title}</p>
           <p className="student-label truncate text-foreground">{entry.fullName}</p>

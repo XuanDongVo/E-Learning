@@ -64,7 +64,7 @@ public class StudentLeaderboardService {
                         me);
         List<StudentLeaderboardResponse.Ranking> entries = rows.stream()
                 .map(row -> new StudentLeaderboardResponse.Ranking(
-                        row.getStudentId(), row.getFullName(),null, row.getPosition(), row.getScore(),
+                        row.getStudentId(), row.getFullName(), row.getAvatarKey(), row.getPosition(), row.getScore(),
                         row.getStudentLevel(), row.getStudentId() == me))
                 .toList();
         long total = leaderboardRepository.countActiveStudents();
@@ -106,7 +106,7 @@ public class StudentLeaderboardService {
     private StudentLeaderboardResponse.Ranking toHonorRanking(
             StudentLeaderboardQueryRepository.HonorProjection row, long me) {
         return new StudentLeaderboardResponse.Ranking(
-                row.getStudentId(), row.getFullName(), null,1, row.getValue(),
+                row.getStudentId(), row.getFullName(), row.getAvatarKey(), 1, row.getValue(),
                 row.getStudentLevel(), row.getStudentId() == me);
     }
 }

@@ -1,6 +1,7 @@
 import { Award, Crown, Medal, Sparkles } from "lucide-react";
 import type { LeaderboardMetric, LeaderboardRanking } from "@/types/gamification";
 import { cn } from "@/lib/utils";
+import { StudentAvatar } from "@/components/student-ui/student-avatar";
 
 export function StudentLeaderboardPodium({
   entries,
@@ -19,7 +20,6 @@ export function StudentLeaderboardPodium({
     <ol className="student-podium" aria-label="Ba vị trí dẫn đầu">
       {order.map((entry) => {
         const isFirst = entry.rank === 1;
-        const initial = entry.fullName.trim().charAt(0).toUpperCase() || "?";
 
         return (
           <li
@@ -57,9 +57,7 @@ export function StudentLeaderboardPodium({
 
               {/* Vòng Ring bao quanh Avatar */}
               <div className="student-podium__ring">
-                <span className="student-podium__portrait" aria-hidden="true">
-                  {initial}
-                </span>
+                <StudentAvatar className="student-podium__portrait" fullName={entry.fullName} avatarKey={entry.avatarKey} />
               </div>
 
               {/* Huy hiệu số thứ hạng ở góc dưới */}

@@ -79,6 +79,7 @@ export type LeaderboardPeriod = "TODAY" | "WEEK" | "MONTH" | "ALL";
 export interface LeaderboardRanking {
   studentId: number;
   fullName: string;
+  avatarKey: string | null;
   rank: number;
   value: number;
   level: number;

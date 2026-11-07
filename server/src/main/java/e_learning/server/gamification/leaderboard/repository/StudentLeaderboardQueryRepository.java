@@ -13,6 +13,7 @@ public interface StudentLeaderboardQueryRepository extends Repository<User, Long
     String BASE_RANKING = """
             with scores as (
                 select u.id as student_id, u.full_name,
+                       sp.avatar_key as "avatarKey",
                        coalesce(p.current_level, 1) as student_level,
                        case when :metric = 'XP' then
                            coalesce(sum(x.amount), 0)
@@ -23,21 +24,23 @@ public interface StudentLeaderboardQueryRepository extends Repository<User, Long
                        end as score
                 from users u
                 left join student_gamification_profiles p on p.student_id = u.id
+                left join student_profiles sp on sp.user_id = u.id
                 left join xp_transactions x on x.student_id = u.id
                     and :metric = 'XP'
                     and x.earned_at >= :startAt
                     and x.earned_at < :endAt
                 where u.role = 'STUDENT' and u.status = 'ACTIVE'
-                group by u.id, u.full_name, p.current_level, p.current_streak, p.last_qualified_date
+                group by u.id, u.full_name, sp.avatar_key,
+                         p.current_level, p.current_streak, p.last_qualified_date
             ), ranked as (
-                select student_id, full_name, student_level, score,
+                select student_id, full_name, "avatarKey", student_level, score,
                        row_number() over (order by score desc, student_id asc) as position
                 from scores
             )
             """;
 
     @Query(value = BASE_RANKING + """
-            select student_id, full_name, student_level, score, position
+            select student_id, full_name, "avatarKey", student_level, score, position
             from ranked
             where position <= 50 or student_id = :studentId
             order by position
@@ -59,14 +62,16 @@ public interface StudentLeaderboardQueryRepository extends Repository<User, Long
     @Query(value = """
             with scores as (
                 select u.id as student_id, u.full_name,
+                       sp.avatar_key as "avatarKey",
                        coalesce(p.current_level, 1) as student_level,
                        coalesce(p.lifetime_xp, 0) as xp,
                        coalesce(p.longest_streak, 0) as best_streak
                 from users u
                 left join student_gamification_profiles p on p.student_id = u.id
+                left join student_profiles sp on sp.user_id = u.id
                 where u.role = 'STUDENT' and u.status = 'ACTIVE'
             )
-            select student_id, full_name, student_level, xp as value
+            select student_id, full_name, "avatarKey", student_level, xp as value
             from scores
             order by xp desc, student_id asc
             limit 1
@@ -76,14 +81,16 @@ public interface StudentLeaderboardQueryRepository extends Repository<User, Long
     @Query(value = """
             with scores as (
                 select u.id as student_id, u.full_name,
+                       sp.avatar_key as "avatarKey",
                        coalesce(p.current_level, 1) as student_level,
                        coalesce(p.lifetime_xp, 0) as xp,
                        coalesce(p.longest_streak, 0) as best_streak
                 from users u
                 left join student_gamification_profiles p on p.student_id = u.id
+                left join student_profiles sp on sp.user_id = u.id
                 where u.role = 'STUDENT' and u.status = 'ACTIVE'
             )
-            select student_id, full_name, student_level, best_streak as value
+            select student_id, full_name, "avatarKey", student_level, best_streak as value
             from scores
             order by best_streak desc, student_id asc
             limit 1
@@ -123,6 +130,8 @@ public interface StudentLeaderboardQueryRepository extends Repository<User, Long
         Long getStudentId();
 
         String getFullName();
+
+        String getAvatarKey();
 
         Integer getStudentLevel();
 

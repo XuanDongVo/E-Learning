@@ -6,6 +6,7 @@ import {
   BarChart2,
   BookOpen,
   ClipboardList,
+  Gamepad2,
   GraduationCap,
   Home,
   LogOut,
@@ -22,6 +23,7 @@ import { useAuth } from "@/components/auth/auth-provider";
 export const NAV_ITEMS = [
   { label: "Home", href: "/student", icon: Home },
   { label: "Learning", href: "/student/units", icon: BookOpen },
+  { label: "Game", href: "/student/game", icon: Gamepad2 },
   { label: "Assignments", href: "/student/assignments", icon: ClipboardList },
   { label: "Progress", href: "/student/progress", icon: BarChart2 },
   { label: "Leaderboard", href: "/student/rewards", icon: Trophy },
@@ -228,7 +230,7 @@ export function StudentNavbar() {
                   {displayName}
                 </span>
                 <span className="block truncate text-xs text-neutral-muted">
-                  {user.email}
+                  {displayRole}
                 </span>
               </div>
             </Link>

@@ -24,6 +24,7 @@ import { EntityHeader } from "./components/entity-header";
 import { TableTitle } from "./components/table-title";
 import { ContentEditor } from "./components/content-editor";
 import { FullPageState } from "@/components/feedback";
+import { UnitVocabularySection } from "./components/unit-vocabulary-section";
 
 export function UnitDetail({
   unitId,
@@ -226,6 +227,9 @@ export function UnitDetail({
           )}
         </div>
       </section>
+
+      {/* Vocabulary Management for this Unit (used in student mini-games) */}
+      <UnitVocabularySection unitId={unitId} />
 
       {editOpen && (
         <div className="mt-5">

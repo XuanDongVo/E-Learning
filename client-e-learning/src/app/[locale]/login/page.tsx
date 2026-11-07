@@ -36,7 +36,18 @@ export default function LoginPage() {
       const safeNext = requestedNext && requestedNext.startsWith("/") && !requestedNext.startsWith("//") && !requestedNext.includes("\\")
         ? requestedNext
         : null;
-      router.replace(safeNext ?? (user.role === "TEACHER" ? "/teacher" : "/"), { locale });
+
+      // Smart role-based redirect: Never redirect teachers into student routes, and vice versa!
+      let targetUrl = user.role === "TEACHER" ? "/teacher" : "/student";
+      if (safeNext) {
+        if (user.role === "TEACHER" && safeNext.startsWith("/teacher")) {
+          targetUrl = safeNext;
+        } else if (user.role === "STUDENT" && !safeNext.startsWith("/teacher")) {
+          targetUrl = safeNext;
+        }
+      }
+
+      router.replace(targetUrl, { locale });
     } catch (submissionError) {
       setError(getAppErrorMessage(submissionError, tErrors as (key: string) => string));
     } finally {

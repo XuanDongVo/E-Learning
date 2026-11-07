@@ -10,7 +10,7 @@ export default function StudentDashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <AuthGuard>
+    <AuthGuard requiredRole="STUDENT">
       <div className="student-theme min-h-screen bg-background text-foreground">
         <StudentShell>{children}</StudentShell>
       </div>

@@ -1,170 +1,98 @@
 import { Link } from "@/i18n/navigation";
-import { useLocale } from "next-intl";
-import { formatDueAt } from "@/utils/format";
-import {
-  ArrowRight,
-  CalendarDays,
-  CheckCircle2,
-  ClipboardList,
-  Clock3,
-  Flame,
-  Trophy,
-  Zap,
-} from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
+import { ArrowRight, CalendarDays, ClipboardList, Clock3, AlertTriangle } from "lucide-react";
+import { PaperSurface } from "@/components/student-ui/paper-surface";
 import { cn } from "@/lib/utils";
+import { formatDueAt } from "@/utils/format";
 import type { StudentAssignmentItem } from "./types";
-import { ASSIGNMENT_STATUS_LABEL } from "./constants";
+import { AssignmentStatusBadge } from "./assignment-status-badge";
 
 interface AssignmentCardProps {
   assignment: StudentAssignmentItem;
-  index?: number;
 }
 
-const CARD_TONES = [
-  {
-    header: "bg-primary-soft border-primary/30",
-    iconBg: "bg-primary text-primary-foreground",
-  },
-  {
-    header: "bg-teal-soft border-teal/30",
-    iconBg: "bg-teal text-white",
-  },
-  {
-    header: "bg-pink-soft border-pink/30",
-    iconBg: "bg-pink text-white",
-  },
-] as const;
-
-function getCardTone(assignmentId: number | string, index = 0) {
-  const numericId =
-    typeof assignmentId === "number" ? assignmentId : Number(assignmentId);
-  const seed = Number.isFinite(numericId) ? Math.abs(numericId) : index;
-  return CARD_TONES[seed % CARD_TONES.length];
-}
-
-export function AssignmentCard({ assignment, index = 0 }: AssignmentCardProps) {
+export function AssignmentCard({ assignment }: AssignmentCardProps) {
+  const t = useTranslations("student.assignments");
   const locale = useLocale();
-  const done = assignment.status === "SUBMITTED";
+  const submitted = assignment.status === "SUBMITTED";
+  const inProgress = assignment.status === "IN_PROGRESS";
   const urgent =
-    !done &&
+    !submitted &&
     !assignment.late &&
+    assignment.dueAt != null &&
     assignment.dueInDays >= 0 &&
     assignment.dueInDays <= 2;
-  const tone = getCardTone(assignment.id, index);
+  const href = submitted
+    ? "/student/assignments/" + assignment.id + "/result"
+    : "/student/assignments/" + assignment.id + "/intro";
 
   return (
-    <article
-      className={cn(
-        "relative flex flex-col gap-2.5 overflow-hidden rounded-2xl border-2 border-foreground bg-card p-5 shadow-pop transition-all duration-150 hover:-translate-x-0.5 hover:-translate-y-1 hover:shadow-pop-lg",
-        done && "bg-card/95",
-      )}
-    >
-      <div
-        className={cn(
-          "absolute inset-x-0 top-0 h-16 border-b-2 border-dashed",
-          tone.header,
-        )}
-      />
-
-      <div className="relative z-10 mb-2 flex items-start justify-between gap-2">
-        <span
-          className={cn(
-            "grid h-12 w-12 place-items-center rounded-2xl border-2 border-foreground shadow-pop-sm -rotate-6",
-            done ? "bg-accent text-foreground" : tone.iconBg,
-          )}
-        >
-          {done ? (
-            <Trophy size={22} />
-          ) : assignment.status === "IN_PROGRESS" ? (
-            <Zap size={22} />
-          ) : (
-            <ClipboardList size={22} />
-          )}
+    <PaperSurface as="article" className="student-assignment-card flex flex-col gap-4 p-4 sm:p-5">
+      <div className="flex items-start justify-between gap-3">
+        <span className="student-assignment-card__icon" aria-hidden="true">
+          <ClipboardList size={22} />
         </span>
-
-        <div className="flex flex-wrap justify-end gap-1.5">
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          <AssignmentStatusBadge status={assignment.status} />
           {assignment.late && (
-            <span className="inline-flex items-center gap-1.5 rounded-full border-1.5 border-foreground bg-destructive-soft px-2.5 py-1 text-xs font-extrabold text-foreground shadow-xs">
-              <Flame size={14} />
-              Late
+            <span className="student-assignment-status student-assignment-status--overdue">
+              <AlertTriangle size={14} aria-hidden="true" /> {t("status.late")}
             </span>
           )}
-
-          <span
-            className={cn(
-              "inline-flex items-center gap-1.5 rounded-full border-1.5 border-foreground bg-card px-2.5 py-1 text-xs font-extrabold shadow-xs",
-              done && "bg-success-soft text-foreground",
-              urgent && "bg-primary text-foreground",
-              !done &&
-                !urgent &&
-                !assignment.late &&
-                assignment.status === "IN_PROGRESS" &&
-                "bg-accent-soft text-foreground",
-            )}
-          >
-            {done ? (
-              <>
-                <CheckCircle2 size={14} className="text-success" />
-                Submitted
-              </>
-            ) : assignment.late ? (
-              ASSIGNMENT_STATUS_LABEL[assignment.status]
-            ) : urgent ? (
-              <>
-                <Flame size={14} className="text-primary-hover" />
-                Due in {assignment.dueInDays} days
-              </>
-            ) : (
-              ASSIGNMENT_STATUS_LABEL[assignment.status]
-            )}
-          </span>
+          {urgent && (
+            <span className="student-assignment-status student-assignment-status--urgent">
+              <Clock3 size={14} aria-hidden="true" />
+              {assignment.dueInDays === 0
+                ? t("status.dueToday")
+                : t("status.dueSoon", { count: assignment.dueInDays })}
+            </span>
+          )}
         </div>
       </div>
 
-      <div className="relative z-10 flex flex-col flex-1">
-        <h2 className="text-lg font-bold leading-snug mt-1">
-          <Link
-            href={`/student/assignments/${assignment.id}/intro`}
-            className="hover:underline hover:decoration-2"
-          >
+      <div className="min-w-0 space-y-2">
+        <p className="student-meta text-muted-foreground">{t("meta.assignedWork")}</p>
+        <h2 className="student-card-title text-foreground">
+          <Link href={href} className="student-assignment-title-link">
             {assignment.title}
           </Link>
         </h2>
-
-        <div className="my-3 flex flex-wrap gap-1.5 text-xs">
-          <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-1 font-semibold text-muted-foreground">
-            <ClipboardList size={13} />
-            {assignment.questionCount} questions
-          </span>
-          <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-1 font-semibold text-muted-foreground">
-            <Clock3 size={13} />
-            {assignment.timeLimitMinutes ?? "—"} min
-          </span>
-          <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-1 font-semibold text-muted-foreground">
-            <CalendarDays size={13} />
-            {formatDueAt(assignment.dueAt, locale, "short")}
-          </span>
-        </div>
-
-        <Link
-          href={`/student/assignments/${assignment.id}/result`}
-          className={cn(
-            "mt-auto flex min-h-[46px] items-center justify-between rounded-xl border-2 border-foreground px-4 text-sm font-extrabold shadow-[0_3px_0_var(--foreground)] transition-all hover:bg-primary-hover active:translate-y-1 active:shadow-none cursor-pointer",
-            done
-              ? "bg-card text-foreground hover:bg-muted"
-              : "bg-primary text-foreground",
-          )}
-        >
-          <span>
-            {done
-              ? "View details"
-              : assignment.status === "IN_PROGRESS"
-                ? "Continue"
-                : "Start"}
-          </span>
-          <ArrowRight size={17} />
-        </Link>
+        {assignment.description && (
+          <p className="student-body line-clamp-2 text-muted-foreground">{assignment.description}</p>
+        )}
       </div>
-    </article>
+
+      <div className="student-assignment-card__details mt-auto flex flex-wrap gap-x-4 gap-y-2">
+        <span className="student-meta student-assignment-detail">
+          <ClipboardList size={15} aria-hidden="true" />
+          {t("meta.questions", { count: assignment.questionCount })}
+        </span>
+        <span className="student-meta student-assignment-detail">
+          <Clock3 size={15} aria-hidden="true" />
+          {assignment.timeLimitMinutes == null
+            ? t("meta.noTimeLimit")
+            : t("meta.minutes", { count: assignment.timeLimitMinutes })}
+        </span>
+        <span className="student-meta student-assignment-detail">
+          <CalendarDays size={15} aria-hidden="true" />
+          {assignment.dueAt ? formatDueAt(assignment.dueAt, locale, "short") : t("meta.noDueDate")}
+        </span>
+      </div>
+
+      <Link
+        href={href}
+        className={cn(
+          "student-control student-assignment-action mt-1",
+          submitted ? "student-control--secondary" : "student-control--action",
+        )}
+      >
+        {submitted
+          ? t("actions.viewResult")
+          : inProgress
+            ? t("actions.continue")
+            : t("actions.viewIntro")}
+        <ArrowRight size={17} aria-hidden="true" />
+      </Link>
+    </PaperSurface>
   );
 }

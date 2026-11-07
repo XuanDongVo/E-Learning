@@ -4,12 +4,23 @@ import { topicService } from "./content/content.topic.service";
 import { questionBankService } from "./content/content.questionBank.service"
 import { questionService } from "./content/content.question.service";
 import { mediaService } from "./content/content.media.service";
+import { vocabularyService } from "./content/content.vocabulary.service";
 
 export const contentService = {
   // Media
   uploadMedia: mediaService.upload,
   uploadQuestionDraftMedia: mediaService.uploadForQuestionDraft,
   deleteMedia: mediaService.delete,
+
+  // Vocabulary
+  listVocabulary: vocabularyService.list,
+  getVocabulary: vocabularyService.get,
+  createVocabulary: vocabularyService.create,
+  bulkCreateVocabulary: vocabularyService.bulkCreate,
+  updateVocabulary: vocabularyService.update,
+  updateVocabularyStatus: vocabularyService.updateStatus,
+  deleteVocabulary: vocabularyService.delete,
+  reorderVocabulary: vocabularyService.reorder,
 
   // Unit
   listUnits: unitService.list,
@@ -54,4 +65,4 @@ export const contentService = {
   bulkDeleteQuestions: questionService.bulkDeleteQuestions,
 };
 
-export { unitService, sectionService, topicService, questionBankService, questionService, mediaService };
+export { unitService, sectionService, topicService, questionBankService, questionService, mediaService, vocabularyService };

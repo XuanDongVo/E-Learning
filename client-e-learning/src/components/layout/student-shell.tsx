@@ -8,10 +8,11 @@ export function StudentShell({ children }: { children: React.ReactNode }) {
 
   const immersiveActivity = /^\/student\/units\/[^/]+\/activities\/[^/]+$/.test(pathname);
   const immersiveAssignmentAttempt = /^\/student\/assignments\/[^/]+\/attempt$/.test(pathname);
+  const immersiveGame = /^\/student\/game\/[^/]+\/[^/]+$/.test(pathname);
 
-  if (immersiveActivity || immersiveAssignmentAttempt) {
+  if (immersiveActivity || immersiveAssignmentAttempt || immersiveGame) {
     return (
-      <div className="min-h-screen bg-background-app">
+      <div className="min-h-screen bg-background-app notranslate" translate="no">
         <main className="h-dvh w-full overflow-hidden">{children}</main>
       </div>
     );

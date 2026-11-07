@@ -40,6 +40,7 @@ public interface ActivitySessionRepository extends JpaRepository<ActivitySession
     List<ActivitySession> findAllByStudentIdWithActivityOrderByStartedAtDesc(@Param("studentId") Long studentId);
 
     long countByStudentId(Long studentId);
+    long countByStudentIdAndStatus(Long studentId, ActivitySessionStatus status);
 
     @EntityGraph(attributePaths = {"activity", "activity.unit"})
     @Query("""

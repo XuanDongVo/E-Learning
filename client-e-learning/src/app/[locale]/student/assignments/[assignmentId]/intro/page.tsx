@@ -12,7 +12,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { FullPageState, PageBanner, BusyButton } from "@/components/feedback";
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 
 export default function StudentAssignmentsIntroRoute({
   params,
@@ -132,6 +132,8 @@ export default function StudentAssignmentsIntroRoute({
         onBack={() => router.push("/student/assignments")}
         onStart={() => void startOrResume()}
         onResume={() => void startOrResume()}
+        onViewResult={() => router.push(`/student/assignments/${parsedAssignmentId}/result`)}
+        busy={isStarting}
       />
 
       {isStarting && (

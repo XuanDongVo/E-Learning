@@ -22,10 +22,12 @@
 - `/student`: Learning Hub with live Student Units and a compact seven-day Streak + XP Level progress region. Not a leaderboard/KPI wall.
 - `/student/units`: searchable Unit explorer.
 - `/student/units/:unitId`: Sections/Topics and published Activity choices.
+- `/student/units/:unitId/activities`: published Activity list scoped by the path Unit.
+- `/student/units/:unitId/activities/:activityId`: immersive Activity start/runtime/result; domain timing and scoring rules remain unchanged.
 - `/student/assignments`: independent teacher-assigned work.
 - `/student/progress`: placeholder; not a live analytics page.
-- `/student/rewards`: dedicated Leaderboard preview with clearly labeled mock ranking/Hall of Fame/feed. Streak/Level move to Student Home; rankings are not live.
-- `/student/profile`: student profile.
+- `/student/rewards`: live XP/Streak Leaderboard, Hall of Fame and terminal Activity feed; see `ui/STUDENT_REWARDS_BLUEPRINT.md`.
+- `/student/profile`: server-backed student profile notebook; see `ui/STUDENT_PROFILE_BLUEPRINT.md`.
 
 See `ui/STUDENT_LEARNING_HUB_BLUEPRINT.md` for the active Home/Units/Unit Detail contract.
 ActivitySession runner/result/review is separate from the formal AssessmentAttempt runtime.
@@ -44,3 +46,7 @@ there is no in-progress XP counter.
 - GameTemplate and Topic formula/reference sheet remain deferred.
 
 Use `ui/QUESTION_BANK_QUESTION_MANAGEMENT_BLUEPRINT.md` for Content UI behavior and `ui/UI_ARCHITECTURE_GUIDELINES.md` for shared design/accessibility rules.
+
+### Leaderboard UI (2026-11-06)
+
+Two tabs only (XP, Streak). XP supports today/current Monday–Sunday week/current calendar month/all time; Streak has no interval filter. Top 3 podium and top 50 table use live results; highlight the signed-in student in the table if within top 50, or show a separate truthful personal rank card if outside. Hall of Fame contains lifetime XP champion and longest Streak only. Recent feed is server-backed ActivitySessions only. Ink border + pop shadow; no mock fallback.

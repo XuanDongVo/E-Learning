@@ -33,10 +33,14 @@ export default async function RootLayout({
   return (
     <html
       lang={locale}
-      className="h-full antialiased"
+      className="h-full antialiased notranslate"
+      translate="no"
       data-scroll-behavior="smooth"
     >
-      <body className="min-h-full flex flex-col bg-[#F8FAFC]">
+      <head>
+        <meta name="google" content="notranslate" />
+      </head>
+      <body className="min-h-full flex flex-col bg-[#F8FAFC] notranslate" translate="no">
         <NextIntlClientProvider messages={messages}>
           <QueryProvider>
             <AuthProvider>

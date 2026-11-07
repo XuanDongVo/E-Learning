@@ -4,6 +4,7 @@ import { Link, usePathname } from "@/i18n/navigation";
 import {
   BarChart3,
   Bell,
+  BookA,
   BookOpen,
   CircleHelp,
   ChevronDown,
@@ -26,15 +27,10 @@ import { LocaleToggle } from "@/components/layout/locale-toggle";
 import { useTranslations } from "next-intl";
 
 const navigation: {
-  key:
-    | "overview"
-    | "classes"
-    | "students"
-    | "activities"
-    | "assignments"
-    | "analytics";
+  key: string;
   href: string;
   icon: LucideIcon;
+  customLabel?: string;
   badge?: string;
 }[] = [
   { key: "overview", href: "/teacher", icon: LayoutDashboard },
@@ -46,6 +42,12 @@ const navigation: {
     href: "/teacher/assignments",
     icon: ClipboardList,
     badge: "8",
+  },
+  {
+    key: "vocabulary",
+    href: "/teacher/vocabulary",
+    icon: BookA,
+    customLabel: "Từ vựng Unit",
   },
   { key: "analytics", href: "/teacher/reports", icon: BarChart3 },
 ];
@@ -110,7 +112,7 @@ function TeacherSidebar({
           <p className="px-2 pb-1.5 text-[0.625rem] font-bold uppercase tracking-wider text-muted-foreground/80">
             Không gian giáo viên
           </p>
-          {navigation.map(({ key, href, icon: Icon }) => {
+          {navigation.map(({ key, href, icon: Icon, customLabel }) => {
             const active =
               href === "/teacher"
                 ? pathname === href
@@ -127,7 +129,9 @@ function TeacherSidebar({
                 }`}
               >
                 <Icon className="size-[1.05rem]" />
-                <span className="flex-1">{key === "overview" ? tCommon("overview") : tNav(key)}</span>
+                <span className="flex-1">
+                  {customLabel ?? (key === "overview" ? tCommon("overview") : tNav(key))}
+                </span>
               </Link>
             );
           })}

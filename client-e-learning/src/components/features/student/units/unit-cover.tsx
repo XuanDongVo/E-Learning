@@ -51,10 +51,10 @@ export function UnitCover({
       aria-hidden="true"
     >
       <div className="flex flex-col items-center gap-1">
-        <span className="text-sm font-semibold text-learning">Unit</span>
+        <span className="student-meta text-learning">Unit</span>
         <span
           className={cn(
-            "text-5xl font-extrabold tracking-tight text-learning",
+            "student-unit-cover-label text-learning",
             labelClassName
           )}
         >

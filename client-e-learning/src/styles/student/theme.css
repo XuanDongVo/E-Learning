@@ -1,0 +1,106 @@
+@import url("https://fonts.googleapis.com/css2?family=Caveat:wght@400;600&family=Courier+Prime:wght@400;700&family=Nunito:wght@400;500;600;700;800&family=Patrick+Hand&display=swap");
+
+/*
+ * ADR 0032 — Indie Illustrated Scrapbook.
+ * Student style is active ONLY while .student-theme exists in the route.
+ * Extending semantic variables to body with :has() ensures dialogs,
+ * select popups and Sonner portals inherit the Student palette.
+ * No :root token or Teacher component is altered.
+ */
+.student-theme,
+body:has(.student-theme) {
+  color-scheme: light;
+  --background: #f7f4eb;
+  --foreground: #2d2b2a;
+  --card: #fffdf9;
+  --card-bg: #fffdf9;
+  --card-foreground: #2d2b2a;
+  --popover: #fffdf9;
+  --popover-foreground: #2d2b2a;
+
+  /* The clay reference #C85A32 is decorative; darken interactive text/CTA for AA. */
+  --primary: #a44724;
+  --primary-foreground: #fffdf9;
+  --primary-hover: #893719;
+  --primary-soft: #c85a3220;
+  --secondary: #e8dec8;
+  --secondary-foreground: #2d2b2a;
+  --secondary-hover: #dbccb0;
+  --muted: #eee7d8;
+  --muted-foreground: #62594f; /* contrast-safe on kraft paper */
+  --accent: #d99b26;
+  --accent-foreground: #2d2b2a;
+
+  --learning: #36566f;
+  --learning-soft: #4a6b821c;
+  --success: #3f6b45;
+  --success-soft: #6b8e6722;
+  --warning: #926009;
+  --warning-soft: #d99b2622;
+  --info: #36566f;
+  --info-soft: #4a6b821c;
+  --destructive: #a33d32;
+  --destructive-soft: #c85a3220;
+  --destructive-foreground: #fffdf9;
+
+  --border: #2d2b2a52;
+  --input: #2d2b2a72;
+  --border-input: #2d2b2a72;
+  --ring: #a44724;
+  --ink: #2d2b2a;
+  --ink-fg: #fffdf9;
+  --pop-shadow: #d6c7ab;
+  --marker: #d99b26;
+  --radius: 0.75rem;
+
+  --sidebar: #f7f4eb;
+  --sidebar-foreground: #2d2b2a;
+  --sidebar-primary: #a44724;
+  --sidebar-primary-foreground: #fffdf9;
+  --sidebar-accent: #e8dec8;
+  --sidebar-accent-foreground: #2d2b2a;
+  --sidebar-border: #2d2b2a52;
+  --sidebar-ring: #a44724;
+  --brand-soft: #c85a3220;
+
+  --student-paper: #fffdf9;
+  --student-canvas: #f7f4eb;
+  --student-kraft: #e8dec8;
+  --student-ink: #2d2b2a;
+  --student-pencil: #6e6863;
+  --student-clay: #c85a32;
+  --student-mustard: #d99b26;
+  --student-sage: #6b8e67;
+  --student-denim: #4a6b82;
+  --student-washi: #f3e88eb3;
+
+  --student-font-body: "Nunito", "Segoe UI", sans-serif;
+  --student-font-hand: "Patrick Hand", "Segoe Print", cursive;
+  --student-font-note: "Caveat", "Segoe Print", cursive;
+  --student-font-mono: "Courier Prime", "Courier New", monospace;
+
+  --elevation-sm: 2px 2px 0 var(--pop-shadow);
+  --elevation-md: 3px 4px 0 var(--pop-shadow), 0 0 0 1px var(--ink);
+  --elevation-lg: 5px 6px 0 var(--pop-shadow), 0 0 0 1px var(--ink);
+
+  font-family: var(--student-font-body);
+}
+
+/* Locale root still uses a literal background. Override only on Student route. */
+body:has(.student-theme) {
+  background-color: var(--student-canvas);
+  color: var(--student-ink);
+}
+
+/* Tailwind v4 @theme inline makes font-sans a fixed Jakarta value. */
+.student-theme .font-sans,
+body:has(.student-theme) .font-sans {
+  font-family: var(--student-font-body);
+}
+
+.student-theme [data-slot="button"] { min-height: 44px; }
+.student-theme :focus-visible { outline-color: var(--primary); }
+body:has(.student-theme) [data-sonner-toast] {
+  font-family: var(--student-font-body);
+  border-color: var(--border);
+}

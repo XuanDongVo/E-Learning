@@ -55,7 +55,7 @@ export function StudentNavbar() {
 
   return (
     <>
-      <header className="sticky top-0 z-40 w-full border-b-1 border-ink shadow-pop bg-card-bg/95 backdrop-blur">
+      <header className="student-navbar sticky top-0 z-40 w-full border-b-1 border-ink shadow-pop bg-card-bg/95 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-[1440px] items-center gap-6 px-4 sm:px-6">
           {/* Brand */}
           <Link href="/student" className="flex shrink-0 items-center gap-2.5">
@@ -81,7 +81,7 @@ export function StudentNavbar() {
                   href={item.href}
                   aria-current={active ? "page" : undefined}
                   className={cn(
-                    "flex min-h-10 items-center gap-2 rounded-full px-4 text-sm font-semibold transition-colors",
+                    "student-nav-item flex min-h-11 items-center gap-2 rounded-full px-4 text-sm font-semibold transition-colors",
                     active
                       ? "bg-primary-light text-primary"
                       : "text-neutral-muted hover:bg-background-app hover:text-neutral-dark",
@@ -159,7 +159,7 @@ export function StudentNavbar() {
           aria-modal="true"
           aria-label="Student menu"
           className={cn(
-            "absolute right-0 top-0 flex h-full w-[82%] max-w-80 flex-col border-l border-border-color bg-card-bg shadow-xl transition-transform duration-300 ease-out",
+            "student-nav-drawer absolute right-0 top-0 flex h-full w-[82%] max-w-80 flex-col border-l border-border-color bg-card-bg shadow-xl transition-transform duration-300 ease-out",
             open ? "translate-x-0" : "translate-x-full",
           )}
         >
@@ -187,7 +187,7 @@ export function StudentNavbar() {
                   href={item.href}
                   aria-current={active ? "page" : undefined}
                   className={cn(
-                    "flex min-h-12 items-center gap-3 rounded-lg px-4 text-base font-semibold transition-colors",
+                    "student-nav-item flex min-h-12 items-center gap-3 rounded-lg px-4 text-base font-semibold transition-colors",
                     active
                       ? "bg-primary-light text-primary"
                       : "text-neutral-muted hover:bg-background-app hover:text-neutral-dark",

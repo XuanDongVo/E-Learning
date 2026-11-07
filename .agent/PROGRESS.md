@@ -1,5 +1,15 @@
 # Project Progress
 
+## Indie Scrapbook Student theme + Home preview (2026-11-07)
+
+- Introduced Student-only scoped semantic tokens, paper/ink texture, typography, visual primitives and reduced-motion rules; Teacher base palette/components remain unchanged.
+- Reworked Student Home presentation (hand-drawn heading, paper hero, taped notebook list, polaroid mascot, paper Assignment note) without changing real Unit API queries, Streak/Level API rules or navigation contracts.
+- Streak/Level visuals now use sketch meters; backend-authored XP/Streak values remain authoritative.
+- Theme extends to root-mounted portals through CSS `body:has(.student-theme)` while the Student route is mounted (modern-browser requirement); Sonner remains semantically shared.
+- Source-level review completed; frontend lint/build and authenticated browser comparison require execution in the project environment. No backend, Teacher UI or API change.
+
+
+
 ## Student visual governance (documentation only — 2026-11-07)
 
 - Owner approved Indie Illustrated Scrapbook as the exclusive Student visual design; Teacher appearance stays unchanged (ADR 0032).

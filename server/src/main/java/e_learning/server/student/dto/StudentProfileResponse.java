@@ -7,5 +7,5 @@ import java.util.List;
 public record StudentProfileResponse(
         Long userId, String email, String fullName, LocalDate dateOfBirth, Gender gender,
         String phone, List<StudentGuardianResponse> guardians, StudentClassResponse currentClass,
-        String accountStatus
+        String accountStatus, String avatarKey
 ) {}

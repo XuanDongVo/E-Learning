@@ -13,7 +13,9 @@ import {
   Trophy,
   X,
 } from "lucide-react";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useQuery } from "@tanstack/react-query";
+import { studentProfileService } from "@/services/student/student-profile.service";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/components/auth/auth-provider";
 
@@ -29,6 +31,18 @@ export function StudentNavbar() {
   const pathname = usePathname();
   const { user, logout } = useAuth();
   const [open, setOpen] = useState(false);
+  const ownProfile = useQuery({
+    queryKey: ["student-profile"],
+    queryFn: studentProfileService.get,
+    enabled: Boolean(user),
+  });
+  const avatarKey = ownProfile.data?.data?.avatarKey;
+  const avatarMatch = avatarKey?.match(
+    /^dicebear:(adventurer|bottts|lorelei|pixel-art|fun-emoji|big-smile|notionists|open-peeps|micah|thumbs):(.{1,40})$/,
+  );
+  const avatarUrl = avatarMatch
+    ? `https://api.dicebear.com/9.x/${avatarMatch[1]}/svg?seed=${encodeURIComponent(avatarMatch[2])}`
+    : undefined;
 
   // Đóng menu khi đổi trang
   useEffect(() => setOpen(false), [pathname]);
@@ -101,6 +115,7 @@ export function StudentNavbar() {
               className="flex items-center gap-2.5 rounded-full py-1 pl-1 pr-3 transition-colors hover:bg-background-app"
             >
               <Avatar className="h-9 w-9">
+                <AvatarImage src={avatarUrl} alt="" />
                 <AvatarFallback>{initials}</AvatarFallback>
               </Avatar>
               <div className="max-w-36 leading-tight">
@@ -205,6 +220,7 @@ export function StudentNavbar() {
               className="flex min-w-0 flex-1 items-center gap-3 rounded-lg p-2 hover:bg-background-app"
             >
               <Avatar className="h-10 w-10 shrink-0">
+                <AvatarImage src={avatarUrl} alt="" />
                 <AvatarFallback>{initials}</AvatarFallback>
               </Avatar>
               <div className="min-w-0 flex-1">

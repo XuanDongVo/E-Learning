@@ -1,5 +1,16 @@
 # Project Progress
 
+## Student profile fidelity restoration and avatar persistence (2026-11-07)
+
+- Restored all four originally designed Profile tabs (`overview | learning | streak | personal`), polaroid avatar picker, KPI cards, calendar, activity history and private guardian editing.
+- Replaced Profile `MOCK` statistics and identity with existing Student profile/gamification/streak/assignment APIs and a new student-owned session learning-overview API; no fabricated progress.
+- Added `student_profiles.avatar_key` (V54) with migration backfill from existing gamification avatar key where available; added validated `PATCH /v1/student/profile/avatar` and profile response `avatarKey`.
+- Avatar update synchronizes an existing gamification avatar record without resetting personal/guardian data. Student Navbar now displays the same stored avatar key.
+- Guardian detail remains collapsed by default, shows only primary/first record, permits editing, and preserves the other records in full-collection PUT updates.
+- Validation: source checks and GitHub commit consistency only. Authenticated browser, database migration and frontend/backend compile/runtime tests still needed before release.
+
+
+
 ## Student Profile + typography consistency (2026-11-07)
 
 - Aligned Student Home display typography to the calmer visual scale used by the Student Profile reference (30–36px page headings; 22–26px section headings).

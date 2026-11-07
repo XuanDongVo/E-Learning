@@ -2,7 +2,7 @@
 
 **Decision:** 2026-11-05, `feature/student-gamification`  
 **Scope:** Student Home, Units list and Unit Detail (implementation stages 1–3).  
-**Visual identity:** Playful Classroom / Playful Learning; see `UI_ARCHITECTURE_GUIDELINES.md`.
+**Visual identity:** Indie Illustrated Scrapbook; see `INDIE_ILLUSTRATED_SCRAPBOOK_DESIGN_SYSTEM.md` and ADR 0032. Current code may still show legacy styles pending theme implementation.
 
 ## Product direction
 
@@ -84,19 +84,11 @@ underlying domain model. Do not expose a top-level Games route.
 
 ## Visual acceptance
 
-- Existing theme only: orange shared primary, cream/white surfaces, ink text,
-  learning blue for learning context, amber only for earned rewards/attention.
-- Plus Jakarta Sans and the existing typography/spacing scale; no raw palette
-  or arbitrary text/pixel sizes in new feature code. The semantic `text-page-title`
-  etc. aliases described in the guidelines are not currently registered as
-  CSS utilities; this slice uses the matching Tailwind type scale until a
-  separately validated typography-token migration is approved.
-- A single meaningful accent per region; a Unit is a navigable content object,
-  not another KPI card. Avoid eyebrow/emoji decoration and endless bounce.
-- Student primary interactive targets ≥44px. Visible keyboard focus, accessible
-  labels, reduced motion, and responsive layouts at 375/768/1024/1440px.
-- Validate `npm run lint`, `npm run build`, TypeScript, and browser visual QA when
-  possible. Do not call the feature production-ready without server E2E.
+- Follow the canonical [Indie Illustrated Scrapbook design rules](./INDIE_ILLUSTRATED_SCRAPBOOK_DESIGN_SYSTEM.md) for Student appearance, rather than legacy Playful Classroom values.
+- Preserve the product's current Unit/Activity hierarchy, verified data, screen states, primary action and readability.
+- Semantic tokens and shared components must be reused or scoped through the approved Student theme. The design rule does not imply that theme code is already implemented.
+- Student touch targets ≥44px; visible focus, clear labels, reduced motion and responsive layouts at 375/768/1024/1440px.
+- Validate lint/build and browser visual QA when applicable; do not claim runtime/API verification unless run.
 
 ## Future dependencies (not included in stages 1–3)
 

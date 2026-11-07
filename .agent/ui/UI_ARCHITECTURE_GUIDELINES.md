@@ -1,6 +1,6 @@
 # UI Architecture Guidelines
 
-**Status:** Source of truth for UI structure, color, typography, spacing and components (Ink-border + shadow-pop correction 2026-11-06; Playful Classroom palette retained)  
+**Status:** Source of truth for shared UI architecture and Teacher styling; Student visual identity governed by ADR 0032 and INDIE_ILLUSTRATED_SCRAPBOOK_DESIGN_SYSTEM.md (2026-11-07)  
 **Applies to:** Teacher UI and Student UI  
 **Audience:** Developers and AI agents who create or modify any screen
 
@@ -18,7 +18,7 @@ When two sources disagree, the higher one wins.
 
 1. **Domain model and phase specs** (`AGENTS.md`, `.agent/plans/*`) decide *what* a screen is for.
 2. **This document** decides *how* it is structured and styled.
-3. **Tokens in `globals.css`** are the only allowed values (Section 3).
+3. **Tokens in `globals.css`** are the currently implemented values (Section 3); Student-scoped overrides follow ADR 0032 after implementation. Canonical Student appearance is defined in [Indie Illustrated Scrapbook](./INDIE_ILLUSTRATED_SCRAPBOOK_DESIGN_SYSTEM.md).
 4. **Existing shared components** (`components/ui`, shared feature primitives) are reused before anything new is built.
 5. **Generic UI tools and skills** (for example `ui-ux-pro-max`) may be used to *check* states, accessibility and hierarchy. They must **not** introduce a new palette, font pairing, radius scale or layout pattern. Their "define a design direction" step means *choose a pattern from Section 5 and Section 9*, not invent one.
 
@@ -124,12 +124,9 @@ Tokens live in `globals.css`. **Raw palette utilities are forbidden in feature c
 (`text-slate-400`, `bg-emerald-50`, `border-rose-300`, `#hex`, `rgb()`), as are arbitrary sizes
 (`text-[11px]`, `h-[37px]`). Use a token or propose a new one (3.8).
 
-### 3.1 Color roles — Playful Classroom (current implementation)
+### 3.1 Current implemented semantic colors — Teacher/base; Student legacy until scoped theme implementation
 
-**Brand decision (2026-11-05): Playful Classroom.** Teacher and Student are one LearnUp
-product with a warm classroom identity. The live `client-e-learning/src/app/globals.css`
-is the value source of truth; the old indigo/cyan palette and measured contrast claims
-in previous versions of Sections 3.1–3.3 are superseded. Do not reintroduce them.
+**Implementation note:** This table describes the currently implemented global/Teacher palette. It is **not** the target Student visual contract. ADR 0032 assigns Student a separate Indie Illustrated Scrapbook identity; until scoped CSS is delivered, current Student screens may still inherit legacy values. The live `client-e-learning/src/app/globals.css` is the evidence of current values. Avoid reintroducing older indigo/cyan palette claims.
 
 | Current CSS variable | Current value (light theme) | Meaning | Usage |
 |---|---|---|---|
@@ -216,9 +213,9 @@ indigo/cyan token proposal from this document into CSS.**
 Status must never substitute for lifecycle, and reward must not resemble an error
 or teacher operational warning. Use text/icon first; avoid redundant badge walls.
 
-### 3.5 Typography
+### 3.5 Typography — current Teacher/base implementation
 
-One family: **Plus Jakarta Sans** (`--font-jakarta`). One scale: the semantic names below.
+The **current Teacher/base** uses **Plus Jakarta Sans** (`--font-jakarta`). Student target typography is defined exclusively by the Indie Illustrated Scrapbook visual specification; it is not yet implemented as a scoped theme. One scale: the semantic names below are current shared references, not a restriction against approved Student-specific visual type tokens.
 Do not use Tailwind defaults (`text-xs`, `text-sm`, `text-base`) or arbitrary pixel sizes in feature code.
 
 | Token | Size / line-height | Weight | Use |
@@ -545,81 +542,32 @@ Teacher UI is an **LMS / management system**. It should feel calm, editorial and
 - It must never look like a game: no confetti, mascots, big gradients, animated backgrounds or XP-style visuals.
 - A Teacher screen should pass the three-second scan test: purpose, main action and important state are obvious.
 
-## 8. Student UI — Playful Learning
+## 8. Student UI — Indie Illustrated Scrapbook
 
-**Vibe:** a modern, warm, motivating classroom for Grades 6–8; approachable,
-not childish, not a SaaS admin dashboard and not a full-screen arcade.
-Teacher is **Calm Classroom**; Student is **Playful Learning**. They share
-the same brand, Plus Jakarta Sans, semantic tokens, component primitives,
-spacing grammar, accessibility behavior, and navigation identity.
+**Only approved Student visual direction:** Hand Drawn × Hipness Purgatory (Indie Illustrated Scrapbook), per [ADR 0032](../decisions/0032-student-indie-scrapbook-visual-system.md). The canonical rules for palettes, typography, surfaces, linework, geometry, decoration and motion are in [INDIE_ILLUSTRATED_SCRAPBOOK_DESIGN_SYSTEM.md](./INDIE_ILLUSTRATED_SCRAPBOOK_DESIGN_SYSTEM.md). Do not use legacy Playful Classroom as a design instruction.
 
-### 8.1 Expressiveness budget
+### 8.1 Boundaries
 
-| Same across Teacher and Student | Student-specific expression |
-|---|---|
-| Orange CTA/brand, cream background, warm ink | Blue learning cues and progress |
-| Buttons, fields, tabs, dialogs, toasts and states | Amber XP, streak, achievements, celebratory moments |
-| Typography system, spacing and consistent shell ownership | Larger key figures, more breathable task surfaces |
-| Semantic success/error/warning rules | Mascot/illustration in suitable learning, empty, or result moments |
-| Keyboard/focus and mobile behavior | Short feedback animation tied to a learner action |
+- Applies to Student visual presentation regardless of route or screen type; do not maintain a hard-coded screen list inside the aesthetic document.
+- Teacher keeps existing design. Shared interaction, accessibility, auth, domain, responsive and state requirements remain binding.
+- Student visual tokens and variants must be scoped; no global Teacher visual changes as a side effect. Portal overlays and themes require particular care when implementing.
+- This documentation update is not the completed Student CSS/theme rollout. See current code for implementation truth.
 
-Use one memorable visual focus per Student screen (e.g. the current learning
-step, a progress path, or a meaningful award). Keep the rest restrained.
-No stock-photo wallpaper, decorative gradients behind text, random colored
-cards, competing call-to-actions, perpetual bouncing crowns or confetti
-outside earned milestones. Reuse current mascot/art direction where available.
+### 8.2 Student product behavior
 
-### 8.2 Screen patterns and tasks
+- Home remains a learning hub focused on real Units, not a KPI wall; do not invent resume/progress, rank, due-date or completion metrics.
+- Learning/activity remains one task at a time; Learning and Try Hard use their accepted interaction rules and server-supported data.
+- Rewards/ranking show actual source, unit and timeframe, with mock states clearly labeled; never present sample data as official results.
+- All data views handle loading, empty, error, disabled and success. Student touch controls remain ≥44px; keyboard focus and reduced motion are required.
+- App shell owns outer padding and container width; child pages do not add duplicate page-level padding.
 
-- **Home / Learning Hub:** welcome, one clear Learning action, available Units,
-  and a secondary route to teacher Assignments. No dashboard KPI wall,
-  fabricated resume/progress, locks, ranks or assignment state.
-- **Learning/activity:** one task at a time, 48px dominant action, progress
-  visible, hints/feedback based on the accepted activity rules.
-- **Rewards/leaderboard:** celebrate achievement without obscuring the metric.
-  A ranking shows metric, unit, timeframe, current-user position and data state;
-  tabs genuinely change the metric and announce selection accessibly.
-- **Progress:** show trends and next improvement steps, not merely decorative
-  numbers. If not implemented, mark the route as coming soon rather than making
-  a navigation promise to a placeholder.
-- **Student navigation:** shared orange LearnUp brand, clear active state,
-  thumb-accessible mobile controls and an accessible drawer. Do not mix a
-  blue/indigo alternate brand header with the orange Teacher brand.
-- Every data view handles loading, empty, error, disabled and success;
-  sample data must be explicitly identified and cannot masquerade as results.
-- For 360–375px screens, keep buttons ≥44px touch target and avoid sideways
-  scroll. Shared shell owns outer page padding and width; child pages do not
-  add duplicate `max-width`/outer padding.
+### 8.3 Activity modes and game experience
 
-### 8.3 Learning vs. Try Hard (same shell, different HUD)
+Practice/Learning: no timer, hint and one retry according to accepted domain rules. Try Hard: per-question timer, lives and no hints. Keep the same semantic flow while expressing the visual language through the approved Student theme. Games are an experience layer inside Activity, not a separate design identity.
 
-| | Learning | Try Hard |
-|---|---|---|
-| Intent | Understand and repeat | Challenge |
-| Tone color | `learning` / `learning-soft` | `warning` / `accent` for timer pressure |
-| HUD | Progress only | Progress + timer chip + lives where required |
-| Hints / explanation | Available | Hidden |
-| Failure | Not a formal event | Wrong answer costs a life; zero lives ends the run |
+### 8.4 Teacher/Student acceptance
 
-The shell, buttons, dialogs and result screen remain the same; the HUD
-and context-specific color differ. When both modes are offered, choose before
-starting using clear selectable rows.
-
-### 8.4 Games and motion
-
-Game artwork is an experience layer within Activity, not a second design
-system. Outside the game viewport, reuse shared components. Animate responses
-to learning actions (correct answer, milestone earned, transition to next
-step) rather than continuous decorative motion. Respect
-`prefers-reduced-motion`.
-
-### 8.5 Teacher/Student consistency review
-
-Before approving either UI, compare a Teacher and a Student screen side by
-side: logo, header/navigation, primary button, form controls, dialog, status,
-typography, width/padding and focus state must be recognizable as one product.
-Different density and illustration are expected, **different brand systems
-are not**.
+Compare a Teacher and Student screen to ensure the intended **visual distinction** and no styling leakage. Shared functional semantics, focus behavior and data states remain consistent; palette, font, paper texture and decorative geometry are intentionally different.
 
 ---
 

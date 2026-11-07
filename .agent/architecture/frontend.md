@@ -30,7 +30,9 @@ ActivitySession stores concrete Activity mode and selection_strategy.
 ActivitySessionQuestion.position is runtime sequence metadata only.
 AssessmentAttempt is a separate Assignment runtime contract.
 
-Follow UI_ARCHITECTURE_GUIDELINES.md for tokens, accessibility and responsive behavior.
+Follow `ui/UI_ARCHITECTURE_GUIDELINES.md` for shared UI architecture, accessibility and responsive behavior. ADR 0032 establishes the exclusive Student visual language in `ui/INDIE_ILLUSTRATED_SCRAPBOOK_DESIGN_SYSTEM.md`; Teacher retains its existing visual language.
+
+**Theme isolation contract (for a future implementation change):** Student semantic CSS variables, font families, surface effects and component variants must be scoped to the Student layout subtree; do not change Teacher defaults as a side effect. Review Radix portals/popovers/selects, shared toast containers, dark mode and root/body styles that may escape the scope. This documentation decision does not implement the new theme.
 
 
 ## Question authoring synchronization

@@ -1,6 +1,6 @@
 # .agent Knowledge Base Index
 
-**Index version:** 1.1  
+**Index version:** 1.2  
 **Last structural/source audit:** 2026-11-01  
 **Branch baseline:** `feature/teacher-assignment-analysis`  
 **Rule:** this index describes the documentation lifecycle; it does not replace the code as evidence of implementation.
@@ -16,6 +16,7 @@
 7. `plans/PHASES.md` and the active phase specification.
 8. One active task plan, if one exists.
 9. Relevant UI blueprint and Definition of Done checklist.
+10. For **Student UI changes**, also read `ui/INDIE_ILLUSTRATED_SCRAPBOOK_DESIGN_SYSTEM.md` and ADR 0032; for Teacher UI retain the current Teacher visual rules.
 
 ## 2. Authority and conflict resolution
 

@@ -1,5 +1,14 @@
 # Project Progress
 
+## Student visual governance (documentation only — 2026-11-07)
+
+- Owner approved Indie Illustrated Scrapbook as the exclusive Student visual design; Teacher appearance stays unchanged (ADR 0032).
+- Added canonical Student visual design document and aligned agent entry point, frontend-design skill, UI architecture, Student Learning Hub blueprint, frontend architecture, ADR index and documentation checklists.
+- Superseded only legacy Student visual decisions; retained Streak/Level, Activity and Assignment business rules.
+- **No CSS, component, UI runtime, backend or API implementation performed.** Scoped Student theme implementation and browser validation remain follow-up work.
+
+
+
 **Updated:** 2026-11-06
 **Branch:** `feature/student-gamification`
 **Canonical state:** `.agent/CURRENT_STATE.md`

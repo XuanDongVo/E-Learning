@@ -4,5 +4,42 @@
   "count": "{count} assignments",
   "emptyTitle": "No assignments found",
   "emptyDescription": "Try another title or keyword.",
-  "clearFilters": "Clear filters"
+  "clearFilters": "Clear filters",
+  "hero": {
+    "eyebrow": "Learning notebook",
+    "title": "Your assignments",
+    "description": "Review assignments, due dates, and your official attempts.",
+    "pending": "You have {count} unfinished assignments.",
+    "completed": "You have completed all current assignments."
+  },
+  "tabs": {
+    "todo": "Unfinished",
+    "inProgress": "In progress",
+    "submitted": "Submitted"
+  },
+  "filterLabel": "Filter assignments by status",
+  "searchLabel": "Search assignments by title",
+  "searchPlaceholder": "Search assignments...",
+  "status": {
+    "todo": "Not started",
+    "inProgress": "In progress",
+    "submitted": "Submitted",
+    "late": "Late / Overdue",
+    "dueToday": "Due today",
+    "dueSoon": "{count} days left"
+  },
+  "meta": {
+    "assignedWork": "ASSIGNMENT",
+    "questions": "{count} questions",
+    "minutes": "{count} min",
+    "noTimeLimit": "No time limit",
+    "noDueDate": "No due date"
+  },
+  "actions": {
+    "viewIntro": "View instructions",
+    "continue": "Continue assignment",
+    "viewResult": "View result"
+  },
+  "emptyFilterDescription": "There are no assignments in this category. Try a different filter.",
+  "emptyNoAssignments": "You have no assignments to complete."
 }

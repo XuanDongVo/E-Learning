@@ -1,5 +1,5 @@
 import { Search } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import type { AssignmentFilter } from "./types";
 
@@ -8,64 +8,53 @@ interface AssignmentFilterBarProps {
   onFilterChange: (filter: AssignmentFilter) => void;
   searchQuery: string;
   onSearchChange: (query: string) => void;
-  counts: Record<AssignmentFilter, number>;
 }
 
-const TABS: { value: AssignmentFilter; label: string }[] = [
-  { value: "TODO", label: "To do" },
-  { value: "IN_PROGRESS", label: "In progress" },
-  { value: "SUBMITTED", label: "Submitted" },
-];
+const TABS: AssignmentFilter[] = ["TODO", "IN_PROGRESS", "SUBMITTED"];
 
 export function AssignmentFilterBar({
   currentFilter,
   onFilterChange,
   searchQuery,
   onSearchChange,
-  counts,
 }: AssignmentFilterBarProps) {
-  return (
-    <div className="flex flex-wrap items-center justify-between gap-3 sm:gap-4">
-      <div
-        className="flex w-full sm:w-auto items-center gap-2 overflow-x-auto pb-1 sm:pb-0"
-        role="tablist"
-        aria-label="Assignment status"
-      >
-        {TABS.map((t) => {
-          const isActive = currentFilter === t.value;
-          return (
-            <button
-              key={t.value}
-              role="tab"
-              aria-selected={isActive}
-              className={cn(
-                "inline-flex min-h-[44px] shrink-0 items-center gap-2 rounded-full border-2 border-foreground bg-card px-3.5 sm:px-4 text-xs sm:text-sm font-bold shadow-pop-sm transition-all hover:-translate-x-px hover:-translate-y-px hover:shadow-pop active:translate-x-0.5 active:translate-y-0.5 active:shadow-none cursor-pointer",
-                isActive && "bg-primary text-foreground shadow-pop",
-              )}
-              onClick={() => onFilterChange(t.value)}
-            >
-              {t.label}
-              <span
-                className={cn(
-                  "grid h-6 min-w-[24px] place-items-center rounded-full bg-muted px-1.5 text-xs",
-                  isActive && "bg-card text-foreground",
-                )}
-              >
-                {counts[t.value] ?? 0}
-              </span>
-            </button>
-          );
-        })}
-      </div>
+  const t = useTranslations("student.assignments");
 
-      <div className="flex w-full sm:w-auto sm:max-w-xs flex-1 items-center gap-2 min-h-[46px] rounded-full border-2 border-foreground bg-card px-4 shadow-pop-sm focus-within:shadow-pop">
-        <Search size={18} className="shrink-0 text-muted-foreground" />
-        <Input
-          aria-label="Search assignments"
-          placeholder="Search assignments…"
+  return (
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div role="group" aria-label={t("filterLabel")} className="flex max-w-full gap-2 overflow-x-auto py-1">
+        {TABS.map((value) => (
+          <button
+            key={value}
+            type="button"
+            aria-pressed={currentFilter === value}
+            onClick={() => onFilterChange(value)}
+            className={cn(
+              "student-control student-assignment-filter shrink-0 px-4",
+              currentFilter === value ? "student-assignment-filter--active" : "student-control--quiet",
+            )}
+          >
+            {value === "TODO"
+              ? t("tabs.todo")
+              : value === "IN_PROGRESS"
+                ? t("tabs.inProgress")
+                : t("tabs.submitted")}
+          </button>
+        ))}
+      </div>
+      <div className="relative min-w-0 flex-1 sm:max-w-xs">
+        <Search
+          className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+          size={18}
+          aria-hidden="true"
+        />
+        <input
+          type="search"
+          aria-label={t("searchLabel")}
+          placeholder={t("searchPlaceholder")}
           value={searchQuery}
-          onChange={(e) => onSearchChange(e.target.value)}
-          className="border-0 bg-transparent text-sm shadow-none focus-visible:ring-0 focus-visible:outline-none"
+          onChange={(event) => onSearchChange(event.target.value)}
+          className="student-field student-assignment-search"
         />
       </div>
     </div>

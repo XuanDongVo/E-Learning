@@ -892,3 +892,145 @@ body:has(.student-theme) [data-slot="dialog-overlay"] {
     min-height: 182px;
   }
 }
+
+/* Student Assignment List and Intro — scoped to these two routes only.
+   Do not change the immersive Assignment Paper or Result visual language. */
+.student-theme .student-assignment-hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: clamp(22px, 4vw, 36px);
+}
+.student-theme .student-assignment-hero__symbol {
+  display: grid;
+  width: 72px;
+  height: 72px;
+  flex-shrink: 0;
+  place-items: center;
+  border: 2px solid var(--student-ink);
+  border-radius: 16px 5px 18px 6px / 5px 18px 6px 16px;
+  background: var(--student-paper);
+  color: var(--primary);
+  box-shadow: var(--elevation-sm);
+  transform: rotate(2deg);
+}
+.student-theme .student-assignment-card {
+  border-radius: 18px 6px 19px 6px / 6px 19px 6px 18px;
+}
+.student-theme .student-assignment-card__icon {
+  display: grid;
+  width: 46px;
+  height: 46px;
+  flex-shrink: 0;
+  place-items: center;
+  border: 2px solid var(--student-ink);
+  border-radius: 12px 4px 14px 4px;
+  background: var(--secondary);
+  color: var(--student-ink);
+  box-shadow: var(--elevation-sm);
+}
+.student-theme .student-assignment-card__details {
+  padding-top: 12px;
+  border-top: 1px dashed var(--border);
+}
+.student-theme .student-assignment-detail {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.student-theme .student-assignment-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 9px;
+  border: 1px solid var(--border);
+  border-radius: 9px 3px 9px 4px;
+  background: var(--student-paper);
+  color: var(--student-ink);
+  font-family: var(--student-font-body);
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1.4;
+}
+.student-theme .student-assignment-status--submitted {
+  background: var(--success-soft);
+  color: var(--success);
+}
+.student-theme .student-assignment-status--in-progress {
+  background: var(--info-soft);
+  color: var(--info);
+}
+.student-theme .student-assignment-status--urgent {
+  background: var(--warning-soft);
+  color: var(--warning);
+}
+.student-theme .student-assignment-status--overdue {
+  background: var(--destructive-soft);
+  color: var(--destructive);
+}
+.student-theme .student-assignment-action {
+  display: inline-flex;
+  min-height: 46px;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  text-align: center;
+  text-decoration: none;
+  box-shadow: var(--elevation-sm);
+}
+.student-theme .student-assignment-action:hover {
+  box-shadow: var(--elevation-md);
+  transform: translate(-1px, -1px);
+}
+.student-theme .student-assignment-title-link:hover {
+  color: var(--primary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+:is(.student-theme, body:has(.student-theme)) .student-assignment-filter--active {
+  border-color: var(--student-ink);
+  background: var(--accent);
+  color: var(--accent-foreground);
+  box-shadow: var(--elevation-sm);
+}
+.student-theme .student-assignment-search {
+  padding-left: 40px;
+}
+.student-theme .student-assignment-empty {
+  border-radius: 18px 6px 19px 6px / 6px 19px 6px 18px;
+}
+.student-theme .student-assignment-intro-hero {
+  border-radius: 20px 6px 22px 7px / 7px 22px 6px 20px;
+}
+.student-theme .student-assignment-info {
+  min-width: 0;
+  border: 2px solid var(--student-ink);
+  border-radius: 13px 4px 15px 5px / 5px 15px 4px 13px;
+  background: var(--student-paper);
+  box-shadow: var(--elevation-sm);
+}
+.student-theme .student-assignment-overdue {
+  border: 2px solid var(--destructive);
+  border-radius: 12px 4px 14px 5px;
+  background: var(--destructive-soft);
+  color: var(--destructive);
+}
+.student-theme .student-assignment-rules {
+  border-radius: 18px 6px 20px 6px / 6px 20px 6px 18px;
+}
+.student-theme .student-assignment-footer {
+  border: 2px solid var(--student-ink);
+  border-radius: 14px 4px 16px 5px / 5px 16px 4px 14px;
+  background: var(--student-kraft);
+}
+.student-theme .student-assignment-back {
+  text-decoration: none;
+}
+@media (max-width: 640px) {
+  .student-theme .student-assignment-hero__symbol { display: none; }
+  .student-theme .student-assignment-footer .student-assignment-action { width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .student-theme .student-assignment-action:hover { transform: none; }
+}

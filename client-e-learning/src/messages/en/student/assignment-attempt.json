@@ -50,17 +50,43 @@
         "singleTabTitle": "One tab only:",
         "singleTab": "Only one active session is allowed.",
         "warningTitle": "Leaving the attempt:",
-        "warning": "If you leave the attempt screen, the system may show a warning."
+        "warning": "If you leave the attempt screen, the system may show a warning.",
+        "submitTitle": "Submit:",
+        "submit": "Review your answers and confirm before your final submission."
+      },
+      "eyebrow": "ASSIGNMENT SHEET",
+      "start": "Start assignment",
+      "resume": "Continue assignment",
+      "viewResult": "View result",
+      "backToAssignments": "Back to assignments",
+      "actionDescription": {
+        "notStarted": "You have one official attempt. Review the rules before starting.",
+        "inProgress": "Your unfinished attempt is saved. Continue your existing attempt.",
+        "submitted": "This assignment has been submitted. View the result when available.",
+        "timedOut": "The attempt has timed out. You can view its result status."
       }
     },
-    "header": { "title": "Attempt", "leave": "Leave" },
-    "timer": { "remaining": "Remaining", "urgent": "Time is almost up" },
-    "save": { "saved": "Saved", "saving": "Saving...", "unsaved": "Unsaved", "error": "Save failed" },
+    "header": {
+      "title": "Attempt",
+      "leave": "Leave"
+    },
+    "timer": {
+      "remaining": "Remaining",
+      "urgent": "Time is almost up"
+    },
+    "save": {
+      "saved": "Saved",
+      "saving": "Saving...",
+      "unsaved": "Unsaved",
+      "error": "Save failed"
+    },
     "session": {
       "conflict": "This attempt is open in another tab",
       "conflictHint": "Only one tab may take this attempt. Close the other tab or return to assignments."
     },
-    "visibility": { "leaveWarning": "You left the attempt screen" },
+    "visibility": {
+      "leaveWarning": "You left the attempt screen"
+    },
     "submit": {
       "title": "Submit attempt?",
       "confirm": "Submit",

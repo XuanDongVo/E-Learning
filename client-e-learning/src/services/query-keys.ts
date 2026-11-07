@@ -43,4 +43,6 @@ export const QUERY_KEYS = {
   studentGamificationProfile: ["student", "gamification", "profile"] as const,
   studentStreak: ["student", "gamification", "streak"] as const,
   recentResults: ["recentResults"] as const,
+  gameGrades: ["student", "game", "grades"] as const,
+  gameUnits: (gradeId: number) => ["student", "game", "units", gradeId] as const,
 };

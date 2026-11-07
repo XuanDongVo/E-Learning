@@ -10,6 +10,22 @@
 
 ## Current stage
 
+- **Student Vocabulary Mini-Games (Bubble Pop & Word Rain):** Complete vertical slice
+  implemented and UX-revamped based on student user feedback. Includes database migrations (`V53__create_vocabulary_and_game_tables.sql`
+  and `V54__seed_vocabulary_words.sql`), Spring Boot JPA entities, repositories,
+  services, and REST controllers (`/v1/student/game/*`). Frontend features a dedicated Game tab in student navbar,
+  Grade/Unit selector Hub, wide responsive mode selector modal, and immersive Fullscreen runners.
+  - **Bubble Pop (Space Word Shooter Pacing & Bubble Sizing Tuning):** Limited on-screen bubbles to 4-5 bubbles to eliminate clutter, reduced falling speed to a gentle ~0.34-0.46 px/frame for comfortable reading, enlarged bubble radius to 48-52px (~96-104px diameter) with large 16px/17px bold typography. Implemented organic continuous bubble flow: when the target word is resolved (shot or reaches bottom), only the target bubble is recycled while all surrounding distractor bubbles continue their natural descent without abrupt disappearance or mid-air morphing; fresh distractors and the next target word enter smoothly from the top.
+  - **Word Rain (Enchanted Lotus Pond & Zero-Lag 60FPS Overhaul):** Completely eliminated all expensive `ctx.shadowBlur` Gaussian convolution calls across high-DPI canvases, replacing them with lightweight multi-pass layered strokes and hardware-accelerated radial gradients. Added delta-time physics interpolation for silky smooth, stutter-free movement. Slowed fall speed to a relaxed ~28-35s per drop so students have ample time to read and type comfortably without rush. Transformed the visual experience from a dark empty box into an enchanting, poetic night pond scene: fluffy animated rain clouds at the top with gentle drizzle, crescent moon & starry sky, luminous crystal dewdrops with high-contrast Vietnamese prompts and glowing golden letter pearl slots, click-to-lock drop targeting support, living lotus pond with animated undulating water waves, floating emerald lotus leaves (lá sen) and blooming pink lotus flowers (hoa sen), celebratory rainbow water fireworks upon word completion, and floating `+XP` / combo score banners.
+  - **Bubble Pop (Lag-Free Zero-Blur Optimization):** Removed `ctx.shadowBlur` overhead from laser bolts, target beacons, and floating texts, guaranteeing solid 60 FPS performance.
+  - **Game Navigation & Replay Fixes:**
+    - Fixed `removeChild` error on `/student/game/...`: Added `<meta name="google" content="notranslate" />` and `translate="no"` across root `layout.tsx`, added game route to `StudentShell` immersive routes (bypassing `StudentNavbar`), and protected `GameRunner` loading states.
+    - Fixed Replay button modal dismissal: Updated `onReplay` in both `BubblePopGame` and `WordRainGame` to immediately clear `result` state (`setResult(null)`) and incremented `gameKey` in `GameRunner` to cleanly remount and re-initialize a fresh session.
+  - **Game Selection Modal Scaling Correction:** Fixed CSS conflict where `dialog.tsx`'s default `sm:max-w-sm` was overriding caller max-width due to direct package `"cn"` imports bypassing `tailwind-merge`. Updated `src/lib/utils.ts` and `dialog.tsx` to use proper `twMerge(clsx(...))`, applied explicit `style={{ maxWidth: '860px', width: '94vw' }}` with `!max-w-[860px]` and `whitespace-nowrap` on action buttons, ensuring the modal is spacious, widescreen, and perfectly scaled across mobile and desktop.
+  - **Word Rain (Dreamy Night Pond):** Poetic lo-fi nighttime rain aesthetic with diagonal drizzle patterns, moonlit nebulae, drifting firefly embers, crystalline dewdrop glass capsules, animated water ripple rings upon landing, and water chime audio.
+  - Protected against browser extension translation DOM mutation crashes (`notranslate`, `translate="no"`).
+  - Backend compile (`mvn test-compile`) and frontend Turbopack build (`npm run build`) verified clean.
+
 - **Student Streak/Level v1 source:** accepted milestone policy (3/7/14/30 → 10/20/40/80 XP), daily completion service, ledger/Level integration, authenticated read APIs, and live Rewards overview added. No Leaderboard live data or Streak Freeze. Validation pending.
 
 - **Activity XP Engine Phases 1–4:** calculator, session audit, atomic terminal

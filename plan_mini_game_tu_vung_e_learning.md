@@ -46,24 +46,25 @@ Lưu ý: đây là kết quả rà soát các phần liên quan, không phải c
 
 ## 2. Mục tiêu tính năng
 
-Xây dựng khu vực mini game để học sinh ôn tập từ vựng tiếng Anh theo cấu trúc:
+Xây dựng khu vực mini game để học sinh ôn tập từ vựng tiếng Anh theo cấu trúc chuẩn Parroto (`parroto.app`):
 
-**Games → Chọn Grade → Chọn Unit → Chọn loại game → Chơi → Xem kết quả**
+**Games (Taskbar) → Chọn Grade → Chọn Unit → Chọn loại game (Bubble Pop / Word Rain) → Chơi Fullscreen → Báo cáo từ vựng**
 
-Từ vựng cần được gắn với Unit để học sinh học đúng nội dung đang học. Grade được suy ra từ Unit, tránh lưu trùng dữ liệu không cần thiết.
-
-### Mục tiêu MVP đề xuất
-
-1. Học sinh xem danh sách Grade và Unit có nội dung từ vựng.
-2. Học sinh chọn một Unit để luyện tập.
-3. Học sinh chọn một trong các trò chơi:
-   - **Word Matching:** Ghép từ tiếng Anh với nghĩa tiếng Việt.
-   - **Vocabulary Quiz:** Chọn nghĩa đúng của từ trong các đáp án.
-4. Hệ thống chấm điểm và hiển thị kết quả.
-5. Lưu lịch sử phiên chơi và câu trả lời.
-6. Tích hợp XP với hệ thống gamification sẵn có.
-
-Chưa đưa các tính năng nâng cao như thi đấu thời gian thực, bảng xếp hạng, PvP, học thích ứng hoặc spaced repetition vào MVP.
+### Các trò chơi hoàn thiện (Chuẩn Parroto):
+1. **Bubble Pop (Bắn bong bóng từ vựng):**
+   - Nghĩa tiếng Việt hiển thị trên đỉnh màn hình kèm nút loa phát âm.
+   - Các bong bóng từ tiếng Anh rực rỡ trôi nổi.
+   - Chạm/click đúng từ -> Nổ bong bóng "Pop!" kèm hiệu ứng nổ nước, tăng combo điểm.
+   - Chạm sai -> Rung lắc nhẹ, không phạt mất mạng, cho phép chọn lại.
+2. **Word Rain (Mưa từ vựng):**
+   - Giọt mưa mang nghĩa tiếng Việt rơi từ đám mây xuống.
+   - Học sinh gõ chữ cái trên bàn phím (hoặc bàn phím ảo trên tablet/mobile).
+   - Cơ chế gợi ý thông minh (Scaffolding): Khi giọt mưa rơi xuống thấp, các chữ cái gợi ý sẽ lần lượt hé lộ để học sinh không bị bí từ.
+   - Chạm đáy: Tự mở đáp án đúng + phát âm để học sinh học, không dừng game (Zero Penalty).
+3. **Giao diện Fullscreen:**
+   - Chế độ chơi tràn màn hình (Fullscreen) tập trung tối đa, không bị xao nhãng bởi thanh điều hướng.
+   - Có nút bật/tắt toàn màn hình trình duyệt, nút âm thanh, nút thoát có xác nhận an toàn.
+   - Màn hình kết thúc tổng kết danh sách "Từ đã nhớ tốt" và "Từ cần ôn lại" (kèm loa nghe lại phát âm).
 
 ---
 
@@ -373,15 +374,10 @@ Mọi thao tác trao XP phải có tính idempotent để tránh nhận thưởn
 
 ## 9. Database migration
 
-Đề xuất:
-
-- Giữ nguyên các migration Flyway hiện có V1–V20.
-- Không sửa hoặc viết lại migration cũ.
-- Nếu thiết kế được duyệt, tạo migration mới tiếp theo, dự kiến `V21__create_vocabulary_game_tables.sql`.
+- Giữ nguyên các migration Flyway hiện có V1–V52.
+- Migration cấu trúc: `V53__create_vocabulary_and_game_tables.sql`.
+- Migration seed dữ liệu: `V54__seed_vocabulary_words.sql` (nạp sẵn 22 từ vựng mẫu chuẩn SGK cho Grade 6 Unit 1 & Unit 2, tạo Unit cho Grade 7 & 8).
 - Migration chỉ chứa DDL: tạo bảng, khóa ngoại, unique constraints và index.
-- Nếu cần dữ liệu demo, cân nhắc migration seed riêng tiếp theo, không trộn lẫn tùy tiện với migration cấu trúc.
-- Không đặt các truy vấn nghiệp vụ SELECT/INSERT/UPDATE của ứng dụng trong migration. Các truy vấn runtime thuộc repository/JPQL.
-- Đối chiếu naming, kiểu ID, timestamp, audit columns và quy ước schema hiện tại trước khi viết migration.
 
 ---
 

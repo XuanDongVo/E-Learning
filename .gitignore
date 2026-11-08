@@ -67,6 +67,10 @@ Desktop.ini
 # Vercel
 .vercel
 
+# Landing page source backup
+landingpage-backup/
+client-e-learning/landingpage-backup/
+
 
 # Spring Boot / Maven
 HELP.md

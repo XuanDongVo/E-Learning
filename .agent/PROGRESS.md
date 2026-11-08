@@ -10,6 +10,16 @@
 
 ## Current stage
 
+- **Interactive E-Learning Landing Page — "The Learning Storybook" (Saltwake Inspired):**
+  - Integrated complete animated storybook experience in `client-e-learning/src/components/landing/*` and `client-e-learning/src/app/page.tsx`.
+  - **Scene 01 Hero Book:** 3D mouse parallax tilt (`perspective(1200px)`), rich emerald leather cover with golden typography, layered page turn physics, pop-up 3D papercraft landscape with rolling hills, rotating Knowledge Lighthouse, floating vocabulary hot-air balloon, and interactive 4-chapter timeline scrubber (`0.0 -> 1.0`).
+  - **Scene 02 Explore World:** Hand-drawn dashed trail, wobbly wooden signposts tilting on hover, interactive Learning Mode vs Try Hard Mode preview switcher with heart counters and hints, and prominent scrapbook note for independent Activity vs Assignment concept.
+  - **Scene 03 Play & Practice:** Interactive Bubble Pop sandbox (popping bubbles with paper star confetti, word polaroid cards, and reset) + Word Rain night lotus pond (luminous raindrop selection with water chime audio, glowing lotus blossoms, and ripple wave physics).
+  - **Scene 04 Rewards Scrapbook:** Interactive XP progress bar with `+25/+50 XP` buttons that level up dynamically, weekly streak calendar with interactive rubber stamp thud interaction, and 3-tier podium with bobbing crowns and medals.
+  - **Scene 06 Final Page:** Open horizon illustration with student adventurer, minimal footer, and direct CTAs into actual student/teacher login routes.
+  - **Custom Ink Cursor & Web Audio API:** Smooth cursor trailing ink bead with splash ripple on click, and pure browser Web Audio API sound synthesis (`sound-effects.ts`) for page turns, bubble pops, water chimes, and stamp thuds with an in-navbar sound toggle.
+  - Verified clean with `npm run build` (0 errors) and `npm run dev` (`HTTP 200 OK`).
+
 - **Student Vocabulary Mini-Games (Bubble Pop & Word Rain):** Complete vertical slice
   implemented and UX-revamped based on student user feedback. Includes database migrations (`V53__create_vocabulary_and_game_tables.sql`
   and `V54__seed_vocabulary_words.sql`), Spring Boot JPA entities, repositories,

@@ -1,4 +1,5 @@
 @import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Nunito:ital,wght@0,400..800;1,400..800&family=Patrick+Hand&display=swap");
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
@@ -7,7 +8,9 @@
 
 @theme inline {
   --font-sans: "Plus Jakarta Sans", sans-serif;
-  --font-display: "Plus Jakarta Sans", sans-serif;
+  --font-display: "Patrick Hand", cursive, sans-serif;
+  --font-hand: "Caveat", cursive, sans-serif;
+  --font-mono: "Courier Prime", monospace;
   --font-heading: var(--font-sans);
 
   --radius-sm: calc(var(--radius) - 4px);
@@ -109,6 +112,35 @@
   --color-rank-1: var(--rank-1);
   --color-rank-2: var(--rank-2);
   --color-rank-3: var(--rank-3);
+
+  /* Storybook Landing Page Theme Tokens */
+  --color-parchment: #F6EFE0;
+  --color-parchment-light: #FAF6EC;
+  --color-parchment-warm: #EDE2CA;
+  --color-parchment-deep: #DFD0B0;
+
+  --color-ink-muted: #524338;
+  --color-ink-soft: #786759;
+
+  --color-sage: #4F7A5A;
+  --color-sage-light: #DCE8D8;
+  --color-sage-dark: #375940;
+
+  --color-star: #F2B84B;
+  --color-star-light: #FBE7B2;
+  --color-star-amber: #D99526;
+
+  --color-terracotta: #D96B43;
+  --color-terracotta-light: #F8DCD2;
+  --color-terracotta-dark: #B54F2A;
+
+  --color-blush: #EFA89A;
+  --color-blush-light: #FBE5E0;
+
+  --shadow-ink: 4px 4px 0px #261E19;
+  --shadow-ink-sm: 2.5px 2.5px 0px #261E19;
+  --shadow-ink-lg: 7px 7px 0px #261E19;
+  --shadow-paper: 0 10px 25px -5px rgba(38, 30, 25, 0.12);
 }
 
 /* =========================================================
@@ -133,10 +165,29 @@
   --border-strong: #2b2220;
 
   /* Brand identity */
-  --ink: #4f3e34;
+  --ink: #261E19;
   --ink-fg: #fffdf8;
   --pop-shadow: #e9c99a;
   --marker: #f0a81c;
+
+  /* Storybook Palette */
+  --bg-parchment: #F6EFE0;
+  --bg-parchment-light: #FAF6EC;
+  --bg-parchment-warm: #EDE2CA;
+  --bg-parchment-deep: #DFD0B0;
+  --ink-primary: #261E19;
+  --ink-muted: #524338;
+  --sage-primary: #4F7A5A;
+  --sage-light: #DCE8D8;
+  --star-gold: #F2B84B;
+  --terracotta: #D96B43;
+  --blush-pink: #EFA89A;
+
+  /* Storybook Fonts */
+  --font-patrick-hand: "Patrick Hand", cursive, sans-serif;
+  --font-caveat: "Caveat", cursive, sans-serif;
+  --font-nunito: "Nunito", system-ui, sans-serif;
+  --font-courier-prime: "Courier Prime", monospace;
 
   /* Elevation */
   --elevation-sm: 2px 2px 0 var(--pop-shadow);
@@ -441,4 +492,153 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* =========================================================
+   THE LEARNING STORYBOOK - HAND-DRAWN CRAFT STYLES
+   ========================================================= */
+
+/* Nền giấy thủ công với vân hạt nhẹ không gây lag */
+.parchment-surface {
+  background-color: var(--bg-parchment, #F6EFE0);
+  background-image: 
+    radial-gradient(rgba(38, 30, 25, 0.045) 1px, transparent 0),
+    radial-gradient(rgba(217, 107, 67, 0.03) 1px, transparent 0);
+  background-size: 26px 26px;
+  background-position: 0 0, 13px 13px;
+}
+
+/* Đường kẻ vở học sinh thủ công */
+.notebook-lines {
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent,
+    transparent 31px,
+    rgba(38, 30, 25, 0.09) 31px,
+    rgba(38, 30, 25, 0.09) 32px
+  );
+}
+
+/* Viền mực vẽ tay hơi bất quy tắc */
+.ink-border {
+  border: 2.5px solid #261E19;
+  box-shadow: 4px 4px 0px #261E19;
+}
+
+.ink-border-sm {
+  border: 2px solid #261E19;
+  box-shadow: 2.5px 2.5px 0px #261E19;
+}
+
+.ink-border-lg {
+  border: 3px solid #261E19;
+  box-shadow: 7px 7px 0px #261E19;
+}
+
+.hand-drawn-card {
+  border: 2.5px solid #261E19;
+  border-radius: 18px 22px 16px 20px / 20px 16px 22px 18px;
+  box-shadow: 5px 5px 0px #261E19;
+}
+
+/* Washi Tape trang trí kiểu Scrapbook */
+.washi-tape {
+  position: relative;
+  background-color: rgba(242, 184, 75, 0.65);
+  border-left: 2px dashed rgba(38, 30, 25, 0.25);
+  border-right: 2px dashed rgba(38, 30, 25, 0.25);
+  box-shadow: 0 2px 4px rgba(38, 30, 25, 0.08);
+}
+
+.washi-tape-sage {
+  background-color: rgba(127, 166, 130, 0.55);
+  border-left: 2px dashed rgba(38, 30, 25, 0.22);
+  border-right: 2px dashed rgba(38, 30, 25, 0.22);
+}
+
+.washi-tape-blush {
+  background-color: rgba(239, 168, 154, 0.62);
+  border-left: 2px dashed rgba(38, 30, 25, 0.22);
+  border-right: 2px dashed rgba(38, 30, 25, 0.22);
+}
+
+/* Ambient Animations có trọng lượng, chậm rãi */
+@keyframes floatSlow {
+  0%, 100% {
+    transform: translate3d(0, 0px, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate3d(0, -7px, 0) rotate(1.5deg);
+  }
+}
+
+@keyframes pencilTilt {
+  0%, 100% {
+    transform: rotate(-4deg) translateY(0px);
+  }
+  50% {
+    transform: rotate(3deg) translateY(-5px);
+  }
+}
+
+@keyframes starTwinkle {
+  0%, 100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 0.92;
+  }
+  50% {
+    transform: scale(1.1) rotate(8deg);
+    opacity: 1;
+  }
+}
+
+@keyframes rainDropFall {
+  0% {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(230px);
+    opacity: 0;
+  }
+}
+
+@keyframes inkRippleExpand {
+  0% {
+    transform: translate(-50%, -50%) scale(0.3);
+    opacity: 0.75;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(2.6);
+    opacity: 0;
+  }
+}
+
+.animate-float-slow {
+  animation: floatSlow 5.5s ease-in-out infinite;
+}
+
+.animate-pencil-tilt {
+  animation: pencilTilt 6.5s ease-in-out infinite;
+}
+
+.animate-star-twinkle {
+  animation: starTwinkle 4.2s ease-in-out infinite;
+}
+
+.animate-ink-ripple {
+  animation: inkRippleExpand 0.55s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Dừng animation khi tab bị ẩn để tối ưu hiệu năng */
+.tab-hidden .animate-float-slow,
+.tab-hidden .animate-pencil-tilt,
+.tab-hidden .animate-star-twinkle {
+  animation-play-state: paused !important;
 }

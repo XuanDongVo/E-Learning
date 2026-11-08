@@ -31,25 +31,13 @@ export default async function RootLayout({
   const messages = await getMessages();
 
   return (
-    <html
-      lang={locale}
-      className="h-full antialiased notranslate"
-      translate="no"
-      data-scroll-behavior="smooth"
-    >
-      <head>
-        <meta name="google" content="notranslate" />
-      </head>
-      <body className="min-h-full flex flex-col bg-[#F8FAFC] notranslate" translate="no">
-        <NextIntlClientProvider messages={messages}>
-          <QueryProvider>
-            <AuthProvider>
-              <ConfirmDialogProvider>{children}</ConfirmDialogProvider>
-            </AuthProvider>
-          </QueryProvider>
-          <Toaster />
-        </NextIntlClientProvider>
-      </body>
-    </html>
+    <NextIntlClientProvider messages={messages}>
+      <QueryProvider>
+        <AuthProvider>
+          <ConfirmDialogProvider>{children}</ConfirmDialogProvider>
+        </AuthProvider>
+      </QueryProvider>
+      <Toaster />
+    </NextIntlClientProvider>
   );
 }

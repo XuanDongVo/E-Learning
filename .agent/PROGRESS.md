@@ -1,5 +1,12 @@
 # Project Progress
 
+## Landing Page — The Learning Storybook & Lucide Icon Refactor (2026-11-08)
+
+- Implemented The Learning Storybook interactive landing page in `client-e-learning/src/app/page.tsx` and root layout `src/app/layout.tsx`.
+- Refactored all landing components (`Navbar`, `Scene01HeroBook`, `Scene02ExploreWorld`, `Scene03PlayPractice`, `Scene04RewardsScrapbook`, `Scene06FinalPage`) to use consistent `lucide-react` icons and removed casual/system Unicode emojis per team feedback.
+- Cleaned up visual clutter to focus on content, hand-drawn scrapbook art, and genuine platform capabilities (Grade/Unit/Topic exploration, Learning & Try Hard modes, Bubble Pop & Word Rain games, XP/Streak rewards).
+- Frontend validation: `npm run build` completed with 0 errors. Backend database V54 Flyway migration checksum reconciled with main branch.
+
 ## Absolute seven-day Auth/Session lifecycle (2026-11-08)
 
 - Added an absolute session deadline fixed at login; access/refresh rotation cannot

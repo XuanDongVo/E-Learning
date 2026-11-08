@@ -1,6 +1,14 @@
 "use client";
 
 import React, { useState } from "react";
+import {
+  Star,
+  Flame,
+  Check,
+  CheckCircle2,
+  Crown,
+  Medal,
+} from "lucide-react";
 import { sounds } from "./sound-effects";
 
 export default function Scene04RewardsScrapbook() {
@@ -65,9 +73,9 @@ export default function Scene04RewardsScrapbook() {
                 </span>
                 <span
                   aria-hidden="true"
-                  className="animate-star-twinkle font-display text-2xl text-star-amber"
+                  className="animate-star-twinkle inline-flex items-center gap-1 font-display text-2xl text-star-amber"
                 >
-                  ★ Level {level}
+                  <Star className="h-5 w-5 fill-star text-star-amber" /> Level {level}
                 </span>
               </div>
 
@@ -147,8 +155,8 @@ export default function Scene04RewardsScrapbook() {
                 <span className="rounded-lg bg-terracotta px-3 py-1 font-mono text-xs font-bold text-parchment-light ink-border-sm">
                   STICKER 02
                 </span>
-                <span className="font-mono text-xs font-bold text-terracotta">
-                  CHUỖI 5 NGÀY 🔥
+                <span className="inline-flex items-center gap-1 font-mono text-xs font-bold text-terracotta">
+                  CHUỖI 5 NGÀY <Flame className="h-4 w-4 fill-terracotta text-terracotta" />
                 </span>
               </div>
 
@@ -185,14 +193,16 @@ export default function Scene04RewardsScrapbook() {
                         }`}
                       >
                         <span className="font-mono text-[10px] font-bold">{day}</span>
-                        <span className="mt-1 text-base">
-                          {isDonePast
-                            ? "⭐"
-                            : isToday && isStampedToday
-                            ? "🔥"
-                            : isToday
-                            ? "❓"
-                            : "⚪"}
+                        <span className="mt-1 flex items-center justify-center h-5 w-5">
+                          {isDonePast ? (
+                            <Check className="h-4 w-4 text-ink stroke-[2.5]" />
+                          ) : isToday && isStampedToday ? (
+                            <Flame className="h-4 w-4 text-terracotta fill-terracotta" />
+                          ) : isToday ? (
+                            <span className="h-2 w-2 rounded-full bg-terracotta animate-ping" />
+                          ) : (
+                            <span className="h-1.5 w-1.5 rounded-full bg-ink/20" />
+                          )}
                         </span>
                       </div>
                     );
@@ -207,16 +217,17 @@ export default function Scene04RewardsScrapbook() {
                       onClick={handleStampToday}
                       className="group inline-flex items-center gap-2 rounded-xl bg-terracotta px-4 py-2 font-display text-lg font-bold text-parchment-light ink-border-sm shadow-ink-sm transition-all hover:scale-105 active:scale-95"
                     >
+                      <CheckCircle2 className="h-5 w-5" />
                       <span>Đóng dấu hôm nay!</span>
-                      <span className="text-xl">🖃</span>
                     </button>
                   ) : (
                     <div
-                      className={`flex items-center gap-2 rounded-xl bg-star-light px-4 py-2 font-hand text-xl font-bold text-ink ink-border-sm ${
+                      className={`inline-flex items-center gap-2 rounded-xl bg-star-light px-4 py-2 font-hand text-xl font-bold text-ink ink-border-sm ${
                         stampBounce ? "animate-bounce" : ""
                       }`}
                     >
-                      <span>🎉 Đã điểm danh thành công chuỗi 5 ngày!</span>
+                      <CheckCircle2 className="h-5 w-5 text-terracotta" />
+                      <span>Đã điểm danh thành công chuỗi 5 ngày!</span>
                     </div>
                   )}
                 </div>
@@ -253,7 +264,9 @@ export default function Scene04RewardsScrapbook() {
                 <div className="flex items-end justify-center gap-3 pt-4">
                   {/* Hạng 2 (Bạc) */}
                   <div className="flex flex-col items-center">
-                    <span className="text-2xl animate-float-slow">🥈</span>
+                    <span className="flex h-8 w-8 items-center justify-center animate-float-slow">
+                      <Medal className="h-6 w-6 text-slate-400 fill-slate-300" />
+                    </span>
                     <span className="font-display text-base font-bold text-ink">
                       Minh Anh
                     </span>
@@ -264,7 +277,9 @@ export default function Scene04RewardsScrapbook() {
 
                   {/* Hạng 1 (Vàng) */}
                   <div className="flex flex-col items-center">
-                    <span className="text-3xl animate-bounce">👑</span>
+                    <span className="flex h-9 w-9 items-center justify-center animate-bounce">
+                      <Crown className="h-7 w-7 text-star fill-star" />
+                    </span>
                     <span className="font-display text-base font-bold text-terracotta">
                       Gia Huy
                     </span>
@@ -275,7 +290,9 @@ export default function Scene04RewardsScrapbook() {
 
                   {/* Hạng 3 (Đồng) */}
                   <div className="flex flex-col items-center">
-                    <span className="text-2xl animate-float-slow">🥉</span>
+                    <span className="flex h-8 w-8 items-center justify-center animate-float-slow">
+                      <Medal className="h-6 w-6 text-amber-700 fill-amber-600" />
+                    </span>
                     <span className="font-display text-base font-bold text-ink">
                       Bảo Ngọc
                     </span>

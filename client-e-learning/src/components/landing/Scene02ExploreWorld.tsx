@@ -1,6 +1,19 @@
 "use client";
 
 import React, { useState } from "react";
+import {
+  Compass,
+  BookOpen,
+  Zap,
+  RotateCw,
+  CheckCircle2,
+  XCircle,
+  Lightbulb,
+  Pin,
+  Heart,
+  Sparkles,
+  Flame,
+} from "lucide-react";
 import { sounds } from "./sound-effects";
 
 interface SampleQuestion {
@@ -128,8 +141,8 @@ export default function Scene02ExploreWorld() {
             {/* Biển 1: Khám phá theo chủ đề */}
             <div className="group relative rounded-2xl bg-parchment-warm p-6 ink-border shadow-ink transition-all duration-200 hover:-translate-y-1.5 hover:rotate-[-1.5deg] hover:shadow-ink-lg">
               <div className="mb-4 flex items-center justify-between">
-                <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-star-light text-2xl ink-border-sm shadow-ink-sm">
-                  🧭
+                <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-star-light ink-border-sm shadow-ink-sm">
+                  <Compass className="h-6 w-6 text-ink" />
                 </span>
                 <span className="font-mono text-xs font-bold text-ink-muted">
                   PHÂN CẤP RÕ RÀNG
@@ -155,8 +168,8 @@ export default function Scene02ExploreWorld() {
             {/* Biển 2: Luyện tập đa dạng */}
             <div className="group relative rounded-2xl bg-parchment-warm p-6 ink-border shadow-ink transition-all duration-200 hover:-translate-y-1.5 hover:rotate-[1.5deg] hover:shadow-ink-lg">
               <div className="mb-4 flex items-center justify-between">
-                <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-sage-light text-2xl ink-border-sm shadow-ink-sm">
-                  📚
+                <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-sage-light ink-border-sm shadow-ink-sm">
+                  <BookOpen className="h-6 w-6 text-ink" />
                 </span>
                 <span className="font-mono text-xs font-bold text-ink-muted">
                   NGÂN HÀNG CÂU HỎI
@@ -185,8 +198,8 @@ export default function Scene02ExploreWorld() {
             {/* Biển 3: Hai cách thử sức */}
             <div className="group relative rounded-2xl bg-parchment-warm p-6 ink-border shadow-ink transition-all duration-200 hover:-translate-y-1.5 hover:rotate-[-1deg] hover:shadow-ink-lg">
               <div className="mb-4 flex items-center justify-between">
-                <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-terracotta-light text-2xl ink-border-sm shadow-ink-sm">
-                  ⚡
+                <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-terracotta-light ink-border-sm shadow-ink-sm">
+                  <Zap className="h-6 w-6 text-ink" />
                 </span>
                 <span className="font-mono text-xs font-bold text-ink-muted">
                   CHẾ ĐỘ THỬ THÁCH
@@ -230,24 +243,26 @@ export default function Scene02ExploreWorld() {
               <button
                 type="button"
                 onClick={() => handleToggleMode("learning")}
-                className={`rounded-lg px-4 py-2 font-display text-base font-bold transition-all ${
+                className={`inline-flex items-center gap-1.5 rounded-lg px-4 py-2 font-display text-base font-bold transition-all ${
                   selectedMode === "learning"
                     ? "bg-sage text-parchment-light ink-border-sm shadow-sm"
                     : "text-ink hover:text-sage-dark"
                 }`}
               >
-                🌱 Learning Mode
+                <Sparkles className="h-4 w-4" />
+                <span>Learning Mode</span>
               </button>
               <button
                 type="button"
                 onClick={() => handleToggleMode("tryhard")}
-                className={`rounded-lg px-4 py-2 font-display text-base font-bold transition-all ${
+                className={`inline-flex items-center gap-1.5 rounded-lg px-4 py-2 font-display text-base font-bold transition-all ${
                   selectedMode === "tryhard"
                     ? "bg-terracotta text-parchment-light ink-border-sm shadow-sm"
                     : "text-ink hover:text-terracotta"
                 }`}
               >
-                🔥 Try Hard Mode
+                <Flame className="h-4 w-4" />
+                <span>Try Hard Mode</span>
               </button>
             </div>
           </div>
@@ -260,20 +275,34 @@ export default function Scene02ExploreWorld() {
               </span>
               <div className="flex items-center gap-3">
                 {selectedMode === "tryhard" ? (
-                  <span className="font-mono text-sm font-bold text-terracotta">
-                    Mạng sống: {"❤️".repeat(hearts)} ({hearts}/3)
-                  </span>
+                  <div className="flex items-center gap-1.5 font-mono text-sm font-bold text-terracotta">
+                    <span>Mạng sống:</span>
+                    <span className="flex items-center gap-0.5">
+                      {Array.from({ length: 3 }).map((_, i) => (
+                        <Heart
+                          key={i}
+                          className={`h-4 w-4 ${
+                            i < hearts
+                              ? "fill-terracotta text-terracotta"
+                              : "text-ink/30"
+                          }`}
+                        />
+                      ))}
+                    </span>
+                    <span>({hearts}/3)</span>
+                  </div>
                 ) : (
                   <span className="font-mono text-xs font-bold text-sage">
-                    ✓ Không giới hạn thời gian & lượt sai
+                    Không giới hạn thời gian & lượt sai
                   </span>
                 )}
                 <button
                   type="button"
                   onClick={handleDrawNewQuestion}
-                  className="rounded-lg bg-parchment-warm px-3 py-1 font-mono text-xs font-bold text-ink border border-ink/30 transition-all hover:bg-star-light active:scale-95"
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-parchment-warm px-3 py-1 font-mono text-xs font-bold text-ink border border-ink/30 transition-all hover:bg-star-light active:scale-95"
                 >
-                  Đổi câu hỏi khác ↻
+                  <RotateCw className="h-3 w-3" />
+                  <span>Đổi câu hỏi khác</span>
                 </button>
               </div>
             </div>
@@ -310,8 +339,18 @@ export default function Scene02ExploreWorld() {
                       {String.fromCharCode(65 + idx)}. {opt}
                     </span>
                     {isSelected && (
-                      <span className="text-lg">
-                        {isCorrect ? "✅ Chính xác!" : "❌ Chưa đúng"}
+                      <span className="inline-flex items-center gap-1 text-sm font-bold">
+                        {isCorrect ? (
+                          <>
+                            <CheckCircle2 className="h-4 w-4 text-sage-dark" />
+                            <span>Chính xác!</span>
+                          </>
+                        ) : (
+                          <>
+                            <XCircle className="h-4 w-4 text-terracotta-dark" />
+                            <span>Chưa đúng</span>
+                          </>
+                        )}
                       </span>
                     )}
                   </button>
@@ -323,7 +362,7 @@ export default function Scene02ExploreWorld() {
             {selectedMode === "learning" && (
               <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-xl bg-sage-light/60 p-3.5 border border-sage/40">
                 <div className="flex items-center gap-2">
-                  <span className="text-lg">💡</span>
+                  <Lightbulb className="h-4 w-4 text-sage-dark shrink-0" />
                   <span className="font-sans text-sm font-semibold text-sage-dark">
                     {showHint
                       ? currentQuestion.hint
@@ -356,8 +395,8 @@ export default function Scene02ExploreWorld() {
             className="washi-tape-blush pointer-events-none absolute -top-3 left-8 h-6 w-32 -rotate-3"
           />
           <div className="flex items-start gap-4">
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-star text-xl ink-border-sm">
-              📌
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-star ink-border-sm">
+              <Pin className="h-5 w-5 text-ink" />
             </span>
             <div className="flex flex-col">
               <h4 className="font-display text-xl font-bold text-ink">

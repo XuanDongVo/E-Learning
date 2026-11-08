@@ -1,6 +1,13 @@
 "use client";
 
 import React, { useState } from "react";
+import {
+  Sparkles,
+  Trophy,
+  RotateCcw,
+  Droplets,
+  Gamepad2,
+} from "lucide-react";
 import { LANDING_ROUTES } from "@/config/landing-routes";
 import { sounds } from "./sound-effects";
 
@@ -207,7 +214,10 @@ export default function Scene03PlayPractice() {
                         </button>
                       ) : (
                         <div className="animate-scale-in flex items-center gap-1.5 rounded-xl border-2 border-dashed border-ink/40 bg-parchment-light/95 px-3 py-1 font-hand text-base font-bold text-terracotta shadow-sm">
-                          <span>✨ {b.word}:</span>
+                          <span className="inline-flex items-center gap-1 font-bold text-terracotta">
+                            <Sparkles className="h-3.5 w-3.5" />
+                            {b.word}:
+                          </span>
                           <span className="text-ink">{b.meaning}</span>
                           <span className="rounded bg-star-light px-1 text-xs text-ink">+10 XP</span>
                         </div>
@@ -219,16 +229,17 @@ export default function Scene03PlayPractice() {
                 {/* Khi người dùng đã nổ hết bong bóng */}
                 {poppedIds.length === INITIAL_BUBBLES.length && (
                   <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-parchment-light/95 p-4 text-center backdrop-blur-sm">
-                    <span className="text-4xl animate-bounce">🎉</span>
+                    <Trophy className="h-12 w-12 text-star animate-bounce" />
                     <p className="mt-2 font-display text-2xl font-bold text-ink">
                       Tuyệt vời! Bạn đã mở khóa toàn bộ từ vựng mẫu!
                     </p>
                     <button
                       type="button"
                       onClick={handleResetBubbles}
-                      className="mt-3 rounded-xl bg-star px-4 py-2 font-display text-lg font-bold text-ink ink-border-sm transition-transform hover:scale-105"
+                      className="mt-3 inline-flex items-center gap-1.5 rounded-xl bg-star px-4 py-2 font-display text-lg font-bold text-ink ink-border-sm transition-transform hover:scale-105"
                     >
-                      Thổi bong bóng mới 🫧
+                      <RotateCcw className="h-4 w-4" />
+                      <span>Thổi bong bóng mới</span>
                     </button>
                   </div>
                 )}
@@ -304,8 +315,9 @@ export default function Scene03PlayPractice() {
                             : "bg-[#FAF6EC]/95 text-ink"
                         }`}
                       >
-                        <span className="font-mono text-[10px] font-bold uppercase text-terracotta">
-                          💧 Giọt mưa
+                        <span className="inline-flex items-center gap-1 font-mono text-[10px] font-bold uppercase text-terracotta">
+                          <Droplets className="h-3 w-3" />
+                          Giọt mưa
                         </span>
                         <span className="mt-0.5 font-display text-lg">
                           {item.word}
@@ -318,7 +330,7 @@ export default function Scene03PlayPractice() {
                 {/* Thẻ nghĩa từ vựng nổi ở giữa hồ sen */}
                 <div className="relative z-10 mt-4 rounded-xl bg-parchment-light/95 p-2.5 text-center text-ink ink-border-sm">
                   <span className="font-hand text-lg font-bold text-terracotta">
-                    🌸 Nghĩa từ vựng:{" "}
+                    Nghĩa từ vựng:{" "}
                   </span>
                   <span className="font-sans text-sm font-bold text-ink">
                     {selectedRain.meaning}
@@ -399,9 +411,7 @@ export default function Scene03PlayPractice() {
             className="group inline-flex items-center gap-3 rounded-2xl bg-terracotta px-8 py-4 font-display text-2xl tracking-wide text-parchment-light ink-border shadow-ink transition-all duration-200 hover:-translate-y-1 hover:shadow-ink-lg active:translate-y-0"
           >
             <span>Vào đấu trường trò chơi tiếng Anh</span>
-            <span className="text-2xl transition-transform duration-200 group-hover:rotate-12">
-              🎮
-            </span>
+            <Gamepad2 className="h-6 w-6 transition-transform duration-200 group-hover:rotate-12" />
           </a>
           <span className="mt-3 font-hand text-lg font-bold text-ink-muted">
             Kết nối trực tiếp với ngân hàng từ vựng từng Unit do thầy cô tạo

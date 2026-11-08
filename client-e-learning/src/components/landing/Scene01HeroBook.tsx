@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useCallback } from "react";
+import { ArrowRight, BookOpen, ArrowDown } from "lucide-react";
 import {
   AuthSessionInfo,
   resolvePrimaryCtaRoute,
@@ -145,18 +146,7 @@ export default function Scene01HeroBook({
                 className="group inline-flex items-center gap-3 rounded-2xl bg-terracotta px-6 py-3.5 font-display text-xl tracking-wide text-parchment-light ink-border shadow-ink transition-all duration-200 hover:-translate-y-1 hover:shadow-ink-lg active:translate-y-0"
               >
                 <span>Bắt đầu học</span>
-                <svg
-                  aria-hidden="true"
-                  viewBox="0 0 24 24"
-                  className="h-5 w-5 transition-transform duration-200 group-hover:translate-x-1"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.8"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M5 12h14M12 5l7 7-7 7" />
-                </svg>
+                <ArrowRight className="h-5 w-5 transition-transform duration-200 group-hover:translate-x-1" />
               </a>
 
               <button
@@ -168,7 +158,7 @@ export default function Scene01HeroBook({
                 className="inline-flex items-center gap-2 rounded-2xl bg-parchment-warm px-6 py-3.5 font-display text-xl tracking-wide text-ink ink-border shadow-ink-sm transition-all duration-200 hover:-translate-y-1 hover:bg-star-light hover:shadow-ink active:translate-y-0"
               >
                 <span>Mở sách ngay</span>
-                <span className="text-xl">📖</span>
+                <BookOpen className="h-5 w-5 text-ink" />
               </button>
             </div>
 
@@ -178,15 +168,7 @@ export default function Scene01HeroBook({
                 aria-hidden="true"
                 className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-ink bg-star-light animate-bounce"
               >
-                <svg
-                  viewBox="0 0 20 20"
-                  className="h-4 w-4 text-ink"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.4"
-                >
-                  <path d="M10 4v12M5 11l5 5 5-5" strokeLinecap="round" />
-                </svg>
+                <ArrowDown className="h-4 w-4 text-ink" />
               </span>
               <span className="font-hand text-xl font-bold text-ink">
                 Cuộn xuống hoặc nhấn để mở sách
@@ -630,8 +612,8 @@ export default function Scene01HeroBook({
               >
                 <span className="font-hand text-base font-bold text-ink">
                   {progress < 0.3
-                    ? "✨ Nhấp vào cuốn sách để mở thế giới học tập"
-                    : "📖 Tiến trình mở sách: " + Math.round(progress * 100) + "%"}
+                    ? "Nhấp vào cuốn sách để mở thế giới học tập"
+                    : `Tiến trình mở sách: ${Math.round(progress * 100)}%`}
                 </span>
               </div>
             </div>

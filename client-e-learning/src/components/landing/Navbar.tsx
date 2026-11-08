@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { Volume2, VolumeX, Menu, X } from "lucide-react";
 import {
   AuthSessionInfo,
   LANDING_ROUTES,
@@ -133,7 +134,11 @@ export default function Navbar({ session, onNavigateSection }: NavbarProps) {
             title={soundActive ? "Tắt âm thanh hiệu ứng" : "Bật âm thanh hiệu ứng"}
             className="inline-flex items-center gap-1.5 rounded-lg border-2 border-dashed border-ink/40 bg-parchment-warm/80 px-2.5 py-1 text-xs font-bold text-ink transition-all hover:border-ink hover:bg-star-light active:scale-95"
           >
-            <span className="text-sm">{soundActive ? "🔔" : "🔕"}</span>
+            {soundActive ? (
+              <Volume2 className="h-4 w-4 text-ink" />
+            ) : (
+              <VolumeX className="h-4 w-4 text-ink-muted" />
+            )}
             <span className="font-mono text-[11px]">{soundActive ? "Âm thanh: Bật" : "Âm thanh: Tắt"}</span>
           </button>
 
@@ -162,9 +167,13 @@ export default function Navbar({ session, onNavigateSection }: NavbarProps) {
             type="button"
             onClick={toggleSound}
             aria-label="Bật tắt âm thanh"
-            className="flex h-10 w-10 items-center justify-center rounded-xl bg-parchment-warm ink-border-sm text-base"
+            className="flex h-10 w-10 items-center justify-center rounded-xl bg-parchment-warm ink-border-sm text-ink"
           >
-            {soundActive ? "🔔" : "🔕"}
+            {soundActive ? (
+              <Volume2 className="h-5 w-5 text-ink" />
+            ) : (
+              <VolumeX className="h-5 w-5 text-ink-muted" />
+            )}
           </button>
           <button
             type="button"
@@ -173,21 +182,11 @@ export default function Navbar({ session, onNavigateSection }: NavbarProps) {
             aria-label={mobileOpen ? "Đóng menu điều hướng" : "Mở menu điều hướng"}
             className="flex h-10 w-10 items-center justify-center rounded-xl bg-parchment-warm ink-border-sm"
           >
-            <svg
-              aria-hidden="true"
-              viewBox="0 0 24 24"
-              className="h-5 w-5 text-ink"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-            >
-              {mobileOpen ? (
-                <path d="M6 6L18 18M6 18L18 6" />
-              ) : (
-                <path d="M4 7H20M4 12H20M4 17H15" />
-              )}
-            </svg>
+            {mobileOpen ? (
+              <X className="h-5 w-5 text-ink" />
+            ) : (
+              <Menu className="h-5 w-5 text-ink" />
+            )}
           </button>
         </div>
       </nav>

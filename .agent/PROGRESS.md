@@ -1,5 +1,12 @@
 # Project Progress
 
+## Container deployment and local configuration (2026-11-08)
+
+- Added a Compose stack for PostgreSQL, Spring Boot, Next.js and Nginx; only Nginx publishes port 80, and `/v1/*` is reverse-proxied to the backend.
+- Added production deployment instructions and an Nginx request-size limit suitable for existing media uploads.
+- Spring Boot defaults to the `dev` profile and imports an ignored `.env.dev` from either the repository or `server/` working directory, enabling direct IntelliJ runs without committed local values.
+- Removed committed fallback database, JWT and Cloudinary credentials. Production now fails fast when its required environment is missing; `.env.prod` remains ignored and Compose is started with `--env-file .env.prod`.
+
 ## Dedicated login portals and Landing logout (2026-11-08)
 
 - Logout now routes every protected UI back to Landing (`/`) through the shared AuthGuard; the former generic `/login` redirect is removed.

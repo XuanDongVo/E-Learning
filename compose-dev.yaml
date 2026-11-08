@@ -1,0 +1,123 @@
+
+name: e-learning-dev
+
+services:
+  db:
+    image: postgres:15.15-alpine3.23
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:?Set POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER:?Set POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
+
+    ports:
+      - "127.0.0.1:5433:5432"
+
+    volumes:
+      - postgres-docker-data:/var/lib/postgresql/data
+
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U "$$POSTGRES_USER" -d "$$POSTGRES_DB"
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+    networks:
+      - internal
+
+  backend:
+    build:
+      context: ./server
+
+    restart: unless-stopped
+
+    env_file:
+      - .env.dev
+
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+
+      # PostgreSQL trong Docker network
+      DB_URL: jdbc:postgresql://db:5432/${POSTGRES_DB}
+      DB_USERNAME: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+
+      JWT_COOKIE_SECURE: "false"
+
+    depends_on:
+      db:
+        condition: service_healthy
+
+    ports:
+      - "127.0.0.1:8080:8080"
+
+    healthcheck:
+      # Tomcat starts only after Spring Boot has completed Flyway migration.
+      test: ["CMD-SHELL", "bash -c '</dev/tcp/127.0.0.1/8080'"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 60s
+
+    networks:
+      - internal
+
+  frontend:
+    build:
+      context: ./client-e-learning
+      args:
+        # Browser calls same-origin /v1/*; Next.js proxies internally to Docker.
+        NEXT_PUBLIC_API_URL: ""
+        API_PROXY_TARGET: "http://backend:8080"
+
+    restart: unless-stopped
+
+    ports:
+      - "127.0.0.1:3000:3000"
+
+    depends_on:
+      backend:
+        condition: service_healthy
+
+    networks:
+      - internal
+
+  seed:
+    image: postgres:15.15-alpine3.23
+
+    restart: "no"
+
+    depends_on:
+      db:
+        condition: service_healthy
+      backend:
+        condition: service_healthy
+
+    environment:
+      PGHOST: db
+      PGPORT: "5432"
+      PGDATABASE: ${POSTGRES_DB}
+      PGUSER: ${POSTGRES_USER}
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+      SEED_CONFIRM: ${SEED_CONFIRM:-}
+
+    volumes:
+      - ./server/src/test/resources/db/seed/grade7:/seed/sql:ro
+      - ./docker/seed/run.sh:/seed/run.sh:ro
+
+    entrypoint:
+      - /bin/sh
+      - /seed/run.sh
+
+    networks:
+      - internal
+
+volumes:
+  postgres-docker-data:
+
+networks:
+  internal:
+    driver: bridge

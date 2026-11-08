@@ -224,7 +224,7 @@ export default function StudentLoginPage() {
 
               <label className="block text-xs font-bold uppercase tracking-wider text-[#2b2825]" htmlFor="student-email">
                 Email học sinh
-                <p className="text-[11px] lowercase">g7.seed.student02@example.test có thể thay 02 -> 55</p>
+                <p className="text-[11px] lowercase">g7.seed.student02@example.test có thể thay 02 → 55</p>
                 <div className="relative mt-2">
                   <Mail className="pointer-events-none absolute left-3.5 top-3.5 h-4 w-4 text-[#8a8275]" />
                   <input

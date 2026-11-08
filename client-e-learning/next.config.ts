@@ -6,7 +6,7 @@ const apiProxyTarget = process.env.API_PROXY_TARGET?.replace(/\/+$/, "");
 
 const nextConfig: NextConfig = {
   reactCompiler: true,
-  // Trace only the runtime dependencies needed for the Docker image.
+  // // Trace only the runtime dependencies needed for the Docker image.
   output: "standalone",
   async rewrites() {
     if (!apiProxyTarget) return [];

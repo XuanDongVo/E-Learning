@@ -7,6 +7,9 @@
   - Introduced dedicated `--landing-page-ink: #261E19` and scoped `--ink: var(--landing-page-ink, #261E19)` strictly inside `.parchment-surface`.
   - Defined dedicated `--font-landing-page-display: "Patrick Hand", cursive, sans-serif;`, `--font-landing-hand`, and `--font-landing-mono` in `@theme inline`.
   - Migrated all Landing Page components (`Navbar`, `Scene01HeroBook`, `Scene02ExploreWorld`, `Scene03PlayPractice`, `Scene04RewardsScrapbook`, `Scene06FinalPage`) to use `font-landing-page-display`, `font-landing-hand`, and `font-landing-mono`.
+  - Removed all redundant landing CSS variables from `:root` and scoped them into `.parchment-surface`.
+  - Scoped all custom landing classes (`.notebook-lines`, `.ink-border`, `.hand-drawn-card`, `.washi-tape*`, `.animate-*`) strictly under `.parchment-surface` to eliminate any possible leakage into Teacher or Student UI.
+  - Restored `bg-[#F8FAFC]` to the root `<body>` in `src/app/layout.tsx` to maintain original background color consistency for Teacher and auth routes.
 - Validation: `npm run build` compiled cleanly with 0 errors across all routes.
 
 ## Landing Page — The Learning Storybook & Lucide Icon Refactor (2026-11-08)

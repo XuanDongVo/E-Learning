@@ -179,25 +179,8 @@
   --pop-shadow: #e9c99a;
   --marker: #f0a81c;
 
-  /* Storybook Palette */
+  /* Dedicated Storybook Landing Page Ink Token (Leader requested) */
   --landing-page-ink: #261E19;
-  --bg-parchment: #F6EFE0;
-  --bg-parchment-light: #FAF6EC;
-  --bg-parchment-warm: #EDE2CA;
-  --bg-parchment-deep: #DFD0B0;
-  --ink-primary: var(--landing-page-ink, #261E19);
-  --ink-muted: #524338;
-  --sage-primary: #4F7A5A;
-  --sage-light: #DCE8D8;
-  --star-gold: #F2B84B;
-  --terracotta: #D96B43;
-  --blush-pink: #EFA89A;
-
-  /* Storybook Fonts */
-  --font-patrick-hand: "Patrick Hand", cursive, sans-serif;
-  --font-caveat: "Caveat", cursive, sans-serif;
-  --font-nunito: "Nunito", system-ui, sans-serif;
-  --font-courier-prime: "Courier Prime", monospace;
 
   /* Elevation */
   --elevation-sm: 2px 2px 0 var(--pop-shadow);
@@ -506,11 +489,25 @@
 
 /* =========================================================
    THE LEARNING STORYBOOK - HAND-DRAWN CRAFT STYLES
+   Tất cả styles, biến màu và animations được SCOPE chặt chẽ
+   bên trong .parchment-surface để bảo vệ 100% Teacher và Student.
    ========================================================= */
 
 /* Nền giấy thủ công với vân hạt nhẹ không gây lag */
 .parchment-surface {
   --ink: var(--landing-page-ink, #261E19);
+  --bg-parchment: #F6EFE0;
+  --bg-parchment-light: #FAF6EC;
+  --bg-parchment-warm: #EDE2CA;
+  --bg-parchment-deep: #DFD0B0;
+  --ink-primary: var(--landing-page-ink, #261E19);
+  --ink-muted: #524338;
+  --sage-primary: #4F7A5A;
+  --sage-light: #DCE8D8;
+  --star-gold: #F2B84B;
+  --terracotta: #D96B43;
+  --blush-pink: #EFA89A;
+
   background-color: var(--bg-parchment, #F6EFE0);
   background-image: 
     radial-gradient(rgba(38, 30, 25, 0.045) 1px, transparent 0),
@@ -519,8 +516,8 @@
   background-position: 0 0, 13px 13px;
 }
 
-/* Đường kẻ vở học sinh thủ công */
-.notebook-lines {
+/* Đường kẻ vở học sinh thủ công - Scoped to landing */
+.parchment-surface .notebook-lines {
   background-image: repeating-linear-gradient(
     to bottom,
     transparent,
@@ -530,30 +527,30 @@
   );
 }
 
-/* Viền mực vẽ tay hơi bất quy tắc */
-.ink-border {
+/* Viền mực vẽ tay hơi bất quy tắc - Scoped to landing */
+.parchment-surface .ink-border {
   border: 2.5px solid #261E19;
   box-shadow: 4px 4px 0px #261E19;
 }
 
-.ink-border-sm {
+.parchment-surface .ink-border-sm {
   border: 2px solid #261E19;
   box-shadow: 2.5px 2.5px 0px #261E19;
 }
 
-.ink-border-lg {
+.parchment-surface .ink-border-lg {
   border: 3px solid #261E19;
   box-shadow: 7px 7px 0px #261E19;
 }
 
-.hand-drawn-card {
+.parchment-surface .hand-drawn-card {
   border: 2.5px solid #261E19;
   border-radius: 18px 22px 16px 20px / 20px 16px 22px 18px;
   box-shadow: 5px 5px 0px #261E19;
 }
 
-/* Washi Tape trang trí kiểu Scrapbook */
-.washi-tape {
+/* Washi Tape trang trí kiểu Scrapbook - Scoped to landing */
+.parchment-surface .washi-tape {
   position: relative;
   background-color: rgba(242, 184, 75, 0.65);
   border-left: 2px dashed rgba(38, 30, 25, 0.25);
@@ -561,13 +558,13 @@
   box-shadow: 0 2px 4px rgba(38, 30, 25, 0.08);
 }
 
-.washi-tape-sage {
+.parchment-surface .washi-tape-sage {
   background-color: rgba(127, 166, 130, 0.55);
   border-left: 2px dashed rgba(38, 30, 25, 0.22);
   border-right: 2px dashed rgba(38, 30, 25, 0.22);
 }
 
-.washi-tape-blush {
+.parchment-surface .washi-tape-blush {
   background-color: rgba(239, 168, 154, 0.62);
   border-left: 2px dashed rgba(38, 30, 25, 0.22);
   border-right: 2px dashed rgba(38, 30, 25, 0.22);
@@ -631,25 +628,25 @@
   }
 }
 
-.animate-float-slow {
+.parchment-surface .animate-float-slow {
   animation: floatSlow 5.5s ease-in-out infinite;
 }
 
-.animate-pencil-tilt {
+.parchment-surface .animate-pencil-tilt {
   animation: pencilTilt 6.5s ease-in-out infinite;
 }
 
-.animate-star-twinkle {
+.parchment-surface .animate-star-twinkle {
   animation: starTwinkle 4.2s ease-in-out infinite;
 }
 
-.animate-ink-ripple {
+.parchment-surface .animate-ink-ripple {
   animation: inkRippleExpand 0.55s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 /* Dừng animation khi tab bị ẩn để tối ưu hiệu năng */
-.tab-hidden .animate-float-slow,
-.tab-hidden .animate-pencil-tilt,
-.tab-hidden .animate-star-twinkle {
+:is(.parchment-surface.tab-hidden, .tab-hidden .parchment-surface) .animate-float-slow,
+:is(.parchment-surface.tab-hidden, .tab-hidden .parchment-surface) .animate-pencil-tilt,
+:is(.parchment-surface.tab-hidden, .tab-hidden .parchment-surface) .animate-star-twinkle {
   animation-play-state: paused !important;
 }

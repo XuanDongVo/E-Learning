@@ -21,7 +21,7 @@ export default function RootLayout({
       <head>
         <meta name="google" content="notranslate" />
       </head>
-      <body className="min-h-full flex flex-col notranslate" translate="no">
+      <body className="min-h-full flex flex-col bg-[#F8FAFC] notranslate" translate="no">
         {children}
       </body>
     </html>

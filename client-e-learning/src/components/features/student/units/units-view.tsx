@@ -12,6 +12,8 @@ import { UnitCard } from "./unit-card";
 import { Pipo } from "@/components/ui/mascot";
 import { SkeletonGrid } from "@/components/ui/skeleton/skeleton-grid";
 import { RegionState } from "@/components/feedback";
+import { PaperSurface } from "@/components/student-ui/paper-surface";
+import { ScrapbookHeading } from "@/components/student-ui/scrapbook-heading";
 
 export function UnitsView() {
   const tErrors = useTranslations("errors");
@@ -35,23 +37,25 @@ export function UnitsView() {
   );
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6 pb-8">
-      <header className="flex items-center justify-between gap-4 border-b border-border pb-6">
+    <div className="student-units-page space-y-6 pb-8">
+      <PaperSurface as="section" variant="kraft" tape tapePosition="right" className="student-units-hero">
         <div className="space-y-2">
-          <p className="text-sm font-semibold text-primary">Learning</p>
-          <h1 className="text-3xl font-extrabold text-foreground">Chọn Unit để học</h1>
-          <p className="max-w-xl text-base text-muted-foreground">
+          <p className="student-meta text-primary">Learning</p>
+          <ScrapbookHeading as="h1" className="student-page-title text-foreground">
+            Chọn Unit để học
+          </ScrapbookHeading>
+          <p className="student-body max-w-xl text-muted-foreground">
             Khám phá phần học và hoạt động luyện tập do giáo viên công bố.
           </p>
         </div>
         <div className="hidden shrink-0 sm:block" aria-hidden="true">
           <Pipo mood="happy" size={92} color="primary" stage={2} />
         </div>
-      </header>
+      </PaperSurface>
 
       {units.length > 0 && (
         <div className="relative max-w-md">
-          <label htmlFor="student-unit-search" className="mb-2 block text-base font-semibold text-foreground">
+          <label htmlFor="student-unit-search" className="student-label mb-2 block text-foreground">
             Tìm bài học
           </label>
           <Search className="absolute bottom-3 left-3.5 h-4 w-4 text-muted-foreground" aria-hidden="true" />
@@ -61,7 +65,7 @@ export function UnitsView() {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Nhập tên Unit..."
-            className="h-11 w-full rounded-xl border border-input bg-card pl-10 pr-4 text-base text-foreground placeholder:text-muted-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+            className="student-field pl-10 pr-4 placeholder:text-muted-foreground"
           />
         </div>
       )}
@@ -102,7 +106,7 @@ export function UnitsView() {
             <button
               type="button"
               onClick={() => setSearchTerm("")}
-              className="text-base font-semibold text-primary hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+              className="student-label min-h-11 text-primary hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
             >
               Xóa tìm kiếm
             </button>

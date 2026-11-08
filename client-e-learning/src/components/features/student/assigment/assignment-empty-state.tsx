@@ -1,24 +1,31 @@
-"use client";
-
+import { NotebookPen } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { Pipo } from "@/components/ui/mascot";
-import { Button } from "@/components/ui/button";
+import { PaperSurface } from "@/components/student-ui/paper-surface";
+import { ScrapbookHeading } from "@/components/student-ui/scrapbook-heading";
 
 interface AssignmentEmptyStateProps {
   onClearFilters: () => void;
+  canClear: boolean;
+  hasSearch: boolean;
 }
 
-export function AssignmentEmptyState({ onClearFilters }: AssignmentEmptyStateProps) {
+export function AssignmentEmptyState({ onClearFilters, canClear, hasSearch }: AssignmentEmptyStateProps) {
   const t = useTranslations("student.assignments");
 
   return (
-    <div className="grid justify-items-center gap-2 rounded-3xl border-2 border-dashed border-border p-8 sm:p-10 text-center">
-      <Pipo mood="think" size={100} />
-      <h2 className="text-lg font-bold">{t("emptyTitle")}</h2>
-      <p className="text-sm text-muted-foreground">{t("emptyDescription")}</p>
-      <Button type="button" className="mt-3" onClick={onClearFilters}>
-        {t("clearFilters")}
-      </Button>
-    </div>
+    <PaperSurface as="section" variant="lined" className="student-assignment-empty flex flex-col items-center gap-3 p-7 text-center sm:p-10">
+      <NotebookPen size={33} className="text-primary" aria-hidden="true" />
+      <ScrapbookHeading as="h2" className="student-section-title text-foreground">
+        {t("emptyTitle")}
+      </ScrapbookHeading>
+      <p className="student-body max-w-md text-muted-foreground">
+        {hasSearch ? t("emptyDescription") : canClear ? t("emptyFilterDescription") : t("emptyNoAssignments")}
+      </p>
+      {canClear && (
+        <button type="button" className="student-control student-control--secondary px-5" onClick={onClearFilters}>
+          {t("clearFilters")}
+        </button>
+      )}
+    </PaperSurface>
   );
 }

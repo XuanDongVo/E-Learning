@@ -1,5 +1,90 @@
 # Project Progress
 
+## Absolute seven-day Auth/Session lifecycle (2026-11-08)
+
+- Added an absolute session deadline fixed at login; access/refresh rotation cannot
+  extend the seven-day session, and legacy refresh tokens retain their existing
+  expiry as the transition deadline.
+- Protected resources now accept only ACCESS tokens and re-check current account
+  status before controllers. INACTIVE accounts receive `ACCOUNT_INACTIVE`, auth
+  cookies are cleared, and refresh cannot issue replacement tokens.
+- Logout now clears cookies without requiring a valid access token. Spring Security
+  authentication/authorization failures use the standard API envelope.
+- The frontend now performs one single-flight refresh and one replay for 401s,
+  coordinates refresh across tabs with Web Locks, broadcasts session termination,
+  clears account-scoped cache/transient runtime state, and preserves a clear login
+  reason.
+- No database migration or endpoint was added. Maven tests, frontend Vitest, lint,
+  TypeScript, and build were explicitly skipped at owner request; runtime/browser
+  validation remains required before release.
+- Added localized frontend messages for network failures and stale requests that
+  finish after their authentication session has ended.
+
+## Student Profile edit navigation (2026-11-08)
+
+- The Profile hero's `Chỉnh sửa` action now switches to the Personal tab, enables editing, and scrolls the tab region into view.
+- Smooth scrolling respects the user's reduced-motion preference; profile data and API behavior are unchanged.
+
+## Student UI standardization — Units branch + Rewards (2026-11-07)
+
+- Standardized `/student/units`, `/student/units/:unitId`, `/student/units/:unitId/activities`, the immersive Activity route wrapper, and `/student/rewards` with the scoped Indie Illustrated Scrapbook roles and shared Student recipes.
+- Corrected the nested Activity list route to read `unitId` from its path parameter rather than an optional duplicate query parameter; Activity APIs, mode selection, runtime scoring and result behavior are unchanged.
+- Units and Activity discovery preserve live data, filters and loading/error/empty states without invented progress, lock, duration or recommendation data.
+- Rewards retains the authenticated XP/Streak Top 50, personal standing, honors and terminal ActivitySession feed. Its Student-only podium derives from the same ranking data; generated third-party avatars were removed and honor loading/error/empty states were added.
+- Centralized Units/Rewards layout, filters, cards, podium and ranking geometry in `styles/student/`; feature files contain no raw palette utilities, arbitrary sizes or default Tailwind type scale.
+- Updated the active route/design contracts and added `ui/STUDENT_REWARDS_BLUEPRINT.md` so documentation no longer describes live Rewards as mock/sample data.
+- Validation: TypeScript passes; focused ESLint passes with zero findings; full ESLint passes with zero errors and 56 existing warnings; static feature token/type guard and `git diff --check` are clean.
+
+## Student UI standardization — Home + Profile reference routes (2026-11-07)
+
+- Standardized `/student` and `/student/profile` as the first Indie Illustrated Scrapbook reference routes without changing their APIs, queries, Profile tabs or server-authored data.
+- Consolidated Student typography roles, paper/tape variants, controls, fields, progress and portal dialog treatment under `styles/student/` and `components/student-ui`.
+- Removed page-local raw colors and arbitrary type/radius/shadow values from both reference routes; StudentShell remains the owner of outer page padding.
+- Profile avatar selection now uses the shared accessible Dialog primitive; the existing guardian email validation and Home shared SkeletonList change were preserved.
+- Aligned active UI/frontend documentation with the implemented scoped theme. Remaining Student routes are explicitly migration debt, not an alternate visual system.
+- TypeScript (`tsc --noEmit`) passes. Focused ESLint passes with zero errors and three DiceBear `<img>` optimization warnings; full ESLint passes with zero errors and 59 existing warnings. Production build is blocked before application compilation by the environment's unavailable SWC native binding/cache permissions, and authenticated viewport/browser verification remains pending because browser-control access was not granted.
+
+## Student profile fidelity restoration and avatar persistence (2026-11-07)
+
+- Restored all four originally designed Profile tabs (`overview | learning | streak | personal`), polaroid avatar picker, KPI cards, calendar, activity history and private guardian editing.
+- Replaced Profile `MOCK` statistics and identity with existing Student profile/gamification/streak/assignment APIs and a new student-owned session learning-overview API; no fabricated progress.
+- Added `student_profiles.avatar_key` (V54) with migration backfill from existing gamification avatar key where available; added validated `PATCH /v1/student/profile/avatar` and profile response `avatarKey`.
+- Avatar update synchronizes an existing gamification avatar record without resetting personal/guardian data. Student Navbar now displays the same stored avatar key.
+- Guardian detail remains collapsed by default, shows only primary/first record, permits editing, and preserves the other records in full-collection PUT updates.
+- Validation: source checks and GitHub commit consistency only. Authenticated browser, database migration and frontend/backend compile/runtime tests still needed before release.
+
+
+
+## Student Profile + typography consistency (2026-11-07)
+
+- Aligned Student Home display typography to the calmer visual scale used by the Student Profile reference (30–36px page headings; 22–26px section headings).
+- Codified Student-specific typography roles in `.agent/ui/INDIE_ILLUSTRATED_SCRAPBOOK_DESIGN_SYSTEM.md` and `styles/student/typography.css`; restored canonical Patrick Hand/Caveat/Nunito/Courier Prime roles while preserving the latest CSS material updates.
+- Added a server-backed Student Profile at `/student/profile`. The old `/student/profile/[id]` demo route now renders the same real profile instead of mock data.
+- Guardian details are hidden by default behind an accessible eye toggle. A single primary/first guardian is exposed for editing; all other stored guardians are preserved in the PUT payload because the backend performs collection replacement.
+- Saving updates the existing student-profile endpoint; the view is refreshed from the server. Email and class data remain read-only.
+- Authenticated browser and full frontend build/E2E checks remain pending.
+
+
+
+## Indie Scrapbook Student theme + Home preview (2026-11-07)
+
+- Introduced Student-only scoped semantic tokens, paper/ink texture, typography, visual primitives and reduced-motion rules; Teacher base palette/components remain unchanged.
+- Reworked Student Home presentation (hand-drawn heading, paper hero, taped notebook list, polaroid mascot, paper Assignment note) without changing real Unit API queries, Streak/Level API rules or navigation contracts.
+- Streak/Level visuals now use sketch meters; backend-authored XP/Streak values remain authoritative.
+- Theme extends to root-mounted portals through CSS `body:has(.student-theme)` while the Student route is mounted (modern-browser requirement); Sonner remains semantically shared.
+- Source-level review completed; frontend lint/build and authenticated browser comparison require execution in the project environment. No backend, Teacher UI or API change.
+
+
+
+## Student visual governance (documentation only — 2026-11-07)
+
+- Owner approved Indie Illustrated Scrapbook as the exclusive Student visual design; Teacher appearance stays unchanged (ADR 0032).
+- Added canonical Student visual design document and aligned agent entry point, frontend-design skill, UI architecture, Student Learning Hub blueprint, frontend architecture, ADR index and documentation checklists.
+- Superseded only legacy Student visual decisions; retained Streak/Level, Activity and Assignment business rules.
+- **No CSS, component, UI runtime, backend or API implementation performed.** Scoped Student theme implementation and browser validation remain follow-up work.
+
+
+
 **Updated:** 2026-11-06
 **Branch:** `feature/student-gamification`
 **Canonical state:** `.agent/CURRENT_STATE.md`
@@ -10,6 +95,28 @@
 
 ## Current stage
 
+- **Student Vocabulary Mini-Games (Bubble Pop & Word Rain):** Complete vertical slice
+  implemented and UX-revamped based on student user feedback. Includes database migrations (`V53__create_vocabulary_and_game_tables.sql`
+  and `V54__seed_vocabulary_words.sql`), Spring Boot JPA entities, repositories,
+  services, and REST controllers (`/v1/student/game/*`). Frontend features a dedicated Game tab in student navbar,
+  Grade/Unit selector Hub, wide responsive mode selector modal, and immersive Fullscreen runners.
+  - **Bubble Pop (Space Word Shooter Pacing & Bubble Sizing Tuning):** Limited on-screen bubbles to 4-5 bubbles to eliminate clutter, reduced falling speed to a gentle ~0.34-0.46 px/frame for comfortable reading, enlarged bubble radius to 48-52px (~96-104px diameter) with large 16px/17px bold typography. Implemented organic continuous bubble flow: when the target word is resolved (shot or reaches bottom), only the target bubble is recycled while all surrounding distractor bubbles continue their natural descent without abrupt disappearance or mid-air morphing; fresh distractors and the next target word enter smoothly from the top.
+  - **Word Rain (Enchanted Lotus Pond & Zero-Lag 60FPS Overhaul):** Completely eliminated all expensive `ctx.shadowBlur` Gaussian convolution calls across high-DPI canvases, replacing them with lightweight multi-pass layered strokes and hardware-accelerated radial gradients. Added delta-time physics interpolation for silky smooth, stutter-free movement. Slowed fall speed to a relaxed ~28-35s per drop so students have ample time to read and type comfortably without rush. Transformed the visual experience from a dark empty box into an enchanting, poetic night pond scene: fluffy animated rain clouds at the top with gentle drizzle, crescent moon & starry sky, luminous crystal dewdrops with high-contrast Vietnamese prompts and glowing golden letter pearl slots, click-to-lock drop targeting support, living lotus pond with animated undulating water waves, floating emerald lotus leaves (lá sen) and blooming pink lotus flowers (hoa sen), celebratory rainbow water fireworks upon word completion, and floating `+XP` / combo score banners.
+  - **Teacher Vocabulary Management & Game Sync (Vertical Slice Complete):**
+    - **Backend:** Implemented `TeacherVocabularyService` and `TeacherVocabularyController` (`/v1/content/units/{unitId}/vocabulary`) secured with `hasRole('TEACHER')`. Supports listing words with status/search filters, single word CRUD with IPA pronunciation and difficulty levels, bulk creation (`/bulk`), status toggling (`/status`), and ordering (`/order`).
+    - **Frontend:** Integrated `UnitVocabularySection` into teacher Unit Detail (`/teacher/content/units/[unitId]`). Features word count badge, low-count warning for mini-game readiness (< 4 words), search/status tabs, inline TTS pronunciation audio test, active/inactive toggle switch, `VocabularyWordModal` for single word editing, and `BulkImportVocabularyModal` for 1-click batch import from formatted text (`word - meaning`).
+    - **Student Game Integration:** Dynamic bidirectional sync: teacher changes to unit vocabulary immediately invalidate student game caches and reflect in real-time in student Game Hub and mini-game sessions.
+    - Verified clean with `mvn test-compile` (0 errors) and `next build` (0 errors).
+  - **Game Navigation & Replay Fixes:**
+    - Fixed `removeChild` error on `/student/game/...`: Added `<meta name="google" content="notranslate" />` and `translate="no"` across root `layout.tsx`, added game route to `StudentShell` immersive routes (bypassing `StudentNavbar`), and protected `GameRunner` loading states.
+    - Fixed Replay button modal dismissal: Updated `onReplay` in both `BubblePopGame` and `WordRainGame` to immediately clear `result` state (`setResult(null)`) and incremented `gameKey` in `GameRunner` to cleanly remount and re-initialize a fresh session.
+  - **Game Selection Modal Scaling Correction:** Fixed CSS conflict where `dialog.tsx`'s default `sm:max-w-sm` was overriding caller max-width due to direct package `"cn"` imports bypassing `tailwind-merge`. Updated `src/lib/utils.ts` and `dialog.tsx` to use proper `twMerge(clsx(...))`, applied explicit `style={{ maxWidth: '860px', width: '94vw' }}` with `!max-w-[860px]` and `whitespace-nowrap` on action buttons, ensuring the modal is spacious, widescreen, and perfectly scaled across mobile and desktop.
+  - **Word Rain (Dreamy Night Pond):** Poetic lo-fi nighttime rain aesthetic with diagonal drizzle patterns, moonlit nebulae, drifting firefly embers, crystalline dewdrop glass capsules, animated water ripple rings upon landing, and water chime audio.
+  - Protected against browser extension translation DOM mutation crashes (`notranslate`, `translate="no"`).
+  - Backend compile (`mvn test-compile`) and frontend Turbopack build (`npm run build`) verified clean.
+
+- Student leaderboard read queries now use Spring Data JPA native-query projections; the previous JDBC template dependency was removed from this service. Backend compilation is pending a Java-enabled environment.
+- Gamification backend code is organized by feature packages: `xp`, `streak`, `level`, `leaderboard`, and `profile`; profile, streak, level, and leaderboard endpoints now have separate controllers/services while preserving existing routes.
 - **Student Streak/Level v1 source:** accepted milestone policy (3/7/14/30 → 10/20/40/80 XP), daily completion service, ledger/Level integration, authenticated read APIs, and live Rewards overview added. No Leaderboard live data or Streak Freeze. Validation pending.
 
 - **Activity XP Engine Phases 1–4:** calculator, session audit, atomic terminal
@@ -112,3 +219,9 @@
 - StudentTable, ActivityWorkspace, Assignment Analysis class comparison/classes/sections/students tables now use the shared column/pagination presentation while retaining feature-owned renderers and behavior.
 - Expandable question analysis rows and content import preview remain specialized tables because their nested row interaction is not representable by the minimal DataTable column contract without changing behavior.
 - Teacher class student management is now split into a query/mutation hook, roster table, and add/transfer/remove dialogs. The add-student query uses `noClass=true` with a fixed fetch size and intentionally has no pagination UI.
+
+## Leaderboard work (2026-11-06)
+
+- Connected Student Rewards UI to real read-only XP/Streak ranking endpoints with 50 displayed students, deterministic self rank including out-of-top-50 card; time filters on XP only.
+- Replaced mock Honors with 2 server-backed honors (lifetime XP, longest Streak), and recent activity with terminal ActivitySessions.
+- No ranking table migration. Runtime PostgreSQL verification, backend Maven, frontend lint/build, and authenticated E2E not yet run.

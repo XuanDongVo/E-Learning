@@ -1,47 +1,38 @@
 import { CheckCircle2, Clock3, FileText } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
-import { toneForStatus, type StatusTone } from "@/components/ui/status-badge";
 import type { StudentAssignmentItem } from "./types";
-import { ASSIGNMENT_STATUS_LABEL } from "./constants";
 
 interface AssignmentStatusBadgeProps {
   status: StudentAssignmentItem["status"];
   className?: string;
 }
 
-/** Soft surface styles aligned with shared StatusTone (keeps icon layout). */
-const TONE_SOFT: Record<StatusTone, string> = {
-  success: "bg-success-soft text-foreground",
-  warning: "bg-amber-500/10 text-foreground",
-  danger: "bg-rose-500/10 text-foreground",
-  neutral: "bg-muted text-foreground",
-  info: "bg-info-soft text-foreground",
-};
-
-export function AssignmentStatusBadge({
-  status,
-  className,
-}: AssignmentStatusBadgeProps) {
-  const tone = toneForStatus(status);
+export function AssignmentStatusBadge({ status, className }: AssignmentStatusBadgeProps) {
+  const t = useTranslations("student.assignments");
   const isSubmitted = status === "SUBMITTED";
   const isInProgress = status === "IN_PROGRESS";
 
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 whitespace-nowrap rounded-md px-2 py-1 text-xs font-semibold",
-        TONE_SOFT[tone],
+        "student-assignment-status",
+        isSubmitted
+          ? "student-assignment-status--submitted"
+          : isInProgress
+            ? "student-assignment-status--in-progress"
+            : "student-assignment-status--todo",
         className,
       )}
     >
       {isSubmitted ? (
-        <CheckCircle2 size={14} className="text-success" />
+        <CheckCircle2 size={15} aria-hidden="true" />
       ) : isInProgress ? (
-        <Clock3 size={14} />
+        <Clock3 size={15} aria-hidden="true" />
       ) : (
-        <FileText size={14} />
-      )}{" "}
-      {ASSIGNMENT_STATUS_LABEL[status]}
+        <FileText size={15} aria-hidden="true" />
+      )}
+      {isSubmitted ? t("status.submitted") : isInProgress ? t("status.inProgress") : t("status.todo")}
     </span>
   );
 }

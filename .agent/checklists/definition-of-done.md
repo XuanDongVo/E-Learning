@@ -13,6 +13,14 @@
 [ ] Responsive behavior checked
 [ ] Accessibility checked
 
+## Student visual-design gate (for Student UI changes)
+[ ] Canonical Indie Illustrated Scrapbook design rules read and followed
+[ ] No alternative Student palette, font system or one-off design language introduced
+[ ] Visual rules implemented through approved tokens/components, not hard-coded per page
+[ ] Teacher appearance and shared components unaffected by Student styles
+[ ] Theme scope, portals/toasts, focus, contrast, mobile and reduced-motion checked when relevant
+[ ] Live data not replaced by fabricated achievements/progress
+
 ## Knowledge-base contract gate
 [ ] Accepted ADRs reflected in active specs/domain/UI
 [ ] Superseded requirements removed from executable sections

@@ -4,5 +4,42 @@
   "count": "{count} bài tập",
   "emptyTitle": "Không tìm thấy bài tập",
   "emptyDescription": "Thử đổi từ khóa hoặc bộ lọc.",
-  "clearFilters": "Xóa bộ lọc"
+  "clearFilters": "Xóa bộ lọc",
+  "hero": {
+    "eyebrow": "Sổ tay học tập",
+    "title": "Bài tập được giao",
+    "description": "Theo dõi các bài tập, thời hạn và lần làm bài chính thức.",
+    "pending": "Bạn còn {count} bài chưa hoàn thành.",
+    "completed": "Bạn đã hoàn thành tất cả bài tập hiện có."
+  },
+  "tabs": {
+    "todo": "Chưa hoàn thành",
+    "inProgress": "Đang làm",
+    "submitted": "Đã nộp"
+  },
+  "filterLabel": "Lọc bài tập theo trạng thái",
+  "searchLabel": "Tìm bài tập theo tên",
+  "searchPlaceholder": "Tìm bài tập...",
+  "status": {
+    "todo": "Chưa làm",
+    "inProgress": "Đang làm dở",
+    "submitted": "Đã nộp",
+    "late": "Nộp muộn / Quá hạn",
+    "dueToday": "Đến hạn hôm nay",
+    "dueSoon": "Còn {count} ngày"
+  },
+  "meta": {
+    "assignedWork": "PHIẾU BÀI TẬP",
+    "questions": "{count} câu hỏi",
+    "minutes": "{count} phút",
+    "noTimeLimit": "Không giới hạn",
+    "noDueDate": "Chưa có hạn nộp"
+  },
+  "actions": {
+    "viewIntro": "Xem hướng dẫn",
+    "continue": "Tiếp tục làm bài",
+    "viewResult": "Xem kết quả"
+  },
+  "emptyFilterDescription": "Không có bài tập nào ở trạng thái này. Bạn có thể đổi bộ lọc.",
+  "emptyNoAssignments": "Bạn chưa có bài tập nào cần thực hiện."
 }

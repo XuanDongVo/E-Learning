@@ -7,6 +7,7 @@ import e_learning.server.activity.repository.ActivityBankRepository;
 import e_learning.server.content.common.enums.ContentStatus;
 import e_learning.server.content.question.repository.ContentQuestionRepository;
 import e_learning.server.activity.enums.ActivityDifficulty;
+import e_learning.server.question.enums.QuestionType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,6 +45,7 @@ public class ActivityReadinessService {
             long total = contentQuestionRepository.countByQuestionBankId(bank.getQuestionBank().getId());
             long ready = contentQuestionRepository.findAllByQuestionBankIdAndQuestionCompleteTrueOrderByQuestionIdAsc(bank.getQuestionBank().getId())
                 .stream()
+                .filter(cq -> isActivitySupportedType(cq.getQuestion().getType()))
                 .filter(cq -> activity.getQuestionDifficulty() == ActivityDifficulty.MIXED
                     || cq.getQuestion().getDifficulty().name().equals(activity.getQuestionDifficulty().name()))
                 .count();
@@ -89,6 +91,15 @@ public class ActivityReadinessService {
             .warnings(List.of())
             .sources(sources)
             .build();
+    }
+
+    /** Activity v1 deliberately excludes compound MATCHING and CLOZE questions. */
+    private boolean isActivitySupportedType(QuestionType type) {
+        return type == QuestionType.SINGLE_CHOICE
+                || type == QuestionType.MULTIPLE_CHOICE
+                || type == QuestionType.TRUE_FALSE
+                || type == QuestionType.FILL_IN_BLANK
+                || type == QuestionType.TYPE_ANSWER;
     }
 
     private ActivityReadinessResponse.ReadinessIssue issue(String code, String message,

@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { useLocale } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import {
@@ -25,6 +25,18 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [sessionReason, setSessionReason] = useState<string | null>(null);
+
+  useEffect(() => {
+    setSessionReason(new URLSearchParams(window.location.search).get("reason"));
+  }, []);
+
+  const sessionMessage =
+    sessionReason === "account_inactive"
+      ? tErrors("errors.ACCOUNT_INACTIVE")
+      : sessionReason === "session_expired"
+        ? tErrors("errors.SESSION_EXPIRED")
+        : null;
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -36,7 +48,18 @@ export default function LoginPage() {
       const safeNext = requestedNext && requestedNext.startsWith("/") && !requestedNext.startsWith("//") && !requestedNext.includes("\\")
         ? requestedNext
         : null;
-      router.replace(safeNext ?? (user.role === "TEACHER" ? "/teacher" : "/"), { locale });
+
+      // Smart role-based redirect: Never redirect teachers into student routes, and vice versa!
+      let targetUrl = user.role === "TEACHER" ? "/teacher" : "/student";
+      if (safeNext) {
+        if (user.role === "TEACHER" && safeNext.startsWith("/teacher")) {
+          targetUrl = safeNext;
+        } else if (user.role === "STUDENT" && !safeNext.startsWith("/teacher")) {
+          targetUrl = safeNext;
+        }
+      }
+
+      router.replace(targetUrl, { locale });
     } catch (submissionError) {
       setError(getAppErrorMessage(submissionError, tErrors as (key: string) => string));
     } finally {
@@ -96,6 +119,14 @@ export default function LoginPage() {
             </p>
 
             <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
+              {sessionMessage && !error && (
+                <p
+                  role="status"
+                  className="rounded-[var(--radius-md)] border border-warning/40 bg-warning/10 px-3 py-2 text-body text-warning-foreground"
+                >
+                  {sessionMessage}
+                </p>
+              )}
               <label className="block text-body font-bold" htmlFor="email">
                 Email
                 <span className="relative mt-2 block">

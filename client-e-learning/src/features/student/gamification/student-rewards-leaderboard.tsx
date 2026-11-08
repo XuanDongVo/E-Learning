@@ -1,292 +1,298 @@
 "use client";
 
-import {
-  Clock3,
-  Flame,
-  Megaphone,
-  Sparkles,
-  Trophy,
-} from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { LeaderboardPodium } from "@/components/ui/leaderboard-podium";
-import { LeaderboardRankings } from "@/components/ui/leaderboard-rankings";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { Activity, Flame, RefreshCw, Trophy, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
-import {
-  avatarUrlFromKey,
-  mockHallOfFame,
-  mockRecentActivities,
-  mockStreakLeaderboard,
-} from "@/mock/gamification";
-import type { HallOfFameItem, LeaderboardTab } from "@/types/gamification";
+import { RegionState } from "@/components/feedback";
+import { PaperSurface } from "@/components/student-ui/paper-surface";
+import { ScrapbookHeading } from "@/components/student-ui/scrapbook-heading";
+import { StudentLeaderboardPodium } from "@/components/student-ui/student-leaderboard-podium";
+import { studentGamificationService } from "@/services/student/student-gamification.service";
+import { StudentAvatar } from "@/components/student-ui/student-avatar";
+import type {
+  LeaderboardMetric,
+  LeaderboardPeriod,
+  LeaderboardRanking,
+} from "@/types/gamification";
 
-const TABS: {
-  id: LeaderboardTab;
-  label: string;
-  available: boolean;
-}[] = [
-  { id: "xp", label: "XP", available: false },
-  { id: "time", label: "Thời gian", available: false },
-  { id: "streak", label: "Chuỗi ngày", available: true },
-  { id: "share", label: "Lan tỏa", available: false },
+const INITIAL_VISIBLE_RANKINGS = 10;
+
+const PERIODS: { key: LeaderboardPeriod; text: string }[] = [
+  { key: "TODAY", text: "Hôm nay" },
+  { key: "WEEK", text: "Tuần này" },
+  { key: "MONTH", text: "Tháng này" },
+  { key: "ALL", text: "Tất cả" },
 ];
 
-const HALL_OF_FAME_ICON: Record<HallOfFameItem["icon"], typeof Trophy> = {
-  trophy: Trophy,
-  fire: Flame,
-  megaphone: Megaphone,
-};
+function RankingValue({ entry, metric }: { entry: LeaderboardRanking; metric: LeaderboardMetric }) {
+  return (
+    <span className="student-label tabular-nums text-foreground">
+      {entry.value.toLocaleString("vi-VN")} {metric === "XP" ? "XP" : "ngày"}
+    </span>
+  );
+}
 
-const HALL_OF_FAME_ICON_STYLE: Record<HallOfFameItem["icon"], string> = {
-  trophy: "bg-warning-soft text-warning",
-  fire: "bg-primary-soft text-primary",
-  megaphone: "bg-info-soft text-info",
-};
+function RankRow({ entry, metric }: { entry: LeaderboardRanking; metric: LeaderboardMetric }) {
+  return (
+    <div
+      role="row"
+      aria-label={entry.currentStudent ? `Vị trí ${entry.rank} của bạn` : undefined}
+      className={cn("student-ranking-row", entry.currentStudent && "student-ranking-row--current")}
+    >
+      <span role="cell" className="student-meta tabular-nums text-muted-foreground">
+        #{entry.rank}
+      </span>
+      <span role="cell" className="flex min-w-0 items-center gap-2">
+        <StudentAvatar className="student-ranking-avatar" fullName={entry.fullName} avatarKey={entry.avatarKey} />
+        <span className="min-w-0">
+          <span className="student-label block truncate text-foreground">{entry.fullName}</span>
+          {entry.currentStudent && <span className="student-meta text-primary">Bạn</span>}
+        </span>
+      </span>
+      <span role="cell" className="student-meta hidden text-muted-foreground sm:block">
+        Level {entry.level}
+      </span>
+      <span role="cell" className="text-right">
+        <RankingValue entry={entry} metric={metric} />
+      </span>
+    </div>
+  );
+}
 
-function toTrophyRanking(entry: (typeof mockStreakLeaderboard)[number]) {
-  return {
-    userId: entry.studentId,
-    userName: entry.fullName,
-    rank: entry.rank,
-    value: entry.value,
-    avatarUrl: avatarUrlFromKey(entry.avatarKey),
-    byline: entry.valueLabel,
-    displayed: true,
-  };
+function HonorCard({
+  title,
+  entry,
+  unit,
+  icon: Icon,
+}: {
+  title: string;
+  entry: LeaderboardRanking;
+  unit: string;
+  icon: typeof Trophy;
+}) {
+  return (
+    <PaperSurface className="student-honor-card flex items-center justify-between gap-4 p-4">
+      <div className="flex min-w-0 items-center gap-3">
+        <StudentAvatar className="student-ranking-avatar" fullName={entry.fullName} avatarKey={entry.avatarKey} />
+        <div className="min-w-0">
+          <p className="student-meta text-primary">{title}</p>
+          <p className="student-label truncate text-foreground">{entry.fullName}</p>
+          <p className="student-meta text-muted-foreground">
+            {entry.value.toLocaleString("vi-VN")} {unit}
+          </p>
+        </div>
+      </div>
+      <span className="student-honor-card__mark">
+        <Icon className="h-5 w-5" aria-hidden="true" />
+      </span>
+    </PaperSurface>
+  );
 }
 
 export function StudentRewardsLeaderboard() {
-  const podiumRankings = mockStreakLeaderboard.slice(0, 3).map(toTrophyRanking);
-  const rankings = mockStreakLeaderboard.map(toTrophyRanking);
+  const [metric, setMetric] = useState<LeaderboardMetric>("XP");
+  const [period, setPeriod] = useState<LeaderboardPeriod>("TODAY");
+  const [showAllRankings, setShowAllRankings] = useState(false);
+  const effectivePeriod = metric === "XP" ? period : "ALL";
+
+  const ranking = useQuery({
+    queryKey: ["student", "leaderboard", metric, effectivePeriod],
+    queryFn: () => studentGamificationService.leaderboard(metric, effectivePeriod),
+  });
+  const honors = useQuery({
+    queryKey: ["student", "leaderboard", "honors"],
+    queryFn: studentGamificationService.honors,
+  });
+  const recent = useQuery({
+    queryKey: ["student", "leaderboard", "recent-activity"],
+    queryFn: studentGamificationService.recentActivity,
+  });
+
+  const data = ranking.data?.data;
+  const selfOutside = data?.currentStudent && !data.currentStudentInTop ? data.currentStudent : null;
+  const honorData = honors.data?.data;
+  const activities = recent.data?.data?.items ?? [];
+  const totalRankings = data?.top.length ?? 0;
+  const hiddenRankingsCount = Math.max(0, totalRankings - INITIAL_VISIBLE_RANKINGS);
+  const visibleRankings = showAllRankings
+    ? (data?.top ?? [])
+    : (data?.top.slice(0, INITIAL_VISIBLE_RANKINGS) ?? []);
 
   return (
-    <div className="space-y-6">
-      <header className="flex flex-col gap-4 border-b border-border pb-5 sm:flex-row sm:items-end sm:justify-between">
-        <div className="max-w-2xl">
-          <div className="mb-2 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-primary">
-            <Sparkles className="h-4 w-4" aria-hidden="true" />
-            Khu vực thi đua
-          </div>
-          <h2 className="text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl">
+    <section aria-labelledby="leaderboard-page-title" className="student-rewards space-y-6 pb-8">
+      <PaperSurface as="section" variant="kraft" tape tapePosition="right" className="student-rewards-hero">
+        <div className="space-y-2">
+          <p className="student-meta text-primary">Cộng đồng học tập</p>
+          <ScrapbookHeading as="h1" id="leaderboard-page-title" className="student-page-title text-foreground">
             Bảng xếp hạng
-          </h2>
-          <p className="mt-2 text-sm leading-6 text-muted-foreground sm:text-base">
-            Bản xem trước · Dữ liệu xếp hạng và thành tích cộng đồng bên dưới chỉ để minh họa.
+          </ScrapbookHeading>
+          <p className="student-body max-w-2xl text-muted-foreground">
+            Top 50 học viên từ XP và Streak được ghi nhận bởi hệ thống học tập.
           </p>
         </div>
-      </header>
+        <Trophy className="hidden h-12 w-12 shrink-0 text-accent sm:block" aria-hidden="true" />
+      </PaperSurface>
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        <div className="min-w-0 space-y-5 lg:col-span-2">
-          <section aria-labelledby="ranking-filter-heading">
-            <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
-              <div>
-                <h2
-                  id="ranking-filter-heading"
-                  className="font-bold text-foreground"
-                >
-                  Xếp hạng theo
-                </h2>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Các tiêu chí khác sẽ xuất hiện khi có dữ liệu.
-                </p>
-              </div>
-              <span className="rounded-full bg-secondary px-3 py-1 text-xs font-semibold text-secondary-foreground">
-                Top {rankings.length}
-              </span>
-            </div>
-
-            <div
-              role="tablist"
-              aria-label="Tiêu chí xếp hạng"
-              className="grid grid-cols-2 gap-2 rounded-xl border-2 border-ink bg-card p-2 shadow-pop sm:grid-cols-4"
-            >
-              {TABS.map((tab) => (
+      <div className="student-rewards-layout">
+        <div className="min-w-0 space-y-4">
+          <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+            <div role="group" aria-label="Loại xếp hạng" className="student-filter-group">
+              {(["XP", "STREAK"] as const).map((value) => (
                 <button
-                  key={tab.id}
-                  id={`${tab.id}-ranking-tab`}
+                  key={value}
                   type="button"
-                  role="tab"
-                  aria-selected={tab.available}
-                  aria-controls={tab.available ? "streak-leaderboard" : undefined}
-                  disabled={!tab.available}
-                  title={tab.available ? undefined : "Sắp ra mắt"}
-                  className={cn(
-                    "min-h-10 rounded-lg px-3 py-2 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                    tab.available
-                      ? "bg-primary text-primary-foreground shadow-pop-sm"
-                      : "cursor-not-allowed text-muted-foreground opacity-60",
-                  )}
+                  aria-pressed={metric === value}
+                  onClick={() => {
+                    setMetric(value);
+                    setShowAllRankings(false);
+                  }}
+                  className={cn("student-control px-5", metric === value ? "student-filter-active" : "student-control--quiet")}
                 >
-                  {tab.label}
+                  {value === "XP" ? "XP" : "Streak"}
                 </button>
               ))}
             </div>
-          </section>
-
-          <section
-            id="streak-leaderboard"
-            role="tabpanel"
-            aria-labelledby="streak-ranking-tab"
-            className="overflow-hidden rounded-2xl border-2 border-ink bg-card shadow-pop"
-          >
-            <div className="flex items-center justify-between gap-4 border-b border-border px-4 py-4 sm:px-5">
-              <div>
-                <h2
-                  id="streak-ranking-heading"
-                  className="font-extrabold text-foreground"
-                >
-                  Chuỗi học tập dài nhất
-                </h2>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Số ngày học liên tiếp của các học viên.
-                </p>
+            {metric === "XP" && (
+              <div role="group" aria-label="Khoảng thời gian XP" className="student-period-group">
+                {PERIODS.map(({ key, text }) => (
+                  <button
+                    key={key}
+                    type="button"
+                    aria-pressed={period === key}
+                    onClick={() => {
+                      setPeriod(key);
+                      setShowAllRankings(false);
+                    }}
+                    className={cn("student-control px-3", period === key ? "student-filter-active" : "student-control--quiet")}
+                  >
+                    {text}
+                  </button>
+                ))}
               </div>
-              <Flame
-                className="h-6 w-6 shrink-0 text-primary"
-                aria-hidden="true"
-              />
-            </div>
+            )}
+          </div>
 
-            <div className="bg-secondary/40 px-3 pb-0 pt-8 sm:px-6 sm:pt-10">
-              <LeaderboardPodium
-                rankings={podiumRankings}
-                spacing="normal"
-                size="default"
-                valueUnit="ngày"
-              />
-            </div>
-
-            <div className="border-t border-border px-4 py-3 sm:px-5">
-              <h3 className="text-sm font-bold text-foreground">
-                Toàn bộ thứ hạng
-              </h3>
-            </div>
-            <LeaderboardRankings
-              rankings={rankings}
-              showPagination={false}
-              className="rounded-none border-0"
+          {ranking.isPending ? (
+            <RegionState variant="loading" title="Đang tải bảng xếp hạng" />
+          ) : ranking.isError || !data ? (
+            <RegionState
+              variant="error"
+              title="Chưa thể tải bảng xếp hạng"
+              description="Hãy thử lại."
+              action={
+                <button type="button" onClick={() => void ranking.refetch()} className="student-control student-control--action">
+                  <RefreshCw className="h-4 w-4" aria-hidden="true" /> Thử lại
+                </button>
+              }
             />
-          </section>
+          ) : data.top.length === 0 ? (
+            <RegionState variant="empty" title="Chưa có học viên nào được xếp hạng" />
+          ) : (
+            <>
+              <PaperSurface as="section" variant="lined" className="overflow-hidden">
+                <div className="student-podium-wrap">
+                  <StudentLeaderboardPodium entries={data.top.slice(0, 3)} metric={metric} />
+                </div>
+                <h2 className="student-card-title border-t-2 border-ink px-4 py-3 text-foreground">
+                  Danh sách Top {showAllRankings ? totalRankings : visibleRankings.length}
+                </h2>
+                <div role="table" aria-label="Bảng xếp hạng học viên">
+                  <div role="row" className="student-ranking-row student-ranking-header">
+                    <span role="columnheader">Hạng</span>
+                    <span role="columnheader">Học viên</span>
+                    <span role="columnheader" className="hidden sm:block">Level</span>
+                    <span role="columnheader" className="text-right">{metric === "XP" ? "XP" : "Streak"}</span>
+                  </div>
+                  {visibleRankings.map((entry) => (
+                    <RankRow key={entry.studentId} entry={entry} metric={metric} />
+                  ))}
+                </div>
+                {hiddenRankingsCount > 0 && (
+                  <button
+                    type="button"
+                    aria-expanded={showAllRankings}
+                    onClick={() => setShowAllRankings((current) => !current)}
+                    className="student-control student-control--quiet flex min-h-11 w-full items-center justify-center border-t-2 border-ink px-4 py-3 text-center"
+                  >
+                    {showAllRankings
+                      ? "Thu gọn về Top 10"
+                      : `Hiển thị thêm ${hiddenRankingsCount} người`}
+                  </button>
+                )}
+              </PaperSurface>
+
+              {selfOutside && (
+                <PaperSurface as="section" tape className="p-4" aria-label="Vị trí riêng của bạn">
+                  <p className="student-meta mb-2 text-primary">Vị trí của bạn · Ngoài Top 50</p>
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="student-label text-foreground">#{selfOutside.rank} · {selfOutside.fullName}</p>
+                      <p className="student-meta text-muted-foreground">Level {selfOutside.level}</p>
+                    </div>
+                    <RankingValue entry={selfOutside} metric={metric} />
+                  </div>
+                </PaperSurface>
+              )}
+            </>
+          )}
         </div>
 
-        <aside className="space-y-5">
-          <section
-            aria-labelledby="hall-of-fame-heading"
-            className="rounded-2xl border-2 border-ink bg-card p-4 shadow-pop"
-          >
-            <div className="mb-4 flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-warning-soft text-warning">
-                <Trophy className="h-5 w-5" aria-hidden="true" />
-              </div>
-              <div>
-                <h2
-                  id="hall-of-fame-heading"
-                  className="font-extrabold text-foreground"
-                >
-                  Dấu ấn nổi bật
-                </h2>
-                <p className="text-xs text-muted-foreground">
-                  Thành tích đáng nhớ của cộng đồng
-                </p>
-              </div>
-            </div>
+        <aside className="min-w-0 space-y-5">
+          <section aria-labelledby="hall-of-fame-heading" className="space-y-3">
+            <ScrapbookHeading as="h2" id="hall-of-fame-heading" className="student-section-title flex items-center gap-2 text-foreground">
+              <Trophy className="h-6 w-6 text-accent" aria-hidden="true" /> Đại sảnh danh vọng
+            </ScrapbookHeading>
+            {honors.isPending ? (
+              <RegionState variant="loading" title="Đang tải danh hiệu" />
+            ) : honors.isError ? (
+              <RegionState
+                variant="error"
+                title="Chưa thể tải danh hiệu"
+                action={<button type="button" onClick={() => void honors.refetch()} className="student-control student-control--quiet">Thử lại</button>}
+              />
+            ) : !honorData?.xpChampion && !honorData?.streakChampion ? (
+              <RegionState variant="empty" title="Chưa có danh hiệu" />
+            ) : (
+              <>
+                {honorData.xpChampion && <HonorCard title="Bậc thầy tri thức" entry={honorData.xpChampion} unit="XP" icon={Trophy} />}
+                {honorData.streakChampion && <HonorCard title="Huyền thoại không nghỉ" entry={honorData.streakChampion} unit="ngày" icon={Flame} />}
+              </>
+            )}
+          </section>
 
-            <ul className="divide-y divide-border">
-              {mockHallOfFame.map((item) => {
-                const Icon = HALL_OF_FAME_ICON[item.icon];
-
-                return (
-                  <li key={item.title} className="flex items-center gap-3 py-3">
-                    <Avatar className="h-10 w-10 shrink-0 border border-border">
-                      <AvatarImage
-                        src={avatarUrlFromKey(item.avatarKey)}
-                        alt={`Ảnh đại diện của ${item.studentName}`}
-                      />
-                      <AvatarFallback>
-                        {item.studentName.slice(0, 1).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-xs font-semibold text-muted-foreground">
-                        {item.title}
-                      </p>
-                      <p className="truncate text-sm font-bold text-foreground">
-                        {item.studentName}
-                      </p>
-                      <p className="text-sm font-extrabold tabular-nums text-primary">
-                        {item.valueLabel}
-                      </p>
-                    </div>
-                    <span
-                      className={cn(
-                        "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg",
-                        HALL_OF_FAME_ICON_STYLE[item.icon],
-                      )}
-                    >
-                      <Icon className="h-4 w-4" aria-hidden="true" />
-                    </span>
+          <PaperSurface as="section" aria-labelledby="recent-activity-heading" className="p-4">
+            <h2 id="recent-activity-heading" className="student-card-title mb-3 flex items-center gap-2 text-foreground">
+              <Activity className="h-5 w-5 text-learning" aria-hidden="true" /> Hoạt động học tập gần đây
+            </h2>
+            {recent.isPending ? (
+              <RegionState variant="loading" title="Đang tải hoạt động" />
+            ) : recent.isError ? (
+              <RegionState
+                variant="error"
+                title="Chưa thể tải hoạt động"
+                action={<button type="button" onClick={() => void recent.refetch()} className="student-control student-control--quiet">Thử lại</button>}
+              />
+            ) : activities.length === 0 ? (
+              <p className="student-body text-muted-foreground">Chưa có hoạt động bài tập nào hoàn thành.</p>
+            ) : (
+              <ul className="divide-y divide-border">
+                {activities.map((item) => (
+                  <li key={item.sessionId} className="flex gap-2 py-3">
+                    <Zap className="mt-1 h-4 w-4 shrink-0 text-accent" aria-hidden="true" />
+                    <p className="student-body min-w-0 flex-1 text-foreground">
+                      <span className="font-bold">{item.fullName}</span>{" "}
+                      {item.status === "COMPLETED" ? "vừa hoàn thành" : "vừa kết thúc thử thách"}{" "}
+                      <span className="font-semibold">{item.activityName}</span>.
+                    </p>
+                    {item.earnedXp != null && <span className="student-meta whitespace-nowrap text-primary">+{item.earnedXp} XP</span>}
                   </li>
-                );
-              })}
-            </ul>
-          </section>
-
-          <section
-            aria-labelledby="recent-activity-heading"
-            className="rounded-2xl border border-border bg-card p-4"
-          >
-            <div className="mb-4 flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-info-soft text-info">
-                <Clock3 className="h-5 w-5" aria-hidden="true" />
-              </div>
-              <div>
-                <h2
-                  id="recent-activity-heading"
-                  className="font-extrabold text-foreground"
-                >
-                  Nhịp học gần đây
-                </h2>
-                <p className="text-xs text-muted-foreground">
-                  Cập nhật mới từ các học viên
-                </p>
-              </div>
-            </div>
-
-            <ul className="space-y-3">
-              {mockRecentActivities.map((activity) => (
-                <li
-                  key={activity.id}
-                  className="flex gap-3 border-b border-border pb-3 last:border-0 last:pb-0"
-                >
-                  <span
-                    className="mt-2 h-2 w-2 shrink-0 rounded-full bg-primary"
-                    aria-hidden="true"
-                  />
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm leading-5 text-foreground">
-                      <span className="font-bold">{activity.actorName}</span>{" "}
-                      {activity.message}
-                      {activity.badgeLabel ? (
-                        <span className="ml-1 inline-flex rounded-md bg-primary-soft px-1.5 py-0.5 text-xs font-bold text-primary">
-                          {activity.badgeLabel}
-                        </span>
-                      ) : null}
-                    </p>
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      {activity.minutesAgo} phút trước
-                    </p>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </section>
-
-          <p className="rounded-xl border border-dashed border-border px-4 py-3 text-xs leading-5 text-muted-foreground">
-            Đây là bản xem trước bằng dữ liệu trình bày. Thành tích thực sẽ
-            được cập nhật khi dịch vụ xếp hạng được kết nối.
-          </p>
+                ))}
+              </ul>
+            )}
+          </PaperSurface>
         </aside>
       </div>
-    </div>
+    </section>
   );
 }

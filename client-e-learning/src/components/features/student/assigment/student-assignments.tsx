@@ -11,14 +11,12 @@ import { AssignmentEmptyState } from "./assignment-empty-state";
 import { studentAssignmentService } from "@/services/student/student-assignment.service";
 import { QUERY_KEYS } from "@/services/query-keys";
 import { RegionState } from "@/components/feedback";
-import { Button } from "@/components/ui/button";
 import { SkeletonGrid } from "@/components/ui/skeleton/skeleton-grid";
+import { RefreshCw } from "lucide-react";
 
 interface StudentAssignmentsProps {
   initialAssignments?: StudentAssignmentItem[];
 }
-
-
 
 export function StudentAssignments({ initialAssignments = [] }: StudentAssignmentsProps) {
   const t = useTranslations("student.assignments");
@@ -26,34 +24,30 @@ export function StudentAssignments({ initialAssignments = [] }: StudentAssignmen
   const [filter, setFilter] = useState<AssignmentFilter>("TODO");
   const [query, setQuery] = useState("");
 
-  const {
-    data: assignments = [],
-    isLoading,
-    isError,
-    refetch,
-  } = useQuery({
+  // TODO includes IN_PROGRESS per backend policy; fetch it independently for an honest hero count.
+  const todoQuery = useQuery({
+    queryKey: QUERY_KEYS.studentAssignments("TODO"),
+    queryFn: () => studentAssignmentService.getAssignments("TODO"),
+    initialData: initialAssignments.length > 0 ? initialAssignments : undefined,
+  });
+  const selectedQuery = useQuery({
     queryKey: QUERY_KEYS.studentAssignments(filter),
     queryFn: () => studentAssignmentService.getAssignments(filter),
-    initialData:
-      filter === "TODO" && initialAssignments.length > 0 ? initialAssignments : undefined,
+    enabled: filter !== "TODO",
   });
+  const activeQuery = filter === "TODO" ? todoQuery : selectedQuery;
+  const assignments = activeQuery.data ?? [];
 
   const records = useMemo(() => {
-    const search = query.trim().toLowerCase();
-    return assignments.filter(
-      (assignment) => search === "" || assignment.title.toLowerCase().includes(search),
-    );
+    const search = query.trim().toLocaleLowerCase();
+    return assignments.filter((item) => search === "" || item.title.toLocaleLowerCase().includes(search));
   }, [assignments, query]);
 
-  const todoCount = filter === "TODO" ? assignments.length : 0;
-  const counts: Record<AssignmentFilter, number> = {
-    TODO: filter === "TODO" ? assignments.length : 0,
-    IN_PROGRESS: filter === "IN_PROGRESS" ? assignments.length : 0,
-    SUBMITTED: filter === "SUBMITTED" ? assignments.length : 0,
-  };
+  const todoCount = todoQuery.isSuccess ? todoQuery.data.length : null;
+  const canClear = query.trim().length > 0 || filter !== "TODO";
 
   return (
-    <div className="grid gap-5 sm:gap-6">
+    <section className="student-assignments space-y-6" aria-label={t("hero.title")}>
       <AssignmentHero todoCount={todoCount} />
 
       <AssignmentFilterBar
@@ -61,45 +55,43 @@ export function StudentAssignments({ initialAssignments = [] }: StudentAssignmen
         onFilterChange={setFilter}
         searchQuery={query}
         onSearchChange={setQuery}
-        counts={counts}
       />
 
-      {isLoading && <SkeletonGrid />}
-
-      {isError && (
+      {activeQuery.isLoading ? (
+        <SkeletonGrid />
+      ) : activeQuery.isError ? (
         <RegionState
           variant="error"
           title={t("loadFailed")}
           action={
-            <Button type="button" variant="secondary" onClick={() => void refetch()}>
-              {tf("retry")}
-            </Button>
+            <button type="button" className="student-control student-control--secondary inline-flex items-center gap-2 px-4" onClick={() => void activeQuery.refetch()}>
+              <RefreshCw size={16} aria-hidden="true" /> {tf("retry")}
+            </button>
           }
         />
-      )}
-
-      {!isLoading && !isError && (
-        <>
-          <p className="text-xs sm:text-sm font-semibold text-muted-foreground" aria-live="polite">
+      ) : (
+        <div className="space-y-4">
+          <p className="student-meta text-muted-foreground" aria-live="polite">
             {t("count", { count: records.length })}
           </p>
-
-          {records.length ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-              {records.map((assignment, index) => (
-                <AssignmentCard key={assignment.id} assignment={assignment} index={index} />
+          {records.length > 0 ? (
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+              {records.map((assignment) => (
+                <AssignmentCard key={assignment.id} assignment={assignment} />
               ))}
             </div>
           ) : (
             <AssignmentEmptyState
+              hasSearch={query.trim().length > 0}
+              canClear={canClear}
               onClearFilters={() => {
                 setQuery("");
                 setFilter("TODO");
               }}
             />
           )}
-        </>
+        </div>
       )}
-    </div>
+    </section>
   );
 }

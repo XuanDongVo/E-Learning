@@ -432,7 +432,7 @@ function ActivityEditorForm({
   return (
     <div className="space-y-6 pb-16">
       {/* ───────── Header ───────── */}
-      <header className="rounded-xl border border-border-color bg-card-bg p-5 shadow-sm">
+      <header className="rounded-xl border-2 border-ink shadow-pop bg-card-bg p-5 shadow-sm">
         <Link
           href={
             activityId
@@ -467,7 +467,7 @@ function ActivityEditorForm({
       </header>
 
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_20rem]">
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_20rem] ">
         <main className="space-y-6">
           {/* Details */}
           <EditorSection title="Activity details">
@@ -947,7 +947,7 @@ function ActivityEditorForm({
 
         {/* ───────── Summary ───────── */}
         <aside className="xl:sticky xl:top-24 xl:self-start">
-          <section className="rounded-xl border border-border-color bg-card-bg p-5">
+          <section className="rounded-xl border-2 border-ink shadow-pop bg-card-bg p-5">
             <h2 className="text-card-title font-semibold">
               Configuration summary
             </h2>
@@ -1036,7 +1036,7 @@ function EditorSection({
   children: React.ReactNode;
 }) {
   return (
-    <section className="rounded-xl border border-border-color bg-card-bg">
+    <section className="rounded-xl border-2 border-ink shadow-pop bg-card-bg">
       <header className="flex items-start justify-between gap-3 border-b border-border-color px-5 py-4">
         <div>
           <h2 className="text-section-title font-bold">{title}</h2>

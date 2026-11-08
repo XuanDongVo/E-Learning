@@ -1,0 +1,1036 @@
+
+/* 1. NỀN TOÀN TRANG (Thớ giấy sổ tay vân hạt li ti) */
+:is(.student-theme, body:has(.student-theme)) {
+  background-color: var(--student-canvas);
+  background-image: 
+    radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--student-ink) 5.5%, transparent) 0.75px, transparent 0.75px),
+    radial-gradient(circle at 0% 0%, color-mix(in srgb, var(--student-ink) 3.5%, transparent) 1px, transparent 1px);
+  background-size: 12px 12px, 24px 24px;
+}
+
+/* 2. TYPOGRAPHY TIỆN ÍCH */
+:is(.student-theme, body:has(.student-theme)) .student-handwriting {
+  font-family: var(--student-font-hand);
+  font-weight: 700;
+  letter-spacing: 0.015em;
+  line-height: 1.15;
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-note {
+  font-family: var(--student-font-note);
+  line-height: 1.25;
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-typewriter {
+  font-family: var(--student-font-mono);
+  letter-spacing: 0.04em;
+}
+
+/* 3. THẺ GIẤY CẮT DÁN (Hand-Drawn Paper Cards) */
+:is(.student-theme, body:has(.student-theme)) .student-paper {
+  position: relative;
+  background-color: var(--student-paper);
+  /* Viền mực 2px vẽ tay với bo góc bất đối xứng đa chiều */
+  border: 2px solid var(--student-ink);
+  border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
+  box-shadow: 4px 5px 0 var(--student-ink);
+  transition: transform 140ms steps(2), box-shadow 140ms steps(2);
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-paper[data-interactive="true"]:hover {
+  transform: translateY(-2px);
+  box-shadow: 5px 7px 0 var(--student-ink);
+}
+
+/* Biến thể: Giấy tập có dòng kẻ ngang */
+:is(.student-theme, body:has(.student-theme)) .student-paper--lined {
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent 27px,
+    color-mix(in srgb, var(--student-denim) 15%, transparent) 28px,
+    transparent 29px
+  );
+  background-size: 100% 29px;
+}
+
+/* Biến thể: Giấy tập kẻ ô caro */
+:is(.student-theme, body:has(.student-theme)) .student-paper--grid {
+  background-image: 
+    linear-gradient(to right, color-mix(in srgb, var(--student-denim) 8%, transparent) 1px, transparent 1px),
+    linear-gradient(to bottom, color-mix(in srgb, var(--student-denim) 8%, transparent) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+/* Biến thể: Bìa carton kraft */
+:is(.student-theme, body:has(.student-theme)) .student-paper--kraft {
+  background-color: var(--student-kraft);
+  box-shadow: 4px 5px 0 var(--student-kraft-dark), 4px 5px 0 2px var(--student-ink);
+}
+
+/* 4. MIẾNG BĂNG DÍNH WASHI (Mép răng cưa bị xé bằng tay) */
+:is(.student-theme, body:has(.student-theme)) .student-washi {
+  position: absolute;
+  z-index: 10;
+  top: -12px;
+  left: 28px;
+  width: 92px;
+  height: 22px;
+  background: var(--student-washi);
+  /* Clip-path tạo vết cắn mép rách thủ công ở 2 đầu */
+  clip-path: polygon(
+    0% 0%, 96% 2%, 100% 8%, 97% 18%, 100% 32%, 96% 45%, 100% 60%, 97% 75%, 100% 88%, 95% 100%,
+    4% 98%, 0% 88%, 3% 74%, 0% 62%, 4% 48%, 0% 35%, 3% 20%, 0% 8%
+  );
+  backdrop-filter: blur(1px);
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--student-ink) 15%, transparent);
+  transform: rotate(-2.5deg);
+  pointer-events: none;
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-washi--center {
+  left: 50%;
+  transform: translateX(-50%) rotate(1deg);
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-washi--right {
+  left: auto;
+  right: 28px;
+  transform: rotate(3deg);
+}
+
+/* 5. KHUNG ẢNH POLAROID VINTAGE */
+:is(.student-theme, body:has(.student-theme)) .student-polaroid {
+  position: relative;
+  width: min(100%, 204px);
+  margin-inline: auto;
+  padding: 10px 10px 24px;
+  background: var(--student-paper);
+  border: 2px solid var(--student-ink);
+  border-radius: 4px 10px 3px 8px;
+  box-shadow: 5px 6px 0 var(--student-ink);
+  transform: rotate(1.8deg);
+  transition: transform 160ms steps(2), box-shadow 160ms steps(2);
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-polaroid:hover {
+  transform: rotate(0deg) scale(1.02);
+  box-shadow: 6px 8px 0 var(--student-ink);
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-polaroid__media {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  background: var(--student-canvas);
+  border: 1.5px solid color-mix(in srgb, var(--student-ink) 35%, transparent);
+  filter: sepia(0.12) contrast(1.05); /* Giả lập ảnh rửa buồng tối */
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-polaroid__caption {
+  margin-top: 10px;
+  color: var(--student-ink);
+  text-align: center;
+  font-family: var(--student-font-hand);
+  font-size: 1.25rem;
+  line-height: 1.1;
+}
+
+/* 6. NÚT BẤM VẼ TAY (Hand-Drawn Stamp Button) */
+:is(.student-theme, body:has(.student-theme)) .student-ink-button {
+  display: inline-flex;
+  min-height: 46px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 20px;
+  border: 2px solid var(--student-ink);
+  border-radius: 20px 4px 18px 5px / 4px 18px 5px 20px;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  font-family: var(--student-font-mono);
+  font-size: 0.92rem;
+  font-weight: 700;
+  text-decoration: none;
+  box-shadow: 3px 3px 0 var(--student-ink);
+  cursor: pointer;
+  transition: transform 120ms steps(2), box-shadow 120ms steps(2), background-color 120ms steps(2);
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-ink-button:hover {
+  background: var(--primary-hover);
+  transform: translate(-1.5px, -1.5px);
+  box-shadow: 4.5px 4.5px 0 var(--student-ink);
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-ink-button:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0 var(--student-ink);
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-ink-button--outline {
+  color: var(--student-ink);
+  background: var(--student-paper);
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-ink-button--outline:hover {
+  background: var(--student-kraft);
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-ink-button--mustard {
+  background: var(--student-mustard);
+  color: var(--accent-foreground);
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-ink-button--mustard:hover {
+  background: var(--warning);
+  color: var(--student-paper);
+}
+
+/* 7. THANH THƯỚC ĐO TIẾN ĐỘ PHÁC THẢO (Sketch Progress Meter) */
+:is(.student-theme, body:has(.student-theme)) .student-sketch-meter {
+  height: 17px;
+  padding: 2px;
+  overflow: hidden;
+  border: 2px solid var(--student-ink);
+  border-radius: 6px 2px 7px 3px / 3px 7px 2px 6px;
+  background: var(--student-paper);
+  box-shadow: inset 1px 1px 2px color-mix(in srgb, var(--student-ink) 12%, transparent);
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-sketch-meter__fill {
+  height: 100%;
+  border-radius: 2px;
+  background-color: var(--student-mustard);
+  /* Hiệu ứng gạch chéo sáp màu bút chì */
+  background-image: repeating-linear-gradient(
+    -45deg,
+    color-mix(in srgb, var(--student-paper) 40%, transparent) 0,
+    color-mix(in srgb, var(--student-paper) 40%, transparent) 3px,
+    transparent 3px,
+    transparent 7px
+  );
+  transition: width 220ms steps(4);
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-sketch-meter__fill--denim {
+  background-color: var(--student-denim);
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-sketch-meter__fill--sage {
+  background-color: var(--student-sage);
+}
+
+/* 8. THANH ĐIỀU HƯỚNG BOOKMARK (Notebook Bookmark Nav) */
+:is(.student-theme, body:has(.student-theme)) .student-navbar {
+  background: var(--student-paper);
+  border-bottom: 2px solid var(--student-ink);
+  box-shadow: 0 4px 0 var(--student-kraft-dark);
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-navbar .student-nav-item {
+  border: 1.5px solid transparent;
+  border-radius: 14px 4px 12px 5px / 5px 12px 4px 14px;
+  font-family: var(--student-font-mono);
+  font-size: 0.85rem;
+  font-weight: 700;
+  transition: background-color 120ms steps(2), border-color 120ms steps(2), color 120ms steps(2), box-shadow 120ms steps(2), transform 120ms steps(2);
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-navbar .student-nav-item:hover {
+  background: var(--student-kraft);
+  border-color: var(--student-ink);
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-navbar .student-nav-item[aria-current="page"] {
+  background: var(--student-mustard);
+  color: var(--student-ink);
+  border-color: var(--student-ink);
+  box-shadow: 2px 2px 0 var(--student-ink);
+}
+
+/* Shared controls for Student feature screens. Page components choose meaning;
+   this file owns geometry, focus, and material treatment. */
+:is(.student-theme, body:has(.student-theme)) .student-control {
+  min-height: 44px;
+  border: 2px solid var(--student-ink);
+  border-radius: 12px 4px 14px 4px / 4px 14px 4px 12px;
+  background: var(--student-paper);
+  color: var(--student-ink);
+  font-family: var(--student-font-body);
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-control--action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  box-shadow: var(--elevation-sm);
+  transition: transform 120ms steps(2), box-shadow 120ms steps(2), background-color 120ms steps(2);
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-control--action:hover {
+  background: var(--primary-hover);
+  transform: translate(-1px, -1px);
+  box-shadow: var(--elevation-md);
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-control--action:active {
+  transform: translate(1px, 1px);
+  box-shadow: none;
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-control--secondary {
+  background: var(--student-kraft);
+  color: var(--student-ink);
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-control--accent {
+  background: var(--accent);
+  color: var(--accent-foreground);
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-control--quiet {
+  background: var(--student-paper);
+  color: var(--student-ink);
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-control:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+  transform: none;
+  box-shadow: none;
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-field {
+  min-height: 44px;
+  width: 100%;
+  border: 2px solid var(--input);
+  border-radius: 10px 3px 12px 4px / 3px 12px 4px 10px;
+  background: var(--student-paper);
+  color: var(--student-ink);
+  padding: 8px 30px;
+  font-family: var(--student-font-body);
+  font-size: 0.875rem;
+  outline: none;
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-field:focus-visible {
+  border-color: var(--ring);
+  box-shadow: 0 0 0 3px var(--primary-soft);
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-field[aria-invalid="true"] {
+  border-color: var(--destructive);
+  box-shadow: 0 0 0 3px var(--destructive-soft);
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-soft-panel {
+  border: 1px solid var(--border);
+  border-radius: 12px 4px 14px 4px / 4px 14px 4px 12px;
+  background: var(--muted);
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--student-ink);
+  border-radius: 8px 3px 9px 3px / 3px 9px 3px 8px;
+  background: var(--secondary);
+  color: var(--student-ink);
+  padding: 4px 10px;
+  font-family: var(--student-font-body);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-avatar-dialog {
+  max-height: min(94vh, 760px);
+  max-width: 48rem;
+  overflow-y: auto;
+  border: 2px solid var(--student-ink);
+  border-radius: 22px 8px 20px 6px / 8px 20px 6px 22px;
+  background: var(--student-paper);
+  padding: 20px;
+  color: var(--student-ink);
+  box-shadow: var(--elevation-lg);
+}
+
+body:has(.student-theme) [data-slot="dialog-overlay"] {
+  background: color-mix(in srgb, var(--student-ink) 70%, transparent);
+}
+
+@media (min-width: 640px) {
+  :is(.student-theme, body:has(.student-theme)) .student-avatar-dialog { padding: 28px; }
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-nav-drawer {
+  background: var(--student-paper);
+  border-right: 2px solid var(--student-ink);
+}
+
+/* 9. HERO SECTION & MỤC BÀI HỌC VỞ BÀI TẬP */
+:is(.student-theme, body:has(.student-theme)) .student-home-hero {
+  position: relative;
+  padding: clamp(24px, 4vw, 44px);
+  border: 2px solid var(--student-ink);
+  border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
+  background-color: var(--student-kraft);
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent 31px,
+    color-mix(in srgb, var(--student-ink) 8%, transparent) 32px
+  );
+  background-size: 100% 32px;
+  box-shadow: 6px 7px 0 var(--student-ink);
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-home-unit {
+  display: flex;
+  min-height: 86px;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 18px;
+  color: var(--student-ink);
+  border-bottom: 2px dashed color-mix(in srgb, var(--student-ink) 35%, transparent);
+  transition: background-color 140ms steps(2), transform 140ms steps(2);
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-home-unit:last-child {
+  border-bottom: 0;
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-home-unit:hover {
+  background-color: color-mix(in srgb, var(--student-paper) 65%, transparent);
+  transform: translateX(3px);
+}
+
+/* Tem đánh dấu bài học */
+:is(.student-theme, body:has(.student-theme)) .student-home-unit__tag {
+  display: grid;
+  flex: 0 0 46px;
+  width: 46px;
+  height: 46px;
+  place-items: center;
+  border: 2px solid var(--student-ink);
+  border-radius: 12px 4px 14px 4px / 4px 14px 4px 12px;
+  background: var(--student-paper);
+  box-shadow: 2px 2px 0 var(--student-ink);
+  font-family: var(--student-font-mono);
+  font-weight: 800;
+  font-size: 1.1rem;
+}
+
+/* 10. HIGHLIGHT DẠ QUANG & TIỆN ÍCH HOẠT ẢNH STOP-MOTION */
+:is(.student-theme, body:has(.student-theme)) .student-highlight {
+  position: relative;
+  display: inline-block;
+  z-index: 1;
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-highlight::after {
+  content: "";
+  position: absolute;
+  bottom: 2px;
+  left: -2px;
+  width: calc(100% + 4px);
+  height: 44%;
+  background: var(--student-washi);
+  z-index: -1;
+  transform: rotate(-1deg);
+  border-radius: 2px;
+}
+
+@keyframes student-wiggle {
+  0% { transform: rotate(0deg); }
+  25% { transform: rotate(-1.5deg); }
+  75% { transform: rotate(1.5deg); }
+  100% { transform: rotate(0deg); }
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-wiggle:hover {
+  animation: student-wiggle 180ms steps(3);
+}
+
+@keyframes student-paper-enter {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-home-hero {
+  animation: student-paper-enter 240ms steps(4) both;
+}
+
+/* 11. MEDIA QUERIES & ACCESSIBILITY */
+@media (max-width: 640px) {
+  :is(.student-theme, body:has(.student-theme)) .student-home-hero { padding: 22px; }
+  :is(.student-theme, body:has(.student-theme)) .student-home-unit { padding: 14px; gap: 12px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :is(.student-theme, body:has(.student-theme)) .student-home-hero { animation: none; }
+  :is(.student-theme, body:has(.student-theme)) .student-polaroid,
+  :is(.student-theme, body:has(.student-theme)) .student-ink-button,
+  :is(.student-theme, body:has(.student-theme)) .student-sketch-meter__fill { transition: none; }
+}
+
+/* Units, nested Activity routes, and Rewards share these Student-owned recipes.
+   Geometry lives here so feature TSX only declares semantic composition. */
+:is(.student-theme, body:has(.student-theme)) .student-units-hero,
+:is(.student-theme, body:has(.student-theme)) .student-unit-detail-hero,
+:is(.student-theme, body:has(.student-theme)) .student-rewards-hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: clamp(22px, 4vw, 36px);
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-unit-card,
+:is(.student-theme, body:has(.student-theme)) .student-activity-card {
+  border-radius: 22px 8px 20px 6px / 8px 20px 6px 22px;
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-unit-cover-frame {
+  border: 2px solid var(--student-ink);
+  border-radius: 12px 4px 14px 4px / 4px 14px 4px 12px;
+  box-shadow: 3px 3px 0 var(--student-ink);
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-unit-cover-label {
+  font-family: var(--student-font-body);
+  font-size: 2.5rem;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  line-height: 1;
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-activity-card__icon,
+:is(.student-theme, body:has(.student-theme)) .student-ranking-avatar,
+:is(.student-theme, body:has(.student-theme)) .student-honor-card__mark {
+  display: grid;
+  flex: 0 0 auto;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border: 2px solid var(--student-ink);
+  border-radius: 12px 4px 14px 4px / 4px 14px 4px 12px;
+  background: var(--secondary);
+  color: var(--student-ink);
+  box-shadow: 2px 2px 0 var(--student-ink);
+  font-family: var(--student-font-body);
+  font-weight: 800;
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-filter-group,
+:is(.student-theme, body:has(.student-theme)) .student-period-group {
+  display: inline-flex;
+  width: fit-content;
+  gap: 4px;
+  padding: 4px;
+  border: 2px solid var(--student-ink);
+  border-radius: 14px 5px 12px 4px / 5px 12px 4px 14px;
+  background: var(--student-paper);
+  box-shadow: 3px 3px 0 var(--student-ink);
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-filter-active {
+  border-color: var(--student-ink);
+  background: var(--accent);
+  color: var(--accent-foreground);
+  box-shadow: 2px 2px 0 var(--student-ink);
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-filter-count {
+  border-radius: 999px;
+  padding: 2px 8px;
+  font-family: var(--student-font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-rewards-layout {
+  display: grid;
+  gap: 24px;
+}
+
+/* ==========================================================================
+   STUDENT PODIUM (BỤC VINH QUANG TOP 3 NÂNG CẤP)
+   ========================================================================== */
+
+:is(.student-theme, body:has(.student-theme)) .student-podium-wrap {
+  padding: 36px 16px 0;
+  background: color-mix(in srgb, var(--student-kraft) 55%, transparent);
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-podium {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: end;
+  gap: 12px;
+  max-width: 38rem;
+  margin-inline: auto;
+  list-style: none;
+  padding: 0;
+}
+
+/* Thẻ bục từng vị trí */
+:is(.student-theme, body:has(.student-theme)) .student-podium__place {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 16px 8px 14px;
+  border: 2px solid var(--student-ink);
+  border-bottom: 0;
+  background: var(--student-paper);
+  box-shadow: 0 -2px 0 color-mix(in srgb, var(--student-ink) 10%, transparent);
+}
+
+/* Chiều cao bậc thang rõ rệt */
+:is(.student-theme, body:has(.student-theme)) .student-podium__place--rank-1 {
+  min-height: 232px;
+  background: var(--student-kraft);
+  border-radius: 16px 16px 0 0;
+  z-index: 2;
+  box-shadow: 0 -3px 0 var(--student-ink);
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-podium__place--rank-2 {
+  min-height: 188px;
+  border-radius: 12px 4px 0 0;
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-podium__place--rank-3 {
+  min-height: 172px;
+  border-radius: 4px 12px 0 0;
+}
+
+/* Cụm Avatar Wrapper */
+:is(.student-theme, body:has(.student-theme)) .student-podium__avatar-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 2px;
+}
+
+/* Container icon sticker chung */
+:is(.student-theme, body:has(.student-theme)) .student-podium__icon-sticker {
+  position: absolute;
+  left: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: 9999px;
+  border: 1.5px solid var(--student-ink);
+  background: var(--student-paper);
+  z-index: 10;
+  box-shadow: 1px 2px 0 var(--student-ink);
+}
+
+/* Hạng 1: Vương miện to, đội trên đầu, xoay nhẹ trái */
+:is(.student-theme, body:has(.student-theme)) .student-podium__icon-sticker--gold {
+  top: -30px;
+  transform: translateX(-50%) rotate(-6deg);
+  padding: 5px;
+  background: color-mix(in srgb, var(--student-mustard) 30%, var(--student-paper));
+}
+
+/* Hạng 2: Huy chương Bạc, đặt đỉnh lệch phải */
+:is(.student-theme, body:has(.student-theme)) .student-podium__icon-sticker--silver {
+  top: -16px;
+  transform: translateX(-50%) rotate(6deg);
+  background: color-mix(in srgb, var(--student-paper) 70%, var(--student-ink) 10%);
+}
+
+/* Hạng 3: Kỷ niệm chương Đồng, đặt đỉnh lệch trái */
+:is(.student-theme, body:has(.student-theme)) .student-podium__icon-sticker--bronze {
+  top: -16px;
+  transform: translateX(-50%) rotate(-5deg);
+  background: color-mix(in srgb, var(--student-kraft-dark) 25%, var(--student-paper));
+}
+
+
+/* Vành Ring phân cấp huy chương */
+:is(.student-theme, body:has(.student-theme)) .student-podium__ring {
+  padding: 3px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed var(--student-ink);
+  transition: transform 140ms steps(2);
+}
+
+/* Ring Hạng 1 (Gold / Vàng hoàng gia) */
+:is(.student-theme, body:has(.student-theme)) .student-podium__avatar-wrap--rank-1 .student-podium__ring {
+  padding: 4px;
+  background: var(--student-mustard);
+  border: 2.5px solid var(--student-ink);
+  box-shadow: 0 0 0 2px var(--student-mustard), 2px 3px 0 var(--student-ink);
+}
+
+/* Ring Hạng 2 (Silver / Bạc sáng) */
+:is(.student-theme, body:has(.student-theme)) .student-podium__avatar-wrap--rank-2 .student-podium__ring {
+  background: color-mix(in srgb, var(--student-paper) 70%, var(--student-ink) 12%);
+  border: 2px solid var(--student-ink);
+  box-shadow: 1.5px 2px 0 var(--student-ink);
+}
+
+/* Ring Hạng 3 (Bronze / Đồng đất nung) */
+:is(.student-theme, body:has(.student-theme)) .student-podium__avatar-wrap--rank-3 .student-podium__ring {
+  background: color-mix(in srgb, var(--student-kraft-dark) 45%, var(--student-kraft));
+  border: 2px solid var(--student-ink);
+  box-shadow: 1.5px 2px 0 var(--student-ink);
+}
+
+/* Chân dung Avatar bên trong */
+:is(.student-theme, body:has(.student-theme)) .student-podium__portrait {
+  display: grid;
+  width: 52px;
+  height: 52px;
+  place-items: center;
+  border: 2px solid var(--student-ink);
+  border-radius: 50%;
+  background: var(--student-paper);
+  color: var(--student-ink);
+  font-family: var(--student-font-hand);
+  font-weight: 800;
+  font-size: 1.25rem;
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-podium__avatar-wrap--rank-1 .student-podium__portrait {
+  width: 64px;
+  height: 64px;
+  font-size: 1.5rem;
+  background: var(--student-canvas);
+}
+
+/* Huy hiệu thứ hạng gắn đè góc dưới avatar */
+:is(.student-theme, body:has(.student-theme)) .student-podium__rank-badge {
+  position: absolute;
+  bottom: -4px;
+  right: -4px;
+  display: grid;
+  width: 26px;
+  height: 26px;
+  place-items: center;
+  border: 2px solid var(--student-ink);
+  border-radius: 50%;
+  font-family: var(--student-font-mono);
+  font-size: 0.75rem;
+  font-weight: 800;
+  box-shadow: 1.5px 1.5px 0 var(--student-ink);
+  z-index: 5;
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-podium__rank-badge--rank-1 {
+  width: 28px;
+  height: 28px;
+  background: var(--student-mustard);
+  color: var(--student-ink);
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-podium__rank-badge--rank-2 {
+  background: var(--student-paper);
+  color: var(--student-ink);
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-podium__rank-badge--rank-3 {
+  background: var(--student-kraft-dark);
+  color: var(--student-paper);
+}
+
+/* Con dấu điểm XP (Tactile XP Pill) */
+:is(.student-theme, body:has(.student-theme)) .student-podium__xp-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  border: 1.5px solid var(--student-ink);
+  border-radius: 9999px;
+  background: var(--student-paper);
+  font-family: var(--student-font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--student-ink);
+  box-shadow: 1.5px 1.5px 0 var(--student-ink);
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-podium__xp-pill--first {
+  background: var(--student-mustard);
+}
+
+/* Responsive Mobile */
+@media (max-width: 639px) {
+  :is(.student-theme, body:has(.student-theme)) .student-podium__place--rank-1 {
+    min-height: 198px;
+  }
+  :is(.student-theme, body:has(.student-theme)) .student-podium__place--rank-2 {
+    min-height: 162px;
+  }
+  :is(.student-theme, body:has(.student-theme)) .student-podium__place--rank-3 {
+    min-height: 150px;
+  }
+  :is(.student-theme, body:has(.student-theme)) .student-podium__portrait {
+    width: 44px;
+    height: 44px;
+    font-size: 1.1rem;
+  }
+  :is(.student-theme, body:has(.student-theme)) .student-podium__avatar-wrap--rank-1 .student-podium__portrait {
+    width: 54px;
+    height: 54px;
+    font-size: 1.25rem;
+  }
+}
+
+
+:is(.student-theme, body:has(.student-theme)) .student-ranking-row {
+  display: grid;
+  grid-template-columns: 2.5rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-ranking-row--current {
+  background: var(--primary-soft);
+  box-shadow: inset 4px 0 0 var(--primary);
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-ranking-header {
+  border-block: 1px solid var(--border);
+  background: var(--secondary);
+  color: var(--muted-foreground);
+  font-family: var(--student-font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-honor-card {
+  border-radius: 18px 6px 16px 5px / 6px 16px 5px 18px;
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-practice-runtime {
+  background-color: var(--student-canvas);
+  color: var(--student-ink);
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-practice-runtime > img {
+  filter: sepia(0.12) saturate(0.8) contrast(0.96);
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-practice-start-layout {
+  max-width: 40rem;
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-practice-start-card {
+  border-radius: 22px 8px 20px 6px / 8px 20px 6px 22px;
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-practice-choice {
+  display: flex;
+  min-height: 72px;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 16px;
+  border: 2px solid var(--student-ink);
+  border-radius: 16px 5px 14px 4px / 5px 14px 4px 16px;
+  background: var(--student-paper);
+  color: var(--student-ink);
+  text-align: left;
+  box-shadow: 2px 2px 0 var(--student-ink);
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-practice-choice:hover,
+:is(.student-theme, body:has(.student-theme)) .student-practice-choice--active {
+  border-color: var(--primary);
+  background: var(--primary-soft);
+}
+
+@media (min-width: 640px) {
+  :is(.student-theme, body:has(.student-theme)) .student-ranking-row {
+    grid-template-columns: 4rem minmax(0, 1fr) 5rem 8rem;
+    gap: 12px;
+    padding-inline: 20px;
+  }
+}
+
+@media (min-width: 1280px) {
+  :is(.student-theme, body:has(.student-theme)) .student-rewards-layout {
+    grid-template-columns: minmax(0, 1.8fr) minmax(18rem, 1fr);
+  }
+}
+
+@media (max-width: 639px) {
+  :is(.student-theme, body:has(.student-theme)) .student-period-group {
+    display: grid;
+    width: 100%;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  :is(.student-theme, body:has(.student-theme)) .student-podium__place {
+    min-height: 150px;
+  }
+
+  :is(.student-theme, body:has(.student-theme)) .student-podium__place--first {
+    min-height: 182px;
+  }
+}
+
+/* Student Assignment List and Intro — scoped to these two routes only.
+   Do not change the immersive Assignment Paper or Result visual language. */
+.student-theme .student-assignment-hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: clamp(22px, 4vw, 36px);
+}
+.student-theme .student-assignment-hero__symbol {
+  display: grid;
+  width: 72px;
+  height: 72px;
+  flex-shrink: 0;
+  place-items: center;
+  border: 2px solid var(--student-ink);
+  border-radius: 16px 5px 18px 6px / 5px 18px 6px 16px;
+  background: var(--student-paper);
+  color: var(--primary);
+  box-shadow: var(--elevation-sm);
+  transform: rotate(2deg);
+}
+.student-theme .student-assignment-card {
+  border-radius: 18px 6px 19px 6px / 6px 19px 6px 18px;
+}
+.student-theme .student-assignment-card__icon {
+  display: grid;
+  width: 46px;
+  height: 46px;
+  flex-shrink: 0;
+  place-items: center;
+  border: 2px solid var(--student-ink);
+  border-radius: 12px 4px 14px 4px;
+  background: var(--secondary);
+  color: var(--student-ink);
+  box-shadow: var(--elevation-sm);
+}
+.student-theme .student-assignment-card__details {
+  padding-top: 12px;
+  border-top: 1px dashed var(--border);
+}
+.student-theme .student-assignment-detail {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.student-theme .student-assignment-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 9px;
+  border: 1px solid var(--border);
+  border-radius: 9px 3px 9px 4px;
+  background: var(--student-paper);
+  color: var(--student-ink);
+  font-family: var(--student-font-body);
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1.4;
+}
+.student-theme .student-assignment-status--submitted {
+  background: var(--success-soft);
+  color: var(--success);
+}
+.student-theme .student-assignment-status--in-progress {
+  background: var(--info-soft);
+  color: var(--info);
+}
+.student-theme .student-assignment-status--urgent {
+  background: var(--warning-soft);
+  color: var(--warning);
+}
+.student-theme .student-assignment-status--overdue {
+  background: var(--destructive-soft);
+  color: var(--destructive);
+}
+.student-theme .student-assignment-action {
+  display: inline-flex;
+  min-height: 46px;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  text-align: center;
+  text-decoration: none;
+  box-shadow: var(--elevation-sm);
+}
+.student-theme .student-assignment-action:hover {
+  box-shadow: var(--elevation-md);
+  transform: translate(-1px, -1px);
+}
+.student-theme .student-assignment-title-link:hover {
+  color: var(--primary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+:is(.student-theme, body:has(.student-theme)) .student-assignment-filter--active {
+  border-color: var(--student-ink);
+  background: var(--accent);
+  color: var(--accent-foreground);
+  box-shadow: var(--elevation-sm);
+}
+.student-theme .student-assignment-search {
+  padding-left: 40px;
+}
+.student-theme .student-assignment-empty {
+  border-radius: 18px 6px 19px 6px / 6px 19px 6px 18px;
+}
+.student-theme .student-assignment-intro-hero {
+  border-radius: 20px 6px 22px 7px / 7px 22px 6px 20px;
+}
+.student-theme .student-assignment-info {
+  min-width: 0;
+  border: 2px solid var(--student-ink);
+  border-radius: 13px 4px 15px 5px / 5px 15px 4px 13px;
+  background: var(--student-paper);
+  box-shadow: var(--elevation-sm);
+}
+.student-theme .student-assignment-overdue {
+  border: 2px solid var(--destructive);
+  border-radius: 12px 4px 14px 5px;
+  background: var(--destructive-soft);
+  color: var(--destructive);
+}
+.student-theme .student-assignment-rules {
+  border-radius: 18px 6px 20px 6px / 6px 20px 6px 18px;
+}
+.student-theme .student-assignment-footer {
+  border: 2px solid var(--student-ink);
+  border-radius: 14px 4px 16px 5px / 5px 16px 4px 14px;
+  background: var(--student-kraft);
+}
+.student-theme .student-assignment-back {
+  text-decoration: none;
+}
+@media (max-width: 640px) {
+  .student-theme .student-assignment-hero__symbol { display: none; }
+  .student-theme .student-assignment-footer .student-assignment-action { width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .student-theme .student-assignment-action:hover { transform: none; }
+}

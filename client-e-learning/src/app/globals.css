@@ -13,10 +13,13 @@
  */
 @theme inline {
   --font-sans: "Plus Jakarta Sans", sans-serif;
-  --font-display: "Patrick Hand", cursive, sans-serif;
-  --font-hand: "Caveat", cursive, sans-serif;
-  --font-mono: "Courier Prime", monospace;
+  --font-display: "Plus Jakarta Sans", sans-serif;
   --font-heading: var(--font-sans);
+
+  /* Dedicated Storybook Landing Page Fonts (prevent overriding global tokens) */
+  --font-landing-page-display: "Patrick Hand", cursive, sans-serif;
+  --font-landing-hand: "Caveat", cursive, sans-serif;
+  --font-landing-mono: "Courier Prime", monospace;
 
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -119,6 +122,7 @@
   --color-rank-3: var(--rank-3);
 
   /* Storybook Landing Page Theme Tokens */
+  --color-landing-page-ink: var(--landing-page-ink, #261E19);
   --color-parchment: #F6EFE0;
   --color-parchment-light: #FAF6EC;
   --color-parchment-warm: #EDE2CA;
@@ -170,17 +174,18 @@
   --border-strong: #2b2220;
 
   /* Brand identity */
-  --ink: #261E19;
+  --ink: #4f3e34;
   --ink-fg: #fffdf8;
   --pop-shadow: #e9c99a;
   --marker: #f0a81c;
 
   /* Storybook Palette */
+  --landing-page-ink: #261E19;
   --bg-parchment: #F6EFE0;
   --bg-parchment-light: #FAF6EC;
   --bg-parchment-warm: #EDE2CA;
   --bg-parchment-deep: #DFD0B0;
-  --ink-primary: #261E19;
+  --ink-primary: var(--landing-page-ink, #261E19);
   --ink-muted: #524338;
   --sage-primary: #4F7A5A;
   --sage-light: #DCE8D8;
@@ -505,6 +510,7 @@
 
 /* Nền giấy thủ công với vân hạt nhẹ không gây lag */
 .parchment-surface {
+  --ink: var(--landing-page-ink, #261E19);
   background-color: var(--bg-parchment, #F6EFE0);
   background-image: 
     radial-gradient(rgba(38, 30, 25, 0.045) 1px, transparent 0),

@@ -138,12 +138,12 @@ export default function Scene03PlayPractice() {
       <div className="relative overflow-hidden rounded-[32px] bg-parchment-warm ink-border-lg p-6 sm:p-10 lg:p-14">
         {/* Header của Section */}
         <div className="mx-auto max-w-2xl text-center">
-          <span className="inline-block rounded-full bg-star-light px-4 py-1.5 font-mono text-xs font-bold text-ink ink-border-sm shadow-ink-sm">
+          <span className="inline-block rounded-full bg-star-light px-4 py-1.5 font-landing-mono text-xs font-bold text-ink ink-border-sm shadow-ink-sm">
             HỌC MÀ CHƠI, CHƠI MÀ HỌC
           </span>
           <h2
             id="scene03-heading"
-            className="mt-4 font-display text-3xl font-bold text-ink sm:text-5xl"
+            className="mt-4 font-landing-page-display text-3xl font-bold text-ink sm:text-5xl"
           >
             Thử thách bản thân theo cách thú vị hơn.
           </h2>
@@ -164,15 +164,15 @@ export default function Scene03PlayPractice() {
 
             <div>
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <span className="rounded-lg bg-star px-3 py-1 font-mono text-xs font-bold text-ink ink-border-sm">
+                <span className="rounded-lg bg-star px-3 py-1 font-landing-mono text-xs font-bold text-ink ink-border-sm">
                   GAME 01 • BẮN BÓNG TỪ VỰNG
                 </span>
-                <span className="font-hand text-lg font-bold text-terracotta">
+                <span className="font-landing-hand text-lg font-bold text-terracotta">
                   Chạm vào bong bóng để làm vỡ!
                 </span>
               </div>
 
-              <h3 className="mt-3 font-display text-3xl font-bold text-ink sm:text-4xl">
+              <h3 className="mt-3 font-landing-page-display text-3xl font-bold text-ink sm:text-4xl">
                 Bubble Pop
               </h3>
               <p className="mt-2 font-sans text-sm font-semibold leading-relaxed text-ink-muted sm:text-base">
@@ -204,7 +204,7 @@ export default function Scene03PlayPractice() {
                             backgroundColor: b.color,
                             animationDelay: `${index * 0.45}s`,
                           }}
-                          className="animate-float-slow group flex items-center gap-1.5 rounded-full px-4 py-2.5 font-display text-lg font-bold text-ink ink-border-sm shadow-ink-sm transition-transform hover:scale-115 active:scale-90"
+                          className="animate-float-slow group flex items-center gap-1.5 rounded-full px-4 py-2.5 font-landing-page-display text-lg font-bold text-ink ink-border-sm shadow-ink-sm transition-transform hover:scale-115 active:scale-90"
                         >
                           <span
                             aria-hidden="true"
@@ -213,7 +213,7 @@ export default function Scene03PlayPractice() {
                           <span>{b.word}</span>
                         </button>
                       ) : (
-                        <div className="animate-scale-in flex items-center gap-1.5 rounded-xl border-2 border-dashed border-ink/40 bg-parchment-light/95 px-3 py-1 font-hand text-base font-bold text-terracotta shadow-sm">
+                        <div className="animate-scale-in flex items-center gap-1.5 rounded-xl border-2 border-dashed border-ink/40 bg-parchment-light/95 px-3 py-1 font-landing-hand text-base font-bold text-terracotta shadow-sm">
                           <span className="inline-flex items-center gap-1 font-bold text-terracotta">
                             <Sparkles className="h-3.5 w-3.5" />
                             {b.word}:
@@ -230,13 +230,13 @@ export default function Scene03PlayPractice() {
                 {poppedIds.length === INITIAL_BUBBLES.length && (
                   <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-parchment-light/95 p-4 text-center backdrop-blur-sm">
                     <Trophy className="h-12 w-12 text-star animate-bounce" />
-                    <p className="mt-2 font-display text-2xl font-bold text-ink">
+                    <p className="mt-2 font-landing-page-display text-2xl font-bold text-ink">
                       Tuyệt vời! Bạn đã mở khóa toàn bộ từ vựng mẫu!
                     </p>
                     <button
                       type="button"
                       onClick={handleResetBubbles}
-                      className="mt-3 inline-flex items-center gap-1.5 rounded-xl bg-star px-4 py-2 font-display text-lg font-bold text-ink ink-border-sm transition-transform hover:scale-105"
+                      className="mt-3 inline-flex items-center gap-1.5 rounded-xl bg-star px-4 py-2 font-landing-page-display text-lg font-bold text-ink ink-border-sm transition-transform hover:scale-105"
                     >
                       <RotateCcw className="h-4 w-4" />
                       <span>Thổi bong bóng mới</span>
@@ -257,7 +257,7 @@ export default function Scene03PlayPractice() {
                 <button
                   type="button"
                   onClick={handleResetBubbles}
-                  className="font-mono text-xs font-bold text-terracotta underline hover:text-ink"
+                  className="font-landing-mono text-xs font-bold text-terracotta underline hover:text-ink"
                 >
                   Chơi lại
                 </button>
@@ -274,15 +274,15 @@ export default function Scene03PlayPractice() {
 
             <div>
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <span className="rounded-lg bg-sage px-3 py-1 font-mono text-xs font-bold text-parchment-light ink-border-sm">
+                <span className="rounded-lg bg-sage px-3 py-1 font-landing-mono text-xs font-bold text-parchment-light ink-border-sm">
                   GAME 02 • MƯA TỪ HỒ SEN
                 </span>
-                <span className="font-hand text-lg font-bold text-star">
+                <span className="font-landing-hand text-lg font-bold text-star">
                   Chạm giọt mưa từ vựng đang rơi!
                 </span>
               </div>
 
-              <h3 className="mt-3 font-display text-3xl font-bold text-star-light sm:text-4xl">
+              <h3 className="mt-3 font-landing-page-display text-3xl font-bold text-star-light sm:text-4xl">
                 Word Rain
               </h3>
               <p className="mt-2 font-sans text-sm font-semibold leading-relaxed text-parchment-warm/90 sm:text-base">
@@ -315,11 +315,11 @@ export default function Scene03PlayPractice() {
                             : "bg-[#FAF6EC]/95 text-ink"
                         }`}
                       >
-                        <span className="inline-flex items-center gap-1 font-mono text-[10px] font-bold uppercase text-terracotta">
+                        <span className="inline-flex items-center gap-1 font-landing-mono text-[10px] font-bold uppercase text-terracotta">
                           <Droplets className="h-3 w-3" />
                           Giọt mưa
                         </span>
-                        <span className="mt-0.5 font-display text-lg">
+                        <span className="mt-0.5 font-landing-page-display text-lg">
                           {item.word}
                         </span>
                       </button>
@@ -329,7 +329,7 @@ export default function Scene03PlayPractice() {
 
                 {/* Thẻ nghĩa từ vựng nổi ở giữa hồ sen */}
                 <div className="relative z-10 mt-4 rounded-xl bg-parchment-light/95 p-2.5 text-center text-ink ink-border-sm">
-                  <span className="font-hand text-lg font-bold text-terracotta">
+                  <span className="font-landing-hand text-lg font-bold text-terracotta">
                     Nghĩa từ vựng:{" "}
                   </span>
                   <span className="font-sans text-sm font-bold text-ink">
@@ -393,7 +393,7 @@ export default function Scene03PlayPractice() {
 
             {/* Chân trang Word Rain */}
             <div className="mt-5 flex items-center justify-between rounded-xl bg-[#14202B] px-4 py-2.5 border border-ink/40">
-              <span className="font-mono text-xs font-bold text-star-light">
+              <span className="font-landing-mono text-xs font-bold text-star-light">
                 Đang lắng nghe giọt: &ldquo;{selectedRain.word}&rdquo;
               </span>
               <span className="font-sans text-xs font-bold text-sage-light">
@@ -408,12 +408,12 @@ export default function Scene03PlayPractice() {
           <a
             href={LANDING_ROUTES.studentGames}
             onClick={() => sounds.playWoodClick()}
-            className="group inline-flex items-center gap-3 rounded-2xl bg-terracotta px-8 py-4 font-display text-2xl tracking-wide text-parchment-light ink-border shadow-ink transition-all duration-200 hover:-translate-y-1 hover:shadow-ink-lg active:translate-y-0"
+            className="group inline-flex items-center gap-3 rounded-2xl bg-terracotta px-8 py-4 font-landing-page-display text-2xl tracking-wide text-parchment-light ink-border shadow-ink transition-all duration-200 hover:-translate-y-1 hover:shadow-ink-lg active:translate-y-0"
           >
             <span>Vào đấu trường trò chơi tiếng Anh</span>
             <Gamepad2 className="h-6 w-6 transition-transform duration-200 group-hover:rotate-12" />
           </a>
-          <span className="mt-3 font-hand text-lg font-bold text-ink-muted">
+          <span className="mt-3 font-landing-hand text-lg font-bold text-ink-muted">
             Kết nối trực tiếp với ngân hàng từ vựng từng Unit do thầy cô tạo
           </span>
         </div>

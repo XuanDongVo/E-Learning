@@ -47,12 +47,12 @@ export default function Scene04RewardsScrapbook() {
 
         {/* Tiêu đề Section */}
         <div className="mx-auto max-w-2xl text-center">
-          <span className="inline-block rounded-full bg-blush-light px-4 py-1.5 font-mono text-xs font-bold text-ink ink-border-sm shadow-ink-sm">
+          <span className="inline-block rounded-full bg-blush-light px-4 py-1.5 font-landing-mono text-xs font-bold text-ink ink-border-sm shadow-ink-sm">
             MỖI CỐ GẮNG ĐỀU ĐÁNG ĐƯỢC GHI NHẬN
           </span>
           <h2
             id="scene04-heading"
-            className="mt-4 font-display text-3xl font-bold text-ink sm:text-5xl"
+            className="mt-4 font-landing-page-display text-3xl font-bold text-ink sm:text-5xl"
           >
             Tiến bộ từng chút, vui hơn mỗi ngày.
           </h2>
@@ -68,18 +68,18 @@ export default function Scene04RewardsScrapbook() {
           <article className="relative flex flex-col justify-between rounded-3xl bg-parchment-warm p-6 ink-border shadow-ink transition-all duration-200 hover:-translate-y-1 sm:p-8">
             <div>
               <div className="flex items-center justify-between">
-                <span className="rounded-lg bg-star px-3 py-1 font-mono text-xs font-bold text-ink ink-border-sm">
+                <span className="rounded-lg bg-star px-3 py-1 font-landing-mono text-xs font-bold text-ink ink-border-sm">
                   STICKER 01
                 </span>
                 <span
                   aria-hidden="true"
-                  className="animate-star-twinkle inline-flex items-center gap-1 font-display text-2xl text-star-amber"
+                  className="animate-star-twinkle inline-flex items-center gap-1 font-landing-page-display text-2xl text-star-amber"
                 >
                   <Star className="h-5 w-5 fill-star text-star-amber" /> Level {level}
                 </span>
               </div>
 
-              <h3 className="mt-4 font-display text-3xl font-bold text-ink">
+              <h3 className="mt-4 font-landing-page-display text-3xl font-bold text-ink">
                 XP & Level
               </h3>
               <p className="mt-2 font-sans text-sm font-semibold leading-relaxed text-ink-muted">
@@ -89,7 +89,7 @@ export default function Scene04RewardsScrapbook() {
 
               {/* Thanh thước kẻ XP tương tác */}
               <div className="mt-6 rounded-2xl bg-parchment-light p-4 ink-border-sm shadow-sm">
-                <div className="flex items-center justify-between font-mono text-xs font-bold text-ink">
+                <div className="flex items-center justify-between font-landing-mono text-xs font-bold text-ink">
                   <span>KINH NGHIỆM: {xp} XP</span>
                   <span className="text-terracotta">
                     {level === 1
@@ -120,21 +120,21 @@ export default function Scene04RewardsScrapbook() {
                 </div>
 
                 <div className="mt-3 flex items-center justify-between">
-                  <span className="font-mono text-[11px] text-ink-muted font-bold">
+                  <span className="font-landing-mono text-[11px] text-ink-muted font-bold">
                     Tiếp theo: {100 - xpInCurrentLevel} XP để lên Level {level + 1}
                   </span>
                   <div className="flex gap-1.5">
                     <button
                       type="button"
                       onClick={() => handleAddXp(25)}
-                      className="rounded-lg bg-star px-2.5 py-1 font-mono text-xs font-bold text-ink ink-border-sm transition-transform active:scale-90"
+                      className="rounded-lg bg-star px-2.5 py-1 font-landing-mono text-xs font-bold text-ink ink-border-sm transition-transform active:scale-90"
                     >
                       +25 XP
                     </button>
                     <button
                       type="button"
                       onClick={() => handleAddXp(50)}
-                      className="rounded-lg bg-terracotta px-2.5 py-1 font-mono text-xs font-bold text-parchment-light ink-border-sm transition-transform active:scale-90"
+                      className="rounded-lg bg-terracotta px-2.5 py-1 font-landing-mono text-xs font-bold text-parchment-light ink-border-sm transition-transform active:scale-90"
                     >
                       +50 XP
                     </button>
@@ -143,7 +143,7 @@ export default function Scene04RewardsScrapbook() {
               </div>
             </div>
 
-            <p className="mt-4 font-hand text-base font-bold text-ink-muted">
+            <p className="mt-4 font-landing-hand text-base font-bold text-ink-muted">
               * XP được tính theo quy tắc hoàn thành bài học thực tế trên hệ thống.
             </p>
           </article>
@@ -152,15 +152,15 @@ export default function Scene04RewardsScrapbook() {
           <article className="relative flex flex-col justify-between rounded-3xl bg-parchment-warm p-6 ink-border shadow-ink transition-all duration-200 hover:-translate-y-1 sm:p-8">
             <div>
               <div className="flex items-center justify-between">
-                <span className="rounded-lg bg-terracotta px-3 py-1 font-mono text-xs font-bold text-parchment-light ink-border-sm">
+                <span className="rounded-lg bg-terracotta px-3 py-1 font-landing-mono text-xs font-bold text-parchment-light ink-border-sm">
                   STICKER 02
                 </span>
-                <span className="inline-flex items-center gap-1 font-mono text-xs font-bold text-terracotta">
+                <span className="inline-flex items-center gap-1 font-landing-mono text-xs font-bold text-terracotta">
                   CHUỖI 5 NGÀY <Flame className="h-4 w-4 fill-terracotta text-terracotta" />
                 </span>
               </div>
 
-              <h3 className="mt-4 font-display text-3xl font-bold text-ink">
+              <h3 className="mt-4 font-landing-page-display text-3xl font-bold text-ink">
                 Streak Mỗi Ngày
               </h3>
               <p className="mt-2 font-sans text-sm font-semibold leading-relaxed text-ink-muted">
@@ -170,7 +170,7 @@ export default function Scene04RewardsScrapbook() {
 
               {/* Lịch tuần dán tem con dấu */}
               <div className="mt-6 rounded-2xl bg-parchment-light p-4 ink-border-sm shadow-sm">
-                <span className="font-mono text-xs font-bold text-ink">
+                <span className="font-landing-mono text-xs font-bold text-ink">
                   LỊCH ĐÓNG DẤU CHĂM CHỈ (TUẦN NÀY)
                 </span>
 
@@ -192,7 +192,7 @@ export default function Scene04RewardsScrapbook() {
                             : "bg-parchment-light border-ink/20 opacity-50"
                         }`}
                       >
-                        <span className="font-mono text-[10px] font-bold">{day}</span>
+                        <span className="font-landing-mono text-[10px] font-bold">{day}</span>
                         <span className="mt-1 flex items-center justify-center h-5 w-5">
                           {isDonePast ? (
                             <Check className="h-4 w-4 text-ink stroke-[2.5]" />
@@ -215,14 +215,14 @@ export default function Scene04RewardsScrapbook() {
                     <button
                       type="button"
                       onClick={handleStampToday}
-                      className="group inline-flex items-center gap-2 rounded-xl bg-terracotta px-4 py-2 font-display text-lg font-bold text-parchment-light ink-border-sm shadow-ink-sm transition-all hover:scale-105 active:scale-95"
+                      className="group inline-flex items-center gap-2 rounded-xl bg-terracotta px-4 py-2 font-landing-page-display text-lg font-bold text-parchment-light ink-border-sm shadow-ink-sm transition-all hover:scale-105 active:scale-95"
                     >
                       <CheckCircle2 className="h-5 w-5" />
                       <span>Đóng dấu hôm nay!</span>
                     </button>
                   ) : (
                     <div
-                      className={`inline-flex items-center gap-2 rounded-xl bg-star-light px-4 py-2 font-hand text-xl font-bold text-ink ink-border-sm ${
+                      className={`inline-flex items-center gap-2 rounded-xl bg-star-light px-4 py-2 font-landing-hand text-xl font-bold text-ink ink-border-sm ${
                         stampBounce ? "animate-bounce" : ""
                       }`}
                     >
@@ -234,7 +234,7 @@ export default function Scene04RewardsScrapbook() {
               </div>
             </div>
 
-            <p className="mt-4 font-hand text-base font-bold text-ink-muted">
+            <p className="mt-4 font-landing-hand text-base font-bold text-ink-muted">
               * Biến việc học thành thói quen niềm vui mỗi ngày.
             </p>
           </article>
@@ -243,15 +243,15 @@ export default function Scene04RewardsScrapbook() {
           <article className="relative flex flex-col justify-between rounded-3xl bg-parchment-warm p-6 ink-border shadow-ink transition-all duration-200 hover:-translate-y-1 sm:p-8">
             <div>
               <div className="flex items-center justify-between">
-                <span className="rounded-lg bg-sage px-3 py-1 font-mono text-xs font-bold text-parchment-light ink-border-sm">
+                <span className="rounded-lg bg-sage px-3 py-1 font-landing-mono text-xs font-bold text-parchment-light ink-border-sm">
                   STICKER 03
                 </span>
-                <span className="font-mono text-xs font-bold text-sage-dark">
+                <span className="font-landing-mono text-xs font-bold text-sage-dark">
                   BẢNG VINH DANH
                 </span>
               </div>
 
-              <h3 className="mt-4 font-display text-3xl font-bold text-ink">
+              <h3 className="mt-4 font-landing-page-display text-3xl font-bold text-ink">
                 Bảng Xếp Hạng
               </h3>
               <p className="mt-2 font-sans text-sm font-semibold leading-relaxed text-ink-muted">
@@ -267,10 +267,10 @@ export default function Scene04RewardsScrapbook() {
                     <span className="flex h-8 w-8 items-center justify-center animate-float-slow">
                       <Medal className="h-6 w-6 text-slate-400 fill-slate-300" />
                     </span>
-                    <span className="font-display text-base font-bold text-ink">
+                    <span className="font-landing-page-display text-base font-bold text-ink">
                       Minh Anh
                     </span>
-                    <div className="mt-1 flex h-20 w-16 items-center justify-center rounded-t-xl bg-slate-200 border-2 border-ink font-display text-2xl font-bold text-ink shadow-sm">
+                    <div className="mt-1 flex h-20 w-16 items-center justify-center rounded-t-xl bg-slate-200 border-2 border-ink font-landing-page-display text-2xl font-bold text-ink shadow-sm">
                       2
                     </div>
                   </div>
@@ -280,10 +280,10 @@ export default function Scene04RewardsScrapbook() {
                     <span className="flex h-9 w-9 items-center justify-center animate-bounce">
                       <Crown className="h-7 w-7 text-star fill-star" />
                     </span>
-                    <span className="font-display text-base font-bold text-terracotta">
+                    <span className="font-landing-page-display text-base font-bold text-terracotta">
                       Gia Huy
                     </span>
-                    <div className="mt-1 flex h-28 w-20 items-center justify-center rounded-t-xl bg-star border-2 border-ink font-display text-3xl font-bold text-ink shadow-sm">
+                    <div className="mt-1 flex h-28 w-20 items-center justify-center rounded-t-xl bg-star border-2 border-ink font-landing-page-display text-3xl font-bold text-ink shadow-sm">
                       1
                     </div>
                   </div>
@@ -293,24 +293,24 @@ export default function Scene04RewardsScrapbook() {
                     <span className="flex h-8 w-8 items-center justify-center animate-float-slow">
                       <Medal className="h-6 w-6 text-amber-700 fill-amber-600" />
                     </span>
-                    <span className="font-display text-base font-bold text-ink">
+                    <span className="font-landing-page-display text-base font-bold text-ink">
                       Bảo Ngọc
                     </span>
-                    <div className="mt-1 flex h-14 w-16 items-center justify-center rounded-t-xl bg-amber-200 border-2 border-ink font-display text-xl font-bold text-ink shadow-sm">
+                    <div className="mt-1 flex h-14 w-16 items-center justify-center rounded-t-xl bg-amber-200 border-2 border-ink font-landing-page-display text-xl font-bold text-ink shadow-sm">
                       3
                     </div>
                   </div>
                 </div>
 
                 <div className="mt-3 text-center">
-                  <span className="font-mono text-xs font-bold text-ink-muted">
+                  <span className="font-landing-mono text-xs font-bold text-ink-muted">
                     Xếp hạng cập nhật hàng tuần theo lớp
                   </span>
                 </div>
               </div>
             </div>
 
-            <p className="mt-4 font-hand text-base font-bold text-ink-muted">
+            <p className="mt-4 font-landing-hand text-base font-bold text-ink-muted">
               * Khám phá bảng xếp hạng lớp học và cá nhân trong mục Tiến trình.
             </p>
           </article>

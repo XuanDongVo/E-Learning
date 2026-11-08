@@ -1,5 +1,14 @@
 # Project Progress
 
+## Landing Page — CSS Token Isolation & Global Style Protection (2026-11-08)
+
+- Resolved PR #44 review feedback from Leader:
+  - Restored base `--ink: #4f3e34` and `--font-display: "Plus Jakarta Sans", sans-serif;` to prevent styling regressions in Teacher and Student interfaces.
+  - Introduced dedicated `--landing-page-ink: #261E19` and scoped `--ink: var(--landing-page-ink, #261E19)` strictly inside `.parchment-surface`.
+  - Defined dedicated `--font-landing-page-display: "Patrick Hand", cursive, sans-serif;`, `--font-landing-hand`, and `--font-landing-mono` in `@theme inline`.
+  - Migrated all Landing Page components (`Navbar`, `Scene01HeroBook`, `Scene02ExploreWorld`, `Scene03PlayPractice`, `Scene04RewardsScrapbook`, `Scene06FinalPage`) to use `font-landing-page-display`, `font-landing-hand`, and `font-landing-mono`.
+- Validation: `npm run build` compiled cleanly with 0 errors across all routes.
+
 ## Landing Page — The Learning Storybook & Lucide Icon Refactor (2026-11-08)
 
 - Implemented The Learning Storybook interactive landing page in `client-e-learning/src/app/page.tsx` and root layout `src/app/layout.tsx`.

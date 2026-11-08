@@ -87,10 +87,10 @@ export default function Navbar({ session, onNavigateSection }: NavbarProps) {
             </svg>
           </span>
           <div className="flex flex-col">
-            <span className="font-display text-2xl font-bold leading-none tracking-wide text-ink transition-colors group-hover:text-terracotta">
+            <span className="font-landing-page-display text-2xl font-bold leading-none tracking-wide text-ink transition-colors group-hover:text-terracotta">
               E-Learning
             </span>
-            <span className="font-mono text-[11px] font-bold text-ink-muted">
+            <span className="font-landing-mono text-[11px] font-bold text-ink-muted">
               The Learning Storybook
             </span>
           </div>
@@ -139,12 +139,12 @@ export default function Navbar({ session, onNavigateSection }: NavbarProps) {
             ) : (
               <VolumeX className="h-4 w-4 text-ink-muted" />
             )}
-            <span className="font-mono text-[11px]">{soundActive ? "Âm thanh: Bật" : "Âm thanh: Tắt"}</span>
+            <span className="font-landing-mono text-[11px]">{soundActive ? "Âm thanh: Bật" : "Âm thanh: Tắt"}</span>
           </button>
 
           <a
             href={LANDING_ROUTES.teacherLogin}
-            className="rounded-lg border-2 border-dashed border-ink/60 bg-parchment-warm/90 px-3.5 py-1.5 font-mono text-xs font-bold text-ink transition-all hover:-translate-y-0.5 hover:border-ink hover:bg-star-light hover:shadow-ink-sm"
+            className="rounded-lg border-2 border-dashed border-ink/60 bg-parchment-warm/90 px-3.5 py-1.5 font-landing-mono text-xs font-bold text-ink transition-all hover:-translate-y-0.5 hover:border-ink hover:bg-star-light hover:shadow-ink-sm"
           >
             Dành cho giáo viên
           </a>
@@ -155,7 +155,7 @@ export default function Navbar({ session, onNavigateSection }: NavbarProps) {
                 ? authCta.href
                 : LANDING_ROUTES.studentLogin
             }
-            className="rounded-xl bg-terracotta px-4.5 py-2 font-display text-lg tracking-wide text-parchment-light ink-border-sm transition-all duration-150 hover:-translate-y-0.5 hover:shadow-ink active:translate-y-0"
+            className="rounded-xl bg-terracotta px-4.5 py-2 font-landing-page-display text-lg tracking-wide text-parchment-light ink-border-sm transition-all duration-150 hover:-translate-y-0.5 hover:shadow-ink active:translate-y-0"
           >
             {session?.isAuthenticated ? authCta.label : "Đăng nhập"}
           </a>
@@ -230,7 +230,7 @@ export default function Navbar({ session, onNavigateSection }: NavbarProps) {
             <hr className="border-dashed border-ink/25" />
             <a
               href={LANDING_ROUTES.teacherLogin}
-              className="rounded-xl border-2 border-dashed border-ink bg-parchment-warm px-4 py-2.5 text-center font-mono text-sm font-bold text-ink"
+              className="rounded-xl border-2 border-dashed border-ink bg-parchment-warm px-4 py-2.5 text-center font-landing-mono text-sm font-bold text-ink"
             >
               Dành cho giáo viên
             </a>
@@ -240,7 +240,7 @@ export default function Navbar({ session, onNavigateSection }: NavbarProps) {
                   ? authCta.href
                   : LANDING_ROUTES.studentLogin
               }
-              className="rounded-xl bg-terracotta px-4 py-2.5 text-center font-display text-xl text-parchment-light ink-border-sm"
+              className="rounded-xl bg-terracotta px-4 py-2.5 text-center font-landing-page-display text-xl text-parchment-light ink-border-sm"
             >
               {session?.isAuthenticated ? authCta.label : "Đăng nhập"}
             </a>

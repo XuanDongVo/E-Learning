@@ -47,13 +47,13 @@ export default function Scene06FinalPage({
         <div className="grid grid-cols-1 items-center gap-8 lg:grid-cols-12">
           {/* Cột thông điệp kết: Trang tiếp theo là của bạn */}
           <div className="flex flex-col items-start text-left lg:col-span-6">
-            <span className="inline-block rounded-full bg-star-light px-4 py-1.5 font-mono text-xs font-bold text-ink ink-border-sm shadow-ink-sm">
+            <span className="inline-block rounded-full bg-star-light px-4 py-1.5 font-landing-mono text-xs font-bold text-ink ink-border-sm shadow-ink-sm">
               CÂU CHUYỆN TIẾP THEO ĐANG CHỜ BẠN
             </span>
 
             <h2
               id="scene06-heading"
-              className="mt-4 font-display text-4xl font-bold text-ink sm:text-5xl lg:text-[56px] leading-[1.12]"
+              className="mt-4 font-landing-page-display text-4xl font-bold text-ink sm:text-5xl lg:text-[56px] leading-[1.12]"
             >
               Trang tiếp theo là của bạn.
             </h2>
@@ -68,7 +68,7 @@ export default function Scene06FinalPage({
               <a
                 href={primaryCta.href}
                 onClick={() => sounds.playWoodClick()}
-                className="group inline-flex items-center gap-3 rounded-2xl bg-terracotta px-7 py-4 font-display text-2xl tracking-wide text-parchment-light ink-border shadow-ink transition-all duration-200 hover:-translate-y-1 hover:shadow-ink-lg active:translate-y-0"
+                className="group inline-flex items-center gap-3 rounded-2xl bg-terracotta px-7 py-4 font-landing-page-display text-2xl tracking-wide text-parchment-light ink-border shadow-ink transition-all duration-200 hover:-translate-y-1 hover:shadow-ink-lg active:translate-y-0"
               >
                 <span>Bắt đầu hành trình</span>
                 <ArrowRight className="h-6 w-6 transition-transform duration-200 group-hover:translate-x-1" />
@@ -77,7 +77,7 @@ export default function Scene06FinalPage({
               <a
                 href={LANDING_ROUTES.studentLogin}
                 onClick={() => sounds.playWoodClick()}
-                className="inline-flex items-center gap-2 rounded-2xl bg-parchment-warm px-6 py-4 font-display text-2xl tracking-wide text-ink ink-border shadow-ink-sm transition-all duration-200 hover:-translate-y-1 hover:bg-star-light hover:shadow-ink active:translate-y-0"
+                className="inline-flex items-center gap-2 rounded-2xl bg-parchment-warm px-6 py-4 font-landing-page-display text-2xl tracking-wide text-ink ink-border shadow-ink-sm transition-all duration-200 hover:-translate-y-1 hover:bg-star-light hover:shadow-ink active:translate-y-0"
               >
                 <span>Đăng nhập</span>
               </a>
@@ -93,7 +93,7 @@ export default function Scene06FinalPage({
               ].map((tag) => (
                 <span
                   key={tag}
-                  className="rounded-xl bg-parchment-warm px-3.5 py-1.5 font-hand text-lg font-bold text-ink ink-border-sm shadow-sm"
+                  className="rounded-xl bg-parchment-warm px-3.5 py-1.5 font-landing-hand text-lg font-bold text-ink ink-border-sm shadow-sm"
                 >
                   {tag}
                 </span>
@@ -220,8 +220,8 @@ export default function Scene06FinalPage({
         <footer className="mt-14 border-t-2 border-dashed border-ink/25 pt-6">
           <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
             <div className="flex items-center gap-3">
-              <span className="font-display text-2xl font-bold text-ink">E-Learning</span>
-              <span className="font-mono text-xs text-ink-muted">
+              <span className="font-landing-page-display text-2xl font-bold text-ink">E-Learning</span>
+              <span className="font-landing-mono text-xs text-ink-muted">
                 • Mỗi bài học là một chuyến phiêu lưu.
               </span>
             </div>

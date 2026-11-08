@@ -105,13 +105,13 @@ export default function Scene01HeroBook({
                 aria-hidden="true"
                 className="inline-block h-2.5 w-2.5 rounded-full bg-terracotta animate-pulse"
               />
-              <span className="font-mono text-xs font-bold tracking-wider text-ink uppercase">
+              <span className="font-landing-mono text-xs font-bold tracking-wider text-ink uppercase">
                 KHÁM PHÁ THẾ GIỚI TIẾNG ANH
               </span>
             </div>
 
             {/* H1 chính chuẩn SEO */}
-            <h1 className="font-display text-4xl leading-[1.12] text-ink sm:text-5xl lg:text-[62px]">
+            <h1 className="font-landing-page-display text-4xl leading-[1.12] text-ink sm:text-5xl lg:text-[62px]">
               Mở trang sách,
               <br />
               <span className="relative inline-block text-terracotta">
@@ -143,7 +143,7 @@ export default function Scene01HeroBook({
               <a
                 href={primaryCta.href}
                 onClick={() => sounds.playWoodClick()}
-                className="group inline-flex items-center gap-3 rounded-2xl bg-terracotta px-6 py-3.5 font-display text-xl tracking-wide text-parchment-light ink-border shadow-ink transition-all duration-200 hover:-translate-y-1 hover:shadow-ink-lg active:translate-y-0"
+                className="group inline-flex items-center gap-3 rounded-2xl bg-terracotta px-6 py-3.5 font-landing-page-display text-xl tracking-wide text-parchment-light ink-border shadow-ink transition-all duration-200 hover:-translate-y-1 hover:shadow-ink-lg active:translate-y-0"
               >
                 <span>Bắt đầu học</span>
                 <ArrowRight className="h-5 w-5 transition-transform duration-200 group-hover:translate-x-1" />
@@ -155,7 +155,7 @@ export default function Scene01HeroBook({
                   sounds.playPageTurn();
                   onTriggerOpenBook();
                 }}
-                className="inline-flex items-center gap-2 rounded-2xl bg-parchment-warm px-6 py-3.5 font-display text-xl tracking-wide text-ink ink-border shadow-ink-sm transition-all duration-200 hover:-translate-y-1 hover:bg-star-light hover:shadow-ink active:translate-y-0"
+                className="inline-flex items-center gap-2 rounded-2xl bg-parchment-warm px-6 py-3.5 font-landing-page-display text-xl tracking-wide text-ink ink-border shadow-ink-sm transition-all duration-200 hover:-translate-y-1 hover:bg-star-light hover:shadow-ink active:translate-y-0"
               >
                 <span>Mở sách ngay</span>
                 <BookOpen className="h-5 w-5 text-ink" />
@@ -170,7 +170,7 @@ export default function Scene01HeroBook({
               >
                 <ArrowDown className="h-4 w-4 text-ink" />
               </span>
-              <span className="font-hand text-xl font-bold text-ink">
+              <span className="font-landing-hand text-xl font-bold text-ink">
                 Cuộn xuống hoặc nhấn để mở sách
               </span>
             </div>
@@ -187,7 +187,7 @@ export default function Scene01HeroBook({
               }}
             >
               <div className="rounded-xl bg-star-light px-3.5 py-1.5 ink-border-sm shadow-ink-sm">
-                <span className="font-display text-base font-bold text-ink">
+                <span className="font-landing-page-display text-base font-bold text-ink">
                   A • B • C • Vocabulary
                 </span>
               </div>
@@ -201,7 +201,7 @@ export default function Scene01HeroBook({
               }}
             >
               <div className="rounded-xl bg-sage-light px-3.5 py-1.5 ink-border-sm shadow-ink-sm animate-star-twinkle">
-                <span className="font-hand text-lg font-bold text-sage-dark">
+                <span className="font-landing-hand text-lg font-bold text-sage-dark">
                   ★ +100 XP Quest
                 </span>
               </div>
@@ -610,7 +610,7 @@ export default function Scene01HeroBook({
                   isHoveringBook ? "scale-105 opacity-100" : "opacity-90"
                 }`}
               >
-                <span className="font-hand text-base font-bold text-ink">
+                <span className="font-landing-hand text-base font-bold text-ink">
                   {progress < 0.3
                     ? "Nhấp vào cuốn sách để mở thế giới học tập"
                     : `Tiến trình mở sách: ${Math.round(progress * 100)}%`}
@@ -624,7 +624,7 @@ export default function Scene01HeroBook({
                 <button
                   type="button"
                   onClick={() => handleMilestoneClick(0)}
-                  className={`font-mono transition-colors hover:text-terracotta ${
+                  className={`font-landing-mono transition-colors hover:text-terracotta ${
                     progress < 0.25 ? "text-terracotta font-extrabold" : ""
                   }`}
                 >
@@ -633,7 +633,7 @@ export default function Scene01HeroBook({
                 <button
                   type="button"
                   onClick={() => handleMilestoneClick(0.35)}
-                  className={`font-mono transition-colors hover:text-terracotta ${
+                  className={`font-landing-mono transition-colors hover:text-terracotta ${
                     progress >= 0.25 && progress < 0.65
                       ? "text-terracotta font-extrabold"
                       : ""
@@ -644,7 +644,7 @@ export default function Scene01HeroBook({
                 <button
                   type="button"
                   onClick={() => handleMilestoneClick(0.75)}
-                  className={`font-mono transition-colors hover:text-terracotta ${
+                  className={`font-landing-mono transition-colors hover:text-terracotta ${
                     progress >= 0.65 && progress < 0.95
                       ? "text-terracotta font-extrabold"
                       : ""
@@ -655,7 +655,7 @@ export default function Scene01HeroBook({
                 <button
                   type="button"
                   onClick={() => handleMilestoneClick(1)}
-                  className={`font-mono transition-colors hover:text-terracotta ${
+                  className={`font-landing-mono transition-colors hover:text-terracotta ${
                     progress >= 0.95 ? "text-terracotta font-extrabold" : ""
                   }`}
                 >

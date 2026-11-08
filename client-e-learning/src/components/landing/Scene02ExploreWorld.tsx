@@ -104,12 +104,12 @@ export default function Scene02ExploreWorld() {
 
         {/* Phần mở đầu Section */}
         <div className="mx-auto max-w-2xl text-center">
-          <span className="inline-block rounded-full bg-sage-light px-4 py-1.5 font-mono text-xs font-bold text-sage-dark ink-border-sm shadow-ink-sm">
+          <span className="inline-block rounded-full bg-sage-light px-4 py-1.5 font-landing-mono text-xs font-bold text-sage-dark ink-border-sm shadow-ink-sm">
             MỖI BÀI HỌC LÀ MỘT KHÁM PHÁ MỚI
           </span>
           <h2
             id="scene02-heading"
-            className="mt-4 font-display text-3xl font-bold text-ink sm:text-5xl"
+            className="mt-4 font-landing-page-display text-3xl font-bold text-ink sm:text-5xl"
           >
             Hôm nay, bạn muốn khám phá điều gì?
           </h2>
@@ -144,11 +144,11 @@ export default function Scene02ExploreWorld() {
                 <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-star-light ink-border-sm shadow-ink-sm">
                   <Compass className="h-6 w-6 text-ink" />
                 </span>
-                <span className="font-mono text-xs font-bold text-ink-muted">
+                <span className="font-landing-mono text-xs font-bold text-ink-muted">
                   PHÂN CẤP RÕ RÀNG
                 </span>
               </div>
-              <h3 className="font-display text-2xl font-bold text-ink">
+              <h3 className="font-landing-page-display text-2xl font-bold text-ink">
                 Khám phá theo chủ đề
               </h3>
               <p className="mt-3 font-sans text-sm font-semibold leading-relaxed text-ink-muted">
@@ -156,10 +156,10 @@ export default function Scene02ExploreWorld() {
                 Unit, Section và từng Topic cụ thể để học sinh dễ dàng tra cứu.
               </p>
               <div className="mt-5 flex flex-wrap gap-2">
-                <span className="rounded-lg bg-parchment-light px-2.5 py-1 font-mono text-xs font-bold text-ink border border-ink/30">
+                <span className="rounded-lg bg-parchment-light px-2.5 py-1 font-landing-mono text-xs font-bold text-ink border border-ink/30">
                   Grade 6 • 7 • 8
                 </span>
-                <span className="rounded-lg bg-parchment-light px-2.5 py-1 font-mono text-xs font-bold text-ink border border-ink/30">
+                <span className="rounded-lg bg-parchment-light px-2.5 py-1 font-landing-mono text-xs font-bold text-ink border border-ink/30">
                   Unit & Topic
                 </span>
               </div>
@@ -171,11 +171,11 @@ export default function Scene02ExploreWorld() {
                 <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-sage-light ink-border-sm shadow-ink-sm">
                   <BookOpen className="h-6 w-6 text-ink" />
                 </span>
-                <span className="font-mono text-xs font-bold text-ink-muted">
+                <span className="font-landing-mono text-xs font-bold text-ink-muted">
                   NGÂN HÀNG CÂU HỎI
                 </span>
               </div>
-              <h3 className="font-display text-2xl font-bold text-ink">
+              <h3 className="font-landing-page-display text-2xl font-bold text-ink">
                 Luyện tập đa dạng
               </h3>
               <p className="mt-3 font-sans text-sm font-semibold leading-relaxed text-ink-muted">
@@ -183,13 +183,13 @@ export default function Scene02ExploreWorld() {
                 tự động chọn tập câu hỏi linh hoạt, giúp bạn không bị nhàm chán.
               </p>
               <div className="mt-5 flex flex-wrap gap-2">
-                <span className="rounded-lg bg-parchment-light px-2.5 py-1 font-mono text-xs font-bold text-ink border border-ink/30">
+                <span className="rounded-lg bg-parchment-light px-2.5 py-1 font-landing-mono text-xs font-bold text-ink border border-ink/30">
                   Trắc nghiệm
                 </span>
-                <span className="rounded-lg bg-parchment-light px-2.5 py-1 font-mono text-xs font-bold text-ink border border-ink/30">
+                <span className="rounded-lg bg-parchment-light px-2.5 py-1 font-landing-mono text-xs font-bold text-ink border border-ink/30">
                   Điền từ
                 </span>
-                <span className="rounded-lg bg-parchment-light px-2.5 py-1 font-mono text-xs font-bold text-ink border border-ink/30">
+                <span className="rounded-lg bg-parchment-light px-2.5 py-1 font-landing-mono text-xs font-bold text-ink border border-ink/30">
                   Nối cặp
                 </span>
               </div>
@@ -201,11 +201,11 @@ export default function Scene02ExploreWorld() {
                 <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-terracotta-light ink-border-sm shadow-ink-sm">
                   <Zap className="h-6 w-6 text-ink" />
                 </span>
-                <span className="font-mono text-xs font-bold text-ink-muted">
+                <span className="font-landing-mono text-xs font-bold text-ink-muted">
                   CHẾ ĐỘ THỬ THÁCH
                 </span>
               </div>
-              <h3 className="font-display text-2xl font-bold text-ink">
+              <h3 className="font-landing-page-display text-2xl font-bold text-ink">
                 Hai cách thử sức
               </h3>
               <p className="mt-3 font-sans text-sm font-semibold leading-relaxed text-ink-muted">
@@ -213,10 +213,10 @@ export default function Scene02ExploreWorld() {
                 gợi ý, hoặc thử thách bản thân với giới hạn thời gian và số lượt sai.
               </p>
               <div className="mt-5 flex flex-wrap gap-2">
-                <span className="rounded-lg bg-sage-light px-2.5 py-1 font-mono text-xs font-bold text-sage-dark border border-sage/40">
+                <span className="rounded-lg bg-sage-light px-2.5 py-1 font-landing-mono text-xs font-bold text-sage-dark border border-sage/40">
                   Learning Mode
                 </span>
-                <span className="rounded-lg bg-terracotta-light px-2.5 py-1 font-mono text-xs font-bold text-terracotta-dark border border-terracotta/40">
+                <span className="rounded-lg bg-terracotta-light px-2.5 py-1 font-landing-mono text-xs font-bold text-terracotta-dark border border-terracotta/40">
                   Try Hard Mode
                 </span>
               </div>
@@ -230,10 +230,10 @@ export default function Scene02ExploreWorld() {
         <div className="mt-12 rounded-2xl bg-parchment p-6 ink-border shadow-ink sm:p-8">
           <div className="flex flex-col items-start justify-between gap-4 border-b-2 border-dashed border-ink/25 pb-5 sm:flex-row sm:items-center">
             <div>
-              <span className="font-mono text-xs font-bold tracking-wider text-terracotta uppercase">
+              <span className="font-landing-mono text-xs font-bold tracking-wider text-terracotta uppercase">
                 BẢN XEM TRƯỚC HOẠT ĐỘNG THỰC TẾ
               </span>
-              <h4 className="mt-1 font-display text-2xl font-bold text-ink">
+              <h4 className="mt-1 font-landing-page-display text-2xl font-bold text-ink">
                 Trải nghiệm câu hỏi luyện tập tương tác
               </h4>
             </div>
@@ -243,7 +243,7 @@ export default function Scene02ExploreWorld() {
               <button
                 type="button"
                 onClick={() => handleToggleMode("learning")}
-                className={`inline-flex items-center gap-1.5 rounded-lg px-4 py-2 font-display text-base font-bold transition-all ${
+                className={`inline-flex items-center gap-1.5 rounded-lg px-4 py-2 font-landing-page-display text-base font-bold transition-all ${
                   selectedMode === "learning"
                     ? "bg-sage text-parchment-light ink-border-sm shadow-sm"
                     : "text-ink hover:text-sage-dark"
@@ -255,7 +255,7 @@ export default function Scene02ExploreWorld() {
               <button
                 type="button"
                 onClick={() => handleToggleMode("tryhard")}
-                className={`inline-flex items-center gap-1.5 rounded-lg px-4 py-2 font-display text-base font-bold transition-all ${
+                className={`inline-flex items-center gap-1.5 rounded-lg px-4 py-2 font-landing-page-display text-base font-bold transition-all ${
                   selectedMode === "tryhard"
                     ? "bg-terracotta text-parchment-light ink-border-sm shadow-sm"
                     : "text-ink hover:text-terracotta"
@@ -270,12 +270,12 @@ export default function Scene02ExploreWorld() {
           {/* Nội dung câu hỏi xem trước */}
           <div className="mt-6">
             <div className="flex flex-wrap items-center justify-between gap-3 text-xs font-bold text-ink-muted">
-              <span className="rounded bg-parchment-warm px-3 py-1 font-mono border border-ink/20">
+              <span className="rounded bg-parchment-warm px-3 py-1 font-landing-mono border border-ink/20">
                 {currentQuestion.topic}
               </span>
               <div className="flex items-center gap-3">
                 {selectedMode === "tryhard" ? (
-                  <div className="flex items-center gap-1.5 font-mono text-sm font-bold text-terracotta">
+                  <div className="flex items-center gap-1.5 font-landing-mono text-sm font-bold text-terracotta">
                     <span>Mạng sống:</span>
                     <span className="flex items-center gap-0.5">
                       {Array.from({ length: 3 }).map((_, i) => (
@@ -292,14 +292,14 @@ export default function Scene02ExploreWorld() {
                     <span>({hearts}/3)</span>
                   </div>
                 ) : (
-                  <span className="font-mono text-xs font-bold text-sage">
+                  <span className="font-landing-mono text-xs font-bold text-sage">
                     Không giới hạn thời gian & lượt sai
                   </span>
                 )}
                 <button
                   type="button"
                   onClick={handleDrawNewQuestion}
-                  className="inline-flex items-center gap-1.5 rounded-lg bg-parchment-warm px-3 py-1 font-mono text-xs font-bold text-ink border border-ink/30 transition-all hover:bg-star-light active:scale-95"
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-parchment-warm px-3 py-1 font-landing-mono text-xs font-bold text-ink border border-ink/30 transition-all hover:bg-star-light active:scale-95"
                 >
                   <RotateCw className="h-3 w-3" />
                   <span>Đổi câu hỏi khác</span>
@@ -376,7 +376,7 @@ export default function Scene02ExploreWorld() {
                       sounds.playWoodClick();
                       setShowHint(true);
                     }}
-                    className="font-mono text-xs font-bold text-sage-dark underline hover:text-ink"
+                    className="font-landing-mono text-xs font-bold text-sage-dark underline hover:text-ink"
                   >
                     Xem gợi ý
                   </button>
@@ -399,7 +399,7 @@ export default function Scene02ExploreWorld() {
               <Pin className="h-5 w-5 text-ink" />
             </span>
             <div className="flex flex-col">
-              <h4 className="font-display text-xl font-bold text-ink">
+              <h4 className="font-landing-page-display text-xl font-bold text-ink">
                 Lưu ý quan trọng: Activity và Assignment là hai khái niệm độc lập
               </h4>
               <p className="mt-2 font-sans text-sm font-semibold leading-relaxed text-ink-muted">

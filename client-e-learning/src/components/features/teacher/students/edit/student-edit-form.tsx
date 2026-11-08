@@ -137,7 +137,7 @@ export function StudentEditForm() {
 
   return (
     <>
-      <div className="mb-4 flex flex-col gap-4 rounded-xl border border-border bg-card p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+      <div className="mb-4 flex flex-col gap-4 rounded-xl border-2 border-ink shadow-pop bg-card p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
         <div className="space-y-1">
           <h2 className="text-2xl font-extrabold tracking-tight">
             {tHub("edit.title")}
@@ -152,7 +152,7 @@ export function StudentEditForm() {
 
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_280px]">
         <form
-          className="space-y-5 rounded-2xl border border-border bg-card p-5 shadow-sm"
+          className="space-y-5 rounded-2xl border-2 border-ink shadow-pop bg-card p-5 shadow-sm"
           onSubmit={(e) => {
             e.preventDefault();
             setError(null);
@@ -303,7 +303,7 @@ export function StudentEditForm() {
         </form>
 
         <aside className="space-y-3 lg:sticky lg:top-4 lg:self-start">
-          <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
+          <div className="rounded-2xl border-2 border-ink shadow-pop bg-card p-4 shadow-sm">
             <div className="mb-3 grid size-12 place-items-center rounded-xl bg-primary/10 text-sm font-extrabold text-primary">
               {initials || "HS"}
             </div>

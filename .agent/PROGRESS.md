@@ -1,8 +1,6 @@
 # Project Progress
 
 ## Landing Page — CSS Token Isolation & Global Style Protection (2026-11-08)
-
-- Resolved PR #44 review feedback from Leader:
   - Restored base `--ink: #4f3e34` and `--font-display: "Plus Jakarta Sans", sans-serif;` to prevent styling regressions in Teacher and Student interfaces.
   - Introduced dedicated `--landing-page-ink: #261E19` and scoped `--ink: var(--landing-page-ink, #261E19)` strictly inside `.parchment-surface`.
   - Defined dedicated `--font-landing-page-display: "Patrick Hand", cursive, sans-serif;`, `--font-landing-hand`, and `--font-landing-mono` in `@theme inline`.
@@ -13,11 +11,23 @@
 - Validation: `npm run build` compiled cleanly with 0 errors across all routes.
 
 ## Landing Page — The Learning Storybook & Lucide Icon Refactor (2026-11-08)
-
 - Implemented The Learning Storybook interactive landing page in `client-e-learning/src/app/page.tsx` and root layout `src/app/layout.tsx`.
 - Refactored all landing components (`Navbar`, `Scene01HeroBook`, `Scene02ExploreWorld`, `Scene03PlayPractice`, `Scene04RewardsScrapbook`, `Scene06FinalPage`) to use consistent `lucide-react` icons and removed casual/system Unicode emojis per team feedback.
 - Cleaned up visual clutter to focus on content, hand-drawn scrapbook art, and genuine platform capabilities (Grade/Unit/Topic exploration, Learning & Try Hard modes, Bubble Pop & Word Rain games, XP/Streak rewards).
 - Frontend validation: `npm run build` completed with 0 errors. Backend database V54 Flyway migration checksum reconciled with main branch.
+## Teacher interface localization audit (2026-11-08)
+
+- Localized the shared Teacher navigation/header chrome and the primary Classes,
+  Activities, Assignments, and Grades screens with paired English/Vietnamese
+  message catalogs; Dashboard and Vocabulary remain outside this change by owner
+  request.
+- Removed hard-coded labels from the Activities list/table, Assignments overview,
+  assignment creation guide/status list, and Class overview, including accessible
+  labels, empty/error states, filters, and notifications.
+- Registered the new Grades message namespace in the locale request loader. No API,
+  domain, route, or database behavior changed.
+- Validation: all touched JSON catalogs parse successfully and `git diff --check`
+  is clean. Lint, TypeScript, Vitest, and build were not run per owner request.
 
 ## Absolute seven-day Auth/Session lifecycle (2026-11-08)
 

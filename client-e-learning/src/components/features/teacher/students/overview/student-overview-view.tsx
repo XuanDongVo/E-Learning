@@ -155,7 +155,7 @@ export function StudentOverviewView() {
             </Link>
           }
         >
-          <div className="grid grid-cols-2 border-b border-border sm:grid-cols-3 lg:grid-cols-6">
+          <div className="grid grid-cols-2 border-b border-border sm:grid-cols-3 lg:grid-cols-6 ">
             {counts.map((item) => (
               <div
                 key={item.key}
@@ -168,7 +168,7 @@ export function StudentOverviewView() {
               </div>
             ))}
           </div>
-          <div className="divide-y divide-border">
+          <div className="divide-y divide-border ">
             {assignmentItems.length === 0 && (
               <p className="p-4 text-sm text-muted-foreground">
                 {t("overview.noAssignments")}
@@ -266,7 +266,7 @@ function Panel({
   children: React.ReactNode;
 }) {
   return (
-    <div className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
+    <div className="overflow-hidden rounded-lg border-2 border-ink shadow-pop bg-card shadow-sm ">
       <div className="flex items-center justify-between border-b border-border p-4">
         <div>
           <h2 className="text-sm font-extrabold">{title}</h2>

@@ -1,0 +1,15 @@
+# Build outputs and local tools
+target
+.git
+.gitignore
+.idea
+.vscode
+*.log
+*.iml
+# NEVER include environment files or secrets in the image build context.
+.env
+.env.*
+*.pem
+*.key
+Dockerfile*
+.dockerignore

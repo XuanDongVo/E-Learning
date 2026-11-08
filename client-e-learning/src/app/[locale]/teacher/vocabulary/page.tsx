@@ -15,31 +15,60 @@ import {
   BookOpen,
 } from "lucide-react";
 import { Link } from "@/i18n/navigation";
+import { RegionState } from "@/components/feedback";
+import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
 
 export default function TeacherVocabularyPage() {
   const [selectedGradeId, setSelectedGradeId] = useState<number | null>(null);
   const [selectedUnitId, setSelectedUnitId] = useState<number | null>(null);
 
   // 1. Fetch Grades
-  const { data: grades = [], isLoading: isLoadingGrades } = useQuery({
-    queryKey: ["grades"],
-    queryFn: async () => (await gradeService.list()).data ?? [],
+  const {
+    data: grades = [],
+    isLoading: isLoadingGrades,
+    isError: isGradesError,
+    error: gradesError,
+    refetch: refetchGrades,
+  } = useQuery({
+    queryKey: ["teacher", "vocabulary", "grades"],
+    queryFn: async () => {
+      const response = await gradeService.list();
+
+      if (!Array.isArray(response.data)) {
+        console.error("Invalid grades response:", response);
+        throw new Error("INVALID_GRADES_RESPONSE");
+      }
+
+      return response.data;
+    },
   });
 
-  const activeGradeId = selectedGradeId ?? grades[0]?.id;
+  const activeGradeId = selectedGradeId ?? grades[0]?.id ?? null;
 
-  // 2. Fetch Units for selected Grade
-  const { data: units = [], isLoading: isLoadingUnits } = useQuery({
+  const {
+    data: units = [],
+    isLoading: isLoadingUnits,
+    isError: isUnitsError,
+    refetch: refetchUnits,
+  } = useQuery({
     queryKey: QUERY_KEYS.contentUnits(activeGradeId ?? 0),
     queryFn: async () => {
-      if (!activeGradeId) return [];
-      return (await contentService.listUnits(activeGradeId)).data ?? [];
+      if (activeGradeId === null) return [];
+
+      const response = await contentService.listUnits(activeGradeId);
+
+      if (!Array.isArray(response.data)) {
+        throw new Error("INVALID_UNITS_RESPONSE");
+      }
+
+      return response.data;
     },
-    enabled: Boolean(activeGradeId),
+    enabled: activeGradeId !== null,
   });
 
   const activeUnit =
-    units.find((u) => u.id === selectedUnitId) ?? units[0];
+    units.find((unit) => unit.id === selectedUnitId) ?? units[0];
 
   return (
     <div className="space-y-6">
@@ -58,7 +87,8 @@ export default function TeacherVocabularyPage() {
             Quản lý Từ vựng theo Unit
           </h1>
           <p className="text-sm text-muted-foreground">
-            Thêm, chỉnh sửa và cấu hình từ vựng tiếng Anh theo từng bài học để học sinh ôn luyện qua mini-game.
+            Thêm, chỉnh sửa và cấu hình từ vựng tiếng Anh theo từng bài học để
+            học sinh ôn luyện qua mini-game.
           </p>
         </div>
 
@@ -85,8 +115,11 @@ export default function TeacherVocabularyPage() {
               🎮 Cơ chế kết nối tự động với Mini-Game Học sinh:
             </p>
             <p className="text-sky-800">
-              Mọi từ vựng bạn thêm hoặc kích hoạt (*Active*) ở đây sẽ <strong>tự động đồng bộ ngay lập tức</strong> vào hai trò chơi:{" "}
-              <strong>Chiến hạm Bắn từ (Bubble Pop)</strong> và <strong>Cơn mưa Từ vựng (Word Rain)</strong>. Học sinh chỉ cần chọn đúng Unit để bắt đầu chơi và ôn tập các từ này!
+              Mọi từ vựng bạn thêm hoặc kích hoạt (*Active*) ở đây sẽ{" "}
+              <strong>tự động đồng bộ ngay lập tức</strong> vào hai trò chơi:{" "}
+              <strong>Chiến hạm Bắn từ (Bubble Pop)</strong> và{" "}
+              <strong>Cơn mưa Từ vựng (Word Rain)</strong>. Học sinh chỉ cần
+              chọn đúng Unit để bắt đầu chơi và ôn tập các từ này!
             </p>
           </div>
         </div>
@@ -97,12 +130,41 @@ export default function TeacherVocabularyPage() {
         <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
           Bước 1: Chọn Khối lớp
         </p>
-        <div className="flex flex-wrap items-center gap-2">
-          {isLoadingGrades ? (
-            <div className="text-xs text-muted-foreground">Đang tải khối lớp...</div>
-          ) : (
-            grades.map((grade) => {
+
+        {isLoadingGrades ? (
+          <div className="flex flex-wrap items-center gap-2">
+            {Array.from({ length: 4 }).map((_, index) => (
+              <Skeleton key={index} className="h-9 w-24 rounded-xl" />
+            ))}
+          </div>
+        ) : isGradesError ? (
+          <RegionState
+            variant="error"
+            title="Không thể tải khối lớp"
+            description="Đã xảy ra lỗi khi lấy danh sách khối lớp."
+            minHeight={120}
+            action={
+              <button
+                type="button"
+                onClick={() => void refetchGrades()}
+                className="rounded-lg bg-primary px-4 py-2 text-sm font-bold text-primary-foreground"
+              >
+                Thử lại
+              </button>
+            }
+          />
+        ) : grades.length === 0 ? (
+          <RegionState
+            variant="empty"
+            title="Chưa có khối lớp"
+            description="Hãy tạo khối lớp trước khi quản lý từ vựng."
+            minHeight={120}
+          />
+        ) : (
+          <div className="flex flex-wrap items-center gap-2">
+            {grades.map((grade) => {
               const isSelected = activeGradeId === grade.id;
+
               return (
                 <button
                   key={grade.id}
@@ -111,18 +173,19 @@ export default function TeacherVocabularyPage() {
                     setSelectedGradeId(grade.id);
                     setSelectedUnitId(null);
                   }}
-                  className={`rounded-xl px-4 py-2 text-xs font-bold transition shadow-sm ${
+                  className={cn(
+                    "rounded-xl px-4 py-2 text-xs font-bold transition shadow-sm",
                     isSelected
-                      ? "bg-primary text-white shadow-md scale-105"
-                      : "border border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground"
-                  }`}
+                      ? "bg-primary text-primary-foreground shadow-md"
+                      : "border border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground",
+                  )}
                 >
                   {grade.name}
                 </button>
               );
-            })
-          )}
-        </div>
+            })}
+          </div>
+        )}
       </div>
 
       {/* Unit Selector Pills */}
@@ -141,42 +204,86 @@ export default function TeacherVocabularyPage() {
             </Link>
           )}
         </div>
+        {!activeGradeId ? (
+          <RegionState
+            variant="empty"
+            title="Vui lòng chọn khối lớp"
+            description="Chọn một khối lớp để xem danh sách Unit."
+            minHeight={120}
+          />
+        ) : isLoadingUnits ? (
+          <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+            {Array.from({ length: 8 }).map((_, index) => (
+              <div
+                key={index}
+                className="flex items-center gap-3 rounded-xl border border-border bg-card p-3"
+              >
+                <Skeleton className="h-8 w-8 shrink-0 rounded-lg" />
 
-        {isLoadingUnits ? (
-          <div className="text-xs text-muted-foreground py-2">Đang tải danh sách bài học...</div>
-        ) : units.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-border p-6 text-center text-xs text-muted-foreground">
-            Chưa có bài học nào trong khối lớp này. Hãy vào mục <strong>Khám phá nội dung</strong> để tạo Unit trước.
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-3 w-16" />
+                  <Skeleton className="h-4 w-3/4" />
+                </div>
+              </div>
+            ))}
           </div>
+        ) : isUnitsError ? (
+          <RegionState
+            variant="error"
+            title="Không thể tải danh sách Unit"
+            description="Đã xảy ra lỗi khi lấy danh sách bài học. Vui lòng thử lại."
+            minHeight={120}
+            action={
+              <button
+                type="button"
+                onClick={() => void refetchUnits()}
+                className="rounded-lg bg-primary px-4 py-2 text-sm font-bold text-primary-foreground transition hover:bg-primary/90"
+              >
+                Thử lại
+              </button>
+            }
+          />
+        ) : units.length === 0 ? (
+          <RegionState
+            variant="empty"
+            title="Chưa có bài học nào"
+            description="Khối lớp này chưa có Unit. Hãy vào mục Khám phá nội dung để tạo Unit trước."
+            minHeight={120}
+          />
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5">
+          <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
             {units.map((unit) => {
               const isSelected = activeUnit?.id === unit.id;
+
               return (
                 <button
                   key={unit.id}
                   type="button"
                   onClick={() => setSelectedUnitId(unit.id)}
-                  className={`flex items-center gap-3 rounded-xl p-3 text-left transition border ${
+                  className={cn(
+                    "flex items-center gap-3 rounded-xl border p-3 text-left transition",
                     isSelected
                       ? "border-primary bg-primary/10 shadow-sm"
-                      : "border-border bg-card hover:bg-muted/60"
-                  }`}
+                      : "border-border bg-card hover:bg-muted/60",
+                  )}
                 >
                   <span
-                    className={`grid h-8 w-8 shrink-0 place-items-center rounded-lg text-xs font-bold ${
+                    className={cn(
+                      "grid h-8 w-8 shrink-0 place-items-center rounded-lg text-xs font-bold",
                       isSelected
-                        ? "bg-primary text-white"
-                        : "bg-muted text-muted-foreground"
-                    }`}
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted text-muted-foreground",
+                    )}
                   >
                     <BookOpen className="h-4 w-4" />
                   </span>
+
                   <div className="min-w-0 flex-1">
-                    <p className="text-[11px] font-bold text-primary truncate">
+                    <p className="truncate text-[11px] font-bold text-primary">
                       {unit.code}
                     </p>
-                    <p className="text-xs font-bold text-foreground truncate">
+
+                    <p className="truncate text-xs font-bold text-foreground">
                       {unit.name}
                     </p>
                   </div>
@@ -203,4 +310,3 @@ export default function TeacherVocabularyPage() {
     </div>
   );
 }
-

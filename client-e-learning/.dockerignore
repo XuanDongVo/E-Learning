@@ -1,0 +1,21 @@
+# Local development/build output and dependency caches
+node_modules
+.next
+out
+build
+dist
+coverage
+*.tsbuildinfo
+.git
+.gitignore
+.vscode
+.idea
+*.log
+npm-debug.log*
+# NEVER include local credentials or environment settings in build context.
+.env
+.env.*
+!.env.example
+!.env.*.example
+Dockerfile*
+.dockerignore

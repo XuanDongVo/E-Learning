@@ -63,46 +63,87 @@ export function ContentOverview({
   });
 
   const grades = useQuery({
-    queryKey: ["grades"],
-    queryFn: async () => (await gradeService.list()).data ?? [],
+    queryKey: ["teacher", "content", "grades"],
+    queryFn: async () => {
+      const response = await gradeService.list();
+
+      if (!Array.isArray(response.data)) {
+        console.error("Invalid grades response:", response);
+        throw new Error("INVALID_GRADES_RESPONSE");
+      }
+
+      return response.data;
+    },
   });
 
-  const selectedGradeId = gradeId ?? grades.data?.[0]?.id;
+  const gradeList = Array.isArray(grades.data) ? grades.data : [];
+  const selectedGradeId = gradeId ?? gradeList[0]?.id;
 
   const units = useQuery({
     queryKey: QUERY_KEYS.contentUnits(selectedGradeId ?? 0),
-    queryFn: async () =>
-      (await contentService.listUnits(selectedGradeId!)).data ?? [],
-    enabled: Boolean(selectedGradeId),
+    queryFn: async () => {
+      const response = await contentService.listUnits(selectedGradeId!);
+
+      if (!Array.isArray(response.data)) {
+        console.error("Invalid units response:", response);
+        throw new Error("INVALID_UNITS_RESPONSE");
+      }
+
+      return response.data;
+    },
+    enabled: selectedGradeId != null,
   });
+
+  const unitList = Array.isArray(units.data) ? units.data : [];
 
   const visibleUnits = useMemo(() => {
     const search = query.trim().toLowerCase();
-    return (units.data ?? []).filter(
+
+    const data = Array.isArray(units.data) ? units.data : [];
+
+    return data.filter(
       (unit) =>
         !search || `${unit.code} ${unit.name}`.toLowerCase().includes(search),
     );
   }, [query, units.data]);
 
   const activeUnit =
-    visibleUnits.find((unit) => unit.id === selectedUnitId) ??
-    visibleUnits[0];
+    visibleUnits.find((unit) => unit.id === selectedUnitId) ?? visibleUnits[0];
+
   const sections = useQuery({
     queryKey: QUERY_KEYS.contentSections(activeUnit?.id ?? 0),
-    queryFn: async () =>
-      (await contentService.listSections(activeUnit!.id)).data ?? [],
-    enabled: Boolean(activeUnit),
+    queryFn: async () => {
+      const response = await contentService.listSections(activeUnit!.id);
+
+      if (!Array.isArray(response.data)) {
+        console.error("Invalid sections response:", response);
+        throw new Error("INVALID_SECTIONS_RESPONSE");
+      }
+
+      return response.data;
+    },
+    enabled: activeUnit != null,
   });
 
+  const sectionList = Array.isArray(sections.data) ? sections.data : [];
+
   const topics = useQueries({
-    queries: (sections.data ?? []).map((section) => ({
+    queries: sectionList.map((section) => ({
       queryKey: QUERY_KEYS.contentTopics(section.id),
-      queryFn: async () =>
-        (await contentService.listTopics(section.id)).data ?? [],
+      queryFn: async () => {
+        const response = await contentService.listTopics(section.id);
+
+        if (!Array.isArray(response.data)) {
+          console.error("Invalid topics response:", response);
+          throw new Error("INVALID_TOPICS_RESPONSE");
+        }
+
+        return response.data;
+      },
       enabled: expandedSections.includes(section.id),
     })),
   });
-  
+
   const createUnit = useMutation({
     mutationFn: contentService.createUnit,
     onSuccess: (response) => {
@@ -125,6 +166,7 @@ export function ContentOverview({
     });
     setFormOpen(true);
   };
+
   const toggleSection = (id: number) => {
     setExpandedSections((current) =>
       current.includes(id)
@@ -132,11 +174,12 @@ export function ContentOverview({
         : [...current, id],
     );
   };
+
   const topicsFor = (section: ContentSection): ContentTopic[] => {
-    const index = (sections.data ?? []).findIndex(
-      (item) => item.id === section.id,
-    );
-    const topicData = topics[index]?.data;
+    const index = sectionList.findIndex((item) => item.id === section.id);
+
+    const topicData = index >= 0 ? topics[index]?.data : undefined;
+
     return Array.isArray(topicData) ? topicData : [];
   };
 
@@ -148,16 +191,26 @@ export function ContentOverview({
         pipoMood="wave"
       />
 
-      {grades.isLoading && <RegionState variant="loading" className="mb-3" minHeight={96} />}
+      {grades.isLoading && (
+        <RegionState variant="loading" className="mb-3" minHeight={96} />
+      )}
       {grades.isError && (
         <PageBanner
           tone="error"
           message="Could not load grades. Try again."
-          action={<button type="button" onClick={() => void grades.refetch()} className="rounded-lg border border-destructive/40 bg-card px-3 py-1.5 font-bold shadow-pop-sm hover:bg-destructive/10">{tCommon("retry")}</button>}
+          action={
+            <button
+              type="button"
+              onClick={() => void grades.refetch()}
+              className="rounded-lg border border-destructive/40 bg-card px-3 py-1.5 font-bold shadow-pop-sm hover:bg-destructive/10"
+            >
+              {tCommon("retry")}
+            </button>
+          }
         />
       )}
       <div className="mb-5 flex gap-2.5 overflow-x-auto pb-1">
-        {(grades.data ?? []).map((grade) => (
+        {gradeList.map((grade) => (
           <button
             key={grade.id}
             type="button"
@@ -173,18 +226,31 @@ export function ContentOverview({
         ))}
       </div>
 
-      <section aria-label="Content Explorer and workspace" className="grid min-h-[calc(100vh-20rem)] overflow-hidden rounded-2xl border-2 border-ink bg-card shadow-pop lg:grid-cols-[20rem_minmax(0,1fr)]">
+      <section
+        aria-label="Content Explorer and workspace"
+        className="grid min-h-[calc(100vh-20rem)] overflow-hidden rounded-2xl border-2 border-ink bg-card shadow-pop lg:grid-cols-[20rem_minmax(0,1fr)]"
+      >
         <aside className="flex min-h-0 flex-col border-b-2 border-border lg:border-b-0 lg:border-r-2 bg-sidebar/50">
           <div className="border-b-2 border-border bg-card p-4">
             <div className="flex items-center justify-between gap-2">
-              <h2 className="text-section-title font-extrabold text-foreground">Content Explorer</h2>
-              <span className="rounded-lg border border-border bg-background-app px-2.5 py-1 text-[0.65rem] font-bold text-muted-foreground shadow-pop-sm">Grade → Unit</span>
+              <h2 className="text-section-title font-extrabold text-foreground">
+                Content Explorer
+              </h2>
+              <span className="rounded-lg border border-border bg-background-app px-2.5 py-1 text-[0.65rem] font-bold text-muted-foreground shadow-pop-sm">
+                Grade → Unit
+              </span>
             </div>
-            <p className="mt-1 text-body-sm text-muted-foreground">Choose a unit to explore its sections and topics.</p>
+            <p className="mt-1 text-body-sm text-muted-foreground">
+              Choose a unit to explore its sections and topics.
+            </p>
             <div className="mt-3.5 flex items-center justify-between gap-2">
-              <h3 className="text-body-sm font-extrabold text-foreground">{tContent("units")}</h3>
+              <h3 className="text-body-sm font-extrabold text-foreground">
+                {tContent("units")}
+              </h3>
 
-              <span className="text-body-sm font-semibold text-muted-foreground">{visibleUnits.length} {tContent("unitCount")}</span>
+              <span className="text-body-sm font-semibold text-muted-foreground">
+                {visibleUnits.length} {tContent("unitCount")}
+              </span>
             </div>
 
             <label className="relative mt-3 block">
@@ -208,27 +274,42 @@ export function ContentOverview({
             {units.isLoading && <SkeletonList count={3} className="p-1" />}
 
             {units.isError && (
-              <RegionState variant="error" action={<button type="button" onClick={() => void units.refetch()} className="rounded-md border border-destructive/30 px-3 py-1.5 font-semibold hover:bg-destructive/10">{tCommon("retry")}</button>} />
-            )}
-
-            {!units.isLoading && !units.isError && visibleUnits.length === 0 && (
-              <p className="p-3 text-body-sm text-muted-foreground">
-                {tContent("noUnits")}
-              </p>
-            )}
-
-            {visibleUnits.map((unit) => (
-              <UnitRow
-                key={unit.id}
-                unit={unit}
-                active={activeUnit?.id === unit.id}
-                onClick={() => {
-                  setSelectedUnitId(unit.id);
-                  setExpandedSections([]);
-                }}
-                onOpen={() => onNavigate("unit", unit.id)}
+              <RegionState
+                variant="error"
+                action={
+                  <button
+                    type="button"
+                    onClick={() => void units.refetch()}
+                    className="rounded-md border border-destructive/30 px-3 py-1.5 font-semibold hover:bg-destructive/10"
+                  >
+                    {tCommon("retry")}
+                  </button>
+                }
               />
-            ))}
+            )}
+
+            {!units.isLoading &&
+              !units.isError &&
+              visibleUnits.length === 0 && (
+                <p className="p-3 text-body-sm text-muted-foreground">
+                  {tContent("noUnits")}
+                </p>
+              )}
+
+            {!units.isLoading &&
+              !units.isError &&
+              visibleUnits.map((unit) => (
+                <UnitRow
+                  key={unit.id}
+                  unit={unit}
+                  active={activeUnit?.id === unit.id}
+                  onClick={() => {
+                    setSelectedUnitId(unit.id);
+                    setExpandedSections([]);
+                  }}
+                  onOpen={() => onNavigate("unit", unit.id)}
+                />
+              ))}
           </div>
         </aside>
 
@@ -236,10 +317,21 @@ export function ContentOverview({
           {activeUnit ? (
             <>
               <div className="border-b border-border bg-card p-4">
-                <nav aria-label="Content breadcrumb" className="mb-3 flex flex-wrap items-center gap-1.5 text-body-sm text-muted-foreground">
-                  <button type="button" onClick={() => onNavigate("overview")} className="hover:text-primary hover:underline">Content</button>
+                <nav
+                  aria-label="Content breadcrumb"
+                  className="mb-3 flex flex-wrap items-center gap-1.5 text-body-sm text-muted-foreground"
+                >
+                  <button
+                    type="button"
+                    onClick={() => onNavigate("overview")}
+                    className="hover:text-primary hover:underline"
+                  >
+                    Content
+                  </button>
                   <ChevronRight className="size-3.5" />
-                  <span className="font-semibold text-foreground">{activeUnit.code} · {activeUnit.name}</span>
+                  <span className="font-semibold text-foreground">
+                    {activeUnit.code} · {activeUnit.name}
+                  </span>
                 </nav>
                 <div className="flex flex-col justify-between gap-3 border-b border-border pb-3 sm:flex-row sm:items-start">
                   <h2 className="text-section-title font-bold">
@@ -251,7 +343,11 @@ export function ContentOverview({
                       {activeUnit.code} · {activeUnit.name}
                     </button>
                   </h2>
-                  <button type="button" onClick={() => onNavigate("unit", activeUnit.id)} className="inline-flex shrink-0 items-center gap-1 self-start rounded-lg border border-border px-3 py-2 text-body-sm font-semibold text-muted-foreground hover:bg-muted hover:text-foreground">
+                  <button
+                    type="button"
+                    onClick={() => onNavigate("unit", activeUnit.id)}
+                    className="inline-flex shrink-0 items-center gap-1 self-start rounded-lg border border-border px-3 py-2 text-body-sm font-semibold text-muted-foreground hover:bg-muted hover:text-foreground"
+                  >
                     Manage unit <ArrowRight className="size-3.5" />
                   </button>
                 </div>
@@ -259,8 +355,16 @@ export function ContentOverview({
                 <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-body-sm text-muted-foreground">
                   <span>{activeUnit.totalSection} sections</span>
                   <span>{activeUnit.totalTopic} topics</span>
-                  <StatusBadge status={activeUnit.status} label={CONTENT_STATUS_LABEL[activeUnit.status] ?? activeUnit.status} />
-                  <span className="sm:ml-auto">{tContent("sectionsAndTopics")}</span>
+                  <StatusBadge
+                    status={activeUnit.status}
+                    label={
+                      CONTENT_STATUS_LABEL[activeUnit.status] ??
+                      activeUnit.status
+                    }
+                  />
+                  <span className="sm:ml-auto">
+                    {tContent("sectionsAndTopics")}
+                  </span>
                 </div>
               </div>
 
@@ -268,22 +372,44 @@ export function ContentOverview({
                 {sections.isLoading && <SkeletonList count={3} />}
 
                 {sections.isError && (
-                  <RegionState variant="error" action={<button type="button" onClick={() => void sections.refetch()} className="rounded-md border border-destructive/30 px-3 py-1.5 font-semibold hover:bg-destructive/10">{tCommon("retry")}</button>} />
+                  <RegionState
+                    variant="error"
+                    action={
+                      <button
+                        type="button"
+                        onClick={() => void sections.refetch()}
+                        className="rounded-md border border-destructive/30 px-3 py-1.5 font-semibold hover:bg-destructive/10"
+                      >
+                        {tCommon("retry")}
+                      </button>
+                    }
+                  />
                 )}
 
-                {!sections.isLoading && !sections.isError && (sections.data ?? []).length === 0 && (
-                  <div className="rounded-xl border border-dashed border-border px-6 py-10 text-center">
-                    <Layers className="mx-auto size-8 text-muted-foreground" />
-                    <p className="mt-3 font-semibold">No sections in this unit yet</p>
-                    <p className="mt-1 text-body-sm text-muted-foreground">Create the first section to start organizing topics.</p>
-                    <button type="button" onClick={() => onNavigate("unit", activeUnit.id)} className="mt-4 inline-flex items-center gap-2 rounded-lg bg-primary px-3 py-2 text-body-sm font-bold text-primary-foreground">
-                      Manage unit <ArrowRight className="size-3.5" />
-                    </button>
-                  </div>
-                )}
+                {!sections.isLoading &&
+                  !sections.isError &&
+                  (sections.data ?? []).length === 0 && (
+                    <div className="rounded-xl border border-dashed border-border px-6 py-10 text-center">
+                      <Layers className="mx-auto size-8 text-muted-foreground" />
+                      <p className="mt-3 font-semibold">
+                        No sections in this unit yet
+                      </p>
+                      <p className="mt-1 text-body-sm text-muted-foreground">
+                        Create the first section to start organizing topics.
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => onNavigate("unit", activeUnit.id)}
+                        className="mt-4 inline-flex items-center gap-2 rounded-lg bg-primary px-3 py-2 text-body-sm font-bold text-primary-foreground"
+                      >
+                        Manage unit <ArrowRight className="size-3.5" />
+                      </button>
+                    </div>
+                  )}
 
-                {!sections.isLoading && !sections.isError &&
-                  (sections.data ?? []).map((section) => {
+                {!sections.isLoading &&
+                  !sections.isError &&
+                  sectionList.map((section) => {
                     const expanded = expandedSections.includes(section.id);
                     const sectionTopics = topicsFor(section);
 
@@ -311,7 +437,14 @@ export function ContentOverview({
                               {section.name}
                             </span>
                           </button>
-                          <StatusBadge status={section.status} label={CONTENT_STATUS_LABEL[section.status] ?? section.status} className="shrink-0 text-[0.625rem]" />
+                          <StatusBadge
+                            status={section.status}
+                            label={
+                              CONTENT_STATUS_LABEL[section.status] ??
+                              section.status
+                            }
+                            className="shrink-0 text-[0.625rem]"
+                          />
                           <span className="shrink-0 text-body-sm font-semibold text-muted-foreground">
                             {section.totalTopic} topics
                           </span>
@@ -327,13 +460,35 @@ export function ContentOverview({
 
                         {expanded && (
                           <div className="divide-y-2 divide-border/60 border-t-2 border-border bg-background-app/40 p-2">
-                            {topics[(sections.data ?? []).findIndex((item) => item.id === section.id)]?.isLoading && (
+                            {topics[
+                              sectionList.findIndex(
+                                (item) => item.id === section.id,
+                              )
+                            ]?.isLoading && (
                               <SkeletonList count={2} className="p-2" />
                             )}
-                            {topics[(sections.data ?? []).findIndex((item) => item.id === section.id)]?.isError && (
+                            {topics[
+                              sectionList.findIndex(
+                                (item) => item.id === section.id,
+                              )
+                            ]?.isError && (
                               <RegionState
                                 variant="error"
-                                action={<button type="button" onClick={() => void topics[(sections.data ?? []).findIndex((item) => item.id === section.id)]?.refetch()} className="rounded-md border border-destructive/30 px-3 py-1.5 font-semibold hover:bg-destructive/10">{tCommon("retry")}</button>}
+                                action={
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      void topics[
+                                        sectionList.findIndex(
+                                          (item) => item.id === section.id,
+                                        )
+                                      ]?.refetch()
+                                    }
+                                    className="rounded-md border border-destructive/30 px-3 py-1.5 font-semibold hover:bg-destructive/10"
+                                  >
+                                    {tCommon("retry")}
+                                  </button>
+                                }
                               />
                             )}
                             {sectionTopics.map((topic) => (
@@ -349,18 +504,36 @@ export function ContentOverview({
                                   {topic.name}
                                 </span>
 
-                                <StatusBadge status={topic.status} label={CONTENT_STATUS_LABEL[topic.status] ?? topic.status} className="shrink-0 text-[0.625rem]" />
+                                <StatusBadge
+                                  status={topic.status}
+                                  label={
+                                    CONTENT_STATUS_LABEL[topic.status] ??
+                                    topic.status
+                                  }
+                                  className="shrink-0 text-[0.625rem]"
+                                />
                                 <span className="text-body-sm text-muted-foreground">
-                                  {topic.totalQuestionBank} {tContent("questionBanks")}
+                                  {topic.totalQuestionBank}{" "}
+                                  {tContent("questionBanks")}
                                 </span>
                               </button>
                             ))}
 
-                            {!topics[(sections.data ?? []).findIndex((item) => item.id === section.id)]?.isLoading && !topics[(sections.data ?? []).findIndex((item) => item.id === section.id)]?.isError && sectionTopics.length === 0 && (
-                              <p className="px-4 py-3 text-body-sm text-muted-foreground">
-                                {tContent("noTopics")}
-                              </p>
-                            )}
+                            {!topics[
+                              sectionList.findIndex(
+                                (item) => item.id === section.id,
+                              )
+                            ]?.isLoading &&
+                              !topics[
+                                sectionList.findIndex(
+                                  (item) => item.id === section.id,
+                                )
+                              ]?.isError &&
+                              sectionTopics.length === 0 && (
+                                <p className="px-4 py-3 text-body-sm text-muted-foreground">
+                                  {tContent("noTopics")}
+                                </p>
+                              )}
                           </div>
                         )}
                       </div>
@@ -373,7 +546,9 @@ export function ContentOverview({
               <div>
                 <Folder className="mx-auto size-8 text-primary" />
 
-                <p className="mt-3 text-body font-bold">{tContent("selectUnit")}</p>
+                <p className="mt-3 text-body font-bold">
+                  {tContent("selectUnit")}
+                </p>
               </div>
             </div>
           )}
@@ -417,14 +592,20 @@ function UnitRow({
         onClick={onClick}
         className="flex min-w-0 flex-1 items-center gap-2.5 text-left"
       >
-        <div className={`grid size-7 shrink-0 place-items-center rounded-lg border ${active ? "border-primary/20 bg-primary/10 text-primary" : "border-border bg-background-app text-neutral-muted"}`}>
+        <div
+          className={`grid size-7 shrink-0 place-items-center rounded-lg border ${active ? "border-primary/20 bg-primary/10 text-primary" : "border-border bg-background-app text-neutral-muted"}`}
+        >
           <Folder className="size-4" />
         </div>
         <span className="min-w-0 flex-1 truncate font-bold">
           {unit.code} · {unit.name}
         </span>
       </button>
-      <StatusBadge status={unit.status} label={CONTENT_STATUS_LABEL[unit.status] ?? unit.status} className="shrink-0 text-[0.625rem]" />
+      <StatusBadge
+        status={unit.status}
+        label={CONTENT_STATUS_LABEL[unit.status] ?? unit.status}
+        className="shrink-0 text-[0.625rem]"
+      />
       <button
         type="button"
         onClick={onOpen}

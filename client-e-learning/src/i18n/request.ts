@@ -30,6 +30,7 @@ async function loadMessages(locale: Locale) {
     teacherAssignments,
     teacherActivities,
     teacherAnalytics,
+    teacherGrades,
     studentDashboard,
     studentLearning,
     studentAssignments,
@@ -49,6 +50,7 @@ async function loadMessages(locale: Locale) {
     loadJson(locale, "teacher/assignments"),
     loadJson(locale, "teacher/activities"),
     loadJson(locale, "teacher/analytics"),
+    loadJson(locale, "teacher/grades"),
     loadJson(locale, "student/dashboard"),
     loadJson(locale, "student/learning"),
     loadJson(locale, "student/assignments"),
@@ -65,6 +67,7 @@ async function loadMessages(locale: Locale) {
     assignments: teacherAssignments,
     activities: teacherActivities,
     analytics: teacherAnalytics,
+    grades: teacherGrades,
   };
 
   const student = {

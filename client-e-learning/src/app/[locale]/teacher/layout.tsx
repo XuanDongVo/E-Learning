@@ -74,7 +74,7 @@ function TeacherSidebar({
     <>
       {open && (
         <button
-          aria-label="Đóng menu"
+          aria-label={tNav("closeMenu")}
           className="fixed inset-0 z-30 bg-slate-950/20 lg:hidden"
           onClick={onClose}
         />
@@ -93,12 +93,12 @@ function TeacherSidebar({
               Class<span className="text-primary">Room</span>
             </p>
             <p className="text-[0.625rem] font-semibold text-muted-foreground">
-              English learning studio
+              {tNav("studioTagline")}
             </p>
           </div>
           <button
             className="ml-auto rounded-md p-1 text-muted-foreground hover:bg-muted lg:hidden"
-            aria-label="Đóng menu"
+            aria-label={tNav("closeMenu")}
             onClick={onClose}
           >
             <X className="size-4" />
@@ -107,10 +107,10 @@ function TeacherSidebar({
 
         <nav
           className="flex-1 space-y-1.5 px-3 py-4"
-          aria-label="Điều hướng giáo viên"
+          aria-label={tNav("teacherNavigation")}
         >
           <p className="px-2 pb-1.5 text-[0.625rem] font-bold uppercase tracking-wider text-muted-foreground/80">
-            Không gian giáo viên
+            {tNav("teacherWorkspace")}
           </p>
           {navigation.map(({ key, href, icon: Icon, customLabel }) => {
             const active =
@@ -188,10 +188,10 @@ function TeacherSidebar({
         <div className="border-t border-sidebar-border p-3">
           <button
             className="flex h-9 w-full items-center gap-3 rounded-xl px-2.5 text-[0.8125rem] font-bold text-muted-foreground transition hover:bg-muted/70 hover:text-foreground"
-            onClick={() => toast("Cài đặt sẽ có ở giai đoạn sau")}
+            onClick={() => toast(tNav("settingsComingSoon"))}
           >
             <Settings className="size-4" />
-            Cài đặt
+            {tNav("settings")}
           </button>
           <div className="mt-2.5 flex items-center gap-2.5 rounded-xl border border-border bg-card p-2.5 shadow-pop-sm">
             <div className="grid size-9 shrink-0 place-items-center rounded-lg bg-primary/15 text-[0.75rem] font-extrabold text-primary border border-primary/20">
@@ -202,7 +202,7 @@ function TeacherSidebar({
                 Cô Mai Anh
               </p>
               <p className="truncate text-[0.625rem] font-semibold text-muted-foreground">
-                Giáo viên tiếng Anh
+                {tNav("englishTeacher")}
               </p>
             </div>
           </div>
@@ -219,6 +219,7 @@ export default function TeacherLayout({
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const pathname = usePathname();
+  const tNav = useTranslations("navigation");
 
   const isAssignmentEditor =
     /^\/teacher\/assignments\/[^/]+$/.test(pathname) ||
@@ -236,7 +237,7 @@ export default function TeacherLayout({
            <header className="sticky top-0 z-20 flex h-[4.1rem] items-center gap-3 border-b-2 border-border bg-card/95 px-4 backdrop-blur sm:px-6">
             <button
               className="grid size-9 place-items-center rounded-lg border border-border bg-card text-muted-foreground shadow-pop-sm lg:hidden"
-              aria-label="Mở menu"
+              aria-label={tNav("openMenu")}
               onClick={() => setSidebarOpen(true)}
             >
               <Menu className="size-4" />
@@ -245,22 +246,22 @@ export default function TeacherLayout({
               <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
               <input
                 className="h-10 w-full rounded-xl border-2 border-border bg-card pl-9 pr-3 text-[0.8125rem] font-medium outline-none placeholder:text-muted-foreground shadow-pop-sm transition focus:border-primary focus:ring-2 focus:ring-primary/20"
-                placeholder="Tìm lớp học, unit, học sinh..."
-                aria-label="Tìm kiếm"
+                placeholder={tNav("searchGlobal")}
+                aria-label={tNav("search")}
               />
             </div>
             <div className="ml-auto flex items-center gap-2.5">
               <LocaleToggle />
               <button
                 className="grid size-9 place-items-center rounded-xl border border-border bg-card text-muted-foreground shadow-pop-sm hover:bg-muted"
-                aria-label="Trợ giúp"
+                aria-label={tNav("help")}
               >
                 <CircleHelp className="size-4" />
               </button>
               <button
                 className="relative grid size-9 place-items-center rounded-xl border border-border bg-card text-muted-foreground shadow-pop-sm hover:bg-muted"
-                aria-label="Thông báo"
-                onClick={() => toast.success("Bạn không có thông báo mới")}
+                aria-label={tNav("notifications")}
+                onClick={() => toast.success(tNav("noNotifications"))}
               >
                 <Bell className="size-4" />
                 <span className="absolute right-2 top-2 size-2 rounded-full bg-primary" />

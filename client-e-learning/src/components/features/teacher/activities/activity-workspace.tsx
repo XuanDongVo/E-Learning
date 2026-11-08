@@ -30,6 +30,7 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 function SearchableSelect({
   value,
@@ -53,7 +54,8 @@ function SearchableSelect({
   const [open, setOpen] = useState(false);
 
   const selectedLabel =
-    items.find((item) => String(item.id) === String(value))?.label ?? placeholder;
+    items.find((item) => String(item.id) === String(value))?.label ??
+    placeholder;
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -75,7 +77,10 @@ function SearchableSelect({
         </Button>
       </PopoverTrigger>
 
-      <PopoverContent className="w-[var(--radix-popover-trigger-width)] min-w-[200px] p-0" align="start">
+      <PopoverContent
+        className="w-[var(--radix-popover-trigger-width)] min-w-[200px] p-0"
+        align="start"
+      >
         <Command>
           <CommandInput placeholder={searchPlaceholder} className="h-9" />
           <CommandList className="max-h-56">
@@ -113,6 +118,7 @@ function SearchableSelect({
 }
 
 export function ActivityWorkspace() {
+  const t = useTranslations("teacher.activities.workspace");
   const params = useSearchParams();
   const router = useRouter();
   const requestedUnitId = Number(params.get("unitId") || 0);
@@ -124,14 +130,33 @@ export function ActivityWorkspace() {
   const [pageSize, setPageSize] = useState(10);
 
   const grades = useQuery({
-    queryKey: ["grades"],
-    queryFn: async () => (await gradeService.list()).data || [],
+    queryKey: ["teacher", "activities", "grades"],
+    queryFn: async () => {
+      const response = await gradeService.list();
+
+      if (!Array.isArray(response.data)) {
+        console.error("Invalid grades response:", response);
+        throw new Error("INVALID_GRADES_RESPONSE");
+      }
+
+      return response.data;
+    },
   });
   const activeGrade = gradeId || grades.data?.[0]?.id;
+
   const units = useQuery({
-    queryKey: QUERY_KEYS.contentUnits(activeGrade || 0),
-    queryFn: async () => (await unitService.list(activeGrade!)).data || [],
-    enabled: !!activeGrade,
+    queryKey: QUERY_KEYS.contentUnits(activeGrade ?? 0),
+    queryFn: async () => {
+      const response = await unitService.list(activeGrade!);
+
+      if (!Array.isArray(response.data)) {
+        console.error("Invalid units response:", response);
+        throw new Error("INVALID_UNITS_RESPONSE");
+      }
+
+      return response.data;
+    },
+    enabled: activeGrade != null,
   });
 
   const selectedUnit =
@@ -140,18 +165,33 @@ export function ActivityWorkspace() {
       ? units.data?.find((u) => u.id === requestedUnitId)
       : undefined) ??
     units.data?.[0];
+
   const includeArchived = status === "ARCHIVED";
+
   const activities = useQuery({
-    queryKey: QUERY_KEYS.activities(selectedUnit?.id || 0, includeArchived),
-    queryFn: async () =>
-      (await activityService.list(selectedUnit!.id, includeArchived)).data ||
-      [],
-    enabled: !!selectedUnit,
+    queryKey: QUERY_KEYS.activities(selectedUnit?.id ?? 0, includeArchived),
+    queryFn: async () => {
+      const response = await activityService.list(
+        selectedUnit!.id,
+        includeArchived,
+      );
+
+      if (!Array.isArray(response.data)) {
+        console.error("Invalid activities response:", response);
+        throw new Error("INVALID_ACTIVITIES_RESPONSE");
+      }
+
+      return response.data;
+    },
+    enabled: selectedUnit != null,
   });
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return (activities.data || [])
+
+    const data = Array.isArray(activities.data) ? activities.data : [];
+
+    return data
       .filter((a) => status === "ALL" || a.status === status)
       .filter(
         (a) =>
@@ -159,12 +199,13 @@ export function ActivityWorkspace() {
       )
       .sort((a, b) => Date.parse(b.updatedAt) - Date.parse(a.updatedAt));
   }, [activities.data, search, status]);
+
   const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
   const visible = filtered.slice((page - 1) * pageSize, page * pageSize);
 
   const gradeItems = useMemo(
     () =>
-      (grades.data || []).map((g) => ({
+      (Array.isArray(grades.data) ? grades.data : []).map((g) => ({
         id: g.id,
         label: g.name,
       })),
@@ -173,13 +214,12 @@ export function ActivityWorkspace() {
 
   const unitItems = useMemo(
     () =>
-      (units.data || []).map((u) => ({
+      (Array.isArray(units.data) ? units.data : []).map((u) => ({
         id: u.id,
         label: `${u.code} · ${u.name}`,
       })),
     [units.data],
   );
-
   const selectUnit = (id: number) => {
     setUnitId(id);
     setPage(1);
@@ -195,8 +235,8 @@ export function ActivityWorkspace() {
   return (
     <div className="space-y-6">
       <TeacherPageHeader
-        title="Activities"
-        description="Create and manage learning activities for your units."
+        title={t("title")}
+        description={t("description")}
         pipoMood="wave"
       />
 
@@ -209,8 +249,8 @@ export function ActivityWorkspace() {
               setSearch(e.target.value);
               setPage(1);
             }}
-            placeholder="Search activities..."
-            aria-label="Search activities"
+            placeholder={t("searchPlaceholder")}
+            aria-label={t("searchLabel")}
             className="h-10 w-full rounded-lg border border-border-input bg-background pl-9 pr-3 text-body outline-none focus:border-primary focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
           />
         </label>
@@ -222,9 +262,9 @@ export function ActivityWorkspace() {
             setUnitId(0);
             setPage(1);
           }}
-          placeholder="Select grade"
-          searchPlaceholder="Tìm khối..."
-          emptyText="Không tìm thấy khối"
+          placeholder={t("selectGrade")}
+          searchPlaceholder={t("searchGrade")}
+          emptyText={t("gradeNotFound")}
           items={gradeItems}
           className="w-full sm:w-[160px]"
         />
@@ -232,9 +272,9 @@ export function ActivityWorkspace() {
         <SearchableSelect
           value={selectedUnit ? String(selectedUnit.id) : ""}
           onChange={(next) => selectUnit(Number(next))}
-          placeholder="Select unit"
-          searchPlaceholder="Tìm unit..."
-          emptyText="Không tìm thấy unit"
+          placeholder={t("selectUnit")}
+          searchPlaceholder={t("searchUnit")}
+          emptyText={t("unitNotFound")}
           items={unitItems}
           disabled={!activeGrade}
           className="w-full sm:w-[220px]"
@@ -246,13 +286,13 @@ export function ActivityWorkspace() {
             setStatus(e.target.value as "ALL" | ActivityStatus);
             setPage(1);
           }}
-          aria-label="Status"
+          aria-label={t("statusLabel")}
           className="h-10 w-full rounded-lg border border-border-input bg-background px-3 text-body outline-none focus:border-primary focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 sm:w-[150px]"
         >
-          <option value="ALL">All statuses</option>
-          <option value="DRAFT">Draft</option>
-          <option value="PUBLISHED">Published</option>
-          <option value="ARCHIVED">Archived</option>
+          <option value="ALL">{t("statuses.all")}</option>
+          <option value="DRAFT">{t("statuses.draft")}</option>
+          <option value="PUBLISHED">{t("statuses.published")}</option>
+          <option value="ARCHIVED">{t("statuses.archived")}</option>
         </select>
 
         <div className="flex shrink-0 flex-wrap items-center gap-2 max-sm:w-full sm:ml-auto">
@@ -262,7 +302,7 @@ export function ActivityWorkspace() {
               className="inline-flex h-10 w-full items-center justify-center gap-1.5 rounded-md bg-primary px-3 text-body-sm font-bold text-primary-foreground shadow-sm transition-colors hover:bg-primary-hover sm:w-auto"
             >
               <Plus size={15} />
-              Create Activity
+              {t("createActivity")}
             </Link>
           ) : (
             <button
@@ -271,18 +311,39 @@ export function ActivityWorkspace() {
               className="inline-flex h-10 w-full cursor-not-allowed items-center justify-center gap-1.5 rounded-md bg-primary/50 px-3 text-body-sm font-bold text-primary-foreground sm:w-auto"
             >
               <Plus size={15} />
-              Create Activity
+              {t("createActivity")}
             </button>
           )}
         </div>
       </div>
 
-      {!selectedUnit ? (
-        <RegionState variant="empty" />
-      ) : activities.isLoading ? (
+      {grades.isLoading || units.isLoading || activities.isLoading ? (
         <SkeletonTable columns={5} />
-      ) : activities.isError ? (
-        <RegionState variant="error" />
+      ) : grades.isError || units.isError || activities.isError ? (
+        <RegionState
+          variant="error"
+          title={t("loadErrorTitle")}
+          description={t("loadErrorDescription")}
+          action={
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                if (grades.isError) void grades.refetch();
+                if (units.isError) void units.refetch();
+                if (activities.isError) void activities.refetch();
+              }}
+            >
+              {t("retry")}
+            </Button>
+          }
+        />
+      ) : !selectedUnit ? (
+        <RegionState
+          variant="empty"
+          title={t("noUnitTitle")}
+          description={t("noUnitDescription")}
+        />
       ) : visible.length === 0 ? (
         <RegionState
           variant="empty"
@@ -291,7 +352,7 @@ export function ActivityWorkspace() {
               href={`/teacher/activities/new?unitId=${selectedUnit.id}`}
               className="inline-flex h-10 items-center rounded-xl border border-primary bg-primary px-4 text-body font-bold text-primary-foreground"
             >
-              Create activity
+              {t("createActivity")}
             </Link>
           }
         />
@@ -301,16 +362,15 @@ export function ActivityWorkspace() {
             <div className="min-w-0">
               <div className="flex items-center gap-2.5">
                 <h2 className="text-base font-bold text-foreground sm:text-lg">
-                  Activity list
+                  {t("listTitle")}
                 </h2>
                 <span className="inline-flex items-center rounded-full border border-border bg-muted/60 px-2.5 py-0.5 text-xs font-semibold text-muted-foreground">
                   {filtered.length}{" "}
-                  {filtered.length === 1 ? "activity" : "activities"}
+                  {t("activityCount", { count: filtered.length })}
                 </span>
               </div>
               <p className="mt-0.5 text-xs text-muted-foreground sm:text-sm">
-                {selectedUnit?.code} activities, sorted by most recently
-                updated.
+                {t("sortedDescription", { unitCode: selectedUnit?.code ?? "" })}
               </p>
             </div>
           </div>

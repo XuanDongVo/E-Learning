@@ -14,6 +14,7 @@ import { teacherStudentService } from "@/services/teacher/student.service";
 import { Button } from "@/components/ui/button";
 import { RegionState } from "@/components/feedback";
 import { SkeletonList } from "@/components/ui/skeleton/skeleton-list";
+import { useTranslations } from "next-intl";
 
 function getInitials(name: string) {
   const parts = name.trim().split(/\s+/);
@@ -22,6 +23,7 @@ function getInitials(name: string) {
 }
 
 export function ClassOverviewView({ classId }: { classId: number }) {
+  const t = useTranslations("teacher.classes.overview");
   const classQuery = useQuery({
     queryKey: ["class", classId],
     queryFn: async () => (await classService.getById(classId)).data,
@@ -50,8 +52,8 @@ export function ClassOverviewView({ classId }: { classId: number }) {
     return (
       <RegionState
         variant="error"
-        title="Không tải được thông tin lớp"
-        description="Thử lại hoặc quay về danh sách lớp."
+        title={t("loadErrorTitle")}
+        description={t("loadErrorDescription")}
       />
     );
   }
@@ -62,17 +64,17 @@ export function ClassOverviewView({ classId }: { classId: number }) {
         <section className="rounded-xl border border-border bg-card shadow-sm">
           <div className="border-b border-border px-5 py-4">
             <h2 className="text-base font-extrabold text-foreground">
-              Thông tin lớp
+              {t("information")}
             </h2>
             <p className="mt-0.5 text-xs text-muted-foreground">
-              Thông tin cơ bản của lớp học.
+              {t("informationDescription")}
             </p>
           </div>
 
           <dl className="grid gap-x-8 gap-y-4 p-5 sm:grid-cols-2">
             <div>
               <dt className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-                Tên lớp
+                {t("className")}
               </dt>
               <dd className="mt-1 text-sm font-extrabold text-foreground">
                 {currentClass.name}
@@ -80,7 +82,7 @@ export function ClassOverviewView({ classId }: { classId: number }) {
             </div>
             <div>
               <dt className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-                Khối
+                {t("grade")}
               </dt>
               <dd className="mt-1 text-sm font-extrabold text-foreground">
                 {currentClass.grade.name} ({currentClass.grade.code})
@@ -88,7 +90,7 @@ export function ClassOverviewView({ classId }: { classId: number }) {
             </div>
             <div>
               <dt className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-                Năm học
+                {t("academicYear")}
               </dt>
               <dd className="mt-1 text-sm font-extrabold text-foreground">
                 {currentClass.academicYear}
@@ -96,10 +98,10 @@ export function ClassOverviewView({ classId }: { classId: number }) {
             </div>
             <div>
               <dt className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-                Trạng thái
+                {t("status")}
               </dt>
               <dd className="mt-1 text-sm font-extrabold text-foreground">
-                {isArchived ? "Đã lưu trữ" : "Đang hoạt động"}
+                {isArchived ? t("archived") : t("active")}
               </dd>
             </div>
           </dl>
@@ -109,15 +111,15 @@ export function ClassOverviewView({ classId }: { classId: number }) {
           <div className="flex items-center justify-between border-b border-border px-5 py-4">
             <div>
               <h2 className="text-base font-extrabold text-foreground">
-                Thành viên gần đây
+                {t("recentMembers")}
               </h2>
               <p className="mt-0.5 text-xs text-muted-foreground">
-                {members.length} học sinh trong lớp.
+                {t("membersCount", { count: members.length })}
               </p>
             </div>
             <Link href={`/teacher/classes/${classId}/students`}>
               <Button size="sm" variant="outline" className="h-8 text-xs font-bold">
-                Xem tất cả
+                {t("viewAll")}
               </Button>
             </Link>
           </div>
@@ -130,7 +132,7 @@ export function ClassOverviewView({ classId }: { classId: number }) {
             <div className="p-6">
               <RegionState
                 variant="empty"
-                description="Chưa có học sinh trong lớp."
+                description={t("noStudents")}
               />
             </div>
           ) : (
@@ -156,8 +158,8 @@ export function ClassOverviewView({ classId }: { classId: number }) {
                     }`}
                   >
                     {m.accountStatus === "ACTIVE"
-                      ? "Đang hoạt động"
-                      : "Tạm khóa"}
+                      ? t("active")
+                      : t("locked")}
                   </span>
                   <Link href={`/teacher/students/${m.id}`}>
                     <Button
@@ -165,7 +167,7 @@ export function ClassOverviewView({ classId }: { classId: number }) {
                       variant="ghost"
                       className="h-8 shrink-0 gap-1 text-xs font-bold text-muted-foreground hover:text-foreground"
                     >
-                      Xem hồ sơ
+                      {t("viewProfile")}
                       <ArrowUpRight className="size-3.5" />
                     </Button>
                   </Link>
@@ -179,9 +181,9 @@ export function ClassOverviewView({ classId }: { classId: number }) {
       <div className="grid content-start gap-4">
         <section className="rounded-xl border border-border bg-card shadow-sm">
           <div className="border-b border-border px-5 py-4">
-            <h2 className="text-base font-extrabold text-foreground">Sĩ số</h2>
+            <h2 className="text-base font-extrabold text-foreground">{t("classSize")}</h2>
             <p className="mt-0.5 text-xs text-muted-foreground">
-              Học sinh đang tham gia lớp.
+              {t("classSizeDescription")}
             </p>
           </div>
           <div className="flex items-center gap-4 p-5">
@@ -192,7 +194,7 @@ export function ClassOverviewView({ classId }: { classId: number }) {
               <p className="text-3xl font-extrabold text-foreground">
                 {currentClass.studentCount}
               </p>
-              <p className="text-xs text-muted-foreground">học sinh đang tham gia</p>
+              <p className="text-xs text-muted-foreground">{t("participatingStudents")}</p>
             </div>
           </div>
         </section>
@@ -200,17 +202,17 @@ export function ClassOverviewView({ classId }: { classId: number }) {
         <section className="rounded-xl border border-border bg-card shadow-sm">
           <div className="border-b border-border px-5 py-4">
             <h2 className="text-base font-extrabold text-foreground">
-              Thao tác nhanh
+              {t("quickActions")}
             </h2>
             <p className="mt-0.5 text-xs text-muted-foreground">
-              Các việc thường làm với lớp này.
+              {t("quickActionsDescription")}
             </p>
           </div>
           <div className="grid gap-2 p-5">
             <Link href={`/teacher/classes/${classId}/students`} className="block">
               <Button className="h-12 w-full justify-start gap-2.5 text-xs font-bold">
                 <Users className="size-4" />
-                Danh sách học sinh
+                {t("studentList")}
               </Button>
             </Link>
             <Link href={`/teacher/classes/${classId}/ranking`} className="block">
@@ -219,7 +221,7 @@ export function ClassOverviewView({ classId }: { classId: number }) {
                 className="h-12 w-full justify-start gap-2.5 text-xs font-bold"
               >
                 <BarChart3 className="size-4 text-muted-foreground" />
-                Xếp hạng XP
+                {t("xpRanking")}
               </Button>
             </Link>
             <Button
@@ -228,7 +230,7 @@ export function ClassOverviewView({ classId }: { classId: number }) {
               disabled
             >
               <Pencil className="size-4 text-muted-foreground" />
-              Chỉnh sửa lớp
+              {t("editClass")}
             </Button>
           </div>
         </section>
@@ -236,7 +238,7 @@ export function ClassOverviewView({ classId }: { classId: number }) {
         <section className="rounded-xl border border-border bg-card shadow-sm">
           <div className="border-b border-border px-5 py-4">
             <h2 className="text-base font-extrabold text-foreground">
-              Trạng thái lớp
+              {t("classStatus")}
             </h2>
           </div>
           <div className="flex items-center gap-3 p-5">
@@ -251,10 +253,10 @@ export function ClassOverviewView({ classId }: { classId: number }) {
                     : "bg-emerald-500/10 text-emerald-600"
                 }`}
               >
-                {isArchived ? "Đã lưu trữ" : "Đang hoạt động"}
+                {isArchived ? t("archived") : t("active")}
               </span>
               <p className="mt-1 text-xs text-muted-foreground">
-                Lớp trong năm học {currentClass.academicYear}.
+                {t("academicYearStatus", { year: currentClass.academicYear })}
               </p>
             </div>
           </div>

@@ -2,7 +2,6 @@
 
 import { Link, usePathname } from "@/i18n/navigation";
 import {
-  BarChart3,
   Bell,
   BookA,
   BookOpen,
@@ -25,6 +24,10 @@ import { toast } from "sonner";
 import { AuthGuard } from "@/components/auth/auth-guard";
 import { LocaleToggle } from "@/components/layout/locale-toggle";
 import { useTranslations } from "next-intl";
+
+import { LogOut } from "lucide-react";
+import { useAuth } from "@/components/auth/auth-provider";
+import { useRouter } from "@/i18n/navigation";
 
 const navigation: {
   key: string;
@@ -62,13 +65,27 @@ function TeacherSidebar({
   const pathname = usePathname();
   const tNav = useTranslations("navigation");
   const tCommon = useTranslations("common");
-  const [contentExpandedOverride, setContentExpandedOverride] = useState<boolean | null>(null);
-  const contentExpanded = contentExpandedOverride ?? pathname.startsWith("/teacher/content");
+  const [contentExpandedOverride, setContentExpandedOverride] = useState<
+    boolean | null
+  >(null);
+  const contentExpanded =
+    contentExpandedOverride ?? pathname.startsWith("/teacher/content");
   const questionBanksActive = pathname.startsWith(
     "/teacher/content/question-banks",
   );
   const explorerActive =
     pathname.startsWith("/teacher/content") && !questionBanksActive;
+  const { logout } = useAuth();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } finally {
+      onClose();
+      router.replace("/login");
+    }
+  };
 
   return (
     <>
@@ -130,7 +147,8 @@ function TeacherSidebar({
               >
                 <Icon className="size-[1.05rem]" />
                 <span className="flex-1">
-                  {customLabel ?? (key === "overview" ? tCommon("overview") : tNav(key))}
+                  {customLabel ??
+                    (key === "overview" ? tCommon("overview") : tNav(key))}
                 </span>
               </Link>
             );
@@ -185,27 +203,30 @@ function TeacherSidebar({
           </div>
         </nav>
 
-        <div className="border-t border-sidebar-border p-3">
-          <button
-            className="flex h-9 w-full items-center gap-3 rounded-xl px-2.5 text-[0.8125rem] font-bold text-muted-foreground transition hover:bg-muted/70 hover:text-foreground"
-            onClick={() => toast(tNav("settingsComingSoon"))}
-          >
-            <Settings className="size-4" />
-            {tNav("settings")}
-          </button>
-          <div className="mt-2.5 flex items-center gap-2.5 rounded-xl border border-border bg-card p-2.5 shadow-pop-sm">
-            <div className="grid size-9 shrink-0 place-items-center rounded-lg bg-primary/15 text-[0.75rem] font-extrabold text-primary border border-primary/20">
-              MA
-            </div>
-            <div className="min-w-0">
-              <p className="truncate text-[0.75rem] font-extrabold">
-                Cô Mai Anh
-              </p>
-              <p className="truncate text-[0.625rem] font-semibold text-muted-foreground">
-                {tNav("englishTeacher")}
-              </p>
-            </div>
+        <div className="mt-2.5 flex items-center gap-2.5 rounded-xl border border-border bg-card p-2.5 shadow-pop-sm">
+          {/* Avatar */}
+          <div className="grid size-9 shrink-0 place-items-center rounded-lg border border-primary/20 bg-primary/15 text-[0.75rem] font-extrabold text-primary">
+            MA
           </div>
+
+          {/* Teacher info */}
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-[0.75rem] font-extrabold">Test</p>
+            <p className="truncate text-[0.625rem] font-semibold text-muted-foreground">
+              {tNav("englishTeacher")}
+            </p>
+          </div>
+
+          {/* Logout button */}
+          <button
+            type="button"
+            onClick={() => void handleLogout()}
+            aria-label="Đăng xuất"
+            title="Đăng xuất"
+            className="grid size-8 shrink-0 place-items-center rounded-lg border border-transparent text-muted-foreground transition-colors hover:border-destructive/20 hover:bg-destructive/10 hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive/50"
+          >
+            <LogOut className="size-4" />
+          </button>
         </div>
       </aside>
     </>
@@ -233,42 +254,42 @@ export default function TeacherLayout({
           onClose={() => setSidebarOpen(false)}
         />
         <div className="min-h-screen lg:pl-60">
-         {!isAssignmentEditor && (
-           <header className="sticky top-0 z-20 flex h-[4.1rem] items-center gap-3 border-b-2 border-border bg-card/95 px-4 backdrop-blur sm:px-6">
-            <button
-              className="grid size-9 place-items-center rounded-lg border border-border bg-card text-muted-foreground shadow-pop-sm lg:hidden"
-              aria-label={tNav("openMenu")}
-              onClick={() => setSidebarOpen(true)}
-            >
-              <Menu className="size-4" />
-            </button>
-            <div className="relative hidden w-full max-w-md sm:block">
-              <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-              <input
-                className="h-10 w-full rounded-xl border-2 border-border bg-card pl-9 pr-3 text-[0.8125rem] font-medium outline-none placeholder:text-muted-foreground shadow-pop-sm transition focus:border-primary focus:ring-2 focus:ring-primary/20"
-                placeholder={tNav("searchGlobal")}
-                aria-label={tNav("search")}
-              />
-            </div>
-            <div className="ml-auto flex items-center gap-2.5">
-              <LocaleToggle />
+          {!isAssignmentEditor && (
+            <header className="sticky top-0 z-20 flex h-[4.1rem] items-center gap-3 border-b-2 border-border bg-card/95 px-4 backdrop-blur sm:px-6">
               <button
-                className="grid size-9 place-items-center rounded-xl border border-border bg-card text-muted-foreground shadow-pop-sm hover:bg-muted"
-                aria-label={tNav("help")}
+                className="grid size-9 place-items-center rounded-lg border border-border bg-card text-muted-foreground shadow-pop-sm lg:hidden"
+                aria-label={tNav("openMenu")}
+                onClick={() => setSidebarOpen(true)}
               >
-                <CircleHelp className="size-4" />
+                <Menu className="size-4" />
               </button>
-              <button
-                className="relative grid size-9 place-items-center rounded-xl border border-border bg-card text-muted-foreground shadow-pop-sm hover:bg-muted"
-                aria-label={tNav("notifications")}
-                onClick={() => toast.success(tNav("noNotifications"))}
-              >
-                <Bell className="size-4" />
-                <span className="absolute right-2 top-2 size-2 rounded-full bg-primary" />
-              </button>
-            </div>
-          </header>
-         )}
+              <div className="relative hidden w-full max-w-md sm:block">
+                <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                <input
+                  className="h-10 w-full rounded-xl border-2 border-border bg-card pl-9 pr-3 text-[0.8125rem] font-medium outline-none placeholder:text-muted-foreground shadow-pop-sm transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+                  placeholder={tNav("searchGlobal")}
+                  aria-label={tNav("search")}
+                />
+              </div>
+              <div className="ml-auto flex items-center gap-2.5">
+                <LocaleToggle />
+                <button
+                  className="grid size-9 place-items-center rounded-xl border border-border bg-card text-muted-foreground shadow-pop-sm hover:bg-muted"
+                  aria-label={tNav("help")}
+                >
+                  <CircleHelp className="size-4" />
+                </button>
+                <button
+                  className="relative grid size-9 place-items-center rounded-xl border border-border bg-card text-muted-foreground shadow-pop-sm hover:bg-muted"
+                  aria-label={tNav("notifications")}
+                  onClick={() => toast.success(tNav("noNotifications"))}
+                >
+                  <Bell className="size-4" />
+                  <span className="absolute right-2 top-2 size-2 rounded-full bg-primary" />
+                </button>
+              </div>
+            </header>
+          )}
           <main className="mx-auto w-full max-w-[1440px] p-4 sm:p-5 lg:p-6">
             {children}
           </main>

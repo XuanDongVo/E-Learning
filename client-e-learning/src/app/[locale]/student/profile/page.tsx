@@ -1,7 +1,5 @@
-import { Link } from "@/i18n/navigation";
-import { User, ArrowLeft } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import StudentProfilePage from "@/components/features/student/profile/student-profile-page";
 
-export default function ProfilePlaceholderPage() {
-  return <div className="space-y-6"><div className="flex items-center gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-xl bg-neutral-dark text-white"><User className="h-5 w-5" /></div><div><h1 className="text-ui-2xl font-extrabold text-neutral-dark">Profile</h1><p className="text-body text-neutral-muted">Account & Learning Settings</p></div></div><div className="space-y-3 rounded-2xl border border-border-color bg-card-bg p-8 text-center"><p className="text-neutral-muted">Module Profile đang sẵn sàng để triển khai tiếp theo.</p><Link href="/student"><Button variant="secondary" className="gap-2"><ArrowLeft className="h-4 w-4" /> Quay lại Dashboard</Button></Link></div></div>;
+export default function Page() {
+  return <StudentProfilePage />;
 }

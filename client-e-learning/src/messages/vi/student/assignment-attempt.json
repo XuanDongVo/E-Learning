@@ -50,17 +50,43 @@
         "singleTabTitle": "Chỉ sử dụng một tab:",
         "singleTab": "Không mở bài làm trên nhiều tab hoặc cửa sổ cùng lúc. Hệ thống chỉ cho phép một phiên làm bài hoạt động.",
         "warningTitle": "Lưu ý khi rời bài:",
-        "warning": "Nếu bạn rời khỏi màn hình làm bài, hệ thống sẽ hiển thị cảnh báo."
+        "warning": "Nếu bạn rời khỏi màn hình làm bài, hệ thống sẽ hiển thị cảnh báo.",
+        "submitTitle": "Nộp bài:",
+        "submit": "Kiểm tra câu trả lời và xác nhận trước khi gửi bài chính thức."
+      },
+      "eyebrow": "PHIẾU BÀI TẬP",
+      "start": "Bắt đầu làm bài",
+      "resume": "Tiếp tục làm bài",
+      "viewResult": "Xem kết quả",
+      "backToAssignments": "Về danh sách bài tập",
+      "actionDescription": {
+        "notStarted": "Bạn chỉ có một lần làm bài chính thức. Hãy đọc kỹ quy chế trước khi bắt đầu.",
+        "inProgress": "Bài làm dở vẫn được lưu. Tiếp tục đúng lần làm bài hiện tại.",
+        "submitted": "Bài đã được nộp. Bạn có thể xem kết quả khi hệ thống cho phép.",
+        "timedOut": "Thời gian làm bài đã kết thúc. Bạn có thể xem trạng thái kết quả."
       }
     },
-    "header": { "title": "Làm bài", "leave": "Thoát" },
-    "timer": { "remaining": "Còn lại", "urgent": "Sắp hết giờ" },
-    "save": { "saved": "Đã lưu", "saving": "Đang lưu...", "unsaved": "Chưa lưu", "error": "Lưu lỗi" },
+    "header": {
+      "title": "Làm bài",
+      "leave": "Thoát"
+    },
+    "timer": {
+      "remaining": "Còn lại",
+      "urgent": "Sắp hết giờ"
+    },
+    "save": {
+      "saved": "Đã lưu",
+      "saving": "Đang lưu...",
+      "unsaved": "Chưa lưu",
+      "error": "Lưu lỗi"
+    },
     "session": {
       "conflict": "Phiên làm bài đang mở ở tab khác",
       "conflictHint": "Chỉ một tab được phép làm bài. Đóng tab kia hoặc quay lại danh sách bài tập."
     },
-    "visibility": { "leaveWarning": "Bạn đã rời khỏi màn hình làm bài" },
+    "visibility": {
+      "leaveWarning": "Bạn đã rời khỏi màn hình làm bài"
+    },
     "submit": {
       "title": "Nộp bài?",
       "confirm": "Nộp bài",

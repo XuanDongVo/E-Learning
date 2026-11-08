@@ -4,6 +4,8 @@ import com.nimbusds.jose.jwk.source.ImmutableSecret;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.oauth2.jwt.*;
 import lombok.RequiredArgsConstructor;
 
@@ -27,14 +29,26 @@ public class JwtConfig {
         return new NimbusJwtEncoder(new ImmutableSecret<>(getSecretKey()));
     }
 
-    @Bean
-    public JwtDecoder jwtDecoder() {
+    @Bean("refreshJwtDecoder")
+    public JwtDecoder refreshJwtDecoder() {
         NimbusJwtDecoder jwtDecoder = NimbusJwtDecoder.withSecretKey(getSecretKey()).macAlgorithm(JwtTokenService.JWT_ALGORITHM).build();
         return token -> {
             Jwt jwt = jwtDecoder.decode(token);
             String jwtId = jwt.getClaimAsString("jwtId");
             if (jwtId != null && revokedTokenRepository.existsByJwtId(jwtId)) {
                 throw new JwtException("JWT token has been revoked");
+            }
+            return jwt;
+        };
+    }
+
+    @Bean
+    @Primary
+    public JwtDecoder jwtDecoder(@Qualifier("refreshJwtDecoder") JwtDecoder refreshJwtDecoder) {
+        return token -> {
+            Jwt jwt = refreshJwtDecoder.decode(token);
+            if (!"ACCESS".equals(jwt.getClaimAsString("tokenType"))) {
+                throw new BadJwtException("JWT token is not an access token");
             }
             return jwt;
         };

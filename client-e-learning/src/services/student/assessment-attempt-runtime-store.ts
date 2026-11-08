@@ -37,3 +37,20 @@ export function consumeAttemptRuntime(
     return null;
   }
 }
+
+export function clearAttemptRuntimeStorage(): void {
+  if (typeof window === "undefined") return;
+  try {
+    const keys = Array.from(
+      { length: window.sessionStorage.length },
+      (_, index) => window.sessionStorage.key(index),
+    );
+    keys.forEach((key) => {
+      if (key?.startsWith("student-assignment-runtime:")) {
+        window.sessionStorage.removeItem(key);
+      }
+    });
+  } catch {
+    // Session cleanup remains best-effort when browser storage is unavailable.
+  }
+}

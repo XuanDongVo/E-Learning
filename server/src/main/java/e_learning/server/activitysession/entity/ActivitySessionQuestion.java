@@ -1,7 +1,7 @@
 package e_learning.server.activitysession.entity;
 
 import e_learning.server.question.entity.Question;
-import e_learning.server.gamification.entity.XpQuestionOutcome;
+import e_learning.server.gamification.xp.entity.XpQuestionOutcome;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;

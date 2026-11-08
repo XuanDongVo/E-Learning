@@ -68,6 +68,7 @@ export interface StudentDetail {
 export interface StudentProfile extends Omit<StudentDetail, "id" | "classId" | "className" | "classStatus"> {
   userId: number;
   currentClass?: StudentClass | null;
+  avatarKey?: string | null;
 }
 export interface StudentGuardianRequest {
   id?: number;

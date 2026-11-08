@@ -2,7 +2,7 @@
 
 **Branch:** `feature/student-gamification`
 **Policy accepted:** 2026-11-06
-**Scope:** Activity completion Streak, milestone XP and Level/profile UI. The public leaderboard remains a presentation-only mock.
+**Scope:** Activity completion Streak, milestone XP and Level/profile UI. The later accepted live leaderboard contract is defined by `decisions/0032-student-xp-streak-leaderboard.md`; presentation-only mock language in the historical steps below is superseded.
 
 ## Agreed rules
 
@@ -38,7 +38,7 @@ The student id always comes from the JWT subject. Client has no Streak/XP mutati
 1. S1: wire completion transition to one-per-day qualification and locked Streak profile updates.
 2. S2: add milestone XP ledger idempotency and recompute Level in the same transaction.
 3. L1: read-only profile/streak APIs and Level progress contract.
-4. UI (revised 2026-11-06): server-backed seven-day Streak calendar and a separate minimal XP-to-next-Level panel on Student Home; Rewards route becomes a dedicated Leaderboard preview with explicit mock labeling. All raised panels use border-ink + shadow-pop. No fictitious Freeze count or 5-minute target.
+4. UI (revised 2026-11-07): server-backed seven-day Streak calendar and a separate minimal XP-to-next-Level panel remain on Student Home; Rewards is a dedicated live XP/Streak Leaderboard using the accepted leaderboard read APIs. No fictitious Freeze count or 5-minute target.
 5. Verify: focused policy/service unit tests; backend compile/test; FE lint/type/build; PostgreSQL transaction/concurrency and authenticated mobile/desktop E2E before production rollout.
 
 ## Required acceptance cases
@@ -55,3 +55,11 @@ The student id always comes from the JWT subject. Client has no Streak/XP mutati
 ## Delivery safety
 
 This implementation in source is **not** proof of production deployment or concurrency testing. Do not activate/claim release before PostgreSQL integration and application E2E verification. The Activity XP rollout guard stays default off until its own release gate passes.
+
+## Leaderboard integration (2026-11-06)
+
+- Student Rewards now loads XP and Streak leaderboards from new read-only server endpoints; XP has TODAY/WEEK/MONTH/ALL, Streak has no interval.
+- Rank top 50 by metric value descending and student ID ascending, deterministic even at zero; show the authenticated student's rank outside the top 50 in an independent card, or distinguish their table row if present.
+- Honors contain lifetime XP and longest Streak only. Recent activity comes only from completed/terminal ActivitySessions and optional committed PRACTICE ledger XP.
+- No mock ranking data or Social Ambassador; no new XP/Streak settlement behavior.
+- Verify in PostgreSQL: time boundaries, ties, empty/zero scores, exact rank 50/51, user isolation, terminal feed status, and pagination/limit. Backend and frontend build/E2E still required.

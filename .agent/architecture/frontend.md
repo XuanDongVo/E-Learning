@@ -1,5 +1,17 @@
 # Frontend Architecture and Rules
 
+## Authentication lifecycle
+
+`api.service.ts` owns 401 recovery for JSON, multipart, and blob requests. Recovery
+is single-flight in one tab, serialized across tabs with Web Locks, and replays the
+original authentication-rejected request once. Login, refresh, and logout bypass
+recovery; `ACCOUNT_INACTIVE` never refreshes.
+
+`AuthProvider` subscribes to shared session-end events, clears React Query and
+transient runtime state, and exposes the termination reason to `AuthGuard` and the
+login screen. Do not add independent refresh loops in feature services or store
+JWT values in localStorage/sessionStorage.
+
 Use TypeScript, central types, services and query keys. Do not invent API fields or endpoints.
 
 ## Activity UI
@@ -30,7 +42,9 @@ ActivitySession stores concrete Activity mode and selection_strategy.
 ActivitySessionQuestion.position is runtime sequence metadata only.
 AssessmentAttempt is a separate Assignment runtime contract.
 
-Follow UI_ARCHITECTURE_GUIDELINES.md for tokens, accessibility and responsive behavior.
+Follow `ui/UI_ARCHITECTURE_GUIDELINES.md` for shared UI architecture, accessibility and responsive behavior. ADR 0032 establishes the exclusive Student visual language in `ui/INDIE_ILLUSTRATED_SCRAPBOOK_DESIGN_SYSTEM.md`; Teacher retains its existing visual language.
+
+**Implemented theme isolation contract:** `app/[locale]/student/layout.tsx` activates the scoped Student theme from `styles/student/`; Teacher/base variables remain unchanged. Student feature code uses semantic aliases, typography roles and `components/student-ui` recipes instead of page-local colors or geometry. Root-mounted dialogs and Sonner are covered through the active Student body scope. Any new portal/popover/select must still be checked for scope escape, focus, contrast and reduced motion.
 
 
 ## Question authoring synchronization

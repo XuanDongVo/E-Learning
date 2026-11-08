@@ -2,6 +2,22 @@
 
 # API Contract
 
+## Authentication and session lifecycle
+
+- Login creates an absolute seven-day session. Refresh rotates cookies without
+  extending the original session deadline.
+- Protected resources accept only JWTs whose `tokenType` is `ACCESS`; refresh JWTs
+  are restricted to `/v1/auth/refresh`.
+- An authenticated user whose current database status is `INACTIVE` receives `403
+  ACCOUNT_INACTIVE`; the response clears the access and refresh cookies.
+- Access authentication failures return `401 INVALID_TOKEN`. The frontend may
+  perform one refresh and replay only the request rejected at the authentication
+  layer, at most once.
+- `/v1/auth/logout` does not require a valid access token. It always attempts token
+  revocation and clears both cookies.
+- Auth cookies remain HttpOnly. Access uses path `/v1`; refresh uses path
+  `/v1/auth`.
+
 ## Auth
 JWT access token. Teacher endpoints require TEACHER. Student runtime endpoints require STUDENT and own-session/attempt scope. Never accept owner ids from clients.
 
@@ -48,7 +64,7 @@ Assignment exposes show_answers_after_submit. No Release Answers endpoint.
 - Post-submit Assignment answer visibility follows show_answers_after_submit.
 
 ## Error vocabulary
-Common: INVALID_REQUEST, INTERNAL_ERROR, UNAUTHORIZED, FORBIDDEN, INVALID_TOKEN.
+Common: INVALID_REQUEST, INTERNAL_ERROR, UNAUTHORIZED, FORBIDDEN, INVALID_TOKEN, ACCOUNT_INACTIVE.
 Activity: ACTIVITY_NOT_FOUND, SOURCE_NOT_FOUND, DUPLICATE_SOURCE, NO_SOURCE_SELECTED, SOURCE_NOT_PUBLISHED, SOURCE_EMPTY, DISTRIBUTION_NOT_DIVISIBLE, PERCENTAGE_INVALID, ALLOCATION_ZERO, FIXED_COUNT_INVALID, INSUFFICIENT_QUESTION_POOL, TRY_HARD_TIMER_REQUIRED, TRY_HARD_LIVES_REQUIRED, ACTIVITY_NOT_READY, INVALID_STATUS_TRANSITION, PREVIEW_NOT_READY.
 Assignment/Attempt codes must be verified against ErrorCode.java before implementation.
 
@@ -101,3 +117,10 @@ Canonical model: .agent/architecture/assignment-composition-v1.md. Phase 7B resp
 ## Assignment score visibility
 
 The server calculates and persists the Assignment score on submit/timeout regardless of `show_score_after_submit`. That boolean controls whether the student is shown the score immediately. `show_answers_after_submit` is a separate switch for correct answers and explanations. These are two independent response-projection policies. Scored questions default to 1 point; a teacher may customize possible points per Assignment item. Compound parts default to equal allocation with editable per-part points that must sum to the aggregate question points.
+
+## Leaderboard (implemented read-only contract)
+
+- `GET /v1/student/gamification/leaderboard?metric=XP&period=TODAY|WEEK|MONTH|ALL`: leaderboard XP aggregated from `xp_transactions` for the selected Ho Chi Minh calendar interval. For `metric=STREAK`, period is always ALL and the ranking uses effective current Streak. Sort value descending then student ID ascending; return top 50 + currentStudent rank even outside top 50. `totalStudents` includes active students, even with zero score.
+- `GET /v1/student/gamification/leaderboard/honors`: all-time lifetime XP champion and longest-ever Streak champion among active students; no influencer/ambassador badge.
+- `GET /v1/student/gamification/leaderboard/recent-activity?limit=8`: latest terminal `ActivitySession` rows (COMPLETED or GAME_OVER), status, Activity name, optional earned PRACTICE XP; no fabricated level-up or share events.
+- Authenticated student only. Student ID from JWT for self rank; no client mutation or XP claims. No new migration.

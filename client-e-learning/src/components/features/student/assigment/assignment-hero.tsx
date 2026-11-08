@@ -1,42 +1,34 @@
-import { Sparkles } from "lucide-react";
-import { Pipo } from "@/components/ui/mascot";
+import { NotebookPen } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { PaperSurface } from "@/components/student-ui/paper-surface";
+import { ScrapbookHeading } from "@/components/student-ui/scrapbook-heading";
 
 interface AssignmentHeroProps {
-  todoCount: number;
+  /** TODO includes IN_PROGRESS according to the server assignment contract. */
+  todoCount: number | null;
 }
 
 export function AssignmentHero({ todoCount }: AssignmentHeroProps) {
+  const t = useTranslations("student.assignments");
+
   return (
-    <header className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 rounded-3xl border-2 border-foreground bg-warm-soft p-5 sm:p-7 shadow-pop-lg">
-      <div className="shrink-0">
-        <Pipo
-          mood={todoCount > 0 ? "wave" : "celebrate"}
-          size={110}
-          stage={1}
-        />
-      </div>
-      <div>
-        <span className="inline-flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-wider text-primary-hover">
-          <Sparkles size={15} />
-          Your assignments
-        </span>
-        <h1 className="my-1.5 text-2xl sm:text-3xl font-extrabold leading-snug">
-          {todoCount > 0 ? (
-            <>
-              You have{" "}
-              <mark className="rounded-lg bg-accent-soft px-2 py-0.5 text-foreground shadow-[inset_0_-6px_0_rgba(240,168,28,0.35)]">
-                {todoCount} assignments
-              </mark>{" "}
-              waiting!
-            </>
-          ) : (
-            "All done — great job!"
-          )}
-        </h1>
-        <p className="text-sm sm:text-base text-muted-foreground">
-          Pick one, focus, and show what you know.
+    <PaperSurface as="section" variant="kraft" tape tapePosition="right" className="student-assignment-hero">
+      <div className="min-w-0 space-y-2">
+        <p className="student-meta text-primary">{t("hero.eyebrow")}</p>
+        <ScrapbookHeading as="h1" className="student-page-title text-foreground">
+          {t("hero.title")}
+        </ScrapbookHeading>
+        <p className="student-body text-muted-foreground">
+          {todoCount === null
+            ? t("hero.description")
+            : todoCount > 0
+              ? t("hero.pending", { count: todoCount })
+              : t("hero.completed")}
         </p>
       </div>
-    </header>
+      <div className="student-assignment-hero__symbol" aria-hidden="true">
+        <NotebookPen size={32} />
+      </div>
+    </PaperSurface>
   );
 }

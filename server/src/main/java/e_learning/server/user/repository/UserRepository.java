@@ -2,6 +2,7 @@ package e_learning.server.user.repository;
 
 import e_learning.server.user.entity.Role;
 import e_learning.server.user.entity.User;
+import e_learning.server.user.entity.UserStatus;
 import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
@@ -16,6 +17,9 @@ public interface UserRepository
         extends JpaRepository<User, Long>, JpaSpecificationExecutor<User> {
 
     Optional<User> findByEmailIgnoreCase(String email);
+
+    @Query("select user.status from User user where user.id = :userId")
+    Optional<UserStatus> findStatusById(@Param("userId") Long userId);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select user from User user where user.id = :userId")

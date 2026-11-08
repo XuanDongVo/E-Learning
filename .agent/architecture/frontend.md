@@ -1,5 +1,17 @@
 # Frontend Architecture and Rules
 
+## Authentication lifecycle
+
+`api.service.ts` owns 401 recovery for JSON, multipart, and blob requests. Recovery
+is single-flight in one tab, serialized across tabs with Web Locks, and replays the
+original authentication-rejected request once. Login, refresh, and logout bypass
+recovery; `ACCOUNT_INACTIVE` never refreshes.
+
+`AuthProvider` subscribes to shared session-end events, clears React Query and
+transient runtime state, and exposes the termination reason to `AuthGuard` and the
+login screen. Do not add independent refresh loops in feature services or store
+JWT values in localStorage/sessionStorage.
+
 Use TypeScript, central types, services and query keys. Do not invent API fields or endpoints.
 
 ## Activity UI

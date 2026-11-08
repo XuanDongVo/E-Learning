@@ -4,7 +4,7 @@ import e_learning.server.auth.dto.TokenPayload;
 import e_learning.server.common.exception.AppException;
 import e_learning.server.common.exception.ErrorCode;
 import e_learning.server.user.entity.User;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.*;
@@ -15,7 +15,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
 @Service
-@RequiredArgsConstructor
 public class JwtTokenService {
 
     public static final MacAlgorithm JWT_ALGORITHM = MacAlgorithm.HS512;
@@ -30,12 +29,43 @@ public class JwtTokenService {
     private final JwtDecoder jwtDecoder;
     private final RevokedTokenRepository revokedTokenRepository;
 
-    public TokenPayload generateAccessToken(User user) {
-        return generateToken(user, accessTokenExpiration, "ACCESS");
+    public JwtTokenService(
+            JwtEncoder jwtEncoder,
+            @Qualifier("refreshJwtDecoder") JwtDecoder jwtDecoder,
+            RevokedTokenRepository revokedTokenRepository
+    ) {
+        this.jwtEncoder = jwtEncoder;
+        this.jwtDecoder = jwtDecoder;
+        this.revokedTokenRepository = revokedTokenRepository;
     }
 
-    public TokenPayload generateRefreshToken(User user) {
-        return generateToken(user, refreshTokenExpiration, "REFRESH");
+    public Instant newSessionExpiresAt() {
+        return Instant.now().plus(refreshTokenExpiration, ChronoUnit.SECONDS);
+    }
+
+    public Instant sessionExpiresAt(Jwt refreshToken) {
+        String claim = refreshToken.getClaimAsString("sessionExpiresAt");
+        if (claim != null && !claim.isBlank()) {
+            try {
+                return Instant.parse(claim);
+            } catch (RuntimeException exception) {
+                throw new AppException(ErrorCode.INVALID_TOKEN);
+            }
+        }
+        Instant expiresAt = refreshToken.getExpiresAt();
+        if (expiresAt == null) {
+            throw new AppException(ErrorCode.INVALID_TOKEN);
+        }
+        return expiresAt;
+    }
+
+    public TokenPayload generateAccessToken(User user, Instant sessionExpiresAt) {
+        Instant tokenExpiresAt = Instant.now().plus(accessTokenExpiration, ChronoUnit.SECONDS);
+        return generateToken(user, min(tokenExpiresAt, sessionExpiresAt), sessionExpiresAt, "ACCESS");
+    }
+
+    public TokenPayload generateRefreshToken(User user, Instant sessionExpiresAt) {
+        return generateToken(user, sessionExpiresAt, sessionExpiresAt, "REFRESH");
     }
 
     public boolean isValidToken(String token) {
@@ -77,10 +107,17 @@ public class JwtTokenService {
         }
     }
 
-    private TokenPayload generateToken(User user, long ttlSeconds, String tokenType) {
+    private TokenPayload generateToken(
+            User user,
+            Instant expiresAt,
+            Instant sessionExpiresAt,
+            String tokenType
+    ) {
         String jwtId = UUID.randomUUID().toString();
         Instant now = Instant.now();
-        Instant expiresAt = now.plus(ttlSeconds, ChronoUnit.SECONDS);
+        if (!expiresAt.isAfter(now) || !sessionExpiresAt.isAfter(now)) {
+            throw new AppException(ErrorCode.INVALID_TOKEN);
+        }
 
         JwtClaimsSet claims = JwtClaimsSet.builder()
                 .issuedAt(now)
@@ -91,6 +128,7 @@ public class JwtTokenService {
                         .map(a -> a.getAuthority().replace("ROLE_", ""))
                         .toList())
                     .claim("tokenType", tokenType)
+                .claim("sessionExpiresAt", sessionExpiresAt.toString())
                 .claim("jwtId", jwtId)
                 .build();
 
@@ -105,5 +143,9 @@ public class JwtTokenService {
                 .jwtId(jwtId)
                 .expiresAt(expiresAt)
                 .build();
+    }
+
+    private Instant min(Instant first, Instant second) {
+        return first.isBefore(second) ? first : second;
     }
 }

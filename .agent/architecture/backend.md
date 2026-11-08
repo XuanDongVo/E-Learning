@@ -1,5 +1,16 @@
 # Backend Architecture and Conventions
 
+## Authentication lifecycle
+
+ADR 0033 is authoritative for JWT-cookie sessions. Resource authentication uses an
+access-only decoder, then `AccountStatusFilter` reads the current `users.status`
+before controllers. Security-chain errors must use the same `ApiResponse` envelope
+as controller errors through the dedicated entry point/access-denied writer.
+
+Refresh rotation preserves the absolute session deadline created at login. Do not
+replace it with a sliding refresh window. Logout is permit-all and cookie clearing
+must retain the original cookie paths and attributes.
+
 Spring Boot, Java 21, Spring Data JPA, Flyway, PostgreSQL, Spring Security/JWT.
 
 ## Feature layout

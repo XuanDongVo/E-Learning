@@ -3,6 +3,7 @@ package e_learning.server.auth;
 import e_learning.server.auth.dto.CurrentUserResponse;
 import e_learning.server.auth.dto.LoginRequest;
 import e_learning.server.auth.security.JwtCookieService;
+import e_learning.server.common.exception.AppException;
 import e_learning.server.common.response.ApiResponse;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -46,9 +47,14 @@ public class AuthController {
 			HttpServletResponse response
 	) {
 		String refreshToken = cookieValue(request, JwtCookieService.REFRESH_TOKEN_COOKIE);
-		AuthService.LoginResult result = authService.refresh(refreshToken);
-		addTokenCookies(response, result);
-		return ResponseEntity.ok(ApiResponse.success("Token refreshed", null));
+		try {
+			AuthService.LoginResult result = authService.refresh(refreshToken);
+			addTokenCookies(response, result);
+			return ResponseEntity.ok(ApiResponse.success("Token refreshed", null));
+		} catch (AppException exception) {
+			clearTokenCookies(response);
+			throw exception;
+		}
 	}
 
 	@PostMapping("/logout")
@@ -58,8 +64,7 @@ public class AuthController {
 	) {
 		authService.revoke(cookieValue(request, JwtCookieService.ACCESS_TOKEN_COOKIE));
 		authService.revoke(cookieValue(request, JwtCookieService.REFRESH_TOKEN_COOKIE));
-		response.addHeader(HttpHeaders.SET_COOKIE, cookieService.clearAccessCookie().toString());
-		response.addHeader(HttpHeaders.SET_COOKIE, cookieService.clearRefreshCookie().toString());
+		clearTokenCookies(response);
 		return ResponseEntity.ok(ApiResponse.success("Logout successful", null));
 	}
 
@@ -71,6 +76,11 @@ public class AuthController {
 	private void addTokenCookies(HttpServletResponse response, AuthService.LoginResult result) {
 		response.addHeader(HttpHeaders.SET_COOKIE, cookieService.accessCookie(result.accessToken()).toString());
 		response.addHeader(HttpHeaders.SET_COOKIE, cookieService.refreshCookie(result.refreshToken()).toString());
+	}
+
+	private void clearTokenCookies(HttpServletResponse response) {
+		response.addHeader(HttpHeaders.SET_COOKIE, cookieService.clearAccessCookie().toString());
+		response.addHeader(HttpHeaders.SET_COOKIE, cookieService.clearRefreshCookie().toString());
 	}
 
 	private String cookieValue(HttpServletRequest request, String name) {

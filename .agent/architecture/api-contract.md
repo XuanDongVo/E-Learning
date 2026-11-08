@@ -2,6 +2,22 @@
 
 # API Contract
 
+## Authentication and session lifecycle
+
+- Login creates an absolute seven-day session. Refresh rotates cookies without
+  extending the original session deadline.
+- Protected resources accept only JWTs whose `tokenType` is `ACCESS`; refresh JWTs
+  are restricted to `/v1/auth/refresh`.
+- An authenticated user whose current database status is `INACTIVE` receives `403
+  ACCOUNT_INACTIVE`; the response clears the access and refresh cookies.
+- Access authentication failures return `401 INVALID_TOKEN`. The frontend may
+  perform one refresh and replay only the request rejected at the authentication
+  layer, at most once.
+- `/v1/auth/logout` does not require a valid access token. It always attempts token
+  revocation and clears both cookies.
+- Auth cookies remain HttpOnly. Access uses path `/v1`; refresh uses path
+  `/v1/auth`.
+
 ## Auth
 JWT access token. Teacher endpoints require TEACHER. Student runtime endpoints require STUDENT and own-session/attempt scope. Never accept owner ids from clients.
 
@@ -48,7 +64,7 @@ Assignment exposes show_answers_after_submit. No Release Answers endpoint.
 - Post-submit Assignment answer visibility follows show_answers_after_submit.
 
 ## Error vocabulary
-Common: INVALID_REQUEST, INTERNAL_ERROR, UNAUTHORIZED, FORBIDDEN, INVALID_TOKEN.
+Common: INVALID_REQUEST, INTERNAL_ERROR, UNAUTHORIZED, FORBIDDEN, INVALID_TOKEN, ACCOUNT_INACTIVE.
 Activity: ACTIVITY_NOT_FOUND, SOURCE_NOT_FOUND, DUPLICATE_SOURCE, NO_SOURCE_SELECTED, SOURCE_NOT_PUBLISHED, SOURCE_EMPTY, DISTRIBUTION_NOT_DIVISIBLE, PERCENTAGE_INVALID, ALLOCATION_ZERO, FIXED_COUNT_INVALID, INSUFFICIENT_QUESTION_POOL, TRY_HARD_TIMER_REQUIRED, TRY_HARD_LIVES_REQUIRED, ACTIVITY_NOT_READY, INVALID_STATUS_TRANSITION, PREVIEW_NOT_READY.
 Assignment/Attempt codes must be verified against ErrorCode.java before implementation.
 

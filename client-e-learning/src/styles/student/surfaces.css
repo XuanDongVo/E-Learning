@@ -315,7 +315,7 @@
   border-radius: 10px 3px 12px 4px / 3px 12px 4px 10px;
   background: var(--student-paper);
   color: var(--student-ink);
-  padding: 8px 12px;
+  padding: 8px 30px;
   font-family: var(--student-font-body);
   font-size: 0.875rem;
   outline: none;

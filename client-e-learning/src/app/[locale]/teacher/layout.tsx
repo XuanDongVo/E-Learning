@@ -49,7 +49,7 @@ const navigation: {
     icon: BookA,
     customLabel: "Từ vựng Unit",
   },
-  { key: "analytics", href: "/teacher/reports", icon: BarChart3 },
+  // { key: "analytics", href: "/teacher/reports", icon: BarChart3 },
 ];
 
 function TeacherSidebar({

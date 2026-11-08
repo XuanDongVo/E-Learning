@@ -68,7 +68,6 @@ export function ActivityDetail({ activityId }: { activityId: number }) {
 
   return (
     <div className="space-y-6">
-      {/* ───────── Header ───────── */}
       <header className="space-y-4">
         <nav
           className="text-body-sm text-neutral-muted"
@@ -86,7 +85,7 @@ export function ActivityDetail({ activityId }: { activityId: number }) {
           <span aria-current="page">{a.name}</span>
         </nav>
 
-        <div className="rounded-xl border border-border-color bg-card-bg p-6 shadow-sm">
+        <div className="rounded-xl border-2 border-ink shadow-pop bg-card-bg p-6 shadow-sm">
           <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
             <div className="min-w-0 space-y-3">
               <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
@@ -204,7 +203,7 @@ export function ActivityDetail({ activityId }: { activityId: number }) {
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
         <main className="space-y-6">
           {/* Question banks */}
-          <section className="overflow-hidden rounded-xl border border-border-color bg-card-bg">
+          <section className="overflow-hidden rounded-xl border-2 border-ink shadow-pop bg-card-bg">
             <div className="flex items-center justify-between border-b border-border-color px-5 py-4">
               <h2 className="text-section-title font-bold">Question Banks</h2>
               <span className="text-body-sm text-neutral-muted">
@@ -294,7 +293,7 @@ export function ActivityDetail({ activityId }: { activityId: number }) {
           </section>
 
           {/* Student experience */}
-          <section className="rounded-xl border border-border-color bg-card-bg p-5">
+          <section className="rounded-xl border-2 border-ink shadow-pop bg-card-bg p-5">
             <h2 className="text-section-title font-bold">Student experience</h2>
             <p className="mt-1 text-body-sm text-neutral-muted">
               {modeHints[a.mode]}
@@ -331,7 +330,7 @@ export function ActivityDetail({ activityId }: { activityId: number }) {
 
         {/* Sidebar */}
         <aside className="self-start lg:sticky lg:top-24">
-          <section className="rounded-xl border border-border-color bg-card-bg p-5">
+          <section className="rounded-xl border-2 border-ink shadow-pop bg-card-bg p-5">
             <h2 className="text-card-title font-semibold">Activity status</h2>
             <ol className="mt-4 space-y-4">
               <TimelineItem

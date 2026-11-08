@@ -274,7 +274,7 @@ export function StudentRewardsLeaderboard() {
                 action={<button type="button" onClick={() => void recent.refetch()} className="student-control student-control--quiet">Thử lại</button>}
               />
             ) : activities.length === 0 ? (
-              <p className="student-body text-muted-foreground">Chưa có ActivitySession hoàn thành.</p>
+              <p className="student-body text-muted-foreground">Chưa có hoạt động bài tập nào hoàn thành.</p>
             ) : (
               <ul className="divide-y divide-border">
                 {activities.map((item) => (

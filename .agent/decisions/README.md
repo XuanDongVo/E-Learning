@@ -37,6 +37,7 @@ An accepted ADR overrides lower-level documents. Never delete an ADR; supersede 
 | 0031 | Student Home Streak/Level placement and border-ink + shadow-pop | **Accepted; visual decision 1 superseded for Student by 0032; behavior retained** |
 | 0032 | Student Indie Illustrated Scrapbook visual system | **Accepted; scoped theme implemented, route migration in progress** |
 | 0032 | XP/Streak Leaderboard, Top 50, honors and ActivitySession feed | **Accepted; source under verification** |
+| 0033 | Absolute seven-day auth session lifecycle | **Accepted; implemented, validation deferred by owner** |
 
 ## Current decision chain
 
@@ -52,6 +53,7 @@ ADR 0019 controls Assignment post-submit answer visibility through show_answers_
 ADR 0021 separates ActivitySession from formal AssessmentAttempt and forbids a shared polymorphic Attempt.
 ADR 0023 accepts Question Engine D1–D8. ADR 0025 governs Assignment hard-lock and Activity update/snapshot semantics. ADR 0026 defines automatic Assignment scoring and visibility.
 ADR 0027 defines the Phase 7B single-active-tab/resumable session policy: Web Locks provides same-browser exclusive tab coordination, a stable session credential is persisted for recovery, another tab is rejected immediately, and there is no heartbeat-driven stale takeover in MVP.
+ADR 0033 defines authentication session lifetime and recovery: seven days is an absolute deadline from login, refresh does not extend it, inactive users are blocked on their next protected request, and the frontend coordinates one-time refresh/replay across tabs.
 ADR 0028 stores the AssessmentAttempt draft answer on AssessmentAttemptQuestion (answer_payload, revision, saved_at) and removes the separate AssessmentAttemptAnswer table; Mutation idempotency remains; normalized values are not stored on draft save.
 
 ADR 0029 also locks the Activity XP v2.2 outcome matrix, Hint precedence, Level scaling, Completion Bonus eligibility, replay without penalty, legacy no-backfill and Result-only first release; approved policy is not deployed engine code.

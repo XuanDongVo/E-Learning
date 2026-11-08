@@ -75,7 +75,7 @@ export function AssignmentCard({ assignment }: AssignmentCardProps) {
         </span>
         <span className="student-meta student-assignment-detail">
           <CalendarDays size={15} aria-hidden="true" />
-          {assignment.dueAt ? formatDueAt(assignment.dueAt, locale, "short") : t("meta.noDueDate")}
+          {assignment.dueAt ? formatDueAt(assignment.dueAt, locale, "long") : t("meta.noDueDate")}
         </span>
       </div>
 

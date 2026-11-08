@@ -12,6 +12,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.Instant;
 
 @Service
 @RequiredArgsConstructor
@@ -28,9 +31,10 @@ public class AuthService {
 
 		User user = userRepository.findByEmailIgnoreCase(request.email())
 				.orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
-		return issueTokens(user);
+		return issueTokens(user, jwtTokenService.newSessionExpiresAt());
 	}
 
+	@Transactional(noRollbackFor = AppException.class)
 	public LoginResult refresh(String refreshToken) {
 		if (refreshToken == null || refreshToken.isBlank()) {
 			throw new AppException(ErrorCode.INVALID_TOKEN);
@@ -47,10 +51,17 @@ public class AuthService {
 			throw new AppException(ErrorCode.INVALID_TOKEN);
 		}
 
+		Instant sessionExpiresAt = jwtTokenService.sessionExpiresAt(jwt);
+		if (!sessionExpiresAt.isAfter(Instant.now())) {
+			throw new AppException(ErrorCode.INVALID_TOKEN);
+		}
+		jwtTokenService.revoke(refreshToken);
 		User user = userRepository.findById(userId)
 				.orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
-		jwtTokenService.revoke(refreshToken);
-		return issueTokens(user);
+		if (!user.isEnabled()) {
+			throw new AppException(ErrorCode.ACCOUNT_INACTIVE);
+		}
+		return issueTokens(user, sessionExpiresAt);
 	}
 
 	public void revoke(String token) {
@@ -78,10 +89,10 @@ public class AuthService {
 		return CurrentUserResponse.from(user);
 	}
 
-	private LoginResult issueTokens(User user) {
+	private LoginResult issueTokens(User user, Instant sessionExpiresAt) {
 		return new LoginResult(
-				jwtTokenService.generateAccessToken(user),
-				jwtTokenService.generateRefreshToken(user)
+				jwtTokenService.generateAccessToken(user, sessionExpiresAt),
+				jwtTokenService.generateRefreshToken(user, sessionExpiresAt)
 		);
 	}
 

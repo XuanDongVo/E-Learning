@@ -65,7 +65,7 @@ export function StudentAssignmentIntro({
     { icon: FileQuestion, label: t("questionLabel"), value: t("questionCount", { count: questionCount }) },
     { icon: Clock3, label: t("timeLimit"), value: timeLimitMinutes != null ? t("timeLimitValue", { minutes: timeLimitMinutes }) : t("noTimeLimit") },
     { icon: GraduationCap, label: t("grade"), value: gradeName || t("metadataUnavailable") },
-    { icon: CalendarDays, label: t("dueAt"), value: dueAt ? formatDueAt(dueAt, locale) : t("noDueDate") },
+    { icon: CalendarDays, label: t("dueAt"), value: dueAt ? formatDueAt(dueAt, locale, "long") : t("noDueDate") },
   ];
 
   const rules = [

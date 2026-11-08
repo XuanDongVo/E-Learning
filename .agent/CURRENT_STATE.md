@@ -1,6 +1,6 @@
 # Current Implementation State
 
-**Audit date:** 2026-11-06
+**Audit date:** 2026-11-08
 **Branch:** `feature/student-gamification`
 **Baseline:** `main` after merge of `feature/student-assignment-attempt` (PR #30)
 
@@ -29,6 +29,18 @@
 | **Phase 8 Teacher Assignment Analysis** | **Code complete on this branch; local E2E not claimed** |
 | **Activity XP Engine Phases 1–4** | **Implemented behind default-off rollout; Phase 5 validation/enablement open** |
 | **Student Streak / Level v1** | **Service/API and Rewards UI source added; tests/build/E2E pending verification** |
+| **Auth / Session lifecycle** | **Absolute seven-day session, inactive-account enforcement and frontend recovery implemented; validation deferred** |
+
+### Auth / Session lifecycle
+
+- Login fixes an absolute seven-day session deadline; refresh rotation preserves
+  rather than extends it, and access tokens cannot outlive it.
+- Protected requests accept ACCESS tokens only and read current `users.status`
+  before controllers. INACTIVE accounts are terminated with a standard API error.
+- The frontend performs one coordinated refresh and one request replay, synchronizes
+  session termination across tabs, and clears account-scoped query/runtime state.
+- No migration or endpoint was added. Maven/Vitest/lint/type/build and authenticated
+  browser verification were explicitly skipped by owner request.
 
 ### Student Streak / Level v1
 

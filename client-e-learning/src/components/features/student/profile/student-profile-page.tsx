@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type {
   StudentProfile,
@@ -311,7 +311,7 @@ function AvatarDialog({
             />
             <input
               aria-label="Từ khóa avatar"
-              className="student-field pl-10"
+              className="student-field !px-[30px]"
               value={draftSeed}
               maxLength={40}
               placeholder="Thử gõ: alice, luna, robot..."
@@ -323,7 +323,7 @@ function AvatarDialog({
             onClick={() =>
               setDraftSeed(Math.random().toString(36).slice(2, 10))
             }
-            className="student-control student-control--secondary px-4"
+            className="student-control student-control--secondary px-4 inline-flex flex-row items-center justify-center gap-1.5 sm:w-auto"
           >
             <RefreshCw size={16} /> Xúc xắc hạt giống
           </button>
@@ -507,6 +507,7 @@ function StudentProfileContent({
   );
 
   const [tab, setTab] = useState<Tab>("overview");
+  const tabsRef = useRef<HTMLElement>(null);
   const [avatarOpen, setAvatarOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [draft, setDraft] = useState<Profile>(() =>
@@ -546,6 +547,7 @@ function StudentProfileContent({
     () => parseAvatar(profile.avatarKey),
     [profile.avatarKey],
   );
+
   const levelRange = Math.max(
     0,
     game.nextLevelRequiredXp - game.currentLevelStartXp,
@@ -713,14 +715,13 @@ function StudentProfileContent({
 
               <div className="w-36 -rotate-1 rounded-sm border-2 border-ink bg-card p-3 pb-5 shadow-pop transition hover:rotate-0 sm:w-40">
                 <div className="aspect-square overflow-hidden rounded-sm border border-border bg-background p-2">
-                  <img
-                    src={avatarSrc(avatar.style, avatar.seed)}
-                    alt="Ảnh đại diện học sinh"
-                    className="h-full w-full object-contain"
-                  />
-                </div>
-                <div className="mt-2 truncate text-center student-meta text-muted-foreground">
-                  {avatar.seed}
+                 {profile.avatarKey && (
+                    <img
+                      src={avatarSrc(avatar.style, avatar.seed)}
+                      alt="Ảnh đại diện học sinh"
+                      className="h-full w-full object-contain"
+                    />
+                  )}
                 </div>
               </div>
 
@@ -780,6 +781,16 @@ function StudentProfileContent({
                 setTab("personal");
                 setEditMode(true);
                 setDraft(profile);
+                window.requestAnimationFrame(() => {
+                  tabsRef.current?.scrollIntoView({
+                    behavior: window.matchMedia(
+                      "(prefers-reduced-motion: reduce)",
+                    ).matches
+                      ? "auto"
+                      : "smooth",
+                    block: "start",
+                  });
+                });
               }}
               className="student-control student-control--secondary self-start px-4 inline-flex flex-row items-center justify-center gap-1.5"
             >
@@ -854,8 +865,9 @@ function StudentProfileContent({
 
         {/* NAVIGATION TABS (Notebook Bookmarks) */}
         <nav
+          ref={tabsRef}
           aria-label="Phần hồ sơ"
-          className="mt-8 flex gap-2 overflow-x-auto border-b-2 border-dashed border-ink pb-3"
+          className="mt-8 flex scroll-mt-6 gap-2 overflow-x-auto border-b-2 border-dashed border-ink pb-3"
         >
           {tabList.map(({ id, label, icon: Icon }) => (
             <button
@@ -1264,7 +1276,7 @@ function StudentProfileContent({
                     setDraft(profile);
                     setEditMode(!editMode);
                   }}
-                  className="student-control student-control--secondary px-3"
+                  className="student-control student-control--secondary px-3 inline-flex flex-row items-center justify-center gap-1.5"
                 >
                   <Pencil size={16} />
                   {editMode ? "Hủy" : "Sửa"}
@@ -1426,9 +1438,7 @@ function StudentProfileContent({
                                 </span>
                               </div>
                               <div className="flex items-center justify-between">
-                                <span className="student-body">
-                                  Email:
-                                </span>
+                                <span className="student-body">Email:</span>
                                 <span className="text-ink font-medium">
                                   {selectedGuardian.email || (
                                     <span className="student-body">

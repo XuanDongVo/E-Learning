@@ -1,5 +1,30 @@
 # Project Progress
 
+## Absolute seven-day Auth/Session lifecycle (2026-11-08)
+
+- Added an absolute session deadline fixed at login; access/refresh rotation cannot
+  extend the seven-day session, and legacy refresh tokens retain their existing
+  expiry as the transition deadline.
+- Protected resources now accept only ACCESS tokens and re-check current account
+  status before controllers. INACTIVE accounts receive `ACCOUNT_INACTIVE`, auth
+  cookies are cleared, and refresh cannot issue replacement tokens.
+- Logout now clears cookies without requiring a valid access token. Spring Security
+  authentication/authorization failures use the standard API envelope.
+- The frontend now performs one single-flight refresh and one replay for 401s,
+  coordinates refresh across tabs with Web Locks, broadcasts session termination,
+  clears account-scoped cache/transient runtime state, and preserves a clear login
+  reason.
+- No database migration or endpoint was added. Maven tests, frontend Vitest, lint,
+  TypeScript, and build were explicitly skipped at owner request; runtime/browser
+  validation remains required before release.
+- Added localized frontend messages for network failures and stale requests that
+  finish after their authentication session has ended.
+
+## Student Profile edit navigation (2026-11-08)
+
+- The Profile hero's `Chỉnh sửa` action now switches to the Personal tab, enables editing, and scrolls the tab region into view.
+- Smooth scrolling respects the user's reduced-motion preference; profile data and API behavior are unchanged.
+
 ## Student UI standardization — Units branch + Rewards (2026-11-07)
 
 - Standardized `/student/units`, `/student/units/:unitId`, `/student/units/:unitId/activities`, the immersive Activity route wrapper, and `/student/rewards` with the scoped Indie Illustrated Scrapbook roles and shared Student recipes.

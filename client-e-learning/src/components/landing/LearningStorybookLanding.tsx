@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { AuthSessionInfo, LANDING_ROUTES } from "@/config/landing-routes";
+import { LANDING_ROUTES } from "@/config/landing-routes";
+import { useOptionalAuth } from "@/components/auth/auth-provider";
 import CustomInkCursor from "./CustomInkCursor";
 import Navbar from "./Navbar";
 import Scene01HeroBook from "./Scene01HeroBook";
@@ -12,12 +13,12 @@ import Scene06FinalPage from "./Scene06FinalPage";
 
 interface LearningStorybookLandingProps {
   /** Truyền thông tin phiên đăng nhập thực tế từ Server/Auth Context nếu có */
-  session?: AuthSessionInfo;
+  role?: import("@/types/auth").UserRole | null;
 }
 
-export default function LearningStorybookLanding({
-  session,
-}: LearningStorybookLandingProps) {
+export default function LearningStorybookLanding({ role: providedRole }: LearningStorybookLandingProps) {
+  const auth = useOptionalAuth();
+  const role = providedRole ?? auth?.user?.role;
   const [heroProgress, setHeroProgress] = useState<number>(0);
   const [tabHidden, setTabHidden] = useState<boolean>(false);
   const isAnimatingRef = useRef<boolean>(false);
@@ -114,7 +115,7 @@ export default function LearningStorybookLanding({
 
       {/* Thanh điều hướng tối giản */}
       <Navbar
-        session={session}
+        role={role}
         onNavigateSection={handleNavigateSection}
       />
 
@@ -125,7 +126,7 @@ export default function LearningStorybookLanding({
           progress={heroProgress}
           onTriggerOpenBook={handleTriggerOpenBook}
           onSetManualProgress={(val) => setHeroProgress(val)}
-          session={session}
+          role={role}
         />
 
         {/* SCENE 02 — EXPLORE THE LEARNING WORLD */}
@@ -141,7 +142,7 @@ export default function LearningStorybookLanding({
 
         {/* SCENE 06 — THE FINAL PAGE */}
         <Scene06FinalPage
-          session={session}
+          role={role}
           onNavigateSection={handleNavigateSection}
         />
       </main>

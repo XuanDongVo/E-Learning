@@ -15,16 +15,18 @@ export function AuthGuard({
   const router = useRouter();
   const pathname = usePathname();
   const { user, isLoading, sessionEndReason } = useAuth();
+  const loginPath =
+    requiredRole === "TEACHER" ? "/login/teacher" : "/login/student";
 
   useEffect(() => {
     if (isLoading) return;
     if (!user) {
       if (sessionEndReason === "account_inactive") {
-        router.replace("/login?reason=account_inactive");
+        router.replace(`${loginPath}?reason=account_inactive`);
         return;
       }
       if (sessionEndReason === "logged_out") {
-        router.replace("/login");
+        router.replace("/");
         return;
       }
       const currentSearch = typeof window === "undefined" ? "" : window.location.search;
@@ -32,13 +34,13 @@ export function AuthGuard({
       const reason = sessionEndReason === "session_expired"
         ? "&reason=session_expired"
         : "";
-      router.replace(`/login?next=${encodeURIComponent(returnTo)}${reason}`);
+      router.replace(`${loginPath}?next=${encodeURIComponent(returnTo)}${reason}`);
       return;
     }
     if (requiredRole && user.role !== requiredRole) {
       router.replace(user.role === "TEACHER" ? "/teacher" : "/");
     }
-  }, [isLoading, pathname, requiredRole, router, sessionEndReason, user]);
+  }, [isLoading, loginPath, pathname, requiredRole, router, sessionEndReason, user]);
 
   if (isLoading || !user || (requiredRole && user.role !== requiredRole)) {
     return (

@@ -2,22 +2,19 @@
 
 import React, { useState } from "react";
 import { Volume2, VolumeX, Menu, X } from "lucide-react";
-import {
-  AuthSessionInfo,
-  LANDING_ROUTES,
-  resolvePrimaryCtaRoute,
-} from "@/config/landing-routes";
+import { LANDING_ROUTES, resolvePrimaryCtaRoute } from "@/config/landing-routes";
+import type { UserRole } from "@/types/auth";
 import { sounds } from "./sound-effects";
 
 interface NavbarProps {
-  session?: AuthSessionInfo;
+  role?: UserRole | null;
   onNavigateSection?: (sectionId: string) => void;
 }
 
-export default function Navbar({ session, onNavigateSection }: NavbarProps) {
+export default function Navbar({ role, onNavigateSection }: NavbarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [soundActive, setSoundActive] = useState(true);
-  const authCta = resolvePrimaryCtaRoute(session);
+  const authCta = resolvePrimaryCtaRoute(role);
 
   const toggleSound = () => {
     const nextState = !soundActive;
@@ -151,13 +148,13 @@ export default function Navbar({ session, onNavigateSection }: NavbarProps) {
 
           <a
             href={
-              session?.isAuthenticated
+              role
                 ? authCta.href
                 : LANDING_ROUTES.studentLogin
             }
             className="rounded-xl bg-terracotta px-4.5 py-2 font-landing-page-display text-lg tracking-wide text-parchment-light ink-border-sm transition-all duration-150 hover:-translate-y-0.5 hover:shadow-ink active:translate-y-0"
           >
-            {session?.isAuthenticated ? authCta.label : "Đăng nhập"}
+            {role ? authCta.label : "Đăng nhập"}
           </a>
         </div>
 
@@ -236,13 +233,13 @@ export default function Navbar({ session, onNavigateSection }: NavbarProps) {
             </a>
             <a
               href={
-                session?.isAuthenticated
+                role
                   ? authCta.href
                   : LANDING_ROUTES.studentLogin
               }
               className="rounded-xl bg-terracotta px-4 py-2.5 text-center font-landing-page-display text-xl text-parchment-light ink-border-sm"
             >
-              {session?.isAuthenticated ? authCta.label : "Đăng nhập"}
+              {role ? authCta.label : "Đăng nhập"}
             </a>
           </div>
         </div>

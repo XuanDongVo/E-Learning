@@ -4,6 +4,7 @@
     "INTERNAL_ERROR": "A server error occurred. Please try again later.",
     "UNAUTHORIZED": "Your credentials are invalid or your session has expired.",
     "AUTHENTICATION_FAILED": "Your credentials are invalid or your session has expired.",
+    "LOGIN_ROLE_MISMATCH": "This account belongs to a different sign-in portal.",
     "INVALID_TOKEN": "Your credentials are invalid or your session has expired.",
     "FORBIDDEN": "You do not have permission to perform this action.",
     "ACCOUNT_INACTIVE": "Your account has been deactivated. Please contact your teacher or administrator.",

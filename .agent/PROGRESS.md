@@ -1,5 +1,12 @@
 # Project Progress
 
+## Dedicated login portals and Landing logout (2026-11-08)
+
+- Logout now routes every protected UI back to Landing (`/`) through the shared AuthGuard; the former generic `/login` redirect is removed.
+- AuthGuard routes unauthenticated Teacher and Student routes to their respective login portals while preserving safe `next` and session-reason parameters.
+- The shared login endpoint now accepts an expected role. Teacher/Student portals send it, and role mismatch returns `LOGIN_ROLE_MISMATCH` before cookies/tokens are issued.
+- Simplified Landing route configuration to use the canonical `UserRole` and wired CTA destinations to the current AuthProvider user when available, including the root Landing route.
+
 ## Landing Page — CSS Token Isolation & Global Style Protection (2026-11-08)
   - Restored base `--ink: #4f3e34` and `--font-display: "Plus Jakarta Sans", sans-serif;` to prevent styling regressions in Teacher and Student interfaces.
   - Introduced dedicated `--landing-page-ink: #261E19` and scoped `--ink: var(--landing-page-ink, #261E19)` strictly inside `.parchment-surface`.

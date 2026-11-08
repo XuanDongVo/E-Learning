@@ -27,7 +27,6 @@ import { useTranslations } from "next-intl";
 
 import { LogOut } from "lucide-react";
 import { useAuth } from "@/components/auth/auth-provider";
-import { useRouter } from "@/i18n/navigation";
 
 const navigation: {
   key: string;
@@ -76,14 +75,12 @@ function TeacherSidebar({
   const explorerActive =
     pathname.startsWith("/teacher/content") && !questionBanksActive;
   const { logout } = useAuth();
-  const router = useRouter();
 
   const handleLogout = async () => {
     try {
       await logout();
     } finally {
       onClose();
-      router.replace("/login");
     }
   };
 

@@ -2,23 +2,20 @@
 
 import React from "react";
 import { ArrowRight } from "lucide-react";
-import {
-  AuthSessionInfo,
-  LANDING_ROUTES,
-  resolvePrimaryCtaRoute,
-} from "@/config/landing-routes";
+import { LANDING_ROUTES, resolvePrimaryCtaRoute } from "@/config/landing-routes";
+import type { UserRole } from "@/types/auth";
 import { sounds } from "./sound-effects";
 
 interface Scene06FinalPageProps {
-  session?: AuthSessionInfo;
+  role?: UserRole | null;
   onNavigateSection?: (anchor: string) => void;
 }
 
 export default function Scene06FinalPage({
-  session,
+  role,
   onNavigateSection,
 }: Scene06FinalPageProps) {
-  const primaryCta = resolvePrimaryCtaRoute(session);
+  const primaryCta = resolvePrimaryCtaRoute(role);
 
   const handleAnchor = (
     e: React.MouseEvent<HTMLAnchorElement>,

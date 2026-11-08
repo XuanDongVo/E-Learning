@@ -2,26 +2,24 @@
 
 import React, { useState, useRef, useCallback } from "react";
 import { ArrowRight, BookOpen, ArrowDown } from "lucide-react";
-import {
-  AuthSessionInfo,
-  resolvePrimaryCtaRoute,
-} from "@/config/landing-routes";
+import { resolvePrimaryCtaRoute } from "@/config/landing-routes";
+import type { UserRole } from "@/types/auth";
 import { sounds } from "./sound-effects";
 
 interface Scene01HeroBookProps {
   progress: number;
   onTriggerOpenBook: () => void;
   onSetManualProgress?: (value: number) => void;
-  session?: AuthSessionInfo;
+  role?: UserRole | null;
 }
 
 export default function Scene01HeroBook({
   progress,
   onTriggerOpenBook,
   onSetManualProgress,
-  session,
+  role,
 }: Scene01HeroBookProps) {
-  const primaryCta = resolvePrimaryCtaRoute(session);
+  const primaryCta = resolvePrimaryCtaRoute(role);
   const containerRef = useRef<HTMLDivElement>(null);
 
   // 3D Mouse Parallax Tilt như Saltwake
@@ -63,7 +61,7 @@ export default function Scene01HeroBook({
     <section
       id="trang-chu"
       aria-label="Mở trang sách, bắt đầu hành trình"
-      className="relative mx-auto mt-4 max-w-[1380px] px-3 sm:px-6"
+      className="relative mx-auto mt-8 max-w-[1380px] px-3 sm:px-6"
     >
       {/* Khung lớn phong cách Saltwake với viền mực đậm và góc bo tròn */}
       <div

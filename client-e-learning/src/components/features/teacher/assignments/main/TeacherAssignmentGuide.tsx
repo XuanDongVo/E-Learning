@@ -12,42 +12,23 @@ import {
   Target,
   X,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 
-const guideSteps = [
+const guideStepIcons = [
   {
     icon: BookOpen,
-    title: "Start with assignment details",
-    description:
-      "Create a draft first. Enter a clear assignment name, select the grade, and add a short description so the purpose is easy to understand.",
-    tips: ["Use a name students will recognize.", "Choose the grade that matches the target class."],
   },
   {
     icon: Target,
-    title: "Choose the students",
-    description:
-      "Select one or more classes that should receive the assignment. Check the target carefully before publishing.",
-    tips: ["You can target multiple classes.", "Only choose classes that should actually receive this assignment."],
   },
   {
     icon: CalendarClock,
-    title: "Set the schedule",
-    description:
-      "Set the due date and decide whether students can see answers after submitting. The assignment remains a draft until you are ready to publish it.",
-    tips: ["Make sure the due date is in the future when publishing.", "Decide the answer-visibility rule before students start."],
   },
   {
     icon: FileQuestion,
-    title: "Add questions",
-    description:
-      "After creating the draft, open the assignment detail page and build its question set. You can add existing questions or create a new question.",
-    tips: ["Review the question wording and answer options.", "Make sure the question set matches the assignment goal."],
   },
   {
     icon: ListChecks,
-    title: "Review and publish",
-    description:
-      "Before publishing, review the assignment information, target classes, schedule, and complete question set. Publish only when everything is ready for students.",
-    tips: ["Check all target classes one last time.", "Confirm questions and due date before publishing."],
   },
 ] as const;
 
@@ -58,7 +39,14 @@ type Props = {
 };
 
 export function TeacherAssignmentGuide({ open, onClose, onStartCreating }: Props) {
+  const t = useTranslations("teacher.assignments.guide");
   const [step, setStep] = useState(0);
+  const guideSteps = guideStepIcons.map((item, index) => ({
+    ...item,
+    title: t(`steps.${index + 1}.title`),
+    description: t(`steps.${index + 1}.description`),
+    tips: [t(`steps.${index + 1}.tip1`), t(`steps.${index + 1}.tip2`)],
+  }));
 
   if (!open) return null;
 
@@ -81,16 +69,16 @@ export function TeacherAssignmentGuide({ open, onClose, onStartCreating }: Props
       <div className="w-full max-w-2xl overflow-hidden rounded-xl border border-border bg-card shadow-xl">
         <div className="flex items-start justify-between border-b border-border p-5">
           <div>
-            <p className="text-body-sm font-bold text-primary">Teacher guide</p>
-            <h2 className="mt-1 text-section-title font-bold">How to create an assignment</h2>
+            <p className="text-body-sm font-bold text-primary">{t("eyebrow")}</p>
+            <h2 className="mt-1 text-section-title font-bold">{t("title")}</h2>
             <p className="mt-1 text-body-sm text-muted-foreground">
-              Follow these steps from creating the draft to publishing it for students.
+              {t("description")}
             </p>
           </div>
           <button
             type="button"
             onClick={close}
-            aria-label="Close guide"
+            aria-label={t("close")}
             className="grid size-8 place-items-center rounded-lg hover:bg-muted"
           >
             <X className="size-4" />
@@ -119,7 +107,7 @@ export function TeacherAssignmentGuide({ open, onClose, onStartCreating }: Props
               <Icon className="size-5" />
             </div>
             <div>
-              <p className="text-body-sm font-bold text-primary">Step {step + 1} of {guideSteps.length}</p>
+              <p className="text-body-sm font-bold text-primary">{t("stepProgress", { current: step + 1, total: guideSteps.length })}</p>
               <h3 className="mt-1 text-lg font-bold">{current.title}</h3>
               <p className="mt-2 text-body-sm leading-6 text-muted-foreground">{current.description}</p>
               <div className="mt-4 space-y-2">
@@ -141,7 +129,7 @@ export function TeacherAssignmentGuide({ open, onClose, onStartCreating }: Props
             disabled={step === 0}
             className="inline-flex items-center gap-2 rounded-lg border border-border px-3 py-2 text-body-sm font-bold disabled:invisible"
           >
-            <ArrowLeft className="size-4" /> Back
+            <ArrowLeft className="size-4" /> {t("back")}
           </button>
 
           {isLast ? (
@@ -150,7 +138,7 @@ export function TeacherAssignmentGuide({ open, onClose, onStartCreating }: Props
               onClick={startCreating}
               className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-body-sm font-bold text-primary-foreground"
             >
-              Start creating
+              {t("startCreating")}
               <ArrowRight className="size-4" />
             </button>
           ) : (
@@ -159,7 +147,7 @@ export function TeacherAssignmentGuide({ open, onClose, onStartCreating }: Props
               onClick={() => setStep((currentStep) => Math.min(guideSteps.length - 1, currentStep + 1))}
               className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-body-sm font-bold text-primary-foreground"
             >
-              Next
+              {t("next")}
               <ArrowRight className="size-4" />
             </button>
           )}

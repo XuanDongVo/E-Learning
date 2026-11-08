@@ -1,1 +1,50 @@
-{}
+{
+  "title": "Bài tập",
+  "description": "Theo dõi hạn nộp, bài cần chấm và tiến độ của các lớp.",
+  "notifications": {
+    "createdWithoutId": "Đã tạo bài tập nhưng máy chủ không trả về mã bài tập.",
+    "created": "Đã tạo bản nháp. Đang mở trình soạn bài tập."
+  },
+  "summary": {
+    "active": "Đang hoạt động",
+    "activeHint": "Bài tập hiện đang mở cho học sinh",
+    "needsGrading": "Cần chấm",
+    "submissionUnavailable": "Dữ liệu bài nộp chưa khả dụng",
+    "submittedOnTime": "Nộp đúng hạn",
+    "resultsUnavailable": "Dữ liệu kết quả chưa khả dụng",
+    "missingSubmissions": "Chưa nộp bài"
+  },
+  "actions": {
+    "importQuestions": "Nhập câu hỏi",
+    "howToCreate": "Hướng dẫn tạo",
+    "create": "Tạo bài tập"
+  },
+  "statuses": { "all": "Tất cả", "active": "Đang hoạt động", "draft": "Bản nháp", "archived": "Đã lưu trữ" },
+  "list": {
+    "title": "Tất cả bài tập",
+    "matching": "{count} bài tập phù hợp",
+    "searchPlaceholder": "Tìm kiếm bài tập...",
+    "searchLabel": "Tìm kiếm bài tập",
+    "questionCount": "{count} câu hỏi",
+    "results": "Kết quả",
+    "draft": "Bản nháp",
+    "openAssignment": "Mở bài tập"
+  },
+  "guide": {
+    "eyebrow": "Hướng dẫn giáo viên",
+    "title": "Cách tạo bài tập",
+    "description": "Thực hiện các bước từ tạo bản nháp đến xuất bản cho học sinh.",
+    "close": "Đóng hướng dẫn",
+    "stepProgress": "Bước {current}/{total}",
+    "back": "Quay lại",
+    "next": "Tiếp theo",
+    "startCreating": "Bắt đầu tạo",
+    "steps": {
+      "1": { "title": "Nhập thông tin bài tập", "description": "Trước tiên hãy tạo bản nháp. Nhập tên rõ ràng, chọn khối và thêm mô tả ngắn để học sinh dễ hiểu mục tiêu.", "tip1": "Dùng tên mà học sinh dễ nhận biết.", "tip2": "Chọn khối phù hợp với lớp mục tiêu." },
+      "2": { "title": "Chọn học sinh", "description": "Chọn một hoặc nhiều lớp sẽ nhận bài tập và kiểm tra kỹ đối tượng trước khi xuất bản.", "tip1": "Có thể giao cho nhiều lớp.", "tip2": "Chỉ chọn những lớp thực sự cần nhận bài." },
+      "3": { "title": "Đặt lịch", "description": "Đặt hạn nộp và quyết định học sinh có được xem đáp án sau khi nộp hay không.", "tip1": "Hạn nộp phải ở tương lai khi xuất bản.", "tip2": "Chốt quy tắc xem đáp án trước khi học sinh bắt đầu." },
+      "4": { "title": "Thêm câu hỏi", "description": "Sau khi tạo bản nháp, mở trang chi tiết để xây dựng bộ câu hỏi từ câu có sẵn hoặc câu mới.", "tip1": "Kiểm tra nội dung và các lựa chọn trả lời.", "tip2": "Đảm bảo bộ câu hỏi phù hợp với mục tiêu." },
+      "5": { "title": "Kiểm tra và xuất bản", "description": "Kiểm tra thông tin, lớp mục tiêu, lịch và bộ câu hỏi trước khi xuất bản.", "tip1": "Kiểm tra lại tất cả lớp mục tiêu.", "tip2": "Xác nhận câu hỏi và hạn nộp trước khi xuất bản." }
+    }
+  }
+}

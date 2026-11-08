@@ -45,6 +45,7 @@ const initialForm: CreateAssignmentRequest = {
 
 export default function TeacherAssignmentsPage() {
   const tErrors = useTranslations("errors");
+  const t = useTranslations("teacher.assignments");
   const queryClient = useQueryClient();
   const router = useRouter();
   const [wizardOpen, setWizardOpen] = useState(false);
@@ -75,11 +76,11 @@ export default function TeacherAssignmentsPage() {
       setForm(initialForm);
       if (!response.data) {
         toast.error(
-          "Assignment was created, but the server returned no Assignment ID.",
+          t("notifications.createdWithoutId"),
         );
         return;
       }
-      toast.success("Assignment draft created. Opening the Builder.");
+      toast.success(t("notifications.created"));
       router.push(`/teacher/assignments/${response.data.id}`);
     },
     onError: (error) => {
@@ -117,38 +118,38 @@ export default function TeacherAssignmentsPage() {
   return (
     <div className="space-y-5">
       <TeacherPageHeader
-        title="Assignments"
-        description="Track due dates, submissions to grade, and progress across classes."
+        title={t("title")}
+        description={t("description")}
         pipoMood="wave"
       />
 
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <SummaryCard
           icon={<Clock3 className="size-4" />}
-          label="Active"
+          label={t("summary.active")}
           value={assignmentList.filter((item) => item.status === "PUBLISHED").length}
-          hint="Assignments currently open to students"
+          hint={t("summary.activeHint")}
           tone="orange"
         />
         <SummaryCard
           icon={<FileSpreadsheet className="size-4" />}
-          label="Needs grading"
+          label={t("summary.needsGrading")}
           value="—"
-          hint="Submission data is not available yet"
+          hint={t("summary.submissionUnavailable")}
           tone="amber"
         />
         <SummaryCard
           icon={<CheckCircle2 className="size-4" />}
-          label="Submitted on time"
+          label={t("summary.submittedOnTime")}
           value="—"
-          hint="Result data is not available yet"
+          hint={t("summary.resultsUnavailable")}
           tone="green"
         />
         <SummaryCard
           icon={<Users className="size-4" />}
-          label="Missing submissions"
+          label={t("summary.missingSubmissions")}
           value="—"
-          hint="Result data is not available yet"
+          hint={t("summary.resultsUnavailable")}
           tone="blue"
         />
       </section>
@@ -158,10 +159,10 @@ export default function TeacherAssignmentsPage() {
           <div className="flex flex-col justify-between gap-3 lg:flex-row lg:items-start">
             <div>
               <h2 className="text-section-title font-extrabold text-foreground">
-                All assignments
+                {t("list.title")}
               </h2>
               <p className="text-body-sm text-muted-foreground">
-                {visibleAssignments.length} matching assignments
+                {t("list.matching", { count: visibleAssignments.length })}
               </p>
             </div>
             <div className="flex flex-col gap-2.5 sm:flex-row sm:flex-wrap">
@@ -170,7 +171,8 @@ export default function TeacherAssignmentsPage() {
                 <input
                   value={search}
                   onChange={(event) => setSearch(event.target.value)}
-                  placeholder="Search assignments..."
+                  placeholder={t("list.searchPlaceholder")}
+                  aria-label={t("list.searchLabel")}
                   className="w-44 bg-transparent outline-none font-medium text-foreground placeholder:text-muted-foreground"
                 />
               </label>
@@ -180,21 +182,21 @@ export default function TeacherAssignmentsPage() {
                 disabled
                 className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border-2 border-border bg-card px-4 text-body-sm font-bold shadow-pop-sm transition hover:bg-muted active:translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                <Upload className="size-4" /> Import questions
+                <Upload className="size-4" /> {t("actions.importQuestions")}
               </button>
               <button
                 type="button"
                 onClick={openGuide}
                 className="inline-flex h-10 items-center gap-2 rounded-xl border-2 border-border bg-card px-4 text-body-sm font-bold shadow-pop-sm transition hover:bg-muted active:translate-y-0.5"
               >
-                <BookOpen className="size-4" /> How to create
+                <BookOpen className="size-4" /> {t("actions.howToCreate")}
               </button>
               <button
                 type="button"
                 onClick={openWizard}
                 className="inline-flex h-10 items-center gap-2 rounded-xl border border-primary bg-primary px-4 text-body-sm font-bold text-primary-foreground shadow-pop-sm transition hover:bg-primary-hover active:translate-y-0.5"
               >
-                <Plus className="size-4" /> Create assignment
+                <Plus className="size-4" /> {t("actions.create")}
               </button>
             </div>
           </div>
@@ -212,12 +214,12 @@ export default function TeacherAssignmentsPage() {
                   }`}
                 >
                   {status === "ALL"
-                    ? "All"
+                    ? t("statuses.all")
                     : status === "PUBLISHED"
-                      ? "Active"
+                      ? t("statuses.active")
                       : status === "DRAFT"
-                        ? "Draft"
-                        : "Archived"}
+                        ? t("statuses.draft")
+                        : t("statuses.archived")}
                 </button>
               ),
             )}

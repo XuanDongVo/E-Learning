@@ -1,1 +1,37 @@
-{}
+{
+  "workspace": {
+    "title": "Hoạt động",
+    "description": "Tạo và quản lý các hoạt động học tập theo từng unit.",
+    "searchPlaceholder": "Tìm kiếm hoạt động...",
+    "searchLabel": "Tìm kiếm hoạt động",
+    "selectGrade": "Chọn khối",
+    "searchGrade": "Tìm khối...",
+    "gradeNotFound": "Không tìm thấy khối",
+    "selectUnit": "Chọn unit",
+    "searchUnit": "Tìm unit...",
+    "unitNotFound": "Không tìm thấy unit",
+    "statusLabel": "Trạng thái",
+    "statuses": { "all": "Tất cả trạng thái", "draft": "Bản nháp", "published": "Đã xuất bản", "archived": "Đã lưu trữ" },
+    "createActivity": "Tạo hoạt động",
+    "loadErrorTitle": "Không thể tải dữ liệu hoạt động",
+    "loadErrorDescription": "Dữ liệu không hợp lệ hoặc có lỗi kết nối. Vui lòng thử lại.",
+    "retry": "Thử lại",
+    "noUnitTitle": "Chưa có unit",
+    "noUnitDescription": "Vui lòng chọn khối lớp và unit để xem hoạt động.",
+    "listTitle": "Danh sách hoạt động",
+    "activityCount": "hoạt động",
+    "sortedDescription": "Các hoạt động trong {unitCode}, sắp xếp theo lần cập nhật gần nhất."
+  },
+  "table": {
+    "activity": "Hoạt động",
+    "noDescription": "Chưa có mô tả",
+    "questions": "Câu hỏi",
+    "sources": "Nguồn",
+    "mode": "Chế độ",
+    "status": "Trạng thái",
+    "rows": "Số dòng",
+    "modes": { "learning": "Luyện tập", "tryHard": "Thử thách", "both": "Cả hai" },
+    "statuses": { "draft": "Bản nháp", "published": "Đã xuất bản", "archived": "Đã lưu trữ" },
+    "readiness": { "ready": "Sẵn sàng", "needsAttention": "Cần xử lý" }
+  }
+}

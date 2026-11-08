@@ -1,1 +1,37 @@
-{}
+{
+  "workspace": {
+    "title": "Activities",
+    "description": "Create and manage learning activities for your units.",
+    "searchPlaceholder": "Search activities...",
+    "searchLabel": "Search activities",
+    "selectGrade": "Select grade",
+    "searchGrade": "Search grades...",
+    "gradeNotFound": "No grade found",
+    "selectUnit": "Select unit",
+    "searchUnit": "Search units...",
+    "unitNotFound": "No unit found",
+    "statusLabel": "Status",
+    "statuses": { "all": "All statuses", "draft": "Draft", "published": "Published", "archived": "Archived" },
+    "createActivity": "Create activity",
+    "loadErrorTitle": "Unable to load activity data",
+    "loadErrorDescription": "The data is invalid or a connection error occurred. Please try again.",
+    "retry": "Try again",
+    "noUnitTitle": "No unit available",
+    "noUnitDescription": "Select a grade and unit to view activities.",
+    "listTitle": "Activity list",
+    "activityCount": "{count, plural, one {activity} other {activities}}",
+    "sortedDescription": "Activities in {unitCode}, sorted by most recently updated."
+  },
+  "table": {
+    "activity": "Activity",
+    "noDescription": "No description",
+    "questions": "Questions",
+    "sources": "Sources",
+    "mode": "Mode",
+    "status": "Status",
+    "rows": "Rows",
+    "modes": { "learning": "Practice", "tryHard": "Try Hard", "both": "Both" },
+    "statuses": { "draft": "Draft", "published": "Published", "archived": "Archived" },
+    "readiness": { "ready": "Ready", "needsAttention": "Needs attention" }
+  }
+}

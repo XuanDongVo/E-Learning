@@ -131,7 +131,7 @@ export function StudentHubLayout({ children }: { children: React.ReactNode }) {
 
             <Button
               size="sm"
-              nativeButton={false}
+              nativeButton={true}
               className="gap-1.5 text-sm font-bold h-10"
               render={<Link href={`${base}/edit`} />}
             >

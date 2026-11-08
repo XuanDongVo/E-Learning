@@ -389,7 +389,7 @@ function Stat({
 
 function Tile({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg bg-background-app px-4 py-3">
+    <div className="rounded-lg bg-background-app px-4 py-3 border-2 bor">
       <dt className="text-body-sm text-neutral-muted">{label}</dt>
       <dd className="mt-0.5 text-body font-semibold">{value}</dd>
     </div>

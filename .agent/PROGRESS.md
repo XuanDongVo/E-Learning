@@ -1,5 +1,19 @@
 # Project Progress
 
+## Teacher interface localization audit (2026-11-08)
+
+- Localized the shared Teacher navigation/header chrome and the primary Classes,
+  Activities, Assignments, and Grades screens with paired English/Vietnamese
+  message catalogs; Dashboard and Vocabulary remain outside this change by owner
+  request.
+- Removed hard-coded labels from the Activities list/table, Assignments overview,
+  assignment creation guide/status list, and Class overview, including accessible
+  labels, empty/error states, filters, and notifications.
+- Registered the new Grades message namespace in the locale request loader. No API,
+  domain, route, or database behavior changed.
+- Validation: all touched JSON catalogs parse successfully and `git diff --check`
+  is clean. Lint, TypeScript, Vitest, and build were not run per owner request.
+
 ## Absolute seven-day Auth/Session lifecycle (2026-11-08)
 
 - Added an absolute session deadline fixed at login; access/refresh rotation cannot

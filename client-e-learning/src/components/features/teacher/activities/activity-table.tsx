@@ -3,12 +3,7 @@
 import { Link } from "@/i18n/navigation";
 import { DataTable, type DataTableColumn } from "@/components/ui/data-table/data-table";
 import type { Activity, ActivityMode } from "@/types/activity";
-
-const modes: Record<ActivityMode, string> = {
-  LEARNING: "Practice",
-  TRY_HARD: "Try Hard",
-  BOTH: "Both",
-};
+import { useTranslations } from "next-intl";
 
 export function ActivityTable({
   activities,
@@ -27,37 +22,43 @@ export function ActivityTable({
   onPageChange: (page: number) => void;
   onPageSizeChange: (pageSize: number) => void;
 }) {
+  const t = useTranslations("teacher.activities.table");
+  const modes: Record<ActivityMode, string> = {
+    LEARNING: t("modes.learning"),
+    TRY_HARD: t("modes.tryHard"),
+    BOTH: t("modes.both"),
+  };
   const columns: DataTableColumn<Activity>[] = [
     {
       id: "activity",
-      header: "Activity",
+      header: t("activity"),
       cell: (activity) => (
         <Link href={`/teacher/activities/${activity.id}`} className="block">
           <span className="block truncate text-card-title font-semibold">{activity.name}</span>
           <span className="mt-1 block max-w-prose truncate text-body-sm text-neutral-muted">
-            {activity.description || "No description"}
+            {activity.description || t("noDescription")}
           </span>
         </Link>
       ),
     },
     {
       id: "questions",
-      header: "Questions",
+      header: t("questions"),
       cell: (activity) => <span className="tabular-nums">{activity.totalQuestions}</span>,
     },
     {
       id: "sources",
-      header: "Sources",
+      header: t("sources"),
       cell: (activity) => <span className="tabular-nums text-neutral-muted">{activity.banks.length}</span>,
     },
     {
       id: "mode",
-      header: "Mode",
+      header: t("mode"),
       cell: (activity) => <span className="text-neutral-muted">{modes[activity.mode]}</span>,
     },
     {
       id: "status",
-      header: "Status",
+      header: t("status"),
       cell: (activity) => (
         <div className="flex flex-wrap gap-2">
           <span
@@ -68,10 +69,10 @@ export function ActivityTable({
             }`}
           >
             {activity.status === "PUBLISHED"
-              ? "Published"
+              ? t("statuses.published")
               : activity.status === "ARCHIVED"
-                ? "Archived"
-                : "Draft"}
+                ? t("statuses.archived")
+                : t("statuses.draft")}
           </span>
           {activity.status !== "ARCHIVED" && (
             <span
@@ -81,7 +82,9 @@ export function ActivityTable({
                   : "text-accent-text"
               }`}
             >
-              {activity.readiness.ready ? "Ready" : "Needs attention"}
+              {activity.readiness.ready
+                ? t("readiness.ready")
+                : t("readiness.needsAttention")}
             </span>
           )}
         </div>
@@ -101,7 +104,7 @@ export function ActivityTable({
         totalElements: total,
         pageSize,
         pageSizeOptions: [10, 20, 50],
-        showLabel: "Rows",
+        showLabel: t("rows"),
         perPageLabel: "",
         onPageChange,
         onPageSizeChange,

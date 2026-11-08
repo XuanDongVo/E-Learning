@@ -136,7 +136,7 @@ function ProfileCard({
   items: [string, string][];
 }) {
   return (
-    <div className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
+    <div className="overflow-hidden rounded-lg border-2 border-ink shadow-pop bg-card shadow-sm">
       <div className="flex items-center justify-between border-b border-border px-4 py-3">
         <h2 className="text-sm font-extrabold">{title}</h2>
         {action}

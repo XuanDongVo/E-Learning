@@ -1,5 +1,48 @@
 # Project Progress
 
+## Container deployment and local configuration (2026-11-08)
+
+- Added a Compose stack for PostgreSQL, Spring Boot, Next.js and Nginx; only Nginx publishes port 80, and `/v1/*` is reverse-proxied to the backend.
+- Added production deployment instructions and an Nginx request-size limit suitable for existing media uploads.
+- Spring Boot defaults to the `dev` profile and imports an ignored `.env.dev` from either the repository or `server/` working directory, enabling direct IntelliJ runs without committed local values.
+- Removed committed fallback database, JWT and Cloudinary credentials. Production now fails fast when its required environment is missing; `.env.prod` remains ignored and Compose is started with `--env-file .env.prod`.
+
+## Dedicated login portals and Landing logout (2026-11-08)
+
+- Logout now routes every protected UI back to Landing (`/`) through the shared AuthGuard; the former generic `/login` redirect is removed.
+- AuthGuard routes unauthenticated Teacher and Student routes to their respective login portals while preserving safe `next` and session-reason parameters.
+- The shared login endpoint now accepts an expected role. Teacher/Student portals send it, and role mismatch returns `LOGIN_ROLE_MISMATCH` before cookies/tokens are issued.
+- Simplified Landing route configuration to use the canonical `UserRole` and wired CTA destinations to the current AuthProvider user when available, including the root Landing route.
+
+## Landing Page — CSS Token Isolation & Global Style Protection (2026-11-08)
+  - Restored base `--ink: #4f3e34` and `--font-display: "Plus Jakarta Sans", sans-serif;` to prevent styling regressions in Teacher and Student interfaces.
+  - Introduced dedicated `--landing-page-ink: #261E19` and scoped `--ink: var(--landing-page-ink, #261E19)` strictly inside `.parchment-surface`.
+  - Defined dedicated `--font-landing-page-display: "Patrick Hand", cursive, sans-serif;`, `--font-landing-hand`, and `--font-landing-mono` in `@theme inline`.
+  - Migrated all Landing Page components (`Navbar`, `Scene01HeroBook`, `Scene02ExploreWorld`, `Scene03PlayPractice`, `Scene04RewardsScrapbook`, `Scene06FinalPage`) to use `font-landing-page-display`, `font-landing-hand`, and `font-landing-mono`.
+  - Removed all redundant landing CSS variables from `:root` and scoped them into `.parchment-surface`.
+  - Scoped all custom landing classes (`.notebook-lines`, `.ink-border`, `.hand-drawn-card`, `.washi-tape*`, `.animate-*`) strictly under `.parchment-surface` to eliminate any possible leakage into Teacher or Student UI.
+  - Restored `bg-[#F8FAFC]` to the root `<body>` in `src/app/layout.tsx` to maintain original background color consistency for Teacher and auth routes.
+- Validation: `npm run build` compiled cleanly with 0 errors across all routes.
+
+## Landing Page — The Learning Storybook & Lucide Icon Refactor (2026-11-08)
+- Implemented The Learning Storybook interactive landing page in `client-e-learning/src/app/page.tsx` and root layout `src/app/layout.tsx`.
+- Refactored all landing components (`Navbar`, `Scene01HeroBook`, `Scene02ExploreWorld`, `Scene03PlayPractice`, `Scene04RewardsScrapbook`, `Scene06FinalPage`) to use consistent `lucide-react` icons and removed casual/system Unicode emojis per team feedback.
+- Cleaned up visual clutter to focus on content, hand-drawn scrapbook art, and genuine platform capabilities (Grade/Unit/Topic exploration, Learning & Try Hard modes, Bubble Pop & Word Rain games, XP/Streak rewards).
+- Frontend validation: `npm run build` completed with 0 errors. Backend database V54 Flyway migration checksum reconciled with main branch.
+## Teacher interface localization audit (2026-11-08)
+
+- Localized the shared Teacher navigation/header chrome and the primary Classes,
+  Activities, Assignments, and Grades screens with paired English/Vietnamese
+  message catalogs; Dashboard and Vocabulary remain outside this change by owner
+  request.
+- Removed hard-coded labels from the Activities list/table, Assignments overview,
+  assignment creation guide/status list, and Class overview, including accessible
+  labels, empty/error states, filters, and notifications.
+- Registered the new Grades message namespace in the locale request loader. No API,
+  domain, route, or database behavior changed.
+- Validation: all touched JSON catalogs parse successfully and `git diff --check`
+  is clean. Lint, TypeScript, Vitest, and build were not run per owner request.
+
 ## Absolute seven-day Auth/Session lifecycle (2026-11-08)
 
 - Added an absolute session deadline fixed at login; access/refresh rotation cannot
@@ -94,6 +137,16 @@
 - Owner selected **border-ink + shadow-pop** (not shadow-ink) as the application-wide outlined visual pattern. Student Home now owns a compact real-data weekly Streak calendar and simple XP-based Level card; Rewards is Leaderboard-only preview. Week dates are delivered by the Streak API. Freeze and minute-based goals remain deferred. Verification pending.
 
 ## Current stage
+
+- **Interactive E-Learning Landing Page — "The Learning Storybook" (Saltwake Inspired):**
+  - Integrated complete animated storybook experience in `client-e-learning/src/components/landing/*` and `client-e-learning/src/app/page.tsx`.
+  - **Scene 01 Hero Book:** 3D mouse parallax tilt (`perspective(1200px)`), rich emerald leather cover with golden typography, layered page turn physics, pop-up 3D papercraft landscape with rolling hills, rotating Knowledge Lighthouse, floating vocabulary hot-air balloon, and interactive 4-chapter timeline scrubber (`0.0 -> 1.0`).
+  - **Scene 02 Explore World:** Hand-drawn dashed trail, wobbly wooden signposts tilting on hover, interactive Learning Mode vs Try Hard Mode preview switcher with heart counters and hints, and prominent scrapbook note for independent Activity vs Assignment concept.
+  - **Scene 03 Play & Practice:** Interactive Bubble Pop sandbox (popping bubbles with paper star confetti, word polaroid cards, and reset) + Word Rain night lotus pond (luminous raindrop selection with water chime audio, glowing lotus blossoms, and ripple wave physics).
+  - **Scene 04 Rewards Scrapbook:** Interactive XP progress bar with `+25/+50 XP` buttons that level up dynamically, weekly streak calendar with interactive rubber stamp thud interaction, and 3-tier podium with bobbing crowns and medals.
+  - **Scene 06 Final Page:** Open horizon illustration with student adventurer, minimal footer, and direct CTAs into actual student/teacher login routes.
+  - **Custom Ink Cursor & Web Audio API:** Smooth cursor trailing ink bead with splash ripple on click, and pure browser Web Audio API sound synthesis (`sound-effects.ts`) for page turns, bubble pops, water chimes, and stamp thuds with an in-navbar sound toggle.
+  - Verified clean with `npm run build` (0 errors) and `npm run dev` (`HTTP 200 OK`).
 
 - **Student Vocabulary Mini-Games (Bubble Pop & Word Rain):** Complete vertical slice
   implemented and UX-revamped based on student user feedback. Includes database migrations (`V53__create_vocabulary_and_game_tables.sql`

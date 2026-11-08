@@ -31,6 +31,9 @@ public class AuthService {
 
 		User user = userRepository.findByEmailIgnoreCase(request.email())
 				.orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+		if (request.expectedRole() != null && user.getRole() != request.expectedRole()) {
+			throw new AppException(ErrorCode.LOGIN_ROLE_MISMATCH);
+		}
 		return issueTokens(user, jwtTokenService.newSessionExpiresAt());
 	}
 

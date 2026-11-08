@@ -100,10 +100,10 @@ export function NewStudentPage() {
             </Link>
             <div>
               <h1 className="text-xl font-bold tracking-tight text-foreground sm:text-2xl">
-                {t("title") || "Thêm học sinh mới"}
+                {t("title") }
               </h1>
               <p className="text-sm sm:text-sm text-muted-foreground">
-                {t("subtitle") || "Tạo hồ sơ tài khoản và xếp lớp cho học sinh"}
+                {t("subtitle") }
               </p>
             </div>
           </div>
@@ -114,7 +114,7 @@ export function NewStudentPage() {
 
       <form onSubmit={submit} className="space-y-6">
         {/* SECTION 1: Thông tin tài khoản & Đăng nhập */}
-        <section className="rounded-xl border-2 border-border shadow-pop bg-card p-5 sm:p-6 shadow-sm space-y-5">
+        <section className="rounded-xl border-2 border-ink shadow-pop bg-card p-5 sm:p-6 shadow-sm space-y-5">
           <div className="flex items-center gap-2 border-b pb-3">
             <div className="grid size-8 place-items-center rounded-lg bg-primary/10 text-primary">
               <User className="size-4" />
@@ -133,7 +133,7 @@ export function NewStudentPage() {
             {/* Họ và tên */}
             <div className="space-y-1.5">
               <label className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
-                {t("fullName") || "Họ và tên"} <span className="text-destructive">*</span>
+                {t("fullName")} <span className="text-destructive">*</span>
               </label>
               <div className="relative">
                 <User className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
@@ -238,7 +238,7 @@ export function NewStudentPage() {
         </section>
 
         {/* SECTION 2: Thông tin cá nhân & Liên hệ học sinh */}
-        <section className="rounded-xl  border-2 border-border shadow-pop bg-card p-5 sm:p-6 shadow-sm space-y-4">
+        <section className="rounded-xl  border-2 border-ink shadow-pop bg-card p-5 sm:p-6 shadow-sm space-y-4">
           <h2 className="text-base font-bold text-foreground border-b pb-2">
             Thông tin cá nhân học sinh
           </h2>
@@ -302,7 +302,7 @@ export function NewStudentPage() {
         </section>
 
         {/* SECTION 3: Thông tin người giám hộ / Phụ huynh */}
-        <section className="rounded-xl border-2 border-border shadow-pop bg-card p-5 sm:p-6 shadow-sm space-y-4">
+        <section className="rounded-xl border-2 border-ink shadow-pop bg-card p-5 sm:p-6 shadow-sm space-y-4">
           <div className="flex items-center gap-2 border-b pb-2">
             <Users className="size-4 text-primary" />
             <h2 className="text-base font-bold text-foreground">

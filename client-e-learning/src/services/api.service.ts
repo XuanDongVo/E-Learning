@@ -3,7 +3,12 @@ import { AppError } from "@/lib/errors/app-error";
 import { endSession, getSessionVersion } from "@/services/auth-session";
 
 const configuredBaseUrl = process.env.NEXT_PUBLIC_API_URL?.trim();
-export const API_BASE_URL = (configuredBaseUrl || "http://localhost:8080").replace(/\/+$/, "");
+// In production, route /v1/* through the same-origin reverse proxy.
+// Development continues to use the local Spring Boot server unless overridden.
+export const API_BASE_URL = (
+  configuredBaseUrl ??
+  (process.env.NODE_ENV === "development" ? "http://localhost:8080" : "")
+).replace(/\/+$/, "");
 
 function buildUrl(path: string) {
   return `${API_BASE_URL}/${path.replace(/^\/+/, "")}`;

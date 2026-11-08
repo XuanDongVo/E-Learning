@@ -195,20 +195,6 @@ function QuestionEditorForm({
       {/* Header */}
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          {/* <div className="mb-2 flex items-center gap-2">
-            <button
-              onClick={() => onNavigate("bank")}
-              className="flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
-            >
-              <ArrowLeft size={14} /> Back to Bank
-            </button>
-            <span className="text-slate-300">·</span>
-            <Badge tone="blue">{draft.type}</Badge>
-            <Badge tone={isReady ? "green" : "gray"}>
-              {isReady ? "Ready" : "Incomplete"}
-            </Badge>
-          </div> */}
-
           <h1 className="text-page-title font-bold text-slate-900">
             Edit Question #{questionId}
           </h1>
@@ -236,8 +222,8 @@ function QuestionEditorForm({
         </div>
       </div>
 
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_340px]">
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-[0_5px_18px_rgba(94,134,173,0.04)]">
+      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_340px] ">
+        <div className="rounded-xl border-2 border-ink shadow-pop bg-white p-5 shadow-[0_5px_18px_rgba(94,134,173,0.04)]">
           <QuestionForm
             question={draft}
             onChange={(patch) => setDraft((prev) => ({ ...prev, ...patch }))}
@@ -257,7 +243,7 @@ function QuestionEditorForm({
 // Sidebar: live preview
 function QuestionPreviewCard({ draft }: { draft: ReturnType<typeof makeDraftQuestion> }) {
   return (
-    <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-[0_5px_18px_rgba(94,134,173,0.04)]">
+    <section className="rounded-xl border-2 border-ink shadow-pop bg-white p-4 shadow-[0_5px_18px_rgba(94,134,173,0.04)]">
       <h3 className="mb-3 text-xs font-bold uppercase tracking-wide text-slate-400">
         Student preview
       </h3>
@@ -352,7 +338,7 @@ function CompletionChecklistCard({ draft }: { draft: ReturnType<typeof makeDraft
   const doneCount = items.filter((item) => item.done).length;
 
   return (
-    <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-[0_5px_18px_rgba(94,134,173,0.04)]">
+    <section className="rounded-xl border-2 border-ink shadow-pop bg-white p-4 shadow-[0_5px_18px_rgba(94,134,173,0.04)]">
       <div className="mb-3 flex items-center justify-between">
         <h3 className="text-xs font-bold uppercase tracking-wide text-slate-400">
           Ready to save
@@ -421,7 +407,7 @@ function MetadataCard({ question, bankName }: { question: QuestionResponse; bank
   const locale = useLocale();
 
   return (
-    <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-[0_5px_18px_rgba(94,134,173,0.04)]">
+    <section className="rounded-xl border-2 border-ink shadow-pop bg-white p-4 shadow-[0_5px_18px_rgba(94,134,173,0.04)]">
       <h3 className="mb-3 text-xs font-bold uppercase tracking-wide text-slate-400">
         Details
       </h3>

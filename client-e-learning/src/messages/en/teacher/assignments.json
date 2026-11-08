@@ -1,1 +1,50 @@
-{}
+{
+  "title": "Assignments",
+  "description": "Track due dates, submissions to grade, and progress across classes.",
+  "notifications": {
+    "createdWithoutId": "Assignment was created, but the server returned no assignment ID.",
+    "created": "Assignment draft created. Opening the builder."
+  },
+  "summary": {
+    "active": "Active",
+    "activeHint": "Assignments currently open to students",
+    "needsGrading": "Needs grading",
+    "submissionUnavailable": "Submission data is not available yet",
+    "submittedOnTime": "Submitted on time",
+    "resultsUnavailable": "Result data is not available yet",
+    "missingSubmissions": "Missing submissions"
+  },
+  "actions": {
+    "importQuestions": "Import questions",
+    "howToCreate": "How to create",
+    "create": "Create assignment"
+  },
+  "statuses": { "all": "All", "active": "Active", "draft": "Draft", "archived": "Archived" },
+  "list": {
+    "title": "All assignments",
+    "matching": "{count} matching assignments",
+    "searchPlaceholder": "Search assignments...",
+    "searchLabel": "Search assignments",
+    "questionCount": "{count, plural, one {# question} other {# questions}}",
+    "results": "Results",
+    "draft": "Draft",
+    "openAssignment": "Open assignment"
+  },
+  "guide": {
+    "eyebrow": "Teacher guide",
+    "title": "How to create an assignment",
+    "description": "Follow these steps from creating the draft to publishing it for students.",
+    "close": "Close guide",
+    "stepProgress": "Step {current} of {total}",
+    "back": "Back",
+    "next": "Next",
+    "startCreating": "Start creating",
+    "steps": {
+      "1": { "title": "Start with assignment details", "description": "Create a draft first. Enter a clear assignment name, select the grade, and add a short description so the purpose is easy to understand.", "tip1": "Use a name students will recognize.", "tip2": "Choose the grade that matches the target class." },
+      "2": { "title": "Choose the students", "description": "Select one or more classes that should receive the assignment. Check the target carefully before publishing.", "tip1": "You can target multiple classes.", "tip2": "Only choose classes that should actually receive this assignment." },
+      "3": { "title": "Set the schedule", "description": "Set the due date and decide whether students can see answers after submitting. The assignment remains a draft until you are ready to publish it.", "tip1": "Make sure the due date is in the future when publishing.", "tip2": "Decide the answer-visibility rule before students start." },
+      "4": { "title": "Add questions", "description": "After creating the draft, open the assignment detail page and build its question set. You can add existing questions or create a new question.", "tip1": "Review the question wording and answer options.", "tip2": "Make sure the question set matches the assignment goal." },
+      "5": { "title": "Review and publish", "description": "Review the assignment information, target classes, schedule, and question set before publishing.", "tip1": "Check all target classes one last time.", "tip2": "Confirm questions and due date before publishing." }
+    }
+  }
+}

@@ -84,7 +84,7 @@ export function StudentNavbar() {
               <GraduationCap className="h-6 w-6" />
             </div>
             <span className="text-ui-xl font-extrabold tracking-tight text-neutral-dark">
-              Learn<span className="text-primary">Up</span>
+              E-<span className="text-primary">Learning</span>
             </span>
           </Link>
 
@@ -186,7 +186,7 @@ export function StudentNavbar() {
         >
           <div className="flex h-16 items-center justify-between border-b border-border-color px-4">
             <span className="text-ui-xl font-extrabold tracking-tight text-neutral-dark">
-              Learn<span className="text-primary">Up</span>
+              E-<span className="text-primary">Learning</span>
             </span>
             <button
               type="button"

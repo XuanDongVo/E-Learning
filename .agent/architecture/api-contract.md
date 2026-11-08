@@ -21,6 +21,10 @@
 ## Auth
 JWT access token. Teacher endpoints require TEACHER. Student runtime endpoints require STUDENT and own-session/attempt scope. Never accept owner ids from clients.
 
+`POST /v1/auth/login` accepts `email`, `password`, and optional `expectedRole`
+(`TEACHER` or `STUDENT`). The dedicated login portals always send the expected
+role; a mismatch returns `403 LOGIN_ROLE_MISMATCH` before any auth cookie is set.
+
 ## Activity
 GET /v1/activities
 GET /v1/activities/sources

@@ -4,6 +4,7 @@
     "INTERNAL_ERROR": "Đã xảy ra lỗi hệ thống. Vui lòng thử lại sau.",
     "UNAUTHORIZED": "Thông tin đăng nhập không hợp lệ hoặc phiên đăng nhập đã hết hạn.",
     "AUTHENTICATION_FAILED": "Thông tin đăng nhập không hợp lệ hoặc phiên đăng nhập đã hết hạn.",
+    "LOGIN_ROLE_MISMATCH": "Tài khoản này thuộc cổng đăng nhập khác.",
     "INVALID_TOKEN": "Thông tin đăng nhập không hợp lệ hoặc phiên đăng nhập đã hết hạn.",
     "FORBIDDEN": "Bạn không có quyền thực hiện thao tác này.",
     "ACCOUNT_INACTIVE": "Tài khoản đã bị vô hiệu hóa. Vui lòng liên hệ giáo viên hoặc quản trị viên.",

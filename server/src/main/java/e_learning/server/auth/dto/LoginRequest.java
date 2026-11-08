@@ -2,9 +2,11 @@ package e_learning.server.auth.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import e_learning.server.user.entity.Role;
 
 public record LoginRequest(
 	@NotBlank @Email String email,
-	@NotBlank String password
+	@NotBlank String password,
+	Role expectedRole
 ) {
 }

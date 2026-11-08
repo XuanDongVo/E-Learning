@@ -773,7 +773,7 @@ export function WordRainGame({
           const slotH = 36;
           const gap = 5;
           const totalSlotsW = letters.length * slotW + (letters.length - 1) * gap;
-          let startSlotX = drawX - totalSlotsW / 2;
+          const startSlotX = drawX - totalSlotsW / 2;
 
           letters.forEach((char, idx) => {
             const isTyped = idx < drop.typed.length;

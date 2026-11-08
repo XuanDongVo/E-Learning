@@ -27,6 +27,7 @@ const emptyForm = {
 
 export default function TeacherGradesPage() {
   const tErrors = useTranslations("errors");
+  const t = useTranslations("teacher.grades");
   const gradesQuery = useQuery({
     queryKey: ["teacher-grades-all"],
     queryFn: async () => (await gradeService.listAll()).data ?? [],
@@ -61,7 +62,7 @@ export default function TeacherGradesPage() {
     event.preventDefault();
 
     if (!form.code.trim() || !form.name.trim()) {
-      setError("Code and name are required.");
+      setError(t("codeAndNameRequired"));
       return;
     }
 
@@ -127,7 +128,7 @@ export default function TeacherGradesPage() {
 
   const handleDelete = async (gradeId: number) => {
     const confirmed = window.confirm(
-      "Delete this grade? This action cannot be undone.",
+      t("deleteConfirm"),
     );
     if (!confirmed) {
       return;
@@ -149,8 +150,8 @@ export default function TeacherGradesPage() {
   return (
     <div className="space-y-6">
       <TeacherPageHeader
-        title="Grade management"
-        description="Manage grade codes, labels, and ordering for classes and student grouping."
+        title={t("title")}
+        description={t("description")}
         pipoMood="wave"
       />
 
@@ -169,7 +170,7 @@ export default function TeacherGradesPage() {
         >
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-ui-xl font-extrabold">
-              {editingId !== null ? "Update grade" : "Create grade"}
+              {editingId !== null ? t("updateGrade") : t("createGrade")}
             </h2>
             <div className="flex items-center gap-2">
               {editingId !== null && (
@@ -178,7 +179,7 @@ export default function TeacherGradesPage() {
                   onClick={resetForm}
                   className="inline-flex items-center gap-1 text-body font-bold text-neutral-muted hover:text-neutral-dark"
                 >
-                  <XCircle className="h-4 w-4" /> Cancel
+                  <XCircle className="h-4 w-4" /> {t("cancel")}
                 </button>
               )}
               {editingId !== null && (
@@ -192,7 +193,7 @@ export default function TeacherGradesPage() {
                   }}
                 >
                   <Plus className="mr-1.5 h-3.5 w-3.5" />
-                  New grade
+                  {t("newGrade")}
                 </Button>
               )}
             </div>
@@ -200,7 +201,7 @@ export default function TeacherGradesPage() {
 
           <div className="space-y-4">
             <label className="block text-body font-bold">
-              Grade code
+              {t("gradeCode")}
               <input
                 required
                 value={form.code}
@@ -213,7 +214,7 @@ export default function TeacherGradesPage() {
             </label>
 
             <label className="block text-body font-bold">
-              Grade name
+              {t("gradeName")}
               <input
                 required
                 value={form.name}
@@ -226,7 +227,7 @@ export default function TeacherGradesPage() {
             </label>
 
             <label className="block text-body font-bold">
-              Display order
+              {t("displayOrder")}
               <input
                 required
                 type="number"
@@ -245,14 +246,14 @@ export default function TeacherGradesPage() {
 
           <div className="mt-6 flex justify-end gap-3">
             <Button type="button" variant="outline" onClick={resetForm}>
-              Reset
+              {t("reset")}
             </Button>
             <Button type="submit" disabled={isSaving}>
               {isSaving
-                ? "Saving..."
+                ? t("saving")
                 : editingId !== null
-                  ? "Update"
-                  : "Create"}
+                  ? t("update")
+                  : t("create")}
             </Button>
           </div>
         </form>
@@ -262,14 +263,14 @@ export default function TeacherGradesPage() {
             <div className="mb-4 flex items-center justify-between">
               <div>
                 <p className="text-body-sm font-extrabold uppercase tracking-[0.16em] text-primary">
-                  Active
+                  {t("active")}
                 </p>
                 <h2 className="mt-1 text-ui-xl font-extrabold">
-                  Current grades
+                  {t("currentGrades")}
                 </h2>
               </div>
               <span className="rounded-full bg-green-100 px-2.5 py-1 text-body-sm font-bold text-green-700">
-                {activeGrades.length} active
+                {t("activeCount", { count: activeGrades.length })}
               </span>
             </div>
 
@@ -309,7 +310,7 @@ export default function TeacherGradesPage() {
                         onClick={() => handleEdit(grade)}
                       >
                         <Pencil className="mr-1.5 h-3.5 w-3.5" />
-                        Edit
+                        {t("edit")}
                       </Button>
                       <Button
                         type="button"
@@ -317,7 +318,7 @@ export default function TeacherGradesPage() {
                         size="sm"
                         onClick={() => handleDeactivate(grade.id)}
                       >
-                        Inactive
+                        {t("deactivate")}
                       </Button>
                       <Button
                         type="button"
@@ -326,7 +327,7 @@ export default function TeacherGradesPage() {
                         onClick={() => handleDelete(grade.id)}
                       >
                         <Trash2 className="mr-1.5 h-3.5 w-3.5" />
-                        Delete
+                        {t("delete")}
                       </Button>
                     </div>
                   </div>
@@ -339,14 +340,14 @@ export default function TeacherGradesPage() {
             <div className="mb-4 flex items-center justify-between">
               <div>
                 <p className="text-body-sm font-extrabold uppercase tracking-[0.16em] text-primary">
-                  Inactive
+                  {t("inactive")}
                 </p>
                 <h2 className="mt-1 text-ui-xl font-extrabold">
-                  Archived grades
+                  {t("archivedGrades")}
                 </h2>
               </div>
               <span className="rounded-full bg-slate-100 px-2.5 py-1 text-body-sm font-bold text-slate-700">
-                {inactiveGrades.length} hidden
+                {t("hiddenCount", { count: inactiveGrades.length })}
               </span>
             </div>
 
@@ -373,7 +374,7 @@ export default function TeacherGradesPage() {
                       size="sm"
                       onClick={() => handleActivate(grade.id)}
                     >
-                      Reactivate
+                      {t("reactivate")}
                     </Button>
                   </div>
                 ))}

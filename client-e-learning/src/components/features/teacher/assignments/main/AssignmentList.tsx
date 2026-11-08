@@ -2,7 +2,7 @@
 
 import { ChevronRight } from "lucide-react";
 import { Link } from "@/i18n/navigation";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { RegionState } from "@/components/feedback";
 import { SkeletonList } from "@/components/ui/skeleton/skeleton-list";
 import { formatDate } from "@/utils/format";
@@ -28,6 +28,7 @@ export function AssignmentList({
   isLoading,
 }: Props) {
   const locale = useLocale();
+  const t = useTranslations("teacher.assignments.list");
   if (isLoading) {
     return <SkeletonList count={5} />;
   }
@@ -52,7 +53,7 @@ export function AssignmentList({
               <AssignmentStatusBadge status={assignment.status} />
             </p>
             <p className="mt-1 text-body-sm text-muted-foreground">
-              {assignment.grade.name} · {assignment.questionCount} questions
+              {assignment.grade.name} · {t("questionCount", { count: assignment.questionCount })}
             </p>
           </Link>
 
@@ -70,17 +71,17 @@ export function AssignmentList({
                 href={`/teacher/assignments/${assignment.id}/results`}
                 className="rounded-md border border-border px-2.5 py-1 font-medium text-primary hover:bg-muted"
               >
-                Results
+                {t("results")}
               </Link>
             ) : (
-              <span className="text-muted-foreground">Draft</span>
+              <span className="text-muted-foreground">{t("draft")}</span>
             )}
           </div>
 
           <Link
             href={`/teacher/assignments/${assignment.id}`}
             className="justify-self-end text-muted-foreground"
-            aria-label="Open assignment"
+            aria-label={t("openAssignment")}
           >
             <ChevronRight className="size-4" />
           </Link>

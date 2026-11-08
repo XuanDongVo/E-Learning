@@ -8,4 +8,16 @@
   "assignments": "Assignments",
   "analytics": "Analytics",
   "searchGlobal": "Search classes, units, students..."
+  ,"closeMenu": "Close menu"
+  ,"openMenu": "Open menu"
+  ,"teacherNavigation": "Teacher navigation"
+  ,"teacherWorkspace": "Teacher workspace"
+  ,"studioTagline": "English learning studio"
+  ,"settings": "Settings"
+  ,"settingsComingSoon": "Settings will be available in a later phase"
+  ,"englishTeacher": "English teacher"
+  ,"search": "Search"
+  ,"help": "Help"
+  ,"notifications": "Notifications"
+  ,"noNotifications": "You have no new notifications"
 }

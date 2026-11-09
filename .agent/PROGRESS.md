@@ -1,5 +1,16 @@
 # Project Progress
 
+## Teacher Vocabulary Management — Pagination & UI Alignment (2026-11-09)
+
+- Upgraded `/v1/content/units/{unitId}/vocabulary` to support server-side pagination with LIMIT / OFFSET via Spring Data JPA `Pageable` and `Specification<VocabularyWord>`.
+- Replaced custom table in `unit-vocabulary-section.tsx` with standard `DataTable` (`components/ui/data-table/data-table.tsx`), aligning layout, typography, filters, and pagination controls with the Teacher Students management view (`students-toolbar.tsx` & `student-table.tsx`).
+- Added multi-criteria filters: search (debounced 300ms across word, pronunciation, meaning), status (`ALL | ACTIVE | INACTIVE`), and difficulty (`ALL | EASY | MEDIUM | HARD`).
+- Added row selection checkboxes and `MoreVertical` three-dot context portal menu for actions (audio speak, edit, toggle status, delete).
+- Validation:
+  - Backend: Added and verified `TeacherVocabularyServicePaginationTest` (2/2 tests passed). Spring Boot context tests verified.
+  - Frontend: `npm run build` completed cleanly with 0 TypeScript/lint errors across all routes.
+  - API Verification: Verified page slicing (`page`, `size`, `totalElements`, `totalPages`), search, and difficulty filtering with Grade 7 seed data.
+
 ## Container deployment and local configuration (2026-11-08)
 
 - Added a Compose stack for PostgreSQL, Spring Boot, Next.js and Nginx; only Nginx publishes port 80, and `/v1/*` is reverse-proxied to the backend.

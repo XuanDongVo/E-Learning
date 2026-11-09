@@ -1,12 +1,19 @@
 package e_learning.server.vocabulary.teacher.service;
 
+import e_learning.server.common.dto.PageResponse;
 import e_learning.server.content.unit.entity.Unit;
 import e_learning.server.content.unit.repository.UnitRepository;
 import e_learning.server.vocabulary.entity.VocabularyWord;
 import e_learning.server.vocabulary.repository.VocabularyWordRepository;
 import e_learning.server.vocabulary.teacher.dto.*;
+import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,29 +30,41 @@ public class TeacherVocabularyService {
     private final UnitRepository unitRepository;
 
     @Transactional(readOnly = true)
-    public List<VocabularyWordResponse> getWordsByUnit(Long unitId, String status, String search) {
+    public PageResponse<VocabularyWordResponse> getWordsByUnit(Long unitId, String status, String search, int page, int size) {
         Unit unit = unitRepository.findById(unitId)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy bài học (Unit) với ID: " + unitId));
 
-        List<VocabularyWord> words;
-        if (status != null && !status.isBlank() && !status.equalsIgnoreCase("ALL")) {
-            words = vocabularyWordRepository.findByUnitIdAndStatusOrderByDisplayOrderAsc(unit.getId(), status.toUpperCase());
-        } else {
-            words = vocabularyWordRepository.findByUnitIdOrderByDisplayOrderAsc(unit.getId());
-        }
+        int safePage = Math.max(0, page - 1);
+        int safeSize = size <= 0 ? 10 : size;
+        Pageable pageable = PageRequest.of(safePage, safeSize,
+                Sort.by(Sort.Direction.ASC, "displayOrder").and(Sort.by(Sort.Direction.ASC, "id")));
 
-        if (search != null && !search.isBlank()) {
-            String lowerSearch = search.trim().toLowerCase();
-            words = words.stream()
-                    .filter(w -> (w.getWord() != null && w.getWord().toLowerCase().contains(lowerSearch))
-                            || (w.getMeaningVi() != null && w.getMeaningVi().toLowerCase().contains(lowerSearch))
-                            || (w.getPronunciation() != null && w.getPronunciation().toLowerCase().contains(lowerSearch)))
-                    .collect(Collectors.toList());
-        }
+        Specification<VocabularyWord> spec = (root, query, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
+            predicates.add(cb.equal(root.get("unit").get("id"), unit.getId()));
 
-        return words.stream()
+            if (status != null && !status.isBlank() && !status.equalsIgnoreCase("ALL")) {
+                predicates.add(cb.equal(cb.upper(root.get("status")), status.trim().toUpperCase()));
+            }
+
+            if (search != null && !search.isBlank()) {
+                String pattern = "%" + search.trim().toLowerCase() + "%";
+                predicates.add(cb.or(
+                        cb.like(cb.lower(root.get("word")), pattern),
+                        cb.like(cb.lower(root.get("meaningVi")), pattern),
+                        cb.like(cb.lower(root.get("pronunciation")), pattern)
+                ));
+            }
+
+            return cb.and(predicates.toArray(new Predicate[0]));
+        };
+
+        Page<VocabularyWord> pageResult = vocabularyWordRepository.findAll(spec, pageable);
+        List<VocabularyWordResponse> mappedContent = pageResult.getContent().stream()
                 .map(VocabularyWordResponse::fromEntity)
-                .collect(Collectors.toList());
+                .toList();
+
+        return PageResponse.from(pageResult, mappedContent);
     }
 
     @Transactional(readOnly = true)

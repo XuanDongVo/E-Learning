@@ -2,12 +2,13 @@ package e_learning.server.vocabulary.repository;
 
 import e_learning.server.vocabulary.entity.VocabularyWord;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
-public interface VocabularyWordRepository extends JpaRepository<VocabularyWord, Long> {
+public interface VocabularyWordRepository extends JpaRepository<VocabularyWord, Long>, JpaSpecificationExecutor<VocabularyWord> {
 
     List<VocabularyWord> findByUnitIdOrderByDisplayOrderAsc(Long unitId);
 

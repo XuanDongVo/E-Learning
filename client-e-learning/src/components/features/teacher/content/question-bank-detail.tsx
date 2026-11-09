@@ -484,12 +484,11 @@ export function QuestionBankDetail({
 
           <button
             type="button"
-            disabled
-            title="Question import is not connected to a server API yet"
-            className="flex cursor-not-allowed items-center gap-1.5 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-body-sm font-semibold text-slate-400"
+            onClick={() => onNavigate("import", bankId, bank?.name)}
+            className="flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 py-2 text-body-sm font-semibold text-slate-700 transition hover:border-primary/30 hover:bg-primary-light/30"
           >
             <Upload size={14} />
-            Import (coming soon)
+            Import CSV
           </button>
 
           <button

@@ -228,7 +228,7 @@ export function ContentRoutePage({ view, id }: ContentRoutePageProps) {
     if (mode === "import")
       return (
         <div className="space-y-6">
-          <ImportQuestions onNavigate={navigate} />
+          <ImportQuestions bankId={id} onNavigate={navigate} />
         </div>
       );
     return (

@@ -17,6 +17,8 @@ import { makeDraftQuestion } from "./question-draft";
 import { isQuestionComplete } from "./question-validator";
 import { QuestionPreviewModal } from "./QuestionPreviewModal";
 import { draftQuestionToPreview } from "./question-preview.mapper";
+import { QuestionImportReport } from "@/components/features/teacher/content/components/question-import-report";
+import type { CsvValidationResult } from "@/types/question-import";
 
 const AUTOSAVE_DEBOUNCE_MS = 1000;
 
@@ -29,6 +31,8 @@ export interface QuestionComposerProps {
   onSave: (questions: DraftQuestion[]) => Promise<void>;
   onSaveSuccess?: () => void;
   successDescription?: string;
+  importReport?: CsvValidationResult;
+  onDraftCleared?: () => void;
 }
 
 type AutoSaveStatus = "idle" | "saving" | "saved";
@@ -42,6 +46,8 @@ export function QuestionComposer({
   onSave,
   onSaveSuccess,
   successDescription,
+  importReport,
+  onDraftCleared,
 }: QuestionComposerProps) {
   const tErrors = useTranslations("errors");
   const [questions, setQuestions] = useState<DraftQuestion[]>(() => {
@@ -195,6 +201,7 @@ export function QuestionComposer({
     setActiveDraftId(initial[0].draftId);
     setShowValidation(false);
     setClearDraftOpen(false);
+    onDraftCleared?.();
 
     toast.success("Draft cleared", {
       description: "All locally saved questions have been removed.",
@@ -269,6 +276,8 @@ export function QuestionComposer({
           </button>
         </div>
       </div>
+
+      {importReport && <QuestionImportReport result={importReport} />}
 
       {showValidation && !isAllValid && (
         <div className="mb-4 flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">

@@ -15,6 +15,8 @@ import {
 } from "lucide-react";
 
 import { toAppError } from "@/lib/errors/app-error";
+import { useAuth } from "@/components/auth/auth-provider";
+import { createQuestionImportHandoff } from "@/services/content/question-import-handoff";
 import { questionImportService } from "@/services/content/content.questionImport.service";
 import type { ContentView } from "@/types/content";
 import type { CsvImportError, CsvValidationResult } from "@/types/question-import";
@@ -63,6 +65,7 @@ export function ImportQuestions({
   bankId: number;
   onNavigate: (view: ContentView, id?: number) => void;
 }) {
+  const { user } = useAuth();
   const [stage, setStage] = useState<ImportStage>("upload");
   const [fileName, setFileName] = useState("");
   const [result, setResult] = useState<CsvValidationResult | null>(null);
@@ -82,6 +85,19 @@ export function ImportQuestions({
     setFileName("");
     setDragging(false);
     if (inputRef.current) inputRef.current.value = "";
+  };
+
+  const continueToEditor = () => {
+    if (!result || !user || user.role !== "TEACHER" || result.validCount === 0) return;
+    try {
+      const importId = createQuestionImportHandoff(bankId, user.id, result);
+      const query = new URLSearchParams(window.location.search);
+      query.set("mode", "bulk-create");
+      query.set("importId", importId);
+      window.location.assign(window.location.pathname + "?" + query.toString());
+    } catch {
+      setErrorMessage("Không thể lưu tạm dữ liệu CSV trong trình duyệt. Vui lòng kiểm tra dung lượng bộ nhớ.");
+    }
   };
 
   const handleFile = async (file: File | undefined) => {
@@ -311,16 +327,17 @@ export function ImportQuestions({
                   {result.validCount > 0
                     ? `${result.validCount} câu hợp lệ đã sẵn sàng để chuyển sang BulkQuestionCreator. ${result.invalidCount} câu lỗi sẽ bị bỏ qua khi tiếp tục.`
                     : "Không có câu nào hợp lệ. Vui lòng sửa CSV và tải lên lại."}
-                  {" "}Bước chuyển vào trình chỉnh sửa và lưu nằm trong Phase 3, chưa được kích hoạt ở Phase 2.
+                  {" "}Bạn có thể chỉnh sửa và preview trước khi lưu câu hỏi.
                 </p>
               </div>
             </div>
+            {errorMessage && <p role="alert" className="mt-2 text-xs text-rose-700">{errorMessage}</p>}
             <div className="mt-4 flex flex-wrap justify-end gap-2">
               <button type="button" onClick={reset} className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100">
                 Chọn lại file
               </button>
-              <button type="button" disabled title="Tích hợp BulkQuestionCreator sẽ được triển khai trong Phase 3" className="cursor-not-allowed rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white opacity-60">
-                Tiếp tục với {result.validCount} câu (Phase 3)
+              <button type="button" disabled={!user || user.role !== "TEACHER" || result.validCount === 0} onClick={continueToEditor} className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-60">
+                Chỉnh sửa {result.validCount} câu hợp lệ
               </button>
             </div>
           </div>

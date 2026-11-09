@@ -222,7 +222,7 @@ export function ContentRoutePage({ view, id }: ContentRoutePageProps) {
     if (mode === "bulk-create")
       return (
         <div className="space-y-6">
-          <BulkQuestionCreator bankId={id} bankName="" onNavigate={navigate} />
+          <BulkQuestionCreator bankId={id} bankName="" importId={searchParams.get("importId") ?? undefined} onNavigate={navigate} />
         </div>
       );
     if (mode === "import")

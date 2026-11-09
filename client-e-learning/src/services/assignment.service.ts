@@ -2,10 +2,15 @@ import { request } from "./api.service";
 import type {
   Assignment,
   CreateAssignmentRequest,
+  TeacherAssignmentSummary,
 } from "@/types/assignment";
 
 export async function listAssignments() {
   return request<Assignment[]>("/v1/assignments");
+}
+
+export async function getTeacherAssignmentSummary() {
+  return request<TeacherAssignmentSummary>("/v1/teacher/assignments/summary");
 }
 
 export async function createAssignment(payload: CreateAssignmentRequest) {

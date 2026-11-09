@@ -2,6 +2,7 @@ export const QUERY_KEYS = {
   currentUser: ["currentUser"] as const,
   dashboardStats: ["dashboardStats"] as const,
   assignments: ["assignments"] as const,
+  teacherAssignmentSummary: ["teacher", "assignments", "summary"] as const,
   studentAssignments: (status: string) =>
     ["student", "assignments", status] as const,
   studentAssignmentIntro: (assignmentId: number) =>
@@ -45,6 +46,8 @@ export const QUERY_KEYS = {
   recentResults: ["recentResults"] as const,
   gameGrades: ["student", "game", "grades"] as const,
   gameUnits: (gradeId: number) => ["student", "game", "units", gradeId] as const,
+  contentVocabularyRoot: (unitId: number) =>
+    ["content", "vocabulary", unitId] as const,
   contentVocabulary: (unitId: number, params?: Record<string, unknown>) =>
     ["content", "vocabulary", unitId, params] as const,
 };

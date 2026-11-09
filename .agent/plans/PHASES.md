@@ -22,6 +22,8 @@ FEATURE MERGED (PR #30). Finalize path on `main`. Remaining: hard-lock, exact-HE
 - Impl notes: `11-TEACHER_ASSIGNMENT_ANALYSIS_IMPLEMENTATION.md`
 - Production UI: `client-e-learning/.../assignments/analysis/`
 - APIs: `/v1/teacher/assignments/{id}/analytics/*` + attempt review
+- Assignment list extension: authenticated portfolio summary at
+  `/v1/teacher/assignments/summary` (ADR 0034)
 
 Deferred vs full spec: answer-option distributions, question detail endpoint, score-range filter, export.
 

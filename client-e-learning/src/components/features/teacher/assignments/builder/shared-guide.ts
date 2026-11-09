@@ -1,220 +1,175 @@
-import type { Assignment, BlockItem, Item, ToolKey } from "@/types/assignment-builder";
+import type {
+  Assignment,
+  BlockItem,
+  BlockType,
+  ID,
+  Item,
+  QuestionItem,
+  ToolKey,
+} from "@/types/assignment-builder";
 import * as ops from "./ops";
+import { validate } from "./validation";
 
 export type GuideScenario = "cloze" | "pool" | "media" | "instructions" | "groups";
-
-export const GUIDE_BLOCK: Record<GuideScenario, ToolKey> = {
-  cloze: "READING_PASSAGE",
-  pool: "ANSWER_POOL",
-  media: "IMAGE_MEDIA",
+export const GUIDE_BLOCK: Record<GuideScenario, BlockType> = {
+  cloze: "PASSAGE",
+  pool: "POOL",
+  media: "MEDIA",
   instructions: "INSTRUCTIONS",
-  groups: "READING_PASSAGE",
+  groups: "PASSAGE",
 };
+export const GUIDE_SECTION_A = "guide-section-a";
+export const GUIDE_SECTION_B = "guide-section-b";
 
-/** Tạo một bài tập mẫu cô lập hoàn toàn cho khu thực hành */
+/** A self-contained editor document: never read or write the real Builder store. */
 export function createPractice(): Assignment {
+  const a = ops.createEmptyAssignment();
   return {
-    id: "practice-assignment",
-    title: "Thực hành Shared Content",
-    subject: "Tiếng Anh",
-    grade: "6",
-    status: "draft",
-    settings: {
-      timeLimitMinutes: null,
-      shuffleQuestions: false,
-      shuffleOptions: false,
-      passingScore: 50,
-      maxAttempts: 1,
-    },
+    ...a,
+    id: "guide-local-only",
+    title: "Bài thực hành Shared Content (không lưu)",
+    grade: 7,
     sections: [
-      { id: "practice-section-1", title: "Section I · Khu thực hành", itemIds: [] },
-      { id: "practice-section-2", title: "Section II · Đích di chuyển", itemIds: [] },
+      { id: GUIDE_SECTION_A, title: "Section I · Thực hành", titleVi: "Phần I", instructions: "", instructionsVi: "", itemIds: [] },
+      { id: GUIDE_SECTION_B, title: "Section II · Đích di chuyển", titleVi: "Phần II", instructions: "", instructionsVi: "", itemIds: [] },
     ],
-    items: {},
   };
 }
 
-/** Thêm một phần tử vào khu thực hành */
-export function addPracticeItem(a: Assignment, tool: ToolKey, groupId: string | null = null): string {
-  const id = `practice-item-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
-  const sec = a.sections[0];
-  if (!sec) return id;
-
-  if (ops.isBlockTool(tool)) {
-    const blockType =
-      tool === "ANSWER_POOL"
-        ? "POOL"
-        : tool === "IMAGE_MEDIA"
-        ? "MEDIA"
-        : tool === "INSTRUCTIONS"
-        ? "INSTRUCTIONS"
-        : "PASSAGE";
-
-    const blockItem: BlockItem = {
-      id,
-      kind: "block",
-      sectionId: sec.id,
-      memberIds: [],
-      block:
-        blockType === "POOL"
-          ? {
-              type: "POOL",
-              instruction: "Chọn từ trong khung để hoàn thành các câu sau:",
-              entries: [
-                { id: "e1", text: "apple" },
-                { id: "e2", text: "banana" },
-                { id: "e3", text: "cherry" },
-                { id: "e4", text: "date" },
-                { id: "e5", text: "elderberry" },
-                { id: "e6", text: "fig" },
-                { id: "e7", text: "grape" },
-                { id: "e8", text: "honeydew" },
-              ],
-            }
-          : blockType === "MEDIA"
-          ? {
-              type: "MEDIA",
-              url: "",
-              alt: "",
-              caption: "",
-            }
-          : blockType === "INSTRUCTIONS"
-          ? {
-              type: "INSTRUCTIONS",
-              text: "",
-            }
-          : {
-              type: "PASSAGE",
-              text: "",
-              title: "Bài đọc mẫu",
-            },
-    };
-    a.items[id] = blockItem;
-    sec.itemIds.push(id);
-    return id;
-  }
-
-  // Thêm câu hỏi
-  const qItem: Item = {
-    id,
-    kind: "question",
-    sectionId: sec.id,
-    config: { groupId, points: 1, required: true },
-    content:
-      tool === "MATCHING"
-        ? {
-            type: "MATCHING",
-            prompt: "1. A red fruit typically grown in cool climates",
-            poolEntryId: "",
-          }
-        : tool === "SINGLE_CHOICE"
-        ? {
-            type: "SINGLE_CHOICE",
-            prompt: "What does the passage say about...",
-            options: [
-              { id: "o1", text: "Option A" },
-              { id: "o2", text: "Option B" },
-            ],
-            correctOptionId: "o1",
-          }
-        : {
-            type: "TEXT_INPUT",
-            prompt: "Điền từ thích hợp vào chỗ trống",
-            acceptedAnswers: ["classroom"],
-            caseSensitive: false,
-          },
-  };
-
-  a.items[id] = qItem;
-  if (groupId && a.items[groupId]?.kind === "block") {
-    (a.items[groupId] as BlockItem).memberIds.push(id);
-  } else {
-    sec.itemIds.push(id);
-  }
-  return id;
+export function addPracticeItem(a: Assignment, tool: ToolKey, sectionId: ID, groupId: ID | null = null): ID {
+  if (tool === "SECTION") throw new Error("Guide sections are already created");
+  const section = ops.getSection(a, sectionId);
+  if (!section) throw new Error("Unknown guide section");
+  const group = groupId ? a.items[groupId] : null;
+  if (groupId && (!group || group.kind !== "block" || !ops.locate(a, groupId)))
+    throw new Error("The chosen shared block no longer exists");
+  const item = ops.createItem(tool);
+  a.items[item.id] = item;
+  const target = groupId ? { sectionId, groupId, index: group!.kind === "block" ? group!.memberIds.length : 0 }
+    : { sectionId, groupId: null, index: section.itemIds.length };
+  ops.place(a, item.id, target);
+  return item.id;
 }
 
-/** Tự động sinh câu con từ các chỗ trống {{1}}, {{2}} */
-export function generatePracticeBlanks(a: Assignment, blockId: string) {
-  const b = a.items[blockId];
-  if (!b || b.kind !== "block" || b.block.type !== "PASSAGE") return;
-
-  const numbers = ops.blankNumbers(b.block.text);
-  b.memberIds = [];
-
-  numbers.forEach((num) => {
-    const qId = `practice-blank-${num}-${Date.now()}`;
-    a.items[qId] = {
-      id: qId,
-      kind: "question",
-      sectionId: b.sectionId,
-      config: { groupId: b.id, points: 1, required: true },
-      content: {
-        type: "TEXT_INPUT",
-        prompt: `Chỗ trống (${num})`,
-        blankRef: num,
-        acceptedAnswers: [num === 1 ? "students" : "teacher"],
-        caseSensitive: false,
-      },
-    };
-    b.memberIds.push(qId);
-  });
-}
-
-/** Kiểm tra câu hỏi con đã được cấu hình đáp án chưa */
-export function practiceQuestionReady(item: Item, a: Assignment): boolean {
-  if (item.kind !== "question") return false;
-  const c = item.content;
-  if (c.type === "MATCHING") return !!c.poolEntryId;
-  if (c.type === "SINGLE_CHOICE") return !!c.correctOptionId;
-  if (c.type === "TEXT_INPUT") return (c.acceptedAnswers?.length ?? 0) > 0 && !!c.acceptedAnswers[0]?.trim();
-  return true;
-}
-
-/** Kiểm tra các blanks trong Cloze đã được nối đầy đủ chưa */
-export function practiceBlanksLinked(a: Assignment, block: BlockItem): boolean {
-  if (block.block.type !== "PASSAGE") return true;
-  const numbers = ops.blankNumbers(block.block.text);
-  if (numbers.length === 0) return false;
-  const memberBlanks = block.memberIds
-    .map((id) => a.items[id])
-    .filter((it): it is Item => it?.kind === "question")
-    .map((it) => it.content.blankRef)
-    .filter(Boolean);
-  return numbers.every((n) => memberBlanks.includes(n));
-}
-
-/** Thao tác mẫu: Tự động điền nội dung cho khối chung */
-export function fillPracticeBlock(b: BlockItem, scenario: GuideScenario) {
-  if (scenario === "cloze" && b.block.type === "PASSAGE") {
-    b.block.text = "There are many {{1}} in our school. The {{2}} is very kind and helpful.";
-  } else if (scenario === "media" && b.block.type === "MEDIA") {
-    b.block.url = "https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=800&auto=format&fit=crop&q=80";
-    b.block.alt = "Phòng học hiện đại";
-    b.block.caption = "Hình 1: Một góc lớp học tiếng Anh";
-  } else if (scenario === "instructions" && b.block.type === "INSTRUCTIONS") {
-    b.block.text = "Đọc kỹ đoạn trích và chọn phương án trả lời chính xác nhất bên dưới:";
-  } else if (b.block.type === "PASSAGE") {
-    b.block.text = "English is one of the most widely spoken languages across the globe.";
-  }
-}
-
-/** Thao tác mẫu: Tự động điền đề bài và đáp án cho câu hỏi con */
-export function fillPracticeQuestion(item: Item, block: BlockItem, index: number) {
-  if (item.kind !== "question") return;
-  if (item.content.type === "MATCHING" && block.block.type === "POOL") {
-    const entry = block.block.entries[index % block.block.entries.length];
-    if (entry) {
-      item.content.prompt = `Vật thể số ${index + 1} cần nối`;
-      item.content.poolEntryId = entry.id;
+export function firstPracticeBlock(a: Assignment): BlockItem | null {
+  for (const section of a.sections) {
+    for (const id of section.itemIds) {
+      const item = a.items[id];
+      if (item?.kind === "block") return item;
     }
-  } else if (item.content.type === "TEXT_INPUT") {
-    item.content.acceptedAnswers = [index === 0 ? "students" : "teacher"];
-  } else if (item.content.type === "SINGLE_CHOICE") {
-    item.content.options = [
-      { id: "opt-1", text: "Phổ biến toàn cầu" },
-      { id: "opt-2", text: "Chỉ nói ở châu Âu" },
-    ];
-    item.content.correctOptionId = "opt-1";
   }
+  return null;
+}
+
+/** Add only missing blank questions; preserve existing IDs, edits and answers. */
+export function generatePracticeBlanks(a: Assignment, blockId: ID): ID[] {
+  const block = a.items[blockId];
+  if (block?.kind !== "block" || block.block.type !== "PASSAGE") return [];
+  const placement = ops.locate(a, blockId);
+  if (!placement) return [];
+  const numbers = [...new Set(ops.blankNumbers(block.block.text))];
+  const existing = new Set(block.memberIds
+    .map((id) => a.items[id])
+    .filter((it): it is QuestionItem => it?.kind === "question")
+    .map((q) => q.content.blankRef));
+  const created: ID[] = [];
+  for (const n of numbers) {
+    if (existing.has(n)) continue;
+    const id = addPracticeItem(a, "TEXT_INPUT", placement.sectionId, blockId);
+    const q = a.items[id] as QuestionItem;
+    if (q.content.type === "TEXT_INPUT") {
+      q.content.prompt = ""; // The passage already provides the surrounding text.
+      q.content.blankRef = n;
+      q.content.acceptedAnswers = [""];
+    }
+    created.push(id);
+  }
+  block.memberIds.sort((left, right) => {
+    const l = a.items[left], r = a.items[right];
+    return (l?.kind === "question" ? l.content.blankRef ?? 999 : 999)
+      - (r?.kind === "question" ? r.content.blankRef ?? 999 : 999);
+  });
+  return created;
+}
+
+export function practiceBlanksLinked(a: Assignment, block: BlockItem): boolean {
+  if (block.block.type !== "PASSAGE") return false;
+  const numbers = [...new Set(ops.blankNumbers(block.block.text))];
+  if (!numbers.length) return false;
+  return numbers.every((n) => block.memberIds.some((id) => {
+    const q = a.items[id];
+    return q?.kind === "question" && q.content.blankRef === n;
+  }));
+}
+
+export function practiceQuestionReady(item: Item, assignment: Assignment): boolean {
+  if (item.kind !== "question") return false;
+  return !validate(assignment).some((issue) => issue.level === "error" && issue.target.id === item.id);
+}
+
+export function fillPracticeBlock(block: BlockItem, scenario: GuideScenario): void {
+  if (block.block.type === "PASSAGE") {
+    block.block.title = "A day at school";
+    block.block.text = scenario === "cloze"
+      ? "There are many {{1}} in our school. Our {{2}} is very helpful."
+      : "Our school has a library and a large playground. Students read there every afternoon.";
+  } else if (block.block.type === "POOL") {
+    block.block.title = "Fruit vocabulary";
+    block.block.entries = ["apple", "banana", "grape"].map((text, i) => ({
+      id: block.block.type === "POOL" ? block.block.entries[i]?.id ?? ops.uid("e") : ops.uid("e"), text,
+    }));
+  } else if (block.block.type === "MEDIA") {
+    block.block.url = "https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=800&auto=format&fit=crop&q=80";
+    block.block.alt = "A classroom with student desks";
+    block.block.caption = "Classroom photo (external demo URL)";
+  } else {
+    block.block.text = "Read the shared context carefully and answer the questions below.";
+  }
+}
+
+export function fillPracticeQuestion(q: QuestionItem, a: Assignment, index = 0): void {
+  const c = q.content;
+  if (c.type === "MATCHING") {
+    const loc = ops.locate(a, q.id);
+    const group = loc?.groupId ? a.items[loc.groupId] : undefined;
+    const pool = group?.kind === "block" && group.block.type === "POOL" ? group
+      : a.sections.find((s) => s.id === loc?.sectionId)?.itemIds
+        .map((id) => a.items[id]).find((item): item is BlockItem => item?.kind === "block" && item.block.type === "POOL");
+    if (!pool || pool.block.type !== "POOL") return;
+    c.poolId = pool.id;
+    c.correctEntryId = pool.block.entries[index % pool.block.entries.length]?.id ?? null;
+    c.prompt = ["A red fruit", "A long yellow fruit", "A small fruit growing in bunches"][index % 3];
+  } else if (c.type === "SINGLE_CHOICE") {
+    c.prompt = "What can you see in the picture?";
+    c.options.forEach((o, i) => {
+      o.text = ["A classroom", "A swimming pool", "A supermarket", "A football stadium"][i] ?? `Option ${i + 1}`;
+      o.isCorrect = i === 0;
+    });
+  } else if (c.type === "TEXT_INPUT") {
+    c.prompt = c.blankRef == null ? "Where do students read books?" : "";
+    c.acceptedAnswers = [c.blankRef === 1 ? "students" : c.blankRef === 2 ? "teacher" : "library"];
+  }
+}
+
+/** Shared Content groups move as one unit. A detached Matching question still needs its Pool. */
+export function detachPracticeQuestion(a: Assignment, questionId: ID): void {
+  const loc = ops.locate(a, questionId);
+  if (!loc?.groupId) return;
+  const section = ops.getSection(a, loc.sectionId)!;
+  ops.moveTo(a, questionId, { sectionId: loc.sectionId, groupId: null, index: section.itemIds.length });
+}
+
+export function removePracticeBlock(a: Assignment, blockId: ID, keepQuestions: boolean): void {
+  const block = a.items[blockId];
+  if (block?.kind !== "block") return;
+  if (keepQuestions && block.block.type === "POOL") {
+    for (const id of block.memberIds) {
+      const q = a.items[id];
+      if (q?.kind === "question" && q.content.type === "MATCHING" && q.content.poolId === blockId) {
+        q.content.poolId = null;
+        q.content.correctEntryId = null;
+      }
+    }
+  }
+  ops.removeItem(a, blockId, !keepQuestions);
 }

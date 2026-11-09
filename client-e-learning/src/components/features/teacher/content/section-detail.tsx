@@ -14,7 +14,10 @@ import type {
 import { EntityHeader } from "./components/entity-header";
 import { TableTitle } from "./components/table-title";
 import { ContentEditor } from "./components/content-editor";
-import { FullPageState, RegionState } from "@/components/feedback";
+import { FullPageState, PageBanner, RegionState } from "@/components/feedback";
+import { SkeletonList } from "@/components/ui/skeleton/skeleton-list";
+import { Link } from "@/i18n/navigation";
+import { ContentBreadcrumb } from "./components/content-breadcrumb";
 
 export function SectionDetail({
   sectionId,
@@ -39,6 +42,12 @@ export function SectionDetail({
   const topics = useQuery({
     queryKey: QUERY_KEYS.contentTopics(sectionId),
     queryFn: async () => (await contentService.listTopics(sectionId)).data,
+  });
+  const unit = useQuery({
+    queryKey: QUERY_KEYS.contentUnit(section.data?.unitId ?? 0),
+    queryFn: async () =>
+      (await contentService.getUnit(section.data!.unitId)).data,
+    enabled: Boolean(section.data?.unitId),
   });
 
   const refresh = () => {
@@ -117,25 +126,12 @@ export function SectionDetail({
     );
   };
 
-  // NOTE on why drag-and-drop can silently fail in React:
-  // 1. `stopPropagation()` inside onDragStart is unnecessary and, in some
-  //    browsers, interferes with the drag image being captured — removed.
-  // 2. The draggable element must not have `user-select` issues and should
-  //    not itself contain other draggable/interactive descendants.
-  // 3. `onDragOver` MUST call preventDefault() on the drop target for
-  //    `onDrop` to ever fire at all — this is native browser behavior,
-  //    not React-specific, and is the single most common reason drop
-  //    handlers "don't work".
   const handleDragStart = (id: number) => (event: React.DragEvent) => {
     setDragId(id);
     event.dataTransfer.effectAllowed = "move";
-    // Some browsers (notably Firefox) require dataTransfer to carry data
-    // for the drag operation to be allowed to start at all.
     event.dataTransfer.setData("text/plain", String(id));
   };
   const handleDragOver = (id: number) => (event: React.DragEvent) => {
-    // Always preventDefault on dragover for valid drop targets — without
-    // this, the browser rejects the drop and onDrop never runs.
     event.preventDefault();
     event.dataTransfer.dropEffect = "move";
     if (id !== dragId) setDragOverId(id);
@@ -157,11 +153,40 @@ export function SectionDetail({
 
   if (section.isLoading) return <FullPageState variant="loading" />;
   if (section.isError || !section.data) return <FullPageState variant="error" />;
+  if (unit.isLoading) return <FullPageState variant="loading" />;
+  if (unit.isError || !unit.data)
+    return (
+      <FullPageState
+        variant="error"
+        action={
+          <button type="button" onClick={() => void unit.refetch()}>
+            Retry
+          </button>
+        }
+      />
+    );
 
   const list = topics.data ?? [];
+  const mutationError =
+    update.error ??
+    status.error ??
+    archive.error ??
+    create.error ??
+    reorder.error;
 
   return (
     <>
+      <ContentBreadcrumb
+        items={[
+          { label: "Content" },
+          { label: "Units", href: "/teacher/content" },
+          {
+            label: `${unit.data.code} - ${unit.data.name}`,
+            href: `/teacher/content/units/${unit.data.id}`,
+          },
+          { label: section.data.name },
+        ]}
+      />
       <EntityHeader
         title={section.data.name}
         label="Section"
@@ -175,7 +200,35 @@ export function SectionDetail({
         onStatusChange={(nextStatus) => status.mutate({ status: nextStatus })}
         onArchive={() => archive.mutate()}
         actionPending={status.isPending || archive.isPending}
+        context={
+          <Link
+            href={`/teacher/content/units/${unit.data.id}`}
+            className="rounded hover:text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          >
+            Unit: {unit.data.code} - {unit.data.name}
+          </Link>
+        }
       />
+
+      {mutationError && (
+        <PageBanner
+          tone="error"
+          className="mt-4"
+          title="Không thể lưu thay đổi"
+          message={
+            mutationError instanceof Error
+              ? mutationError.message
+              : "Vui lòng kiểm tra dữ liệu và thử lại."
+          }
+          onDismiss={() => {
+            update.reset();
+            status.reset();
+            archive.reset();
+            create.reset();
+            reorder.reset();
+          }}
+        />
+      )}
 
       {editOpen && (
         <div className="mt-5">
@@ -190,7 +243,7 @@ export function SectionDetail({
         </div>
       )}
 
-      <section className="mt-5 rounded-xl border border-slate-200 bg-white shadow-[0_5px_18px_rgba(94,134,173,0.04)]">
+      <section className="mt-5 overflow-hidden border-2 border-ink bg-card rounded-lg shadow-pop">
         <div className="p-4 sm:p-5 sm:pb-0">
           <TableTitle
             title="Topics"
@@ -202,7 +255,7 @@ export function SectionDetail({
 
         {createOpen && (
           <form
-            className="mx-4 mb-1 rounded-xl border border-primary/15 bg-primary-light/40 p-4 sm:mx-5"
+            className="mx-4 mb-1 border border-primary/20 bg-primary-soft p-4 sm:mx-5"
             onSubmit={(event) => {
               event.preventDefault();
               const payload: CreateTopicRequest = {
@@ -215,7 +268,7 @@ export function SectionDetail({
           >
             <div className="grid gap-3 sm:grid-cols-2">
               <label className="block">
-                <span className="mb-1 block text-xs font-medium text-slate-500">
+                <span className="mb-1 block text-label font-semibold text-muted-foreground">
                   Topic name
                 </span>
                 <input
@@ -224,18 +277,18 @@ export function SectionDetail({
                   placeholder="e.g. Adding fractions"
                   value={name}
                   onChange={(event) => setName(event.target.value)}
-                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-body-sm  text-slate-800 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+                  className="min-h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-body-sm text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
                 />
               </label>
               <label className="block">
-                <span className="mb-1 block text-xs font-medium text-slate-500">
+                <span className="mb-1 block text-label font-semibold text-muted-foreground">
                   Description
                 </span>
                 <input
                   placeholder="Optional short description"
                   value={description}
                   onChange={(event) => setDescription(event.target.value)}
-                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-body-sm  text-slate-800 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+                  className="min-h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-body-sm text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
                 />
               </label>
             </div>
@@ -243,13 +296,13 @@ export function SectionDetail({
               <button
                 type="button"
                 onClick={() => setCreateOpen(false)}
-                className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-body-sm  font-medium text-slate-600 transition hover:bg-slate-50"
+                className="min-h-10 rounded-lg border border-border bg-card px-4 py-2 text-body-sm font-semibold text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
                 Cancel
               </button>
               <button
                 disabled={create.isPending}
-                className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-body-sm  font-semibold text-white transition hover:bg-primary/90 disabled:opacity-60"
+                className="inline-flex min-h-10 items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-body-sm font-semibold text-primary-foreground transition-colors hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-60"
               >
                 <Plus size={15} />
                 {create.isPending ? "Saving..." : "Save topic"}
@@ -258,12 +311,29 @@ export function SectionDetail({
           </form>
         )}
 
-        {list.length === 0 && !createOpen ? (
+        {topics.isLoading ? (
+          <SkeletonList count={4} className="p-4 sm:p-5" />
+        ) : topics.isError ? (
+          <RegionState
+            variant="error"
+            title="Could not load topics"
+            description="Try loading the topic list again."
+            action={
+              <button
+                type="button"
+                onClick={() => void topics.refetch()}
+                className="rounded-lg border border-border px-3 py-2 font-semibold hover:bg-muted"
+              >
+                Retry
+              </button>
+            }
+          />
+        ) : list.length === 0 && !createOpen ? (
           <RegionState variant="empty" />
         ) : (
           <>
             {/* Column header — desktop only, sits directly above the row list */}
-            <div className="mt-4 hidden grid-cols-[3rem_1fr_7rem_7rem_5.5rem] gap-3 border-y border-slate-100 bg-slate-50/70 px-5 py-2 text-xs font-medium text-slate-400 md:grid">
+            <div className="mt-4 hidden grid-cols-[3rem_1fr_7rem_7rem_6rem] gap-3 border-y border-border bg-muted/50 px-5 py-2 text-label font-semibold text-muted-foreground md:grid">
               <span>Order</span>
               <span>Topic</span>
               <span className="text-right">Question banks</span>
@@ -272,7 +342,7 @@ export function SectionDetail({
             </div>
 
             {/* Row list — hairline dividers, no per-row card chrome */}
-            <ul className="divide-y divide-slate-100 border-b border-slate-100 md:border-b-0">
+            <ul className="divide-y divide-border border-b border-border md:border-b-0">
               {list.map((topic, index) => {
                 const isDraft = topic.status !== "PUBLISHED";
                 const highlighted = justMovedId === topic.id;
@@ -286,6 +356,14 @@ export function SectionDetail({
                     onDragLeave={handleDragLeave(topic.id)}
                     onDrop={handleDrop(topic.id)}
                     onClick={() => onNavigate("topic", topic.id)}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        onNavigate("topic", topic.id);
+                      }
+                    }}
+                    role="link"
+                    tabIndex={0}
                     className={`group grid cursor-pointer grid-cols-[2.5rem_1fr_auto] items-start gap-3 px-4 py-3.5 transition-colors duration-700 sm:px-5 md:grid-cols-[3rem_1fr_7rem_7rem_5.5rem] md:items-center md:gap-3 md:py-3 ${
                       isDragging
                         ? "opacity-40"
@@ -293,34 +371,34 @@ export function SectionDetail({
                           ? "bg-primary-light/60 ring-1 ring-inset ring-primary/30"
                           : highlighted
                             ? "bg-primary-light/40"
-                            : "hover:bg-slate-50"
+                            : "hover:bg-muted/60 focus-within:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary"
                     }`}
                   >
                     {/* Order number — tabular, aligned like a spreadsheet column */}
-                    <span className="pt-0.5 font-mono text-body-sm tabular-nums text-slate-400 md:pt-0">
+                    <span className="pt-0.5 text-body-sm tabular-nums text-muted-foreground md:pt-0">
                       {String(topic.displayOrder).padStart(2, "0")}
                     </span>
 
                     {/* Name + description + mobile-only meta row */}
                     <div className="min-w-0">
                       <div className="flex items-center gap-1.5">
-                        <span className="truncate text-sm font-semibold text-slate-800">
+                        <span className="truncate text-body font-semibold text-foreground">
                           {topic.name}
                         </span>
                       </div>
-                      <p className="mt-0.5 truncate text-body-sm text-slate-400">
+                      <p className="mt-0.5 truncate text-body-sm text-muted-foreground">
                         {topic.description ?? "No description"}
                       </p>
                       <div className="mt-1.5 flex flex-wrap items-center gap-x-2.5 gap-y-1 md:hidden">
                         <StatusDot draft={isDraft} label={topic.status} />
-                        <span className="whitespace-nowrap text-xs text-slate-400">
+                        <span className="whitespace-nowrap text-label text-muted-foreground">
                           {topic.totalQuestionBank} question banks
                         </span>
                       </div>
                     </div>
 
                     {/* Question banks — desktop column */}
-                    <span className="hidden text-right text-body-sm tabular-nums text-slate-500 md:block">
+                    <span className="hidden text-right text-body-sm tabular-nums text-muted-foreground md:block">
                       {topic.totalQuestionBank}
                     </span>
 
@@ -333,6 +411,7 @@ export function SectionDetail({
                     <div
                       className="col-start-3 row-start-1 flex shrink-0 items-center gap-0.5 justify-self-end md:col-start-auto md:row-start-auto md:justify-self-end"
                       onClick={(event) => event.stopPropagation()}
+                      onKeyDown={(event) => event.stopPropagation()}
                     >
                       {/* Drag handle. draggable is set here only (not on the
                           whole row) so clicking/selecting row text still
@@ -345,7 +424,7 @@ export function SectionDetail({
                         onDragEnd={handleDragEnd}
                         aria-label="Drag to reorder topic"
                         title="Drag to reorder"
-                        className="mr-0.5 hidden select-none rounded p-1 text-slate-300 transition hover:bg-slate-100 hover:text-slate-500 active:cursor-grabbing md:block md:cursor-grab"
+                        className="mr-0.5 hidden select-none rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground active:cursor-grabbing md:block md:cursor-grab"
                       >
                         <GripVertical size={15} className="pointer-events-none" />
                       </span>
@@ -354,7 +433,7 @@ export function SectionDetail({
                         disabled={index === 0 || reorder.isPending}
                         onClick={() => move(index, -1)}
                         aria-label="Move topic up"
-                        className="rounded-md p-1.5 text-slate-400 transition hover:bg-primary/10 hover:text-primary disabled:cursor-not-allowed disabled:opacity-25"
+                        className="grid size-10 place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-25"
                       >
                         <ArrowUp size={14} />
                       </button>
@@ -363,7 +442,7 @@ export function SectionDetail({
                         disabled={index === list.length - 1 || reorder.isPending}
                         onClick={() => move(index, 1)}
                         aria-label="Move topic down"
-                        className="rounded-md p-1.5 text-slate-400 transition hover:bg-primary/10 hover:text-primary disabled:cursor-not-allowed disabled:opacity-25"
+                        className="grid size-10 place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-25"
                       >
                         <ArrowDown size={14} />
                       </button>
@@ -381,10 +460,10 @@ export function SectionDetail({
 
 function StatusDot({ draft, label }: { draft: boolean; label: string }) {
   return (
-    <span className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap text-xs font-medium text-slate-600">
+    <span className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap text-label font-semibold text-muted-foreground">
       <span
         className={`h-1.5 w-1.5 shrink-0 rounded-full ${
-          draft ? "bg-amber-400" : "bg-emerald-500"
+          draft ? "bg-warning" : "bg-success"
         }`}
       />
       {label}

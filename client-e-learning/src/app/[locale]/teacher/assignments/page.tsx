@@ -6,14 +6,14 @@ import { getAppErrorMessage } from "@/lib/errors/app-error";
 import { useRouter } from "@/i18n/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+  BarChart3,
   BookOpen,
   CheckCircle2,
   Clock3,
-  FileSpreadsheet,
   Plus,
   Search,
+  TriangleAlert,
   Upload,
-  Users,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -21,8 +21,10 @@ import { classService } from "@/services/class.service";
 import { gradeService } from "@/services/grade.service";
 import {
   createAssignment,
+  getTeacherAssignmentSummary,
   listAssignments,
 } from "@/services/assignment.service";
+import { QUERY_KEYS } from "@/services/query-keys";
 import type { CreateAssignmentRequest } from "@/types/assignment";
 import { AssignmentImportDialog } from "@/components/features/teacher/assignments/main/AssignmentImportDialog";
 import { AssignmentList } from "@/components/features/teacher/assignments/main/AssignmentList";
@@ -30,6 +32,8 @@ import { AssignmentWizard } from "@/components/features/teacher/assignments/main
 import { SummaryCard } from "@/components/features/teacher/assignments/main/SummaryCard";
 import { TeacherAssignmentGuide } from "@/components/features/teacher/assignments/main/TeacherAssignmentGuide";
 import { TeacherPageHeader } from "@/components/features/teacher/shared/teacher-page-header";
+import { PageBanner } from "@/components/feedback";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const initialForm: CreateAssignmentRequest = {
   gradeId: 0,
@@ -57,8 +61,12 @@ export default function TeacherAssignmentsPage() {
   const [form, setForm] = useState<CreateAssignmentRequest>(initialForm);
 
   const assignments = useQuery({
-    queryKey: ["assignments"],
+    queryKey: QUERY_KEYS.assignments,
     queryFn: listAssignments,
+  });
+  const summary = useQuery({
+    queryKey: QUERY_KEYS.teacherAssignmentSummary,
+    queryFn: getTeacherAssignmentSummary,
   });
   const classes = useQuery({
     queryKey: ["classes"],
@@ -71,7 +79,10 @@ export default function TeacherAssignmentsPage() {
   const create = useMutation({
     mutationFn: createAssignment,
     onSuccess: (response) => {
-      void queryClient.invalidateQueries({ queryKey: ["assignments"] });
+      void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.assignments });
+      void queryClient.invalidateQueries({
+        queryKey: QUERY_KEYS.teacherAssignmentSummary,
+      });
       setWizardOpen(false);
       setForm(initialForm);
       if (!response.data) {
@@ -91,6 +102,11 @@ export default function TeacherAssignmentsPage() {
   });
 
   const assignmentList = assignments.data?.data ?? [];
+  const summaryData = summary.data?.data;
+  const resultRate =
+    summaryData?.resultRate == null
+      ? "—"
+      : `${Math.round(summaryData.resultRate * 100)}%`;
   const visibleAssignments = assignmentList.filter((assignment) => {
     const matchesSearch = assignment.name
       .toLowerCase()
@@ -123,35 +139,94 @@ export default function TeacherAssignmentsPage() {
         pipoMood="wave"
       />
 
-      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <SummaryCard
-          icon={<Clock3 className="size-4" />}
-          label={t("summary.active")}
-          value={assignmentList.filter((item) => item.status === "PUBLISHED").length}
-          hint={t("summary.activeHint")}
-          tone="orange"
-        />
-        <SummaryCard
-          icon={<FileSpreadsheet className="size-4" />}
-          label={t("summary.needsGrading")}
-          value="—"
-          hint={t("summary.submissionUnavailable")}
-          tone="amber"
-        />
-        <SummaryCard
-          icon={<CheckCircle2 className="size-4" />}
-          label={t("summary.submittedOnTime")}
-          value="—"
-          hint={t("summary.resultsUnavailable")}
-          tone="green"
-        />
-        <SummaryCard
-          icon={<Users className="size-4" />}
-          label={t("summary.missingSubmissions")}
-          value="—"
-          hint={t("summary.resultsUnavailable")}
-          tone="blue"
-        />
+      <section aria-labelledby="assignment-summary-title" className="space-y-3">
+        <div>
+          <h2
+            id="assignment-summary-title"
+            className="text-section-title font-bold text-foreground"
+          >
+            {t("summary.title")}
+          </h2>
+          <p className="mt-1 text-body-sm text-muted-foreground">
+            {t("summary.description")}
+          </p>
+        </div>
+
+        {summary.isError ? (
+          <PageBanner
+            tone="error"
+            title={t("summary.errorTitle")}
+            message={t("summary.errorMessage")}
+            action={
+              <button
+                type="button"
+                onClick={() => void summary.refetch()}
+                className="min-h-10 rounded-lg border border-current px-3 py-2 text-body-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              >
+                {tErrors("retry")}
+              </button>
+            }
+          />
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <SummaryCard
+              icon={<Clock3 className="size-4" />}
+              label={t("summary.open")}
+              value={
+                summary.isLoading ? (
+                  <Skeleton className="h-8 w-14 rounded-lg" />
+                ) : (
+                  summaryData?.openAssignmentCount ?? 0
+                )
+              }
+              hint={t("summary.openHint")}
+              tone="primary"
+            />
+            <SummaryCard
+              icon={<CheckCircle2 className="size-4" />}
+              label={t("summary.finalized")}
+              value={
+                summary.isLoading ? (
+                  <Skeleton className="h-8 w-16 rounded-lg" />
+                ) : (
+                  summaryData?.finalizedDeliveryCount ?? 0
+                )
+              }
+              hint={t("summary.finalizedHint")}
+              tone="success"
+            />
+            <SummaryCard
+              icon={<TriangleAlert className="size-4" />}
+              label={t("summary.overdue")}
+              value={
+                summary.isLoading ? (
+                  <Skeleton className="h-8 w-14 rounded-lg" />
+                ) : (
+                  summaryData?.overdueIncompleteDeliveryCount ?? 0
+                )
+              }
+              hint={t("summary.overdueHint")}
+              tone="warning"
+            />
+            <SummaryCard
+              icon={<BarChart3 className="size-4" />}
+              label={t("summary.completionRate")}
+              value={
+                summary.isLoading ? (
+                  <Skeleton className="h-8 w-20 rounded-lg" />
+                ) : (
+                  resultRate
+                )
+              }
+              hint={
+                summaryData?.resultRate == null && !summary.isLoading
+                  ? t("summary.noDueDeliveries")
+                  : t("summary.completionRateHint")
+              }
+              tone="info"
+            />
+          </div>
+        )}
       </section>
 
       <section className="overflow-hidden rounded-2xl border-2 border-ink bg-card shadow-pop">

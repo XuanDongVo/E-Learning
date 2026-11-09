@@ -57,7 +57,9 @@ export function QuestionBankDetail({
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [selectedType, setSelectedType] = useState<string>("");
   const [selectedDifficulty, setSelectedDifficulty] = useState<string>("");
-  const [selectedCompleteness, setSelectedCompleteness] = useState<"" | "complete" | "incomplete">("");
+  const [selectedCompleteness, setSelectedCompleteness] = useState<
+    "" | "complete" | "incomplete"
+  >("");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
 
@@ -123,7 +125,10 @@ export function QuestionBankDetail({
       search: debouncedSearch,
       type: selectedType || undefined,
       difficulty: selectedDifficulty || undefined,
-      isComplete: selectedCompleteness === "" ? undefined : selectedCompleteness === "complete",
+      isComplete:
+        selectedCompleteness === ""
+          ? undefined
+          : selectedCompleteness === "complete",
       page,
       size: pageSize,
     }),
@@ -134,7 +139,10 @@ export function QuestionBankDetail({
           search: debouncedSearch || undefined,
           type: selectedType || undefined,
           difficulty: selectedDifficulty || undefined,
-          isComplete: selectedCompleteness === "" ? undefined : selectedCompleteness === "complete",
+          isComplete:
+            selectedCompleteness === ""
+              ? undefined
+              : selectedCompleteness === "complete",
           page,
           size: pageSize,
         })
@@ -151,12 +159,14 @@ export function QuestionBankDetail({
   });
   const sectionQuery = useQuery({
     queryKey: QUERY_KEYS.contentSection(topicQuery.data?.sectionId ?? 0),
-    queryFn: async () => (await contentService.getSection(topicQuery.data!.sectionId)).data,
+    queryFn: async () =>
+      (await contentService.getSection(topicQuery.data!.sectionId)).data,
     enabled: Boolean(topicQuery.data?.sectionId),
   });
   const unitQuery = useQuery({
     queryKey: QUERY_KEYS.contentUnit(sectionQuery.data?.unitId ?? 0),
-    queryFn: async () => (await contentService.getUnit(sectionQuery.data!.unitId)).data,
+    queryFn: async () =>
+      (await contentService.getUnit(sectionQuery.data!.unitId)).data,
     enabled: Boolean(sectionQuery.data?.unitId),
   });
 
@@ -177,7 +187,8 @@ export function QuestionBankDetail({
   // Selection helpers
   const pageIds = questionsList.map((q) => q.id);
   const selectedOnPage = pageIds.filter((id) => selectedIds.has(id));
-  const allOnPageSelected = pageIds.length > 0 && selectedOnPage.length === pageIds.length;
+  const allOnPageSelected =
+    pageIds.length > 0 && selectedOnPage.length === pageIds.length;
   const someOnPageSelected = selectedOnPage.length > 0 && !allOnPageSelected;
 
   const toggleOne = (id: number) => {
@@ -193,13 +204,11 @@ export function QuestionBankDetail({
     setSelectedIds(allOnPageSelected ? new Set() : new Set(pageIds));
   };
 
-  const deletePreviewLabels = (deleteTargetIds ?? [])
-    .slice(0, 3)
-    .map((id) => {
-      const found = questionsList.find((q) => q.id === id);
-      const text = found?.content ?? `Question #${id}`;
-      return text.length > 70 ? `${text.slice(0, 70)}…` : text;
-    });
+  const deletePreviewLabels = (deleteTargetIds ?? []).slice(0, 3).map((id) => {
+    const found = questionsList.find((q) => q.id === id);
+    const text = found?.content ?? `Question #${id}`;
+    return text.length > 70 ? `${text.slice(0, 70)}…` : text;
+  });
 
   // Mutations
   const statusMutation = useMutation({
@@ -207,15 +216,25 @@ export function QuestionBankDetail({
       contentService.updateQuestionBankStatus(bankId, { status: nextStatus }),
     onSuccess: async () => {
       await Promise.all([
-        client.invalidateQueries({ queryKey: QUERY_KEYS.contentQuestionBank(bankId) }),
+        client.invalidateQueries({
+          queryKey: QUERY_KEYS.contentQuestionBank(bankId),
+        }),
         ...(bankQuery.data?.topicId
-          ? [client.invalidateQueries({ queryKey: QUERY_KEYS.contentQuestionBanks(bankQuery.data.topicId) })]
+          ? [
+              client.invalidateQueries({
+                queryKey: QUERY_KEYS.contentQuestionBanks(
+                  bankQuery.data.topicId,
+                ),
+              }),
+            ]
           : []),
       ]);
       toast.success("Question bank status updated");
     },
     onError: (error) => {
-      toast.error(getAppErrorMessage(error, tErrors as (key: string) => string));
+      toast.error(
+        getAppErrorMessage(error, tErrors as (key: string) => string),
+      );
     },
   });
 
@@ -223,15 +242,25 @@ export function QuestionBankDetail({
     mutationFn: () => contentService.archiveQuestionBank(bankId),
     onSuccess: async () => {
       await Promise.all([
-        client.invalidateQueries({ queryKey: QUERY_KEYS.contentQuestionBank(bankId) }),
+        client.invalidateQueries({
+          queryKey: QUERY_KEYS.contentQuestionBank(bankId),
+        }),
         ...(bankQuery.data?.topicId
-          ? [client.invalidateQueries({ queryKey: QUERY_KEYS.contentQuestionBanks(bankQuery.data.topicId) })]
+          ? [
+              client.invalidateQueries({
+                queryKey: QUERY_KEYS.contentQuestionBanks(
+                  bankQuery.data.topicId,
+                ),
+              }),
+            ]
           : []),
       ]);
       toast.success("Question bank archived");
     },
     onError: (error) => {
-      toast.error(getAppErrorMessage(error, tErrors as (key: string) => string));
+      toast.error(
+        getAppErrorMessage(error, tErrors as (key: string) => string),
+      );
     },
   });
 
@@ -240,16 +269,26 @@ export function QuestionBankDetail({
       contentService.updateQuestionBank(bankId, payload),
     onSuccess: async () => {
       await Promise.all([
-        client.invalidateQueries({ queryKey: QUERY_KEYS.contentQuestionBank(bankId) }),
+        client.invalidateQueries({
+          queryKey: QUERY_KEYS.contentQuestionBank(bankId),
+        }),
         ...(bankQuery.data?.topicId
-          ? [client.invalidateQueries({ queryKey: QUERY_KEYS.contentQuestionBanks(bankQuery.data.topicId) })]
+          ? [
+              client.invalidateQueries({
+                queryKey: QUERY_KEYS.contentQuestionBanks(
+                  bankQuery.data.topicId,
+                ),
+              }),
+            ]
           : []),
       ]);
       setEditOpen(false);
       toast.success("Question bank updated");
     },
     onError: (error) => {
-      toast.error(getAppErrorMessage(error, tErrors as (key: string) => string));
+      toast.error(
+        getAppErrorMessage(error, tErrors as (key: string) => string),
+      );
     },
   });
 
@@ -257,40 +296,44 @@ export function QuestionBankDetail({
     mutationFn: (ids: number[]) =>
       contentService.bulkDeleteQuestions({ questionBankId: bankId, ids }),
     onSuccess: async (_, ids) => {
-      await client.invalidateQueries({ queryKey: ["content", "questions"], refetchType: "all" });
-      await client.invalidateQueries({ queryKey: QUERY_KEYS.contentQuestionBank(bankId) });
+      await client.invalidateQueries({
+        queryKey: ["content", "questions"],
+        refetchType: "all",
+      });
+      await client.invalidateQueries({
+        queryKey: QUERY_KEYS.contentQuestionBank(bankId),
+      });
       if (ids.length >= questionsList.length && page > 1) {
         setPage((currentPage) => Math.max(1, currentPage - 1));
       }
       setSelectedIds(new Set());
       setDeleteTargetIds(null);
-      toast.success(ids.length === 1 ? "Question deleted" : `${ids.length} questions deleted`);
+      toast.success(
+        ids.length === 1
+          ? "Question deleted"
+          : `${ids.length} questions deleted`,
+      );
     },
   });
 
   return (
     <>
-      <EntityHeader
-        title={bank?.name ?? "Question Bank"}
-        label={`${bank?.totalQuestions ?? 0} questions (${bank?.readyQuestions ?? 0} ready)`}
-        status={bank?.status}
-        icon={<FileQuestion size={21} />}
-        description={bank?.description ?? "Manage questions inside this bank."}
-        editLabel="Edit Question Bank"
-        onEdit={() => setEditOpen((open) => !open)}
-        onStatusChange={(nextStatus) => statusMutation.mutate(nextStatus)}
-        onArchive={() => archiveMutation.mutate()}
-        actionPending={statusMutation.isPending || archiveMutation.isPending || update.isPending}
-      />
-
       {/* Breadcrumb Navigation */}
-      <nav aria-label="Breadcrumb" className="mt-3 flex flex-wrap items-center gap-2 text-xs font-semibold text-muted-foreground">
+      <nav
+        aria-label="Breadcrumb"
+        className="mt-3 flex flex-wrap items-center gap-2 text-sm font-semibold text-muted-foreground"
+      >
         {source === "global" ? (
           <>
-            <Link href="/teacher/content/question-banks" className="rounded hover:text-primary hover:underline">
+            <Link
+              href="/teacher/content/question-banks"
+              className="rounded hover:text-primary hover:underline"
+            >
               Question Banks
             </Link>
-            <span aria-hidden="true" className="text-border">/</span>
+            <span aria-hidden="true" className="text-border">
+              /
+            </span>
           </>
         ) : (
           <button
@@ -303,33 +346,70 @@ export function QuestionBankDetail({
         )}
         {unitQuery.data && (
           <>
-            <span aria-hidden="true" className="text-border">/</span>
-            <Link href={`/teacher/content/units/${unitQuery.data.id}`} className="max-w-[180px] truncate rounded hover:text-primary hover:underline">
+            <span aria-hidden="true" className="text-border">
+              /
+            </span>
+            <Link
+              href={`/teacher/content/units/${unitQuery.data.id}`}
+              className="max-w-[180px] truncate rounded hover:text-primary hover:underline"
+            >
               {unitQuery.data.name}
             </Link>
           </>
         )}
         {sectionQuery.data && (
           <>
-            <span aria-hidden="true" className="text-border">/</span>
-            <Link href={`/teacher/content/sections/${sectionQuery.data.id}`} className="max-w-[180px] truncate rounded hover:text-primary hover:underline">
+            <span aria-hidden="true" className="text-border">
+              /
+            </span>
+            <Link
+              href={`/teacher/content/sections/${sectionQuery.data.id}`}
+              className="max-w-[180px] truncate rounded hover:text-primary hover:underline"
+            >
               {sectionQuery.data.name}
             </Link>
           </>
         )}
         {topicQuery.data && (
           <>
-            <span aria-hidden="true" className="text-border">/</span>
-            <Link href={`/teacher/content/topics/${topicQuery.data.id}`} className="max-w-[180px] truncate rounded hover:text-primary hover:underline">
+            <span aria-hidden="true" className="text-border">
+              /
+            </span>
+            <Link
+              href={`/teacher/content/topics/${topicQuery.data.id}`}
+              className="max-w-[180px] truncate rounded hover:text-primary hover:underline"
+            >
               {topicQuery.data.name}
             </Link>
           </>
         )}
-        <span aria-hidden="true" className="text-border">/</span>
-        <span aria-current="page" className="max-w-[220px] truncate font-bold text-foreground">
+        <span aria-hidden="true" className="text-border">
+          /
+        </span>
+        <span
+          aria-current="page"
+          className="max-w-[220px] truncate font-bold text-foreground"
+        >
           {bank?.name ?? "Question Bank"}
         </span>
       </nav>
+
+      <EntityHeader
+        title={bank?.name ?? "Question Bank"}
+        label={`${bank?.totalQuestions ?? 0} questions (${bank?.readyQuestions ?? 0} ready)`}
+        status={bank?.status}
+        icon={<FileQuestion size={21} />}
+        description={bank?.description ?? "Manage questions inside this bank."}
+        editLabel="Edit Question Bank"
+        onEdit={() => setEditOpen((open) => !open)}
+        onStatusChange={(nextStatus) => statusMutation.mutate(nextStatus)}
+        onArchive={() => archiveMutation.mutate()}
+        actionPending={
+          statusMutation.isPending ||
+          archiveMutation.isPending ||
+          update.isPending
+        }
+      />
 
       {/* Inline Content Editor */}
       {editOpen && (
@@ -340,7 +420,9 @@ export function QuestionBankDetail({
               name: bank?.name ?? "",
               description: bank?.description ?? "",
             }}
-            onSubmit={(payload) => update.mutate(payload as UpdateQuestionBankRequest)}
+            onSubmit={(payload) =>
+              update.mutate(payload as UpdateQuestionBankRequest)
+            }
             onCancel={() => setEditOpen(false)}
             pending={update.isPending}
             error={update.isError ? "Could not save changes." : undefined}
@@ -353,11 +435,19 @@ export function QuestionBankDetail({
         {/* Header Thông tin tổng quan */}
         <div className="mb-5 border-b-2 border-border pb-5">
           <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-muted-foreground">
-            <Link href="/teacher/content" className="hover:text-primary hover:underline">Content Explorer</Link>
+            <Link
+              href="/teacher/content"
+              className="hover:text-primary hover:underline"
+            >
+              Content Explorer
+            </Link>
             {unitQuery.data && (
               <>
                 <span className="text-border">/</span>
-                <Link href={`/teacher/content/units/${unitQuery.data.id}`} className="hover:text-primary hover:underline">
+                <Link
+                  href={`/teacher/content/units/${unitQuery.data.id}`}
+                  className="hover:text-primary hover:underline"
+                >
                   {unitQuery.data.name}
                 </Link>
               </>
@@ -365,19 +455,25 @@ export function QuestionBankDetail({
             {topicQuery.data && (
               <>
                 <span className="text-border">/</span>
-                <Link href={`/teacher/content/topics/${topicQuery.data.id}`} className="hover:text-primary hover:underline">
+                <Link
+                  href={`/teacher/content/topics/${topicQuery.data.id}`}
+                  className="hover:text-primary hover:underline"
+                >
                   {topicQuery.data.name}
                 </Link>
               </>
             )}
             <span className="text-border">/</span>
-            <span className="font-bold text-foreground">{bank?.name ?? "Question Bank"}</span>
+            <span className="font-bold text-foreground">
+              {bank?.name ?? "Question Bank"}
+            </span>
           </div>
 
           <div className="mt-3 flex flex-wrap items-start justify-between gap-4">
             <div>
               <h2 className="text-xl font-black tracking-tight text-foreground sm:text-2xl">
-                {topicQuery.data?.name ?? bank?.name ?? "Question Bank"} — Question Bank
+                {topicQuery.data?.name ?? bank?.name ?? "Question Bank"} —
+                Question Bank
               </h2>
               <p className="mt-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Question bank · {bank?.status?.toLowerCase() ?? "loading"}
@@ -387,17 +483,30 @@ export function QuestionBankDetail({
             {/* Stat Badges */}
             <div className="flex flex-wrap gap-2.5">
               <div className="min-w-[105px] rounded-lg border-2 border-ink bg-muted/40 px-3.5 py-2 text-center shadow-pop-sm">
-                <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Questions</p>
-                <p className="mt-0.5 text-sm font-black text-foreground">{bank?.totalQuestions ?? 0}</p>
+                <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                  Questions
+                </p>
+                <p className="mt-0.5 text-sm font-black text-foreground">
+                  {bank?.totalQuestions ?? 0}
+                </p>
               </div>
               <div className="min-w-[105px] rounded-lg border-2 border-ink bg-success-soft px-3.5 py-2 text-center text-success shadow-pop-sm">
-                <p className="text-xs font-bold uppercase tracking-wider">Complete</p>
-                <p className="mt-0.5 text-sm font-black">{bank?.readyQuestions ?? 0}</p>
+                <p className="text-xs font-bold uppercase tracking-wider">
+                  Complete
+                </p>
+                <p className="mt-0.5 text-sm font-black">
+                  {bank?.readyQuestions ?? 0}
+                </p>
               </div>
               <div className="min-w-[105px] rounded-lg border-2 border-ink bg-warning-soft px-3.5 py-2 text-center text-warning shadow-pop-sm">
-                <p className="text-xs font-bold uppercase tracking-wider">Incomplete</p>
+                <p className="text-xs font-bold uppercase tracking-wider">
+                  Incomplete
+                </p>
                 <p className="mt-0.5 text-sm font-black">
-                  {Math.max(0, (bank?.totalQuestions ?? 0) - (bank?.readyQuestions ?? 0))}
+                  {Math.max(
+                    0,
+                    (bank?.totalQuestions ?? 0) - (bank?.readyQuestions ?? 0),
+                  )}
                 </p>
               </div>
             </div>
@@ -467,7 +576,9 @@ export function QuestionBankDetail({
             aria-label="Filter by completeness"
             value={selectedCompleteness}
             onChange={(e) => {
-              setSelectedCompleteness(e.target.value as "" | "complete" | "incomplete");
+              setSelectedCompleteness(
+                e.target.value as "" | "complete" | "incomplete",
+              );
               setPage(1);
             }}
             className="h-9 rounded-lg border-2 border-ink  px-2.5 text-xs font-semibold text-foreground shadow-pop-sm outline-none transition-all hover:bg-muted focus:border-primary"
@@ -533,7 +644,9 @@ export function QuestionBankDetail({
         {/* Header Danh sách câu hỏi */}
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
           <p className="text-xs font-semibold text-muted-foreground">
-            Hiển thị {totalElements === 0 ? 0 : (page - 1) * pageSize + 1}–{Math.min(page * pageSize, totalElements)} trên tổng số {totalElements} câu
+            Hiển thị {totalElements === 0 ? 0 : (page - 1) * pageSize + 1}–
+            {Math.min(page * pageSize, totalElements)} trên tổng số{" "}
+            {totalElements} câu
           </p>
           <span className="inline-flex items-center gap-1.5 rounded-md border border-border bg-muted/40 px-2.5 py-1 text-xs font-bold text-foreground">
             <FileQuestion size={14} className="text-primary" /> Danh sách
@@ -541,7 +654,11 @@ export function QuestionBankDetail({
         </div>
 
         {/* Question List Items */}
-        <div className="space-y-2.5" role="list" aria-label="Questions in this bank">
+        <div
+          className="space-y-2.5"
+          role="list"
+          aria-label="Questions in this bank"
+        >
           {/* Table Header Bar */}
           <div className="flex items-center gap-3 rounded-lg border-2 border-ink bg-muted/60 px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-muted-foreground shadow-pop-sm">
             <input
@@ -564,7 +681,10 @@ export function QuestionBankDetail({
           ) : questionsQuery.isError ? (
             <RegionState
               variant="error"
-              description={getAppErrorMessage(questionsQuery.error, tErrors as (key: string) => string)}
+              description={getAppErrorMessage(
+                questionsQuery.error,
+                tErrors as (key: string) => string,
+              )}
               action={
                 <button
                   type="button"
@@ -576,13 +696,18 @@ export function QuestionBankDetail({
               }
             />
           ) : questionsList.length === 0 ? (
-            <RegionState variant="empty" description={tContent("bankDetail.emptyQuestions")} />
+            <RegionState
+              variant="empty"
+              description={tContent("bankDetail.emptyQuestions")}
+            />
           ) : (
             questionsList.map((question, index) => {
               const rowIndex = (page - 1) * pageSize + index + 1;
               const isReady = question.complete ?? question.is_complete;
               const isSelected = selectedIds.has(question.id);
-              const typeLabel = questionTypeOptions.find((item) => item.value === question.type)?.label ?? question.type;
+              const typeLabel =
+                questionTypeOptions.find((item) => item.value === question.type)
+                  ?.label ?? question.type;
               const questionCode = "Q" + String(rowIndex).padStart(2, "0");
 
               return (
@@ -622,7 +747,15 @@ export function QuestionBankDetail({
                       </span>
                       <span className="mt-2.5 flex flex-wrap items-center gap-2 text-xs">
                         <Badge tone="blue">{typeLabel}</Badge>
-                        <Badge tone={question.difficulty === "EASY" ? "easy" : question.difficulty === "MEDIUM" ? "medium" : "hard"}>
+                        <Badge
+                          tone={
+                            question.difficulty === "EASY"
+                              ? "easy"
+                              : question.difficulty === "MEDIUM"
+                                ? "medium"
+                                : "hard"
+                          }
+                        >
                           {question.difficulty}
                         </Badge>
                         <Badge tone={isReady ? "green" : "gray"}>
@@ -632,7 +765,10 @@ export function QuestionBankDetail({
                     </button>
 
                     {/* Action Buttons */}
-                    <div className="flex shrink-0 items-center gap-1" aria-label={`Actions for question ${rowIndex}`}>
+                    <div
+                      className="flex shrink-0 items-center gap-1"
+                      aria-label={`Actions for question ${rowIndex}`}
+                    >
                       <button
                         type="button"
                         title="Preview Question"
@@ -646,7 +782,9 @@ export function QuestionBankDetail({
                         type="button"
                         title="Edit Question"
                         aria-label={`Edit question ${rowIndex}`}
-                        onClick={() => onNavigate("question", question.id, bank?.name)}
+                        onClick={() =>
+                          onNavigate("question", question.id, bank?.name)
+                        }
                         className="rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground hover:shadow-pop-sm transition-all"
                       >
                         <SquarePen size={16} />
@@ -671,7 +809,9 @@ export function QuestionBankDetail({
         {/* Phân trang (Pagination) */}
         <div className="mt-5 flex min-w-[640px] items-center justify-between border-t-2 border-border pt-4 text-xs font-semibold text-muted-foreground">
           <div className="flex items-center gap-3">
-            <span className="font-bold text-foreground">Tổng số: {totalElements} câu</span>
+            <span className="font-bold text-foreground">
+              Tổng số: {totalElements} câu
+            </span>
             <div className="flex items-center gap-1.5">
               <span>Hiển thị</span>
               <select
@@ -700,19 +840,21 @@ export function QuestionBankDetail({
               Previous
             </button>
 
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
-              <button
-                key={pageNum}
-                onClick={() => setPage(pageNum)}
-                className={`h-8 w-8 rounded-lg border-2 border-ink text-xs font-bold transition-all hover:-translate-y-0.5 active:translate-y-0 ${
-                  pageNum === page
-                    ? "bg-primary text-primary-foreground shadow-pop"
-                    : "bg-card text-foreground shadow-pop-sm hover:bg-muted"
-                }`}
-              >
-                {pageNum}
-              </button>
-            ))}
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+              (pageNum) => (
+                <button
+                  key={pageNum}
+                  onClick={() => setPage(pageNum)}
+                  className={`h-8 w-8 rounded-lg border-2 border-ink text-xs font-bold transition-all hover:-translate-y-0.5 active:translate-y-0 ${
+                    pageNum === page
+                      ? "bg-primary text-primary-foreground shadow-pop"
+                      : "bg-card text-foreground shadow-pop-sm hover:bg-muted"
+                  }`}
+                >
+                  {pageNum}
+                </button>
+              ),
+            )}
 
             <button
               disabled={page >= totalPages}
@@ -737,9 +879,19 @@ export function QuestionBankDetail({
             <div className="flex items-center justify-between border-b-2 border-border pb-3">
               <div className="flex items-center gap-2">
                 <Badge tone="blue">
-                  {questionTypeOptions.find((item) => item.value === previewQuestion.type)?.label ?? previewQuestion.type}
+                  {questionTypeOptions.find(
+                    (item) => item.value === previewQuestion.type,
+                  )?.label ?? previewQuestion.type}
                 </Badge>
-                <Badge tone={previewQuestion.difficulty === "EASY" ? "easy" : previewQuestion.difficulty === "MEDIUM" ? "medium" : "hard"}>
+                <Badge
+                  tone={
+                    previewQuestion.difficulty === "EASY"
+                      ? "easy"
+                      : previewQuestion.difficulty === "MEDIUM"
+                        ? "medium"
+                        : "hard"
+                  }
+                >
                   {previewQuestion.difficulty}
                 </Badge>
               </div>
@@ -755,59 +907,81 @@ export function QuestionBankDetail({
 
             <div className="mt-4 space-y-4 text-xs">
               <div>
-                <p className="font-bold uppercase tracking-wider text-muted-foreground">Đề bài (Prompt)</p>
-                <h2 id="question-preview-title" className="mt-1 text-base font-black text-foreground">
+                <p className="font-bold uppercase tracking-wider text-muted-foreground">
+                  Đề bài (Prompt)
+                </p>
+                <h2
+                  id="question-preview-title"
+                  className="mt-1 text-base font-black text-foreground"
+                >
                   {previewQuestion.content}
                 </h2>
               </div>
 
               {/* Các lựa chọn trắc nghiệm */}
-              {previewQuestion.options && previewQuestion.options.length > 0 && (
-                <div>
-                  <p className="mb-2 font-bold uppercase tracking-wider text-muted-foreground">Lựa chọn (Options)</p>
-                  <div className="space-y-2">
-                    {previewQuestion.options.map((opt, i) => (
-                      <div
-                        key={opt.id || i}
-                        className={`flex items-center justify-between rounded-lg border-2 p-3 ${
-                          opt.isCorrect
-                            ? "border-ink bg-success-soft font-bold text-success shadow-pop-sm"
-                            : "border-border bg-background text-foreground"
-                        }`}
-                      >
-                        <span className="flex items-center">
-                          <strong className="mr-2 text-muted-foreground">{String.fromCharCode(65 + i)}.</strong>
-                          {opt.content}
-                        </span>
-                        {opt.isCorrect && <CheckCircle2 size={16} className="shrink-0 text-success" />}
-                      </div>
-                    ))}
+              {previewQuestion.options &&
+                previewQuestion.options.length > 0 && (
+                  <div>
+                    <p className="mb-2 font-bold uppercase tracking-wider text-muted-foreground">
+                      Lựa chọn (Options)
+                    </p>
+                    <div className="space-y-2">
+                      {previewQuestion.options.map((opt, i) => (
+                        <div
+                          key={opt.id || i}
+                          className={`flex items-center justify-between rounded-lg border-2 p-3 ${
+                            opt.isCorrect
+                              ? "border-ink bg-success-soft font-bold text-success shadow-pop-sm"
+                              : "border-border bg-background text-foreground"
+                          }`}
+                        >
+                          <span className="flex items-center">
+                            <strong className="mr-2 text-muted-foreground">
+                              {String.fromCharCode(65 + i)}.
+                            </strong>
+                            {opt.content}
+                          </span>
+                          {opt.isCorrect && (
+                            <CheckCircle2
+                              size={16}
+                              className="shrink-0 text-success"
+                            />
+                          )}
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
               {/* Đáp án chấp nhận */}
-              {previewQuestion.answers && previewQuestion.answers.length > 0 && (
-                <div>
-                  <p className="mb-1.5 font-bold uppercase tracking-wider text-muted-foreground">Đáp án chấp nhận</p>
-                  <div className="flex flex-wrap gap-2">
-                    {previewQuestion.answers.map((ans) => (
-                      <span
-                        key={ans.id}
-                        className="rounded-md border-2 border-ink bg-success-soft px-3 py-1 text-xs font-bold text-success shadow-pop-sm"
-                      >
-                        {ans.rawValue}
-                      </span>
-                    ))}
+              {previewQuestion.answers &&
+                previewQuestion.answers.length > 0 && (
+                  <div>
+                    <p className="mb-1.5 font-bold uppercase tracking-wider text-muted-foreground">
+                      Đáp án chấp nhận
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {previewQuestion.answers.map((ans) => (
+                        <span
+                          key={ans.id}
+                          className="rounded-md border-2 border-ink bg-success-soft px-3 py-1 text-xs font-bold text-success shadow-pop-sm"
+                        >
+                          {ans.rawValue}
+                        </span>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
               {/* Lời giải thích */}
               {previewQuestion.explanation && (
                 <div className="rounded-xl border-2 border-ink bg-warning-soft p-3.5 text-warning shadow-pop-sm">
-                  <p className="font-bold uppercase tracking-wider">Giải thích chi tiết</p>
-                  <p className="mt-1 font-medium leading-relaxed">{previewQuestion.explanation}</p>
+                  <p className="font-bold uppercase tracking-wider">
+                    Giải thích chi tiết
+                  </p>
+                  <p className="mt-1 font-medium leading-relaxed">
+                    {previewQuestion.explanation}
+                  </p>
                 </div>
               )}
             </div>
@@ -837,7 +1011,8 @@ export function QuestionBankDetail({
         pending={deleteMutation.isPending}
         errorMessage={
           deleteMutation.isError
-            ? (deleteMutation.error as Error)?.message || "Could not delete the selected questions. Please try again."
+            ? (deleteMutation.error as Error)?.message ||
+              "Could not delete the selected questions. Please try again."
             : undefined
         }
         onConfirm={() => {

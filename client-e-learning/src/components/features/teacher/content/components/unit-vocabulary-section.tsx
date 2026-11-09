@@ -1,460 +1,535 @@
 "use client";
 
-import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useDeferredValue, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  Volume2,
-  Plus,
-  Zap,
-  Search,
-  Trash2,
-  Edit3,
-  AlertCircle,
-  Sparkles,
   BookA,
   CheckCircle2,
+  Edit3,
+  Plus,
+  Search,
+  Trash2,
+  Volume2,
   XCircle,
+  Zap,
 } from "lucide-react";
+import { toast } from "sonner";
+
+import { RegionState } from "@/components/feedback";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { SkeletonList } from "@/components/ui/skeleton/skeleton-list";
+import { cn } from "@/lib/utils";
 import { contentService } from "@/services/content.service";
 import { QUERY_KEYS } from "@/services/query-keys";
 import type {
-  VocabularyWord,
   CreateVocabularyWordRequest,
   UpdateVocabularyWordRequest,
+  VocabularyWord,
 } from "@/types/vocabulary";
-import { VocabularyWordModal } from "./vocabulary-word-modal";
+
 import { BulkImportVocabularyModal } from "./bulk-import-vocabulary-modal";
+import { VocabularyWordModal } from "./vocabulary-word-modal";
 
 interface UnitVocabularySectionProps {
   unitId: number;
 }
 
+type VocabularyStatusFilter = "ALL" | "ACTIVE" | "INACTIVE";
+
+const DIFFICULTY_STYLES: Record<VocabularyWord["difficulty"], string> = {
+  EASY: "border-success/30 bg-success-soft text-success",
+  MEDIUM: "border-warning/30 bg-warning-soft text-warning",
+  HARD: "border-destructive/30 bg-destructive-soft text-destructive",
+};
+
+function errorMessage(error: unknown, fallback: string) {
+  return error instanceof Error && error.message ? error.message : fallback;
+}
+
 export function UnitVocabularySection({ unitId }: UnitVocabularySectionProps) {
   const queryClient = useQueryClient();
-  const [statusFilter, setStatusFilter] = useState<"ALL" | "ACTIVE" | "INACTIVE">("ALL");
+  const [statusFilter, setStatusFilter] =
+    useState<VocabularyStatusFilter>("ALL");
   const [searchTerm, setSearchTerm] = useState("");
+  const deferredSearch = useDeferredValue(searchTerm.trim());
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [editingWord, setEditingWord] = useState<VocabularyWord | null>(null);
   const [bulkModalOpen, setBulkModalOpen] = useState(false);
   const [deletingWord, setDeletingWord] = useState<VocabularyWord | null>(null);
 
-  // Fetch words
-  const { data: words = [], isLoading } = useQuery({
+  const wordsQuery = useQuery({
     queryKey: QUERY_KEYS.contentVocabulary(unitId, {
       status: statusFilter === "ALL" ? undefined : statusFilter,
-      search: searchTerm.trim() || undefined,
+      search: deferredSearch || undefined,
     }),
     queryFn: async () => {
-      const res = await contentService.listVocabulary(unitId, {
+      const response = await contentService.listVocabulary(unitId, {
         status: statusFilter === "ALL" ? undefined : statusFilter,
-        search: searchTerm.trim() || undefined,
+        search: deferredSearch || undefined,
       });
-      return res.data ?? [];
+      return response.data ?? [];
     },
   });
 
-  const refresh = () => {
-    queryClient.invalidateQueries({
-      queryKey: ["content", "vocabulary", unitId],
-    });
-    // Also invalidate student game units cache so game hub syncs immediately!
-    queryClient.invalidateQueries({
-      queryKey: ["student", "game"],
-    });
+  const refresh = async () => {
+    await Promise.all([
+      queryClient.invalidateQueries({
+        queryKey: QUERY_KEYS.contentVocabularyRoot(unitId),
+      }),
+      queryClient.invalidateQueries({ queryKey: ["student", "game"] }),
+    ]);
   };
 
-  // Mutations
   const createMutation = useMutation({
     mutationFn: (payload: CreateVocabularyWordRequest) =>
       contentService.createVocabulary(unitId, payload),
-    onSuccess: () => {
-      refresh();
+    onSuccess: async () => {
+      await refresh();
       setAddModalOpen(false);
+      toast.success("Đã thêm từ vựng");
     },
   });
 
   const bulkMutation = useMutation({
-    mutationFn: (wordsList: CreateVocabularyWordRequest[]) =>
-      contentService.bulkCreateVocabulary(unitId, { words: wordsList }),
-    onSuccess: () => {
-      refresh();
+    mutationFn: (words: CreateVocabularyWordRequest[]) =>
+      contentService.bulkCreateVocabulary(unitId, { words }),
+    onSuccess: async (response) => {
+      await refresh();
       setBulkModalOpen(false);
+      toast.success(`Đã thêm ${response.data?.length ?? 0} từ vựng`);
     },
   });
 
   const updateMutation = useMutation({
     mutationFn: (payload: UpdateVocabularyWordRequest) => {
-      if (!editingWord) throw new Error("No word to edit");
+      if (!editingWord) throw new Error("Không tìm thấy từ vựng cần chỉnh sửa");
       return contentService.updateVocabulary(editingWord.id, payload);
     },
-    onSuccess: () => {
-      refresh();
+    onSuccess: async () => {
+      await refresh();
       setEditingWord(null);
+      toast.success("Đã cập nhật từ vựng");
     },
   });
 
   const toggleStatusMutation = useMutation({
-    mutationFn: ({ id, nextStatus }: { id: number; nextStatus: "ACTIVE" | "INACTIVE" }) =>
-      contentService.updateVocabularyStatus(id, nextStatus),
-    onSuccess: refresh,
+    mutationFn: ({
+      id,
+      nextStatus,
+    }: {
+      id: number;
+      nextStatus: "ACTIVE" | "INACTIVE";
+    }) => contentService.updateVocabularyStatus(id, nextStatus),
+    onSuccess: async () => {
+      await refresh();
+      toast.success("Đã cập nhật trạng thái từ vựng");
+    },
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) => contentService.deleteVocabulary(id),
-    onSuccess: () => {
-      refresh();
+    onSuccess: async () => {
+      await refresh();
       setDeletingWord(null);
+      toast.success("Đã xóa từ vựng");
     },
   });
 
-  // Web Speech audio helper
+  const words = wordsQuery.data ?? [];
+  const hasFilters = statusFilter !== "ALL" || Boolean(deferredSearch);
+
   const handleSpeak = (word: string) => {
-    if (!word || typeof window === "undefined" || !("speechSynthesis" in window)) return;
+    if (
+      !word ||
+      typeof window === "undefined" ||
+      !("speechSynthesis" in window)
+    ) {
+      return;
+    }
+
     window.speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(word);
-    u.lang = "en-US";
-    u.rate = 0.9;
-    window.speechSynthesis.speak(u);
+    const utterance = new SpeechSynthesisUtterance(word);
+    utterance.lang = "en-US";
+    utterance.rate = 0.9;
+    window.speechSynthesis.speak(utterance);
   };
 
-  const activeCount = words.filter((w) => w.status === "ACTIVE").length;
+  const resetFilters = () => {
+    setStatusFilter("ALL");
+    setSearchTerm("");
+  };
 
   return (
-    <section className="mt-5 rounded-xl border border-slate-200 bg-white shadow-[0_5px_18px_rgba(94,134,173,0.04)] overflow-hidden">
-      {/* Header */}
-      <div className="border-b border-slate-100 p-4 sm:p-5">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div>
+    <section className="overflow-hidden border-2 border-ink rounded-lg shadow-pop bg-card">
+      <div className="border-b border-border p-4 sm:p-5">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <span className="grid h-7 w-7 place-items-center rounded-lg bg-amber-50 text-amber-600 border border-amber-200/60">
-                <BookA className="h-4 w-4" />
-              </span>
-              <p className="text-xs font-extrabold uppercase tracking-wider text-amber-600">
-                Vocabulary Management
-              </p>
-              <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-bold text-slate-700">
-                {words.length} từ
+              <BookA className="size-5 text-primary" aria-hidden="true" />
+              <h2 className="text-card-title font-bold text-foreground">
+                Từ vựng của Unit
+              </h2>
+              <span className="rounded-full bg-muted px-2 py-0.5 text-caption font-semibold text-muted-foreground">
+                {words.length}
               </span>
             </div>
-            <h2 className="mt-1 text-base font-bold text-slate-800">
-              Từ vựng của Unit (Dùng cho Mini-Game & Bài học)
-            </h2>
+            <p className="mt-1 text-body-sm text-muted-foreground">
+              Danh sách này dùng chung với trang Vocabulary trong Teacher Navbar.
+            </p>
           </div>
 
-          {/* Action buttons */}
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <button
               type="button"
+              disabled={bulkMutation.isPending}
               onClick={() => setBulkModalOpen(true)}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-xs font-bold text-amber-800 hover:bg-amber-100 transition shadow-sm"
+              className="inline-flex min-h-10 items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-2 text-body-sm font-semibold text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:pointer-events-none disabled:opacity-50"
             >
-              <Zap className="h-3.5 w-3.5 fill-amber-500 text-amber-500" />
-              <span>Nhập nhanh</span>
+              <Zap className="size-4 text-warning" aria-hidden="true" />
+              Nhập nhanh
             </button>
             <button
               type="button"
+              disabled={createMutation.isPending}
               onClick={() => setAddModalOpen(true)}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3.5 py-2 text-xs font-bold text-white hover:bg-primary-dark transition shadow-sm"
+              className="inline-flex min-h-10 items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-body-sm font-semibold text-primary-foreground transition-colors hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
             >
-              <Plus className="h-3.5 w-3.5" />
-              <span>Thêm từ vựng</span>
+              <Plus className="size-4" aria-hidden="true" />
+              Thêm từ vựng
             </button>
           </div>
         </div>
-
-        {/* Mini-game Warning if active words < 4 */}
-        {activeCount > 0 && activeCount < 4 && (
-          <div className="mt-3.5 flex items-center gap-2 rounded-lg bg-amber-50 border border-amber-200/80 p-2.5 text-xs text-amber-800">
-            <AlertCircle className="h-4 w-4 shrink-0 text-amber-600" />
-            <span>
-              Unit này hiện có <strong>{activeCount} từ hoạt động</strong>. Để học sinh có thể chơi tốt các mini-game (Bắn bóng & Mưa từ), bạn nên thêm tối thiểu <strong>4 từ</strong>.
-            </span>
-          </div>
-        )}
       </div>
 
-      {/* Filter & Search Bar */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 border-b border-slate-100 bg-slate-50/50 px-4 py-3 sm:px-5">
-        {/* Status filter tabs */}
-        <div className="flex items-center rounded-lg border border-slate-200 bg-white p-0.5 text-xs font-semibold text-slate-600 shadow-sm w-full sm:w-auto">
-          {(["ALL", "ACTIVE", "INACTIVE"] as const).map((s) => (
+      <div className="flex flex-col gap-3 border-b border-border bg-muted/30 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+        <div
+          className="flex w-full items-center rounded-lg border border-border bg-card p-1 text-body-sm font-semibold sm:w-auto"
+          aria-label="Lọc trạng thái từ vựng"
+        >
+          {(["ALL", "ACTIVE", "INACTIVE"] as const).map((status) => (
             <button
-              key={s}
+              key={status}
               type="button"
-              onClick={() => setStatusFilter(s)}
-              className={`flex-1 sm:flex-initial px-3 py-1.5 rounded-md transition ${
-                statusFilter === s
-                  ? "bg-primary text-white shadow-sm"
-                  : "hover:text-slate-900"
-              }`}
+              aria-pressed={statusFilter === status}
+              onClick={() => setStatusFilter(status)}
+              className={cn(
+                "min-h-10 flex-1 rounded-lg px-3 py-1 text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary sm:flex-none",
+                statusFilter === status &&
+                  "bg-primary text-primary-foreground hover:text-primary-foreground",
+              )}
             >
-              {s === "ALL" ? "Tất cả" : s === "ACTIVE" ? "Đang dùng" : "Tạm ẩn"}
+              {status === "ALL"
+                ? "Tất cả"
+                : status === "ACTIVE"
+                  ? "Đang dùng"
+                  : "Tạm ẩn"}
             </button>
           ))}
         </div>
 
-        {/* Search Input */}
-        <div className="relative w-full sm:w-64">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
-          <input
-            type="text"
-            placeholder="Tìm từ tiếng Anh, tiếng Việt..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full rounded-lg border border-slate-200 bg-white pl-8 pr-3 py-1.5 text-xs text-slate-800 outline-none transition focus:border-primary focus:ring-1 focus:ring-primary/20"
+        <label className="relative w-full sm:max-w-xs">
+          <Search
+            className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+            aria-hidden="true"
           />
-        </div>
+          <span className="sr-only">Tìm từ vựng</span>
+          <input
+            type="search"
+            value={searchTerm}
+            onChange={(event) => setSearchTerm(event.target.value)}
+            placeholder="Tìm từ hoặc nghĩa tiếng Việt"
+            className="h-10 w-full rounded-lg border border-input bg-background pl-9 pr-3 text-body text-foreground outline-none transition focus:border-primary focus-visible:ring-2 focus-visible:ring-primary/30"
+          />
+        </label>
       </div>
 
-      {/* Table Content */}
-      <div className="overflow-x-auto">
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="border-b border-slate-100 bg-slate-50/40 text-[11px] font-extrabold uppercase tracking-wider text-slate-400">
-              <th className="py-3 pl-4 pr-2 sm:pl-5 w-12 text-center">#</th>
-              <th className="py-3 px-3">Từ vựng (Word)</th>
-              <th className="py-3 px-3">Phiên âm</th>
-              <th className="py-3 px-3">Nghĩa tiếng Việt</th>
-              <th className="py-3 px-3">Độ khó</th>
-              <th className="py-3 px-3 text-center">Trạng thái</th>
-              <th className="py-3 pl-3 pr-4 sm:pr-5 text-right">Thao tác</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100 text-xs text-slate-700">
-            {isLoading ? (
-              <tr>
-                <td colSpan={7} className="py-12 text-center text-slate-400">
-                  Đang tải danh sách từ vựng...
-                </td>
+      {toggleStatusMutation.isError && (
+        <div
+          role="alert"
+          className="border-b border-destructive/30 bg-destructive-soft px-4 py-3 text-body-sm text-destructive sm:px-5"
+        >
+          {errorMessage(
+            toggleStatusMutation.error,
+            "Không thể cập nhật trạng thái từ vựng.",
+          )}
+        </div>
+      )}
+
+      {wordsQuery.isLoading ? (
+        <SkeletonList count={5} className="p-4 sm:p-5" />
+      ) : wordsQuery.isError ? (
+        <RegionState
+          variant="error"
+          title="Không thể tải danh sách từ vựng"
+          description={errorMessage(
+            wordsQuery.error,
+            "Đã xảy ra lỗi khi tải dữ liệu của Unit này.",
+          )}
+          action={
+            <button
+              type="button"
+              onClick={() => void wordsQuery.refetch()}
+              className="min-h-10 rounded-lg border border-border bg-card px-3 py-2 text-body-sm font-semibold hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            >
+              Thử lại
+            </button>
+          }
+        />
+      ) : words.length === 0 ? (
+        <RegionState
+          variant="empty"
+          title={
+            hasFilters
+              ? "Không tìm thấy từ vựng phù hợp"
+              : "Unit này chưa có từ vựng"
+          }
+          description={
+            hasFilters
+              ? "Thay đổi bộ lọc hoặc từ khóa để xem kết quả khác."
+              : "Thêm từ vựng đầu tiên để bắt đầu xây dựng danh sách của Unit."
+          }
+          action={
+            hasFilters ? (
+              <button
+                type="button"
+                onClick={resetFilters}
+                className="min-h-10 rounded-lg border border-border bg-card px-3 py-2 text-body-sm font-semibold hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              >
+                Xóa bộ lọc
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setAddModalOpen(true)}
+                className="min-h-10 rounded-lg bg-primary px-3 py-2 text-body-sm font-semibold text-primary-foreground hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              >
+                Thêm từ vựng
+              </button>
+            )
+          }
+        />
+      ) : (
+        <div className="overflow-x-auto" aria-busy={wordsQuery.isFetching}>
+          <table className="w-full min-w-max border-collapse text-left">
+            <thead>
+              <tr className="border-b border-border bg-muted/20 text-label font-semibold text-muted-foreground">
+                <th className="px-4 py-3 text-center sm:pl-5">#</th>
+                <th className="px-3 py-3">Từ vựng</th>
+                <th className="px-3 py-3">Phiên âm</th>
+                <th className="px-3 py-3">Nghĩa tiếng Việt</th>
+                <th className="px-3 py-3">Độ khó</th>
+                <th className="px-3 py-3 text-center">Trạng thái</th>
+                <th className="px-4 py-3 text-right sm:pr-5">Thao tác</th>
               </tr>
-            ) : words.length === 0 ? (
-              <tr>
-                <td colSpan={7} className="py-12 text-center">
-                  <div className="mx-auto max-w-xs space-y-2">
-                    <Sparkles className="mx-auto h-7 w-7 text-slate-300" />
-                    <p className="font-semibold text-slate-600">
-                      {searchTerm.trim()
-                        ? "Không tìm thấy từ vựng phù hợp"
-                        : "Chưa có từ vựng nào trong bài học này"}
-                    </p>
-                    <p className="text-[11px] text-slate-400">
-                      Hãy thêm từ vựng để kích hoạt mini-game cho học sinh luyện tập.
-                    </p>
-                    {!searchTerm.trim() && (
-                      <div className="pt-2 flex justify-center gap-2">
+            </thead>
+            <tbody className="divide-y divide-border text-body-sm text-foreground">
+              {words.map((item, index) => {
+                const statusPending =
+                  toggleStatusMutation.isPending &&
+                  toggleStatusMutation.variables?.id === item.id;
+                const deletePending =
+                  deleteMutation.isPending && deletingWord?.id === item.id;
+
+                return (
+                  <tr key={item.id} className="group hover:bg-muted/30">
+                    <td className="px-4 py-3 text-center tabular-nums text-muted-foreground sm:pl-5">
+                      {index + 1}
+                    </td>
+                    <td className="px-3 py-3">
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold">{item.word}</span>
                         <button
                           type="button"
-                          onClick={() => setAddModalOpen(true)}
-                          className="rounded-lg bg-primary px-3 py-1.5 text-xs font-bold text-white hover:bg-primary-dark transition"
+                          onClick={() => handleSpeak(item.word)}
+                          aria-label={`Nghe phát âm ${item.word}`}
+                          className="grid size-10 place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-primary-soft hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                         >
-                          + Thêm từ đầu tiên
+                          <Volume2 className="size-4" aria-hidden="true" />
+                        </button>
+                        {item.partOfSpeech && (
+                          <span className="text-body-sm italic text-muted-foreground">
+                            ({item.partOfSpeech.toLowerCase()})
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-3 py-3 text-muted-foreground">
+                      {item.pronunciation || "—"}
+                    </td>
+                    <td className="max-w-sm px-3 py-3">
+                      <span className="font-semibold">{item.meaningVi}</span>
+                      {item.exampleSentence && (
+                        <p className="mt-1 truncate italic text-muted-foreground">
+                          “{item.exampleSentence}”
+                        </p>
+                      )}
+                    </td>
+                    <td className="px-3 py-3">
+                      <span
+                        className={cn(
+                          "inline-flex rounded-full border px-2 py-0.5 text-caption font-semibold",
+                          DIFFICULTY_STYLES[item.difficulty],
+                        )}
+                      >
+                        {item.difficulty}
+                      </span>
+                    </td>
+                    <td className="px-3 py-3 text-center">
+                      <button
+                        type="button"
+                        disabled={statusPending}
+                        aria-pressed={item.status === "ACTIVE"}
+                        aria-label={`Đổi trạng thái của ${item.word}`}
+                        onClick={() =>
+                          toggleStatusMutation.mutate({
+                            id: item.id,
+                            nextStatus:
+                              item.status === "ACTIVE" ? "INACTIVE" : "ACTIVE",
+                          })
+                        }
+                        className={cn(
+                          "inline-flex min-h-10 items-center gap-1 rounded-full px-2.5 py-1 text-caption font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:pointer-events-none disabled:opacity-50",
+                          item.status === "ACTIVE"
+                            ? "bg-success-soft text-success"
+                            : "bg-muted text-muted-foreground",
+                        )}
+                      >
+                        {item.status === "ACTIVE" ? (
+                          <CheckCircle2 className="size-3.5" aria-hidden="true" />
+                        ) : (
+                          <XCircle className="size-3.5" aria-hidden="true" />
+                        )}
+                        {statusPending
+                          ? "Đang lưu"
+                          : item.status === "ACTIVE"
+                            ? "Đang dùng"
+                            : "Tạm ẩn"}
+                      </button>
+                    </td>
+                    <td className="px-4 py-3 text-right sm:pr-5">
+                      <div className="flex items-center justify-end gap-1">
+                        <button
+                          type="button"
+                          disabled={deletePending || statusPending}
+                          onClick={() => setEditingWord(item)}
+                          aria-label={`Chỉnh sửa ${item.word}`}
+                          className="grid size-10 place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-primary-soft hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:pointer-events-none disabled:opacity-50"
+                        >
+                          <Edit3 className="size-4" aria-hidden="true" />
                         </button>
                         <button
                           type="button"
-                          onClick={() => setBulkModalOpen(true)}
-                          className="rounded-lg border border-amber-300 bg-amber-50 px-3 py-1.5 text-xs font-bold text-amber-800 hover:bg-amber-100 transition"
+                          disabled={deletePending || statusPending}
+                          onClick={() => {
+                            deleteMutation.reset();
+                            setDeletingWord(item);
+                          }}
+                          aria-label={`Xóa ${item.word}`}
+                          className="grid size-10 place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-destructive-soft hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive disabled:pointer-events-none disabled:opacity-50"
                         >
-                          ⚡ Nhập nhanh
+                          <Trash2 className="size-4" aria-hidden="true" />
                         </button>
                       </div>
-                    )}
-                  </div>
-                </td>
-              </tr>
-            ) : (
-              words.map((item, idx) => (
-                <tr
-                  key={item.id}
-                  className="hover:bg-slate-50/70 transition group"
-                >
-                  {/* Order */}
-                  <td className="py-3 pl-4 pr-2 sm:pl-5 text-center font-mono text-slate-400">
-                    {idx + 1}
-                  </td>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
 
-                  {/* Word + TTS button */}
-                  <td className="py-3 px-3">
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-slate-800 text-[13px]">
-                        {item.word}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => handleSpeak(item.word)}
-                        className="rounded p-1 text-slate-400 hover:text-primary hover:bg-primary/10 transition opacity-80 group-hover:opacity-100"
-                        title="Nghe phát âm"
-                      >
-                        <Volume2 className="h-3.5 w-3.5" />
-                      </button>
-                      {item.partOfSpeech && (
-                        <span className="text-[10px] italic text-slate-400 font-medium">
-                          ({item.partOfSpeech.toLowerCase()})
-                        </span>
-                      )}
-                    </div>
-                  </td>
-
-                  {/* Pronunciation */}
-                  <td className="py-3 px-3 font-mono text-[11px] text-slate-500">
-                    {item.pronunciation || "—"}
-                  </td>
-
-                  {/* Vietnamese Meaning */}
-                  <td className="py-3 px-3">
-                    <span className="font-medium text-slate-800">
-                      {item.meaningVi}
-                    </span>
-                    {item.exampleSentence && (
-                      <p className="mt-0.5 text-[11px] text-slate-400 italic truncate max-w-xs">
-                        &quot;{item.exampleSentence}&quot;
-                      </p>
-                    )}
-                  </td>
-
-                  {/* Difficulty */}
-                  <td className="py-3 px-3">
-                    <span
-                      className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold ${
-                        item.difficulty === "EASY"
-                          ? "bg-emerald-50 text-emerald-700 border border-emerald-200/60"
-                          : item.difficulty === "MEDIUM"
-                          ? "bg-amber-50 text-amber-700 border border-amber-200/60"
-                          : "bg-rose-50 text-rose-700 border border-rose-200/60"
-                      }`}
-                    >
-                      {item.difficulty}
-                    </span>
-                  </td>
-
-                  {/* Status Toggle */}
-                  <td className="py-3 px-3 text-center">
-                    <button
-                      type="button"
-                      onClick={() =>
-                        toggleStatusMutation.mutate({
-                          id: item.id,
-                          nextStatus: item.status === "ACTIVE" ? "INACTIVE" : "ACTIVE",
-                        })
-                      }
-                      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold transition ${
-                        item.status === "ACTIVE"
-                          ? "bg-emerald-100/70 text-emerald-800 hover:bg-emerald-200/70"
-                          : "bg-slate-200/80 text-slate-600 hover:bg-slate-300/80"
-                      }`}
-                      title="Bấm để đổi trạng thái"
-                    >
-                      {item.status === "ACTIVE" ? (
-                        <>
-                          <CheckCircle2 className="h-3 w-3 text-emerald-600" />
-                          <span>Active</span>
-                        </>
-                      ) : (
-                        <>
-                          <XCircle className="h-3 w-3 text-slate-500" />
-                          <span>Hidden</span>
-                        </>
-                      )}
-                    </button>
-                  </td>
-
-                  {/* Action buttons */}
-                  <td className="py-3 pl-3 pr-4 sm:pr-5 text-right">
-                    <div className="flex items-center justify-end gap-1">
-                      <button
-                        type="button"
-                        onClick={() => setEditingWord(item)}
-                        className="rounded-lg p-1.5 text-slate-400 hover:text-primary hover:bg-primary/10 transition"
-                        title="Chỉnh sửa từ này"
-                      >
-                        <Edit3 className="h-3.5 w-3.5" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setDeletingWord(item)}
-                        className="rounded-lg p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 transition"
-                        title="Xóa từ này"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Modal Thêm từ vựng */}
       <VocabularyWordModal
         open={addModalOpen}
         onOpenChange={setAddModalOpen}
         onSubmit={async (payload) => {
-          await createMutation.mutateAsync(payload as CreateVocabularyWordRequest);
+          await createMutation.mutateAsync(
+            payload as CreateVocabularyWordRequest,
+          );
         }}
         isPending={createMutation.isPending}
       />
 
-      {/* Modal Sửa từ vựng */}
       <VocabularyWordModal
-        open={!!editingWord}
-        onOpenChange={(open) => !open && setEditingWord(null)}
+        open={Boolean(editingWord)}
+        onOpenChange={(open) => {
+          if (!open && !updateMutation.isPending) setEditingWord(null);
+        }}
         word={editingWord}
         onSubmit={async (payload) => {
-          await updateMutation.mutateAsync(payload as UpdateVocabularyWordRequest);
+          await updateMutation.mutateAsync(
+            payload as UpdateVocabularyWordRequest,
+          );
         }}
         isPending={updateMutation.isPending}
       />
 
-      {/* Modal Nhập nhanh */}
       <BulkImportVocabularyModal
         open={bulkModalOpen}
         onOpenChange={setBulkModalOpen}
-        onSubmit={async (wordsList) => {
-          await bulkMutation.mutateAsync(wordsList);
+        onSubmit={async (wordsToCreate) => {
+          await bulkMutation.mutateAsync(wordsToCreate);
         }}
         isPending={bulkMutation.isPending}
       />
 
-      {/* Confirmation Dialog Xóa từ vựng */}
-      {deletingWord && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-          <div className="w-full max-w-sm rounded-2xl bg-white p-5 shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150">
-            <div className="flex items-center gap-3">
-              <span className="grid h-10 w-10 place-items-center rounded-xl bg-red-100 text-red-600">
-                <Trash2 className="h-5 w-5" />
-              </span>
-              <div>
-                <h3 className="text-sm font-bold text-slate-800">
-                  Xác nhận xóa từ vựng?
-                </h3>
-                <p className="text-xs text-slate-500">
-                  Bạn có chắc muốn xóa từ &quot;<strong>{deletingWord.word}</strong>&quot; khỏi Unit này?
-                </p>
-              </div>
+      <AlertDialog
+        open={Boolean(deletingWord)}
+        onOpenChange={(open) => {
+          if (!open && !deleteMutation.isPending) {
+            deleteMutation.reset();
+            setDeletingWord(null);
+          }
+        }}
+      >
+        <AlertDialogContent className="max-w-md border-border bg-card">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Xóa từ vựng?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Từ “<strong>{deletingWord?.word}</strong>” sẽ bị xóa khỏi Unit này
+              và không còn xuất hiện trong danh sách Vocabulary dùng chung.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          {deleteMutation.isError && (
+            <div
+              role="alert"
+              className="rounded-lg border border-destructive/30 bg-destructive-soft p-3 text-body-sm text-destructive"
+            >
+              {errorMessage(
+                deleteMutation.error,
+                "Không thể xóa từ vựng. Vui lòng thử lại.",
+              )}
             </div>
-
-            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
-              <button
-                type="button"
-                onClick={() => setDeletingWord(null)}
-                className="rounded-lg border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition"
-              >
-                Hủy
-              </button>
-              <button
-                type="button"
-                disabled={deleteMutation.isPending}
-                onClick={() => deleteMutation.mutate(deletingWord.id)}
-                className="rounded-lg bg-red-600 px-4 py-1.5 text-xs font-bold text-white hover:bg-red-700 transition disabled:opacity-50"
-              >
-                {deleteMutation.isPending ? "Đang xóa..." : "Xóa vĩnh viễn"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+          )}
+          <AlertDialogFooter>
+            <AlertDialogCancel
+              disabled={deleteMutation.isPending}
+              className="border-border hover:bg-muted"
+            >
+              Hủy
+            </AlertDialogCancel>
+            <AlertDialogAction
+              disabled={deleteMutation.isPending || !deletingWord}
+              onClick={(event) => {
+                event.preventDefault();
+                if (deletingWord) deleteMutation.mutate(deletingWord.id);
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleteMutation.isPending ? "Đang xóa…" : "Xóa từ vựng"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </section>
   );
 }
-

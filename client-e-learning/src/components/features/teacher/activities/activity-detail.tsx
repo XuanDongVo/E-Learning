@@ -70,7 +70,7 @@ export function ActivityDetail({ activityId }: { activityId: number }) {
     <div className="space-y-6">
       <header className="space-y-4">
         <nav
-          className="text-body-sm text-neutral-muted"
+          className="text-sm text-neutral-muted"
           aria-label="Breadcrumb"
         >
           <Link

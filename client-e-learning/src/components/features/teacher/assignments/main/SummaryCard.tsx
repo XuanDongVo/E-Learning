@@ -1,13 +1,20 @@
 import type { ReactNode } from "react";
-import type { ColorTone } from "@/types/theme";
-import { colorToneClasses } from "@/utils/theme";
+
+type SummaryTone = "primary" | "success" | "warning" | "info";
+
+const toneClasses: Record<SummaryTone, string> = {
+  primary: "bg-primary-soft text-primary",
+  success: "bg-success-soft text-success",
+  warning: "bg-warning-soft text-warning",
+  info: "bg-info-soft text-info",
+};
 
 type Props = {
   icon: ReactNode;
   label: string;
-  value: string | number;
+  value: ReactNode;
   hint: string;
-  tone: ColorTone;
+  tone: SummaryTone;
 };
 
 export function SummaryCard({
@@ -18,24 +25,24 @@ export function SummaryCard({
   tone,
 }: Props) {
   return (
-    <div className="rounded-2xl border-2 border-ink bg-card p-5 shadow-pop transition hover:-translate-y-0.5">
+    <div className="rounded-xl border border-border bg-card p-5">
       <div className="flex items-center justify-between">
-        <p className="text-body-sm font-bold text-neutral-muted">
+        <p className="text-sm font-bold text-muted-foreground">
           {label}
         </p>
 
         <span
-          className={`grid size-9 place-items-center rounded-xl border border-border shadow-pop-sm ${colorToneClasses[tone]}`}
+          className={`grid size-9 place-items-center rounded-lg ${toneClasses[tone]}`}
         >
           {icon}
         </span>
       </div>
 
-      <p className="mt-3 text-2xl font-extrabold text-foreground">
+      <div className="mt-3 text-2xl font-extrabold ">
         {value}
-      </p>
+      </div>
 
-      <p className="mt-1 text-body-sm font-medium text-neutral-muted">
+      <p className="mt-1 text-sm font-medium text-muted-foreground">
         {hint}
       </p>
     </div>

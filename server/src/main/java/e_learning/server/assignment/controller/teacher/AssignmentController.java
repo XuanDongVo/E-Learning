@@ -22,8 +22,10 @@ public class AssignmentController {
     private final AssignmentService assignmentService;
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<AssignmentResponse>>> list() {
-        return ResponseEntity.ok(ApiResponse.success(assignmentService.list()));
+    public ResponseEntity<ApiResponse<List<AssignmentResponse>>> list(
+            @AuthenticationPrincipal Jwt jwt) {
+        return ResponseEntity.ok(ApiResponse.success(
+                assignmentService.list(Long.valueOf(jwt.getSubject()))));
     }
 
     @GetMapping("/{id}")

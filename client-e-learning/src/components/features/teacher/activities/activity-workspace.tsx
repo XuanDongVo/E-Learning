@@ -129,6 +129,12 @@ export function ActivityWorkspace() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
+  const requestedUnit = useQuery({
+    queryKey: QUERY_KEYS.contentUnit(requestedUnitId),
+    queryFn: async () => (await unitService.get(requestedUnitId)).data,
+    enabled: requestedUnitId > 0,
+  });
+
   const grades = useQuery({
     queryKey: ["teacher", "activities", "grades"],
     queryFn: async () => {
@@ -142,7 +148,11 @@ export function ActivityWorkspace() {
       return response.data;
     },
   });
-  const activeGrade = gradeId || grades.data?.[0]?.id;
+  const activeGrade =
+    gradeId ??
+    (requestedUnitId > 0 && !requestedUnit.isError
+      ? requestedUnit.data?.gradeId
+      : grades.data?.[0]?.id);
 
   const units = useQuery({
     queryKey: QUERY_KEYS.contentUnits(activeGrade ?? 0),
@@ -261,6 +271,11 @@ export function ActivityWorkspace() {
             setGradeId(Number(next));
             setUnitId(0);
             setPage(1);
+            const q = new URLSearchParams(params.toString());
+            q.delete("unitId");
+            router.replace(
+              q.size > 0 ? `/teacher/activities?${q.toString()}` : "/teacher/activities",
+            );
           }}
           placeholder={t("selectGrade")}
           searchPlaceholder={t("searchGrade")}

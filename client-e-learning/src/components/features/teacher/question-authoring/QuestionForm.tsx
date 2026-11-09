@@ -42,11 +42,12 @@ export type QuestionMediaUploadHandler = (
 export const questionTypes = questionTypeOptions;
 export const difficultyOptions = questionDifficultyOptions;
 
+// Input & Select: Viền border-2 sắc nét, tương phản cao, TUYỆT ĐỐI không dùng shadow / focus-ring mờ
 const inputClassName =
-  "w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800 outline-none transition placeholder:text-slate-300 hover:border-slate-300 focus:border-primary focus:ring-2 focus:ring-primary/10";
+  "w-full rounded-lg border-2 border-slate-300 bg-white px-3.5 py-2.5 text-sm font-medium text-slate-800 shadow-none outline-none transition placeholder:text-slate-400 hover:border-slate-400 focus:border-primary focus:outline-none focus:ring-0 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500 dark:hover:border-slate-500 dark:focus:border-primary";
 
 const selectClassName =
-  "h-10 w-full appearance-none rounded-lg border border-slate-200 bg-white pl-3 pr-9 text-sm text-slate-700 outline-none transition hover:border-slate-300 focus:border-primary focus:ring-2 focus:ring-primary/10";
+  "h-11 w-full appearance-none rounded-lg border-2 border-slate-300 bg-white pl-3.5 pr-10 text-sm font-semibold text-slate-800 shadow-none outline-none transition hover:border-slate-400 focus:border-primary focus:outline-none focus:ring-0 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100 dark:hover:border-slate-500 dark:focus:border-primary";
 
 export function QuestionForm({
   question,
@@ -58,9 +59,11 @@ export function QuestionForm({
   onUploadMedia: QuestionMediaUploadHandler;
 }) {
   const tErrors = useTranslations("errors");
-  const [pendingTypeChange, setPendingTypeChange] = useState<QuestionType | null>(null);
-  // Per-kind upload state — only disables that specific attach button
-  const [uploadingKind, setUploadingKind] = useState<"image" | "audio" | null>(null);
+  const [pendingTypeChange, setPendingTypeChange] =
+    useState<QuestionType | null>(null);
+  const [uploadingKind, setUploadingKind] = useState<"image" | "audio" | null>(
+    null,
+  );
   const imageInputRef = useRef<HTMLInputElement>(null);
   const audioInputRef = useRef<HTMLInputElement>(null);
 
@@ -84,7 +87,9 @@ export function QuestionForm({
 
   const removeOption = (optionId: string) => {
     if (question.options.length <= 2) return;
-    const remaining = question.options.filter((option) => option.id !== optionId);
+    const remaining = question.options.filter(
+      (option) => option.id !== optionId,
+    );
     const normalized = remaining.map((option, index) => ({
       ...option,
       id: String.fromCharCode(65 + index),
@@ -119,11 +124,13 @@ export function QuestionForm({
   const removeAcceptedAnswer = (index: number) => {
     if (question.acceptedAnswers.length <= 1) return;
     onChange({
-      acceptedAnswers: question.acceptedAnswers.filter((_, answerIndex) => answerIndex !== index),
+      acceptedAnswers: question.acceptedAnswers.filter(
+        (_, answerIndex) => answerIndex !== index,
+      ),
     });
   };
 
-  // ── Question type change 
+  // ── Question type change
   const handleTypeSelect = (nextType: QuestionType) => {
     if (nextType === question.type) return;
     const hasData =
@@ -186,31 +193,33 @@ export function QuestionForm({
   };
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-6">
       {/* Type Change Warning Modal */}
       {pendingTypeChange && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-sm rounded-xl bg-white p-5 shadow-xl">
-            <div className="flex items-center gap-2 text-amber-600">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-sm rounded-xl border-2 border-slate-800 bg-white p-5 dark:border-slate-200 dark:bg-slate-900">
+            <div className="flex items-center gap-2 text-amber-600 dark:text-amber-500">
               <AlertTriangle size={20} />
-              <h3 className="font-bold text-slate-800">Change Question Type?</h3>
+              <h3 className="font-bold text-slate-900 dark:text-slate-100">
+                Change Question Type?
+              </h3>
             </div>
-            <p className="mt-2 text-xs text-slate-600">
-              Changing question type to <b>{pendingTypeChange}</b> will reset your current choices
-              and answers. Are you sure?
+            <p className="mt-2 text-xs leading-relaxed text-slate-600 dark:text-slate-400">
+              Changing question type to <b>{pendingTypeChange}</b> will reset
+              your current choices and answers. Are you sure?
             </p>
-            <div className="mt-4 flex justify-end gap-2">
+            <div className="mt-5 flex justify-end gap-2.5">
               <button
                 type="button"
                 onClick={() => setPendingTypeChange(null)}
-                className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50"
+                className="rounded-lg border-2 border-slate-300 px-3.5 py-1.5 text-xs font-bold text-slate-700 transition hover:bg-slate-100 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-800"
               >
                 Cancel
               </button>
               <button
                 type="button"
                 onClick={() => applyTypeChange(pendingTypeChange)}
-                className="rounded-lg bg-amber-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-amber-700"
+                className="rounded-lg border-2 border-amber-700 bg-amber-600 px-3.5 py-1.5 text-xs font-bold text-white transition hover:bg-amber-700"
               >
                 Confirm Change
               </button>
@@ -220,44 +229,64 @@ export function QuestionForm({
       )}
 
       {/* Type + Difficulty */}
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-3.5">
         <label className="block">
-          <span className="mb-1 block text-xs font-medium text-slate-500">Type</span>
+          <span className="mb-1.5 block text-xs font-bold tracking-wide text-slate-700 dark:text-slate-300">
+            Type
+          </span>
           <div className="relative">
             <select
               className={selectClassName}
               value={question.type}
-              onChange={(event) => handleTypeSelect(event.target.value as QuestionType)}
+              onChange={(event) =>
+                handleTypeSelect(event.target.value as QuestionType)
+              }
             >
               {questionTypes.map((item) => (
-                <option key={item.value} value={item.value}>{item.label}</option>
+                <option key={item.value} value={item.value}>
+                  {item.label}
+                </option>
               ))}
             </select>
-            <ChevronDown size={15} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <ChevronDown
+              size={16}
+              className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400"
+            />
           </div>
         </label>
 
         <label className="block">
-          <span className="mb-1 block text-xs font-medium text-slate-500">Difficulty</span>
+          <span className="mb-1.5 block text-xs font-bold tracking-wide text-slate-700 dark:text-slate-300">
+            Difficulty
+          </span>
           <div className="relative">
             <select
               className={selectClassName}
               value={question.difficulty}
-              onChange={(event) => onChange({ difficulty: event.target.value as Difficulty })}
+              onChange={(event) =>
+                onChange({ difficulty: event.target.value as Difficulty })
+              }
             >
               {difficultyOptions.map((item) => (
-                <option key={item.value} value={item.value}>{item.label}</option>
+                <option key={item.value} value={item.value}>
+                  {item.label}
+                </option>
               ))}
             </select>
-            <ChevronDown size={15} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <ChevronDown
+              size={16}
+              className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400"
+            />
           </div>
         </label>
       </div>
 
       {/* Question text */}
       <label className="block">
-        <div className="mb-1 flex items-center justify-between">
-          <span className="text-xs font-medium text-slate-500">Question</span>
+        <div className="mb-1.5 flex items-center justify-between">
+          <span className="text-xs font-bold tracking-wide text-slate-700 dark:text-slate-300">
+            Question
+          </span>
           {question.type === "FILL_IN_BLANK" && (
             <button
               type="button"
@@ -280,21 +309,26 @@ export function QuestionForm({
               : "Enter your question prompt..."
           }
           rows={3}
-          className={`${inputClassName} resize-y`}
+          className={`${inputClassName} resize-y leading-relaxed`}
         />
-        {question.type === "FILL_IN_BLANK" && !question.text.includes("____") && (
-          <p className="mt-1 text-xs text-amber-600 font-medium">
-            ⚠️ Fill in the Blank questions require 4 underscores{" "}
-            <code className="bg-amber-100 px-1 rounded">____</code> in the prompt text.
-          </p>
-        )}
+        {question.type === "FILL_IN_BLANK" &&
+          !question.text.includes("____") && (
+            <p className="mt-1.5 text-xs font-semibold text-amber-600 dark:text-amber-400">
+              ⚠️ Fill in the Blank questions require 4 underscores{" "}
+              <code className="rounded border border-amber-300 bg-amber-100 px-1 py-0.5 text-amber-900 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-200">
+                ____
+              </code>{" "}
+              in the prompt text.
+            </p>
+          )}
       </label>
 
       {/* Choice questions */}
-      {(question.type === "SINGLE_CHOICE" || question.type === "MULTIPLE_CHOICE") && (
+      {(question.type === "SINGLE_CHOICE" ||
+        question.type === "MULTIPLE_CHOICE") && (
         <div>
-          <div className="mb-2 flex items-center justify-between">
-            <span className="text-xs font-medium text-slate-500">
+          <div className="mb-2.5 flex items-center justify-between">
+            <span className="text-xs font-bold tracking-wide text-slate-700 dark:text-slate-300">
               {question.type === "SINGLE_CHOICE"
                 ? "Options (select one correct)"
                 : "Options (select one or more correct)"}
@@ -302,20 +336,23 @@ export function QuestionForm({
             <button
               type="button"
               onClick={addOption}
-              className="inline-flex items-center gap-1 text-xs font-semibold text-primary transition hover:text-primary-hover"
+              className="inline-flex items-center gap-1 text-xs font-bold text-primary transition hover:opacity-80"
             >
-              <Plus size={12} /> Add option
+              <Plus size={14} /> Add option
             </button>
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-2.5">
             {question.options.map((option) => {
               const isCorrect = question.correctOptionIds.includes(option.id);
               return (
                 <div
                   key={option.id}
-                  className={`flex items-center gap-2.5 rounded-lg border p-2 transition ${isCorrect ? "border-primary bg-primary-light/40" : "border-slate-200"
-                    }`}
+                  className={`flex items-center gap-3 rounded-lg border-2 p-2.5 transition ${
+                    isCorrect
+                      ? "border-primary bg-primary/5 dark:bg-primary/10"
+                      : "border-slate-300 bg-white hover:border-slate-400 dark:border-slate-600 dark:bg-slate-900 dark:hover:border-slate-500"
+                  }`}
                 >
                   <button
                     type="button"
@@ -324,36 +361,49 @@ export function QuestionForm({
                         question.type === "SINGLE_CHOICE"
                           ? [option.id]
                           : isCorrect
-                            ? question.correctOptionIds.filter((id) => id !== option.id)
+                            ? question.correctOptionIds.filter(
+                                (id) => id !== option.id,
+                              )
                             : [...question.correctOptionIds, option.id];
                       onChange({ correctOptionIds: nextCorrectOptionIds });
                     }}
-                    className={`grid h-5 w-5 shrink-0 place-items-center rounded-full border-2 transition ${isCorrect ? "border-primary bg-primary" : "border-slate-300"
-                      }`}
+                    className={`grid h-5 w-5 shrink-0 place-items-center rounded-full border-2 transition ${
+                      isCorrect
+                        ? "border-primary bg-primary"
+                        : "border-slate-400 bg-white dark:border-slate-500 dark:bg-slate-800"
+                    }`}
                   >
-                    {isCorrect && <span className="h-2 w-2 rounded-full bg-white" />}
+                    {isCorrect && (
+                      <span className="h-1.5 w-1.5 rounded-full bg-white" />
+                    )}
                   </button>
-                  <span className="grid h-7 w-7 shrink-0 place-items-center rounded-md bg-slate-100 text-xs font-bold text-slate-500">
+
+                  <span className="grid h-7 w-7 shrink-0 place-items-center rounded-md border border-slate-200 bg-slate-100 text-xs font-bold text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200">
                     {option.id}
                   </span>
+
                   <input
                     value={option.text}
-                    onChange={(event) => updateOption(option.id, event.target.value)}
+                    onChange={(event) =>
+                      updateOption(option.id, event.target.value)
+                    }
                     placeholder={`Option ${option.id}`}
-                    className="min-w-0 flex-1 bg-transparent text-sm text-slate-800 outline-none placeholder:text-slate-300"
+                    className="min-w-0 flex-1 bg-transparent text-sm font-medium text-slate-800 shadow-none outline-none placeholder:text-slate-400 focus:outline-none focus:ring-0 dark:text-slate-100 dark:placeholder:text-slate-500"
                   />
+
                   {isCorrect && (
-                    <span className="hidden shrink-0 items-center gap-1 text-xs font-semibold text-primary sm:flex">
-                      <CheckCircle2 size={13} /> Correct
+                    <span className="hidden shrink-0 items-center gap-1 text-xs font-bold text-primary sm:flex">
+                      <CheckCircle2 size={14} /> Correct
                     </span>
                   )}
+
                   <button
                     type="button"
                     disabled={question.options.length <= 2}
                     onClick={() => removeOption(option.id)}
-                    className="shrink-0 rounded-md p-1.5 text-slate-300 transition hover:bg-rose-50 hover:text-rose-500 disabled:pointer-events-none disabled:opacity-30"
+                    className="shrink-0 rounded-md p-1.5 text-slate-400 transition hover:bg-rose-50 hover:text-rose-600 disabled:pointer-events-none disabled:opacity-30 dark:hover:bg-rose-950 dark:hover:text-rose-400"
                   >
-                    <Trash2 size={14} />
+                    <Trash2 size={15} />
                   </button>
                 </div>
               );
@@ -365,8 +415,10 @@ export function QuestionForm({
       {/* True / False */}
       {question.type === "TRUE_FALSE" && (
         <div>
-          <span className="mb-2 block text-xs font-medium text-slate-500">Correct Answer</span>
-          <div className="grid grid-cols-2 gap-2">
+          <span className="mb-2 block text-xs font-bold tracking-wide text-slate-700 dark:text-slate-300">
+            Correct Answer
+          </span>
+          <div className="grid grid-cols-2 gap-3">
             {(["TRUE", "FALSE"] as const).map((value) => {
               const isSelected = question.trueFalseAnswer === value;
               return (
@@ -374,10 +426,11 @@ export function QuestionForm({
                   key={value}
                   type="button"
                   onClick={() => onChange({ trueFalseAnswer: value })}
-                  className={`flex h-11 items-center justify-center gap-2 rounded-lg border text-sm font-bold transition ${isSelected
-                    ? "border-primary bg-primary text-white"
-                    : "border-slate-200 bg-white text-slate-700 hover:border-slate-300"
-                    }`}
+                  className={`flex h-11 items-center justify-center gap-2 rounded-lg border-2 text-sm font-bold shadow-none transition ${
+                    isSelected
+                      ? "border-primary bg-primary text-white"
+                      : "border-slate-300 bg-white text-slate-800 hover:border-slate-400 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100 dark:hover:border-slate-500"
+                  }`}
                 >
                   {value}
                 </button>
@@ -388,22 +441,25 @@ export function QuestionForm({
       )}
 
       {/* Text Answers (Fill in blank / Type answer) */}
-      {(question.type === "FILL_IN_BLANK" || question.type === "TYPE_ANSWER") && (
+      {(question.type === "FILL_IN_BLANK" ||
+        question.type === "TYPE_ANSWER") && (
         <div>
-          <div className="mb-2 flex items-center justify-between">
-            <span className="text-xs font-medium text-slate-500">Accepted Answers</span>
+          <div className="mb-2.5 flex items-center justify-between">
+            <span className="text-xs font-bold tracking-wide text-slate-700 dark:text-slate-300">
+              Accepted Answers
+            </span>
             <button
               type="button"
               onClick={addAcceptedAnswer}
-              className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:text-primary-hover"
+              className="inline-flex items-center gap-1 text-xs font-bold text-primary transition hover:opacity-80"
             >
-              <Plus size={12} /> Add alternative answer
+              <Plus size={14} /> Add alternative answer
             </button>
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-2.5">
             {question.acceptedAnswers.map((answer, index) => (
-              <div key={index} className="flex items-center gap-2">
+              <div key={index} className="flex items-center gap-2.5">
                 <input
                   value={answer}
                   onChange={(e) => updateAcceptedAnswer(index, e.target.value)}
@@ -414,9 +470,9 @@ export function QuestionForm({
                   type="button"
                   disabled={question.acceptedAnswers.length <= 1}
                   onClick={() => removeAcceptedAnswer(index)}
-                  className="shrink-0 rounded-md p-2 text-slate-300 hover:bg-rose-50 hover:text-rose-500 disabled:opacity-30"
+                  className="shrink-0 rounded-lg border-2 border-slate-300 p-2.5 text-slate-400 transition hover:border-rose-400 hover:bg-rose-50 hover:text-rose-600 disabled:opacity-30 dark:border-slate-600 dark:hover:border-rose-700 dark:hover:bg-rose-950 dark:hover:text-rose-400"
                 >
-                  <Trash2 size={14} />
+                  <Trash2 size={15} />
                 </button>
               </div>
             ))}
@@ -426,51 +482,50 @@ export function QuestionForm({
 
       {/* Explanation */}
       <label className="block">
-        <span className="mb-1 block text-xs font-medium text-slate-500">Explanation (Optional)</span>
+        <span className="mb-1.5 block text-xs font-bold tracking-wide text-slate-700 dark:text-slate-300">
+          Explanation (Optional)
+        </span>
         <textarea
           value={question.explanation}
           onChange={(event) => onChange({ explanation: event.target.value })}
           placeholder="Explain why the answer is correct..."
           rows={2}
-          className={`${inputClassName} resize-y`}
+          className={`${inputClassName} resize-y leading-relaxed`}
         />
       </label>
 
       {/* Optional Learning Mode hint */}
       <label className="block">
-        <span className="mb-1 block text-xs font-medium text-slate-500">Hint (Optional)</span>
+        <span className="mb-1.5 block text-xs font-bold tracking-wide text-slate-700 dark:text-slate-300">
+          Hint (Optional)
+        </span>
         <textarea
           value={question.hint}
           onChange={(event) => onChange({ hint: event.target.value })}
           placeholder="Give a small clue without revealing the answer..."
           rows={2}
           maxLength={500}
-          className={`${inputClassName} resize-y`}
+          className={`${inputClassName} resize-y leading-relaxed`}
         />
       </label>
 
       {/* ── Media Attachments ─────────────────────────────────────────────────── */}
-      {/*
-        Server-side PENDING lifecycle:
-          • Upload → server stores media as PENDING
-          • Save question with mediaIds → server marks them READY (linked to question)
-          • Any PENDING media not saved → cron job deletes orphans
-        Constraint: max 1 image + max 1 audio per question.
-      */}
-      <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-4">
-        <div className="mb-3 flex items-center justify-between">
-          <span className="text-xs font-semibold text-slate-600">
+      <div className="rounded-xl border-2 border-slate-300 bg-slate-50/70 p-4 dark:border-slate-600 dark:bg-slate-900/50">
+        <div className="mb-3.5 flex items-center justify-between">
+          <span className="text-xs font-bold tracking-wide text-slate-700 dark:text-slate-300">
             Media Attachments
           </span>
-          <span className="text-[10px] text-slate-400">Max: 1 image + 1 audio</span>
+          <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+            Max: 1 image + 1 audio
+          </span>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-3.5">
           {/* Image slot */}
           <MediaSlot
             kind="image"
             label="Image"
-            icon={<ImageIcon size={14} />}
+            icon={<ImageIcon size={16} />}
             accept="image/*"
             current={currentImage}
             isUploading={uploadingKind === "image"}
@@ -483,7 +538,7 @@ export function QuestionForm({
           <MediaSlot
             kind="audio"
             label="Audio"
-            icon={<Volume2 size={14} />}
+            icon={<Volume2 size={16} />}
             accept="audio/*"
             current={currentAudio}
             isUploading={uploadingKind === "audio"}
@@ -521,15 +576,14 @@ function MediaSlot({
   onRemove: () => void;
 }) {
   if (current) {
-    // ── Attached state ────────────────────────────────────────────────────────
     return (
-      <div className="flex flex-col gap-1.5 rounded-lg border border-slate-200 bg-white p-2.5">
+      <div className="flex flex-col gap-2 rounded-lg border-2 border-slate-300 bg-white p-3 dark:border-slate-600 dark:bg-slate-900">
         {kind === "image" && current.url && (
           /* eslint-disable-next-line @next/next/no-img-element */
           <img
             src={current.url}
             alt={current.name}
-            className="h-20 w-full rounded-md object-cover border border-slate-100"
+            className="h-20 w-full rounded-md border border-slate-200 object-cover dark:border-slate-700"
             onError={(e) => {
               (e.target as HTMLImageElement).src =
                 "https://placehold.co/200x80/e2e8f0/475569?text=Preview";
@@ -539,45 +593,46 @@ function MediaSlot({
         {kind === "audio" && current.url && (
           <audio controls src={current.url} className="h-8 w-full" />
         )}
-        <div className="flex items-center justify-between gap-1">
-          <span className="min-w-0 flex-1 truncate text-[11px] font-medium text-slate-600">
+        <div className="flex items-center justify-between gap-1.5">
+          <span className="min-w-0 flex-1 truncate text-xs font-semibold text-slate-700 dark:text-slate-300">
             {current.name}
           </span>
           <button
             type="button"
             onClick={onRemove}
             title="Remove media"
-            className="shrink-0 rounded p-0.5 text-slate-400 transition hover:bg-rose-50 hover:text-rose-500"
+            className="shrink-0 rounded p-1 text-slate-400 transition hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-950 dark:hover:text-rose-400"
           >
-            <X size={13} />
+            <X size={14} />
           </button>
         </div>
         {current.sizeLabel && (
-          <span className="text-[10px] text-slate-400">{current.sizeLabel}</span>
+          <span className="text-[10px] font-medium text-slate-400 dark:text-slate-500">
+            {current.sizeLabel}
+          </span>
         )}
       </div>
     );
   }
 
-  // ── Empty slot ─────────────────────────────────────────────────────────────
   return (
     <label
-      className={`flex flex-col items-center justify-center gap-1.5 rounded-lg border-2 border-dashed p-4 text-center transition cursor-pointer
-        ${isUploading
-          ? "border-primary/40 bg-primary/5 text-primary"
-          : "border-slate-200 bg-white text-slate-400 hover:border-primary/40 hover:bg-primary/5 hover:text-primary"
-        }`}
+      className={`flex cursor-pointer flex-col items-center justify-center gap-1.5 rounded-lg border-2 border-dashed p-4 text-center transition ${
+        isUploading
+          ? "border-primary bg-primary/5 text-primary"
+          : "border-slate-300 bg-white text-slate-500 hover:border-primary hover:bg-primary/5 hover:text-primary dark:border-slate-600 dark:bg-slate-900 dark:text-slate-400 dark:hover:border-primary"
+      }`}
     >
       {isUploading ? (
         <>
           <Loader2 size={18} className="animate-spin text-primary" />
-          <span className="text-[11px] font-medium">Uploading...</span>
+          <span className="text-xs font-bold">Uploading...</span>
         </>
       ) : (
         <>
-          <span className="text-slate-400">{icon}</span>
-          <span className="text-[11px] font-semibold">Attach {label}</span>
-          <span className="text-[10px] text-slate-400">
+          <span className="text-slate-500 dark:text-slate-400">{icon}</span>
+          <span className="text-xs font-bold">Attach {label}</span>
+          <span className="text-[10px] font-medium text-slate-400">
             {kind === "image" ? "PNG, JPG, GIF…" : "MP3, WAV, AAC…"}
           </span>
         </>

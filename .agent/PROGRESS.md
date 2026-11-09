@@ -1,5 +1,25 @@
 # Project Progress
 
+## Teacher Content UI improvement — Phase 0 audit (2026-11-09)
+
+- Audited the Unit, Section, Topic, Question Bank, Activities, and Vocabulary
+  frontend flows plus their existing Spring Boot contracts. No application code,
+  API contract, database schema, route, or business rule changed in this phase.
+- Confirmed the canonical hierarchy is already represented by the current APIs:
+  Unit → Section → Topic → Question Bank. Vocabulary belongs to one Unit;
+  Activities belong to one Unit and reference Question Banks through ActivityBank.
+- The shared `UnitVocabularySection` already powers both Unit Detail and the
+  Navbar Vocabulary route, using the same CRUD service and Unit-scoped query key.
+- Phase 1 remains gated. Its frontend scope is breadcrumb/parent navigation for
+  Unit, Section, and Topic; removal of the duplicated Unit Activity list; and a
+  compact Topic Activity reference while preserving Question Banks as the main
+  Topic content.
+- Known constraint: Activities can be filtered by Unit, not by Topic. Topic-related
+  counts can be derived from returned Activity banks, but navigation must not claim
+  a Topic-filtered Activities view. No backend change is required for Phase 1.
+- Audit validation was static source/contract inspection only; no build, lint,
+  tests, screenshots, or runtime mutations were performed.
+
 ## Container deployment and local configuration (2026-11-08)
 
 - Added a Compose stack for PostgreSQL, Spring Boot, Next.js and Nginx; only Nginx publishes port 80, and `/v1/*` is reverse-proxied to the backend.

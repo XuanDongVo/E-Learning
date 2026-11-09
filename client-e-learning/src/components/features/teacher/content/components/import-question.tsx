@@ -1,303 +1,464 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   AlertTriangle,
+  ArrowLeft,
   CheckCircle2,
   Download,
   FileSpreadsheet,
+  FileWarning,
+  Info,
   Loader2,
-  X,
+  Upload,
   XCircle,
 } from "lucide-react";
 
+import { toAppError } from "@/lib/errors/app-error";
+import { useAuth } from "@/components/auth/auth-provider";
+import { createQuestionImportHandoff } from "@/services/content/question-import-handoff";
+import { questionImportService } from "@/services/content/content.questionImport.service";
 import type { ContentView } from "@/types/content";
-import { Badge } from "./badge";
+import type { CsvImportError, CsvValidationResult } from "@/types/question-import";
 
-type ImportStage = "upload" | "validating" | "preview" | "importing" | "done";
+const MAX_FILE_BYTES = 2 * 1024 * 1024;
+const TEMPLATE_PATH = "/templates/question-bank-csv-v1.csv";
 
-type PreviewRow = {
-  row: number;
-  question: string;
-  type: string;
-  difficulty: string;
-  status: "valid" | "error";
-  error?: string;
-};
+type ImportStage = "upload" | "validating" | "report" | "error";
 
-// Mock validation result — replace with the real response from
-// POST /api/v1/question-banks/{bankId}/questions/import/validate
-function mockValidate(fileName: string): PreviewRow[] {
-  const base: PreviewRow[] = Array.from({ length: 12 }, (_, index) => ({
-    row: index + 2, // header is row 1
-    question: `Sample imported question ${index + 1} from ${fileName}`,
-    type: "MULTIPLE_CHOICE",
-    difficulty: index % 3 === 0 ? "HARD" : "EASY",
-    status: "valid",
-  }));
+function csvCell(value: string | number | null | undefined): string {
+  let text = String(value ?? "");
+  // Prevent spreadsheet applications treating untrusted error values as formulas.
+  if (/^[\s]*[=+\-@]/.test(text)) text = "'" + text;
+  return '"' + text.replace(/"/g, '""') + '"';
+}
 
-  // Seed a couple of realistic errors so the preview isn't misleadingly clean.
-  base[3] = { ...base[3], status: "error", error: "Missing correct answer" };
-  base[9] = { ...base[9], status: "error", error: "Question text is empty" };
+function exportErrors(fileName: string, errors: CsvImportError[]) {
+  const header = ["row_number", "field", "error_code", "error_message", "raw_value"];
+  const rows = errors.map((error) => [
+    error.rowNumber,
+    error.field,
+    error.code,
+    error.message,
+    error.rawValue,
+  ]);
+  const csv =
+    "\uFEFF" + [header, ...rows].map((row) => row.map(csvCell).join(",")).join("\r\n") + "\r\n";
+  const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = fileName.replace(/\.csv$/i, "") + "-validation-errors.csv";
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 0);
+}
 
-  return base;
+function validationMessage(error: unknown): string {
+  const appError = toAppError(error);
+  const raw = appError.message.replace(/^\[[A-Z0-9_]+\]\s*/, "").trim();
+  if (!raw || /^\s*<(!doctype|html)/i.test(raw)) {
+    return "Không thể kiểm tra file. Vui lòng thử lại.";
+  }
+  return raw;
 }
 
 export function ImportQuestions({
+  bankId,
   onNavigate,
 }: {
-  onNavigate: (view: ContentView) => void;
+  bankId: number;
+  onNavigate: (view: ContentView, id?: number) => void;
 }) {
+  const { user } = useAuth();
   const [stage, setStage] = useState<ImportStage>("upload");
-  const [fileName, setFileName] = useState<string>();
-  const [rows, setRows] = useState<PreviewRow[]>([]);
-  const [isDraggingFile, setIsDraggingFile] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [fileName, setFileName] = useState("");
+  const [result, setResult] = useState<CsvValidationResult | null>(null);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [dragging, setDragging] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const requestId = useRef(0);
 
-  const validRows = rows.filter((row) => row.status === "valid");
-  const errorRows = rows.filter((row) => row.status === "error");
-
-  const handleFile = (file: File | undefined) => {
-    if (!file) return;
-    const isSpreadsheet = /\.(csv|xlsx|xls)$/i.test(file.name);
-    if (!isSpreadsheet) return;
-
-    setFileName(file.name);
-    setStage("validating");
-
-    // TODO: upload the file and call the real validate endpoint.
-    setTimeout(() => {
-      setRows(mockValidate(file.name));
-      setStage("preview");
-    }, 900);
-  };
-
-  const handleImport = () => {
-    setStage("importing");
-    // TODO: POST /api/v1/question-banks/{bankId}/questions/import
-    // with only the valid rows (or the full file + "skip errors" flag).
-    setTimeout(() => setStage("done"), 900);
-  };
+  // Ignore an old response if a new file was selected or the page unmounted.
+  useEffect(() => () => { requestId.current += 1; }, []);
 
   const reset = () => {
+    requestId.current += 1;
     setStage("upload");
-    setFileName(undefined);
-    setRows([]);
+    setResult(null);
+    setErrorMessage("");
+    setFileName("");
+    setDragging(false);
+    if (inputRef.current) inputRef.current.value = "";
+  };
+
+  const continueToEditor = () => {
+    if (!result || !user || user.role !== "TEACHER" || result.validCount === 0) return;
+    try {
+      const importId = createQuestionImportHandoff(bankId, user.id, result);
+      const query = new URLSearchParams(window.location.search);
+      query.set("mode", "bulk-create");
+      query.set("importId", importId);
+      window.location.assign(window.location.pathname + "?" + query.toString());
+    } catch {
+      setErrorMessage("Không thể lưu tạm dữ liệu CSV trong trình duyệt. Vui lòng kiểm tra dung lượng bộ nhớ.");
+    }
+  };
+
+  const handleFile = async (file: File | undefined) => {
+    if (!file) return;
+    const currentRequest = ++requestId.current;
+    setResult(null);
+    setFileName(file.name);
+    setErrorMessage("");
+
+    if (!/\.csv$/i.test(file.name)) {
+      setErrorMessage("Chỉ hỗ trợ file .csv. Excel (.xlsx, .xls) chưa được hỗ trợ.");
+      setStage("error");
+      return;
+    }
+    if (file.size === 0 || file.size > MAX_FILE_BYTES) {
+      setErrorMessage("File CSV phải có dữ liệu và không vượt quá 2 MB.");
+      setStage("error");
+      return;
+    }
+
+    setStage("validating");
+    try {
+      const response = await questionImportService.validate(bankId, file);
+      if (requestId.current !== currentRequest) return;
+      if (!Array.isArray(response.validQuestions) || !Array.isArray(response.errors)) {
+        throw new Error("Dữ liệu xác thực CSV không đúng định dạng.");
+      }
+      setResult(response);
+      setStage("report");
+    } catch (error) {
+      if (requestId.current !== currentRequest) return;
+      setErrorMessage(validationMessage(error));
+      setStage("error");
+    } finally {
+      if (inputRef.current) inputRef.current.value = "";
+    }
   };
 
   return (
-    <>
-      <div className="mb-5">
-        <h1 className="mt-3 text-page-title font-bold text-slate-900">Import questions</h1>
-        <p className="mt-1 text-body-sm text-slate-400">
-          Upload a CSV or Excel file to add many questions at once.
-        </p>
+    <div className="space-y-6">
+      {/* Header điều hướng */}
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <button
+            type="button"
+            onClick={() => onNavigate("bank", bankId)}
+            className="mb-2.5 inline-flex items-center gap-2 rounded-md border-2 border-ink bg-card px-3 py-1.5 text-xs font-bold text-foreground shadow-pop-sm transition-all hover:-translate-y-0.5 active:translate-y-0"
+          >
+            <ArrowLeft size={14} className="text-primary" /> Question Bank
+          </button>
+          <h1 className="text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl">
+            Import CSV Questions
+          </h1>
+          <p className="mt-1 text-sm font-medium text-muted-foreground">
+            Kiểm tra và chuẩn hóa dữ liệu trước khi nạp vào ngân hàng đề · Chưa lưu trực tiếp.
+          </p>
+        </div>
+
+        <a
+          href={TEMPLATE_PATH}
+          download="question-bank-csv-v1.csv"
+          className="inline-flex items-center gap-2 rounded-lg border-2 border-ink bg-card px-4 py-2.5 text-xs font-bold text-foreground shadow-pop-sm transition-all hover:-translate-y-0.5 hover:bg-muted active:translate-y-0"
+        >
+          <Download size={15} className="text-primary" /> Tải file CSV mẫu
+        </a>
       </div>
 
-      {stage === "upload" && (
-        <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-[0_5px_18px_rgba(94,134,173,0.04)] sm:p-6">
+      {/* Thông số định dạng file */}
+      <section className="rounded-xl border-2 border-ink bg-card p-5 text-card-foreground shadow-pop">
+        <div className="flex items-center gap-2">
+          <div className="grid size-6 place-items-center rounded border border-ink bg-primary-soft text-primary font-bold text-xs">
+            i
+          </div>
+          <h2 className="text-sm font-bold uppercase tracking-wider text-foreground">
+            Quy chuẩn định dạng CSV v1
+          </h2>
+        </div>
+        <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+          Bảng mã UTF-8, giới hạn tối đa 2 MB (~1.000 câu). Các cột dữ liệu phải sắp xếp đúng theo thứ tự file mẫu.
+          Hỗ trợ: SINGLE_CHOICE, MULTIPLE_CHOICE, TRUE_FALSE, FILL_IN_BLANK và TYPE_ANSWER.
+        </p>
+
+        <details className="group mt-3 rounded-lg border-2 border-border bg-background p-3 text-xs">
+          <summary className="cursor-pointer font-bold text-primary hover:underline">
+            Bấm để xem chi tiết quy tắc điền dữ liệu từng dạng câu
+          </summary>
+          <ul className="mt-3 list-inside list-disc space-y-1.5 leading-relaxed text-foreground">
+            <li><strong className="font-semibold text-primary">difficulty:</strong> Nhận giá trị EASY, MEDIUM hoặc HARD; cột content là bắt buộc.</li>
+            <li><strong className="font-semibold text-primary">Dạng trắc nghiệm:</strong> Điền liên tiếp từ option_a, tối thiểu 2 và tối đa 4 phương án.</li>
+            <li><strong className="font-semibold text-primary">correct_answer:</strong> Với SINGLE_CHOICE điền B; với MULTIPLE_CHOICE điền các chữ cái ngăn cách bằng gạch đứng: A|C.</li>
+            <li><strong className="font-semibold text-primary">TRUE_FALSE:</strong> Giá trị TRUE hoặc FALSE; bỏ trống các cột option_a đến option_d.</li>
+            <li><strong className="font-semibold text-primary">FILL_IN_BLANK:</strong> Nội dung câu hỏi phải chứa ký hiệu 4 dấu gạch dưới: <code className="rounded border border-border bg-muted px-1">____</code>.</li>
+            <li><strong className="font-semibold text-primary">TYPE_ANSWER:</strong> Danh sách các đáp án được chấp nhận, ngăn cách bởi dấu gạch đứng <code className="rounded border border-border bg-muted px-1">|</code>.</li>
+            <li>Nội dung có chứa dấu phẩy phải được bọc trong cặp dấu ngoặc kép theo chuẩn CSV quốc tế.</li>
+          </ul>
+        </details>
+      </section>
+
+      {/* Input file ẩn */}
+      <input
+        ref={inputRef}
+        type="file"
+        accept=".csv,text/csv"
+        className="sr-only"
+        aria-label="Chọn file CSV"
+        disabled={stage === "validating"}
+        onChange={(event) => void handleFile(event.target.files?.[0])}
+      />
+
+      {/* Giai đoạn 1: Upload / Drag & Drop */}
+      {(stage === "upload" || stage === "error") && (
+        <section className="rounded-xl border-2 border-ink bg-card p-6 shadow-pop sm:p-8">
           <div
             onDragOver={(event) => {
               event.preventDefault();
-              setIsDraggingFile(true);
+              // if (stage !== "validating") setDragging(true);
             }}
-            onDragLeave={() => setIsDraggingFile(false)}
+            onDragLeave={(event) => {
+              event.preventDefault();
+              setDragging(false);
+            }}
             onDrop={(event) => {
               event.preventDefault();
-              setIsDraggingFile(false);
-              handleFile(event.dataTransfer.files?.[0]);
+              setDragging(false);
+              void handleFile(event.dataTransfer.files?.[0]);
             }}
-            className={`flex flex-col items-center gap-3 rounded-xl border-2 border-dashed p-10 text-center transition ${
-              isDraggingFile ? "border-primary bg-primary-light/30" : "border-slate-200 bg-slate-50/50"
+            className={`flex flex-col items-center gap-3.5 rounded-xl border-2 border-dashed p-8 text-center transition-all sm:p-12 ${
+              dragging
+                ? "border-primary bg-primary-soft/40 shadow-inner"
+                : "border-border bg-background/50 hover:bg-muted/30"
             }`}
           >
-            <span className="grid h-14 w-14 place-items-center rounded-full bg-white shadow-sm">
-              <FileSpreadsheet className="text-primary" size={26} />
-            </span>
+            <div className="grid size-16 place-items-center rounded-2xl border-2 border-ink bg-primary text-primary-foreground shadow-pop-sm">
+              <Upload size={28} />
+            </div>
             <div>
-              <p className="text-sm font-semibold text-slate-800">
-                Drag and drop your file here
+              <p className="text-base font-bold text-foreground">Kéo thả file CSV vào đây</p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Định dạng .csv chuẩn UTF-8 · Dung lượng không quá 2 MB
               </p>
-              <p className="mt-0.5 text-xs text-slate-400">CSV or Excel (.xlsx, .xls), up to 10 MB</p>
             </div>
             <button
               type="button"
-              onClick={() => fileInputRef.current?.click()}
-              className="mt-1 rounded-lg bg-primary px-4 py-2 text-body-sm font-semibold text-white transition hover:bg-primary-hover"
+              onClick={() => inputRef.current?.click()}
+              className="mt-2 rounded-lg border-2 border-ink bg-primary px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-primary-foreground shadow-pop transition-all hover:-translate-y-0.5 active:translate-y-0"
             >
-              Choose file
-            </button>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".csv,.xlsx,.xls"
-              className="sr-only"
-              onChange={(event) => handleFile(event.target.files?.[0])}
-            />
-          </div>
-
-          <div className="mt-4 flex items-center justify-between rounded-lg bg-slate-50 px-4 py-3 text-body-sm text-slate-500">
-            <span>Need the correct format?</span>
-            <button
-              type="button"
-              className="inline-flex items-center gap-1.5 font-semibold text-primary transition hover:text-primary-hover"
-            >
-              <Download size={14} />
-              Download template
+              Chọn file từ máy
             </button>
           </div>
-        </section>
-      )}
 
-      {stage === "validating" && (
-        <section className="flex flex-col items-center gap-3 rounded-xl border border-slate-200 bg-white p-10 text-center shadow-[0_5px_18px_rgba(94,134,173,0.04)]">
-          <Loader2 className="animate-spin text-primary" size={28} />
-          <p className="text-sm font-semibold text-slate-800">Validating {fileName}...</p>
-          <p className="text-xs text-slate-400">Checking formatting and required fields.</p>
-        </section>
-      )}
-
-      {stage === "preview" && (
-        <>
-          <section className="mb-4 flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-[0_5px_18px_rgba(94,134,173,0.04)] sm:flex-row sm:items-center sm:justify-between sm:p-5">
-            <div className="flex items-center gap-3">
-              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-slate-100 text-slate-500">
-                <FileSpreadsheet size={18} />
-              </span>
+          {stage === "error" && (
+            <div
+              role="alert"
+              className="mt-5 flex items-start gap-3 rounded-lg border-2 border-destructive bg-destructive-soft p-4 text-xs font-medium text-destructive"
+            >
+              <XCircle size={18} className="mt-0.5 shrink-0" />
               <div>
-                <p className="text-sm font-semibold text-slate-800">{fileName}</p>
-                <div className="mt-0.5 flex items-center gap-3 text-xs">
-                  <span className="inline-flex items-center gap-1 text-emerald-600">
-                    <CheckCircle2 size={13} /> {validRows.length} valid
-                  </span>
-                  {errorRows.length > 0 && (
-                    <span className="inline-flex items-center gap-1 text-rose-600">
-                      <XCircle size={13} /> {errorRows.length} errors
-                    </span>
-                  )}
-                </div>
+                <strong className="font-bold">Không thể đọc file {fileName}.</strong>
+                <p className="mt-1 break-words">{errorMessage}</p>
               </div>
             </div>
-            <button
-              type="button"
-              onClick={reset}
-              className="inline-flex items-center gap-1.5 self-start rounded-lg border border-slate-200 bg-white px-3 py-2 text-body-sm font-medium text-slate-600 transition hover:bg-slate-50 sm:self-auto"
-            >
-              <X size={14} />
-              Choose a different file
-            </button>
-          </section>
-
-          {errorRows.length > 0 && (
-            <div className="mb-4 flex items-start gap-2.5 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-body-sm text-amber-800">
-              <AlertTriangle size={16} className="mt-0.5 shrink-0" />
-              <span>
-                {errorRows.length} row{errorRows.length > 1 ? "s" : ""} need attention and will be skipped.
-                You can import the {validRows.length} valid question{validRows.length !== 1 ? "s" : ""} now
-                and fix the rest afterwards.
-              </span>
-            </div>
           )}
-
-          <section className="mb-5 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-[0_5px_18px_rgba(94,134,173,0.04)]">
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[560px] border-collapse text-body-sm">
-                <thead>
-                  <tr className="border-b border-slate-100 bg-slate-50/70 text-left text-xs font-medium uppercase tracking-wide text-slate-400">
-                    <th className="w-14 p-2.5">Row</th>
-                    <th className="p-2.5">Question</th>
-                    <th className="w-32 p-2.5">Difficulty</th>
-                    <th className="w-28 p-2.5">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {rows.map((row) => (
-                    <tr
-                      key={row.row}
-                      className={`border-b border-slate-100 last:border-0 ${
-                        row.status === "error" ? "bg-rose-50/40" : ""
-                      }`}
-                    >
-                      <td className="p-2.5 font-mono text-slate-400">{row.row}</td>
-                      <td className="max-w-[320px] truncate p-2.5 text-slate-700">{row.question}</td>
-                      <td className="p-2.5 text-slate-500">{row.difficulty}</td>
-                      <td className="p-2.5">
-                        {row.status === "valid" ? (
-                          <Badge tone="green">Valid</Badge>
-                        ) : (
-                          <span className="inline-flex items-center gap-1 text-xs font-medium text-rose-600">
-                            <XCircle size={13} />
-                            {row.error}
-                          </span>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </section>
-
-          <div className="sticky bottom-4 flex items-center justify-end gap-2 rounded-xl border border-slate-200 bg-white/95 p-4 shadow-[0_12px_30px_rgba(15,23,42,0.10)] backdrop-blur">
-            <button
-              type="button"
-              onClick={reset}
-              className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-body-sm font-medium text-slate-600 transition hover:bg-slate-50"
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              disabled={validRows.length === 0}
-              onClick={handleImport}
-              className="rounded-lg bg-primary px-4 py-2 text-body-sm font-semibold text-white transition hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              Import {validRows.length} question{validRows.length !== 1 ? "s" : ""}
-            </button>
-          </div>
-        </>
-      )}
-
-      {stage === "importing" && (
-        <section className="flex flex-col items-center gap-3 rounded-xl border border-slate-200 bg-white p-10 text-center shadow-[0_5px_18px_rgba(94,134,173,0.04)]">
-          <Loader2 className="animate-spin text-primary" size={28} />
-          <p className="text-sm font-semibold text-slate-800">Importing {validRows.length} questions...</p>
         </section>
       )}
 
-      {stage === "done" && (
-        <section className="flex flex-col items-center gap-3 rounded-xl border border-slate-200 bg-white p-10 text-center shadow-[0_5px_18px_rgba(94,134,173,0.04)]">
-          <span className="grid h-14 w-14 place-items-center rounded-full bg-emerald-50 text-emerald-600">
-            <CheckCircle2 size={28} />
-          </span>
-          <p className="text-sm font-semibold text-slate-800">
-            {validRows.length} questions imported successfully
-          </p>
-          {errorRows.length > 0 && (
-            <p className="text-xs text-slate-400">
-              {errorRows.length} rows were skipped due to errors and were not imported.
+      {/* Giai đoạn 2: Đang xác thực */}
+      {stage === "validating" && (
+        <section
+          role="status"
+          aria-live="polite"
+          className="flex flex-col items-center gap-3.5 rounded-xl border-2 border-ink bg-card p-12 text-center shadow-pop"
+        >
+          <div className="grid size-14 place-items-center rounded-xl border-2 border-ink bg-primary-soft text-primary shadow-pop-sm">
+            <Loader2 className="animate-spin" size={28} />
+          </div>
+          <div>
+            <p className="text-base font-bold text-foreground">Đang kiểm tra {fileName}...</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Hệ thống đang đối soát dữ liệu và phân tích từng câu hỏi.
             </p>
-          )}
-          <div className="mt-2 flex gap-2">
-            {errorRows.length > 0 && (
+          </div>
+        </section>
+      )}
+
+      {/* Giai đoạn 3: Báo cáo kết quả */}
+      {stage === "report" && result && (
+        <div className="space-y-6">
+          {/* Card tổng kết số liệu */}
+          <section className="rounded-xl border-2 border-ink bg-card p-5 shadow-pop sm:p-6">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b-2 border-border pb-4">
+              <div className="flex items-center gap-3">
+                <div className="grid size-11 place-items-center rounded-xl border-2 border-ink bg-primary-soft text-primary shadow-pop-sm">
+                  <FileSpreadsheet size={22} />
+                </div>
+                <div>
+                  <p className="break-all text-sm font-bold text-foreground">{result.fileName}</p>
+                  <p className="text-xs text-muted-foreground">Kiểm tra hoàn tất · Chưa lưu vào ngân hàng</p>
+                </div>
+              </div>
               <button
                 type="button"
-                className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-4 py-2 text-body-sm font-medium text-slate-600 transition hover:bg-slate-50"
+                onClick={reset}
+                className="rounded-lg border-2 border-ink bg-card px-3.5 py-1.5 text-xs font-bold text-foreground shadow-pop-sm transition-all hover:-translate-y-0.5 hover:bg-muted active:translate-y-0"
               >
-                <Download size={14} />
-                Download error file
+                Chọn file khác
               </button>
+            </div>
+
+            <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
+              <div className="rounded-lg border-2 border-ink bg-muted/40 p-4 text-center shadow-pop-sm">
+                <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Tổng số câu</span>
+                <strong className="mt-1 block text-2xl font-black text-foreground">{result.totalRows}</strong>
+              </div>
+              <div className="rounded-lg border-2 border-ink bg-success-soft p-4 text-center text-success shadow-pop-sm">
+                <span className="text-xs font-bold uppercase tracking-wider">Hợp lệ</span>
+                <strong className="mt-1 block text-2xl font-black">{result.validCount}</strong>
+              </div>
+              <div className="rounded-lg border-2 border-ink bg-warning-soft p-4 text-center text-warning shadow-pop-sm">
+                <span className="text-xs font-bold uppercase tracking-wider">Không hợp lệ</span>
+                <strong className="mt-1 block text-2xl font-black">{result.invalidCount}</strong>
+              </div>
+            </div>
+          </section>
+
+          {/* Bảng chi tiết lỗi (nếu có) */}
+          {result.invalidCount > 0 ? (
+            <section className="overflow-hidden rounded-xl border-2 border-ink bg-card shadow-pop">
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b-2 border-ink bg-warning-soft px-5 py-3.5">
+                <div className="flex items-center gap-2 text-xs font-bold text-warning">
+                  <AlertTriangle size={18} />
+                  <span>Phát hiện {result.invalidCount} câu không hợp lệ ({result.errors.length} lỗi)</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => exportErrors(result.fileName, result.errors)}
+                  className="inline-flex items-center gap-1.5 rounded-md border-2 border-ink bg-card px-3 py-1.5 text-xs font-bold text-foreground shadow-pop-sm transition-all hover:-translate-y-0.5 active:translate-y-0"
+                >
+                  <Download size={14} className="text-primary" /> Tải báo cáo lỗi (.csv)
+                </button>
+              </div>
+
+              <div className="max-h-80 overflow-auto">
+                <table className="w-full min-w-[640px] text-left text-xs">
+                  <thead className="sticky top-0 border-b-2 border-border bg-muted/90 font-bold uppercase tracking-wider text-muted-foreground backdrop-blur">
+                    <tr>
+                      <th className="p-3 w-16 text-center">Dòng</th>
+                      <th className="p-3 w-36">Trường</th>
+                      <th className="p-3">Chi tiết lỗi</th>
+                      <th className="p-3 w-48">Dữ liệu gốc</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border">
+                    {result.errors.map((error, index) => (
+                      <tr key={`${error.rowNumber}-${error.code}-${index}`} className="hover:bg-muted/30">
+                        <td className="p-3 text-center font-mono font-bold text-foreground">{error.rowNumber}</td>
+                        <td className="p-3 font-semibold text-primary">{error.field}</td>
+                        <td className="p-3">
+                          <span className="block font-bold text-destructive">{error.message}</span>
+                          <span className="mt-0.5 block font-mono text-[10px] text-muted-foreground">{error.code}</span>
+                        </td>
+                        <td className="max-w-48 break-all p-3 font-mono text-[11px] text-muted-foreground">
+                          {error.rawValue || "—"}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          ) : (
+            <div className="flex items-center gap-2.5 rounded-xl border-2 border-ink bg-success-soft p-4 text-xs font-bold text-success shadow-pop-sm">
+              <CheckCircle2 size={18} /> Toàn bộ các câu hỏi trong file đều đạt tiêu chuẩn hợp lệ.
+            </div>
+          )}
+
+          {/* Danh sách câu hợp lệ xem trước */}
+          {result.validCount > 0 && (
+            <section className="rounded-xl border-2 border-ink bg-card p-5 shadow-pop">
+              <div className="flex items-center gap-2 text-sm font-bold text-foreground">
+                <CheckCircle2 size={18} className="text-success" />
+                <span>Danh sách {result.validCount} câu hợp lệ sẵn sàng chuyển đổi</span>
+              </div>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Dữ liệu đã được hệ thống chuẩn hóa cấu trúc. Bạn có thể mở rộng danh sách để xem nhanh.
+              </p>
+
+              <details className="mt-3 rounded-lg border-2 border-border bg-background p-3">
+                <summary className="cursor-pointer text-xs font-bold text-primary hover:underline">
+                  Bấm để xem chi tiết {result.validCount} câu hợp lệ
+                </summary>
+                <ol className="mt-3 max-h-64 space-y-2 overflow-auto pr-1">
+                  {result.validQuestions.map(({ rowNumber, question }) => (
+                    <li
+                      key={rowNumber}
+                      className="rounded-md border border-border bg-card p-2.5 text-xs shadow-sm"
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="rounded bg-muted px-1.5 py-0.5 font-mono text-[10px] font-bold text-muted-foreground">
+                          Dòng {rowNumber}
+                        </span>
+                        <span className="rounded border border-primary/30 bg-primary-soft px-1.5 py-0.5 font-bold text-[10px] text-primary">
+                          {question.type}
+                        </span>
+                      </div>
+                      <p className="mt-1.5 whitespace-pre-wrap break-words font-medium text-foreground">
+                        {question.content}
+                      </p>
+                    </li>
+                  ))}
+                </ol>
+              </details>
+            </section>
+          )}
+
+          {/* Action Footer Bar */}
+          <div className="rounded-xl border-2 border-ink bg-card p-5 shadow-pop">
+            <div className="flex items-start gap-3">
+              <div className="grid size-7 shrink-0 place-items-center rounded-lg border-2 border-ink bg-primary text-primary-foreground shadow-pop-sm">
+                <Info size={16} />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-bold text-foreground">Giai đoạn kiểm tra hoàn tất</p>
+                <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                  {result.validCount > 0
+                    ? `Có ${result.validCount} câu hợp lệ sẽ được chuyển sang giao diện Bulk Creator để bạn chỉnh sửa lần cuối trước khi lưu. Các câu bị lỗi sẽ tự động được bỏ qua.`
+                    : "Không tìm thấy câu hỏi nào hợp lệ. Vui lòng chỉnh sửa lại theo báo cáo lỗi và tải lên lại."}
+                </p>
+              </div>
+            </div>
+
+            {errorMessage && (
+              <p role="alert" className="mt-3 text-xs font-bold text-destructive">
+                {errorMessage}
+              </p>
             )}
-            <button
-              type="button"
-              onClick={() => onNavigate("bank")}
-              className="rounded-lg bg-primary px-4 py-2 text-body-sm font-semibold text-white transition hover:bg-primary-hover"
-            >
-              Back to question bank
-            </button>
+
+            <div className="mt-5 flex flex-wrap items-center justify-end gap-3 border-t-2 border-border pt-4">
+              <button
+                type="button"
+                onClick={reset}
+                className="rounded-lg border-2 border-ink bg-card px-4 py-2.5 text-xs font-bold text-foreground shadow-pop-sm transition-all hover:-translate-y-0.5 hover:bg-muted active:translate-y-0"
+              >
+                Chọn lại file
+              </button>
+              <button
+                type="button"
+                disabled={!user || user.role !== "TEACHER" || result.validCount === 0}
+                onClick={continueToEditor}
+                className="rounded-lg border-2 border-ink bg-primary px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-primary-foreground shadow-pop transition-all hover:-translate-y-0.5 active:translate-y-0 disabled:pointer-events-none disabled:opacity-50"
+              >
+                Chuyển {result.validCount} câu vào trình soạn
+              </button>
+            </div>
           </div>
-        </section>
+        </div>
       )}
-    </>
+    </div>
   );
 }

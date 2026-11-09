@@ -1,8 +1,7 @@
 "use client";
 
-import { Link } from "@/i18n/navigation";
-
 import { useEffect, useState } from "react";
+import { useLocale } from "next-intl";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowDown,
@@ -13,7 +12,6 @@ import {
   Plus,
 } from "lucide-react";
 import { contentService } from "@/services/content.service";
-import { activityService } from "@/services/activity.service";
 import { QUERY_KEYS } from "@/services/query-keys";
 import type {
   ContentView,
@@ -23,8 +21,20 @@ import type {
 import { EntityHeader } from "./components/entity-header";
 import { TableTitle } from "./components/table-title";
 import { ContentEditor } from "./components/content-editor";
-import { FullPageState } from "@/components/feedback";
+import { FullPageState, PageBanner, RegionState } from "@/components/feedback";
 import { UnitVocabularySection } from "./components/unit-vocabulary-section";
+import { ContentBreadcrumb } from "./components/content-breadcrumb";
+import { SkeletonList } from "@/components/ui/skeleton/skeleton-list";
+import { ContentTabs } from "./components/content-tabs";
+import { formatDateTime } from "@/utils/format";
+
+type UnitTab = "content" | "vocabulary" | "overview";
+
+const UNIT_TABS: { value: UnitTab; label: string }[] = [
+  { value: "content", label: "Nội dung" },
+  { value: "vocabulary", label: "Từ vựng" },
+  { value: "overview", label: "Tổng quan" },
+];
 
 export function UnitDetail({
   unitId,
@@ -34,6 +44,8 @@ export function UnitDetail({
   onNavigate: (view: ContentView, id?: number) => void;
 }) {
   const client = useQueryClient();
+  const locale = useLocale();
+  const [activeTab, setActiveTab] = useState<UnitTab>("content");
   const [editOpen, setEditOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
   const [name, setName] = useState("");
@@ -46,11 +58,6 @@ export function UnitDetail({
     queryKey: QUERY_KEYS.contentUnit(unitId),
     queryFn: async () => (await contentService.getUnit(unitId)).data,
   });
-  const activities = useQuery({
-    queryKey: QUERY_KEYS.activities(unitId),
-    queryFn: async () => (await activityService.list(unitId)).data ?? [],
-  });
-
   const sections = useQuery({
     queryKey: QUERY_KEYS.contentSections(unitId),
     queryFn: async () => (await contentService.listSections(unitId)).data,
@@ -153,13 +160,25 @@ export function UnitDetail({
   };
 
   if (unit.isLoading) return <FullPageState variant="loading" />;
-  if (unit.isError || !unit.data)
-    return <FullPageState variant="error" />;
+  if (unit.isError || !unit.data) return <FullPageState variant="error" />;
 
   const list = sections.data ?? [];
+  const mutationError =
+    update.error ??
+    status.error ??
+    archive.error ??
+    create.error ??
+    reorder.error;
 
   return (
     <>
+      <ContentBreadcrumb
+        items={[
+          { label: "Content" },
+          { label: "Units", href: "/teacher/content" },
+          { label: `${unit.data.code} - ${unit.data.name}` },
+        ]}
+      />
       <EntityHeader
         title={`${unit.data.code} - ${unit.data.name}`}
         label={`Grade ${unit.data.gradeId}`}
@@ -175,61 +194,25 @@ export function UnitDetail({
         actionPending={status.isPending || archive.isPending}
       />
 
-      <section className="mt-5 overflow-hidden rounded-xl border border-slate-200 bg-white">
-        <div className="flex items-center justify-between border-b border-slate-100 px-4 py-4 sm:px-5">
-          <div>
-            <p className="text-xs font-extrabold uppercase tracking-wider text-primary">
-              Learning activities
-            </p>
-            <h2 className="mt-1 font-bold text-slate-800">
-              Activities in this unit
-            </h2>
-          </div>
-          <Link
-            href={"/teacher/activities?unitId=" + unitId}
-            className="rounded-lg bg-primary-light px-3 py-2 text-xs font-bold text-primary"
-          >
-            Open activities
-          </Link>
-        </div>
-        <div className="divide-y divide-slate-100">
-          {(activities.data ?? []).slice(0, 4).map((activity) => (
-            <Link
-              key={activity.id}
-              href={"/teacher/activities/" + activity.id}
-              className="flex items-center gap-3 px-4 py-3.5 hover:bg-slate-50 sm:px-5"
-            >
-              <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary-light text-primary">
-                A
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="block truncate text-sm font-semibold text-slate-800">
-                  {activity.name}
-                </span>
-                <span className="text-xs text-slate-400">
-                  {activity.totalQuestions} questions ·{" "}
-                  {activity.mode === "BOTH"
-                    ? "Both modes"
-                    : activity.mode === "TRY_HARD"
-                      ? "Try Hard"
-                      : "Practice"}
-                </span>
-              </span>
-              <span className="text-xs font-bold text-slate-400">
-                {activity.status}
-              </span>
-            </Link>
-          ))}
-          {(activities.data ?? []).length === 0 && (
-            <div className="p-8 text-center text-sm text-slate-400">
-              No activities yet.
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* Vocabulary Management for this Unit (used in student mini-games) */}
-      <UnitVocabularySection unitId={unitId} />
+      {mutationError && (
+        <PageBanner
+          tone="error"
+          className="mt-4"
+          title="Không thể lưu thay đổi"
+          message={
+            mutationError instanceof Error
+              ? mutationError.message
+              : "Vui lòng kiểm tra dữ liệu và thử lại."
+          }
+          onDismiss={() => {
+            update.reset();
+            status.reset();
+            archive.reset();
+            create.reset();
+            reorder.reset();
+          }}
+        />
+      )}
 
       {editOpen && (
         <div className="mt-5">
@@ -244,203 +227,333 @@ export function UnitDetail({
         </div>
       )}
 
-      <section className="mt-5 rounded-xl border border-slate-200 bg-white shadow-[0_5px_18px_rgba(94,134,173,0.04)]">
-        <div className="p-4 sm:p-5 sm:pb-0">
-          <TableTitle
-            title="Sections"
-            count={list.length}
-            action="Add Section"
-            onAction={() => setCreateOpen((open) => !open)}
-          />
-        </div>
+      <ContentTabs
+        active={activeTab}
+        items={UNIT_TABS}
+        onChange={setActiveTab}
+        idPrefix={`unit-${unitId}`}
+        className="mt-6"
+      />
 
-        {createOpen && (
-          <form
-            className="mx-4 mb-1 rounded-xl border border-primary/15 bg-primary-light/40 p-4 sm:mx-5"
-            onSubmit={(event) => {
-              event.preventDefault();
-              const payload: CreateSectionRequest = {
-                unitId,
-                name,
-                description,
-              };
-              create.mutate(payload);
-            }}
-          >
-            <div className="grid gap-3 sm:grid-cols-2">
-              <label className="block">
-                <span className="mb-1 block text-xs font-medium text-slate-500">
-                  Section name
-                </span>
-                <input
-                  required
-                  autoFocus
-                  placeholder="e.g. Fractions"
-                  value={name}
-                  onChange={(event) => setName(event.target.value)}
-                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-body-sm  text-slate-800 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
-                />
-              </label>
-              <label className="block">
-                <span className="mb-1 block text-xs font-medium text-slate-500">
-                  Description
-                </span>
-                <input
-                  placeholder="Optional short description"
-                  value={description}
-                  onChange={(event) => setDescription(event.target.value)}
-                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-body-sm  text-slate-800 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
-                />
-              </label>
-            </div>
-            <div className="mt-3 flex justify-end gap-2">
-              <button
-                type="button"
-                onClick={() => setCreateOpen(false)}
-                className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-body-sm  font-medium text-slate-600 transition hover:bg-slate-50"
-              >
-                Cancel
-              </button>
-              <button
-                disabled={create.isPending}
-                className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-body-sm  font-semibold text-white transition hover:bg-primary/90 disabled:opacity-60"
-              >
-                <Plus size={15} />
-                {create.isPending ? "Saving..." : "Save section"}
-              </button>
-            </div>
-          </form>
-        )}
-
-        {list.length === 0 && !createOpen ? (
-          <div className="flex flex-col items-center gap-2 px-4 py-16 text-center sm:px-5">
-            <Layers className="text-slate-300" size={26} strokeWidth={1.5} />
-            <p className="text-body-sm  text-slate-500">No sections yet</p>
-            <p className="text-xs text-slate-400">
-              Add a section to start organizing this unit&apos;s topics.
-            </p>
+      {activeTab === "content" && (
+        <section
+          id={`unit-${unitId}-panel-content`}
+          role="tabpanel"
+          aria-labelledby={`unit-${unitId}-tab-content`}
+          className="mt-5 overflow-hidden rounded-xl border-2 border-ink shadow-pop bg-white shadow-none dark:border-slate-700 dark:bg-slate-900"
+        >
+          <div className="border-b-2 border-slate-300 p-2 sm:p-3 dark:border-slate-700">
+            <TableTitle
+              title="Sections"
+              count={list.length}
+              action="Add Section"
+              onAction={() => setCreateOpen((open) => !open)}
+            />
           </div>
-        ) : (
-          <>
-            {/* Column header — desktop only, sits directly above the row list */}
-            <div className="mt-4 hidden grid-cols-[3rem_1fr_6rem_7rem_5.5rem] gap-3 border-y border-slate-100 bg-slate-50/70 px-5 py-2 text-xs font-medium text-slate-400 md:grid">
-              <span>Order</span>
-              <span>Section</span>
-              <span className="text-right">Topics</span>
-              <span>Status</span>
-              <span className="text-right">Reorder</span>
-            </div>
 
-            {/* Row list — hairline dividers, no per-row card chrome */}
-            <ul className="divide-y divide-slate-100 border-b border-slate-100 md:border-b-0">
-              {list.map((section, index) => {
-                const isDraft = section.status !== "PUBLISHED";
-                const highlighted = justMovedId === section.id;
-                const isDragging = dragId === section.id;
-                const isDragOver =
-                  dragOverId === section.id && dragId !== section.id;
-                return (
-                  <li
-                    key={section.id}
-                    draggable
-                    onDragStart={handleDragStart(section.id)}
-                    onDragOver={handleDragOver(section.id)}
-                    onDragLeave={handleDragLeave(section.id)}
-                    onDrop={handleDrop(section.id)}
-                    onDragEnd={handleDragEnd}
-                    onClick={() => onNavigate("section", section.id)}
-                    className={`group grid cursor-pointer grid-cols-[2.5rem_1fr_auto] items-start gap-3 px-4 py-3.5 transition-colors duration-700 sm:px-5 md:grid-cols-[3rem_1fr_6rem_7rem_5.5rem] md:items-center md:gap-3 md:py-3 ${
-                      isDragging
-                        ? "opacity-40"
-                        : isDragOver
-                          ? "bg-primary-light/60 ring-1 ring-inset ring-primary/30"
-                          : highlighted
-                            ? "bg-primary-light/40"
-                            : "hover:bg-slate-50"
-                    }`}
+          {createOpen && (
+            <form
+              className="border-b-2 border-slate-300 bg-slate-50/80 p-4 sm:p-5 dark:border-slate-700 dark:bg-slate-800/50"
+              onSubmit={(event) => {
+                event.preventDefault();
+                const payload: CreateSectionRequest = {
+                  unitId,
+                  name,
+                  description,
+                };
+                create.mutate(payload);
+              }}
+            >
+              <div className="grid gap-3.5 sm:grid-cols-2">
+                <label className="block">
+                  <span className="mb-1.5 block text-sm font-bold tracking-wide text-slate-700 dark:text-slate-300">
+                    Section name
+                  </span>
+                  <input
+                    required
+                    autoFocus
+                    placeholder="e.g. Fractions"
+                    value={name}
+                    onChange={(event) => setName(event.target.value)}
+                    className="min-h-11 w-full rounded-lg border-2 border-slate-300 bg-white px-3.5 py-2.5 text-sm font-medium text-slate-800 shadow-none outline-none transition placeholder:text-slate-400 hover:border-slate-400 focus:border-primary focus:outline-none focus:ring-0 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100 dark:hover:border-slate-500 dark:focus:border-primary"
+                  />
+                </label>
+                <label className="block">
+                  <span className="mb-1.5 block text-sm font-bold tracking-wide text-slate-700 dark:text-slate-300">
+                    Description
+                  </span>
+                  <input
+                    placeholder="Optional short description"
+                    value={description}
+                    onChange={(event) => setDescription(event.target.value)}
+                    className="min-h-11 w-full rounded-lg border-2 border-slate-300 bg-white px-3.5 py-2.5 text-sm font-medium text-slate-800 shadow-none outline-none transition placeholder:text-slate-400 hover:border-slate-400 focus:border-primary focus:outline-none focus:ring-0 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100 dark:hover:border-slate-500 dark:focus:border-primary"
+                  />
+                </label>
+              </div>
+              <div className="mt-4 flex justify-end gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => setCreateOpen(false)}
+                  className="min-h-10 rounded-lg border-2 border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 shadow-none transition hover:bg-slate-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+                >
+                  Cancel
+                </button>
+                <button
+                  disabled={create.isPending}
+                  className="inline-flex min-h-10 items-center gap-1.5 rounded-lg border-2 border-primary bg-primary px-4 py-2 text-sm font-bold text-white shadow-none transition hover:bg-primary-hover hover:border-primary-hover disabled:opacity-50"
+                >
+                  <Plus size={15} />
+                  {create.isPending ? "Saving..." : "Save section"}
+                </button>
+              </div>
+            </form>
+          )}
+
+          {sections.isLoading ? (
+            <SkeletonList count={4} className="p-4 sm:p-5" />
+          ) : sections.isError ? (
+            <div className="p-4 sm:p-5">
+              <RegionState
+                variant="error"
+                title="Could not load sections"
+                description="Try loading the section list again."
+                action={
+                  <button
+                    type="button"
+                    onClick={() => void sections.refetch()}
+                    className="rounded-lg border-2 border-slate-300 px-3.5 py-2 text-sm font-bold text-slate-700 hover:bg-slate-100 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-800"
                   >
-                    {/* Order number — tabular, aligned like a spreadsheet column */}
-                    <span className="pt-0.5 font-mono text-body-sm tabular-nums text-slate-400 md:pt-0">
-                      {String(section.displayOrder).padStart(2, "0")}
-                    </span>
+                    Retry
+                  </button>
+                }
+              />
+            </div>
+          ) : list.length === 0 && !createOpen ? (
+            <div className="flex flex-col items-center gap-2 px-4 py-16 text-center sm:px-5">
+              <Layers
+                className="text-slate-400 dark:text-slate-500"
+                size={28}
+                strokeWidth={1.75}
+              />
+              <p className="text-sm font-bold text-slate-800 dark:text-slate-200">
+                No sections yet
+              </p>
+              <p className="text-sm text-slate-500 dark:text-slate-400">
+                Add a section to start organizing this unit&apos;s topics.
+              </p>
+            </div>
+          ) : (
+            <>
+              {/* Column header — desktop only, sits directly above the row list */}
+              <div className="hidden grid-cols-[3.5rem_1fr_6rem_8rem_6rem] gap-3 border-b-2 border-slate-300 bg-slate-100/80 px-5 py-2.5 text-sm font-bold text-slate-700 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-300 md:grid">
+                <span>Order</span>
+                <span>Section</span>
+                <span className="text-right">Topics</span>
+                <span>Status</span>
+                <span className="text-right">Reorder</span>
+              </div>
 
-                    {/* Name + description + mobile-only meta row */}
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-1.5">
-                        <span className="truncate text-sm font-semibold text-slate-800">
-                          {section.name}
-                        </span>
-                      </div>
-                      {section.description && (
-                        <p className="mt-0.5 truncate text-body-sm text-slate-400">
-                          {section.description}
-                        </p>
-                      )}
-                      <div className="mt-1.5 flex flex-wrap items-center gap-x-2.5 gap-y-1 md:hidden">
-                        <StatusDot draft={isDraft} label={section.status} />
-                        <span className="whitespace-nowrap text-xs text-slate-400">
-                          {section.totalTopic} topics
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Topics — desktop column */}
-                    <span className="hidden text-right text-body-sm tabular-nums text-slate-500 md:block">
-                      {section.totalTopic}
-                    </span>
-
-                    {/* Status — desktop column */}
-                    <div className="hidden md:flex md:items-center md:justify-start">
-                      <StatusDot draft={isDraft} label={section.status} />
-                    </div>
-
-                    {/* Reorder controls */}
-                    <div
-                      className="col-start-3 row-start-1 flex shrink-0 items-center gap-0.5 justify-self-end md:col-start-auto md:row-start-auto md:justify-self-end"
-                      onClick={(event) => event.stopPropagation()}
-                    >
-                      <GripVertical
-                        size={15}
-                        className="mr-0.5 hidden cursor-grab text-slate-300 transition hover:text-slate-500 active:cursor-grabbing md:block"
-                      />
-                      <button
-                        type="button"
-                        disabled={index === 0 || reorder.isPending}
-                        onClick={() => move(index, -1)}
-                        aria-label="Move section up"
-                        className="rounded-md p-1.5 text-slate-400 transition hover:bg-primary/10 hover:text-primary disabled:cursor-not-allowed disabled:opacity-25"
-                      >
-                        <ArrowUp size={14} />
-                      </button>
-                      <button
-                        type="button"
-                        disabled={
-                          index === list.length - 1 || reorder.isPending
+              {/* Row list */}
+              <ul className="divide-y-2 divide-slate-200 dark:divide-slate-800">
+                {list.map((section, index) => {
+                  const isDraft = section.status !== "PUBLISHED";
+                  const highlighted = justMovedId === section.id;
+                  const isDragging = dragId === section.id;
+                  const isDragOver =
+                    dragOverId === section.id && dragId !== section.id;
+                  return (
+                    <li
+                      key={section.id}
+                      draggable
+                      onDragStart={handleDragStart(section.id)}
+                      onDragOver={handleDragOver(section.id)}
+                      onDragLeave={handleDragLeave(section.id)}
+                      onDrop={handleDrop(section.id)}
+                      onDragEnd={handleDragEnd}
+                      onClick={() => onNavigate("section", section.id)}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter" || event.key === " ") {
+                          event.preventDefault();
+                          onNavigate("section", section.id);
                         }
-                        onClick={() => move(index, 1)}
-                        aria-label="Move section down"
-                        className="rounded-md p-1.5 text-slate-400 transition hover:bg-primary/10 hover:text-primary disabled:cursor-not-allowed disabled:opacity-25"
+                      }}
+                      role="link"
+                      tabIndex={0}
+                      className={`group grid cursor-pointer grid-cols-[2.5rem_1fr_auto] items-start gap-3 px-4 py-3.5 transition duration-200 sm:px-5 md:grid-cols-[3.5rem_1fr_6rem_8rem_6rem] md:items-center md:gap-3 md:py-3 ${
+                        isDragging
+                          ? "opacity-30"
+                          : isDragOver
+                            ? "border-l-4 border-l-primary bg-primary/10"
+                            : highlighted
+                              ? "bg-primary/10"
+                              : "hover:bg-slate-50 dark:hover:bg-slate-800/50"
+                      }`}
+                    >
+                      {/* Order number */}
+                      <span className="pt-0.5 text-sm font-bold tabular-nums text-slate-500 dark:text-slate-400 md:pt-0">
+                        {String(section.displayOrder).padStart(2, "0")}
+                      </span>
+
+                      {/* Name + description + mobile-only meta row */}
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <span className="truncate text-sm font-bold text-slate-900 group-hover:text-primary dark:text-slate-100">
+                            {section.name}
+                          </span>
+                        </div>
+                        {section.description && (
+                          <p className="mt-0.5 truncate text-sm font-medium text-slate-500 dark:text-slate-400">
+                            {section.description}
+                          </p>
+                        )}
+                        <div className="mt-1.5 flex flex-wrap items-center gap-x-2.5 gap-y-1 md:hidden">
+                          <StatusDot draft={isDraft} label={section.status} />
+                          <span className="whitespace-nowrap text-sm font-semibold text-slate-500 dark:text-slate-400">
+                            {section.totalTopic} topics
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Topics — desktop column */}
+                      <span className="hidden text-right text-sm font-bold tabular-nums text-slate-600 dark:text-slate-300 md:block">
+                        {section.totalTopic}
+                      </span>
+
+                      {/* Status — desktop column */}
+                      <div className="hidden md:flex md:items-center md:justify-start">
+                        <StatusDot draft={isDraft} label={section.status} />
+                      </div>
+
+                      {/* Reorder controls */}
+                      <div
+                        className="col-start-3 row-start-1 flex shrink-0 items-center gap-1 justify-self-end md:col-start-auto md:row-start-auto md:justify-self-end"
+                        onClick={(event) => event.stopPropagation()}
+                        onKeyDown={(event) => event.stopPropagation()}
                       >
-                        <ArrowDown size={14} />
-                      </button>
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-          </>
-        )}
-      </section>
+                        <GripVertical
+                          size={16}
+                          className="mr-0.5 hidden cursor-grab text-slate-400 transition hover:text-slate-700 active:cursor-grabbing dark:text-slate-500 dark:hover:text-slate-300 md:block"
+                        />
+                        <button
+                          type="button"
+                          disabled={index === 0 || reorder.isPending}
+                          onClick={() => move(index, -1)}
+                          aria-label="Move section up"
+                          className="grid h-8 w-8 place-items-center rounded-lg border-2 border-slate-300 bg-white text-slate-600 transition hover:border-primary hover:bg-primary/5 hover:text-primary disabled:cursor-not-allowed disabled:opacity-30 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:border-primary"
+                        >
+                          <ArrowUp size={14} />
+                        </button>
+                        <button
+                          type="button"
+                          disabled={
+                            index === list.length - 1 || reorder.isPending
+                          }
+                          onClick={() => move(index, 1)}
+                          aria-label="Move section down"
+                          className="grid h-8 w-8 place-items-center rounded-lg border-2 border-slate-300 bg-white text-slate-600 transition hover:border-primary hover:bg-primary/5 hover:text-primary disabled:cursor-not-allowed disabled:opacity-30 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:border-primary"
+                        >
+                          <ArrowDown size={14} />
+                        </button>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            </>
+          )}
+        </section>
+      )}
+
+      {activeTab === "vocabulary" && (
+        <div
+          id={`unit-${unitId}-panel-vocabulary`}
+          role="tabpanel"
+          aria-labelledby={`unit-${unitId}-tab-vocabulary`}
+          className="mt-5"
+        >
+          <UnitVocabularySection unitId={unitId} />
+        </div>
+      )}
+
+      {activeTab === "overview" && (
+        <section
+          id={`unit-${unitId}-panel-overview`}
+          role="tabpanel"
+          aria-labelledby={`unit-${unitId}-tab-overview`}
+          className="mt-5 rounded-xl border-2 border-ink shadow-pop bg-white p-5 dark:border-slate-700 dark:bg-slate-900"
+        >
+          <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100">
+            Thông tin Unit
+          </h2>
+          <dl className="mt-5 grid gap-x-8 gap-y-4 sm:grid-cols-2 lg:grid-cols-3">
+            <OverviewField
+              label="Mô tả"
+              value={unit.data.description || "Chưa có mô tả"}
+            />
+            <OverviewField
+              label="Khối lớp"
+              value={`Grade ${unit.data.gradeId}`}
+            />
+            <OverviewField label="Mã Unit" value={unit.data.code} />
+            <OverviewField label="Trạng thái" value={unit.data.status} />
+            <OverviewField
+              label="Số Section"
+              value={String(unit.data.totalSection)}
+            />
+            <OverviewField
+              label="Số Topic"
+              value={String(unit.data.totalTopic)}
+            />
+            <OverviewField
+              label="Thứ tự hiển thị"
+              value={String(unit.data.displayOrder)}
+            />
+            <OverviewField
+              label="Ngày tạo"
+              value={formatDateTime(unit.data.createdAt, locale)}
+            />
+            <OverviewField
+              label="Cập nhật gần nhất"
+              value={formatDateTime(unit.data.updatedAt, locale)}
+            />
+            {unit.data.publishedAt && (
+              <OverviewField
+                label="Ngày xuất bản"
+                value={formatDateTime(unit.data.publishedAt, locale)}
+              />
+            )}
+          </dl>
+        </section>
+      )}
     </>
+  );
+}
+
+function OverviewField({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-lg border-2 border-slate-200 bg-slate-50/60 p-3 dark:border-slate-800 dark:bg-slate-800/40">
+      <dt className="text-sm font-bold text-slate-500 dark:text-slate-400">
+        {label}
+      </dt>
+      <dd className="mt-1 break-words text-sm font-bold text-slate-900 dark:text-slate-100">
+        {value}
+      </dd>
+    </div>
   );
 }
 
 function StatusDot({ draft, label }: { draft: boolean; label: string }) {
   return (
-    <span className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap text-xs font-medium text-slate-600">
+    <span
+      className={`inline-flex shrink-0 items-center gap-1.5 rounded-md border-2 px-2 py-0.5 text-sm font-bold tracking-wide ${
+        draft
+          ? "border-amber-300 bg-amber-50 text-amber-800 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-200"
+          : "border-emerald-300 bg-emerald-50 text-emerald-800 dark:border-emerald-700 dark:bg-emerald-950 dark:text-emerald-200"
+      }`}
+    >
       <span
-        className={`h-1.5 w-1.5 shrink-0 rounded-full ${
-          draft ? "bg-amber-400" : "bg-emerald-500"
+        className={`h-2 w-2 shrink-0 rounded-full ${
+          draft ? "bg-amber-500" : "bg-emerald-500"
         }`}
       />
       {label}

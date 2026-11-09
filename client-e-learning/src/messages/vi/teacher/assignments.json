@@ -6,13 +6,19 @@
     "created": "Đã tạo bản nháp. Đang mở trình soạn bài tập."
   },
   "summary": {
-    "active": "Đang hoạt động",
-    "activeHint": "Bài tập hiện đang mở cho học sinh",
-    "needsGrading": "Cần chấm",
-    "submissionUnavailable": "Dữ liệu bài nộp chưa khả dụng",
-    "submittedOnTime": "Nộp đúng hạn",
-    "resultsUnavailable": "Dữ liệu kết quả chưa khả dụng",
-    "missingSubmissions": "Chưa nộp bài"
+    "title": "Tổng quan bài tập",
+    "description": "Theo dõi bài tập đang mở và tiến độ của các lượt giao bài.",
+    "open": "Đang mở",
+    "openHint": "Bài tập đang trong thời gian làm",
+    "finalized": "Đã có kết quả",
+    "finalizedHint": "Lượt giao bài đã có kết quả cuối cùng",
+    "overdue": "Chưa hoàn thành quá hạn",
+    "overdueHint": "Lượt giao bài chưa có kết quả sau hạn",
+    "completionRate": "Tỷ lệ có kết quả",
+    "completionRateHint": "Trên tổng lượt giao bài đã đến hạn",
+    "noDueDeliveries": "Chưa có lượt giao bài nào đến hạn",
+    "errorTitle": "Không thể tải tổng quan bài tập",
+    "errorMessage": "Danh sách bài tập vẫn khả dụng. Hãy thử tải lại phần tổng quan."
   },
   "actions": {
     "importQuestions": "Nhập câu hỏi",

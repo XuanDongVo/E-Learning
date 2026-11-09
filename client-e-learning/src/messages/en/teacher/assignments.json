@@ -6,13 +6,19 @@
     "created": "Assignment draft created. Opening the builder."
   },
   "summary": {
-    "active": "Active",
-    "activeHint": "Assignments currently open to students",
-    "needsGrading": "Needs grading",
-    "submissionUnavailable": "Submission data is not available yet",
-    "submittedOnTime": "Submitted on time",
-    "resultsUnavailable": "Result data is not available yet",
-    "missingSubmissions": "Missing submissions"
+    "title": "Assignment overview",
+    "description": "Track open assignments and delivery progress.",
+    "open": "Open",
+    "openHint": "Assignments currently within their working window",
+    "finalized": "Results available",
+    "finalizedHint": "Deliveries with a finalized result",
+    "overdue": "Overdue incomplete",
+    "overdueHint": "Deliveries without a result after the due time",
+    "completionRate": "Result rate",
+    "completionRateHint": "Across all deliveries that have reached their due time",
+    "noDueDeliveries": "No deliveries have reached their due time",
+    "errorTitle": "Assignment overview could not be loaded",
+    "errorMessage": "The assignment list is still available. Try loading the overview again."
   },
   "actions": {
     "importQuestions": "Import questions",

@@ -4,6 +4,15 @@ export type AssignmentManagementStatus = "DRAFT" | "PUBLISHED" | "ARCHIVED";
 export interface AssignmentGradeSummary { id: number; code: string; name: string; displayOrder: number; }
 export interface Assignment { id: number; grade: AssignmentGradeSummary; academicYear: string; name: string; description?: string; status: AssignmentManagementStatus; startAt: string; dueAt: string; timeLimitMinutes: number; showAnswersAfterSubmit: boolean; questionCount: number; classIds: number[]; }
 export interface CreateAssignmentRequest { gradeId: number; academicYear: string; name: string; description?: string; startAt: string; dueAt: string; timeLimitMinutes: number; showAnswersAfterSubmit?: boolean; classIds: number[]; }
+
+export interface TeacherAssignmentSummary {
+  openAssignmentCount: number;
+  finalizedDeliveryCount: number;
+  overdueIncompleteDeliveryCount: number;
+  dueDeliveryCount: number;
+  finalizedDueDeliveryCount: number;
+  resultRate: number | null;
+}
 export interface AssignmentQuestionOption { id: number; content: string; isCorrect: boolean; }
 export interface AssignmentQuestionAnswer { id: number; rawValue: string; normalizedValue?: string; }
 export interface AssignmentQuestionMedia { id: number; mediaId: number; mediaType: string; url: string; }

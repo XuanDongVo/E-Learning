@@ -31,6 +31,15 @@ public interface AssessmentAttemptRepository extends JpaRepository<AssessmentAtt
 
     @Query("""
             select a from AssessmentAttempt a
+            join fetch a.student
+            join fetch a.assignment
+            where a.assignment.id in :assignmentIds
+            """)
+    List<AssessmentAttempt> findAllByAssignmentIdInWithStudent(
+            @Param("assignmentIds") List<Long> assignmentIds);
+
+    @Query("""
+            select a from AssessmentAttempt a
             join fetch a.assignment
             where a.student.id = :studentId
             """)

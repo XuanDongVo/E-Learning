@@ -13,7 +13,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { useBuilder } from "@/components/features/teacher/assignments/builder/store";
-import { Button } from "@/components/ui/button";
+import { SharedContentGuide } from "./SharedContentGuide";
 import type { ToolKey } from "@/types/assignment-builder";
 import { BatchAdd } from "./BatchAdd";
 
@@ -136,6 +136,9 @@ export function Toolbox() {
   const groups = [...new Set(AVAILABLE_TOOLS.map((tool) => tool.group))];
   return (
     <div className="space-y-4 p-3">
+      <div className="px-1">
+        <SharedContentGuide />
+      </div>
       <div className="px-1">
         <BatchAdd label="Add multiple questions" variant="default" />
       </div>

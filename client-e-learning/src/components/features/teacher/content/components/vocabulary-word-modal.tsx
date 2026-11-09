@@ -101,16 +101,16 @@ export function VocabularyWordModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[560px]">
+      <DialogContent className="max-h-[calc(100dvh-2rem)] overflow-y-auto sm:max-w-[560px]">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-lg font-bold text-slate-800">
-            <Sparkles className="h-5 w-5 text-amber-500" />
+          <DialogTitle className="flex items-center gap-2 text-card-title font-bold text-foreground">
+            <Sparkles className="size-5 text-primary" />
             <span>{word ? "Chỉnh sửa từ vựng" : "Thêm từ vựng mới"}</span>
           </DialogTitle>
         </DialogHeader>
 
         {error && (
-          <div className="flex items-center gap-2 rounded-lg bg-red-50 border border-red-200 p-3 text-xs font-medium text-red-600">
+          <div className="flex items-center gap-2 rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-body-sm font-medium text-destructive">
             <AlertCircle className="h-4 w-4 shrink-0" />
             <span>{error}</span>
           </div>
@@ -121,14 +121,14 @@ export function VocabularyWordModal({
             {/* English Word */}
             <div className="space-y-1 sm:col-span-2">
               <div className="flex items-center justify-between">
-                <label className="text-xs font-bold text-slate-700">
-                  Từ vựng tiếng Anh <span className="text-red-500">*</span>
+                <label className="text-label font-bold text-foreground">
+                  Từ vựng tiếng Anh <span className="text-destructive">*</span>
                 </label>
                 {wordText.trim() && (
                   <button
                     type="button"
                     onClick={handleSpeak}
-                    className="flex items-center gap-1 text-[11px] font-semibold text-primary hover:underline"
+                    className="flex min-h-10 items-center gap-1 rounded-lg px-2 text-label font-semibold text-primary hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                   >
                     <Volume2 className="h-3.5 w-3.5" />
                     <span>Nghe phát âm</span>
@@ -142,14 +142,14 @@ export function VocabularyWordModal({
                 placeholder="Ví dụ: pencil case, backpack..."
                 value={wordText}
                 onChange={(e) => setWordText(e.target.value)}
-                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+                className="min-h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-body-sm text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
               />
             </div>
 
             {/* Vietnamese Meaning */}
             <div className="space-y-1 sm:col-span-2">
-              <label className="text-xs font-bold text-slate-700">
-                Nghĩa tiếng Việt <span className="text-red-500">*</span>
+              <label className="text-label font-bold text-foreground">
+                Nghĩa tiếng Việt <span className="text-destructive">*</span>
               </label>
               <input
                 type="text"
@@ -157,13 +157,13 @@ export function VocabularyWordModal({
                 placeholder="Ví dụ: hộp bút, ba lô đi học..."
                 value={meaningVi}
                 onChange={(e) => setMeaningVi(e.target.value)}
-                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+                className="min-h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-body-sm text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
               />
             </div>
 
             {/* Pronunciation (IPA) */}
             <div className="space-y-1">
-              <label className="text-xs font-bold text-slate-700">
+              <label className="text-label font-bold text-foreground">
                 Phiên âm IPA (tùy chọn)
               </label>
               <input
@@ -171,19 +171,19 @@ export function VocabularyWordModal({
                 placeholder="Ví dụ: /ˈpensl keɪs/"
                 value={pronunciation}
                 onChange={(e) => setPronunciation(e.target.value)}
-                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+                className="min-h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-body-sm text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
               />
             </div>
 
             {/* Part of Speech */}
             <div className="space-y-1">
-              <label className="text-xs font-bold text-slate-700">
+              <label className="text-label font-bold text-foreground">
                 Từ loại
               </label>
               <select
                 value={partOfSpeech}
                 onChange={(e) => setPartOfSpeech(e.target.value)}
-                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20 bg-white"
+                className="min-h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-body-sm text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
               >
                 <option value="Noun">Danh từ (Noun)</option>
                 <option value="Verb">Động từ (Verb)</option>
@@ -196,7 +196,7 @@ export function VocabularyWordModal({
 
             {/* Difficulty */}
             <div className="space-y-1 sm:col-span-2">
-              <label className="text-xs font-bold text-slate-700">
+              <label className="text-label font-bold text-foreground">
                 Mức độ khó
               </label>
               <div className="grid grid-cols-3 gap-2">
@@ -205,14 +205,14 @@ export function VocabularyWordModal({
                     key={diff}
                     type="button"
                     onClick={() => setDifficulty(diff)}
-                    className={`rounded-lg py-2 text-xs font-bold border transition ${
+                    className={`min-h-10 rounded-lg border px-2 py-2 text-label font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                       difficulty === diff
                         ? diff === "EASY"
-                          ? "bg-emerald-50 border-emerald-500 text-emerald-700 ring-2 ring-emerald-500/20"
+                          ? "border-success bg-success/10 text-success ring-2 ring-success/20"
                           : diff === "MEDIUM"
-                          ? "bg-amber-50 border-amber-500 text-amber-700 ring-2 ring-amber-500/20"
-                          : "bg-rose-50 border-rose-500 text-rose-700 ring-2 ring-rose-500/20"
-                        : "bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100"
+                          ? "border-warning bg-warning/10 text-warning ring-2 ring-warning/20"
+                          : "border-destructive bg-destructive/10 text-destructive ring-2 ring-destructive/20"
+                        : "border-border bg-card text-muted-foreground hover:bg-muted"
                     }`}
                   >
                     {diff === "EASY" ? "Dễ (Easy)" : diff === "MEDIUM" ? "Vừa (Medium)" : "Khó (Hard)"}
@@ -223,7 +223,7 @@ export function VocabularyWordModal({
 
             {/* Example sentence */}
             <div className="space-y-1 sm:col-span-2">
-              <label className="text-xs font-bold text-slate-700">
+              <label className="text-label font-bold text-foreground">
                 Câu ví dụ tiếng Anh (tùy chọn)
               </label>
               <input
@@ -231,13 +231,13 @@ export function VocabularyWordModal({
                 placeholder="Ví dụ: I have a new blue pencil case."
                 value={exampleSentence}
                 onChange={(e) => setExampleSentence(e.target.value)}
-                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+                className="min-h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-body-sm text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
               />
             </div>
 
             {/* Example Vietnamese */}
             <div className="space-y-1 sm:col-span-2">
-              <label className="text-xs font-bold text-slate-700">
+              <label className="text-label font-bold text-foreground">
                 Dịch nghĩa câu ví dụ (tùy chọn)
               </label>
               <input
@@ -245,23 +245,23 @@ export function VocabularyWordModal({
                 placeholder="Ví dụ: Tôi có một chiếc hộp bút màu xanh mới."
                 value={exampleMeaningVi}
                 onChange={(e) => setExampleMeaningVi(e.target.value)}
-                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+                className="min-h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-body-sm text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
               />
             </div>
           </div>
 
-          <DialogFooter className="mt-4 pt-3 border-t border-slate-100 gap-2">
+          <DialogFooter className="gap-2">
             <button
               type="button"
               onClick={() => onOpenChange(false)}
-              className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition"
+              className="min-h-10 rounded-lg border border-border bg-card px-4 py-2 text-body-sm font-semibold text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
               Hủy
             </button>
             <button
               type="submit"
               disabled={isPending}
-              className="rounded-lg bg-primary px-5 py-2 text-sm font-bold text-white hover:bg-primary-dark transition disabled:opacity-50"
+              className="min-h-10 rounded-lg bg-primary px-5 py-2 text-body-sm font-bold text-primary-foreground transition-colors hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-50"
             >
               {isPending ? "Đang lưu..." : word ? "Cập nhật" : "Thêm từ vựng"}
             </button>

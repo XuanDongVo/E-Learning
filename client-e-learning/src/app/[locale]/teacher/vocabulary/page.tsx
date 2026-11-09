@@ -28,7 +28,6 @@ export default function TeacherVocabularyPage() {
     data: grades = [],
     isLoading: isLoadingGrades,
     isError: isGradesError,
-    error: gradesError,
     refetch: refetchGrades,
   } = useQuery({
     queryKey: ["teacher", "vocabulary", "grades"],
@@ -71,22 +70,22 @@ export default function TeacherVocabularyPage() {
     units.find((unit) => unit.id === selectedUnitId) ?? units[0];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 overflow-x-clip">
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-5">
-        <div>
+      <div className="flex flex-col justify-between gap-4 border-b border-border pb-5 sm:flex-row sm:items-start">
+        <div className="min-w-0">
           <div className="flex items-center gap-2">
-            <span className="grid h-8 w-8 place-items-center rounded-xl bg-primary/10 text-primary border border-primary/20">
+            <span className="grid size-10 place-items-center rounded-lg border border-primary/20 bg-primary-soft text-primary">
               <BookA className="h-5 w-5" />
             </span>
-            <p className="text-xs font-bold uppercase tracking-wider text-primary">
+            <p className="text-label font-semibold text-primary">
               Vocabulary Hub
             </p>
           </div>
-          <h1 className="mt-1 text-2xl font-extrabold text-foreground">
+          <h1 className="mt-2 text-page-title font-bold text-foreground">
             Quản lý Từ vựng theo Unit
           </h1>
-          <p className="text-sm text-muted-foreground">
+          <p className="mt-1 max-w-3xl text-body-sm text-muted-foreground">
             Thêm, chỉnh sửa và cấu hình từ vựng tiếng Anh theo từng bài học để
             học sinh ôn luyện qua mini-game.
           </p>
@@ -96,7 +95,7 @@ export default function TeacherVocabularyPage() {
         <Link
           href="/student/game"
           target="_blank"
-          className="inline-flex items-center gap-2 rounded-xl border border-primary/30 bg-primary/5 px-4 py-2.5 text-xs font-bold text-primary hover:bg-primary/10 transition shadow-sm self-start sm:self-auto"
+          className="inline-flex min-h-10 items-center gap-2 self-start rounded-lg border border-border bg-card px-4 py-2 text-body-sm font-semibold text-primary transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary sm:shrink-0"
         >
           <Gamepad2 className="h-4 w-4" />
           <span>Xem Đấu trường Game Học sinh</span>
@@ -105,16 +104,16 @@ export default function TeacherVocabularyPage() {
       </div>
 
       {/* Sync Explanation Banner */}
-      <div className="rounded-2xl border border-sky-200 bg-sky-50/70 p-4 sm:p-5 shadow-sm text-sky-950">
+      <div className="border-y border-border bg-muted/40 p-4 sm:p-5">
         <div className="flex items-start gap-3.5">
-          <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-sky-500 text-white shadow-md">
+          <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-primary-soft text-primary">
             <Sparkles className="h-4 w-4" />
           </span>
-          <div className="space-y-1 text-xs sm:text-sm leading-relaxed">
-            <p className="font-bold text-sky-900">
+          <div className="space-y-1 text-body-sm leading-relaxed">
+            <p className="font-bold text-foreground">
               🎮 Cơ chế kết nối tự động với Mini-Game Học sinh:
             </p>
-            <p className="text-sky-800">
+            <p className="text-muted-foreground">
               Mọi từ vựng bạn thêm hoặc kích hoạt (*Active*) ở đây sẽ{" "}
               <strong>tự động đồng bộ ngay lập tức</strong> vào hai trò chơi:{" "}
               <strong>Chiến hạm Bắn từ (Bubble Pop)</strong> và{" "}
@@ -127,14 +126,14 @@ export default function TeacherVocabularyPage() {
 
       {/* Grade Selector Tabs */}
       <div className="space-y-2">
-        <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+        <p className="text-label font-semibold text-muted-foreground">
           Bước 1: Chọn Khối lớp
         </p>
 
         {isLoadingGrades ? (
           <div className="flex flex-wrap items-center gap-2">
             {Array.from({ length: 4 }).map((_, index) => (
-              <Skeleton key={index} className="h-9 w-24 rounded-xl" />
+              <Skeleton key={index} className="h-10 w-24 rounded-lg" />
             ))}
           </div>
         ) : isGradesError ? (
@@ -174,10 +173,10 @@ export default function TeacherVocabularyPage() {
                     setSelectedUnitId(null);
                   }}
                   className={cn(
-                    "rounded-xl px-4 py-2 text-xs font-bold transition shadow-sm",
+                    "min-h-10 rounded-lg border px-4 py-2 text-body-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                     isSelected
-                      ? "bg-primary text-primary-foreground shadow-md"
-                      : "border border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground",
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground",
                   )}
                 >
                   {grade.name}
@@ -190,14 +189,14 @@ export default function TeacherVocabularyPage() {
 
       {/* Unit Selector Pills */}
       <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-label font-semibold text-muted-foreground">
             Bước 2: Chọn Bài học (Unit) để xem và nhập từ vựng
           </p>
           {activeUnit && (
             <Link
               href={`/teacher/content/units/${activeUnit.id}`}
-              className="text-xs font-semibold text-primary hover:underline flex items-center gap-1"
+              className="flex min-h-10 items-center gap-1 self-start rounded-lg px-2 text-body-sm font-semibold text-primary hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
               <span>Xem toàn bộ chi tiết Unit này</span>
               <ChevronRight className="h-3 w-3" />
@@ -212,11 +211,11 @@ export default function TeacherVocabularyPage() {
             minHeight={120}
           />
         ) : isLoadingUnits ? (
-          <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+          <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {Array.from({ length: 8 }).map((_, index) => (
               <div
                 key={index}
-                className="flex items-center gap-3 rounded-xl border border-border bg-card p-3"
+                className="flex items-center gap-3 border border-border bg-card p-3"
               >
                 <Skeleton className="h-8 w-8 shrink-0 rounded-lg" />
 
@@ -251,7 +250,7 @@ export default function TeacherVocabularyPage() {
             minHeight={120}
           />
         ) : (
-          <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+          <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {units.map((unit) => {
               const isSelected = activeUnit?.id === unit.id;
 
@@ -261,15 +260,15 @@ export default function TeacherVocabularyPage() {
                   type="button"
                   onClick={() => setSelectedUnitId(unit.id)}
                   className={cn(
-                    "flex items-center gap-3 rounded-xl border p-3 text-left transition",
+                    "flex min-h-16 items-center gap-3 border p-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                     isSelected
-                      ? "border-primary bg-primary/10 shadow-sm"
+                      ? "border-primary bg-primary-soft"
                       : "border-border bg-card hover:bg-muted/60",
                   )}
                 >
                   <span
                     className={cn(
-                      "grid h-8 w-8 shrink-0 place-items-center rounded-lg text-xs font-bold",
+                      "grid size-9 shrink-0 place-items-center rounded-lg text-label font-bold",
                       isSelected
                         ? "bg-primary text-primary-foreground"
                         : "bg-muted text-muted-foreground",
@@ -279,11 +278,11 @@ export default function TeacherVocabularyPage() {
                   </span>
 
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-[11px] font-bold text-primary">
+                    <p className="truncate text-label font-bold text-primary">
                       {unit.code}
                     </p>
 
-                    <p className="truncate text-xs font-bold text-foreground">
+                    <p className="truncate text-body-sm font-bold text-foreground">
                       {unit.name}
                     </p>
                   </div>
@@ -297,9 +296,9 @@ export default function TeacherVocabularyPage() {
       {/* Main Vocabulary Management Section */}
       {activeUnit ? (
         <div className="pt-2">
-          <div className="mb-2 flex items-center gap-2 text-xs font-bold text-foreground">
+          <div className="mb-3 flex flex-wrap items-center gap-2 text-body-sm font-bold text-foreground">
             <span>Đang quản lý từ vựng cho:</span>
-            <span className="rounded-md bg-primary/10 px-2 py-0.5 text-primary">
+            <span className="rounded-lg bg-primary-soft px-2 py-1 text-primary">
               {activeUnit.code} · {activeUnit.name}
             </span>
           </div>

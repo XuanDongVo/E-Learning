@@ -49,6 +49,14 @@ POST /v1/assignments/{id}/questions
 PUT /v1/assignments/{id}/questions/{questionId}
 POST /v1/assignments/{id}/questions/bulk-delete
 
+GET /v1/teacher/assignments/summary
+
+The Teacher summary is scoped through the authenticated Teacher's target classes.
+It returns open Assignment count, finalized delivery count (`SUBMITTED` +
+`TIMED_OUT`), overdue incomplete delivery count, due/finalized-due denominators,
+and nullable result rate. A delivery is one distinct published
+`Assignment × active Student` pair. Drafts are excluded.
+
 Assignment exposes show_answers_after_submit. No Release Answers endpoint.
 
 ## Student class membership

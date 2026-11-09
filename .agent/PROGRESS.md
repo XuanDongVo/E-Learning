@@ -1,5 +1,135 @@
 # Project Progress
 
+## Teacher Assignment portfolio summary (2026-11-09)
+
+- Replaced the Assignment list's placeholder Summary Cards with a real,
+  authenticated API: `GET /v1/teacher/assignments/summary`.
+- The server now owns open Assignment, finalized delivery (`SUBMITTED` plus
+  `TIMED_OUT`), overdue incomplete delivery, due-delivery denominator, and result
+  rate calculations. Distinct `Assignment × active Student` deliveries prevent
+  duplicate counting across target classes; Drafts are excluded.
+- The Assignment list read is now scoped to target classes owned by the
+  authenticated Teacher. No Assignment owner column or database migration was
+  introduced.
+- Teacher Assignment UI now shows `Đang mở`, `Đã có kết quả`,
+  `Chưa hoàn thành quá hạn`, and `Tỷ lệ có kết quả`, with independent loading,
+  error/retry, zero-data, and success states. The list remains usable when the
+  summary request fails.
+- Summary Cards retain the current Teacher layout while using semantic status
+  tokens and non-interactive card behavior. Vietnamese and English copy are
+  updated; no demo values remain.
+- Per-Assignment overdue monitoring now also marks an `IN_PROGRESS` Attempt as
+  overdue once the Assignment due time is reached.
+- Validation: focused backend summary tests pass 2/2 through Surefire; frontend
+  TypeScript and focused ESLint pass. Maven's compiler lifecycle emits a local
+  `Cannot close compiler resources` failure after writing classes, so the focused
+  test was executed from the emitted test classes. Production build and
+  authenticated PostgreSQL E2E remain pending.
+
+## Teacher Content UI improvement — Phase 3 (2026-11-09)
+
+- Refined the existing Teacher Content visual system without changing its
+  information architecture: Unit, Section, and Topic detail headers now share
+  the same responsive title, metadata, primary edit action, and lifecycle menu
+  hierarchy using approved semantic tokens.
+- Unit Sections and Section Topics now use consistent flat list surfaces,
+  typography, dividers, status treatment, and 40px action targets. Rows retain
+  pointer/drag behavior and are now keyboard reachable with Enter/Space
+  navigation and visible focus states.
+- Breadcrumbs now horizontally scroll with bounded/truncated items instead of
+  clipping the current location on narrow screens. Unit tabs remain keyboard
+  operable and horizontally scrollable on mobile.
+- Topic Question Banks now use the same responsive list language and a shared
+  portal Dialog for creation, replacing the fixed custom overlay while keeping
+  the existing form, mutation, validation, and error behavior.
+- Unit Vocabulary and the Teacher Navbar Vocabulary page were normalized to the
+  same semantic palette, button hierarchy, spacing, and responsive grids. Word
+  and bulk-import dialogs are viewport-bounded and scroll internally so their
+  controls remain reachable on short/mobile screens.
+- Source-level viewport review covered 375px, 768px, and 1440px behavior: page
+  headers/actions wrap, selector grids step from one to two/three/four columns,
+  list metadata collapses below desktop, dialog content is height-bounded, and
+  wide vocabulary tables scroll only inside their region.
+- No backend/API contract, database schema, route, authorization behavior,
+  content lifecycle, Vocabulary–Unit relationship, Activity rule, or Student UI
+  changed. Teacher styling remains isolated from the Student scrapbook system.
+- Validation: focused ESLint has 0 errors and one pre-existing
+  `react-hooks/set-state-in-effect` warning in `VocabularyWordModal`; full
+  TypeScript (`tsc --noEmit`) passes; `git diff --check` passes with line-ending
+  warnings only. Per owner request, no production build or screenshots were run.
+
+## Teacher Content UI improvement — Phase 2 (2026-11-09)
+
+- Unit Detail now has three accessible tabs: `Nội dung` (default), `Từ vựng`,
+  and `Tổng quan`. Keyboard Left/Right/Home/End navigation is supported and the
+  tab bar remains horizontally usable on narrow layouts.
+- The Content tab retains Section create/navigation/reorder behavior. The Overview
+  tab displays only existing Unit fields: description, grade, code, lifecycle,
+  hierarchy counts, display order, and persisted timestamps.
+- Unit Vocabulary and Navbar Vocabulary continue to render the same
+  `UnitVocabularySection` and call the same Unit-scoped CRUD API. A canonical query
+  root now invalidates every search/status variant for the Unit after mutations.
+- Vocabulary management now covers loading, query error/retry, filtered empty,
+  initial empty, success, background refetch, per-item pending, mutation error, and
+  success-toast states. Search/status filters and bulk import remain available.
+- Vocabulary create/edit still reuse the existing form and validation. API errors
+  keep the form open with its entered data. Delete now uses the shared AlertDialog,
+  stays open on API failure, and cannot submit repeatedly while pending.
+- Unit, Section, and Topic entity/list mutation failures now surface dismissible
+  banners while preserving the existing CRUD forms and values.
+- No API endpoint, request/response type, database schema, route, authorization,
+  Activity rule, Vocabulary–Unit relationship, or Student UI changed. The current
+  Vocabulary API is an unpaginated Unit-scoped list, so no pagination UI was added.
+- Validation: focused ESLint passes with zero findings and `git diff --check`
+  passes (line-ending normalization warning only). Full TypeScript reaches the
+  changed files without Phase 2 errors but remains blocked by pre-existing
+  Assignment Builder errors outside this phase. Production build was not run per
+  explicit owner request; no screenshots were produced.
+
+## Teacher Content UI improvement — Phase 1 (2026-11-09)
+
+- Added a shared, responsive Teacher Content breadcrumb and explicit parent links
+  for Unit, Section, and Topic detail routes. Breadcrumb labels use fetched entity
+  names and locale-aware application links; no history-based navigation is used.
+- Unit Detail now presents Sections as its primary list and no longer duplicates
+  the Unit Activity list. Existing Section CRUD/reorder and Unit Vocabulary CRUD
+  remain available; Vocabulary is kept below Sections until Phase 2 introduces tabs.
+- Section Detail now resolves and displays its parent Unit, keeps Topics as the
+  primary content, and distinguishes Topic loading/error/empty states.
+- Topic Detail now resolves its full Unit/Section path, keeps Question Banks as the
+  primary content, and replaces the full Activity list with a compact reference
+  count derived from Activity Question Bank links.
+- Topic Activity navigation truthfully opens the Unit-filtered Activities view.
+  The Activities workspace now resolves the requested Unit's grade before loading
+  Units, so direct `?unitId=` links work outside the default grade. Topic filtering
+  remains unsupported and is stated in the UI.
+- No backend endpoint, API contract, database schema, Activity business rule,
+  Vocabulary behavior, authorization behavior, or Student UI changed.
+- Validation: focused ESLint passes with zero findings; `git diff --check` passes.
+  Full TypeScript is blocked by pre-existing Assignment Builder and stale
+  `.next` route-type errors outside Phase 1. Production build is unverified because
+  SWC native-cache access requires an out-of-sandbox run and approval was declined.
+
+## Teacher Content UI improvement — Phase 0 audit (2026-11-09)
+
+- Audited the Unit, Section, Topic, Question Bank, Activities, and Vocabulary
+  frontend flows plus their existing Spring Boot contracts. No application code,
+  API contract, database schema, route, or business rule changed in this phase.
+- Confirmed the canonical hierarchy is already represented by the current APIs:
+  Unit → Section → Topic → Question Bank. Vocabulary belongs to one Unit;
+  Activities belong to one Unit and reference Question Banks through ActivityBank.
+- The shared `UnitVocabularySection` already powers both Unit Detail and the
+  Navbar Vocabulary route, using the same CRUD service and Unit-scoped query key.
+- Phase 1 remains gated. Its frontend scope is breadcrumb/parent navigation for
+  Unit, Section, and Topic; removal of the duplicated Unit Activity list; and a
+  compact Topic Activity reference while preserving Question Banks as the main
+  Topic content.
+- Known constraint: Activities can be filtered by Unit, not by Topic. Topic-related
+  counts can be derived from returned Activity banks, but navigation must not claim
+  a Topic-filtered Activities view. No backend change is required for Phase 1.
+- Audit validation was static source/contract inspection only; no build, lint,
+  tests, screenshots, or runtime mutations were performed.
+
 ## Container deployment and local configuration (2026-11-08)
 
 - Added a Compose stack for PostgreSQL, Spring Boot, Next.js and Nginx; only Nginx publishes port 80, and `/v1/*` is reverse-proxied to the backend.

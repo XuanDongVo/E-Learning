@@ -39,8 +39,8 @@ public class AssignmentService {
     private final AssignmentEditabilityService editabilityService;
 
     @Transactional(readOnly = true)
-    public List<AssignmentResponse> list() {
-        return assignmentRepository.findAllByStatusNotOrderByDueAtAscIdAsc(AssignmentStatus.ARCHIVED)
+    public List<AssignmentResponse> list(Long teacherId) {
+        return assignmentRepository.findAllVisibleToTeacherExcludingArchived(teacherId)
                 .stream().map(assignment -> AssignmentResponse.from(assignment, (int) assignmentQuestionRepository.countByAssignmentId(assignment.getId()))).toList();
     }
 

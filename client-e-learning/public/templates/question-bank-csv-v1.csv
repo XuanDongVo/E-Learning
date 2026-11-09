@@ -1,0 +1,6 @@
+﻿type,difficulty,content,option_a,option_b,option_c,option_d,correct_answer,explanation,hint
+SINGLE_CHOICE,EASY,She ____ to school every day.,go,goes,going,gone,B,Present simple with she,
+MULTIPLE_CHOICE,MEDIUM,Choose the fruits.,Apple,Carrot,Banana,Potato,A|C,Apple and banana are fruits,
+TRUE_FALSE,EASY,The sun is a star.,,,,,TRUE,The Sun is a star,
+FILL_IN_BLANK,MEDIUM,She ____ to school every day.,,,,,goes,Use present simple,
+TYPE_ANSWER,HARD,Translate apple into Vietnamese.,,,,,táo,Apple means táo,

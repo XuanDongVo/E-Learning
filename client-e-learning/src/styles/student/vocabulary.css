@@ -1,0 +1,70 @@
+/* Vocabulary is a Student-only notebook module; Teacher styles stay untouched. */
+:is(.student-theme, body:has(.student-theme)) .student-vocab-flashcard {
+  min-height: 290px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1rem;
+  padding: 1.5rem;
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-vocab-word {
+  font-family: var(--student-font-body);
+  font-size: clamp(1.65rem, 4vw, 2.4rem);
+  line-height: 1.22;
+  font-weight: 900;
+  overflow-wrap: anywhere;
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-vocab-meaning {
+  font-family: var(--student-font-body);
+  font-size: clamp(1.25rem, 3vw, 1.7rem);
+  line-height: 1.35;
+  font-weight: 800;
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-vocab-term {
+  display: inline-block;
+  padding: 0.25rem 0.625rem;
+  border-radius: 0.65rem;
+  border: 1px solid var(--border);
+  background: var(--secondary);
+  color: var(--foreground);
+  font-family: var(--student-font-body);
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-vocab-option {
+  display: flex;
+  width: 100%;
+  min-height: 48px;
+  align-items: center;
+  text-align: left;
+  padding: 0.75rem 1rem;
+  border: 2px solid var(--student-ink);
+  border-radius: 0.85rem;
+  background: var(--student-paper);
+  color: var(--foreground);
+  font-family: var(--student-font-body);
+  font-weight: 700;
+  transition: background-color 120ms ease;
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-vocab-option:hover:not(:disabled),
+:is(.student-theme, body:has(.student-theme)) .student-vocab-option:focus-visible {
+  background: var(--student-kraft);
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-vocab-option[aria-pressed="true"] {
+  background: var(--student-washi);
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-vocab-option:disabled {
+  cursor: not-allowed;
+  opacity: 0.72;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :is(.student-theme, body:has(.student-theme)) .student-vocab-option { transition: none; }
+}

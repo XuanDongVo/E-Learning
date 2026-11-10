@@ -1,5 +1,22 @@
 # Project Progress
 
+## Vocabulary Phase 03 — Student Notebook UI (2026-11-10)
+
+- Added Unit detail entry and `/student/units/{unitId}/vocabulary` with four
+  Student-only surfaces: Xem từ, Học, Ôn tập, Chơi. Uses the canonical Indie
+  Illustrated Scrapbook primitives and scoped CSS; no Teacher visual changes.
+- Implemented UK/US Flashcard with optional image, examples and related terms;
+  due-first recommended Learn queue, self-chosen word previews and due-only Review.
+- Self-rating HARD/GOOD/EASY/AGAIN writes exclusively to Phase 02 FSRS API with
+  stable requestId retries, server error messages and cache refresh. MC/typing/
+  optional browser speech-recognition practice is deliberately non-scheduling.
+- Unit game links require explicit US/UK and preserve existing game modes and
+  runner. No changes to Game Hub, Activity XP or Gamification.
+- Static source review and `git diff --check` done. Next.js dependencies are
+  unavailable here, so TS/ESLint/build, live browser and device/voice checks
+  remain necessary before deployment. See `plans/VOCABULARY_STUDENT_PHASE_3_SPEC.md`.
+
+
 ## Vocabulary Learn / Review — Phase 02 backend foundation (2026-11-10)
 
 - Pinned Java-FSRS 1.0.0 and added Flyway V57: per-student/word cards (full FSRS

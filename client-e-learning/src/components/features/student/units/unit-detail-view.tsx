@@ -3,7 +3,7 @@
 import { Link } from "@/i18n/navigation";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, BookOpen, ListTree, RotateCcw, Tag, Zap } from "lucide-react";
+import { ArrowLeft, BookOpen, BookMarked, ChevronRight, ListTree, RotateCcw, Tag, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FullPageState } from "@/components/feedback";
 import { studentUnitService } from "@/services/student-unit.service";
@@ -158,6 +158,25 @@ export function UnitDetailView({ unitId, mascotSlot }: UnitDetailViewProps) {
               {mascotSlot}
             </div>
           )}
+        </div>
+      </PaperSurface>
+
+      <PaperSurface as="section" variant="lined" className="p-5 sm:p-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="space-y-1">
+            <span className="student-meta text-primary">UNIT {label} · VOCABULARY</span>
+            <h2 className="student-card-title flex items-center gap-2 text-foreground">
+              <BookMarked className="h-5 w-5 text-primary" aria-hidden="true" />
+              Sổ tay từ vựng
+            </h2>
+            <p className="student-body text-muted-foreground">
+              Xem từ, học bằng Flashcard, ôn đúng lịch và chơi trò chơi theo Unit.
+            </p>
+          </div>
+          <Link href={`/student/units/${unit.id}/vocabulary`}
+            className="student-control student-control--action inline-flex shrink-0 items-center justify-center gap-2 px-5">
+            Mở sổ từ vựng <ChevronRight className="size-4" aria-hidden="true" />
+          </Link>
         </div>
       </PaperSurface>
 

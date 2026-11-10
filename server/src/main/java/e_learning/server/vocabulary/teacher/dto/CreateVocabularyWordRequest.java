@@ -5,6 +5,7 @@ import e_learning.server.vocabulary.enums.VocabularyPartOfSpeech;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import jakarta.validation.Valid;
 
 public record CreateVocabularyWordRequest(
         @NotBlank(message = "Từ vựng tiếng Anh không được để trống")
@@ -29,6 +30,8 @@ public record CreateVocabularyWordRequest(
         VocabularyDifficulty difficulty,
 
         String audioUrl,
-        String imageUrl
+        String imageUrl,
+
+        @Valid VocabularyRelatedTermsDto relatedTerms
 ) {}
 

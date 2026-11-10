@@ -18,6 +18,15 @@ public class TeacherVocabularyController {
 
     private final TeacherVocabularyService teacherVocabularyService;
 
+    @GetMapping("/v1/content/vocabulary/search")
+    public ResponseEntity<ApiResponse<List<VocabularySearchItemResponse>>> searchCandidates(
+            @RequestParam Long unitId,
+            @RequestParam String q,
+            @RequestParam(defaultValue = "10") int limit
+    ) {
+        return ResponseEntity.ok(ApiResponse.success(teacherVocabularyService.searchCandidates(unitId, q, limit)));
+    }
+
     @GetMapping("/v1/content/units/{unitId}/vocabulary")
     public ResponseEntity<ApiResponse<PageResponse<VocabularyWordResponse>>> getWordsByUnit(
             @PathVariable Long unitId,

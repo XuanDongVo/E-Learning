@@ -6,6 +6,7 @@ import e_learning.server.vocabulary.enums.VocabularyStatus;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import jakarta.validation.Valid;
 
 public record UpdateVocabularyWordRequest(
         @NotBlank(message = "Từ vựng tiếng Anh không được để trống")
@@ -31,6 +32,8 @@ public record UpdateVocabularyWordRequest(
 
         VocabularyStatus status,
         String audioUrl,
-        String imageUrl
+        String imageUrl,
+
+        @Valid VocabularyRelatedTermsDto relatedTerms
 ) {}
 

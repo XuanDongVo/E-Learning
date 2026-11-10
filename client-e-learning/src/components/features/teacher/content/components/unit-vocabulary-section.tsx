@@ -488,6 +488,7 @@ export function UnitVocabularySection({ unitId }: UnitVocabularySectionProps) {
       />}
 
       <VocabularyWordModal
+        unitId={unitId}
         open={addModalOpen}
         onOpenChange={setAddModalOpen}
         onSubmit={async (payload) => {
@@ -499,6 +500,7 @@ export function UnitVocabularySection({ unitId }: UnitVocabularySectionProps) {
       />
 
       <VocabularyWordModal
+        unitId={unitId}
         open={Boolean(editingWord)}
         onOpenChange={(open) => {
           if (!open && !updateMutation.isPending) setEditingWord(null);

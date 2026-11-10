@@ -1,5 +1,28 @@
 # Project Progress
 
+## Vocabulary Content Enhancement — Phase 01 (2026-11-10)
+
+- Extended `VocabularyWord` with structured non-null JSONB `relatedTerms` in
+  Flyway V56, keeping existing rows and the UK/US and enum foundation intact.
+- Added typed value objects, nested request validation and server normalization
+  (empty lists, whitespace, max 20/group, max lengths, case-insensitive dedup
+  within each group). Missing data in legacy update requests does not erase
+  existing Related Terms; explicit empty lists clear them.
+- Added Teacher-only `GET /v1/content/vocabulary/search` for copy-only candidate
+  suggestions from ACTIVE words in the same Grade. No auto-creation or links.
+- Updated shared Teacher Vocabulary create/edit form with Word Family, Synonyms,
+  Antonyms, inline search/manual addition, meaning and POS editing, Media image
+  upload/removal, UK/US listen buttons, and live two-sided Flashcard preview.
+- Added focused backend tests for normalization, response mapping, update
+  preservation, explicit clear, and candidate search contract.
+- CSV file import, Student Learn/Practice, FSRS, and Game/Gamification changes
+  remain deferred. Existing quick-paste input still works.
+- Validation: `git diff --check` passes. Maven tests could not start because
+  Maven Central parent POM is unavailable in the executor; ESLint is unavailable
+  because frontend node_modules are not installed. Run both and verify the
+  Teacher layout at mobile/tablet/desktop in an installed environment before merge.
+
+
 ## Vocabulary foundation: typed metadata, US/UK pronunciation and game selection (2026-11-10)
 
 - Based on `feature/question-bank-csv-import-phase1`, isolated on

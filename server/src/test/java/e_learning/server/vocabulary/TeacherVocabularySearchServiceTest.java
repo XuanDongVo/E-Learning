@@ -1,5 +1,6 @@
 package e_learning.server.vocabulary;
 
+import e_learning.server.common.exception.AppException;
 import e_learning.server.content.unit.entity.Unit;
 import e_learning.server.content.unit.repository.UnitRepository;
 import e_learning.server.grades.entity.Grade;
@@ -54,7 +55,7 @@ class TeacherVocabularySearchServiceTest {
     void rejectsQueriesShorterThanTwoCharacters() {
         when(unitRepository.findById(1L)).thenReturn(Optional.of(Unit.builder().id(1L).build()));
         assertThatThrownBy(() -> service.searchCandidates(1L, "a", 10))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(AppException.class);
         verifyNoInteractions(vocabularyWordRepository);
     }
 }

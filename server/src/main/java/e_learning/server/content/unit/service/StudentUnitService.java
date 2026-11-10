@@ -66,15 +66,7 @@ public class StudentUnitService {
             Long unitId
     ) {
 
-        // 1. Resolve student's current grade.
-        Long gradeId = resolveStudentGradeId(studentId);
-
-        // 2. Resolve published unit belonging to that grade.
-        Unit unit = unitRepository.findById(unitId).orElseThrow(() -> new AppException(ErrorCode.UNIT_NOT_FOUND));
-
-        if (!unit.getGrade().getId().equals(gradeId) || unit.getStatus() != ContentStatus.PUBLISHED) {
-            throw new AppException(ErrorCode.UNIT_NOT_FOUND);
-        }
+        Unit unit = requireVisibleUnit(studentId, unitId);
 
         // 3. Fetch published sections and topics.
         List<StudentSectionResponse> sections = getPublishedSections(unitId);
@@ -101,6 +93,17 @@ public class StudentUnitService {
                 sections,
                 activities
         );
+    }
+
+    /** Shared authorization rule for Unit content and vocabulary study/review. */
+    public Unit requireVisibleUnit(Long studentId, Long unitId) {
+        Long gradeId = resolveStudentGradeId(studentId);
+        Unit unit = unitRepository.findById(unitId)
+                .orElseThrow(() -> new AppException(ErrorCode.UNIT_NOT_FOUND));
+        if (!unit.getGrade().getId().equals(gradeId) || unit.getStatus() != ContentStatus.PUBLISHED) {
+            throw new AppException(ErrorCode.UNIT_NOT_FOUND);
+        }
+        return unit;
     }
 
     /**

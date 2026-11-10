@@ -68,6 +68,24 @@ Assignment exposes show_answers_after_submit. No Release Answers endpoint.
 
 ## Contract rules
 
+### Student Vocabulary FSRS foundation (Phase 02, 2026-11-10)
+
+- `GET /v1/student/vocabulary/units/{unitId}/cards`: Student-only, ACTIVE words
+  in a published Unit belonging to the authenticated Student's active-class Grade.
+  Returns Flashcard content plus per-word `state`, `dueAt`, `reviewCount`, `due`.
+  A word with no progress is `NEW`, `due=true`, `dueAt=null`.
+- `POST /v1/student/vocabulary/words/{wordId}/reviews`: body must include a UUID
+  `requestId` (idempotent retry token) and `rating` (AGAIN/HARD/GOOD/EASY).
+  Server computes FSRS `Card`, persists progress and immutable log in one
+  transaction, and returns `wordId,requestId,rating,state,reviewedAt,dueAt,reviewCount`.
+  A repeat of the same requestId/word/rating returns the prior result;
+  reusing its ID for another rating/word returns `409 VOCABULARY_REVIEW_REQUEST_CONFLICT`.
+  A premature review returns `409 VOCABULARY_REVIEW_NOT_DUE`.
+- Vocabulary errors use structured `AppException` with 400/404/409 status and
+  server detail in `ApiResponse.message`. Validation and invalid JSON are 400.
+  Student progress is independent of games, Activity and XP/Streak.
+  See `plans/VOCABULARY_FSRS_PHASE_2_SPEC.md`.
+
 ### Teacher Vocabulary Content (Phase 01, 2026-11-10)
 
 - `GET /v1/content/vocabulary/search?unitId={id}&q={text}&limit={n}` searches

@@ -52,7 +52,7 @@ export function VocabularyRelatedTermsEditor({ unitId, currentWordId, value, onC
     return () => window.clearTimeout(timeout);
   }, [search]);
 
-  const { data: suggestions = [], isFetching, isError, refetch } = useQuery({
+  const { data: suggestions = [], isFetching, isError, error, refetch } = useQuery({
     queryKey: ["content", "vocabulary", "search-candidates", unitId, debouncedSearch],
     queryFn: async () => {
       const response = await contentService.searchVocabularyCandidates(unitId, debouncedSearch);
@@ -154,7 +154,7 @@ export function VocabularyRelatedTermsEditor({ unitId, currentWordId, value, onC
                   {isFetching && <p className="flex items-center gap-2 p-3 text-label text-muted-foreground"><Loader2 className="size-4 animate-spin" /> Đang tìm kiếm...</p>}
                   {isError && (
                     <div className="flex items-center justify-between gap-2 p-3 text-label text-destructive">
-                      Không tìm được từ gợi ý.
+                      {error instanceof Error ? error.message : "Không tìm được từ gợi ý."}
                       <button type="button" onClick={() => void refetch()} className="font-bold underline">Thử lại</button>
                     </div>
                   )}

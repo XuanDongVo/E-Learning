@@ -9,13 +9,13 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Volume2, Sparkles, AlertCircle, ImagePlus, X } from "lucide-react";
-import type {
-  VocabularyWord,
-  CreateVocabularyWordRequest,
-  UpdateVocabularyWordRequest,
-  VocabularyPartOfSpeech,
-  VocabularyRelatedTerms,
+import {
   emptyVocabularyRelatedTerms,
+  type VocabularyWord,
+  type CreateVocabularyWordRequest,
+  type UpdateVocabularyWordRequest,
+  type VocabularyPartOfSpeech,
+  type VocabularyRelatedTerms,
 } from "@/types/vocabulary";
 import { speakVocabulary } from "@/lib/vocabulary-pronunciation";
 import { contentService } from "@/services/content.service";

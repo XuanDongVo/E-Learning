@@ -68,12 +68,12 @@ function throwApiError(
 ): never {
   const code = body.code || `HTTP_${status}`;
   const serverMessage = body.message || "Request failed";
-  // Preserve the existing Error.message contract for consumers not migrated yet.
   throw new AppError({
     code,
     status,
     details: body.details,
-    message: `[${code}] ${serverMessage}`,
+    // Show the server's business message as-is; structured code stays in AppError.code.
+    message: serverMessage,
     source: code.startsWith("HTTP_") ? "http" : source,
   });
 }

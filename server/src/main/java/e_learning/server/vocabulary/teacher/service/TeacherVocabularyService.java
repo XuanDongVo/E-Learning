@@ -1,5 +1,7 @@
 package e_learning.server.vocabulary.teacher.service;
 
+import e_learning.server.common.exception.AppException;
+import e_learning.server.common.exception.ErrorCode;
 import e_learning.server.common.dto.PageResponse;
 import e_learning.server.content.unit.entity.Unit;
 import e_learning.server.content.unit.repository.UnitRepository;
@@ -7,6 +9,7 @@ import e_learning.server.vocabulary.entity.VocabularyWord;
 import e_learning.server.vocabulary.enums.VocabularyDifficulty;
 import e_learning.server.vocabulary.enums.VocabularyStatus;
 import e_learning.server.vocabulary.repository.VocabularyWordRepository;
+import e_learning.server.vocabulary.review.repository.StudentVocabularyProgressRepository;
 import e_learning.server.vocabulary.teacher.dto.*;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
@@ -31,14 +34,15 @@ public class TeacherVocabularyService {
     private final VocabularyWordRepository vocabularyWordRepository;
     private final UnitRepository unitRepository;
     private final VocabularyRelatedTermsNormalizer relatedTermsNormalizer;
+    private final StudentVocabularyProgressRepository progressRepository;
 
     @Transactional(readOnly = true)
     public List<VocabularySearchItemResponse> searchCandidates(Long unitId, String q, int limit) {
         Unit sourceUnit = unitRepository.findById(unitId)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy Unit: " + unitId));
+                .orElseThrow(() -> new AppException(ErrorCode.UNIT_NOT_FOUND, "Không tìm thấy Unit: " + unitId));
         String needle = q == null ? "" : q.strip().toLowerCase(java.util.Locale.ROOT);
         if (needle.length() < 2 || needle.length() > 100) {
-            throw new IllegalArgumentException("Từ khóa tìm kiếm phải có từ 2 đến 100 ký tự");
+            throw new AppException(ErrorCode.INVALID_REQUEST, "Từ khóa tìm kiếm phải có từ 2 đến 100 ký tự");
         }
         int safeLimit = Math.max(1, Math.min(limit, 20));
         String escaped = needle.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_");
@@ -60,19 +64,29 @@ public class TeacherVocabularyService {
     @Transactional(readOnly = true)
     public PageResponse<VocabularyWordResponse> getWordsByUnit(Long unitId, String status, String search, int page, int size) {
         Unit unit = unitRepository.findById(unitId)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy bài học (Unit) với ID: " + unitId));
+                .orElseThrow(() -> new AppException(ErrorCode.UNIT_NOT_FOUND, "Không tìm thấy bài học (Unit) với ID: " + unitId));
 
         int safePage = Math.max(0, page - 1);
         int safeSize = size <= 0 ? 10 : size;
         Pageable pageable = PageRequest.of(safePage, safeSize,
                 Sort.by(Sort.Direction.ASC, "displayOrder").and(Sort.by(Sort.Direction.ASC, "id")));
 
+        VocabularyStatus filteredStatus = null;
+        if (status != null && !status.isBlank() && !status.equalsIgnoreCase("ALL")) {
+            try {
+                filteredStatus = VocabularyStatus.valueOf(status.trim().toUpperCase(java.util.Locale.ROOT));
+            } catch (IllegalArgumentException invalidStatus) {
+                throw new AppException(ErrorCode.INVALID_REQUEST, "Trạng thái lọc từ vựng không hợp lệ");
+            }
+        }
+        final VocabularyStatus requestedStatus = filteredStatus;
+
         Specification<VocabularyWord> spec = (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
             predicates.add(cb.equal(root.get("unit").get("id"), unit.getId()));
 
-            if (status != null && !status.isBlank() && !status.equalsIgnoreCase("ALL")) {
-                predicates.add(cb.equal(root.get("status"), VocabularyStatus.valueOf(status.trim().toUpperCase())));
+            if (requestedStatus != null) {
+                predicates.add(cb.equal(root.get("status"), requestedStatus));
             }
 
             if (search != null && !search.isBlank()) {
@@ -99,18 +113,18 @@ public class TeacherVocabularyService {
     @Transactional(readOnly = true)
     public VocabularyWordResponse getWordById(Long wordId) {
         VocabularyWord word = vocabularyWordRepository.findById(wordId)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy từ vựng với ID: " + wordId));
+                .orElseThrow(() -> wordNotFound(wordId));
         return VocabularyWordResponse.fromEntity(word);
     }
 
     @Transactional
     public VocabularyWordResponse createWord(Long unitId, CreateVocabularyWordRequest request) {
         Unit unit = unitRepository.findById(unitId)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy bài học (Unit) với ID: " + unitId));
+                .orElseThrow(() -> new AppException(ErrorCode.UNIT_NOT_FOUND, "Không tìm thấy bài học (Unit) với ID: " + unitId));
 
         String cleanWord = request.word().trim();
         if (vocabularyWordRepository.existsByUnitIdAndWordIgnoreCase(unitId, cleanWord)) {
-            throw new IllegalArgumentException("Từ vựng '" + cleanWord + "' đã tồn tại trong bài học này");
+            throw duplicateWord(cleanWord);
         }
 
         int nextOrder = vocabularyWordRepository.findMaxDisplayOrderByUnitId(unitId) + 1;
@@ -142,7 +156,7 @@ public class TeacherVocabularyService {
     @Transactional
     public List<VocabularyWordResponse> bulkCreateWords(Long unitId, BulkCreateVocabularyWordsRequest request) {
         Unit unit = unitRepository.findById(unitId)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy bài học (Unit) với ID: " + unitId));
+                .orElseThrow(() -> new AppException(ErrorCode.UNIT_NOT_FOUND, "Không tìm thấy bài học (Unit) với ID: " + unitId));
 
         int nextOrder = vocabularyWordRepository.findMaxDisplayOrderByUnitId(unitId) + 1;
         List<VocabularyWord> toSave = new ArrayList<>();
@@ -187,11 +201,11 @@ public class TeacherVocabularyService {
     @Transactional
     public VocabularyWordResponse updateWord(Long wordId, UpdateVocabularyWordRequest request) {
         VocabularyWord word = vocabularyWordRepository.findById(wordId)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy từ vựng với ID: " + wordId));
+                .orElseThrow(() -> wordNotFound(wordId));
 
         String cleanWord = request.word().trim();
         if (vocabularyWordRepository.existsByUnitIdAndWordIgnoreCaseAndIdNot(word.getUnit().getId(), cleanWord, wordId)) {
-            throw new IllegalArgumentException("Từ vựng '" + cleanWord + "' đã tồn tại trong bài học này");
+            throw duplicateWord(cleanWord);
         }
 
         word.setWord(cleanWord);
@@ -223,7 +237,7 @@ public class TeacherVocabularyService {
     @Transactional
     public VocabularyWordResponse updateWordStatus(Long wordId, VocabularyStatus status) {
         VocabularyWord word = vocabularyWordRepository.findById(wordId)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy từ vựng với ID: " + wordId));
+                .orElseThrow(() -> wordNotFound(wordId));
 
         word.setStatus(status);
         VocabularyWord updated = vocabularyWordRepository.save(word);
@@ -235,7 +249,12 @@ public class TeacherVocabularyService {
     @Transactional
     public void deleteWord(Long wordId) {
         VocabularyWord word = vocabularyWordRepository.findById(wordId)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy từ vựng với ID: " + wordId));
+                .orElseThrow(() -> wordNotFound(wordId));
+
+        if (progressRepository.existsByWordId(wordId)) {
+            throw new AppException(ErrorCode.VOCABULARY_WORD_HAS_PROGRESS,
+                    "Từ '" + word.getWord() + "' đã có tiến độ học sinh. Hãy chọn 'Tạm ẩn' để giữ lịch ôn.");
+        }
 
         vocabularyWordRepository.delete(word);
         log.info("Teacher deleted vocabulary word '{}' (id: {}) from unit {}",
@@ -245,7 +264,7 @@ public class TeacherVocabularyService {
     @Transactional
     public void reorderWords(Long unitId, ReorderVocabularyRequest request) {
         Unit unit = unitRepository.findById(unitId)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy bài học (Unit) với ID: " + unitId));
+                .orElseThrow(() -> new AppException(ErrorCode.UNIT_NOT_FOUND, "Không tìm thấy bài học (Unit) với ID: " + unitId));
 
         for (ReorderVocabularyRequest.ReorderItem item : request.items()) {
             vocabularyWordRepository.findById(item.id()).ifPresent(word -> {
@@ -257,6 +276,15 @@ public class TeacherVocabularyService {
         }
         log.info("Teacher reordered {} words in unit '{}' (id: {})",
                 request.items().size(), unit.getName(), unit.getId());
+    }
+
+    private AppException wordNotFound(Long wordId) {
+        return new AppException(ErrorCode.VOCABULARY_WORD_NOT_FOUND, "Không tìm thấy từ vựng với ID: " + wordId);
+    }
+
+    private AppException duplicateWord(String word) {
+        return new AppException(ErrorCode.VOCABULARY_WORD_ALREADY_EXISTS,
+                "Từ vựng '" + word + "' đã tồn tại trong bài học này");
     }
 }
 

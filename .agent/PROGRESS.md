@@ -1,5 +1,24 @@
 # Project Progress
 
+## Vocabulary Learn / Review — Phase 02 backend foundation (2026-11-10)
+
+- Pinned Java-FSRS 1.0.0 and added Flyway V57: per-student/word cards (full FSRS
+  JSON + due UTC) and immutable review events with unique request UUIDs.
+- Added Student-only Unit-card listing and server-authoritative due-review API,
+  active-class Grade/Unit publication checks, student-level request serialization,
+  replay-safe rating idempotency and early-review conflict protection.
+- Teacher hard-deletion of words already studied is blocked with an explanatory
+  409; inactive words remain historically tracked but disappear from study cards.
+- Replaced Vocabulary `IllegalArgumentException` with typed `AppException` codes,
+  improved field-validation messages, exposed exact API messages in the FE,
+  fixed `emptyVocabularyRelatedTerms` value import, and added error toasts.
+- Typed FE transport is ready for a future Student Learn / Practice / Review UI.
+  No CSV files, Game XP, Activity, Gamification, or UI learning workflow changed.
+- `git diff --check` passes. Focused Maven tests remain blocked by unavailable
+  Spring Boot 4.1.1 parent POM network resolution. JS dependencies must be
+  installed before typecheck/lint; Postgres Flyway verification pending.
+
+
 ## Vocabulary Content Enhancement — Phase 01 (2026-11-10)
 
 - Extended `VocabularyWord` with structured non-null JSONB `relatedTerms` in

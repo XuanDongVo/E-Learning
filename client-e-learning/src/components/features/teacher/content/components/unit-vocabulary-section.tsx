@@ -168,6 +168,7 @@ export function UnitVocabularySection({ unitId }: UnitVocabularySectionProps) {
       await refresh();
       toast.success("Đã cập nhật trạng thái từ vựng");
     },
+    onError: (error) => toast.error(errorMessage(error, "Không cập nhật được trạng thái từ vựng")),
   });
 
   const deleteMutation = useMutation({
@@ -177,6 +178,7 @@ export function UnitVocabularySection({ unitId }: UnitVocabularySectionProps) {
       setDeletingWord(null);
       toast.success("Đã xóa từ vựng");
     },
+    onError: (error) => toast.error(errorMessage(error, "Không xóa được từ vựng")),
   });
 
   const handleSpeak = (word: string) => {

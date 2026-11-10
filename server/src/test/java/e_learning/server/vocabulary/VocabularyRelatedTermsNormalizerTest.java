@@ -1,5 +1,6 @@
 package e_learning.server.vocabulary;
 
+import e_learning.server.common.exception.AppException;
 import e_learning.server.vocabulary.enums.VocabularyPartOfSpeech;
 import e_learning.server.vocabulary.teacher.dto.RelatedTermDto;
 import e_learning.server.vocabulary.teacher.dto.VocabularyRelatedTermsDto;
@@ -41,21 +42,21 @@ class VocabularyRelatedTermsNormalizerTest {
     void rejectsBlankTermAndTooManyItems() {
         assertThatThrownBy(() -> normalizer.normalize(new VocabularyRelatedTermsDto(
                 List.of(new RelatedTermDto("   ", null, null)), null, null)))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(AppException.class);
 
         var oversized = new ArrayList<RelatedTermDto>();
         for (int i = 0; i < 21; i++) oversized.add(new RelatedTermDto("term" + i, null, null));
         assertThatThrownBy(() -> normalizer.normalize(new VocabularyRelatedTermsDto(oversized, null, null)))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(AppException.class);
     }
 
     @Test
     void rejectsNullEntriesAndOverlongMeaning() {
         assertThatThrownBy(() -> normalizer.normalize(new VocabularyRelatedTermsDto(
                 null, java.util.Arrays.asList((RelatedTermDto) null), null)))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(AppException.class);
         assertThatThrownBy(() -> normalizer.normalize(new VocabularyRelatedTermsDto(
                 null, List.of(new RelatedTermDto("term", "x".repeat(256), null)), null)))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(AppException.class);
     }
 }

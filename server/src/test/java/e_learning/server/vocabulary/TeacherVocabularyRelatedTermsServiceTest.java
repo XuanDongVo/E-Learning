@@ -1,9 +1,12 @@
 package e_learning.server.vocabulary;
 
+import e_learning.server.common.exception.AppException;
+import e_learning.server.common.exception.ErrorCode;
 import e_learning.server.content.unit.entity.Unit;
 import e_learning.server.content.unit.repository.UnitRepository;
 import e_learning.server.vocabulary.entity.VocabularyWord;
 import e_learning.server.vocabulary.repository.VocabularyWordRepository;
+import e_learning.server.vocabulary.review.repository.StudentVocabularyProgressRepository;
 import e_learning.server.vocabulary.teacher.dto.RelatedTermDto;
 import e_learning.server.vocabulary.teacher.dto.UpdateVocabularyWordRequest;
 import e_learning.server.vocabulary.teacher.dto.VocabularyRelatedTermsDto;
@@ -22,13 +25,17 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class TeacherVocabularyRelatedTermsServiceTest {
     @Mock private VocabularyWordRepository words;
     @Mock private UnitRepository units;
+    @Mock private StudentVocabularyProgressRepository progress;
     @Spy private VocabularyRelatedTermsNormalizer normalizer = new VocabularyRelatedTermsNormalizer();
     @InjectMocks private TeacherVocabularyService service;
 
@@ -68,6 +75,17 @@ class TeacherVocabularyRelatedTermsServiceTest {
 
         assertThat(word.getRelatedTerms().synonyms()).hasSize(1);
         assertThat(word.getRelatedTerms().synonyms().get(0).term()).isEqualTo("take part in");
+    }
+
+    @Test
+    void studiedWordMustBeInactivatedInsteadOfHardDeleted() {
+        when(words.findById(5L)).thenReturn(Optional.of(wordWithRelatedTerms(VocabularyRelatedTerms.empty())));
+        when(progress.existsByWordId(5L)).thenReturn(true);
+
+        assertThatThrownBy(() -> service.deleteWord(5L))
+                .isInstanceOfSatisfying(AppException.class, exception ->
+                        assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.VOCABULARY_WORD_HAS_PROGRESS));
+        verify(words, never()).delete(any(VocabularyWord.class));
     }
 
     private VocabularyWord wordWithRelatedTerms(VocabularyRelatedTerms related) {

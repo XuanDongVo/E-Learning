@@ -17,7 +17,7 @@ export function BulkSaveBar({
   const isAllValid = total > 0 && validCount === total;
 
   return (
-    <div className="sticky bottom-4 mt-4 flex flex-col gap-3 rounded-xl border border-slate-200 bg-white/95 p-4 shadow-[0_12px_30px_rgba(15,23,42,0.10)] backdrop-blur sm:flex-row sm:items-center sm:justify-between">
+    <div className="sticky bottom-4 mt-4 flex flex-col gap-3 rounded-xl border-2 border-ink shadow-pop bg-white/95 p-4 shadow-[0_12px_30px_rgba(15,23,42,0.10)] backdrop-blur sm:flex-row sm:items-center sm:justify-between">
       <div className="flex items-center gap-3 text-body-sm">
         <span className="font-semibold text-slate-800">{total} questions</span>
         <span className="inline-flex items-center gap-1 text-emerald-600 font-medium">

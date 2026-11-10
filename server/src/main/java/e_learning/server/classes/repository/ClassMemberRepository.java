@@ -42,6 +42,21 @@ public interface ClassMemberRepository extends JpaRepository<ClassMember, Long> 
         from ClassMember member
         join fetch member.user
         join fetch member.classEntity classEntity
+        where classEntity.teacher.id = :teacherId
+          and classEntity.id in :classIds
+          and member.status = 'ACTIVE'
+          and member.user.role = e_learning.server.user.entity.Role.STUDENT
+        order by classEntity.id, member.user.id
+        """)
+    List<ClassMember> findActiveStudentsByTeacherIdAndClassIdIn(
+            @Param("teacherId") Long teacherId,
+            @Param("classIds") Collection<Long> classIds);
+
+    @Query("""
+        select member
+        from ClassMember member
+        join fetch member.user
+        join fetch member.classEntity classEntity
         join fetch classEntity.grade
         where classEntity.teacher.id = :teacherId
           and member.user.id in :studentIds

@@ -21,7 +21,7 @@ export function AssignmentSummary({
         label="Active"
         value={activeCount}
         hint="Assignments currently open to students"
-        tone="orange"
+        tone="primary"
       />
 
       <SummaryCard
@@ -29,7 +29,7 @@ export function AssignmentSummary({
         label="Needs grading"
         value="—"
         hint="Submission data is not available yet"
-        tone="amber"
+        tone="warning"
       />
 
       <SummaryCard
@@ -37,7 +37,7 @@ export function AssignmentSummary({
         label="Submitted on time"
         value="—"
         hint="Result data is not available yet"
-        tone="green"
+        tone="success"
       />
 
       <SummaryCard
@@ -45,7 +45,7 @@ export function AssignmentSummary({
         label="Missing submissions"
         value="—"
         hint="Result data is not available yet"
-        tone="blue"
+        tone="info"
       />
     </section>
   );

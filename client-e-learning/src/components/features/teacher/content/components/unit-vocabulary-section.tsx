@@ -1,25 +1,43 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import {useDeferredValue,useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
-  Volume2,
+  BookA,
+  CheckCircle2,
+  Edit3,
   Plus,
-  Zap,
   Search,
   Trash2,
   Edit3,
   AlertCircle,
   BookA,
   CheckCircle2,
+  Volume2,
   XCircle,
+  Zap,
 } from "lucide-react";
+import { toast } from "sonner";
+
+import { RegionState } from "@/components/feedback";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { SkeletonList } from "@/components/ui/skeleton/skeleton-list";
+import { cn } from "@/lib/utils";
 import { contentService } from "@/services/content.service";
 import { QUERY_KEYS } from "@/services/query-keys";
 import type {
-  VocabularyWord,
   CreateVocabularyWordRequest,
   UpdateVocabularyWordRequest,
+  VocabularyWord,
 } from "@/types/vocabulary";
 import {
   DataTable,
@@ -34,6 +52,18 @@ interface UnitVocabularySectionProps {
   unitId: number;
 }
 
+type VocabularyStatusFilter = "ALL" | "ACTIVE" | "INACTIVE";
+
+const DIFFICULTY_STYLES: Record<VocabularyWord["difficulty"], string> = {
+  EASY: "border-success/30 bg-success-soft text-success",
+  MEDIUM: "border-warning/30 bg-warning-soft text-warning",
+  HARD: "border-destructive/30 bg-destructive-soft text-destructive",
+};
+
+function errorMessage(error: unknown, fallback: string) {
+  return error instanceof Error && error.message ? error.message : fallback;
+}
+
 export function UnitVocabularySection({ unitId }: UnitVocabularySectionProps) {
   const queryClient = useQueryClient();
   const [statusFilter, setStatusFilter] = useState<"ALL" | "ACTIVE" | "INACTIVE">("ALL");
@@ -41,6 +71,10 @@ export function UnitVocabularySection({ unitId }: UnitVocabularySectionProps) {
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [statusFilter, setStatusFilter] =
+    useState<VocabularyStatusFilter>("ALL");
+  const [searchTerm, setSearchTerm] = useState("");
+  const deferredSearch = useDeferredValue(searchTerm.trim());
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [editingWord, setEditingWord] = useState<VocabularyWord | null>(null);
   const [bulkModalOpen, setBulkModalOpen] = useState(false);
@@ -72,7 +106,7 @@ export function UnitVocabularySection({ unitId }: UnitVocabularySectionProps) {
       size: pageSize,
     }),
     queryFn: async () => {
-      const res = await contentService.listVocabulary(unitId, {
+      const response = await contentService.listVocabulary(unitId, {
         status: statusFilter === "ALL" ? undefined : statusFilter,
         search: debouncedSearch || undefined,
         page,
@@ -96,58 +130,78 @@ export function UnitVocabularySection({ unitId }: UnitVocabularySectionProps) {
     });
   };
 
-  // Mutations
   const createMutation = useMutation({
     mutationFn: (payload: CreateVocabularyWordRequest) =>
       contentService.createVocabulary(unitId, payload),
-    onSuccess: () => {
-      refresh();
+    onSuccess: async () => {
+      await refresh();
       setAddModalOpen(false);
+      toast.success("Đã thêm từ vựng");
     },
   });
 
   const bulkMutation = useMutation({
-    mutationFn: (wordsList: CreateVocabularyWordRequest[]) =>
-      contentService.bulkCreateVocabulary(unitId, { words: wordsList }),
-    onSuccess: () => {
-      refresh();
+    mutationFn: (words: CreateVocabularyWordRequest[]) =>
+      contentService.bulkCreateVocabulary(unitId, { words }),
+    onSuccess: async (response) => {
+      await refresh();
       setBulkModalOpen(false);
+      toast.success(`Đã thêm ${response.data?.length ?? 0} từ vựng`);
     },
   });
 
   const updateMutation = useMutation({
     mutationFn: (payload: UpdateVocabularyWordRequest) => {
-      if (!editingWord) throw new Error("No word to edit");
+      if (!editingWord) throw new Error("Không tìm thấy từ vựng cần chỉnh sửa");
       return contentService.updateVocabulary(editingWord.id, payload);
     },
-    onSuccess: () => {
-      refresh();
+    onSuccess: async () => {
+      await refresh();
       setEditingWord(null);
+      toast.success("Đã cập nhật từ vựng");
     },
   });
 
   const toggleStatusMutation = useMutation({
-    mutationFn: ({ id, nextStatus }: { id: number; nextStatus: "ACTIVE" | "INACTIVE" }) =>
-      contentService.updateVocabularyStatus(id, nextStatus),
-    onSuccess: refresh,
+    mutationFn: ({
+      id,
+      nextStatus,
+    }: {
+      id: number;
+      nextStatus: "ACTIVE" | "INACTIVE";
+    }) => contentService.updateVocabularyStatus(id, nextStatus),
+    onSuccess: async () => {
+      await refresh();
+      toast.success("Đã cập nhật trạng thái từ vựng");
+    },
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) => contentService.deleteVocabulary(id),
-    onSuccess: () => {
-      refresh();
+    onSuccess: async () => {
+      await refresh();
       setDeletingWord(null);
+      toast.success("Đã xóa từ vựng");
     },
   });
 
-  // Web Speech audio helper
+  const words = wordsQuery.data ?? [];
+  const hasFilters = statusFilter !== "ALL" || Boolean(deferredSearch);
+
   const handleSpeak = (word: string) => {
-    if (!word || typeof window === "undefined" || !("speechSynthesis" in window)) return;
+    if (
+      !word ||
+      typeof window === "undefined" ||
+      !("speechSynthesis" in window)
+    ) {
+      return;
+    }
+
     window.speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(word);
-    u.lang = "en-US";
-    u.rate = 0.9;
-    window.speechSynthesis.speak(u);
+    const utterance = new SpeechSynthesisUtterance(word);
+    utterance.lang = "en-US";
+    utterance.rate = 0.9;
+    window.speechSynthesis.speak(utterance);
   };
 
   const columns: DataTableColumn<VocabularyWord>[] = [
@@ -304,23 +358,24 @@ export function UnitVocabularySection({ unitId }: UnitVocabularySectionProps) {
             </h2>
           </div>
 
-          {/* Action buttons */}
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <button
               type="button"
+              disabled={bulkMutation.isPending}
               onClick={() => setBulkModalOpen(true)}
               className="inline-flex items-center gap-1.5 rounded-xl border border-amber-300 bg-amber-50 px-3.5 py-2 text-xs font-bold text-amber-800 hover:bg-amber-100 transition shadow-sm"
             >
-              <Zap className="h-3.5 w-3.5 fill-amber-500 text-amber-500" />
-              <span>Nhập nhanh</span>
+              <Zap className="size-4 text-warning" aria-hidden="true" />
+              Nhập nhanh
             </button>
             <button
               type="button"
+              disabled={createMutation.isPending}
               onClick={() => setAddModalOpen(true)}
               className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-3.5 py-2 text-xs font-bold text-primary-foreground hover:bg-primary/90 transition shadow-sm"
             >
-              <Plus className="h-3.5 w-3.5" />
-              <span>Thêm từ vựng</span>
+              <Plus className="size-4" aria-hidden="true" />
+              Thêm từ vựng
             </button>
           </div>
         </div>
@@ -436,33 +491,36 @@ export function UnitVocabularySection({ unitId }: UnitVocabularySectionProps) {
         }}
       />
 
-      {/* Modal Thêm từ vựng */}
       <VocabularyWordModal
         open={addModalOpen}
         onOpenChange={setAddModalOpen}
         onSubmit={async (payload) => {
-          await createMutation.mutateAsync(payload as CreateVocabularyWordRequest);
+          await createMutation.mutateAsync(
+            payload as CreateVocabularyWordRequest,
+          );
         }}
         isPending={createMutation.isPending}
       />
 
-      {/* Modal Sửa từ vựng */}
       <VocabularyWordModal
-        open={!!editingWord}
-        onOpenChange={(open) => !open && setEditingWord(null)}
+        open={Boolean(editingWord)}
+        onOpenChange={(open) => {
+          if (!open && !updateMutation.isPending) setEditingWord(null);
+        }}
         word={editingWord}
         onSubmit={async (payload) => {
-          await updateMutation.mutateAsync(payload as UpdateVocabularyWordRequest);
+          await updateMutation.mutateAsync(
+            payload as UpdateVocabularyWordRequest,
+          );
         }}
         isPending={updateMutation.isPending}
       />
 
-      {/* Modal Nhập nhanh */}
       <BulkImportVocabularyModal
         open={bulkModalOpen}
         onOpenChange={setBulkModalOpen}
-        onSubmit={async (wordsList) => {
-          await bulkMutation.mutateAsync(wordsList);
+        onSubmit={async (wordsToCreate) => {
+          await bulkMutation.mutateAsync(wordsToCreate);
         }}
         isPending={bulkMutation.isPending}
       />

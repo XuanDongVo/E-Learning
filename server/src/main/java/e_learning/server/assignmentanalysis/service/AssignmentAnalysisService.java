@@ -247,10 +247,13 @@ public class AssignmentAnalysisService {
             AssessmentAttempt a = attemptByStudent.get(rs.studentId());
             if (a == null) {
                 notStarted++;
-                if (dueAt != null && now.isAfter(dueAt)) overdue++;
+                if (dueAt != null && !now.isBefore(dueAt)) overdue++;
                 continue;
             }
-            if (a.getStatus() == AssessmentAttemptStatus.IN_PROGRESS) inProgress++;
+            if (a.getStatus() == AssessmentAttemptStatus.IN_PROGRESS) {
+                inProgress++;
+                if (dueAt != null && !now.isBefore(dueAt)) overdue++;
+            }
             else if (a.getStatus() == AssessmentAttemptStatus.SUBMITTED) {
                 submitted++;
                 if (a.isLate()) late++;
@@ -336,7 +339,7 @@ public class AssignmentAnalysisService {
 
     private StudentResultRow toStudentRow(RosterStudent rs, AssessmentAttempt a, LocalDateTime dueAt) {
         if (a == null) {
-            String deadline = (dueAt != null && LocalDateTime.now().isAfter(dueAt)) ? "OVERDUE" : "NONE";
+            String deadline = (dueAt != null && !LocalDateTime.now().isBefore(dueAt)) ? "OVERDUE" : "NONE";
             return new StudentResultRow(rs.studentId(), rs.studentName(), rs.classId(), rs.className(),
                     null, "NOT_STARTED", deadline, null, null, null, null, null, null, null, null);
         }
@@ -369,10 +372,11 @@ public class AssignmentAnalysisService {
 
     private String resolveDeadlineState(AssessmentAttempt a, LocalDateTime dueAt) {
         if (a.isLate()) return "LATE";
-        if (a.getStatus() == AssessmentAttemptStatus.IN_PROGRESS) return "OPEN";
+        if (a.getStatus() == AssessmentAttemptStatus.IN_PROGRESS)
+            return dueAt != null && !LocalDateTime.now().isBefore(dueAt) ? "OVERDUE" : "OPEN";
         if (a.getStatus() == AssessmentAttemptStatus.SUBMITTED || a.getStatus() == AssessmentAttemptStatus.TIMED_OUT)
             return "ON_TIME";
-        if (dueAt != null && LocalDateTime.now().isAfter(dueAt)) return "OVERDUE";
+        if (dueAt != null && !LocalDateTime.now().isBefore(dueAt)) return "OVERDUE";
         return "NONE";
     }
 

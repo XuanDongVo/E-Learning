@@ -10,7 +10,7 @@ export function IconTile({
   children,
 }: IconTileProps) {
   return (
-    <div className={`grid h-[34px] w-[34px] shrink-0 place-items-center rounded-[9px] ${colorToneClasses[tone]}`}>
+    <div className={`grid size-10 shrink-0 place-items-center rounded-lg ${colorToneClasses[tone]}`}>
       {children}
     </div>
   );

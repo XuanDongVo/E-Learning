@@ -1,18 +1,23 @@
+export type VocabularyPartOfSpeech = "NOUN" | "VERB" | "ADJECTIVE" | "ADVERB" | "PREPOSITION" | "PHRASE";
+export type VocabularyDifficulty = "EASY" | "MEDIUM" | "HARD";
+export type VocabularyStatus = "ACTIVE" | "INACTIVE";
+
 export interface VocabularyWord {
   id: number;
   unitId: number;
   unitName?: string;
   word: string;
   meaningVi: string;
-  pronunciation?: string | null;
-  partOfSpeech?: string | null;
+  pronunciationUk?: string | null;
+  pronunciationUs?: string | null;
+  partOfSpeech?: VocabularyPartOfSpeech | null;
   exampleSentence?: string | null;
   exampleMeaningVi?: string | null;
   audioUrl?: string | null;
   imageUrl?: string | null;
-  difficulty: "EASY" | "MEDIUM" | "HARD";
+  difficulty: VocabularyDifficulty;
   displayOrder: number;
-  status: "ACTIVE" | "INACTIVE";
+  status: VocabularyStatus;
   createdAt: string;
   updatedAt: string;
 }
@@ -20,11 +25,12 @@ export interface VocabularyWord {
 export interface CreateVocabularyWordRequest {
   word: string;
   meaningVi: string;
-  pronunciation?: string;
-  partOfSpeech?: string;
+  pronunciationUk?: string;
+  pronunciationUs?: string;
+  partOfSpeech?: VocabularyPartOfSpeech;
   exampleSentence?: string;
   exampleMeaningVi?: string;
-  difficulty?: "EASY" | "MEDIUM" | "HARD";
+  difficulty?: VocabularyDifficulty;
   audioUrl?: string;
   imageUrl?: string;
 }
@@ -32,12 +38,13 @@ export interface CreateVocabularyWordRequest {
 export interface UpdateVocabularyWordRequest {
   word: string;
   meaningVi: string;
-  pronunciation?: string;
-  partOfSpeech?: string;
+  pronunciationUk?: string;
+  pronunciationUs?: string;
+  partOfSpeech?: VocabularyPartOfSpeech;
   exampleSentence?: string;
   exampleMeaningVi?: string;
-  difficulty?: "EASY" | "MEDIUM" | "HARD";
-  status?: "ACTIVE" | "INACTIVE";
+  difficulty?: VocabularyDifficulty;
+  status?: VocabularyStatus;
   audioUrl?: string;
   imageUrl?: string;
 }

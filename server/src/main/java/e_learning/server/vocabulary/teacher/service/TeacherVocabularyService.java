@@ -4,6 +4,8 @@ import e_learning.server.common.dto.PageResponse;
 import e_learning.server.content.unit.entity.Unit;
 import e_learning.server.content.unit.repository.UnitRepository;
 import e_learning.server.vocabulary.entity.VocabularyWord;
+import e_learning.server.vocabulary.enums.VocabularyDifficulty;
+import e_learning.server.vocabulary.enums.VocabularyStatus;
 import e_learning.server.vocabulary.repository.VocabularyWordRepository;
 import e_learning.server.vocabulary.teacher.dto.*;
 import jakarta.persistence.criteria.Predicate;
@@ -44,7 +46,7 @@ public class TeacherVocabularyService {
             predicates.add(cb.equal(root.get("unit").get("id"), unit.getId()));
 
             if (status != null && !status.isBlank() && !status.equalsIgnoreCase("ALL")) {
-                predicates.add(cb.equal(cb.upper(root.get("status")), status.trim().toUpperCase()));
+                predicates.add(cb.equal(root.get("status"), VocabularyStatus.valueOf(status.trim().toUpperCase())));
             }
 
             if (search != null && !search.isBlank()) {
@@ -52,7 +54,8 @@ public class TeacherVocabularyService {
                 predicates.add(cb.or(
                         cb.like(cb.lower(root.get("word")), pattern),
                         cb.like(cb.lower(root.get("meaningVi")), pattern),
-                        cb.like(cb.lower(root.get("pronunciation")), pattern)
+                        cb.like(cb.lower(root.get("pronunciationUk")), pattern),
+                        cb.like(cb.lower(root.get("pronunciationUs")), pattern)
                 ));
             }
 
@@ -90,13 +93,14 @@ public class TeacherVocabularyService {
                 .unit(unit)
                 .word(cleanWord)
                 .meaningVi(request.meaningVi().trim())
-                .pronunciation(request.pronunciation() != null ? request.pronunciation().trim() : null)
-                .partOfSpeech(request.partOfSpeech() != null ? request.partOfSpeech().trim() : null)
+                .pronunciationUk(request.pronunciationUk() != null ? request.pronunciationUk().trim() : null)
+                .pronunciationUs(request.pronunciationUs() != null ? request.pronunciationUs().trim() : null)
+                .partOfSpeech(request.partOfSpeech())
                 .exampleSentence(request.exampleSentence() != null ? request.exampleSentence().trim() : null)
                 .exampleMeaningVi(request.exampleMeaningVi() != null ? request.exampleMeaningVi().trim() : null)
-                .difficulty(request.difficulty() != null && !request.difficulty().isBlank() ? request.difficulty().toUpperCase() : "EASY")
+                .difficulty(request.difficulty() != null ? request.difficulty() : VocabularyDifficulty.EASY)
                 .displayOrder(nextOrder)
-                .status("ACTIVE")
+                .status(VocabularyStatus.ACTIVE)
                 .audioUrl(request.audioUrl() != null ? request.audioUrl().trim() : null)
                 .imageUrl(request.imageUrl() != null ? request.imageUrl().trim() : null)
                 .build();
@@ -128,13 +132,14 @@ public class TeacherVocabularyService {
                 .unit(unit)
                 .word(cleanWord)
                 .meaningVi(item.meaningVi().trim())
-                .pronunciation(item.pronunciation() != null ? item.pronunciation().trim() : null)
-                .partOfSpeech(item.partOfSpeech() != null ? item.partOfSpeech().trim() : null)
+                .pronunciationUk(item.pronunciationUk() != null ? item.pronunciationUk().trim() : null)
+                .pronunciationUs(item.pronunciationUs() != null ? item.pronunciationUs().trim() : null)
+                .partOfSpeech(item.partOfSpeech())
                 .exampleSentence(item.exampleSentence() != null ? item.exampleSentence().trim() : null)
                 .exampleMeaningVi(item.exampleMeaningVi() != null ? item.exampleMeaningVi().trim() : null)
-                .difficulty(item.difficulty() != null && !item.difficulty().isBlank() ? item.difficulty().toUpperCase() : "EASY")
+                .difficulty(item.difficulty() != null ? item.difficulty() : VocabularyDifficulty.EASY)
                 .displayOrder(nextOrder++)
-                .status("ACTIVE")
+                .status(VocabularyStatus.ACTIVE)
                 .audioUrl(item.audioUrl() != null ? item.audioUrl().trim() : null)
                 .imageUrl(item.imageUrl() != null ? item.imageUrl().trim() : null)
                 .build();
@@ -163,15 +168,16 @@ public class TeacherVocabularyService {
 
         word.setWord(cleanWord);
         word.setMeaningVi(request.meaningVi().trim());
-        word.setPronunciation(request.pronunciation() != null ? request.pronunciation().trim() : null);
-        word.setPartOfSpeech(request.partOfSpeech() != null ? request.partOfSpeech().trim() : null);
+        word.setPronunciationUk(request.pronunciationUk() != null ? request.pronunciationUk().trim() : null);
+        word.setPronunciationUs(request.pronunciationUs() != null ? request.pronunciationUs().trim() : null);
+        word.setPartOfSpeech(request.partOfSpeech());
         word.setExampleSentence(request.exampleSentence() != null ? request.exampleSentence().trim() : null);
         word.setExampleMeaningVi(request.exampleMeaningVi() != null ? request.exampleMeaningVi().trim() : null);
-        if (request.difficulty() != null && !request.difficulty().isBlank()) {
-            word.setDifficulty(request.difficulty().toUpperCase());
+        if (request.difficulty() != null) {
+            word.setDifficulty(request.difficulty());
         }
-        if (request.status() != null && !request.status().isBlank()) {
-            word.setStatus(request.status().toUpperCase());
+        if (request.status() != null) {
+            word.setStatus(request.status());
         }
         word.setAudioUrl(request.audioUrl() != null ? request.audioUrl().trim() : null);
         word.setImageUrl(request.imageUrl() != null ? request.imageUrl().trim() : null);
@@ -183,11 +189,11 @@ public class TeacherVocabularyService {
     }
 
     @Transactional
-    public VocabularyWordResponse updateWordStatus(Long wordId, String status) {
+    public VocabularyWordResponse updateWordStatus(Long wordId, VocabularyStatus status) {
         VocabularyWord word = vocabularyWordRepository.findById(wordId)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy từ vựng với ID: " + wordId));
 
-        word.setStatus(status.toUpperCase());
+        word.setStatus(status);
         VocabularyWord updated = vocabularyWordRepository.save(word);
         log.info("Teacher updated status of word '{}' (id: {}) to {}", updated.getWord(), updated.getId(), status);
 

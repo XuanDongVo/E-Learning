@@ -5,11 +5,14 @@ import e_learning.server.user.entity.User;
 import e_learning.server.vocabulary.game.enums.GameMode;
 import e_learning.server.vocabulary.game.enums.GameSessionStatus;
 import e_learning.server.vocabulary.game.enums.GameType;
+import e_learning.server.vocabulary.game.enums.PronunciationAccent;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "vocabulary_game_sessions")
@@ -40,6 +43,18 @@ public class VocabularyGameSession {
     @Column(name = "mode", nullable = false, length = 20)
     @Builder.Default
     private GameMode mode = GameMode.PRACTICE;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "pronunciation_accent", nullable = false, length = 2)
+    @Builder.Default
+    private PronunciationAccent accent = PronunciationAccent.US;
+
+    @ElementCollection
+    @CollectionTable(name = "vocabulary_game_session_words", joinColumns = @JoinColumn(name = "session_id"))
+    @OrderColumn(name = "position")
+    @Column(name = "word_id", nullable = false)
+    @Builder.Default
+    private List<Long> wordIds = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 20)
@@ -80,6 +95,7 @@ public class VocabularyGameSession {
     void onCreate() {
         startedAt = LocalDateTime.now();
         if (mode == null) mode = GameMode.PRACTICE;
+        if (accent == null) accent = PronunciationAccent.US;
         if (status == null) status = GameSessionStatus.IN_PROGRESS;
         if (totalWords == null) totalWords = 0;
         if (firstTryCorrect == null) firstTryCorrect = 0;

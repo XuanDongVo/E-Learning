@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import type { GamePlayWord, WordAnswerResult, FinishGameSessionResponse } from "@/types/vocabulary-game";
+import type { GamePlayWord, WordAnswerResult, FinishGameSessionResponse, PronunciationAccent } from "@/types/vocabulary-game";
 import { soundEffects } from "./sound-effects";
 import { studentGameService } from "@/services/student/student-game.service";
 import { FullscreenGameContainer } from "./fullscreen-game-container";
@@ -9,6 +9,7 @@ import { GameResultModal } from "./game-result-modal";
 import { Volume2, Crosshair, Sparkles } from "lucide-react";
 
 interface BubblePopGameProps {
+  accent: PronunciationAccent;
   sessionId: number;
   unitName: string;
   words: GamePlayWord[];
@@ -92,6 +93,7 @@ const BUBBLE_PALETTES = [
 ];
 
 export function BubblePopGame({
+  accent,
   sessionId,
   unitName,
   words,
@@ -428,7 +430,7 @@ export function BubblePopGame({
 
         if (!isMutedRef.current) {
           soundEffects.playExplosion();
-          soundEffects.speakWord(wordText);
+          soundEffects.speakWord(wordText, accent);
         }
       } else {
         if (!isMutedRef.current) {
@@ -558,7 +560,7 @@ export function BubblePopGame({
                 if (correctBubble) {
                   correctBubble.isRevealedAsCorrect = true;
                   if (!isMutedRef.current) {
-                    soundEffects.speakWord(correctBubble.word);
+                    soundEffects.speakWord(correctBubble.word, accent);
                   }
                 }
 
@@ -640,7 +642,7 @@ export function BubblePopGame({
 
             if (!isMutedRef.current) {
               soundEffects.playWrong();
-              soundEffects.speakWord(bubble.word);
+              soundEffects.speakWord(bubble.word, accent);
             }
 
             answersHistoryRef.current.push({
@@ -1034,7 +1036,7 @@ export function BubblePopGame({
             </h2>
             <button
               type="button"
-              onClick={() => soundEffects.speakWord(currentWord?.word || "")}
+              onClick={() => soundEffects.speakWord(currentWord?.word || "", accent)}
               className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-md hover:scale-110 active:scale-95 transition-transform cursor-pointer"
               title="Nghe phát âm từ tiếng Anh"
             >

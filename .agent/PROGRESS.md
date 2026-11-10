@@ -1,5 +1,38 @@
 # Project Progress
 
+## Vocabulary foundation: typed metadata, US/UK pronunciation and game selection (2026-11-10)
+
+- Based on `feature/question-bank-csv-import-phase1`, isolated on
+  `feature/vocabulary-uk-us-enums-game-accent` before starting the future Learn/Review/FSRS work.
+- Vocabulary now has distinct optional `pronunciationUk` and `pronunciationUs` IPA
+  values and typed Java enums for `partOfSpeech`, `difficulty` and `status`.
+  Create/update/bulk, teacher response, filters, game DTOs, UI types and word editor
+  use the same values. Legacy audio URL columns remain for backward compatibility;
+  spoken audio in this feature uses the browser's speech synthesis.
+- Flyway V55 adds IPA fields, a constrained US/UK session accent and a stable set
+  of word IDs for each game session; existing word classes are normalized to
+  uppercase before enforcing their enum constraint. The old unclassified
+  `pronunciation` database column remains intact; IPA cannot be safely labeled
+  UK or US without verifying the original source. Populate new IPA variants via
+  teacher content editing as reference data becomes available.
+- Game select now requires an explicit US/UK pronunciation choice; the accent is
+  sent to/persisted by the session and used for synthesized speech and IPA
+  rendering in Bubble Pop, Word Rain and the result screen. Device voice quality
+  depends on available local/browser voices; no audio uploads required.
+- `UnitVocabularySection` now reads the paginated API correctly (removed
+  undeclared variables), handles errors and out-of-range pages, shows both IPA
+  variants and warns based on **active** vocabulary count rather than total count.
+- Finish-game processing uses the session's initial word IDs instead of the
+  current ACTIVE list. Legacy in-progress sessions fall back to the previous
+  lookup. Unknown/duplicate submitted answer IDs are rejected.
+- Validation: `git diff --check` passes. Maven compile is blocked because this
+  execution environment cannot resolve Spring Boot parent POM from Maven Central;
+  frontend dependencies are not installed, so typecheck/lint/build cannot run
+  here. Database migration requires review against any existing nonstandard
+  `part_of_speech` strings before production deployment.
+- Not included yet: vocabulary flashcards, spaced repetition/FSRS, synonym and
+  antonym models, pronunciation scoring, or a new Game Hub architecture.
+
 ## Teacher Assignment portfolio summary (2026-11-09)
 
 - Replaced the Assignment list's placeholder Summary Cards with a real,

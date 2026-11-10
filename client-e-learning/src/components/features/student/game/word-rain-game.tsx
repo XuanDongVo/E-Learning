@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import type { GamePlayWord, WordAnswerResult, FinishGameSessionResponse } from "@/types/vocabulary-game";
+import type { GamePlayWord, WordAnswerResult, FinishGameSessionResponse, PronunciationAccent } from "@/types/vocabulary-game";
 import { soundEffects } from "./sound-effects";
 import { studentGameService } from "@/services/student/student-game.service";
 import { FullscreenGameContainer } from "./fullscreen-game-container";
@@ -9,6 +9,7 @@ import { GameResultModal } from "./game-result-modal";
 import { CloudRain, Sparkles, Volume2 } from "lucide-react";
 
 interface WordRainGameProps {
+  accent: PronunciationAccent;
   sessionId: number;
   unitName: string;
   words: GamePlayWord[];
@@ -110,6 +111,7 @@ const DROP_THEMES = [
 const LANES = [0.22, 0.5, 0.78]; // Non-overlapping comfortable vertical columns
 
 export function WordRainGame({
+  accent,
   sessionId,
   unitName,
   words,
@@ -603,7 +605,7 @@ export function WordRainGame({
 
             if (!isMutedRef.current) {
               soundEffects.playWaterChime();
-              soundEffects.speakWord(drop.cleanWord);
+              soundEffects.speakWord(drop.cleanWord, accent);
             }
             setCombo(1);
 
@@ -761,7 +763,7 @@ export function WordRainGame({
           ctx.textAlign = "center";
           ctx.textBaseline = "middle";
           ctx.fillText(
-            `${drop.wordObj.word} ${drop.wordObj.pronunciation ? `(${drop.wordObj.pronunciation})` : ""}`,
+            `${drop.wordObj.word} ${accent === "UK" ? (drop.wordObj.pronunciationUk ?? "") : (drop.wordObj.pronunciationUs ?? "")}`,
             drawX,
             top + 60
           );
@@ -994,7 +996,7 @@ export function WordRainGame({
         d.isLocked = true;
         if (!isMutedRef.current) {
           soundEffects.playPop();
-          soundEffects.speakWord(d.cleanWord);
+          soundEffects.speakWord(d.cleanWord, accent);
         }
         break;
       }
@@ -1084,7 +1086,7 @@ export function WordRainGame({
           if (!isMutedRef.current) {
             soundEffects.playWaterChime();
             soundEffects.playSplash();
-            soundEffects.speakWord(lockedDrop.cleanWord);
+            soundEffects.speakWord(lockedDrop.cleanWord, accent);
           }
 
           setScore((s) => s + 10 * comboRef.current);
@@ -1116,7 +1118,7 @@ export function WordRainGame({
           if (!isMutedRef.current) {
             soundEffects.playWaterChime();
             soundEffects.playSplash();
-            soundEffects.speakWord(candidateDrop.cleanWord);
+            soundEffects.speakWord(candidateDrop.cleanWord, accent);
           }
 
           setScore((s) => s + 10 * comboRef.current);

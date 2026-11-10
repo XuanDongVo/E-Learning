@@ -118,7 +118,7 @@ export function GameResultModal({ result, onReplay }: GameResultModalProps) {
                   <div className="flex items-center gap-3">
                     <button
                       type="button"
-                      onClick={() => soundEffects.speakWord(item.word)}
+                      onClick={() => soundEffects.speakWord(item.word, result.accent)}
                       className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/20 hover:bg-primary/40 text-primary transition-colors"
                       title="Nghe phát âm"
                     >
@@ -127,8 +127,8 @@ export function GameResultModal({ result, onReplay }: GameResultModalProps) {
                     <div>
                       <div className="flex items-baseline gap-2">
                         <span className="font-extrabold text-white text-sm sm:text-base">{item.word}</span>
-                        {item.pronunciation && (
-                          <span className="text-xs text-slate-400 font-mono">{item.pronunciation}</span>
+                        {(result.accent === "UK" ? item.pronunciationUk : item.pronunciationUs) && (
+                          <span className="text-xs text-slate-400 font-mono">{result.accent === "UK" ? item.pronunciationUk : item.pronunciationUs}</span>
                         )}
                       </div>
                       <span className="text-xs text-slate-300">{item.meaningVi}</span>

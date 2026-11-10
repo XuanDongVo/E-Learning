@@ -4,6 +4,8 @@ import e_learning.server.common.dto.PageResponse;
 import e_learning.server.content.unit.entity.Unit;
 import e_learning.server.content.unit.repository.UnitRepository;
 import e_learning.server.vocabulary.entity.VocabularyWord;
+import e_learning.server.vocabulary.enums.VocabularyDifficulty;
+import e_learning.server.vocabulary.enums.VocabularyStatus;
 import e_learning.server.vocabulary.repository.VocabularyWordRepository;
 import e_learning.server.vocabulary.teacher.dto.VocabularyWordResponse;
 import e_learning.server.vocabulary.teacher.service.TeacherVocabularyService;
@@ -55,9 +57,9 @@ class TeacherVocabularyServicePaginationTest {
                 .unit(testUnit)
                 .word("hobby")
                 .meaningVi("sở thích")
-                .difficulty("EASY")
+                .difficulty(VocabularyDifficulty.EASY)
                 .displayOrder(1)
-                .status("ACTIVE")
+                .status(VocabularyStatus.ACTIVE)
                 .build();
 
         VocabularyWord word2 = VocabularyWord.builder()
@@ -65,9 +67,9 @@ class TeacherVocabularyServicePaginationTest {
                 .unit(testUnit)
                 .word("collect")
                 .meaningVi("sưu tầm")
-                .difficulty("EASY")
+                .difficulty(VocabularyDifficulty.EASY)
                 .displayOrder(2)
-                .status("ACTIVE")
+                .status(VocabularyStatus.ACTIVE)
                 .build();
 
         testWords = List.of(word1, word2);

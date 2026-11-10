@@ -1,6 +1,6 @@
 "use client";
 
-import {useDeferredValue,useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   BookA,
@@ -15,17 +15,6 @@ import {
   Zap,
 } from "lucide-react";
 import { toast } from "sonner";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { SkeletonList } from "@/components/ui/skeleton/skeleton-list";
 import { cn } from "@/lib/utils";
 import { contentService } from "@/services/content.service";
 import { QUERY_KEYS } from "@/services/query-keys";
@@ -67,8 +56,6 @@ export function UnitVocabularySection({ unitId }: UnitVocabularySectionProps) {
   const [pageSize, setPageSize] = useState(10);
   const [statusFilter, setStatusFilter] =
     useState<VocabularyStatusFilter>("ALL");
-  const [searchTerm, setSearchTerm] = useState("");
-  const deferredSearch = useDeferredValue(searchTerm.trim());
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [editingWord, setEditingWord] = useState<VocabularyWord | null>(null);
   const [bulkModalOpen, setBulkModalOpen] = useState(false);
@@ -92,7 +79,7 @@ export function UnitVocabularySection({ unitId }: UnitVocabularySectionProps) {
   }, [unitId]);
 
   // Fetch words with pagination
-  const { data: pageResponse, isLoading } = useQuery({
+  const { data: pageResponse, isLoading, isError, error, refetch } = useQuery({
     queryKey: QUERY_KEYS.contentVocabulary(unitId, {
       status: statusFilter === "ALL" ? undefined : statusFilter,
       search: debouncedSearch || undefined,
@@ -106,13 +93,26 @@ export function UnitVocabularySection({ unitId }: UnitVocabularySectionProps) {
         page,
         size: pageSize,
       });
-      return res.data;
+      return response.data;
     },
+  });
+
+  const { data: activePageResponse } = useQuery({
+    queryKey: QUERY_KEYS.contentVocabulary(unitId, { status: "ACTIVE", page: 1, size: 1 }),
+    queryFn: async () => (await contentService.listVocabulary(unitId, { status: "ACTIVE", page: 1, size: 1 })).data,
   });
 
   const words = pageResponse?.items ?? [];
   const totalElements = pageResponse?.totalElements ?? 0;
-  const totalPages = pageResponse?.totalPages ?? 1;
+  const totalPages = Math.max(1, pageResponse?.totalPages ?? 1);
+  const activeCount = activePageResponse?.totalElements ?? 0;
+
+  // Deletion/filtering may leave the currently selected page out of range.
+  useEffect(() => {
+    if (pageResponse && page > Math.max(1, totalPages)) {
+      setPage(Math.max(1, totalPages));
+    }
+  }, [page, pageResponse, totalPages]);
 
   const refresh = () => {
     queryClient.invalidateQueries({
@@ -179,9 +179,6 @@ export function UnitVocabularySection({ unitId }: UnitVocabularySectionProps) {
     },
   });
 
-  const words = wordsQuery.data ?? [];
-  const hasFilters = statusFilter !== "ALL" || Boolean(deferredSearch);
-
   const handleSpeak = (word: string) => {
     if (
       !word ||
@@ -236,7 +233,12 @@ export function UnitVocabularySection({ unitId }: UnitVocabularySectionProps) {
       id: "pronunciation",
       header: "Phiên âm",
       className: "font-mono text-xs text-neutral-muted",
-      cell: (item) => item.pronunciation || "—",
+      cell: (item) => (
+        <div className="space-y-1">
+          <p><span className="font-semibold">UK:</span> {item.pronunciationUk || "—"}</p>
+          <p><span className="font-semibold">US:</span> {item.pronunciationUs || "—"}</p>
+        </div>
+      ),
     },
     {
       id: "meaningVi",
@@ -257,13 +259,7 @@ export function UnitVocabularySection({ unitId }: UnitVocabularySectionProps) {
       header: "Độ khó",
       cell: (item) => (
         <span
-          className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-bold ${
-            item.difficulty === "EASY"
-              ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-              : item.difficulty === "MEDIUM"
-              ? "bg-amber-50 text-amber-700 border border-amber-200"
-              : "bg-rose-50 text-rose-700 border border-rose-200"
-          }`}
+          className={cn("inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-bold", DIFFICULTY_STYLES[item.difficulty])}
         >
           {item.difficulty}
         </span>
@@ -375,11 +371,11 @@ export function UnitVocabularySection({ unitId }: UnitVocabularySectionProps) {
         </div>
 
         {/* Mini-game Warning if total words < 4 */}
-        {totalElements > 0 && totalElements < 4 && statusFilter === "ALL" && (
+        {activePageResponse && activeCount < 4 && (
           <div className="mt-3.5 flex items-center gap-2 rounded-xl bg-amber-50 border border-amber-200/80 p-3 text-xs text-amber-800">
             <AlertCircle className="h-4 w-4 shrink-0 text-amber-600" />
             <span>
-              Unit này hiện chỉ có <strong>{totalElements} từ</strong>. Để học sinh có thể chơi tốt các mini-game (Bắn bóng & Mưa từ), bạn nên thêm tối thiểu <strong>4 từ</strong>.
+              Unit này hiện chỉ có <strong>{activeCount} từ đang dùng</strong>. Để học sinh có thể chơi tốt các mini-game (Bắn bóng & Mưa từ), bạn nên bật/thêm tối thiểu <strong>4 từ</strong>.
             </span>
           </div>
         )}
@@ -422,7 +418,13 @@ export function UnitVocabularySection({ unitId }: UnitVocabularySectionProps) {
       </div>
 
       {/* Table Content with Pagination using DataTable */}
-      <DataTable
+      {isError && (
+        <div role="alert" className="flex items-center justify-between gap-3 rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
+          <span>{errorMessage(error, "Không tải được danh sách từ vựng")}</span>
+          <button type="button" className="font-bold underline" onClick={() => void refetch()}>Thử lại</button>
+        </div>
+      )}
+      {!isError && <DataTable
         data={words}
         columns={columns}
         getRowKey={(item) => item.id}
@@ -483,7 +485,7 @@ export function UnitVocabularySection({ unitId }: UnitVocabularySectionProps) {
             setPage(1);
           },
         }}
-      />
+      />}
 
       <VocabularyWordModal
         open={addModalOpen}

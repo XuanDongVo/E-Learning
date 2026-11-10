@@ -66,7 +66,6 @@ export function BulkImportVocabularyModal({
             word,
             meaningVi,
             difficulty: defaultDifficulty,
-            partOfSpeech: "Noun",
           });
         }
       }

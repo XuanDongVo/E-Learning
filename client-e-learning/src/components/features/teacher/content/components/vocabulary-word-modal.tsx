@@ -13,7 +13,9 @@ import type {
   VocabularyWord,
   CreateVocabularyWordRequest,
   UpdateVocabularyWordRequest,
+  VocabularyPartOfSpeech,
 } from "@/types/vocabulary";
+import { speakVocabulary } from "@/lib/vocabulary-pronunciation";
 
 interface VocabularyWordModalProps {
   open: boolean;
@@ -32,8 +34,9 @@ export function VocabularyWordModal({
 }: VocabularyWordModalProps) {
   const [wordText, setWordText] = useState("");
   const [meaningVi, setMeaningVi] = useState("");
-  const [pronunciation, setPronunciation] = useState("");
-  const [partOfSpeech, setPartOfSpeech] = useState("Noun");
+  const [pronunciationUk, setPronunciationUk] = useState("");
+  const [pronunciationUs, setPronunciationUs] = useState("");
+  const [partOfSpeech, setPartOfSpeech] = useState<VocabularyPartOfSpeech | "">("");
   const [difficulty, setDifficulty] = useState<"EASY" | "MEDIUM" | "HARD">("EASY");
   const [exampleSentence, setExampleSentence] = useState("");
   const [exampleMeaningVi, setExampleMeaningVi] = useState("");
@@ -43,16 +46,18 @@ export function VocabularyWordModal({
     if (word) {
       setWordText(word.word);
       setMeaningVi(word.meaningVi);
-      setPronunciation(word.pronunciation || "");
-      setPartOfSpeech(word.partOfSpeech || "Noun");
+      setPronunciationUk(word.pronunciationUk || "");
+      setPronunciationUs(word.pronunciationUs || "");
+      setPartOfSpeech(word.partOfSpeech || "");
       setDifficulty(word.difficulty || "EASY");
       setExampleSentence(word.exampleSentence || "");
       setExampleMeaningVi(word.exampleMeaningVi || "");
     } else {
       setWordText("");
       setMeaningVi("");
-      setPronunciation("");
-      setPartOfSpeech("Noun");
+      setPronunciationUk("");
+      setPronunciationUs("");
+      setPartOfSpeech("");
       setDifficulty("EASY");
       setExampleSentence("");
       setExampleMeaningVi("");
@@ -61,14 +66,7 @@ export function VocabularyWordModal({
   }, [word, open]);
 
   // Pronounce word using Web Speech API
-  const handleSpeak = () => {
-    if (!wordText.trim() || typeof window === "undefined" || !("speechSynthesis" in window)) return;
-    window.speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(wordText.trim());
-    u.lang = "en-US";
-    u.rate = 0.9;
-    window.speechSynthesis.speak(u);
-  };
+  const handleSpeak = () => speakVocabulary(wordText, "US");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -86,8 +84,9 @@ export function VocabularyWordModal({
       await onSubmit({
         word: wordText.trim(),
         meaningVi: meaningVi.trim(),
-        pronunciation: pronunciation.trim() || undefined,
-        partOfSpeech: partOfSpeech.trim() || undefined,
+        pronunciationUk: pronunciationUk.trim() || undefined,
+        pronunciationUs: pronunciationUs.trim() || undefined,
+        partOfSpeech: partOfSpeech || undefined,
         difficulty,
         exampleSentence: exampleSentence.trim() || undefined,
         exampleMeaningVi: exampleMeaningVi.trim() || undefined,
@@ -161,16 +160,26 @@ export function VocabularyWordModal({
               />
             </div>
 
-            {/* Pronunciation (IPA) */}
+            {/* IPA variants: reference text only; audio is synthesized by the browser. */}
             <div className="space-y-1">
               <label className="text-label font-bold text-foreground">
-                Phiên âm IPA (tùy chọn)
+                IPA Anh–Anh (UK, tùy chọn)
               </label>
               <input
                 type="text"
-                placeholder="Ví dụ: /ˈpensl keɪs/"
-                value={pronunciation}
-                onChange={(e) => setPronunciation(e.target.value)}
+                placeholder="IPA en-GB"
+                value={pronunciationUk}
+                onChange={(e) => setPronunciationUk(e.target.value)}
+                className="min-h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-body-sm text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-label font-bold text-foreground">IPA Anh–Mỹ (US, tùy chọn)</label>
+              <input
+                type="text"
+                placeholder="IPA en-US"
+                value={pronunciationUs}
+                onChange={(e) => setPronunciationUs(e.target.value)}
                 className="min-h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-body-sm text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
               />
             </div>
@@ -182,15 +191,16 @@ export function VocabularyWordModal({
               </label>
               <select
                 value={partOfSpeech}
-                onChange={(e) => setPartOfSpeech(e.target.value)}
+                onChange={(e) => setPartOfSpeech(e.target.value as VocabularyPartOfSpeech | "")}
                 className="min-h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-body-sm text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
               >
-                <option value="Noun">Danh từ (Noun)</option>
-                <option value="Verb">Động từ (Verb)</option>
-                <option value="Adjective">Tính từ (Adjective)</option>
-                <option value="Adverb">Trạng từ (Adverb)</option>
-                <option value="Preposition">Giới từ (Preposition)</option>
-                <option value="Phrase">Cụm từ (Phrase)</option>
+                <option value="">Chưa phân loại</option>
+                <option value="NOUN">Danh từ (Noun)</option>
+                <option value="VERB">Động từ (Verb)</option>
+                <option value="ADJECTIVE">Tính từ (Adjective)</option>
+                <option value="ADVERB">Trạng từ (Adverb)</option>
+                <option value="PREPOSITION">Giới từ (Preposition)</option>
+                <option value="PHRASE">Cụm từ (Phrase)</option>
               </select>
             </div>
 

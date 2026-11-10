@@ -1,4 +1,6 @@
 // Web Audio API synthesized sound effects (Zero external assets needed)
+import type { PronunciationAccent } from "@/types/vocabulary-game";
+import { speakVocabulary } from "@/lib/vocabulary-pronunciation";
 
 let audioCtx: AudioContext | null = null;
 
@@ -189,15 +191,6 @@ export const soundEffects = {
   },
 
   // Speak English word using Web Speech Synthesis API
-  speakWord: (word: string) => {
-    if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
-    try {
-      window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(word);
-      utterance.lang = "en-US";
-      utterance.rate = 0.9;
-      window.speechSynthesis.speak(utterance);
-    } catch {}
-  },
+  speakWord: (word: string, accent: PronunciationAccent = "US") => speakVocabulary(word, accent),
 };
 

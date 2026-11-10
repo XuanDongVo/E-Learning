@@ -9,11 +9,11 @@ public record GamePlayWordDto(
         Long id,
         String word,
         String meaningVi,
-        String pronunciation,
+        String pronunciationUk,
+        String pronunciationUs,
         String partOfSpeech,
         String exampleSentence,
         String exampleMeaningVi,
-        String audioUrl,
         String imageUrl,
         List<String> distractors
 ) {}

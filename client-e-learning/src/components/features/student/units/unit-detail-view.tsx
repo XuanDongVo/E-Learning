@@ -161,24 +161,23 @@ export function UnitDetailView({ unitId, mascotSlot }: UnitDetailViewProps) {
         </div>
       </PaperSurface>
 
-      <PaperSurface as="section" variant="lined" className="p-5 sm:p-6">
+      <div className="student-soft-panel flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="space-y-1">
-            <span className="student-meta text-primary">UNIT {label} · VOCABULARY</span>
             <h2 className="student-card-title flex items-center gap-2 text-foreground">
               <BookMarked className="h-5 w-5 text-primary" aria-hidden="true" />
-              Sổ tay từ vựng
+              Bộ từ vựng Unit {label}
             </h2>
             <p className="student-body text-muted-foreground">
-              Xem từ, học bằng Flashcard, ôn đúng lịch và chơi trò chơi theo Unit.
+              Xem và luyện bộ từ này trong Sổ tay từ vựng riêng.
             </p>
           </div>
-          <Link href={`/student/units/${unit.id}/vocabulary`}
-            className="student-control student-control--action inline-flex shrink-0 items-center justify-center gap-2 px-5">
-            Mở sổ từ vựng <ChevronRight className="size-4" aria-hidden="true" />
-          </Link>
         </div>
-      </PaperSurface>
+        <Link href={`/student/vocabulary/units/${unit.id}`}
+          className="student-control student-control--secondary inline-flex shrink-0 items-center justify-center gap-2 px-5">
+          Mở bộ từ <ChevronRight className="size-4" aria-hidden="true" />
+        </Link>
+      </div>
 
       <div className="space-y-3">
         <ScrapbookHeading as="h2" className="student-section-title text-foreground">

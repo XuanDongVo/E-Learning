@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 240" role="img" aria-label="Recycling arrows around a leaf">
+ <rect width="320" height="240" rx="20" fill="#f7f2e5"/>
+ <path d="M136 55q46-23 88 20" fill="none" stroke="#4c8067" stroke-width="16" stroke-linecap="round"/>
+ <path d="m222 53 23 36-43-3" fill="#4c8067"/>
+ <path d="M253 113q19 64-36 91" fill="none" stroke="#4c8067" stroke-width="16" stroke-linecap="round"/>
+ <path d="m236 211-43 4 21-38" fill="#4c8067"/>
+ <path d="M155 204q-59-12-77-68" fill="none" stroke="#4c8067" stroke-width="16" stroke-linecap="round"/>
+ <path d="m58 150 5-45 39 26" fill="#4c8067"/>
+ <path d="M163 168c-37-22-22-66 29-75 0 38-8 62-29 75z" fill="#9fc48e" stroke="#416e58" stroke-width="4"/>
+ <path d="M161 170q7-43 29-59" fill="none" stroke="#416e58" stroke-width="4" stroke-linecap="round"/>
+</svg>

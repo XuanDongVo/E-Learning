@@ -38,6 +38,28 @@ public class StudentVocabularyReviewService {
     private final StudentVocabularyProgressRepository progressRepository;
     private final VocabularyReviewLogRepository reviewLogRepository;
 
+    /** Published Unit collections only; no cross-Grade or unpublished vocabulary is exposed. */
+    @Transactional(readOnly = true)
+    public List<StudentVocabularyUnitOverviewResponse> listOverview(Long studentId) {
+        var units = studentUnitService.getMyUnits(studentId);
+        if (units.isEmpty()) {
+            return List.of();
+        }
+        List<Long> ids = units.stream().map(unit -> unit.id()).toList();
+        Map<Long, VocabularyWordRepository.StudentUnitVocabularyCounts> countsByUnit = wordRepository
+                .countStudentUnitVocabulary(studentId, ids, Instant.now()).stream()
+                .collect(Collectors.toMap(VocabularyWordRepository.StudentUnitVocabularyCounts::getUnitId,
+                        Function.identity()));
+        return units.stream().map(unit -> {
+            var counts = countsByUnit.get(unit.id());
+            long total = counts == null ? 0 : counts.getTotalCount();
+            long fresh = counts == null ? 0 : counts.getNewCount();
+            long due = counts == null ? 0 : counts.getDueCount();
+            return new StudentVocabularyUnitOverviewResponse(unit.id(), unit.code(), unit.name(), unit.coverUrl(),
+                    unit.displayOrder(), total, fresh, due, total - fresh);
+        }).toList();
+    }
+
     @Transactional(readOnly = true)
     public List<StudentVocabularyCardResponse> listUnitCards(Long studentId, Long unitId) {
         studentUnitService.requireVisibleUnit(studentId, unitId);

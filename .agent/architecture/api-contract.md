@@ -70,6 +70,12 @@ Assignment exposes show_answers_after_submit. No Release Answers endpoint.
 
 ### Student Vocabulary FSRS foundation (Phase 02, 2026-11-10)
 
+- `GET /v1/student/vocabulary/overview` (Phase 03 Library): visible published
+  Unit collections for the authenticated Student, each with `unitId,code,name,
+  coverUrl,displayOrder,totalCount,newCount,dueCount,learnedCount`. Counts include
+  ACTIVE words only; `dueCount` excludes never-reviewed NEW words. Students with no
+  visible Units receive an empty list. This is a read-only projection, not a new
+  global vocabulary/FSRS entity or a global review-session endpoint.
 - `GET /v1/student/vocabulary/units/{unitId}/cards`: Student-only, ACTIVE words
   in a published Unit belonging to the authenticated Student's active-class Grade.
   Returns Flashcard content plus per-word `state`, `dueAt`, `reviewCount`, `due`.

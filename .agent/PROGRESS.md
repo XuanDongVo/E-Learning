@@ -1,5 +1,22 @@
 # Project Progress
 
+## Vocabulary Phase 03 refresh — Student Library + Grade 7 fixture (2026-11-10)
+
+- Added standalone `/student/vocabulary` Library, searchable/filterable published
+  Unit collections and authenticated `/v1/student/vocabulary/overview` summary
+  counts (ACTIVE only; NEW and due reviewed cards distinguished). Canonical
+  learning route is `/student/vocabulary/units/{unitId}`; old route still works.
+- Unit Detail now only links to the vocabulary module. Browse is a compact
+  searchable word list; the Flashcard reverse has tailored with-image/text-only
+  layouts and broken-image fallback. Student scrapbook theme and Teacher admin
+  styles remain isolated. FSRS review scheduling and game rules are unchanged.
+- Updated Grade 7 `07_vocabulary.sql` to comply with enum constraint and added
+  curated demo IPA, related terms and local illustrations for a subset of words.
+  No DELETE/TRUNCATE/data-reset action was performed; teacher-edited nonempty
+  fields are preserved on fixture re-run.
+- Verify Next.js/ESLint, Maven focused tests, real Postgres seed execution and
+  device UI once project dependencies/services are available.
+
 ## Vocabulary Phase 03 — Student Notebook UI (2026-11-10)
 
 - Added Unit detail entry and `/student/units/{unitId}/vocabulary` with four

@@ -68,3 +68,187 @@
 @media (prefers-reduced-motion: reduce) {
   :is(.student-theme, body:has(.student-theme)) .student-vocab-option { transition: none; }
 }
+
+/* Standalone Library and compact, scannable Unit collection entries. */
+:is(.student-theme, body:has(.student-theme)) .student-vocab-library-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding-top: 0.25rem;
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-vocab-library-stats > div {
+  display: flex;
+  flex-direction: column;
+  min-width: 7.5rem;
+  gap: 0.125rem;
+  padding: 0.5rem 1rem;
+  border-left: 2px solid var(--border);
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-vocab-library-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-vocab-collection {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-vocab-collection-cover {
+  height: 7rem;
+  width: 100%;
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-vocab-collection-metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.875rem;
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-vocab-collection-metrics > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-vocab-summary-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.125rem;
+  color: var(--muted-foreground);
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-vocab-summary-strip strong {
+  color: var(--foreground);
+  font-variant-numeric: tabular-nums;
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-vocab-word-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-vocab-word-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.875rem 1rem;
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-vocab-word-row-content {
+  min-width: 0;
+  flex: 1 1 16rem;
+  overflow-wrap: anywhere;
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-vocab-word-row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-vocab-word-row-actions > button {
+  min-height: 2.75rem;
+  text-align: left;
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-vocab-word-thumbnail {
+  display: grid;
+  flex: 0 0 5.5rem;
+  width: 5.5rem;
+  height: 5.5rem;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--student-paper);
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-vocab-word-thumbnail img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-vocab-word-row-cta {
+  flex: 0 0 auto;
+}
+
+/* Reverse side: illustrations get a dedicated column; text-only words use the full width. */
+:is(.student-theme, body:has(.student-theme)) .student-vocab-answer {
+  width: 100%;
+  margin-inline: auto;
+  min-width: 0;
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-vocab-answer--text {
+  max-width: 39rem;
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-vocab-answer--illustrated {
+  display: grid;
+  align-items: center;
+  gap: 1.25rem;
+  max-width: 54rem;
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-vocab-answer-image {
+  display: grid;
+  place-items: center;
+  margin: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--student-paper);
+  min-height: 10rem;
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-vocab-answer-image img {
+  width: 100%;
+  max-height: 17rem;
+  object-fit: contain;
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-vocab-answer-copy {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+@media (min-width: 700px) {
+  :is(.student-theme, body:has(.student-theme)) .student-vocab-collection {
+    flex-direction: row;
+  }
+
+  :is(.student-theme, body:has(.student-theme)) .student-vocab-collection-cover {
+    flex: 0 0 7rem;
+    width: 7rem;
+    height: auto;
+    min-height: 10rem;
+  }
+
+  :is(.student-theme, body:has(.student-theme)) .student-vocab-answer--illustrated {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+  }
+}
+
+@media (max-width: 699px) {
+  :is(.student-theme, body:has(.student-theme)) .student-vocab-library-grid {
+    grid-template-columns: 1fr;
+  }
+
+  :is(.student-theme, body:has(.student-theme)) .student-vocab-word-row-cta {
+    flex: 1 1 100%;
+  }
+
+  :is(.student-theme, body:has(.student-theme)) .student-vocab-word-thumbnail {
+    flex-basis: 4.5rem;
+    width: 4.5rem;
+    height: 4.5rem;
+  }
+}

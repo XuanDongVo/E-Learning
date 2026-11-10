@@ -1,6 +1,7 @@
 "use client";
 
-import { ImageIcon, RotateCcw, Volume2 } from "lucide-react";
+import { useState } from "react";
+import { RotateCcw, Volume2 } from "lucide-react";
 import { PaperSurface } from "@/components/student-ui/paper-surface";
 import { speakVocabulary } from "@/lib/vocabulary-pronunciation";
 import type { StudentVocabularyStudyCard } from "@/types/student-vocabulary-review";
@@ -19,6 +20,8 @@ export function VocabularyFlashcard({
   revealed: boolean;
   onReveal: () => void;
 }) {
+  const [imageFailed, setImageFailed] = useState(false);
+  const hasImage = Boolean(card.imageUrl && !imageFailed);
   const groups = [
     { label: "Họ từ", items: card.relatedTerms?.wordFamilies ?? [] },
     { label: "Đồng nghĩa", items: card.relatedTerms?.synonyms ?? [] },
@@ -50,38 +53,39 @@ export function VocabularyFlashcard({
           <p className="student-body text-muted-foreground">Đọc hoặc nghe trước khi lật để nhớ nghĩa.</p>
         </>
       ) : (
-        <div className="mx-auto w-full max-w-xl space-y-4 text-left">
-          <div className="text-center">
-            <span className="student-meta text-muted-foreground">{card.word}</span>
-            <h2 className="student-vocab-meaning mt-1 text-foreground">{card.meaningVi}</h2>
-          </div>
-          {card.imageUrl && (
-            <div className="mx-auto max-w-xs overflow-hidden rounded-xl border border-border bg-muted">
-              {/* Teacher-configured media URL; no image upload occurs in Student study. */}
+        <div className={`student-vocab-answer ${hasImage ? "student-vocab-answer--illustrated" : "student-vocab-answer--text"}`}>
+          {hasImage && (
+            <figure className="student-vocab-answer-image">
+              {/* Teacher-configured illustration; shown only after flip to avoid giving away the answer. */}
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={card.imageUrl} alt={`Minh họa từ ${card.word}`} className="max-h-52 w-full object-contain" />
-            </div>
+              <img src={card.imageUrl!} alt={`Minh họa cho ${card.word}`} onError={() => setImageFailed(true)} />
+            </figure>
           )}
-          {!card.imageUrl && <div className="flex justify-center text-muted-foreground" aria-hidden="true"><ImageIcon className="size-5" /></div>}
-          {card.exampleSentence && (
-            <div className="student-soft-panel space-y-1 p-3">
-              <p className="student-label text-foreground">Ví dụ</p>
-              <p className="student-body italic text-foreground">{card.exampleSentence}</p>
-              {card.exampleMeaningVi && <p className="student-body text-muted-foreground">{card.exampleMeaningVi}</p>}
+          <div className="student-vocab-answer-copy space-y-4 text-left">
+            <div className={hasImage ? "" : "text-center"}>
+              <span className="student-meta text-muted-foreground">{card.word}</span>
+              <h2 className="student-vocab-meaning mt-1 text-foreground">{card.meaningVi}</h2>
             </div>
-          )}
-          {groups.filter((group) => group.items.length > 0).map((group) => (
-            <div key={group.label} className="space-y-1.5">
-              <p className="student-label text-muted-foreground">{group.label}</p>
-              <div className="flex flex-wrap gap-2">
-                {group.items.map((item, index) => (
-                  <span className="student-vocab-term" key={`${group.label}-${item.term}-${index}`}>
-                    {item.term}{item.meaningVi ? ` · ${item.meaningVi}` : ""}
-                  </span>
-                ))}
+            {card.exampleSentence && (
+              <div className="student-soft-panel space-y-1 p-3">
+                <p className="student-label text-foreground">Ví dụ</p>
+                <p className="student-body italic text-foreground">{card.exampleSentence}</p>
+                {card.exampleMeaningVi && <p className="student-body text-muted-foreground">{card.exampleMeaningVi}</p>}
               </div>
-            </div>
-          ))}
+            )}
+            {groups.filter((group) => group.items.length > 0).map((group) => (
+              <div key={group.label} className="space-y-1.5">
+                <p className="student-label text-muted-foreground">{group.label}</p>
+                <div className="flex flex-wrap gap-2">
+                  {group.items.map((item, index) => (
+                    <span className="student-vocab-term" key={`${group.label}-${item.term}-${index}`}>
+                      {item.term}{item.meaningVi ? ` · ${item.meaningVi}` : ""}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
       <div className="mt-2 flex justify-center">

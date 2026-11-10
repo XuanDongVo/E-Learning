@@ -1,5 +1,30 @@
 # Vocabulary Phase 03 — Student Learn / Practice / Review UI (2026-11-10)
 
+## Phase 03 UI refresh — independent library, unchanged vocabulary ownership
+
+- Canonical entry `/student/vocabulary` is a standalone Student Library; Unit
+  detail contains only a lightweight link, not the entire vocabulary experience.
+- `GET /v1/student/vocabulary/overview` returns published, Grade-visible Unit
+  collection summaries and ACTIVE word new/due/learned counts. The student
+  cannot enumerate out-of-Grade vocabulary. The library has loading, error,
+  empty, search and due-filter states; Unit cards link to the existing FSRS flow.
+- Canonical Unit route `/student/vocabulary/units/{unitId}` includes Browse/Learn/
+  Review/Games. Old `/student/units/{unitId}/vocabulary` remains functional for
+  compatibility; no deletion or redirect is needed.
+- Browse is a compact, single-column, searchable word list, not a two-column
+  stack of large paper cards. Optional thumbnails occupy space only for words
+  with images. The Flashcard reverse displays the illustration in a 2/5-width
+  column beside text on desktop, above text on mobile; text-only cards use
+  the full reading width, without empty image placeholder. Broken images fall
+  back to text-only rather than implying media exists.
+- Teacher management keeps its existing admin UI. No `VocabularyEntry`/
+  `VocabularyCollection` schema refactor is introduced yet; Unit ownership is
+  still the current persisted model. Activity/Game XP and FSRS are independent.
+- Grade 7 `07_vocabulary.sql` is updated to uppercase enum values (V55) and
+  adds a curated subset with UK/US IPA, JSONB related terms, and bundled sample
+  illustrations. 120-word fixtures and no-image scenarios remain; no DB row
+  deletion or truncation. A later CSV-import feature remains separate.
+
 ## Screen briefs
 
 **Student Unit Detail**

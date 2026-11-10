@@ -12,6 +12,7 @@ import {
   LogOut,
   Menu,
   Trophy,
+  LibraryBig,
   X,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -23,6 +24,7 @@ import { useAuth } from "@/components/auth/auth-provider";
 export const NAV_ITEMS = [
   { label: "Home", href: "/student", icon: Home },
   { label: "Learning", href: "/student/units", icon: BookOpen },
+  { label: "Vocabulary", href: "/student/vocabulary", icon: LibraryBig },
   { label: "Assignments", href: "/student/assignments", icon: ClipboardList },
   { label: "Game", href: "/student/game", icon: Gamepad2 },
   { label: "Leaderboard", href: "/student/leaderboard", icon: Trophy },

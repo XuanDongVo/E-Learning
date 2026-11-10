@@ -17,6 +17,11 @@ import java.util.List;
 public class StudentVocabularyReviewController {
     private final StudentVocabularyReviewService service;
 
+    @GetMapping("/overview")
+    public ApiResponse<List<StudentVocabularyUnitOverviewResponse>> overview(@AuthenticationPrincipal Jwt jwt) {
+        return ApiResponse.success(service.listOverview(Long.valueOf(jwt.getSubject())));
+    }
+
     @GetMapping("/units/{unitId}/cards")
     public ApiResponse<List<StudentVocabularyCardResponse>> listCards(
             @AuthenticationPrincipal Jwt jwt, @PathVariable Long unitId) {

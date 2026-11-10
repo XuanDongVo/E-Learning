@@ -3,6 +3,18 @@ import type { VocabularyPartOfSpeech, VocabularyRelatedTerms } from "@/types/voc
 export type VocabularyFsrsRating = "AGAIN" | "HARD" | "GOOD" | "EASY";
 export type VocabularyFsrsState = "NEW" | "LEARNING" | "REVIEW" | "RELEARNING";
 
+export interface StudentVocabularyUnitOverview {
+  unitId: number;
+  code: string;
+  name: string;
+  coverUrl: string | null;
+  displayOrder: number;
+  totalCount: number;
+  newCount: number;
+  dueCount: number;
+  learnedCount: number;
+}
+
 export interface StudentVocabularyStudyCard {
   wordId: number;
   word: string;

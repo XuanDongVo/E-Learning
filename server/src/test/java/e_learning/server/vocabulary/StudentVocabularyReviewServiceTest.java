@@ -4,6 +4,7 @@ import e_learning.server.common.exception.AppException;
 import e_learning.server.common.exception.ErrorCode;
 import e_learning.server.content.unit.entity.Unit;
 import e_learning.server.content.unit.service.StudentUnitService;
+import e_learning.server.content.unit.dto.student.StudentUnitSummaryResponse;
 import e_learning.server.user.entity.Role;
 import e_learning.server.user.entity.User;
 import e_learning.server.user.repository.UserRepository;
@@ -43,6 +44,37 @@ class StudentVocabularyReviewServiceTest {
     @Mock private StudentVocabularyProgressRepository progress;
     @Mock private VocabularyReviewLogRepository logs;
     @InjectMocks private StudentVocabularyReviewService service;
+
+    @Test
+    void overviewOnlyAggregatesPublishedUnitsReturnedByStudentUnitService() {
+        var visible = new StudentUnitSummaryResponse(2L, "U01", "School", null, null, 1, 1, 1);
+        var empty = new StudentUnitSummaryResponse(3L, "U02", "Hobbies", null, null, 2, 1, 1);
+        when(units.getMyUnits(7L)).thenReturn(List.of(visible, empty));
+        var counts = mock(VocabularyWordRepository.StudentUnitVocabularyCounts.class);
+        when(counts.getUnitId()).thenReturn(2L);
+        when(counts.getTotalCount()).thenReturn(20L);
+        when(counts.getNewCount()).thenReturn(8L);
+        when(counts.getDueCount()).thenReturn(3L);
+        when(words.countStudentUnitVocabulary(eq(7L), eq(List.of(2L, 3L)), any(Instant.class)))
+                .thenReturn(List.of(counts));
+
+        var result = service.listOverview(7L);
+
+        assertThat(result).hasSize(2);
+        assertThat(result.getFirst().totalCount()).isEqualTo(20L);
+        assertThat(result.getFirst().newCount()).isEqualTo(8L);
+        assertThat(result.getFirst().dueCount()).isEqualTo(3L);
+        assertThat(result.getFirst().learnedCount()).isEqualTo(12L);
+        assertThat(result.get(1).totalCount()).isZero();
+        assertThat(result.get(1).dueCount()).isZero();
+    }
+
+    @Test
+    void emptyPublishedUnitListNeverQueriesWordCounts() {
+        when(units.getMyUnits(7L)).thenReturn(List.of());
+        assertThat(service.listOverview(7L)).isEmpty();
+        verify(words, never()).countStudentUnitVocabulary(any(), any(), any());
+    }
 
     @Test
     void newActiveWordIsImmediatelyDueWithoutPersistingAProgressRow() {

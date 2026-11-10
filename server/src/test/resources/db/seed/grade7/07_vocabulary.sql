@@ -1,6 +1,8 @@
--- G7-SEED vocabulary fixture (V53 schema; Flyway V54 already applied).
+-- G7-SEED vocabulary fixture for the V55 enum/UK-US and V56 relatedTerms schema.
 -- 20 unique words in each of six Grade 7 units. Safe to rerun: per-unit, case-insensitive lookup.
--- No fabricated audio/image URLs; both remain NULL until real media is supplied.
+-- Speech is synthesized by the browser: no fabricated audio URLs. A few words use
+-- bundled illustrative SVG files so Student UI can exercise both image/no-image layouts.
+-- No DELETE/TRUNCATE and no replacement of teacher-edited nonempty metadata.
 BEGIN;
 
 WITH words(unit_code,word,meaning_vi,pronunciation,part_of_speech,difficulty,display_order,example_sentence,example_meaning_vi) AS (
@@ -130,12 +132,44 @@ INSERT INTO vocabulary_words(
  unit_id,word,meaning_vi,pronunciation,part_of_speech,
  example_sentence,example_meaning_vi,audio_url,image_url,difficulty,display_order,status
 )
-SELECT u.id,w.word,w.meaning_vi,w.pronunciation,w.part_of_speech,
+SELECT u.id,w.word,w.meaning_vi,w.pronunciation,UPPER(w.part_of_speech),
        w.example_sentence,w.example_meaning_vi,NULL,NULL,w.difficulty,w.display_order,'ACTIVE'
 FROM words w JOIN content_units u ON u.code=w.unit_code
 WHERE NOT EXISTS(
  SELECT 1 FROM vocabulary_words existing
  WHERE existing.unit_id=u.id AND lower(existing.word)=lower(w.word)
 );
+
+-- Enrich a small, curated subset for the Student Flashcard and related-term UI.
+-- All other fixture rows deliberately remain image-free. Existing teacher edits win.
+WITH enriched(unit_code, word, ipa_uk, ipa_us, image_url, terms_json) AS (
+ VALUES
+ ('G7-SEED-U01','chess','/tʃes/','/tʃes/','/assets/vocabulary/chess.svg',
+  '{"wordFamilies":[],"synonyms":[],"antonyms":[]}'),
+ ('G7-SEED-U01','collect','/kəˈlekt/','/kəˈlekt/',NULL,
+  '{"wordFamilies":[{"term":"collection","meaningVi":"bộ sưu tập","partOfSpeech":"NOUN"},{"term":"collector","meaningVi":"người sưu tầm","partOfSpeech":"NOUN"}],"synonyms":[{"term":"gather","meaningVi":"thu thập","partOfSpeech":"VERB"}],"antonyms":[]}'),
+ ('G7-SEED-U01','gardening','/ˈɡɑː.dən.ɪŋ/','/ˈɡɑːr.dən.ɪŋ/','/assets/vocabulary/gardening.svg',
+  '{"wordFamilies":[{"term":"garden","meaningVi":"khu vườn","partOfSpeech":"NOUN"}],"synonyms":[],"antonyms":[]}'),
+ ('G7-SEED-U02','healthy','/ˈhel.θi/','/ˈhel.θi/','/assets/vocabulary/healthy.svg',
+  '{"wordFamilies":[{"term":"health","meaningVi":"sức khỏe","partOfSpeech":"NOUN"}],"synonyms":[{"term":"fit","meaningVi":"khỏe mạnh","partOfSpeech":"ADJECTIVE"}],"antonyms":[{"term":"unhealthy","meaningVi":"không lành mạnh","partOfSpeech":"ADJECTIVE"}]}'),
+ ('G7-SEED-U03','recycle','/ˌriːˈsaɪ.kəl/','/ˌriːˈsaɪ.kəl/','/assets/vocabulary/recycle.svg',
+  '{"wordFamilies":[{"term":"recycling","meaningVi":"việc tái chế","partOfSpeech":"NOUN"}],"synonyms":[],"antonyms":[]}'),
+ ('G7-SEED-U04','music','/ˈmjuː.zɪk/','/ˈmjuː.zɪk/','/assets/vocabulary/music.svg',
+  '{"wordFamilies":[{"term":"musician","meaningVi":"nhạc công","partOfSpeech":"NOUN"},{"term":"musical","meaningVi":"thuộc âm nhạc","partOfSpeech":"ADJECTIVE"}],"synonyms":[],"antonyms":[]}'),
+ ('G7-SEED-U05','omelette','/ˈɒm.lət/','/ˈɑːm.lət/','/assets/vocabulary/omelette.svg',
+  '{"wordFamilies":[],"synonyms":[],"antonyms":[]}'),
+ ('G7-SEED-U06','helmet','/ˈhel.mɪt/','/ˈhel.mət/','/assets/vocabulary/helmet.svg',
+  '{"wordFamilies":[],"synonyms":[],"antonyms":[]}')
+)
+UPDATE vocabulary_words v SET
+ pronunciation_uk = COALESCE(v.pronunciation_uk, enriched.ipa_uk),
+ pronunciation_us = COALESCE(v.pronunciation_us, enriched.ipa_us),
+ image_url = COALESCE(v.image_url, enriched.image_url),
+ related_terms = CASE
+     WHEN v.related_terms IS NULL OR v.related_terms = '{"wordFamilies":[],"synonyms":[],"antonyms":[]}'::jsonb
+     THEN enriched.terms_json::jsonb ELSE v.related_terms END,
+ updated_at = CURRENT_TIMESTAMP
+FROM enriched JOIN content_units u ON u.code = enriched.unit_code
+WHERE v.unit_id = u.id AND LOWER(v.word) = LOWER(enriched.word);
 
 COMMIT;

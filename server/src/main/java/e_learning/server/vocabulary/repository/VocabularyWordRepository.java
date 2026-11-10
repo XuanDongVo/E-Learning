@@ -8,8 +8,30 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.time.Instant;
 
 public interface VocabularyWordRepository extends JpaRepository<VocabularyWord, Long>, JpaSpecificationExecutor<VocabularyWord> {
+
+    interface StudentUnitVocabularyCounts {
+        Long getUnitId();
+        Long getTotalCount();
+        Long getNewCount();
+        Long getDueCount();
+    }
+
+    @Query(value = """
+            SELECT w.unit_id AS "unitId", COUNT(*) AS "totalCount",
+                   COUNT(*) FILTER (WHERE p.id IS NULL) AS "newCount",
+                   COUNT(*) FILTER (WHERE p.id IS NOT NULL AND p.due_at <= :now) AS "dueCount"
+            FROM vocabulary_words w
+            LEFT JOIN student_vocabulary_progress p ON p.word_id = w.id AND p.student_id = :studentId
+            WHERE w.unit_id IN (:unitIds) AND w.status = 'ACTIVE'
+            GROUP BY w.unit_id
+            """, nativeQuery = true)
+    List<StudentUnitVocabularyCounts> countStudentUnitVocabulary(
+            @Param("studentId") Long studentId,
+            @Param("unitIds") List<Long> unitIds,
+            @Param("now") Instant now);
 
     List<VocabularyWord> findByUnitIdOrderByDisplayOrderAsc(Long unitId);
 

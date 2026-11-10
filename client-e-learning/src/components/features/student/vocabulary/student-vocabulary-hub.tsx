@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, BookOpen, CalendarClock, CheckCircle2, ChevronRight, Gamepad2, Layers3, RotateCcw, Sparkles } from "lucide-react";
+import { ArrowLeft, BookOpen, CalendarClock, CheckCircle2, ChevronRight, Gamepad2, Layers3, RotateCcw, Search, Sparkles } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { FullPageState } from "@/components/feedback";
 import { PaperSurface } from "@/components/student-ui/paper-surface";
@@ -15,6 +15,7 @@ import type { RecordVocabularyReviewRequest, StudentVocabularyStudyCard, Vocabul
 import { VocabularyFlashcard } from "./vocabulary-flashcard";
 import { VocabularyPractice } from "./vocabulary-practice";
 import { VocabularyGamesPanel } from "./vocabulary-games-panel";
+import { speakVocabulary } from "@/lib/vocabulary-pronunciation";
 
 type Tab = "browse" | "learn" | "review" | "games";
 type StudyStep = "front" | "back" | "remembered" | "practice";
@@ -56,7 +57,10 @@ function VocabularyStudySession({
     mutationFn: (payload: RecordVocabularyReviewRequest) =>
       studentVocabularyReviewService.recordReview(card.wordId, payload),
     onSuccess: async (result) => {
-      await queryClient.invalidateQueries({ queryKey: vocabularyKey(unitId) });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: vocabularyKey(unitId) }),
+        queryClient.invalidateQueries({ queryKey: ["student", "vocabulary", "overview"] }),
+      ]);
       onRecorded(result.data?.dueAt ?? null);
     },
   });
@@ -141,10 +145,13 @@ function VocabularyStudySession({
   );
 }
 
-export function StudentVocabularyHub({ unitId }: { unitId: number }) {
-  const [tab, setTab] = useState<Tab>("browse");
+export function StudentVocabularyHub({ unitId, initialTab = "browse" }: { unitId: number; initialTab?: Tab }) {
+  const [tab, setTab] = useState<Tab>(initialTab);
   const [focusWordId, setFocusWordId] = useState<number | null>(null);
   const [notice, setNotice] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [browseFilter, setBrowseFilter] = useState<"all" | "new" | "due">("all");
+  const [failedImages, setFailedImages] = useState<Set<number>>(() => new Set());
   const validUnitId = Number.isSafeInteger(unitId) && unitId > 0;
   const unitQuery = useQuery({
     queryKey: QUERY_KEYS.unitDetail(String(unitId)),
@@ -163,6 +170,10 @@ export function StudentVocabularyHub({ unitId }: { unitId: number }) {
   const dueCards = cards.filter((card) => card.state !== "NEW" && card.due);
   const learnedCount = cards.length - newCards.length;
   const learnQueue = [...dueCards, ...newCards];
+  const visibleBrowseCards = cards.filter((card) =>
+    (browseFilter === "all" || (browseFilter === "new" ? card.state === "NEW" : card.state !== "NEW" && card.due)) &&
+    `${card.word} ${card.meaningVi}`.toLocaleLowerCase("vi").includes(searchTerm.trim().toLocaleLowerCase("vi")),
+  );
   const queue = tab === "review" ? dueCards : learnQueue;
   const focusedCard = focusWordId !== null ? cards.find((item) => item.wordId === focusWordId) : undefined;
   const currentCard = focusedCard ?? queue[0];
@@ -187,30 +198,27 @@ export function StudentVocabularyHub({ unitId }: { unitId: number }) {
   }
 
   return (
-    <main className="student-vocab space-y-6 pb-10">
-      <Link href={`/student/units/${unitId}`}
+    <main className="student-vocab student-vocab-unit mx-auto max-w-5xl space-y-6 pb-10">
+      <Link href="/student/vocabulary"
         className="student-label inline-flex min-h-11 items-center gap-2 text-muted-foreground hover:text-primary">
-        <ArrowLeft className="size-4" aria-hidden="true" /> Về Unit {unit.code}
+        <ArrowLeft className="size-4" aria-hidden="true" /> Tất cả bộ từ
       </Link>
-      <PaperSurface as="section" variant="kraft" tape tapePosition="right" className="space-y-3 p-5 sm:p-7">
-        <p className="student-meta text-primary">{unit.code} · VOCABULARY NOTEBOOK</p>
-        <ScrapbookHeading as="h1" className="student-page-title text-foreground">{unit.name}</ScrapbookHeading>
-        <p className="student-body text-muted-foreground">Học theo gợi ý hoặc tự chọn từ. Lịch ôn được FSRS sắp xếp sau mỗi lần bạn tự đánh giá.</p>
-        <div className="grid gap-3 sm:grid-cols-3">
-          {[
-            { label: "Tất cả", count: cards.length, hint: "từ trong Unit" },
-            { label: "Từ mới", count: newCards.length, hint: "chưa đánh giá" },
-            { label: "Đến hạn", count: dueCards.length, hint: "cần ôn lại" },
-          ].map((item) => (
-            <div key={item.label} className="student-soft-panel p-3">
-              <p className="student-label text-muted-foreground">{item.label}</p>
-              <p className="student-stat text-foreground">{item.count}</p>
-              <p className="student-caption text-muted-foreground">{item.hint}</p>
-            </div>
-          ))}
+      <PaperSurface as="section" variant="kraft" tape tapePosition="right" className="space-y-3 p-5 sm:p-6">
+        <p className="student-meta text-primary">{unit.code} · BỘ TỪ VỰNG</p>
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="min-w-0 space-y-1">
+            <ScrapbookHeading as="h1" className="student-page-title text-foreground">{unit.name}</ScrapbookHeading>
+            <p className="student-body text-muted-foreground">Xem từ · Học theo gợi ý hoặc tự chọn · Ôn đúng lịch FSRS · Chơi</p>
+          </div>
+          <Link href={`/student/units/${unitId}`} className="student-control student-control--quiet px-4">Về bài học</Link>
+        </div>
+        <div className="student-vocab-summary-strip student-label" aria-label="Tiến độ bộ từ">
+          <span><strong>{cards.length}</strong> từ</span>
+          <span><strong>{newCards.length}</strong> từ mới</span>
+          <span><strong>{dueCards.length}</strong> đến hạn</span>
         </div>
         {cards.length > 0 && (
-          <div className="space-y-1">
+          <div className="max-w-xl space-y-1">
             <div className="student-meta flex justify-between text-muted-foreground"><span>Đã bắt đầu học</span><span>{learnedCount}/{cards.length}</span></div>
             <SketchProgress value={learnedCount} max={cards.length} label="Số từ đã có tiến độ FSRS" tone="sage" />
           </div>
@@ -240,23 +248,56 @@ export function StudentVocabularyHub({ unitId }: { unitId: number }) {
       {cards.length > 0 && tab === "browse" && (
         <section className="space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <h2 className="student-section-title text-foreground">Danh sách từ</h2>
+            <div className="space-y-1">
+              <h2 className="student-section-title text-foreground">Tra cứu danh sách</h2>
+              <p className="student-body text-muted-foreground">Từ có ảnh sẽ hiện hình nhỏ; từ chưa có ảnh vẫn hiển thị đầy đủ nghĩa và ví dụ.</p>
+            </div>
             <button type="button" onClick={() => pickTab("learn")}
               className="student-control student-control--action inline-flex items-center gap-2 px-4">
               <Sparkles className="size-4" aria-hidden="true" /> Học theo gợi ý <ChevronRight className="size-4" />
             </button>
           </div>
-          <div className="grid gap-3 sm:grid-cols-2">
-            {cards.map((card) => (
-              <PaperSurface key={card.wordId} as="article" className="flex flex-col justify-between gap-3 p-4">
-                <div className="space-y-1">
-                  <span className="student-meta text-primary">{dueLabel(card)}</span>
-                  <h3 className="student-card-title text-foreground">{card.word}</h3>
-                  <p className="student-body text-muted-foreground">{card.meaningVi}</p>
+          <div className="flex flex-wrap gap-2" role="group" aria-label="Lọc trạng thái từ">
+            {([{ key: "all", label: `Tất cả (${cards.length})` }, { key: "new", label: `Từ mới (${newCards.length})` }, { key: "due", label: `Đến hạn (${dueCards.length})` }] as const).map((item) => (
+              <button type="button" key={item.key} aria-pressed={browseFilter === item.key} onClick={() => setBrowseFilter(item.key)}
+                className={`student-control px-3 ${browseFilter === item.key ? "student-filter-active" : "student-control--quiet"}`}>{item.label}</button>
+            ))}
+          </div>
+          <div className="relative max-w-lg">
+            <label htmlFor="student-vocab-words-search" className="student-label mb-2 block">Tìm từ hoặc nghĩa</label>
+            <Search className="absolute bottom-3.5 left-3.5 size-4 text-muted-foreground" aria-hidden="true" />
+            <input id="student-vocab-words-search" value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)}
+              className="student-field pl-10" placeholder="Ví dụ: hobby, sở thích..." />
+          </div>
+          {visibleBrowseCards.length === 0 && <PaperSurface className="p-5 text-center student-body text-muted-foreground">Không có từ phù hợp với bộ lọc.</PaperSurface>}
+          <div className="student-vocab-word-list">
+            {visibleBrowseCards.map((card) => (
+              <PaperSurface key={card.wordId} as="article" className="student-vocab-word-row">
+                <div className="student-vocab-word-row-content space-y-1">
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                    <h3 className="student-card-title text-foreground">{card.word}</h3>
+                    {card.partOfSpeech && <span className="student-chip">{card.partOfSpeech.toLowerCase()}</span>}
+                    <span className="student-meta text-muted-foreground">{dueLabel(card)}</span>
+                  </div>
+                  <p className="student-body font-bold text-foreground">{card.meaningVi}</p>
+                  {card.exampleSentence && <p className="student-body text-muted-foreground">{card.exampleSentence}</p>}
+                  <div className="student-vocab-word-row-actions">
+                    <button type="button" className="student-label text-primary underline" onClick={() => speakVocabulary(card.word, "UK")}
+                      aria-label={`Nghe giọng Anh–Anh của ${card.word}`}>UK <span className="student-caption">{card.pronunciationUk ?? "Nghe"}</span></button>
+                    <button type="button" className="student-label text-primary underline" onClick={() => speakVocabulary(card.word, "US")}
+                      aria-label={`Nghe giọng Anh–Mỹ của ${card.word}`}>US <span className="student-caption">{card.pronunciationUs ?? "Nghe"}</span></button>
+                  </div>
                 </div>
-                <button type="button" className="student-control student-control--secondary inline-flex items-center justify-center gap-2 px-4"
+                {card.imageUrl && !failedImages.has(card.wordId) && (
+                  <div className="student-vocab-word-thumbnail">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={card.imageUrl} alt={`Minh họa: ${card.word}`} loading="lazy"
+                      onError={() => setFailedImages((previous) => new Set(previous).add(card.wordId))} />
+                  </div>
+                )}
+                <button type="button" className="student-control student-control--secondary student-vocab-word-row-cta inline-flex items-center justify-center gap-1.5 px-4"
                   onClick={() => selectWord(card)}>
-                  {card.due || card.state === "NEW" ? "Học từ này" : "Xem & luyện thêm"} <ChevronRight className="size-4" aria-hidden="true" />
+                  {card.due || card.state === "NEW" ? "Học từ" : "Xem lại"} <ChevronRight className="size-4" aria-hidden="true" />
                 </button>
               </PaperSurface>
             ))}

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 240" role="img" aria-label="Plant growing in a watering can garden">
+ <rect width="320" height="240" rx="20" fill="#f7f2e5"/>
+ <path d="M44 200q111-23 233 2" fill="none" stroke="#d4bb8a" stroke-width="7" stroke-linecap="round"/>
+ <path d="M160 171v-103" stroke="#416e58" stroke-width="8" stroke-linecap="round"/>
+ <path d="M159 120c-42 3-60-16-61-44 37-6 58 8 61 44zm1-22c6-36 29-51 62-43-3 32-20 47-62 43z" fill="#80a578" stroke="#416e58" stroke-width="3"/>
+ <path d="M154 157c-30-2-43-17-40-40 26 2 40 13 40 40z" fill="#9dbc80" stroke="#416e58" stroke-width="3"/>
+ <path d="M118 169h90l-9 40h-70z" fill="#c85a32" stroke="#7a4a37" stroke-width="4" stroke-linejoin="round"/>
+ <path d="M44 120h45l12 30h-67zm45 6 30-13" fill="#9bb4b5" stroke="#4a6b82" stroke-width="5" stroke-linejoin="round"/>
+ <path d="M41 118l18-25 28 26M101 143l19 16" fill="none" stroke="#4a6b82" stroke-width="5" stroke-linecap="round"/>
+ <g fill="#4a6b82"><circle cx="79" cy="166" r="4"/><circle cx="99" cy="175" r="4"/><circle cx="117" cy="186" r="4"/></g>
+</svg>

@@ -14,6 +14,7 @@ export const contentService = {
 
   // Vocabulary
   listVocabulary: vocabularyService.list,
+  searchVocabularyCandidates: vocabularyService.searchCandidates,
   getVocabulary: vocabularyService.get,
   createVocabulary: vocabularyService.create,
   bulkCreateVocabulary: vocabularyService.bulkCreate,

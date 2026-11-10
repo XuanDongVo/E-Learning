@@ -2,6 +2,33 @@ export type VocabularyPartOfSpeech = "NOUN" | "VERB" | "ADJECTIVE" | "ADVERB" | 
 export type VocabularyDifficulty = "EASY" | "MEDIUM" | "HARD";
 export type VocabularyStatus = "ACTIVE" | "INACTIVE";
 
+export interface VocabularyRelatedTerm {
+  term: string;
+  meaningVi?: string | null;
+  partOfSpeech?: VocabularyPartOfSpeech | null;
+}
+
+export interface VocabularyRelatedTerms {
+  wordFamilies: VocabularyRelatedTerm[];
+  synonyms: VocabularyRelatedTerm[];
+  antonyms: VocabularyRelatedTerm[];
+}
+
+export const emptyVocabularyRelatedTerms = (): VocabularyRelatedTerms => ({
+  wordFamilies: [],
+  synonyms: [],
+  antonyms: [],
+});
+
+export interface VocabularySearchItem {
+  id: number;
+  word: string;
+  meaningVi: string;
+  partOfSpeech?: VocabularyPartOfSpeech | null;
+  unitId: number;
+  unitName: string;
+}
+
 export interface VocabularyWord {
   id: number;
   unitId: number;
@@ -15,6 +42,7 @@ export interface VocabularyWord {
   exampleMeaningVi?: string | null;
   audioUrl?: string | null;
   imageUrl?: string | null;
+  relatedTerms: VocabularyRelatedTerms;
   difficulty: VocabularyDifficulty;
   displayOrder: number;
   status: VocabularyStatus;
@@ -33,6 +61,7 @@ export interface CreateVocabularyWordRequest {
   difficulty?: VocabularyDifficulty;
   audioUrl?: string;
   imageUrl?: string;
+  relatedTerms?: VocabularyRelatedTerms;
 }
 
 export interface UpdateVocabularyWordRequest {
@@ -47,6 +76,7 @@ export interface UpdateVocabularyWordRequest {
   status?: VocabularyStatus;
   audioUrl?: string;
   imageUrl?: string;
+  relatedTerms?: VocabularyRelatedTerms;
 }
 
 export interface BulkCreateVocabularyWordsRequest {

@@ -30,6 +30,32 @@ public class TeacherVocabularyService {
 
     private final VocabularyWordRepository vocabularyWordRepository;
     private final UnitRepository unitRepository;
+    private final VocabularyRelatedTermsNormalizer relatedTermsNormalizer;
+
+    @Transactional(readOnly = true)
+    public List<VocabularySearchItemResponse> searchCandidates(Long unitId, String q, int limit) {
+        Unit sourceUnit = unitRepository.findById(unitId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy Unit: " + unitId));
+        String needle = q == null ? "" : q.strip().toLowerCase(java.util.Locale.ROOT);
+        if (needle.length() < 2 || needle.length() > 100) {
+            throw new IllegalArgumentException("Từ khóa tìm kiếm phải có từ 2 đến 100 ký tự");
+        }
+        int safeLimit = Math.max(1, Math.min(limit, 20));
+        String escaped = needle.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_");
+        Specification<VocabularyWord> specification = (root, query, cb) -> {
+            var wordLower = cb.lower(root.get("word"));
+            query.orderBy(
+                    cb.asc(cb.<Integer>selectCase().when(cb.equal(wordLower, needle), 0)
+                            .when(cb.like(wordLower, escaped + "%", '\\'), 1).otherwise(2)),
+                    cb.asc(wordLower), cb.asc(root.get("id")));
+            return cb.and(
+                    cb.equal(root.get("unit").get("grade").get("id"), sourceUnit.getGrade().getId()),
+                    cb.equal(root.get("status"), VocabularyStatus.ACTIVE),
+                    cb.like(wordLower, "%" + escaped + "%", '\\'));
+        };
+        return vocabularyWordRepository.findAll(specification, PageRequest.of(0, safeLimit))
+                .getContent().stream().map(VocabularySearchItemResponse::fromEntity).toList();
+    }
 
     @Transactional(readOnly = true)
     public PageResponse<VocabularyWordResponse> getWordsByUnit(Long unitId, String status, String search, int page, int size) {
@@ -103,6 +129,7 @@ public class TeacherVocabularyService {
                 .status(VocabularyStatus.ACTIVE)
                 .audioUrl(request.audioUrl() != null ? request.audioUrl().trim() : null)
                 .imageUrl(request.imageUrl() != null ? request.imageUrl().trim() : null)
+                .relatedTerms(relatedTermsNormalizer.normalize(request.relatedTerms()))
                 .build();
 
         VocabularyWord saved = vocabularyWordRepository.save(word);
@@ -142,6 +169,7 @@ public class TeacherVocabularyService {
                 .status(VocabularyStatus.ACTIVE)
                 .audioUrl(item.audioUrl() != null ? item.audioUrl().trim() : null)
                 .imageUrl(item.imageUrl() != null ? item.imageUrl().trim() : null)
+                .relatedTerms(relatedTermsNormalizer.normalize(item.relatedTerms()))
                 .build();
 
             toSave.add(word);
@@ -181,6 +209,10 @@ public class TeacherVocabularyService {
         }
         word.setAudioUrl(request.audioUrl() != null ? request.audioUrl().trim() : null);
         word.setImageUrl(request.imageUrl() != null ? request.imageUrl().trim() : null);
+        // An omitted field from older clients must never erase existing related terms.
+        if (request.relatedTerms() != null) {
+            word.setRelatedTerms(relatedTermsNormalizer.normalize(request.relatedTerms()));
+        }
 
         VocabularyWord updated = vocabularyWordRepository.save(word);
         log.info("Teacher updated vocabulary word '{}' (id: {})", updated.getWord(), updated.getId());

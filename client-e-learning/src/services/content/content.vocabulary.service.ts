@@ -6,9 +6,14 @@ import type {
   UpdateVocabularyWordRequest,
   BulkCreateVocabularyWordsRequest,
   ReorderVocabularyRequest,
+  VocabularySearchItem,
 } from "@/types/vocabulary";
 
 export const vocabularyService = {
+  searchCandidates: (unitId: number, q: string, limit = 10) =>
+    request<VocabularySearchItem[]>(
+      `/v1/content/vocabulary/search?${new URLSearchParams({ unitId: String(unitId), q, limit: String(limit) })}`
+    ),
   list: (
     unitId: number,
     params?: {

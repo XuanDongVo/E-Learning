@@ -4,8 +4,11 @@ import e_learning.server.content.unit.entity.Unit;
 import e_learning.server.vocabulary.enums.VocabularyDifficulty;
 import e_learning.server.vocabulary.enums.VocabularyPartOfSpeech;
 import e_learning.server.vocabulary.enums.VocabularyStatus;
+import e_learning.server.vocabulary.value.VocabularyRelatedTerms;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
 
@@ -54,6 +57,11 @@ public class VocabularyWord {
     @Column(name = "image_url", length = 500)
     private String imageUrl;
 
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "related_terms", nullable = false, columnDefinition = "jsonb")
+    @Builder.Default
+    private VocabularyRelatedTerms relatedTerms = VocabularyRelatedTerms.empty();
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     @Builder.Default
@@ -82,6 +90,7 @@ public class VocabularyWord {
         if (difficulty == null) difficulty = VocabularyDifficulty.EASY;
         if (displayOrder == null) displayOrder = 0;
         if (status == null) status = VocabularyStatus.ACTIVE;
+        if (relatedTerms == null) relatedTerms = VocabularyRelatedTerms.empty();
     }
 
     @PreUpdate

@@ -67,6 +67,21 @@ Assignment exposes show_answers_after_submit. No Release Answers endpoint.
 - Class roster responses contain ACTIVE members only.
 
 ## Contract rules
+
+### Teacher Vocabulary Content (Phase 01, 2026-11-10)
+
+- `GET /v1/content/vocabulary/search?unitId={id}&q={text}&limit={n}` searches
+  existing ACTIVE words in the same Grade and returns copy-only authoring
+  candidates with ID, word, meaning, part of speech and Unit context.
+- Create/update/bulk/list/get VocabularyWord payloads support `relatedTerms`:
+  `wordFamilies`, `synonyms`, `antonyms`, each a list of `{term, meaningVi?, partOfSpeech?}`.
+  Related Terms are inline JSONB values, not independent VocabularyWords.
+- When a create/bulk request omits `relatedTerms`, the server stores three empty
+  arrays. When update omits it, existing data is preserved; explicit empty lists
+  clear it. Responses always contain all three lists.
+- The pre-existing quick text bulk-create route is unchanged. CSV file import
+  remains out of scope. See `plans/VOCABULARY_CONTENT_PHASE_1_SPEC.md`.
+
 - AssignmentQuestion has no position. The canonical Assignment Builder and student runtime use Composition section/item/member position; question_id ASC is only legacy backfill/compatibility order.
 - AssignmentQuestion has no position.
 - Activity preview does not create ActivitySession state.

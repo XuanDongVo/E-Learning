@@ -4,22 +4,17 @@ import {useDeferredValue,useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   BookA,
-  CheckCircle2,
   Edit3,
   Plus,
   Search,
   Trash2,
-  Edit3,
   AlertCircle,
-  BookA,
   CheckCircle2,
   Volume2,
   XCircle,
   Zap,
 } from "lucide-react";
 import { toast } from "sonner";
-
-import { RegionState } from "@/components/feedback";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -66,7 +61,6 @@ function errorMessage(error: unknown, fallback: string) {
 
 export function UnitVocabularySection({ unitId }: UnitVocabularySectionProps) {
   const queryClient = useQueryClient();
-  const [statusFilter, setStatusFilter] = useState<"ALL" | "ACTIVE" | "INACTIVE">("ALL");
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [page, setPage] = useState(1);

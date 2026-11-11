@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import type { StudentVocabularyStudyCard } from "@/types/student-vocabulary-review";
 
-export function VocabularyMultipleChoice({ card, cards }: { card: StudentVocabularyStudyCard; cards: StudentVocabularyStudyCard[] }) {
+export function VocabularyMultipleChoice({ card, cards, onComplete }: { card: StudentVocabularyStudyCard; cards: StudentVocabularyStudyCard[]; onComplete: () => void }) {
   const [selected, setSelected] = useState<string | null>(null);
   const choices = useMemo(() => {
     const options = [card.meaningVi];
@@ -24,7 +24,7 @@ export function VocabularyMultipleChoice({ card, cards }: { card: StudentVocabul
       ) : (
         <div className="grid gap-3 sm:grid-cols-2">
           {choices.map((choice) => (
-            <button type="button" key={choice} disabled={selected !== null} onClick={() => setSelected(choice)}
+            <button type="button" key={choice} disabled={selected !== null} onClick={() => { setSelected(choice); onComplete(); }}
               className="student-vocab-option text-left" aria-pressed={selected === choice}>{choice}</button>
           ))}
         </div>

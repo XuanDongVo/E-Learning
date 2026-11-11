@@ -1,5 +1,11 @@
 # Project Progress
 
+## 2026-11-11 Vocabulary Learn responsive interaction polish
+
+- Each Learn mode now hides Chưa nhớ/Đã thuộc until its own activity completes (reveal, choose, check, or listen/self-practice); switching modes clears the ready state and resets its interaction.
+- The four FSRS choices replace the same action slot instead of rendering as an additional panel. Responsive Student-only mode tabs, action buttons and rating controls cover mobile and desktop. Review's backend/queue contract remains unchanged in this pass.
+- Automated FE lint/build remains unavailable without frontend dependencies; manual screen checks are still required.
+
 ## Vocabulary Phase 03 refresh — Student Library + Grade 7 fixture (2026-11-10)
 
 - Added standalone `/student/vocabulary` Library, searchable/filterable published

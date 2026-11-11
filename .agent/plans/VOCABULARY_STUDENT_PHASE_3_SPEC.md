@@ -2,6 +2,12 @@
 
 ## Learn refactor (2026-11-11) — supersedes the original Learn/Practice flow below
 
+### Learn action-area UX update — desktop and mobile
+
+- The shared Study Session starts each mode with Chưa nhớ/Đã thuộc hidden. WORD unlocks after Flashcard reveal; Multiple Choice after an answer; Typing after checking a nonempty entry (editing resets the unlock); Pronunciation after listening to a sample, receiving speech recognition, or explicitly confirming self-practice. No browser microphone support is required to proceed.
+- Entering a different mode, including reselecting the current mode, resets its pending interaction and hides the action buttons. `Chưa nhớ` advances to the next mode, wrapping Pronunciation → WORD. `Đã thuộc` replaces the **same action area** with the four-choice rating panel; Back restores Chưa nhớ/Đã thuộc without creating another rating surface below.
+- Mobile mode tabs allow horizontal scrolling at narrow widths. Action buttons are two equal columns, and rating buttons use a 2×2 mobile/4-column desktop grid. These changes are Student-theme-scoped and do not change Browse, Teacher or Review behavior.
+
 - Browse remains unchanged. Learn operates only on NEW words. Review operates only on already-studied words with `due=true`.
 - Learn has four freely selectable modes for the **same current word**: Word/Flashcard, Multiple Choice, Typing Recall, Pronunciation. `Chưa nhớ` advances WORD → MULTIPLE_CHOICE → TYPING → PRONUNCIATION → WORD; manual tab selection is allowed.
 - `Đã thuộc` only opens the four-choice rating panel. `Học lại` queues the word locally without calling FSRS, and advances to another word. `HARD`/`GOOD`/`EASY` alone record the backend review, then advance after success.

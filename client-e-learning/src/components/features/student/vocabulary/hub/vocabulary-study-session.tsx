@@ -28,7 +28,8 @@ export function VocabularyStudySession({ unitId, card, allCards, onRetry, onReco
   onRecorded: () => void;
 }) {
   const [mode, setMode] = useState<StudyMode>("WORD");
-  const [wordRevealed, setWordRevealed] = useState(false);
+  const [modeReady, setModeReady] = useState(false);
+  const [modeVisit, setModeVisit] = useState(0);
   const [ratingOpen, setRatingOpen] = useState(false);
   const [pendingAttempt, setPendingAttempt] = useState<RecordVocabularyReviewRequest | null>(null);
   const queryClient = useQueryClient();
@@ -63,29 +64,37 @@ export function VocabularyStudySession({ unitId, card, allCards, onRetry, onReco
     review.mutate(payload);
   };
 
-  return <div className="space-y-4">
-    <div className="flex flex-wrap gap-2" role="tablist" aria-label="Cách học từ vựng">
+  const selectMode = (next: StudyMode) => {
+    setMode(next);
+    setModeReady(false);
+    setModeVisit((value) => value + 1);
+    setRatingOpen(false);
+  };
+
+  return <div className="student-vocab-study mx-auto w-full max-w-3xl space-y-4">
+    <div className="student-vocab-study-modes" role="tablist" aria-label="Cách học từ vựng">
       {MODES.map((item) => <button type="button" role="tab" key={item.key} aria-selected={mode === item.key}
-        disabled={review.isPending || pendingAttempt !== null} onClick={() => { setMode(item.key); setRatingOpen(false); }}
-        className={`student-control px-3 ${mode === item.key ? "student-filter-active" : "student-control--quiet"}`}>
+        disabled={review.isPending || pendingAttempt !== null} onClick={() => selectMode(item.key)}
+        className={`student-control student-vocab-study-mode ${mode === item.key ? "student-filter-active" : "student-control--quiet"}`}>
         {item.label}
       </button>)}
     </div>
-    {!ratingOpen && <div role="tabpanel" className="space-y-4">
-      {mode === "WORD" && <VocabularyFlashcard key={card.wordId} cards={[card]} mode="study" onReveal={() => setWordRevealed(true)} />}
-      {mode !== "WORD" && <PaperSurface as="section" className="space-y-4 p-5 sm:p-7">
-        {mode === "MULTIPLE_CHOICE" && <VocabularyMultipleChoice key={card.wordId} card={card} cards={allCards} />}
-        {mode === "TYPING" && <VocabularyTypingRecall key={card.wordId} card={card} />}
-        {mode === "PRONUNCIATION" && <VocabularyPronunciation key={card.wordId} card={card} />}
+    <div role="tabpanel" className="space-y-4">
+      {mode === "WORD" && <VocabularyFlashcard key={`${card.wordId}-${modeVisit}`} cards={[card]} mode="study" onReveal={() => setModeReady(true)} />}
+      {mode !== "WORD" && <PaperSurface as="section" className="student-vocab-study-exercise space-y-4 p-4 sm:p-7">
+        {mode === "MULTIPLE_CHOICE" && <VocabularyMultipleChoice key={`${card.wordId}-${modeVisit}`} card={card} cards={allCards} onComplete={() => setModeReady(true)} />}
+        {mode === "TYPING" && <VocabularyTypingRecall key={`${card.wordId}-${modeVisit}`} card={card} onComplete={() => setModeReady(true)} onReset={() => setModeReady(false)} />}
+        {mode === "PRONUNCIATION" && <VocabularyPronunciation key={`${card.wordId}-${modeVisit}`} card={card} onComplete={() => setModeReady(true)} onReset={() => setModeReady(false)} />}
       </PaperSurface>}
-      {(mode !== "WORD" || wordRevealed) && <div className="grid gap-3 sm:grid-cols-2">
-        <button type="button" className="student-control student-control--secondary min-h-12" onClick={() => {
+    </div>
+    <div className="student-vocab-study-actions" aria-live="polite">
+      {!ratingOpen && modeReady && <div className="student-vocab-study-action-grid">
+        <button type="button" className="student-control student-control--secondary student-vocab-study-action" onClick={() => {
           const index = MODES.findIndex((item) => item.key === mode);
-          setMode(MODES[(index + 1) % MODES.length].key);
+          selectMode(MODES[(index + 1) % MODES.length].key);
         }}>Chưa nhớ · Luyện tiếp</button>
-        <button type="button" className="student-control student-control--action min-h-12" onClick={() => setRatingOpen(true)}>Đã thuộc · Đánh giá</button>
+        <button type="button" className="student-control student-control--action student-vocab-study-action" onClick={() => setRatingOpen(true)}>Đã thuộc · Đánh giá</button>
       </div>}
-    </div>}
     {ratingOpen && <>
       {preview.isPending && <p role="status" className="student-caption text-muted-foreground">Đang tính lịch ôn dự kiến...</p>}
       {preview.isError && <p role="alert" className="student-body text-destructive">{preview.error instanceof Error ? preview.error.message : "Không tải được lịch ôn."}</p>}
@@ -94,6 +103,7 @@ export function VocabularyStudySession({ unitId, card, allCards, onRetry, onReco
         onBack={() => setRatingOpen(false)} onRate={handleRate}
         times={{ HARD: formatDue(dueTimes?.HARD), GOOD: formatDue(dueTimes?.GOOD), EASY: formatDue(dueTimes?.EASY) }} />
     </>}
+    </div>
     {review.isPending && <p role="status" className="student-body text-center text-muted-foreground">Đang lưu lịch ôn...</p>}
     {review.isError && <PaperSurface as="section" role="alert" className="space-y-3 p-4">
       <p className="student-body text-destructive">{review.error instanceof Error ? review.error.message : "Không lưu được lần học."}</p>

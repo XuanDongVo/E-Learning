@@ -1,5 +1,6 @@
 export type GameType = "BUBBLE_POP" | "WORD_RAIN";
 export type GameMode = "PRACTICE" | "CHALLENGE";
+export type PronunciationAccent = "US" | "UK";
 
 export interface GameGrade {
   id: number;
@@ -22,11 +23,11 @@ export interface GamePlayWord {
   id: number;
   word: string;
   meaningVi: string;
-  pronunciation?: string | null;
+  pronunciationUk?: string | null;
+  pronunciationUs?: string | null;
   partOfSpeech?: string | null;
   exampleSentence?: string | null;
   exampleMeaningVi?: string | null;
-  audioUrl?: string | null;
   imageUrl?: string | null;
   distractors: string[];
 }
@@ -35,6 +36,7 @@ export interface StartGameSessionRequest {
   unitId: number;
   gameType: GameType;
   mode?: GameMode;
+  accent?: PronunciationAccent;
 }
 
 export interface StartGameSessionResponse {
@@ -44,6 +46,7 @@ export interface StartGameSessionResponse {
   unitCode: string;
   gameType: GameType;
   mode: GameMode;
+  accent: PronunciationAccent;
   words: GamePlayWord[];
 }
 
@@ -63,8 +66,8 @@ export interface WordSummary {
   id: number;
   word: string;
   meaningVi: string;
-  pronunciation?: string | null;
-  audioUrl?: string | null;
+  pronunciationUk?: string | null;
+  pronunciationUs?: string | null;
   firstTryCorrect: boolean;
 }
 
@@ -73,6 +76,7 @@ export interface FinishGameSessionResponse {
   unitId: number;
   unitName: string;
   gameType: GameType;
+  accent: PronunciationAccent;
   totalWords: number;
   firstTryCorrect: number;
   accuracyPercentage: number;

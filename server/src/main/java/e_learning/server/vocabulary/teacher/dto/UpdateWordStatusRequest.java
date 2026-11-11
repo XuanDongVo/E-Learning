@@ -1,11 +1,10 @@
 package e_learning.server.vocabulary.teacher.dto;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
+import e_learning.server.vocabulary.enums.VocabularyStatus;
+import jakarta.validation.constraints.NotNull;
 
 public record UpdateWordStatusRequest(
-        @NotBlank(message = "Trạng thái không được để trống")
-        @Pattern(regexp = "^(ACTIVE|INACTIVE)$", message = "Trạng thái phải là ACTIVE hoặc INACTIVE")
-        String status
+        @NotNull(message = "Trạng thái không được để trống")
+        VocabularyStatus status
 ) {}
 

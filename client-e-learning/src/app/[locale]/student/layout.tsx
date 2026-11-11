@@ -3,6 +3,7 @@ import { StudentShell } from "@/components/layout/student-shell";
 import "@/styles/student/theme.css";
 import "@/styles/student/surfaces.css";
 import "@/styles/student/typography.css";
+import "@/styles/student/vocabulary.css";
 
 export default function StudentDashboardLayout({
   children,

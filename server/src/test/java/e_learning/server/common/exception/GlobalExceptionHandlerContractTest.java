@@ -8,6 +8,12 @@ import e_learning.server.common.response.ApiResponse;
 import e_learning.server.question.engine.exception.QuestionEngineException;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BeanPropertyBindingResult;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class GlobalExceptionHandlerContractTest {
     private final GlobalExceptionHandler handler = new GlobalExceptionHandler();
@@ -26,12 +32,23 @@ class GlobalExceptionHandlerContractTest {
 
     @Test
     void validationFailureUsesStableCodeAndBadRequestStatus() {
+        MethodArgumentNotValidException invalid = mock(MethodArgumentNotValidException.class);
+        var binding = new BeanPropertyBindingResult(new Object(), "vocabulary");
+        binding.addError(new FieldError("vocabulary", "word", "Từ vựng tiếng Anh không được để trống"));
+        when(invalid.getBindingResult()).thenReturn(binding);
         ResponseEntity<ApiResponse<Void>> response =
-                handler.handleValidationException(new IllegalArgumentException("invalid input"));
+                handler.handleValidationException(invalid);
 
         assertEquals(400, response.getStatusCode().value());
         assertEquals("VALIDATION_FAILED", response.getBody().code());
-        assertEquals(ErrorCode.VALIDATION_FAILED.message(), response.getBody().message());
+        assertEquals("Từ vựng tiếng Anh không được để trống", response.getBody().message());
+    }
+
+    @Test
+    void malformedVocabularyJsonReturnsBadRequestInsteadOfInternalError() {
+        ResponseEntity<ApiResponse<Void>> response = handler.handleInvalidJson();
+        assertEquals(400, response.getStatusCode().value());
+        assertEquals("INVALID_REQUEST", response.getBody().code());
     }
 
     @Test

@@ -2,6 +2,7 @@ package e_learning.server.vocabulary.game.dto;
 
 import e_learning.server.vocabulary.game.enums.GameMode;
 import e_learning.server.vocabulary.game.enums.GameType;
+import e_learning.server.vocabulary.game.enums.PronunciationAccent;
 import lombok.Builder;
 
 import java.util.List;
@@ -14,6 +15,7 @@ public record StartGameSessionResponse(
         String unitCode,
         GameType gameType,
         GameMode mode,
+        PronunciationAccent accent,
         List<GamePlayWordDto> words
 ) {}
 

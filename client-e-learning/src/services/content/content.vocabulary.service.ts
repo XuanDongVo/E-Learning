@@ -1,19 +1,35 @@
 import { request } from "@/services/api.service";
+import type { PageResponse } from "@/types/content";
 import type {
   VocabularyWord,
   CreateVocabularyWordRequest,
   UpdateVocabularyWordRequest,
   BulkCreateVocabularyWordsRequest,
   ReorderVocabularyRequest,
+  VocabularySearchItem,
 } from "@/types/vocabulary";
 
 export const vocabularyService = {
-  list: (unitId: number, params?: { status?: string; search?: string }) => {
+  searchCandidates: (unitId: number, q: string, limit = 10) =>
+    request<VocabularySearchItem[]>(
+      `/v1/content/vocabulary/search?${new URLSearchParams({ unitId: String(unitId), q, limit: String(limit) })}`
+    ),
+  list: (
+    unitId: number,
+    params?: {
+      status?: string;
+      search?: string;
+      page?: number;
+      size?: number;
+    }
+  ) => {
     const searchParams = new URLSearchParams();
     if (params?.status) searchParams.set("status", params.status);
     if (params?.search) searchParams.set("search", params.search);
+    if (params?.page) searchParams.set("page", String(params.page));
+    if (params?.size) searchParams.set("size", String(params.size));
     const qs = searchParams.toString();
-    return request<VocabularyWord[]>(
+    return request<PageResponse<VocabularyWord>>(
       `/v1/content/units/${unitId}/vocabulary${qs ? `?${qs}` : ""}`
     );
   },

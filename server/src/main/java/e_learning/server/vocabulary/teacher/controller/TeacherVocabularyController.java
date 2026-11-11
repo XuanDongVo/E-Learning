@@ -1,5 +1,6 @@
 package e_learning.server.vocabulary.teacher.controller;
 
+import e_learning.server.common.dto.PageResponse;
 import e_learning.server.common.response.ApiResponse;
 import e_learning.server.vocabulary.teacher.dto.*;
 import e_learning.server.vocabulary.teacher.service.TeacherVocabularyService;
@@ -17,13 +18,24 @@ public class TeacherVocabularyController {
 
     private final TeacherVocabularyService teacherVocabularyService;
 
+    @GetMapping("/v1/content/vocabulary/search")
+    public ResponseEntity<ApiResponse<List<VocabularySearchItemResponse>>> searchCandidates(
+            @RequestParam Long unitId,
+            @RequestParam String q,
+            @RequestParam(defaultValue = "10") int limit
+    ) {
+        return ResponseEntity.ok(ApiResponse.success(teacherVocabularyService.searchCandidates(unitId, q, limit)));
+    }
+
     @GetMapping("/v1/content/units/{unitId}/vocabulary")
-    public ResponseEntity<ApiResponse<List<VocabularyWordResponse>>> getWordsByUnit(
+    public ResponseEntity<ApiResponse<PageResponse<VocabularyWordResponse>>> getWordsByUnit(
             @PathVariable Long unitId,
             @RequestParam(required = false) String status,
-            @RequestParam(required = false) String search
+            @RequestParam(required = false) String search,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size
     ) {
-        List<VocabularyWordResponse> response = teacherVocabularyService.getWordsByUnit(unitId, status, search);
+        PageResponse<VocabularyWordResponse> response = teacherVocabularyService.getWordsByUnit(unitId, status, search, page, size);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 

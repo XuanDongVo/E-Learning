@@ -1,6 +1,7 @@
 "use client";
 
-import type { GameUnitSummary, GameType, GameMode } from "@/types/vocabulary-game";
+import { useState } from "react";
+import type { GameUnitSummary, GameType, GameMode, PronunciationAccent } from "@/types/vocabulary-game";
 import { useRouter } from "@/i18n/navigation";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { CloudRain, Sparkles, Zap, BookOpen } from "lucide-react";
@@ -13,16 +14,23 @@ interface GameSelectModalProps {
 
 export function GameSelectModal({ unit, isOpen, onClose }: GameSelectModalProps) {
   const router = useRouter();
+  const [accent, setAccent] = useState<PronunciationAccent | null>(null);
+
+  const close = () => {
+    setAccent(null);
+    onClose();
+  };
 
   if (!unit) return null;
 
   const handleLaunchGame = (gameType: GameType, mode: GameMode) => {
-    onClose();
-    router.push(`/student/game/${unit.id}/${gameType}?mode=${mode}`);
+    if (!accent) return;
+    close();
+    router.push(`/student/game/${unit.id}/${gameType}?mode=${mode}&accent=${accent}`);
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && close()}>
       <DialogContent
         className="w-[94vw] max-w-[860px] sm:max-w-[860px] md:max-w-[860px] p-6 sm:p-8 notranslate !max-w-[860px]"
         style={{ maxWidth: "860px", width: "94vw" }}
@@ -43,7 +51,23 @@ export function GameSelectModal({ unit, isOpen, onClose }: GameSelectModalProps)
           </DialogDescription>
         </DialogHeader>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+        <div className="mt-4 rounded-2xl border border-border bg-muted/40 p-4">
+          <p className="text-sm font-bold text-foreground">1. Chọn giọng phát âm trước khi chơi</p>
+          <p className="mt-1 text-xs text-muted-foreground">Máy sẽ đọc từ bằng giọng của trình duyệt; chất giọng thực tế phụ thuộc bộ giọng được cài trên thiết bị.</p>
+          <div className="mt-3 grid grid-cols-2 gap-2" role="group" aria-label="Giọng phát âm">
+            {(["US", "UK"] as const).map((choice) => (
+              <button key={choice} type="button" aria-pressed={accent === choice}
+                onClick={() => setAccent(choice)}
+                className={`min-h-11 rounded-xl border-2 px-3 text-sm font-bold transition ${accent === choice ? "border-primary bg-primary/10 text-primary" : "border-border bg-card text-foreground hover:bg-muted"}`}>
+                {choice === "US" ? "🇺🇸 Anh–Mỹ (US)" : "🇬🇧 Anh–Anh (UK)"}
+              </button>
+            ))}
+          </div>
+          {!accent && <p className="mt-2 text-xs text-amber-700">Vui lòng chọn US hoặc UK để mở khóa chế độ chơi.</p>}
+        </div>
+
+        <p className="mt-4 text-sm font-bold text-foreground">2. Chọn trò chơi và chế độ</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-2">
           {/* Card 1: Space Shooter */}
           <div className="relative flex flex-col justify-between overflow-hidden rounded-3xl border-2 border-amber-500/30 bg-gradient-to-br from-amber-500/10 via-card to-card p-6 sm:p-7 shadow-sm transition-all duration-300 hover:border-amber-500/60 hover:shadow-xl">
             <div className="space-y-4">
@@ -66,16 +90,18 @@ export function GameSelectModal({ unit, isOpen, onClose }: GameSelectModalProps)
             <div className="mt-8 flex flex-col sm:flex-row gap-3 pt-5 border-t border-border/80">
               <button
                 type="button"
+                disabled={!accent}
                 onClick={() => handleLaunchGame("BUBBLE_POP", "CHALLENGE")}
-                className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white py-3.5 px-4 text-sm font-black shadow-md shadow-orange-500/25 transition-all active:scale-95 whitespace-nowrap cursor-pointer"
+                className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white py-3.5 px-4 text-sm font-black shadow-md shadow-orange-500/25 transition-all active:scale-95 whitespace-nowrap cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <Zap className="h-4 w-4" />
                 <span>Thử thách tốc độ</span>
               </button>
               <button
                 type="button"
+                disabled={!accent}
                 onClick={() => handleLaunchGame("BUBBLE_POP", "PRACTICE")}
-                className="flex items-center justify-center gap-2 rounded-xl bg-card hover:bg-muted text-foreground py-3.5 px-5 text-sm font-bold border-2 border-border transition-all active:scale-95 whitespace-nowrap cursor-pointer"
+                className="flex items-center justify-center gap-2 rounded-xl bg-card hover:bg-muted text-foreground py-3.5 px-5 text-sm font-bold border-2 border-border transition-all active:scale-95 whitespace-nowrap cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <BookOpen className="h-4 w-4 text-muted-foreground" />
                 <span>Tự luyện</span>
@@ -105,16 +131,18 @@ export function GameSelectModal({ unit, isOpen, onClose }: GameSelectModalProps)
             <div className="mt-8 flex flex-col sm:flex-row gap-3 pt-5 border-t border-border/80">
               <button
                 type="button"
+                disabled={!accent}
                 onClick={() => handleLaunchGame("WORD_RAIN", "CHALLENGE")}
-                className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 text-white py-3.5 px-4 text-sm font-black shadow-md shadow-sky-500/25 transition-all active:scale-95 whitespace-nowrap cursor-pointer"
+                className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 text-white py-3.5 px-4 text-sm font-black shadow-md shadow-sky-500/25 transition-all active:scale-95 whitespace-nowrap cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <Zap className="h-4 w-4" />
                 <span>Thử thách tốc độ</span>
               </button>
               <button
                 type="button"
+                disabled={!accent}
                 onClick={() => handleLaunchGame("WORD_RAIN", "PRACTICE")}
-                className="flex items-center justify-center gap-2 rounded-xl bg-card hover:bg-muted text-foreground py-3.5 px-5 text-sm font-bold border-2 border-border transition-all active:scale-95 whitespace-nowrap cursor-pointer"
+                className="flex items-center justify-center gap-2 rounded-xl bg-card hover:bg-muted text-foreground py-3.5 px-5 text-sm font-bold border-2 border-border transition-all active:scale-95 whitespace-nowrap cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <BookOpen className="h-4 w-4 text-muted-foreground" />
                 <span>Tự luyện</span>

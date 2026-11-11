@@ -27,6 +27,12 @@ public enum ErrorCode {
     GRADE_ALREADY_EXISTS(HttpStatus.CONFLICT, "GRADE_ALREADY_EXISTS", "Grade already exists"),
 
     UNIT_NOT_FOUND(HttpStatus.NOT_FOUND, "UNIT_NOT_FOUND", "Unit not found"),
+    VOCABULARY_WORD_NOT_FOUND(HttpStatus.NOT_FOUND, "VOCABULARY_WORD_NOT_FOUND", "Không tìm thấy từ vựng"),
+    VOCABULARY_WORD_ALREADY_EXISTS(HttpStatus.CONFLICT, "VOCABULARY_WORD_ALREADY_EXISTS", "Từ vựng đã tồn tại trong Unit"),
+    VOCABULARY_RELATED_TERMS_INVALID(HttpStatus.BAD_REQUEST, "VOCABULARY_RELATED_TERMS_INVALID", "Thông tin từ liên quan không hợp lệ"),
+    VOCABULARY_REVIEW_NOT_DUE(HttpStatus.CONFLICT, "VOCABULARY_REVIEW_NOT_DUE", "Từ này chưa đến lịch ôn tiếp theo"),
+    VOCABULARY_REVIEW_REQUEST_CONFLICT(HttpStatus.CONFLICT, "VOCABULARY_REVIEW_REQUEST_CONFLICT", "Yêu cầu ôn tập đã được sử dụng với nội dung khác"),
+    VOCABULARY_WORD_HAS_PROGRESS(HttpStatus.CONFLICT, "VOCABULARY_WORD_HAS_PROGRESS", "Từ đã có lịch học, vui lòng chuyển sang Tạm ẩn thay vì xóa"),
     UNIT_CODE_ALREADY_EXISTS(HttpStatus.CONFLICT, "UNIT_CODE_ALREADY_EXISTS", "A unit with this code already exists for this grade"),
     SECTION_NOT_FOUND(HttpStatus.NOT_FOUND, "SECTION_NOT_FOUND", "Section not found"),
     SECTION_ALREADY_EXISTS(HttpStatus.CONFLICT, "SECTION_ALREADY_EXISTS", "A section with this name already exists in this unit"),

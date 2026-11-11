@@ -30,6 +30,11 @@ public interface UserRepository
     @Query("select user from User user where user.id = :userId")
     Optional<User> findByIdForGamificationUpdate(@Param("userId") Long userId);
 
+    /** Serialize a student's concurrent vocabulary reviews before creating/updating their FSRS cards. */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select user from User user where user.id = :userId")
+    Optional<User> findByIdForVocabularyReview(@Param("userId") Long userId);
+
     List<User> findAllByRoleOrderByFullNameAsc(Role role);
 
 }

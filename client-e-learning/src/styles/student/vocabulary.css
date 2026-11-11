@@ -1,0 +1,382 @@
+/* Vocabulary is a Student-only notebook module; Teacher styles stay untouched. */
+:is(.student-theme, body:has(.student-theme)) .student-vocab-flashcard {
+  min-height: 290px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1rem;
+  padding: 1.5rem;
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-vocab-word {
+  font-family: var(--student-font-body);
+  font-size: clamp(1.65rem, 4vw, 2.4rem);
+  line-height: 1.22;
+  font-weight: 900;
+  overflow-wrap: anywhere;
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-vocab-meaning {
+  font-family: var(--student-font-body);
+  font-size: clamp(1.25rem, 3vw, 1.7rem);
+  line-height: 1.35;
+  font-weight: 800;
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-vocab-term {
+  display: inline-block;
+  padding: 0.25rem 0.625rem;
+  border-radius: 0.65rem;
+  border: 1px solid var(--border);
+  background: var(--secondary);
+  color: var(--foreground);
+  font-family: var(--student-font-body);
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-vocab-option {
+  display: flex;
+  width: 100%;
+  min-height: 48px;
+  align-items: center;
+  text-align: left;
+  padding: 0.75rem 1rem;
+  border: 2px solid var(--student-ink);
+  border-radius: 0.85rem;
+  background: var(--student-paper);
+  color: var(--foreground);
+  font-family: var(--student-font-body);
+  font-weight: 700;
+  transition: background-color 120ms ease;
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-vocab-option:hover:not(:disabled),
+:is(.student-theme, body:has(.student-theme)) .student-vocab-option:focus-visible {
+  background: var(--student-kraft);
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-vocab-option[aria-pressed="true"] {
+  background: var(--student-washi);
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-vocab-option:disabled {
+  cursor: not-allowed;
+  opacity: 0.72;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :is(.student-theme, body:has(.student-theme)) .student-vocab-option { transition: none; }
+}
+
+/* 3D Vertical Flip Card Container */
+:is(.student-theme, body:has(.student-theme)) .student-flashcard-viewport {
+  perspective: 1200px;
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-flashcard-flipper {
+  position: relative;
+  width: 100%;
+  transition: transform 500ms cubic-bezier(0.4, 0.2, 0.2, 1);
+  transform-style: preserve-3d;
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-flashcard-flipper.is-flipped {
+  transform: rotateX(180deg);
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-flashcard-face {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-flashcard-back {
+  transform: rotateX(180deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :is(.student-theme, body:has(.student-theme)) .student-flashcard-flipper {
+    transition: none;
+  }
+}
+
+/* Standalone Library and compact, scannable Unit collection entries. */
+:is(.student-theme, body:has(.student-theme)) .student-vocab-library-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding-top: 0.25rem;
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-vocab-library-stats > div {
+  display: flex;
+  flex-direction: column;
+  min-width: 7.5rem;
+  gap: 0.125rem;
+  padding: 0.5rem 1rem;
+  border-left: 2px solid var(--border);
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-vocab-library-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-vocab,
+:is(.student-theme, body:has(.student-theme)) .student-vocab-hub-header,
+:is(.student-theme, body:has(.student-theme)) .student-vocab-hub-tabs,
+:is(.student-theme, body:has(.student-theme)) .student-vocab-hub-tab {
+  min-width: 0;
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-vocab {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: clip;
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-vocab-list-header,
+:is(.student-theme, body:has(.student-theme)) .student-vocab-list-legend {
+  min-width: 0;
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-vocab-hub-tabs {
+  flex: 1 1 auto;
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-vocab-hub-tab {
+  white-space: normal;
+  text-align: center;
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-vocab-collection {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-vocab-word-row-definition {
+  overflow-wrap: anywhere;
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-vocab-word-row-tools {
+  min-width: 0;
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-vocab-word-row-actions button {
+  min-height: 2.5rem;
+  min-width: 2.5rem;
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-vocab-answer-image {
+  display: grid;
+  place-items: center;
+  margin: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--student-paper);
+  min-height: 10rem;
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-vocab-answer-image img {
+  width: 100%;
+  max-height: 17rem;
+  object-fit: contain;
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-vocab-answer-copy {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+@media (min-width: 700px) {
+  :is(.student-theme, body:has(.student-theme)) .student-vocab-collection {
+    flex-direction: row;
+  }
+
+  :is(.student-theme, body:has(.student-theme)) .student-vocab-collection-cover {
+    flex: 0 0 7rem;
+    width: 7rem;
+    height: auto;
+    min-height: 10rem;
+  }
+
+  :is(.student-theme, body:has(.student-theme)) .student-vocab-answer--illustrated {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+  }
+}
+
+@media (max-width: 699px) {
+  :is(.student-theme, body:has(.student-theme)) .student-vocab-library-grid {
+    grid-template-columns: 1fr;
+  }
+
+  :is(.student-theme, body:has(.student-theme)) .student-vocab-word-row-cta {
+    flex: 1 1 100%;
+  }
+
+  :is(.student-theme, body:has(.student-theme)) .student-vocab-word-row {
+    padding: 1rem;
+    border-radius: 1rem;
+  }
+
+  :is(.student-theme, body:has(.student-theme)) .student-vocab-list-header {
+    gap: 0.625rem;
+  }
+
+  :is(.student-theme, body:has(.student-theme)) .student-vocab-list-header h3 {
+    font-size: 1rem;
+    line-height: 1.35;
+  }
+
+  :is(.student-theme, body:has(.student-theme)) .student-vocab-list-legend {
+    gap: 0.5rem 0.75rem;
+    font-size: 0.6875rem;
+  }
+
+  :is(.student-theme, body:has(.student-theme)) .student-vocab-word-row-layout {
+    gap: 0.875rem;
+  }
+
+  :is(.student-theme, body:has(.student-theme)) .student-vocab-word-row-term {
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid color-mix(in srgb, var(--border) 65%, transparent);
+  }
+
+  :is(.student-theme, body:has(.student-theme)) .student-vocab-word-row-term h3 {
+    font-size: 1.125rem;
+    line-height: 1.25;
+  }
+
+  :is(.student-theme, body:has(.student-theme)) .student-vocab-word-row-pronunciation {
+    margin-top: 0.625rem;
+    display: grid;
+    gap: 0.25rem;
+  }
+
+  :is(.student-theme, body:has(.student-theme)) .student-vocab-word-row-pronunciation button {
+    width: fit-content;
+    max-width: 100%;
+    min-height: 2rem;
+    padding-block: 0.25rem;
+  }
+
+  :is(.student-theme, body:has(.student-theme)) .student-vocab-word-row-definition {
+    display: grid;
+    gap: 0.35rem;
+  }
+
+  :is(.student-theme, body:has(.student-theme)) .student-vocab-word-row-definition p {
+    overflow-wrap: anywhere;
+  }
+
+  :is(.student-theme, body:has(.student-theme)) .student-vocab-word-row-tools {
+    min-height: 3.75rem;
+    padding-top: 0.875rem;
+  }
+
+  :is(.student-theme, body:has(.student-theme)) .student-vocab-word-row-image {
+    width: 4.5rem;
+    height: 3.75rem;
+    border-radius: 0.75rem;
+  }
+
+  :is(.student-theme, body:has(.student-theme)) .student-vocab-word-row-actions {
+    margin-left: auto;
+    gap: 0.25rem;
+  }
+
+  :is(.student-theme, body:has(.student-theme)) .student-vocab-word-thumbnail {
+    flex-basis: 4.5rem;
+    width: 4.5rem;
+    height: 4.5rem;
+  }
+}
+
+/* Learn runtime: one action slot for Chưa nhớ/Đã thuộc or the FSRS ratings. */
+:is(.student-theme, body:has(.student-theme)) .student-vocab-study {
+  min-width: 0;
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-vocab-study-modes {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-vocab-study-mode {
+  min-width: 0;
+  min-height: 2.75rem;
+  padding-inline: 0.5rem;
+  white-space: normal;
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-vocab-study-exercise {
+  min-width: 0;
+  min-height: 18rem;
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-vocab-study-actions {
+  width: 100%;
+  min-width: 0;
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-vocab-study-action-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-vocab-study-action {
+  min-width: 0;
+  min-height: 3.5rem;
+  padding: 0.75rem;
+  text-align: center;
+  white-space: normal;
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-vocab-rating-panel {
+  min-width: 0;
+  width: 100%;
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-vocab-rating-option {
+  min-width: 0;
+  min-height: 4.25rem;
+  padding: 0.75rem 0.5rem;
+  text-align: center;
+}
+
+@media (max-width: 699px) {
+  :is(.student-theme, body:has(.student-theme)) .student-vocab-hub-header {
+    align-items: flex-start;
+  }
+
+  :is(.student-theme, body:has(.student-theme)) .student-vocab-hub-tabs {
+    order: 3;
+    flex-basis: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+  }
+
+  :is(.student-theme, body:has(.student-theme)) .student-vocab-hub-tab {
+    min-height: 2.75rem;
+    padding-inline: 0.5rem;
+  }
+
+  :is(.student-theme, body:has(.student-theme)) .student-vocab-study-modes {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  :is(.student-theme, body:has(.student-theme)) .student-vocab-study .student-flashcard-flipper > div {
+    min-height: 18rem;
+    padding: 1rem;
+  }
+
+  :is(.student-theme, body:has(.student-theme)) .student-vocab-study-exercise {
+    min-height: 15rem;
+  }
+}

@@ -1,7 +1,11 @@
 package e_learning.server.vocabulary.teacher.dto;
 
+import e_learning.server.vocabulary.enums.VocabularyDifficulty;
+import e_learning.server.vocabulary.enums.VocabularyPartOfSpeech;
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import jakarta.validation.Valid;
 
 public record CreateVocabularyWordRequest(
         @NotBlank(message = "Từ vựng tiếng Anh không được để trống")
@@ -12,19 +16,22 @@ public record CreateVocabularyWordRequest(
         @Size(max = 255, message = "Nghĩa tiếng Việt tối đa 255 ký tự")
         String meaningVi,
 
-        @Size(max = 100, message = "Phiên âm tối đa 100 ký tự")
-        String pronunciation,
+        @Size(max = 100, message = "Phiên âm Anh tối đa 100 ký tự")
+        String pronunciationUk,
 
-        @Size(max = 30, message = "Từ loại tối đa 30 ký tự")
-        String partOfSpeech,
+        @Size(max = 100, message = "Phiên âm Mỹ tối đa 100 ký tự")
+        String pronunciationUs,
+
+        VocabularyPartOfSpeech partOfSpeech,
 
         String exampleSentence,
         String exampleMeaningVi,
 
-        @Size(max = 20, message = "Độ khó tối đa 20 ký tự")
-        String difficulty,
+        VocabularyDifficulty difficulty,
 
         String audioUrl,
-        String imageUrl
+        String imageUrl,
+
+        @Valid VocabularyRelatedTermsDto relatedTerms
 ) {}
 

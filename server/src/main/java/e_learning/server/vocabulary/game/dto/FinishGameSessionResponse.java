@@ -1,6 +1,7 @@
 package e_learning.server.vocabulary.game.dto;
 
 import e_learning.server.vocabulary.game.enums.GameType;
+import e_learning.server.vocabulary.game.enums.PronunciationAccent;
 import lombok.Builder;
 
 import java.math.BigDecimal;
@@ -12,6 +13,7 @@ public record FinishGameSessionResponse(
         Long unitId,
         String unitName,
         GameType gameType,
+        PronunciationAccent accent,
         int totalWords,
         int firstTryCorrect,
         BigDecimal accuracyPercentage,

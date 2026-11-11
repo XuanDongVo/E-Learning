@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 240" role="img" aria-label="Omelette on a plate">
+ <rect width="320" height="240" rx="20" fill="#f7f2e5"/>
+ <ellipse cx="161" cy="132" rx="120" ry="83" fill="#fefaf1" stroke="#7e776a" stroke-width="5"/>
+ <ellipse cx="161" cy="132" rx="101" ry="67" fill="#f3eadb" stroke="#dbcbb8" stroke-width="3"/>
+ <path d="M82 127q10-45 67-44 68-13 91 41-18 51-80 54-67-3-78-51z" fill="#e5b55a" stroke="#a57734" stroke-width="5"/>
+ <path d="M110 105q29 18 40 3M165 146q23-22 48-12" stroke="#c98e37" stroke-width="5" fill="none" stroke-linecap="round"/>
+ <g fill="#6b8e67"><ellipse cx="121" cy="140" rx="11" ry="5" transform="rotate(35 121 140)"/><ellipse cx="195" cy="111" rx="13" ry="5" transform="rotate(-20 195 111)"/><ellipse cx="174" cy="164" rx="10" ry="4" transform="rotate(15 174 164)"/></g>
+</svg>

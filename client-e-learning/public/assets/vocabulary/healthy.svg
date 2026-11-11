@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 240" role="img" aria-label="Apple and heart symbol for healthy living">
+ <rect width="320" height="240" rx="20" fill="#f7f2e5"/>
+ <path d="M155 81c-29-24-79-17-86 23-11 58 40 105 84 90 46 16 99-33 89-88-6-39-55-49-87-25z" fill="#c85a32" stroke="#713e30" stroke-width="5"/>
+ <path d="M154 86q-8-30 17-48" stroke="#5d563e" stroke-width="7" fill="none" stroke-linecap="round"/>
+ <path d="M164 64q14-31 48-23-8 30-48 23z" fill="#80a578" stroke="#40654d" stroke-width="4"/>
+ <path d="M156 141c-9-20-33-19-38-1-7 23 35 43 38 47 5-7 43-24 38-47-5-18-30-19-38 1z" fill="#f7f2e5"/>
+ <path d="M74 73q-12 12-15 30M242 166q16-13 18-28" stroke="#d6b567" fill="none" stroke-width="5" stroke-linecap="round"/>
+</svg>

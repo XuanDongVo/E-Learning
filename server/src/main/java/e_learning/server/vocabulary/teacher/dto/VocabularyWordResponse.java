@@ -1,6 +1,9 @@
 package e_learning.server.vocabulary.teacher.dto;
 
 import e_learning.server.vocabulary.entity.VocabularyWord;
+import e_learning.server.vocabulary.enums.VocabularyDifficulty;
+import e_learning.server.vocabulary.enums.VocabularyPartOfSpeech;
+import e_learning.server.vocabulary.enums.VocabularyStatus;
 
 import java.time.LocalDateTime;
 
@@ -10,15 +13,17 @@ public record VocabularyWordResponse(
         String unitName,
         String word,
         String meaningVi,
-        String pronunciation,
-        String partOfSpeech,
+        String pronunciationUk,
+        String pronunciationUs,
+        VocabularyPartOfSpeech partOfSpeech,
         String exampleSentence,
         String exampleMeaningVi,
         String audioUrl,
         String imageUrl,
-        String difficulty,
+        VocabularyRelatedTermsDto relatedTerms,
+        VocabularyDifficulty difficulty,
         Integer displayOrder,
-        String status,
+        VocabularyStatus status,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {
@@ -29,12 +34,14 @@ public record VocabularyWordResponse(
                 entity.getUnit() != null ? entity.getUnit().getName() : null,
                 entity.getWord(),
                 entity.getMeaningVi(),
-                entity.getPronunciation(),
+                entity.getPronunciationUk(),
+                entity.getPronunciationUs(),
                 entity.getPartOfSpeech(),
                 entity.getExampleSentence(),
                 entity.getExampleMeaningVi(),
                 entity.getAudioUrl(),
                 entity.getImageUrl(),
+                VocabularyRelatedTermsDto.fromValue(entity.getRelatedTerms()),
                 entity.getDifficulty(),
                 entity.getDisplayOrder(),
                 entity.getStatus(),

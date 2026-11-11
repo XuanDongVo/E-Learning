@@ -3,7 +3,7 @@
 import { Link } from "@/i18n/navigation";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, BookOpen, ListTree, RotateCcw, Tag, Zap } from "lucide-react";
+import { ArrowLeft, BookOpen, BookMarked, ChevronRight, ListTree, RotateCcw, Tag, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FullPageState } from "@/components/feedback";
 import { studentUnitService } from "@/services/student-unit.service";
@@ -160,6 +160,24 @@ export function UnitDetailView({ unitId, mascotSlot }: UnitDetailViewProps) {
           )}
         </div>
       </PaperSurface>
+
+      <div className="student-soft-panel flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="space-y-1">
+            <h2 className="student-card-title flex items-center gap-2 text-foreground">
+              <BookMarked className="h-5 w-5 text-primary" aria-hidden="true" />
+              Bộ từ vựng Unit {label}
+            </h2>
+            <p className="student-body text-muted-foreground">
+              Xem và luyện bộ từ này trong Sổ tay từ vựng riêng.
+            </p>
+          </div>
+        </div>
+        <Link href={`/student/vocabulary/units/${unit.id}`}
+          className="student-control student-control--secondary inline-flex shrink-0 items-center justify-center gap-2 px-5">
+          Mở bộ từ <ChevronRight className="size-4" aria-hidden="true" />
+        </Link>
+      </div>
 
       <div className="space-y-3">
         <ScrapbookHeading as="h2" className="student-section-title text-foreground">

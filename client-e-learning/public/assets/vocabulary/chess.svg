@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 240" role="img" aria-label="Chess board and pawn illustration">
+ <rect width="320" height="240" rx="20" fill="#f7f2e5"/>
+ <rect x="49" y="80" width="222" height="128" rx="8" fill="#dbc8a4" stroke="#433c34" stroke-width="4"/>
+ <g fill="#b38e61"><path d="M53 84h53v40H53zm106 0h54v40h-54zm-53 40h53v40h-53zm107 0h54v40h-54zm-160 40h53v40H53zm106 0h54v40h-54z"/></g>
+ <path d="M141 168c7-13 11-23 11-38-13-6-21-20-15-34 4-11 14-18 26-18s22 7 26 18c6 14-2 28-15 34 0 15 5 25 12 38" fill="#4a6b82" stroke="#334a57" stroke-width="5" stroke-linejoin="round"/>
+ <ellipse cx="164" cy="78" rx="21" ry="20" fill="#4a6b82" stroke="#334a57" stroke-width="5"/>
+ <path d="M128 170h72l9 14h-90z" fill="#4a6b82" stroke="#334a57" stroke-width="5" stroke-linejoin="round"/>
+ <path d="M67 53q34-23 60-4M208 46q29-4 44 19" fill="none" stroke="#c85a32" stroke-width="4" stroke-linecap="round"/>
+</svg>

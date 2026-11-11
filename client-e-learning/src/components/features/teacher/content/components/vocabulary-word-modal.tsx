@@ -8,14 +8,22 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Volume2, Sparkles, AlertCircle } from "lucide-react";
-import type {
-  VocabularyWord,
-  CreateVocabularyWordRequest,
-  UpdateVocabularyWordRequest,
+import { Volume2, Sparkles, AlertCircle, ImagePlus, X } from "lucide-react";
+import {
+  emptyVocabularyRelatedTerms,
+  type VocabularyWord,
+  type CreateVocabularyWordRequest,
+  type UpdateVocabularyWordRequest,
+  type VocabularyPartOfSpeech,
+  type VocabularyRelatedTerms,
 } from "@/types/vocabulary";
+import { speakVocabulary } from "@/lib/vocabulary-pronunciation";
+import { contentService } from "@/services/content.service";
+import { VocabularyRelatedTermsEditor } from "./vocabulary-related-terms-editor";
+import { VocabularyFlashcardPreview } from "./vocabulary-flashcard-preview";
 
 interface VocabularyWordModalProps {
+  unitId: number;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   word?: VocabularyWord | null;
@@ -24,6 +32,7 @@ interface VocabularyWordModalProps {
 }
 
 export function VocabularyWordModal({
+  unitId,
   open,
   onOpenChange,
   word,
@@ -32,42 +41,68 @@ export function VocabularyWordModal({
 }: VocabularyWordModalProps) {
   const [wordText, setWordText] = useState("");
   const [meaningVi, setMeaningVi] = useState("");
-  const [pronunciation, setPronunciation] = useState("");
-  const [partOfSpeech, setPartOfSpeech] = useState("Noun");
+  const [pronunciationUk, setPronunciationUk] = useState("");
+  const [pronunciationUs, setPronunciationUs] = useState("");
+  const [partOfSpeech, setPartOfSpeech] = useState<VocabularyPartOfSpeech | "">("");
   const [difficulty, setDifficulty] = useState<"EASY" | "MEDIUM" | "HARD">("EASY");
   const [exampleSentence, setExampleSentence] = useState("");
   const [exampleMeaningVi, setExampleMeaningVi] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
+  const [relatedTerms, setRelatedTerms] = useState<VocabularyRelatedTerms>(emptyVocabularyRelatedTerms);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (word) {
       setWordText(word.word);
       setMeaningVi(word.meaningVi);
-      setPronunciation(word.pronunciation || "");
-      setPartOfSpeech(word.partOfSpeech || "Noun");
+      setPronunciationUk(word.pronunciationUk || "");
+      setPronunciationUs(word.pronunciationUs || "");
+      setPartOfSpeech(word.partOfSpeech || "");
       setDifficulty(word.difficulty || "EASY");
       setExampleSentence(word.exampleSentence || "");
       setExampleMeaningVi(word.exampleMeaningVi || "");
+      setImageUrl(word.imageUrl || "");
+      setRelatedTerms({
+        wordFamilies: [...(word.relatedTerms?.wordFamilies ?? [])],
+        synonyms: [...(word.relatedTerms?.synonyms ?? [])],
+        antonyms: [...(word.relatedTerms?.antonyms ?? [])],
+      });
     } else {
       setWordText("");
       setMeaningVi("");
-      setPronunciation("");
-      setPartOfSpeech("Noun");
+      setPronunciationUk("");
+      setPronunciationUs("");
+      setPartOfSpeech("");
       setDifficulty("EASY");
       setExampleSentence("");
       setExampleMeaningVi("");
+      setImageUrl("");
+      setRelatedTerms(emptyVocabularyRelatedTerms());
     }
     setError(null);
   }, [word, open]);
 
   // Pronounce word using Web Speech API
-  const handleSpeak = () => {
-    if (!wordText.trim() || typeof window === "undefined" || !("speechSynthesis" in window)) return;
-    window.speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(wordText.trim());
-    u.lang = "en-US";
-    u.rate = 0.9;
-    window.speechSynthesis.speak(u);
+  const handleSpeak = () => speakVocabulary(wordText, "US");
+
+  const handleUploadImage = async (file?: File) => {
+    if (!file) return;
+    if (!file.type.startsWith("image/") || file.size > 5 * 1024 * 1024) {
+      setError("Chỉ hỗ trợ ảnh có kích thước không quá 5 MB.");
+      return;
+    }
+    setIsUploadingImage(true);
+    setError(null);
+    try {
+      const response = await contentService.uploadMedia(file);
+      if (!response.data?.url) throw new Error("Tải ảnh lên thành công nhưng chưa nhận được đường dẫn ảnh.");
+      setImageUrl(response.data.url);
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "Không tải được ảnh.");
+    } finally {
+      setIsUploadingImage(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -86,11 +121,15 @@ export function VocabularyWordModal({
       await onSubmit({
         word: wordText.trim(),
         meaningVi: meaningVi.trim(),
-        pronunciation: pronunciation.trim() || undefined,
-        partOfSpeech: partOfSpeech.trim() || undefined,
+        pronunciationUk: pronunciationUk.trim() || undefined,
+        pronunciationUs: pronunciationUs.trim() || undefined,
+        partOfSpeech: partOfSpeech || undefined,
         difficulty,
         exampleSentence: exampleSentence.trim() || undefined,
         exampleMeaningVi: exampleMeaningVi.trim() || undefined,
+        imageUrl: imageUrl || undefined,
+        audioUrl: word?.audioUrl ?? undefined,
+        relatedTerms,
       });
       onOpenChange(false);
     } catch (err: unknown) {
@@ -101,7 +140,7 @@ export function VocabularyWordModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[calc(100dvh-2rem)] overflow-y-auto sm:max-w-[560px]">
+      <DialogContent className="max-h-[calc(100dvh-2rem)] overflow-y-auto sm:max-w-[900px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-card-title font-bold text-foreground">
             <Sparkles className="size-5 text-primary" />
@@ -116,7 +155,11 @@ export function VocabularyWordModal({
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div className="border-b border-border pb-2">
+            <h3 className="text-body-sm font-extrabold text-foreground">1. Thông tin từ vựng và phát âm</h3>
+            <p className="text-label text-muted-foreground">Chỉ từ tiếng Anh và nghĩa tiếng Việt là bắt buộc.</p>
+          </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {/* English Word */}
             <div className="space-y-1 sm:col-span-2">
@@ -131,7 +174,7 @@ export function VocabularyWordModal({
                     className="flex min-h-10 items-center gap-1 rounded-lg px-2 text-label font-semibold text-primary hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                   >
                     <Volume2 className="h-3.5 w-3.5" />
-                    <span>Nghe phát âm</span>
+                    <span>Nghe US</span>
                   </button>
                 )}
               </div>
@@ -161,16 +204,34 @@ export function VocabularyWordModal({
               />
             </div>
 
-            {/* Pronunciation (IPA) */}
+            {/* IPA variants: reference text only; audio is synthesized by the browser. */}
             <div className="space-y-1">
               <label className="text-label font-bold text-foreground">
-                Phiên âm IPA (tùy chọn)
+                IPA Anh–Anh (UK, tùy chọn)
               </label>
+              <button type="button" disabled={!wordText.trim()} onClick={() => speakVocabulary(wordText, "UK")}
+                className="inline-flex min-h-10 items-center gap-1 text-label font-semibold text-primary hover:underline disabled:opacity-50">
+                <Volume2 className="size-4" /> Nghe UK
+              </button>
               <input
                 type="text"
-                placeholder="Ví dụ: /ˈpensl keɪs/"
-                value={pronunciation}
-                onChange={(e) => setPronunciation(e.target.value)}
+                placeholder="IPA en-GB"
+                value={pronunciationUk}
+                onChange={(e) => setPronunciationUk(e.target.value)}
+                className="min-h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-body-sm text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-label font-bold text-foreground">IPA Anh–Mỹ (US, tùy chọn)</label>
+              <button type="button" disabled={!wordText.trim()} onClick={() => speakVocabulary(wordText, "US")}
+                className="inline-flex min-h-10 items-center gap-1 text-label font-semibold text-primary hover:underline disabled:opacity-50">
+                <Volume2 className="size-4" /> Nghe US
+              </button>
+              <input
+                type="text"
+                placeholder="IPA en-US"
+                value={pronunciationUs}
+                onChange={(e) => setPronunciationUs(e.target.value)}
                 className="min-h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-body-sm text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
               />
             </div>
@@ -182,15 +243,16 @@ export function VocabularyWordModal({
               </label>
               <select
                 value={partOfSpeech}
-                onChange={(e) => setPartOfSpeech(e.target.value)}
+                onChange={(e) => setPartOfSpeech(e.target.value as VocabularyPartOfSpeech | "")}
                 className="min-h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-body-sm text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
               >
-                <option value="Noun">Danh từ (Noun)</option>
-                <option value="Verb">Động từ (Verb)</option>
-                <option value="Adjective">Tính từ (Adjective)</option>
-                <option value="Adverb">Trạng từ (Adverb)</option>
-                <option value="Preposition">Giới từ (Preposition)</option>
-                <option value="Phrase">Cụm từ (Phrase)</option>
+                <option value="">Chưa phân loại</option>
+                <option value="NOUN">Danh từ (Noun)</option>
+                <option value="VERB">Động từ (Verb)</option>
+                <option value="ADJECTIVE">Tính từ (Adjective)</option>
+                <option value="ADVERB">Trạng từ (Adverb)</option>
+                <option value="PREPOSITION">Giới từ (Preposition)</option>
+                <option value="PHRASE">Cụm từ (Phrase)</option>
               </select>
             </div>
 
@@ -250,6 +312,39 @@ export function VocabularyWordModal({
             </div>
           </div>
 
+          <section className="space-y-3 border-t border-border pt-4">
+            <div>
+              <h3 className="text-body-sm font-extrabold text-foreground">2. Hình minh họa</h3>
+              <p className="text-label text-muted-foreground">Không bắt buộc. Ảnh được tải lên qua Media hiện có.</p>
+            </div>
+            <div className="flex flex-wrap items-center gap-3">
+              <label className="inline-flex min-h-10 cursor-pointer items-center gap-2 rounded-lg border border-border bg-card px-3 text-label font-semibold text-primary hover:bg-muted">
+                <ImagePlus className="size-4" /> {isUploadingImage ? "Đang tải ảnh..." : imageUrl ? "Thay ảnh" : "Chọn ảnh"}
+                <input type="file" accept="image/*" disabled={isUploadingImage || isPending}
+                  onChange={(event) => { void handleUploadImage(event.target.files?.[0]); event.target.value = ""; }} className="sr-only" />
+              </label>
+              {imageUrl && <button type="button" disabled={isUploadingImage || isPending} onClick={() => setImageUrl("")}
+                className="inline-flex min-h-10 items-center gap-1 text-label font-semibold text-destructive hover:underline">
+                <X className="size-4" /> Bỏ ảnh khỏi từ này
+              </button>}
+            </div>
+          </section>
+
+          <section className="space-y-3 border-t border-border pt-4">
+            <div>
+              <h3 className="text-body-sm font-extrabold text-foreground">3. Từ liên quan</h3>
+              <p className="text-label text-muted-foreground">Tùy chọn · hỗ trợ tìm từ đã có hoặc thêm trực tiếp. Từ liên quan không tự trở thành một VocabularyWord mới.</p>
+            </div>
+            <VocabularyRelatedTermsEditor unitId={unitId} currentWordId={word?.id} value={relatedTerms} onChange={setRelatedTerms}
+              disabled={isPending || isUploadingImage} />
+          </section>
+
+          <section className="border-t border-border pt-4">
+            <VocabularyFlashcardPreview word={wordText} meaningVi={meaningVi} pronunciationUk={pronunciationUk}
+              pronunciationUs={pronunciationUs} partOfSpeech={partOfSpeech} exampleSentence={exampleSentence}
+              exampleMeaningVi={exampleMeaningVi} imageUrl={imageUrl} relatedTerms={relatedTerms} />
+          </section>
+
           <DialogFooter className="gap-2">
             <button
               type="button"
@@ -260,7 +355,7 @@ export function VocabularyWordModal({
             </button>
             <button
               type="submit"
-              disabled={isPending}
+              disabled={isPending || isUploadingImage}
               className="min-h-10 rounded-lg bg-primary px-5 py-2 text-body-sm font-bold text-primary-foreground transition-colors hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-50"
             >
               {isPending ? "Đang lưu..." : word ? "Cập nhật" : "Thêm từ vựng"}

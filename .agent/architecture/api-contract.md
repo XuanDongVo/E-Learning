@@ -67,6 +67,45 @@ Assignment exposes show_answers_after_submit. No Release Answers endpoint.
 - Class roster responses contain ACTIVE members only.
 
 ## Contract rules
+
+### Student Vocabulary FSRS foundation (Phase 02, 2026-11-10)
+
+- `GET /v1/student/vocabulary/overview` (Phase 03 Library): visible published
+  Unit collections for the authenticated Student, each with `unitId,code,name,
+  coverUrl,displayOrder,totalCount,newCount,dueCount,learnedCount`. Counts include
+  ACTIVE words only; `dueCount` excludes never-reviewed NEW words. Students with no
+  visible Units receive an empty list. This is a read-only projection, not a new
+  global vocabulary/FSRS entity or a global review-session endpoint.
+- `GET /v1/student/vocabulary/units/{unitId}/cards`: Student-only, ACTIVE words
+  in a published Unit belonging to the authenticated Student's active-class Grade.
+  Returns Flashcard content plus per-word `state`, `dueAt`, `reviewCount`, `due`.
+  A word with no progress is `NEW`, `due=true`, `dueAt=null`.
+- `POST /v1/student/vocabulary/words/{wordId}/reviews`: body must include a UUID
+  `requestId` (idempotent retry token) and `rating` (AGAIN/HARD/GOOD/EASY).
+  Server computes FSRS `Card`, persists progress and immutable log in one
+  transaction, and returns `wordId,requestId,rating,state,reviewedAt,dueAt,reviewCount`.
+  A repeat of the same requestId/word/rating returns the prior result;
+  reusing its ID for another rating/word returns `409 VOCABULARY_REVIEW_REQUEST_CONFLICT`.
+  A premature review returns `409 VOCABULARY_REVIEW_NOT_DUE`.
+- Vocabulary errors use structured `AppException` with 400/404/409 status and
+  server detail in `ApiResponse.message`. Validation and invalid JSON are 400.
+  Student progress is independent of games, Activity and XP/Streak.
+  See `plans/VOCABULARY_FSRS_PHASE_2_SPEC.md`.
+
+### Teacher Vocabulary Content (Phase 01, 2026-11-10)
+
+- `GET /v1/content/vocabulary/search?unitId={id}&q={text}&limit={n}` searches
+  existing ACTIVE words in the same Grade and returns copy-only authoring
+  candidates with ID, word, meaning, part of speech and Unit context.
+- Create/update/bulk/list/get VocabularyWord payloads support `relatedTerms`:
+  `wordFamilies`, `synonyms`, `antonyms`, each a list of `{term, meaningVi?, partOfSpeech?}`.
+  Related Terms are inline JSONB values, not independent VocabularyWords.
+- When a create/bulk request omits `relatedTerms`, the server stores three empty
+  arrays. When update omits it, existing data is preserved; explicit empty lists
+  clear it. Responses always contain all three lists.
+- The pre-existing quick text bulk-create route is unchanged. CSV file import
+  remains out of scope. See `plans/VOCABULARY_CONTENT_PHASE_1_SPEC.md`.
+
 - AssignmentQuestion has no position. The canonical Assignment Builder and student runtime use Composition section/item/member position; question_id ASC is only legacy backfill/compatibility order.
 - AssignmentQuestion has no position.
 - Activity preview does not create ActivitySession state.
@@ -136,3 +175,7 @@ The server calculates and persists the Assignment score on submit/timeout regard
 - `GET /v1/student/gamification/leaderboard/honors`: all-time lifetime XP champion and longest-ever Streak champion among active students; no influencer/ambassador badge.
 - `GET /v1/student/gamification/leaderboard/recent-activity?limit=8`: latest terminal `ActivitySession` rows (COMPLETED or GAME_OVER), status, Activity name, optional earned PRACTICE XP; no fabricated level-up or share events.
 - Authenticated student only. Student ID from JWT for self rank; no client mutation or XP claims. No new migration.
+# Vocabulary FSRS review preview (2026-11-11)
+
+- `GET /v1/student/vocabulary/words/{wordId}/review-preview` requires an authenticated Student with access to the word's published Unit; returns `{ wordId, dueAtByRating: { AGAIN, HARD, GOOD, EASY } }` in the standard `ApiResponse` envelope. It does not mutate review progress.
+- Initial HARD/GOOD/EASY ratings persist 6h/12h/1d respectively and initialize Java-FSRS Card state. Subsequent review timestamps come from the library. Learn `Học lại` stays client-only; Review `AGAIN` is a server rating.

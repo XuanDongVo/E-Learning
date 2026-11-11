@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
-import type { GameType, GameMode } from "@/types/vocabulary-game";
+import type { GameType, GameMode, PronunciationAccent } from "@/types/vocabulary-game";
 import { studentGameService } from "@/services/student/student-game.service";
 import { BubblePopGame } from "./bubble-pop-game";
 import { WordRainGame } from "./word-rain-game";
@@ -15,9 +15,10 @@ interface GameRunnerProps {
   unitId: number;
   gameType: GameType;
   mode: GameMode;
+  accent: PronunciationAccent;
 }
 
-export function GameRunner({ unitId, gameType, mode }: GameRunnerProps) {
+export function GameRunner({ unitId, gameType, mode, accent }: GameRunnerProps) {
   const router = useRouter();
   const [gameKey, setGameKey] = useState(0);
 
@@ -28,8 +29,8 @@ export function GameRunner({ unitId, gameType, mode }: GameRunnerProps) {
     error,
     refetch,
   } = useQuery({
-    queryKey: ["student", "game", "session", unitId, gameType, mode, gameKey],
-    queryFn: () => studentGameService.startSession({ unitId, gameType, mode }),
+    queryKey: ["student", "game", "session", unitId, gameType, mode, accent, gameKey],
+    queryFn: () => studentGameService.startSession({ unitId, gameType, mode, accent }),
     refetchOnWindowFocus: false,
     retry: 1,
   });
@@ -93,6 +94,7 @@ export function GameRunner({ unitId, gameType, mode }: GameRunnerProps) {
         sessionId={sessionData.sessionId}
         unitName={sessionData.unitName}
         words={sessionData.words}
+        accent={sessionData.accent}
         onReplay={handleReplay}
       />
     );
@@ -104,6 +106,7 @@ export function GameRunner({ unitId, gameType, mode }: GameRunnerProps) {
       sessionId={sessionData.sessionId}
       unitName={sessionData.unitName}
       words={sessionData.words}
+      accent={sessionData.accent}
       mode={mode}
       onReplay={handleReplay}
     />

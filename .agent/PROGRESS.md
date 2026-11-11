@@ -1,5 +1,135 @@
 # Project Progress
 
+## 2026-11-11 Vocabulary mobile term-list layout
+
+- Reworked the mobile vocabulary term cards into clearer term, definition and
+  image/action sections, with tighter spacing and wrapped long content.
+- Compact mobile list heading/legend and preserved desktop row layout.
+- Production build passes; affected component lint has warnings only.
+
+## 2026-11-11 Vocabulary mobile layout pass
+
+- Removed the Vocabulary hub's mobile horizontal overflow by wrapping the unit tabs,
+  changing Learn modes to a 2x2 grid, and adding min-width/text wrapping guards to
+  vocabulary cards, IPA controls and list rows.
+- Frontend production build passes. Full ESLint still reports unrelated pre-existing
+  repository warnings/errors; affected Vocabulary files have no lint errors.
+
+## 2026-11-11 Vocabulary Learn responsive interaction polish
+
+- Each Learn mode now hides Chưa nhớ/Đã thuộc until its own activity completes (reveal, choose, check, or listen/self-practice); switching modes clears the ready state and resets its interaction.
+- The four FSRS choices replace the same action slot instead of rendering as an additional panel. Responsive Student-only mode tabs, action buttons and rating controls cover mobile and desktop. Review's backend/queue contract remains unchanged in this pass.
+- Manual device/browser screen checks remain recommended before deployment.
+
+## Vocabulary Phase 03 refresh — Student Library + Grade 7 fixture (2026-11-10)
+
+- Added standalone `/student/vocabulary` Library, searchable/filterable published
+  Unit collections and authenticated `/v1/student/vocabulary/overview` summary
+  counts (ACTIVE only; NEW and due reviewed cards distinguished). Canonical
+  learning route is `/student/vocabulary/units/{unitId}`; old route still works.
+- Unit Detail now only links to the vocabulary module. Browse is a compact
+  searchable word list; the Flashcard reverse has tailored with-image/text-only
+  layouts and broken-image fallback. Student scrapbook theme and Teacher admin
+  styles remain isolated. FSRS review scheduling and game rules are unchanged.
+- Updated Grade 7 `07_vocabulary.sql` to comply with enum constraint and added
+  curated demo IPA, related terms and local illustrations for a subset of words.
+  No DELETE/TRUNCATE/data-reset action was performed; teacher-edited nonempty
+  fields are preserved on fixture re-run.
+- Verify Next.js/ESLint, Maven focused tests, real Postgres seed execution and
+  device UI once project dependencies/services are available.
+
+## Vocabulary Phase 03 — Student Notebook UI (2026-11-10)
+
+- Added Unit detail entry and `/student/units/{unitId}/vocabulary` with four
+  Student-only surfaces: Xem từ, Học, Ôn tập, Chơi. Uses the canonical Indie
+  Illustrated Scrapbook primitives and scoped CSS; no Teacher visual changes.
+- Implemented UK/US Flashcard with optional image, examples and related terms;
+  due-first recommended Learn queue, self-chosen word previews and due-only Review.
+- Self-rating HARD/GOOD/EASY/AGAIN writes exclusively to Phase 02 FSRS API with
+  stable requestId retries, server error messages and cache refresh. MC/typing/
+  optional browser speech-recognition practice is deliberately non-scheduling.
+- Unit game links require explicit US/UK and preserve existing game modes and
+  runner. No changes to Game Hub, Activity XP or Gamification.
+- Static source review and `git diff --check` done. Next.js dependencies are
+  unavailable here, so TS/ESLint/build, live browser and device/voice checks
+  remain necessary before deployment. See `plans/VOCABULARY_STUDENT_PHASE_3_SPEC.md`.
+
+
+## Vocabulary Learn / Review — Phase 02 backend foundation (2026-11-10)
+
+- Pinned Java-FSRS 1.0.0 and added Flyway V57: per-student/word cards (full FSRS
+  JSON + due UTC) and immutable review events with unique request UUIDs.
+- Added Student-only Unit-card listing and server-authoritative due-review API,
+  active-class Grade/Unit publication checks, student-level request serialization,
+  replay-safe rating idempotency and early-review conflict protection.
+- Teacher hard-deletion of words already studied is blocked with an explanatory
+  409; inactive words remain historically tracked but disappear from study cards.
+- Replaced Vocabulary `IllegalArgumentException` with typed `AppException` codes,
+  improved field-validation messages, exposed exact API messages in the FE,
+  fixed `emptyVocabularyRelatedTerms` value import, and added error toasts.
+- Typed FE transport is ready for a future Student Learn / Practice / Review UI.
+  No CSV files, Game XP, Activity, Gamification, or UI learning workflow changed.
+- `git diff --check` passes. Focused Maven tests remain blocked by unavailable
+  Spring Boot 4.1.1 parent POM network resolution. JS dependencies must be
+  installed before typecheck/lint; Postgres Flyway verification pending.
+
+
+## Vocabulary Content Enhancement — Phase 01 (2026-11-10)
+
+- Extended `VocabularyWord` with structured non-null JSONB `relatedTerms` in
+  Flyway V56, keeping existing rows and the UK/US and enum foundation intact.
+- Added typed value objects, nested request validation and server normalization
+  (empty lists, whitespace, max 20/group, max lengths, case-insensitive dedup
+  within each group). Missing data in legacy update requests does not erase
+  existing Related Terms; explicit empty lists clear them.
+- Added Teacher-only `GET /v1/content/vocabulary/search` for copy-only candidate
+  suggestions from ACTIVE words in the same Grade. No auto-creation or links.
+- Updated shared Teacher Vocabulary create/edit form with Word Family, Synonyms,
+  Antonyms, inline search/manual addition, meaning and POS editing, Media image
+  upload/removal, UK/US listen buttons, and live two-sided Flashcard preview.
+- Added focused backend tests for normalization, response mapping, update
+  preservation, explicit clear, and candidate search contract.
+- CSV file import, Student Learn/Practice, FSRS, and Game/Gamification changes
+  remain deferred. Existing quick-paste input still works.
+- Validation: `git diff --check` passes. Maven tests could not start because
+  Maven Central parent POM is unavailable in the executor; ESLint is unavailable
+  because frontend node_modules are not installed. Run both and verify the
+  Teacher layout at mobile/tablet/desktop in an installed environment before merge.
+
+
+## Vocabulary foundation: typed metadata, US/UK pronunciation and game selection (2026-11-10)
+
+- Based on `feature/question-bank-csv-import-phase1`, isolated on
+  `feature/vocabulary-uk-us-enums-game-accent` before starting the future Learn/Review/FSRS work.
+- Vocabulary now has distinct optional `pronunciationUk` and `pronunciationUs` IPA
+  values and typed Java enums for `partOfSpeech`, `difficulty` and `status`.
+  Create/update/bulk, teacher response, filters, game DTOs, UI types and word editor
+  use the same values. Legacy audio URL columns remain for backward compatibility;
+  spoken audio in this feature uses the browser's speech synthesis.
+- Flyway V55 adds IPA fields, a constrained US/UK session accent and a stable set
+  of word IDs for each game session; existing word classes are normalized to
+  uppercase before enforcing their enum constraint. The old unclassified
+  `pronunciation` database column remains intact; IPA cannot be safely labeled
+  UK or US without verifying the original source. Populate new IPA variants via
+  teacher content editing as reference data becomes available.
+- Game select now requires an explicit US/UK pronunciation choice; the accent is
+  sent to/persisted by the session and used for synthesized speech and IPA
+  rendering in Bubble Pop, Word Rain and the result screen. Device voice quality
+  depends on available local/browser voices; no audio uploads required.
+- `UnitVocabularySection` now reads the paginated API correctly (removed
+  undeclared variables), handles errors and out-of-range pages, shows both IPA
+  variants and warns based on **active** vocabulary count rather than total count.
+- Finish-game processing uses the session's initial word IDs instead of the
+  current ACTIVE list. Legacy in-progress sessions fall back to the previous
+  lookup. Unknown/duplicate submitted answer IDs are rejected.
+- Validation: `git diff --check` passes. Maven compile is blocked because this
+  execution environment cannot resolve Spring Boot parent POM from Maven Central;
+  frontend dependencies are not installed, so typecheck/lint/build cannot run
+  here. Database migration requires review against any existing nonstandard
+  `part_of_speech` strings before production deployment.
+- Not included yet: vocabulary flashcards, spaced repetition/FSRS, synonym and
+  antonym models, pronunciation scoring, or a new Game Hub architecture.
+
 ## Teacher Assignment portfolio summary (2026-11-09)
 
 - Replaced the Assignment list's placeholder Summary Cards with a real,
@@ -408,3 +538,4 @@
 - Connected Student Rewards UI to real read-only XP/Streak ranking endpoints with 50 displayed students, deterministic self rank including out-of-top-50 card; time filters on XP only.
 - Replaced mock Honors with 2 server-backed honors (lifetime XP, longest Streak), and recent activity with terminal ActivitySessions.
 - No ranking table migration. Runtime PostgreSQL verification, backend Maven, frontend lint/build, and authenticated E2E not yet run.
+- **2026-11-11 Vocabulary Learn refactor:** NEW-word dynamic queue (five unique retry words), continuous selectable Word/Choice/Typing/Pronunciation modes, Chưa nhớ next-mode loop, Đã thuộc rating panel, local Học lại (no FSRS write), HARD/GOOD/EASY backend FSRS write and initial 6h/12h/1d policy with non-mutating review preview endpoint. Student Browse/Teacher/Game are intentionally outside refactor. Verification is limited by unavailable frontend dependencies and inaccessible Maven Central in this execution environment.

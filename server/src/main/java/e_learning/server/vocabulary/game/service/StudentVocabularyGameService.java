@@ -16,12 +16,14 @@ import e_learning.server.grades.repository.GradeRepository;
 import e_learning.server.user.entity.User;
 import e_learning.server.user.repository.UserRepository;
 import e_learning.server.vocabulary.entity.VocabularyWord;
+import e_learning.server.vocabulary.enums.VocabularyStatus;
 import e_learning.server.vocabulary.game.dto.*;
 import e_learning.server.vocabulary.game.entity.VocabularyGameAnswer;
 import e_learning.server.vocabulary.game.entity.VocabularyGameSession;
 import e_learning.server.vocabulary.game.enums.GameMode;
 import e_learning.server.vocabulary.game.enums.GameSessionStatus;
 import e_learning.server.vocabulary.game.enums.GameType;
+import e_learning.server.vocabulary.game.enums.PronunciationAccent;
 import e_learning.server.vocabulary.game.repository.VocabularyGameAnswerRepository;
 import e_learning.server.vocabulary.game.repository.VocabularyGameSessionRepository;
 import e_learning.server.vocabulary.repository.VocabularyWordRepository;
@@ -68,7 +70,7 @@ public class StudentVocabularyGameService {
     public List<GameUnitSummaryDto> getUnitsByGrade(Long gradeId) {
         List<Unit> units = unitRepository.findAllByGradeIdAndStatusOrderByDisplayOrderAsc(gradeId, e_learning.server.content.common.enums.ContentStatus.PUBLISHED);
         return units.stream().map(u -> {
-            long count = vocabularyWordRepository.countByUnitIdAndStatus(u.getId(), "ACTIVE");
+            long count = vocabularyWordRepository.countByUnitIdAndStatus(u.getId(), VocabularyStatus.ACTIVE);
             String coverUrl = null;
             if (u.getCoverMediaId() != null) {
                 try {
@@ -105,7 +107,7 @@ public class StudentVocabularyGameService {
         Unit unit = unitRepository.findById(request.unitId())
                 .orElseThrow(() -> new AppException(ErrorCode.UNIT_NOT_FOUND));
 
-        List<VocabularyWord> words = vocabularyWordRepository.findByUnitIdAndStatusOrderByDisplayOrderAsc(unit.getId(), "ACTIVE");
+        List<VocabularyWord> words = vocabularyWordRepository.findByUnitIdAndStatusOrderByDisplayOrderAsc(unit.getId(), VocabularyStatus.ACTIVE);
         if (words.isEmpty()) {
             throw new AppException(ErrorCode.INVALID_REQUEST);
         }
@@ -117,8 +119,10 @@ public class StudentVocabularyGameService {
                 .unit(unit)
                 .gameType(request.gameType())
                 .mode(mode)
+                .accent(request.accent() != null ? request.accent() : PronunciationAccent.US)
                 .status(GameSessionStatus.IN_PROGRESS)
                 .totalWords(words.size())
+                .wordIds(new ArrayList<>(words.stream().map(VocabularyWord::getId).toList()))
                 .build();
 
         session = gameSessionRepository.save(session);
@@ -140,11 +144,11 @@ public class StudentVocabularyGameService {
                     .id(vw.getId())
                     .word(vw.getWord())
                     .meaningVi(vw.getMeaningVi())
-                    .pronunciation(vw.getPronunciation())
-                    .partOfSpeech(vw.getPartOfSpeech())
+                    .pronunciationUk(vw.getPronunciationUk())
+                    .pronunciationUs(vw.getPronunciationUs())
+                    .partOfSpeech(vw.getPartOfSpeech() != null ? vw.getPartOfSpeech().name() : null)
                     .exampleSentence(vw.getExampleSentence())
                     .exampleMeaningVi(vw.getExampleMeaningVi())
-                    .audioUrl(vw.getAudioUrl())
                     .imageUrl(vw.getImageUrl())
                     .distractors(distractors)
                     .build());
@@ -159,6 +163,7 @@ public class StudentVocabularyGameService {
                 .unitCode(unit.getCode())
                 .gameType(session.getGameType())
                 .mode(session.getMode())
+                .accent(session.getAccent())
                 .words(playWords)
                 .build();
     }
@@ -180,17 +185,30 @@ public class StudentVocabularyGameService {
         Map<Long, WordAnswerResultDto> answersMap = new HashMap<>();
         if (request.answers() != null) {
             for (WordAnswerResultDto ans : request.answers()) {
-                answersMap.put(ans.wordId(), ans);
+                if (ans == null || ans.wordId() == null || answersMap.putIfAbsent(ans.wordId(), ans) != null) {
+                    throw new AppException(ErrorCode.INVALID_REQUEST);
+                }
             }
         }
 
-        List<VocabularyWord> unitWords = vocabularyWordRepository.findByUnitIdAndStatusOrderByDisplayOrderAsc(session.getUnit().getId(), "ACTIVE");
+        List<Long> sessionWordIds = session.getWordIds();
+        // Allow sessions created before the snapshot migration to finish.
+        if (sessionWordIds.isEmpty()) {
+            sessionWordIds = vocabularyWordRepository.findByUnitIdAndStatusOrderByDisplayOrderAsc(
+                    session.getUnit().getId(), VocabularyStatus.ACTIVE).stream().map(VocabularyWord::getId).toList();
+        }
+        Map<Long, VocabularyWord> wordsById = vocabularyWordRepository.findAllById(sessionWordIds).stream()
+                .collect(Collectors.toMap(VocabularyWord::getId, vw -> vw));
+        if (!wordsById.keySet().containsAll(sessionWordIds) || !sessionWordIds.containsAll(answersMap.keySet())) {
+            throw new AppException(ErrorCode.INVALID_REQUEST);
+        }
+        List<VocabularyWord> unitWords = sessionWordIds.stream().map(wordsById::get).toList();
 
         for (VocabularyWord vw : unitWords) {
             WordAnswerResultDto ans = answersMap.get(vw.getId());
             boolean firstTry = ans != null && Boolean.TRUE.equals(ans.firstTryCorrect());
-            int attempts = ans != null && ans.attemptsCount() != null ? ans.attemptsCount() : 1;
-            int responseTime = ans != null ? ans.responseTimeMs() : 0;
+            int attempts = ans != null && ans.attemptsCount() != null ? Math.max(1, ans.attemptsCount()) : 1;
+            int responseTime = ans != null && ans.responseTimeMs() != null ? Math.max(0, ans.responseTimeMs()) : 0;
 
             VocabularyGameAnswer gameAnswer = VocabularyGameAnswer.builder()
                     .session(session)
@@ -208,8 +226,8 @@ public class StudentVocabularyGameService {
                         .id(vw.getId())
                         .word(vw.getWord())
                         .meaningVi(vw.getMeaningVi())
-                        .pronunciation(vw.getPronunciation())
-                        .audioUrl(vw.getAudioUrl())
+                        .pronunciationUk(vw.getPronunciationUk())
+                        .pronunciationUs(vw.getPronunciationUs())
                         .firstTryCorrect(true)
                         .build());
             } else {
@@ -218,8 +236,8 @@ public class StudentVocabularyGameService {
                         .id(vw.getId())
                         .word(vw.getWord())
                         .meaningVi(vw.getMeaningVi())
-                        .pronunciation(vw.getPronunciation())
-                        .audioUrl(vw.getAudioUrl())
+                        .pronunciationUk(vw.getPronunciationUk())
+                        .pronunciationUs(vw.getPronunciationUs())
                         .firstTryCorrect(false)
                         .build());
             }
@@ -251,6 +269,7 @@ public class StudentVocabularyGameService {
                 .unitId(session.getUnit().getId())
                 .unitName(session.getUnit().getName())
                 .gameType(session.getGameType())
+                .accent(session.getAccent())
                 .totalWords(totalWords)
                 .firstTryCorrect(firstTryCount)
                 .accuracyPercentage(accuracy)

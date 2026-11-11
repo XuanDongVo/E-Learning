@@ -1,4 +1,4 @@
-package e_learning.server.vocabulary.value;
+package e_learning.server.vocabulary.entity;
 
 import java.util.List;
 

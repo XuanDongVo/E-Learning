@@ -6,8 +6,8 @@ import e_learning.server.vocabulary.enums.VocabularyDifficulty;
 import e_learning.server.vocabulary.enums.VocabularyPartOfSpeech;
 import e_learning.server.vocabulary.enums.VocabularyStatus;
 import e_learning.server.vocabulary.teacher.dto.VocabularyWordResponse;
-import e_learning.server.vocabulary.value.RelatedTerm;
-import e_learning.server.vocabulary.value.VocabularyRelatedTerms;
+import e_learning.server.vocabulary.entity.RelatedTerm;
+import e_learning.server.vocabulary.entity.VocabularyRelatedTerms;
 import org.junit.jupiter.api.Test;
 import java.util.List;
 

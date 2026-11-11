@@ -5,7 +5,7 @@ import e_learning.server.vocabulary.enums.VocabularyPartOfSpeech;
 import e_learning.server.vocabulary.teacher.dto.RelatedTermDto;
 import e_learning.server.vocabulary.teacher.dto.VocabularyRelatedTermsDto;
 import e_learning.server.vocabulary.teacher.service.VocabularyRelatedTermsNormalizer;
-import e_learning.server.vocabulary.value.VocabularyRelatedTerms;
+import e_learning.server.vocabulary.entity.VocabularyRelatedTerms;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;

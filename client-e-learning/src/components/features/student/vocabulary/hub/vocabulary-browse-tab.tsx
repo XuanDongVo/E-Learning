@@ -76,7 +76,7 @@ export function VocabularyBrowseTab({
   }, [cards, browseFilter, searchTerm]);
 
   return (
-    <div className="mx-auto w-full max-w-4xl space-y-6 px-4 py-2 sm:px-6">
+    <div className="space-y-6 ">
       {/* Flashcards (Ôn tập tập trung, lật 3D trên/dưới) */}
       {visibleBrowseCards.length > 0 && (
         <VocabularyFlashcard
@@ -140,12 +140,12 @@ export function VocabularyBrowseTab({
       </div>
 
       {/* List header */}
-      <div className="flex flex-col gap-2 text-xs font-medium text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+      <div className="student-vocab-list-header flex flex-col gap-2 text-xs font-medium text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
         <h3 className="student-card-title text-foreground text-sm">
           Thuật ngữ trong phần này ({visibleBrowseCards.length})
         </h3>
 
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="student-vocab-list-legend flex flex-wrap items-center gap-3">
           <span className="flex items-center gap-1 student-typewriter">
             <BookOpen className="size-3.5" />
             Chi tiết

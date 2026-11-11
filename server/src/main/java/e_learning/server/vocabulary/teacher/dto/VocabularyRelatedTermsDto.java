@@ -1,6 +1,6 @@
 package e_learning.server.vocabulary.teacher.dto;
 
-import e_learning.server.vocabulary.value.VocabularyRelatedTerms;
+import e_learning.server.vocabulary.entity.VocabularyRelatedTerms;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;

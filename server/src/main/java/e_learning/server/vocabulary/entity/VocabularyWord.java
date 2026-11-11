@@ -4,7 +4,6 @@ import e_learning.server.content.unit.entity.Unit;
 import e_learning.server.vocabulary.enums.VocabularyDifficulty;
 import e_learning.server.vocabulary.enums.VocabularyPartOfSpeech;
 import e_learning.server.vocabulary.enums.VocabularyStatus;
-import e_learning.server.vocabulary.value.VocabularyRelatedTerms;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;

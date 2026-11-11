@@ -120,13 +120,53 @@
 :is(.student-theme, body:has(.student-theme)) .student-vocab-library-grid {
   display: grid;
   gap: 1rem;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-vocab,
+:is(.student-theme, body:has(.student-theme)) .student-vocab-hub-header,
+:is(.student-theme, body:has(.student-theme)) .student-vocab-hub-tabs,
+:is(.student-theme, body:has(.student-theme)) .student-vocab-hub-tab {
+  min-width: 0;
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-vocab {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: clip;
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-vocab-list-header,
+:is(.student-theme, body:has(.student-theme)) .student-vocab-list-legend {
+  min-width: 0;
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-vocab-hub-tabs {
+  flex: 1 1 auto;
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-vocab-hub-tab {
+  white-space: normal;
+  text-align: center;
 }
 
 :is(.student-theme, body:has(.student-theme)) .student-vocab-collection {
   display: flex;
   flex-direction: column;
   min-width: 0;
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-vocab-word-row-definition {
+  overflow-wrap: anywhere;
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-vocab-word-row-tools {
+  min-width: 0;
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-vocab-word-row-actions button {
+  min-height: 2.5rem;
+  min-width: 2.5rem;
 }
 
 :is(.student-theme, body:has(.student-theme)) .student-vocab-answer-image {
@@ -177,6 +217,77 @@
     flex: 1 1 100%;
   }
 
+  :is(.student-theme, body:has(.student-theme)) .student-vocab-word-row {
+    padding: 1rem;
+    border-radius: 1rem;
+  }
+
+  :is(.student-theme, body:has(.student-theme)) .student-vocab-list-header {
+    gap: 0.625rem;
+  }
+
+  :is(.student-theme, body:has(.student-theme)) .student-vocab-list-header h3 {
+    font-size: 1rem;
+    line-height: 1.35;
+  }
+
+  :is(.student-theme, body:has(.student-theme)) .student-vocab-list-legend {
+    gap: 0.5rem 0.75rem;
+    font-size: 0.6875rem;
+  }
+
+  :is(.student-theme, body:has(.student-theme)) .student-vocab-word-row-layout {
+    gap: 0.875rem;
+  }
+
+  :is(.student-theme, body:has(.student-theme)) .student-vocab-word-row-term {
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid color-mix(in srgb, var(--border) 65%, transparent);
+  }
+
+  :is(.student-theme, body:has(.student-theme)) .student-vocab-word-row-term h3 {
+    font-size: 1.125rem;
+    line-height: 1.25;
+  }
+
+  :is(.student-theme, body:has(.student-theme)) .student-vocab-word-row-pronunciation {
+    margin-top: 0.625rem;
+    display: grid;
+    gap: 0.25rem;
+  }
+
+  :is(.student-theme, body:has(.student-theme)) .student-vocab-word-row-pronunciation button {
+    width: fit-content;
+    max-width: 100%;
+    min-height: 2rem;
+    padding-block: 0.25rem;
+  }
+
+  :is(.student-theme, body:has(.student-theme)) .student-vocab-word-row-definition {
+    display: grid;
+    gap: 0.35rem;
+  }
+
+  :is(.student-theme, body:has(.student-theme)) .student-vocab-word-row-definition p {
+    overflow-wrap: anywhere;
+  }
+
+  :is(.student-theme, body:has(.student-theme)) .student-vocab-word-row-tools {
+    min-height: 3.75rem;
+    padding-top: 0.875rem;
+  }
+
+  :is(.student-theme, body:has(.student-theme)) .student-vocab-word-row-image {
+    width: 4.5rem;
+    height: 3.75rem;
+    border-radius: 0.75rem;
+  }
+
+  :is(.student-theme, body:has(.student-theme)) .student-vocab-word-row-actions {
+    margin-left: auto;
+    gap: 0.25rem;
+  }
+
   :is(.student-theme, body:has(.student-theme)) .student-vocab-word-thumbnail {
     flex-basis: 4.5rem;
     width: 4.5rem;
@@ -199,7 +310,7 @@
   min-width: 0;
   min-height: 2.75rem;
   padding-inline: 0.5rem;
-  white-space: nowrap;
+  white-space: normal;
 }
 
 :is(.student-theme, body:has(.student-theme)) .student-vocab-study-exercise {
@@ -239,14 +350,25 @@
 }
 
 @media (max-width: 699px) {
+  :is(.student-theme, body:has(.student-theme)) .student-vocab-hub-header {
+    align-items: flex-start;
+  }
+
+  :is(.student-theme, body:has(.student-theme)) .student-vocab-hub-tabs {
+    order: 3;
+    flex-basis: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+  }
+
+  :is(.student-theme, body:has(.student-theme)) .student-vocab-hub-tab {
+    min-height: 2.75rem;
+    padding-inline: 0.5rem;
+  }
+
   :is(.student-theme, body:has(.student-theme)) .student-vocab-study-modes {
-    grid-auto-flow: column;
-    grid-auto-columns: minmax(7rem, max-content);
-    grid-template-columns: none;
-    overflow-x: auto;
-    overscroll-behavior-inline: contain;
-    padding-block: 0.25rem;
-    scrollbar-width: thin;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   :is(.student-theme, body:has(.student-theme)) .student-vocab-study .student-flashcard-flipper > div {

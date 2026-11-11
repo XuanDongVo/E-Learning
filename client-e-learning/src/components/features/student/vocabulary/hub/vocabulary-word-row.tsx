@@ -57,13 +57,13 @@ export function VocabularyWordRow({
 
   return (
     <article
-      className="group relative rounded-xl border-2 border-border/75 bg-card p-5 shadow-2xs transition-all duration-200 hover:border-primary/40 hover:shadow-xs"
+      className="student-vocab-word-row group relative min-w-0 rounded-xl border-2 border-border/75 bg-card p-5 shadow-2xs transition-all duration-200 hover:border-primary/40 hover:shadow-xs"
     >
-      <div className="flex flex-col gap-4 md:flex-row md:items-start md:gap-6">
+      <div className="student-vocab-word-row-layout flex flex-col gap-4 md:flex-row md:items-start md:gap-6">
         {/* CỘT 1: TỪ VỰNG & PHIÊN ÂM */}
-        <div className="md:w-56 md:shrink-0 lg:w-64">
-          <div className="flex items-baseline gap-2">
-            <h3 className="student-card-title text-foreground group-hover:text-primary transition-colors text-lg">
+        <div className="student-vocab-word-row-term min-w-0 md:w-56 md:shrink-0 lg:w-64">
+          <div className="flex min-w-0 flex-wrap items-baseline gap-2">
+            <h3 className="student-card-title min-w-0 break-words text-lg text-foreground transition-colors group-hover:text-primary">
               {card.word}
             </h3>
             {posFormatted && (
@@ -73,7 +73,7 @@ export function VocabularyWordRow({
             )}
           </div>
 
-          <div className="mt-2 space-y-1.5 text-xs text-muted-foreground student-typewriter">
+          <div className="student-vocab-word-row-pronunciation mt-2 space-y-1.5 text-xs text-muted-foreground student-typewriter">
             {hasBothDistinct ? (
               <>
                 <button
@@ -82,11 +82,11 @@ export function VocabularyWordRow({
                     e.stopPropagation();
                     handleSpeak("UK");
                   }}
-                  className="flex items-center gap-1.5 rounded-md px-1.5 py-0.5 -ml-1.5 transition-colors hover:bg-muted hover:text-foreground"
+                  className="flex max-w-full flex-wrap items-center gap-1.5 rounded-md px-1.5 py-0.5 -ml-1.5 text-left transition-colors hover:bg-muted hover:text-foreground"
                   title="Nghe phát âm UK"
                 >
                   <span className="text-[11px] font-semibold text-muted-foreground">UK:</span>
-                  <span>{uk}</span>
+                  <span className="break-all">{uk}</span>
                   <Volume2
                     className={`size-3.5 shrink-0 ${
                       activeAudio === "UK" ? "text-primary animate-pulse" : "text-muted-foreground"
@@ -99,11 +99,11 @@ export function VocabularyWordRow({
                     e.stopPropagation();
                     handleSpeak("US");
                   }}
-                  className="flex items-center gap-1.5 rounded-md px-1.5 py-0.5 -ml-1.5 transition-colors hover:bg-muted hover:text-foreground"
+                  className="flex max-w-full flex-wrap items-center gap-1.5 rounded-md px-1.5 py-0.5 -ml-1.5 text-left transition-colors hover:bg-muted hover:text-foreground"
                   title="Nghe phát âm US"
                 >
                   <span className="text-[11px] font-semibold text-muted-foreground">US:</span>
-                  <span>{us}</span>
+                  <span className="break-all">{us}</span>
                   <Volume2
                     className={`size-3.5 shrink-0 ${
                       activeAudio === "US" ? "text-primary animate-pulse" : "text-muted-foreground"
@@ -118,11 +118,11 @@ export function VocabularyWordRow({
                   e.stopPropagation();
                   handleSpeak("US");
                 }}
-                className="inline-flex items-center gap-1.5 rounded-md px-1.5 py-0.5 -ml-1.5 transition-colors hover:bg-muted hover:text-foreground"
+                className="inline-flex max-w-full flex-wrap items-center gap-1.5 rounded-md px-1.5 py-0.5 -ml-1.5 text-left transition-colors hover:bg-muted hover:text-foreground"
                 title="Nghe phát âm (US)"
               >
                 {defaultUsPhonetic ? (
-                  <span>{defaultUsPhonetic}</span>
+                  <span className="break-all">{defaultUsPhonetic}</span>
                 ) : (
                   <span className="text-[11px] text-muted-foreground">Phát âm US</span>
                 )}
@@ -137,7 +137,7 @@ export function VocabularyWordRow({
         </div>
 
         {/* CỘT 2: NGHĨA & CÂU VÍ DỤ SONG NGỮ */}
-        <div className="flex-1 space-y-1.5">
+        <div className="student-vocab-word-row-definition min-w-0 flex-1 space-y-1.5">
           <p className="student-body font-bold text-foreground md:text-base leading-snug">
             {card.meaningVi}
           </p>
@@ -157,9 +157,9 @@ export function VocabularyWordRow({
 
         {/* CỘT 3: ẢNH MINH HỌA & ACTION (NẾU CÓ) */}
         {(hasImage || onToggleFavorite || onToggleMastered) && (
-          <div className="flex flex-row items-center justify-between gap-3 pt-2 border-t border-border/50 md:flex-col md:items-end md:justify-start md:border-none md:pt-0 md:w-32 md:shrink-0">
+          <div className="student-vocab-word-row-tools flex flex-row items-center justify-between gap-3 pt-2 border-t border-border/50 md:flex-col md:items-end md:justify-start md:border-none md:pt-0 md:w-32 md:shrink-0">
             {hasImage && (
-              <div className="h-20 w-24 overflow-hidden rounded-xl bg-background border border-border shadow-2xs">
+              <div className="student-vocab-word-row-image h-20 w-24 overflow-hidden rounded-xl bg-background border border-border shadow-2xs">
                 <img
                   src={card.imageUrl!}
                   alt={`Minh họa từ: ${card.word}`}
@@ -170,7 +170,7 @@ export function VocabularyWordRow({
               </div>
             )}
 
-            <div className="flex items-center gap-1 text-muted-foreground">
+            <div className="student-vocab-word-row-actions flex items-center gap-1 text-muted-foreground">
               {onToggleFavorite && (
                 <button
                   type="button"

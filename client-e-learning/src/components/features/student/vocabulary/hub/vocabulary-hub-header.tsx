@@ -21,7 +21,7 @@ export function VocabularyHubHeader({
   onSelectTab,
 }: VocabularyHubHeaderProps) {
   return (
-    <header className="relative flex items-center justify-between py-3">
+    <header className="student-vocab-hub-header flex flex-wrap items-center gap-3 py-3">
       <div className="flex items-center">
         <Link
           href="/student/vocabulary"
@@ -35,7 +35,7 @@ export function VocabularyHubHeader({
       <nav
         role="tablist"
         aria-label="Chế độ học từ vựng"
-        className="absolute left-1/2 -translate-x-1/2 inline-flex items-center gap-1 p-1 "
+        className="student-vocab-hub-tabs inline-flex min-w-0 items-center justify-center gap-1 p-1"
       >
         {TAB_ITEMS.map(({ key, label, icon: Icon }) => {
           const isActive = currentTab === key;
@@ -47,7 +47,7 @@ export function VocabularyHubHeader({
               role="tab"
               aria-selected={isActive}
               onClick={() => onSelectTab(key)}
-              className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 student-control inline-flex items-center gap-2 px-4 ${
+              className={`student-vocab-hub-tab inline-flex min-w-0 items-center justify-center gap-2 rounded-xl px-4 py-2 student-control ${
                 isActive ? "student-filter-active" : "student-control--quiet"
               }`}
             >
@@ -70,7 +70,7 @@ export function VocabularyHubHeader({
         })}
       </nav>
 
-      <div className="h-9 w-9" aria-hidden="true" />
+      <div className="h-9 w-9 shrink-0" aria-hidden="true" />
     </header>
   );
 }

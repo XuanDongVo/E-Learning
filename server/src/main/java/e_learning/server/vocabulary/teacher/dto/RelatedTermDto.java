@@ -1,7 +1,7 @@
 package e_learning.server.vocabulary.teacher.dto;
 
 import e_learning.server.vocabulary.enums.VocabularyPartOfSpeech;
-import e_learning.server.vocabulary.value.RelatedTerm;
+import e_learning.server.vocabulary.entity.RelatedTerm;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 

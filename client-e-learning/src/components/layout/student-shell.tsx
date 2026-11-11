@@ -19,7 +19,6 @@ export function StudentShell({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    // Sửa flex -> flex flex-col, bỏ pb-16 thừa
     <div className="flex min-h-screen flex-col bg-background-app">
       <StudentNavbar />
       <main className="mx-auto w-full max-w-[1440px] flex-1 p-4 sm:p-5 lg:p-6">

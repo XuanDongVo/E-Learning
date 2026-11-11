@@ -1,10 +1,25 @@
 # Project Progress
 
+## 2026-11-11 Vocabulary mobile term-list layout
+
+- Reworked the mobile vocabulary term cards into clearer term, definition and
+  image/action sections, with tighter spacing and wrapped long content.
+- Compact mobile list heading/legend and preserved desktop row layout.
+- Production build passes; affected component lint has warnings only.
+
+## 2026-11-11 Vocabulary mobile layout pass
+
+- Removed the Vocabulary hub's mobile horizontal overflow by wrapping the unit tabs,
+  changing Learn modes to a 2x2 grid, and adding min-width/text wrapping guards to
+  vocabulary cards, IPA controls and list rows.
+- Frontend production build passes. Full ESLint still reports unrelated pre-existing
+  repository warnings/errors; affected Vocabulary files have no lint errors.
+
 ## 2026-11-11 Vocabulary Learn responsive interaction polish
 
 - Each Learn mode now hides Chưa nhớ/Đã thuộc until its own activity completes (reveal, choose, check, or listen/self-practice); switching modes clears the ready state and resets its interaction.
 - The four FSRS choices replace the same action slot instead of rendering as an additional panel. Responsive Student-only mode tabs, action buttons and rating controls cover mobile and desktop. Review's backend/queue contract remains unchanged in this pass.
-- Automated FE lint/build remains unavailable without frontend dependencies; manual screen checks are still required.
+- Manual device/browser screen checks remain recommended before deployment.
 
 ## Vocabulary Phase 03 refresh — Student Library + Grade 7 fixture (2026-11-10)
 

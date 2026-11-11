@@ -4,8 +4,8 @@ import e_learning.server.common.exception.AppException;
 import e_learning.server.common.exception.ErrorCode;
 import e_learning.server.vocabulary.teacher.dto.RelatedTermDto;
 import e_learning.server.vocabulary.teacher.dto.VocabularyRelatedTermsDto;
-import e_learning.server.vocabulary.value.RelatedTerm;
-import e_learning.server.vocabulary.value.VocabularyRelatedTerms;
+import e_learning.server.vocabulary.entity.RelatedTerm;
+import e_learning.server.vocabulary.entity.VocabularyRelatedTerms;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;

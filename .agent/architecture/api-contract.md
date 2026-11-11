@@ -175,3 +175,7 @@ The server calculates and persists the Assignment score on submit/timeout regard
 - `GET /v1/student/gamification/leaderboard/honors`: all-time lifetime XP champion and longest-ever Streak champion among active students; no influencer/ambassador badge.
 - `GET /v1/student/gamification/leaderboard/recent-activity?limit=8`: latest terminal `ActivitySession` rows (COMPLETED or GAME_OVER), status, Activity name, optional earned PRACTICE XP; no fabricated level-up or share events.
 - Authenticated student only. Student ID from JWT for self rank; no client mutation or XP claims. No new migration.
+# Vocabulary FSRS review preview (2026-11-11)
+
+- `GET /v1/student/vocabulary/words/{wordId}/review-preview` requires an authenticated Student with access to the word's published Unit; returns `{ wordId, dueAtByRating: { AGAIN, HARD, GOOD, EASY } }` in the standard `ApiResponse` envelope. It does not mutate review progress.
+- Initial HARD/GOOD/EASY ratings persist 6h/12h/1d respectively and initialize Java-FSRS Card state. Subsequent review timestamps come from the library. Learn `Học lại` stays client-only; Review `AGAIN` is a server rating.

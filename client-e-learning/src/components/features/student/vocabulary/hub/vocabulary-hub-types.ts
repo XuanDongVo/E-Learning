@@ -2,7 +2,6 @@ import { BookOpen, CalendarClock, Gamepad2, Layers3 } from "lucide-react";
 import type { StudentVocabularyStudyCard } from "@/types/student-vocabulary-review";
 
 export type HubTab = "browse" | "learn" | "review" | "games";
-export type StudyStep = "front" | "back" | "remembered" | "practice";
 
 export const TAB_ITEMS = [
   { key: "browse", label: "Xem từ", icon: BookOpen },

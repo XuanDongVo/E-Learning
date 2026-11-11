@@ -1,5 +1,17 @@
 # Vocabulary Phase 03 — Student Learn / Practice / Review UI (2026-11-10)
 
+## Learn refactor (2026-11-11) — supersedes the original Learn/Practice flow below
+
+- Browse remains unchanged. Learn operates only on NEW words. Review operates only on already-studied words with `due=true`.
+- Learn has four freely selectable modes for the **same current word**: Word/Flashcard, Multiple Choice, Typing Recall, Pronunciation. `Chưa nhớ` advances WORD → MULTIPLE_CHOICE → TYPING → PRONUNCIATION → WORD; manual tab selection is allowed.
+- `Đã thuộc` only opens the four-choice rating panel. `Học lại` queues the word locally without calling FSRS, and advances to another word. `HARD`/`GOOD`/`EASY` alone record the backend review, then advance after success.
+- Learn's dynamic queue contains all NEW Unit words, plus up to five unique retry words. When five retries are outstanding, cycle retries; otherwise take new words first. Neither a timer nor a mandatory number of completed practice modes is involved. A lone retry word can recur; each pass resets its mode to WORD. Persist transient ordering in sessionStorage and reconcile with server progress.
+- Initial FSRS graduation policy is HARD +6h, GOOD +12h, EASY +1d. The backend applies the initial due time and persists the full library Card state; subsequent reviews use Java-FSRS. `GET /v1/student/vocabulary/words/{wordId}/review-preview` previews the four ratings without writing progress. The client never invents schedule timestamps.
+- `AGAIN` remains available in Review and continues to be persisted through backend FSRS. Its future reset policy is deferred.
+- The retired standalone `vocabulary-flashcard.tsx` and `vocabulary-practice.tsx` were replaced by the shared hub Flashcard and inline mode components. Teacher UI, Unit Games, Activity and XP are unaffected.
+
+The original Learn/Practice behavior described below is historical context, not the active Learn contract.
+
 ## Phase 03 UI refresh — independent library, unchanged vocabulary ownership
 
 - Canonical entry `/student/vocabulary` is a standalone Student Library; Unit

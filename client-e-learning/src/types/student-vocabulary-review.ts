@@ -47,3 +47,8 @@ export interface VocabularyReviewResult {
   dueAt: string;
   reviewCount: number;
 }
+
+export interface VocabularyReviewPreview {
+  wordId: number;
+  dueAtByRating: Partial<Record<VocabularyFsrsRating, string>>;
+}

@@ -27,12 +27,16 @@ interface FlashcardSettings {
 
 interface VocabularyFlashcardProps {
   cards: StudentVocabularyStudyCard[];
+  mode?: "browse" | "study";
+  onReveal?: () => void;
   onToggleFavorite?: (wordId: number) => void;
   isFavorite?: (wordId: number) => boolean;
 }
 
 export function VocabularyFlashcard({
   cards = [],
+  mode = "browse",
+  onReveal,
   onToggleFavorite,
   isFavorite,
 }: VocabularyFlashcardProps) {
@@ -136,11 +140,12 @@ export function VocabularyFlashcard({
 
       if (e.code === "Space") {
         e.preventDefault();
+        onReveal?.();
         setIsFlipped((prev) => !prev);
-      } else if (e.code === "ArrowRight") {
+      } else if (mode === "browse" && e.code === "ArrowRight") {
         e.preventDefault();
         handleNext();
-      } else if (e.code === "ArrowLeft") {
+      } else if (mode === "browse" && e.code === "ArrowLeft") {
         e.preventDefault();
         handlePrev();
       }
@@ -148,7 +153,7 @@ export function VocabularyFlashcard({
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [handleNext, handlePrev]);
+  }, [handleNext, handlePrev, mode, onReveal]);
 
   // Xáo trộn
   const handleShuffle = () => {
@@ -184,7 +189,7 @@ export function VocabularyFlashcard({
         >
           {/* MẶT TRƯỚC (Front - Tiếng Anh) */}
           <div
-            onClick={() => setIsFlipped(true)}
+            onClick={() => { setIsFlipped(true); onReveal?.(); }}
             className={`w-full min-h-[380px] cursor-pointer rounded-2xl border-2 border-border/75 bg-card p-6 shadow-sm sm:p-8 flex flex-col justify-between transition-colors hover:border-primary/40 ${
               isFlipped
                 ? "student-flashcard-face pointer-events-none absolute inset-0"
@@ -218,14 +223,14 @@ export function VocabularyFlashcard({
                   <Star className="size-4" />
                 </button>
 
-                <button
+                {mode === "browse" && <button
                   type="button"
                   onClick={handleShuffle}
                   className="rounded-lg p-2 transition-colors hover:bg-muted hover:text-foreground"
                   title="Xáo trộn ngẫu nhiên"
                 >
                   <Shuffle className="size-4" />
-                </button>
+                </button>}
 
                 <button
                   type="button"
@@ -556,7 +561,7 @@ export function VocabularyFlashcard({
       </div>
 
       {/* Điều hướng từ trước/sau */}
-      <div className="flex flex-col items-center gap-1.5 text-muted-foreground pt-1">
+      {mode === "browse" && <div className="flex flex-col items-center gap-1.5 text-muted-foreground pt-1">
         <div className="flex items-center gap-4">
           <button
             type="button"
@@ -584,7 +589,7 @@ export function VocabularyFlashcard({
         <p className="student-typewriter text-[11px] text-muted-foreground">
           ← → chuyển từ · Space lật thẻ
         </p>
-      </div>
+      </div>}
     </div>
   );
 }

@@ -4,6 +4,7 @@ import type {
   RecordVocabularyReviewRequest,
   VocabularyReviewResult,
   StudentVocabularyUnitOverview,
+  VocabularyReviewPreview,
 } from "@/types/student-vocabulary-review";
 
 /** Student-only Vocabulary Library, Unit cards and FSRS transport. */
@@ -18,4 +19,6 @@ export const studentVocabularyReviewService = {
       method: "POST",
       body: JSON.stringify(payload),
     }),
+  previewReview: (wordId: number) =>
+    request<VocabularyReviewPreview>(`/v1/student/vocabulary/words/${wordId}/review-preview`),
 };

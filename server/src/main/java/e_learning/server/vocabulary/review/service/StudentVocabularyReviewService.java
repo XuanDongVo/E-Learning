@@ -23,8 +23,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.time.Duration;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import io.github.openspacedrepetition.Rating;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -37,6 +40,41 @@ public class StudentVocabularyReviewService {
     private final VocabularyWordRepository wordRepository;
     private final StudentVocabularyProgressRepository progressRepository;
     private final VocabularyReviewLogRepository reviewLogRepository;
+
+    /** First encounter is a product learning policy; later reviews use Java-FSRS. */
+    private Instant firstLearningDue(Instant reviewedAt, Rating rating) {
+        return switch (rating) {
+            case HARD -> reviewedAt.plus(Duration.ofHours(6));
+            case GOOD -> reviewedAt.plus(Duration.ofHours(12));
+            case EASY -> reviewedAt.plus(Duration.ofDays(1));
+            default -> null;
+        };
+    }
+
+    @Transactional(readOnly = true)
+    public VocabularyReviewPreviewResponse previewReview(Long studentId, Long wordId) {
+        VocabularyWord word = wordRepository.findById(wordId)
+                .filter(value -> value.getStatus() == VocabularyStatus.ACTIVE)
+                .orElseThrow(() -> new AppException(ErrorCode.VOCABULARY_WORD_NOT_FOUND));
+        studentUnitService.requireVisibleUnit(studentId, word.getUnit().getId());
+        var progress = progressRepository.findByStudentIdAndWordId(studentId, wordId).orElse(null);
+        Instant now = Instant.now();
+        if (progress != null && progress.getDueAt().isAfter(now)) {
+            throw new AppException(ErrorCode.VOCABULARY_REVIEW_NOT_DUE,
+                    "Từ này chưa đến lịch ôn. Vui lòng trở lại khi đến hạn.");
+        }
+        Card previous = progress == null ? Card.builder().due(now).build()
+                : Card.fromJson(progress.getCardJson());
+        var schedule = progress == null ? Scheduler.builder().learningSteps(new Duration[] {}).build()
+                : Scheduler.builder().build();
+        Map<Rating, Instant> times = new EnumMap<>(Rating.class);
+        for (Rating rating : Rating.values()) {
+            Instant firstDue = progress == null ? firstLearningDue(now, rating) : null;
+            times.put(rating, firstDue != null ? firstDue
+                    : schedule.reviewCard(new Card(previous), rating, now).card().getDue());
+        }
+        return new VocabularyReviewPreviewResponse(wordId, times);
+    }
 
     /** Published Unit collections only; no cross-Grade or unpublished vocabulary is exposed. */
     @Transactional(readOnly = true)
@@ -118,9 +156,15 @@ public class StudentVocabularyReviewService {
         // Never recalculate the FSRS algorithm ourselves; persist the complete library Card JSON.
         Card previousCard = progress == null ? Card.builder().due(reviewedAt).build()
                 : Card.fromJson(progress.getCardJson());
-        CardAndReviewLog scheduled = Scheduler.builder().build()
+        Scheduler scheduler = progress == null ? Scheduler.builder().learningSteps(new Duration[] {}).build()
+                : Scheduler.builder().build();
+        CardAndReviewLog scheduled = scheduler
                 .reviewCard(previousCard, request.rating(), reviewedAt);
         Card nextCard = scheduled.card();
+        if (progress == null) {
+            Instant firstDue = firstLearningDue(reviewedAt, request.rating());
+            if (firstDue != null) nextCard.setDue(firstDue);
+        }
         int count = progress == null ? 1 : progress.getReviewCount() + 1;
         if (progress == null) {
             progress = StudentVocabularyProgress.builder()

@@ -34,4 +34,10 @@ public class StudentVocabularyReviewController {
             @Valid @RequestBody RecordVocabularyReviewRequest request) {
         return ApiResponse.success(service.recordReview(Long.valueOf(jwt.getSubject()), wordId, request));
     }
+
+    @GetMapping("/words/{wordId}/review-preview")
+    public ApiResponse<VocabularyReviewPreviewResponse> preview(
+            @AuthenticationPrincipal Jwt jwt, @PathVariable Long wordId) {
+        return ApiResponse.success(service.previewReview(Long.valueOf(jwt.getSubject()), wordId));
+    }
 }

@@ -2,13 +2,12 @@
 
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { BookOpen, CheckCircle2 } from "lucide-react";
+import { BookOpen } from "lucide-react";
 import { FullPageState } from "@/components/feedback";
 import { PaperSurface } from "@/components/student-ui/paper-surface";
 import { studentUnitService } from "@/services/student/student-unit.service";
 import { studentVocabularyReviewService } from "@/services/student/student-vocabulary-review.service";
 import { QUERY_KEYS } from "@/services/query-keys";
-import type { StudentVocabularyStudyCard } from "@/types/student-vocabulary-review";
 import { VocabularyGamesPanel } from "./vocabulary-games-panel";
 import {
   VocabularyBrowseTab,
@@ -26,8 +25,6 @@ export function StudentVocabularyHub({
   initialTab?: HubTab;
 }) {
   const [tab, setTab] = useState<HubTab>(initialTab);
-  const [focusWordId, setFocusWordId] = useState<number | null>(null);
-  const [notice, setNotice] = useState("");
 
   const validUnitId = Number.isSafeInteger(unitId) && unitId > 0;
   const unitQuery = useQuery({
@@ -46,18 +43,10 @@ export function StudentVocabularyHub({
   const unit = unitQuery.data?.data;
   const cards = useMemo(() => cardsQuery.data?.data ?? [], [cardsQuery.data?.data]);
 
-  const newCards = useMemo(() => cards.filter((card) => card.state === "NEW"), [cards]);
   const dueCards = useMemo(() => cards.filter((card) => card.state !== "NEW" && card.due), [cards]);
-  const learnQueue = useMemo(() => [...dueCards, ...newCards], [dueCards, newCards]);
-
-  const queue = tab === "review" ? dueCards : learnQueue;
-  const focusedCard = focusWordId !== null ? cards.find((item) => item.wordId === focusWordId) : undefined;
-  const currentCard = focusedCard ?? queue[0];
 
   const pickTab = (next: HubTab) => {
     setTab(next);
-    setFocusWordId(null);
-    setNotice("");
   };
 
 
@@ -116,18 +105,6 @@ export function StudentVocabularyHub({
           tab={tab}
           unitId={unitId}
           cards={cards}
-          queue={queue}
-          currentCard={currentCard}
-          focusedCard={focusedCard}
-          onSelectCard={(item) => {
-            setFocusWordId(item.wordId);
-          }}
-          onClearFocus={() => setFocusWordId(null)}
-          onPickBrowseTab={() => pickTab("browse")}
-          onCardRecorded={(savedWord, dueAt) => {
-            setFocusWordId(null);
-           
-          }}
         />
       )}
 

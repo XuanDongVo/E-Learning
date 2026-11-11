@@ -69,6 +69,37 @@
   :is(.student-theme, body:has(.student-theme)) .student-vocab-option { transition: none; }
 }
 
+/* 3D Vertical Flip Card Container */
+:is(.student-theme, body:has(.student-theme)) .student-flashcard-viewport {
+  perspective: 1200px;
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-flashcard-flipper {
+  position: relative;
+  width: 100%;
+  transition: transform 500ms cubic-bezier(0.4, 0.2, 0.2, 1);
+  transform-style: preserve-3d;
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-flashcard-flipper.is-flipped {
+  transform: rotateX(180deg);
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-flashcard-face {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+:is(.student-theme, body:has(.student-theme)) .student-flashcard-back {
+  transform: rotateX(180deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :is(.student-theme, body:has(.student-theme)) .student-flashcard-flipper {
+    transition: none;
+  }
+}
+
 /* Standalone Library and compact, scannable Unit collection entries. */
 :is(.student-theme, body:has(.student-theme)) .student-vocab-library-stats {
   display: flex;
@@ -96,106 +127,6 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
-}
-
-:is(.student-theme, body:has(.student-theme)) .student-vocab-collection-cover {
-  height: 7rem;
-  width: 100%;
-}
-
-:is(.student-theme, body:has(.student-theme)) .student-vocab-collection-metrics {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem 0.875rem;
-}
-
-:is(.student-theme, body:has(.student-theme)) .student-vocab-collection-metrics > span {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-}
-
-:is(.student-theme, body:has(.student-theme)) .student-vocab-summary-strip {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem 1.125rem;
-  color: var(--muted-foreground);
-}
-
-:is(.student-theme, body:has(.student-theme)) .student-vocab-summary-strip strong {
-  color: var(--foreground);
-  font-variant-numeric: tabular-nums;
-}
-
-:is(.student-theme, body:has(.student-theme)) .student-vocab-word-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.625rem;
-}
-
-:is(.student-theme, body:has(.student-theme)) .student-vocab-word-row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 1rem;
-  padding: 0.875rem 1rem;
-}
-
-:is(.student-theme, body:has(.student-theme)) .student-vocab-word-row-content {
-  min-width: 0;
-  flex: 1 1 16rem;
-  overflow-wrap: anywhere;
-}
-
-:is(.student-theme, body:has(.student-theme)) .student-vocab-word-row-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem 1rem;
-}
-
-:is(.student-theme, body:has(.student-theme)) .student-vocab-word-row-actions > button {
-  min-height: 2.75rem;
-  text-align: left;
-}
-
-:is(.student-theme, body:has(.student-theme)) .student-vocab-word-thumbnail {
-  display: grid;
-  flex: 0 0 5.5rem;
-  width: 5.5rem;
-  height: 5.5rem;
-  place-items: center;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  overflow: hidden;
-  background: var(--student-paper);
-}
-
-:is(.student-theme, body:has(.student-theme)) .student-vocab-word-thumbnail img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-
-:is(.student-theme, body:has(.student-theme)) .student-vocab-word-row-cta {
-  flex: 0 0 auto;
-}
-
-/* Reverse side: illustrations get a dedicated column; text-only words use the full width. */
-:is(.student-theme, body:has(.student-theme)) .student-vocab-answer {
-  width: 100%;
-  margin-inline: auto;
-  min-width: 0;
-}
-
-:is(.student-theme, body:has(.student-theme)) .student-vocab-answer--text {
-  max-width: 39rem;
-}
-
-:is(.student-theme, body:has(.student-theme)) .student-vocab-answer--illustrated {
-  display: grid;
-  align-items: center;
-  gap: 1.25rem;
-  max-width: 54rem;
 }
 
 :is(.student-theme, body:has(.student-theme)) .student-vocab-answer-image {

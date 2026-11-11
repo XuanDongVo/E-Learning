@@ -218,6 +218,7 @@ export function WordRainGame({
         unitId: 0,
         unitName,
         gameType: "WORD_RAIN",
+        accent: "UK",
         totalWords: words.length,
         firstTryCorrect: finalAnswers.filter((a) => a.firstTryCorrect).length,
         accuracyPercentage: Math.round(

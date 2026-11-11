@@ -29,7 +29,7 @@ export function StudentVocabularyLibrary() {
       <PaperSurface as="section" variant="kraft" tape tapePosition="right" className="student-vocab-library-hero space-y-3 p-5 sm:p-7">
         <p className="student-meta text-primary">MY VOCABULARY NOTEBOOK</p>
         <ScrapbookHeading as="h1" className="student-page-title text-foreground">Sổ tay từ vựng</ScrapbookHeading>
-        <p className="student-body max-w-2xl text-muted-foreground">
+        {/* <p className="student-body max-w-2xl text-muted-foreground">
           Khám phá bộ từ theo từng Unit, tự chọn từ để học hoặc ôn lại đúng lịch FSRS.
           Phần này độc lập với Activity và Game Hub.
         </p>
@@ -39,7 +39,7 @@ export function StudentVocabularyLibrary() {
             <div><span className="student-stat">{totalNew}</span><span className="student-label">Từ mới</span></div>
             <div><span className="student-stat">{totalDue}</span><span className="student-label">Đến hạn ôn</span></div>
           </div>
-        )}
+        )} */}
       </PaperSurface>
 
       {overview.isLoading && <PaperSurface className="p-6 student-body" role="status">Đang tải các bộ từ vựng...</PaperSurface>}
@@ -97,8 +97,14 @@ export function StudentVocabularyLibrary() {
                   {unit.totalCount > 0 ? (
                     <div className="flex flex-wrap gap-2">
                       <Link href={`/student/vocabulary/units/${unit.unitId}`} className="student-control student-control--action inline-flex items-center gap-1.5 px-4">
-                        Mở bộ từ <ArrowRight className="size-4" aria-hidden="true" />
+                        Xem từ <ArrowRight className="size-4" aria-hidden="true" />
                       </Link>
+                      <Link href={`/student/vocabulary/units/${unit.unitId}?mode=learn`} className="student-control student-control--action inline-flex items-center gap-1.5 px-4">
+                        Học <ArrowRight className="size-4" aria-hidden="true" />
+                      </Link>
+                      {/* <Link href={`/student/vocabulary/units/${unit.unitId}`} className="student-control student-control--action inline-flex items-center gap-1.5 px-4">
+                        Xem từ <ArrowRight className="size-4" aria-hidden="true" />
+                      </Link> */}
                       {unit.dueCount > 0 && <Link href={`/student/vocabulary/units/${unit.unitId}?mode=review`}
                         className="student-control student-control--secondary inline-flex items-center gap-1.5 px-4">Ôn ngay</Link>}
                     </div>
@@ -107,7 +113,6 @@ export function StudentVocabularyLibrary() {
               </PaperSurface>
             ))}
           </div>
-          <p className="student-caption text-muted-foreground">Mỗi bộ hiện thuộc một Unit. Thư viện có trang riêng để sau này thêm bộ từ theo chủ đề mà không thay đổi cách học.</p>
         </section>
       )}
     </main>

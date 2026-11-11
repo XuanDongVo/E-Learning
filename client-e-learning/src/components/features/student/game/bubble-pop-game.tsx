@@ -192,6 +192,7 @@ export function BubblePopGame({
         unitId: 0,
         unitName,
         gameType: "BUBBLE_POP",
+        accent: "UK",
         totalWords: words.length,
         firstTryCorrect: finalAnswers.filter((a) => a.firstTryCorrect).length,
         accuracyPercentage: Math.round(

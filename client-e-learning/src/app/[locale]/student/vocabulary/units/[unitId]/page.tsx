@@ -8,5 +8,12 @@ export default async function StudentVocabularyUnitPage({
   searchParams: Promise<{ mode?: string }>;
 }) {
   const [{ unitId }, { mode }] = await Promise.all([params, searchParams]);
-  return <StudentVocabularyHub unitId={Number(unitId)} initialTab={mode === "review" ? "review" : mode === "learn" ? "learn" : "browse"} />;
+  return (
+    <StudentVocabularyHub
+      unitId={Number(unitId)}
+      initialTab={
+        mode === "review" ? "review" : mode === "learn" ? "learn" : "browse"
+      }
+    />
+  );
 }

@@ -250,8 +250,6 @@
   box-shadow: 2px 2px 0 var(--student-ink);
 }
 
-/* Shared controls for Student feature screens. Page components choose meaning;
-   this file owns geometry, focus, and material treatment. */
 :is(.student-theme, body:has(.student-theme)) .student-control {
   min-height: 44px;
   border: 2px solid var(--student-ink);

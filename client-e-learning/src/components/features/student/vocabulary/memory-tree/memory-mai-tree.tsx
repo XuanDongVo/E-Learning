@@ -328,7 +328,7 @@ export function MemoryMaiTree({
             <circle cx="460" cy="146" r="2.5" fill="#DDBF82" />
           </g>
           <Soil />
-          <AnimatePresence mode="wait" initial={false}>
+          <AnimatePresence mode="wait" initial>
             <motion.g
               key={id + "-" + stage}
               initial={animated ? { opacity: 0, scale: .88, y: 12 } : false}

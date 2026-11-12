@@ -1,5 +1,13 @@
 # Project Progress
 
+## 2026-11-12 Vocabulary progress hero layout
+
+- Refined the Student vocabulary progress hero to mirror the reference composition:
+  a narrower daily-goal panel, larger central mai tree, and a dedicated right-side
+  column for tree stats, milestones, and the journey action.
+- Preserved the existing data, interactions, and single-column mobile fallback.
+- Changed the hero layout only; ESLint passes for the affected page and `git diff --check` passes.
+
 ## 2026-11-11 Vocabulary mobile term-list layout
 
 - Reworked the mobile vocabulary term cards into clearer term, definition and

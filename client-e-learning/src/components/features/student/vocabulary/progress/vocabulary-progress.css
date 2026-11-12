@@ -1,56 +1,298 @@
-/* Student Vocabulary Progress — scoped to this page, never Teacher. */
-.vprogress { --vp-olive: #758b59; --vp-gold: #bd9355; min-width: 0; }
-.vprogress-page-header { padding: .25rem 0 .5rem; }
-.vprogress-mock-notice { display: inline-block; font-size: .75rem; font-weight: 700; color: var(--foreground); background: color-mix(in srgb, var(--student-washi, #f4e4ad) 54%, transparent); border: 1px dashed var(--border); border-radius: .45rem; padding: .32rem .65rem; }
-.vprogress-hero-grid { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: 1.25rem; align-items: stretch; }
-.vprogress-bottom-grid { display: grid; grid-template-columns: minmax(0, 1.08fr) minmax(0, .92fr); gap: 1.25rem; align-items: start; }
-.vprogress-today, .vprogress-tree { min-width: 0; }
-.vprogress-today-number { color: var(--foreground); font-size: clamp(3.5rem, 7vw, 5.4rem); line-height: 1; font-weight: 900; letter-spacing: -.06em; }
-.vprogress-stamp { width: 2.7rem; height: 2.7rem; border: 2px dashed var(--vp-olive); display: grid; place-items: center; flex: none; color: var(--vp-olive); border-radius: 50%; transform: rotate(-14deg); }
-.vprogress-track { height: .65rem; width: 100%; overflow: hidden; border: 1px solid color-mix(in srgb, var(--border) 72%, transparent); border-radius: 1rem; background: color-mix(in srgb, var(--foreground) 8%, var(--background)); }
-.vprogress-track > span { display: block; height: 100%; background: var(--vp-olive); border-radius: inherit; transition: width .4s ease; }
-.vprogress-tree { background-image: radial-gradient(ellipse at 50% 38%, color-mix(in srgb, #f6db8a 19%, transparent), transparent 71%); }
-.vprogress-tree-art { position: relative; max-height: 350px; display: grid; place-items: center; }
-.vprogress-tree-art .memory-mai-tree { width: min(100%, 440px); }
-.vprogress-stage-label, .vprogress-badge { display: inline-flex; align-items: center; gap: .3rem; border: 1px solid color-mix(in srgb, var(--vp-gold) 65%, var(--border)); border-radius: 100px; color: var(--foreground); background: color-mix(in srgb, #e8cb85 21%, var(--background)); padding: .45rem .68rem; font-size: .72rem; font-weight: 700; line-height: 1.25; white-space: nowrap; }
-.vprogress-number { padding: 1rem; border-radius: .8rem; color: var(--foreground); border: 1px solid var(--border); background: color-mix(in srgb, var(--background) 70%, var(--secondary)); }
-.vprogress-number--learned { background: color-mix(in srgb, #8caf77 17%, var(--background)); }
-.vprogress-number--new { background: color-mix(in srgb, #d6b880 16%, var(--background)); }
-.vprogress-schedule { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: .5rem; }
-.vprogress-schedule-day { min-width: 0; display: flex; flex-direction: column; align-items: center; gap: .55rem; border: 1.5px solid var(--border); border-radius: .8rem; padding: .7rem .25rem; background: color-mix(in srgb, var(--background) 92%, var(--secondary)); color: var(--foreground); cursor: pointer; transition: background .16s ease, border-color .16s ease; }
-.vprogress-schedule-day:hover { background: color-mix(in srgb, var(--vp-olive) 10%, var(--background)); }
-.vprogress-schedule-day.is-selected { border-color: var(--vp-olive); background: color-mix(in srgb, var(--vp-olive) 16%, var(--background)); }
-.vprogress-bar-holder { display: flex; align-items: end; justify-content: center; width: 100%; height: 95px; }
-.vprogress-bar { display: block; width: min(60%, 42px); min-height: 5px; border-radius: .3rem .3rem .12rem .12rem; background: var(--vp-olive); }
-.vprogress-heatmap { display: grid; grid-template-rows: repeat(7, 15px); grid-auto-flow: column; grid-auto-columns: 15px; width: max-content; gap: 5px; }
-.vprogress-heat-cell { width: 15px; height: 15px; display: block; border: 0; border-radius: 3px; cursor: pointer; padding: 0; }
-.vprogress-heat-cell--empty { background: color-mix(in srgb, var(--foreground) 9%, var(--background)); }
+/* Vocabulary Progress: student-only, mock-first page. */
+.vprogress {
+  --vp-olive: #788b5b;
+  --vp-olive-dark: #536f4b;
+  --vp-gold: #c79d54;
+  --vp-cream: #f8f0dc;
+  min-width: 0;
+}
+.vprogress-page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: .1rem 0 .15rem;
+}
+.vprogress-page-title { min-width: 0; display: grid; gap: .4rem; }
+.vprogress-heading-line { display: flex; align-items: center; gap: .4rem; }
+.vprogress-header-flower { width: 36px; height: 36px; flex: none; transform: rotate(-12deg); }
+.vprogress-mock-notice {
+  width: fit-content;
+  display: inline-block;
+  margin-top: .25rem;
+  padding: .28rem .55rem;
+  border: 1px dashed color-mix(in srgb, var(--vp-gold) 70%, var(--border));
+  border-radius: .4rem;
+  background: color-mix(in srgb, var(--vp-cream) 63%, var(--background));
+  color: var(--foreground);
+  font-size: .72rem;
+  font-weight: 650;
+}
+.vprogress-hero {
+  display: grid;
+  grid-template-columns: minmax(0, .76fr) minmax(0, 1.24fr);
+  align-items: stretch;
+  overflow: hidden;
+  padding: 0;
+}
+.vprogress-hero-today {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: clamp(1.15rem, 2.8vw, 2rem);
+  border-right: 1px dashed color-mix(in srgb, var(--border) 80%, transparent);
+  background-image: repeating-linear-gradient(
+    transparent 0, transparent 35px,
+    color-mix(in srgb, var(--vp-olive) 11%, transparent) 36px,
+    transparent 37px
+  );
+}
+.vprogress-hero-title {
+  margin-top: .3rem;
+  font-family: var(--student-font-heading, inherit);
+  color: var(--foreground);
+  font-size: clamp(1.2rem, 2vw, 1.6rem);
+  line-height: 1.2;
+  font-weight: 800;
+}
+.vprogress-today-total { display: flex; align-items: baseline; gap: .55rem; margin-top: clamp(1.5rem, 3vw, 2.5rem); }
+.vprogress-today-number {
+  color: var(--foreground);
+  font-size: clamp(3.4rem, 6vw, 5rem);
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -.06em;
+}
+.vprogress-today-denominator { color: var(--foreground); font-size: 1.15rem; font-weight: 700; }
+.vprogress-track {
+  height: .68rem;
+  width: 100%;
+  border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
+  border-radius: 100px;
+  background: color-mix(in srgb, var(--foreground) 8%, var(--background));
+  overflow: hidden;
+}
+.vprogress-track > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--vp-olive);
+  transition: width .3s ease;
+}
+.vprogress-track--small { height: .47rem; }
+.vprogress-today-due {
+  display: flex;
+  gap: .55rem;
+  align-items: center;
+  border-top: 1px solid var(--border);
+  margin-top: auto;
+  padding-top: 1.1rem;
+  padding-bottom: 1rem;
+  font-size: .9rem;
+}
+.vprogress-main-action {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: .5rem;
+  min-height: 44px;
+  padding: .65rem 1rem;
+}
+.vprogress-hero-tree {
+  min-width: 0;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 1.2rem clamp(1rem, 2.3vw, 1.6rem) 1.3rem;
+  background: radial-gradient(ellipse at 38% 48%, color-mix(in srgb, #ead9aa 20%, transparent), transparent 65%);
+}
+.vprogress-tree-sprig {
+  position: absolute;
+  width: 82px;
+  height: auto;
+  top: -13px;
+  right: -17px;
+  opacity: .58;
+  pointer-events: none;
+  transform: rotate(14deg);
+}
+.vprogress-tree-heading { position: relative; display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: .7rem; z-index: 1; }
+.vprogress-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: .35rem .68rem;
+  background: color-mix(in srgb, #dec58e 26%, var(--background));
+  color: var(--foreground);
+  font-size: .72rem;
+  font-weight: 750;
+  border: 1px solid color-mix(in srgb, var(--vp-gold) 61%, var(--border));
+  border-radius: 99px;
+  white-space: nowrap;
+}
+.vprogress-tree-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(135px, .72fr);
+  align-items: center;
+  gap: .15rem;
+  min-width: 0;
+}
+.vprogress-tree-art { width: 100%; max-width: 400px; margin-inline: auto; }
+.vprogress-tree-details { display: flex; flex-direction: column; gap: .85rem; min-width: 0; }
+.vprogress-tree-stat { display: grid; gap: .14rem; }
+.vprogress-tree-stat > span { color: var(--muted-foreground); font-size: .75rem; }
+.vprogress-tree-stat strong { color: var(--foreground); font-size: 1.38rem; line-height: 1.15; font-weight: 850; }
+.vprogress-tree-stat small { font-size: .73rem; font-weight: 600; }
+.vprogress-milestone-track {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: .3rem;
+  margin: -.15rem .1rem .8rem;
+  position: relative;
+}
+.vprogress-milestone-track::before {
+  content: "";
+  position: absolute;
+  top: 11px;
+  left: 11%;
+  right: 11%;
+  height: 2px;
+  background: color-mix(in srgb, var(--vp-olive) 35%, var(--border));
+}
+.vprogress-milestone-marker { position: relative; z-index: 1; display: grid; justify-items: center; gap: .2rem; color: var(--foreground); }
+.vprogress-milestone-marker > span {
+  width: 23px; height: 23px;
+  display: grid; place-items: center;
+  border: 2px solid var(--vp-olive);
+  border-radius: 50%;
+  background: var(--background);
+}
+.vprogress-milestone-marker > span.is-unlocked { background: var(--vp-olive); color: #fff; }
+.vprogress-milestone-marker small { font-size: .68rem; font-weight: 700; }
+.vprogress-tree-action { display: flex; align-items: center; justify-content: center; gap: .5rem; width: 100%; min-height: 42px; padding: .45rem 1rem; }
+.vprogress-body-grid { display: grid; grid-template-columns: minmax(0, .95fr) minmax(0, 1.05fr); gap: 1.25rem; align-items: stretch; }
+.vprogress-learning-panel, .vprogress-activity-panel, .vprogress-attention { position: relative; min-width: 0; padding: 1.3rem clamp(1rem, 2.2vw, 1.65rem); }
+.vprogress-content-flower { position: absolute; width: 33px; height: 33px; top: -17px; right: 14px; transform: rotate(20deg); opacity: .72; pointer-events: none; }
+.vprogress-learning-overview { margin-top: 1.35rem; padding: 1rem 0 1.1rem; border-bottom: 1px dashed var(--border); display: grid; gap: .6rem; }
+.vprogress-learning-number { font-size: clamp(2.1rem, 4vw, 3.1rem); line-height: 1; color: var(--foreground); letter-spacing: -.045em; }
+.vprogress-content-list { margin-top: 1.25rem; display: grid; gap: .8rem; }
+.vprogress-content-row {
+  display: flex;
+  align-items: center;
+  gap: .65rem;
+  padding: .7rem .8rem;
+  border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
+  border-radius: .65rem;
+  color: var(--foreground);
+  background: color-mix(in srgb, var(--background) 84%, var(--secondary));
+  transition: border-color .15s ease, background .15s ease;
+}
+.vprogress-content-row:hover { border-color: var(--vp-olive); background: color-mix(in srgb, var(--vp-olive) 9%, var(--background)); }
+.vprogress-text-link {
+  display: inline-flex;
+  align-items: center;
+  gap: .3rem;
+  width: fit-content;
+  margin-top: 1rem;
+  color: var(--primary);
+  font-size: .84rem;
+  font-weight: 750;
+  text-decoration: none;
+}
+.vprogress-text-link:hover { text-decoration: underline; text-underline-offset: 3px; }
+.vprogress-activity-section { margin-top: 1.15rem; display: grid; gap: .65rem; }
+.vprogress-activity-section--heatmap { padding-top: 1.05rem; margin-top: 1.1rem; border-top: 1px dashed var(--border); }
+.vprogress-subheading { color: var(--foreground); font-size: .98rem; font-weight: 800; }
+.vprogress-schedule { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: .35rem; min-width: 0; }
+.vprogress-schedule-day {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .3rem;
+  padding: .55rem .1rem .45rem;
+  border: 1px solid var(--border);
+  border-radius: .55rem;
+  background: color-mix(in srgb, var(--background) 84%, var(--secondary));
+  color: var(--foreground);
+  transition: border-color .15s ease, background .15s ease;
+}
+.vprogress-schedule-day:hover { border-color: var(--vp-olive); }
+.vprogress-schedule-day.is-selected { border-color: var(--vp-olive); background: color-mix(in srgb, var(--vp-olive) 13%, var(--background)); }
+.vprogress-bar-holder { width: 100%; height: 63px; display: flex; justify-content: center; align-items: flex-end; }
+.vprogress-bar { display: block; width: min(58%, 30px); min-height: 5px; border-radius: 4px 4px 1px 1px; background: var(--vp-olive); }
+.vprogress-activity-note {
+  display: flex; align-items: flex-start; flex-wrap: wrap; gap: .35rem;
+  padding: .65rem .75rem;
+  border-radius: .5rem;
+  background: color-mix(in srgb, var(--vp-cream) 60%, var(--background));
+  color: var(--foreground);
+  font-size: .76rem;
+}
+.vprogress-heatmap-wrap { width: 100%; overflow-x: auto; padding: 4px 2px; }
+.vprogress-heatmap {
+  width: 100%;
+  min-width: 250px;
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  grid-template-rows: repeat(7, 17px);
+  grid-auto-flow: column;
+  gap: 4px;
+}
+.vprogress-heat-cell { width: 100%; min-width: 0; height: 17px; padding: 0; border-radius: 3px; border: 0; cursor: pointer; }
+.vprogress-heat-cell--empty { background: color-mix(in srgb, var(--foreground) 8%, var(--background)); }
 .vprogress-heat-cell--low { background: #c7d4a8; }
 .vprogress-heat-cell--medium { background: #83a875; }
 .vprogress-heat-cell--high { background: #416e55; }
-.vprogress-heat-cell--future { background: transparent; border: 1px dashed var(--border); }
-.vprogress-heat-cell.is-selected { outline: 2px solid var(--foreground); outline-offset: 2px; }
-.vprogress-heat-key { width: .8rem; height: .8rem; border-radius: 2px; display: inline-block; }
-.vprogress-word-index { flex: none; width: 2.25rem; height: 2.25rem; display: grid; place-items: center; border-radius: .6rem; background: color-mix(in srgb, var(--vp-olive) 15%, var(--background)); color: var(--foreground); }
-.vprogress-milestone { min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .25rem; min-height: 4.8rem; padding: .4rem .1rem; border: 1.5px solid var(--border); border-radius: .7rem; background: var(--background); color: var(--foreground); cursor: pointer; }
-.vprogress-milestone.is-selected { background: color-mix(in srgb, var(--vp-olive) 18%, var(--background)); border-color: var(--vp-olive); }
+.vprogress-heat-cell--future { border: 1px dashed var(--border); background: transparent; }
+.vprogress-heat-cell.is-selected { outline: 2px solid var(--foreground); outline-offset: 1px; }
+.vprogress-heatmap-footer { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .5rem; }
+.vprogress-heat-legend { display: flex; align-items: center; gap: .3rem; font-size: .7rem; color: var(--muted-foreground); white-space: nowrap; }
+.vprogress-heat-key { width: .75rem; height: .75rem; display: inline-block; border-radius: 2px; }
+.vprogress-word-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .8rem; margin-top: 1.1rem; }
+.vprogress-word { min-width: 0; padding: .85rem; border: 1px solid var(--border); border-radius: .7rem; background: color-mix(in srgb, var(--background) 78%, var(--secondary)); }
+.vprogress-word-toggle { display: flex; align-items: center; text-align: left; width: 100%; gap: .65rem; color: var(--foreground); }
+.vprogress-word-icon { flex: none; display: grid; place-items: center; width: 2rem; height: 2rem; border-radius: 50%; background: color-mix(in srgb, var(--vp-olive) 14%, var(--background)); color: var(--vp-olive-dark); }
+.vprogress-word-tags { display: flex; flex-wrap: wrap; gap: .4rem; margin: .65rem 0 0 2.65rem; }
+.vprogress-word-tags span { border: 1px solid color-mix(in srgb, var(--vp-gold) 55%, var(--border)); border-radius: 99px; padding: .12rem .5rem; color: var(--foreground); font-size: .68rem; font-weight: 700; }
+.vprogress-word-detail { margin: .55rem 0 0 2.65rem; color: var(--muted-foreground); font-size: .75rem; }
+.vprogress-milestone { min-width: 0; min-height: 4.6rem; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .2rem; padding: .4rem .1rem; border: 1px solid var(--border); border-radius: .55rem; background: var(--background); color: var(--foreground); }
+.vprogress-milestone.is-selected { border-color: var(--vp-olive); background: color-mix(in srgb, var(--vp-olive) 16%, var(--background)); }
 .vprogress-journey-dialog { max-height: min(92dvh, 790px); overflow-y: auto; }
-.vprogress-journey-dialog .memory-mai-tree { max-width: 100%; }
-.vprogress :is(a,button):focus-visible, .vprogress-journey-dialog :is(a,button):focus-visible { outline: 2px solid var(--vp-olive); outline-offset: 3px; }
-@media (max-width: 760px) {
-  .vprogress-hero-grid, .vprogress-bottom-grid { grid-template-columns: 1fr; gap: 1rem; }
-  .vprogress-tree-art { max-height: 310px; }
-  .vprogress-schedule { gap: .25rem; }
-  .vprogress-schedule-day { padding: .55rem .1rem; gap: .35rem; }
-  .vprogress-bar-holder { height: 72px; }
-  .vprogress-number { padding: .75rem .5rem; }
+.vprogress :is(a, button):focus-visible, .vprogress-journey-dialog button:focus-visible { outline: 2px solid var(--vp-olive); outline-offset: 3px; }
+@media (max-width: 1020px) {
+  .vprogress-hero { grid-template-columns: minmax(0, .86fr) minmax(0, 1.14fr); }
+  .vprogress-tree-layout { grid-template-columns: minmax(0, 1fr); }
+  .vprogress-tree-details { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: .45rem; }
+  .vprogress-tree-details > p { grid-column: 1 / -1; }
 }
-@media (max-width: 380px) {
-  .vprogress-stage-label { max-width: 120px; white-space: normal; }
-  .vprogress-number { padding: .65rem .35rem; }
-  .vprogress-number > span:first-child { font-size: 1.4rem; }
-  .vprogress-schedule-day { font-size: .68rem; }
+@media (max-width: 800px) {
+  .vprogress-hero { grid-template-columns: minmax(0,1fr); }
+  .vprogress-hero-today { border-right: 0; border-bottom: 1px dashed var(--border); }
+  .vprogress-today-total { margin-top: 1.25rem; }
+  .vprogress-today-due { margin-top: 1.5rem; }
+  .vprogress-tree-layout { grid-template-columns: minmax(0, 1fr) minmax(135px, .72fr); }
+  .vprogress-tree-details { display: flex; }
+  .vprogress-body-grid { grid-template-columns: minmax(0,1fr); gap: 1rem; }
+}
+@media (max-width: 550px) {
+  .vprogress-page-header { flex-direction: column; align-items: flex-start; }
+  .vprogress-tree-layout { grid-template-columns: minmax(0,1fr) minmax(107px, .61fr); }
+  .vprogress-tree-details { gap: .6rem; }
+  .vprogress-tree-stat strong { font-size: 1.12rem; }
+  .vprogress-tree-details > p { font-size: .68rem; }
+  .vprogress-tree-sprig { width: 60px; }
+  .vprogress-badge { font-size: .66rem; }
+  .vprogress-word-grid { grid-template-columns: 1fr; gap: .55rem; }
+  .vprogress-word { padding: .75rem; }
+}
+@media (max-width: 370px) {
+  .vprogress-tree-layout { grid-template-columns: 1fr; }
+  .vprogress-tree-art { max-width: 300px; }
+  .vprogress-tree-details { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .vprogress-tree-details > p { grid-column: 1 / -1; }
+  .vprogress-schedule { gap: .18rem; }
+  .vprogress-schedule-day { padding: .45rem 0; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .vprogress-track > span, .vprogress-schedule-day { transition: none; }
+  .vprogress-track > span, .vprogress-content-row, .vprogress-schedule-day { transition: none; }
 }

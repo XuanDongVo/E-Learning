@@ -2,17 +2,25 @@
 
 import { useState } from "react";
 import {
-  ArrowLeft, ArrowRight, BookOpen, CalendarDays, Check, ChevronRight,
-  Clock3, Flower2, History, Leaf, LibraryBig, Sparkles,
+  ArrowLeft, ArrowRight, BookOpen, CalendarDays, Check,
+  ChevronRight, Clock3, History, LibraryBig, Sparkles,
 } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { PaperSurface } from "@/components/student-ui/paper-surface";
 import { ScrapbookHeading } from "@/components/student-ui/scrapbook-heading";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle,
+} from "@/components/ui/dialog";
 import { MemoryMaiTree, MEMORY_MAI_STAGES } from "../memory-tree/memory-mai-tree";
+import { MaiBlossomAccent, MaiBranchAccent } from "./vocabulary-progress-botanicals";
 import { vocabularyProgressMock } from "./vocabulary-progress.mock";
-import type { MemoryTreeMilestone, VocabularyProgressDashboard } from "@/types/student-vocabulary-progress";
+import type {
+  MemoryTreeMilestone, VocabularyProgressDashboard,
+} from "@/types/student-vocabulary-progress";
 import "./vocabulary-progress.css";
+
+type Today = VocabularyProgressDashboard["today"];
+type Tree = VocabularyProgressDashboard["tree"];
 
 const STAGE_LABELS: Record<MemoryTreeMilestone, string> = {
   0: "Hạt giống",
@@ -22,266 +30,459 @@ const STAGE_LABELS: Record<MemoryTreeMilestone, string> = {
   30: "Mai cổ thụ",
 };
 
-const dateLabel = (value: string) =>
-  new Intl.DateTimeFormat("vi-VN", { timeZone: "UTC", day: "2-digit", month: "2-digit" })
-    .format(new Date(value + "T12:00:00Z"));
+function dateLabel(value: string) {
+  return new Intl.DateTimeFormat("vi-VN", {
+    timeZone: "UTC", day: "2-digit", month: "2-digit",
+  }).format(new Date(value + "T12:00:00Z"));
+}
 
-const weekdayLabel = (value: string) =>
-  new Intl.DateTimeFormat("vi-VN", { timeZone: "UTC", weekday: "short" })
-    .format(new Date(value + "T12:00:00Z"));
+function weekdayLabel(value: string) {
+  return new Intl.DateTimeFormat("vi-VN", {
+    timeZone: "UTC", weekday: "short",
+  }).format(new Date(value + "T12:00:00Z"));
+}
 
-function SectionHeading({ eyebrow, title, hint }: { eyebrow: string; title: string; hint?: string }) {
+function SectionHeading({ eyebrow, title, hint }: {
+  eyebrow?: string; title: string; hint?: string;
+}) {
   return (
     <div className="space-y-1">
-      <span className="student-meta text-primary">{eyebrow}</span>
-      <ScrapbookHeading as="h2" className="student-section-title text-foreground">{title}</ScrapbookHeading>
+      {eyebrow && <span className="student-meta text-primary">{eyebrow}</span>}
+      <ScrapbookHeading as="h2" className="student-section-title text-foreground">
+        {title}
+      </ScrapbookHeading>
       {hint && <p className="student-caption text-muted-foreground">{hint}</p>}
     </div>
   );
 }
 
-function TodayCard({ data }: { data: VocabularyProgressDashboard }) {
-  const { today } = data;
-  const remaining = Math.max(0, today.dailyTarget - today.completedDistinctWords);
+function TodayPanel({ today }: { today: Today }) {
+  const target = Math.max(1, today.dailyTarget);
+  const remaining = Math.max(0, target - today.completedDistinctWords);
+  const progress = Math.min(100, today.completedDistinctWords / target * 100);
+
   return (
-    <PaperSurface as="section" variant="lined" className="vprogress-today relative overflow-hidden p-5 sm:p-6">
-      <div className="mb-5 flex items-start justify-between gap-3">
-        <SectionHeading eyebrow="01 / HÔM NAY" title="Một chút mỗi ngày" hint="Hoàn thành 5 từ khác nhau để chăm cây." />
-        <span className="vprogress-stamp" aria-hidden="true"><Leaf className="size-5" /></span>
-      </div>
-      <div className="flex items-end gap-2">
-        <span className="vprogress-today-number tabular-nums">{Math.min(today.completedDistinctWords, today.dailyTarget)}</span>
-        <span className="pb-2 text-xl font-bold text-muted-foreground">/ {today.dailyTarget} từ</span>
-      </div>
-      <div className="vprogress-track mt-2" role="progressbar" aria-label="Từ đủ điều kiện hôm nay" aria-valuenow={Math.min(today.completedDistinctWords,today.dailyTarget)} aria-valuemin={0} aria-valuemax={today.dailyTarget}>
-        <span style={{ width: `${Math.min(100, today.completedDistinctWords / today.dailyTarget * 100)}%` }} />
-      </div>
-      <p className="mt-3 text-sm font-medium text-foreground">
-        {today.qualifiedToday ? "Hôm nay cây đã được chăm sóc!" : `Còn ${remaining} từ để ghi nhận một ngày học.`}
+    <div className="vprogress-hero-today">
+      <span className="student-meta text-primary">01 / HÔM NAY</span>
+      <h2 className="vprogress-hero-title">Một chút mỗi ngày</h2>
+      <p className="mt-1 text-sm text-muted-foreground">
+        Học hoặc ôn 5 từ khác nhau để chăm cây.
       </p>
-      <div className="mt-6 flex items-center gap-2 border-t border-border pt-4 text-sm">
-        <Clock3 className="size-4 shrink-0 text-primary" aria-hidden="true" />
-        <span className="flex-1"><strong>{today.dueNow}</strong> từ đang đến hạn ôn</span>
+      <div className="vprogress-today-total">
+        <span className="vprogress-today-number tabular-nums">{today.completedDistinctWords}</span>
+        <span className="vprogress-today-denominator">/ {target} từ</span>
       </div>
-      <Link href="/student/vocabulary" className="student-control student-control--action mt-4 flex w-full items-center justify-center gap-2 px-4">
-        Đến thư viện để ôn tập <ArrowRight className="size-4" aria-hidden="true" />
+      <div
+        className="vprogress-track"
+        role="progressbar"
+        aria-label="Từ đủ điều kiện hôm nay"
+        aria-valuenow={Math.min(today.completedDistinctWords, target)}
+        aria-valuemin={0}
+        aria-valuemax={target}
+      >
+        <span style={{ width: progress + "%" }} />
+      </div>
+      <p className="mt-3 text-sm font-semibold text-foreground">
+        {today.qualifiedToday
+          ? "Hôm nay bạn đã chăm sóc cây tri thức."
+          : "Còn " + remaining + " từ để ghi nhận ngày học hợp lệ."}
+      </p>
+      <div className="vprogress-today-due">
+        <Clock3 className="size-4 shrink-0 text-primary" aria-hidden="true" />
+        <span><strong>{today.dueNow}</strong> từ đang đến hạn ôn tập</span>
+      </div>
+      <Link
+        href="/student/vocabulary"
+        className="student-control student-control--action vprogress-main-action"
+      >
+        Đến thư viện để ôn <ArrowRight className="size-4" aria-hidden="true" />
       </Link>
-    </PaperSurface>
+    </div>
   );
 }
 
-function TreeCard({ data }: { data: VocabularyProgressDashboard }) {
+function TreePanel({ tree }: { tree: Tree }) {
   const [open, setOpen] = useState(false);
-  const [previewStage, setPreviewStage] = useState<MemoryTreeMilestone>(data.tree.highestUnlockedMilestone);
+  const [previewStage, setPreviewStage] = useState<MemoryTreeMilestone>(
+    tree.highestUnlockedMilestone,
+  );
   const [replayKey, setReplayKey] = useState(0);
-  const tree = data.tree;
+
   return (
-    <>
-      <PaperSurface as="section" className="vprogress-tree relative flex min-w-0 flex-col overflow-hidden p-4 sm:p-6">
-        <div className="relative z-10 flex items-start justify-between gap-3">
-          <SectionHeading eyebrow="02 / CÂY TRI THỨC" title="Cây mai của bạn" />
-          <span className="vprogress-stage-label"><Flower2 className="size-3.5" /> Mốc {tree.highestUnlockedMilestone} ngày</span>
+    <div className="vprogress-hero-tree">
+      <MaiBranchAccent className="vprogress-tree-sprig" />
+      <div className="vprogress-tree-heading">
+        <div>
+          <span className="student-meta text-primary">02 / CÂY TRI THỨC</span>
+          <h2 className="vprogress-hero-title">Cây mai của bạn</h2>
         </div>
-        <div className="vprogress-tree-art mx-auto w-full max-w-[430px] flex-1">
+        <span className="vprogress-badge">Mốc {tree.highestUnlockedMilestone} ngày</span>
+      </div>
+      <div className="vprogress-tree-layout">
+        <div className="vprogress-tree-art">
           <MemoryMaiTree stage={tree.highestUnlockedMilestone} />
         </div>
-        <div className="relative z-10 grid grid-cols-2 gap-3 border-t border-border pt-3">
-          <div><p className="student-caption text-muted-foreground">Chuỗi hiện tại</p><p className="text-xl font-bold text-foreground tabular-nums">{tree.currentStreak} <span className="text-sm font-medium">ngày</span></p></div>
-          <div><p className="student-caption text-muted-foreground">Chuỗi dài nhất</p><p className="text-xl font-bold text-foreground tabular-nums">{tree.longestStreak} <span className="text-sm font-medium">ngày</span></p></div>
+        <div className="vprogress-tree-details">
+          <div className="vprogress-tree-stat">
+            <span>Chuỗi hiện tại</span>
+            <strong>{tree.currentStreak} <small>ngày</small></strong>
+          </div>
+          <div className="vprogress-tree-stat">
+            <span>Chuỗi dài nhất</span>
+            <strong>{tree.longestStreak} <small>ngày</small></strong>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Cây giữ mốc cao nhất đã đạt, kể cả khi chuỗi học bị ngắt.
+          </p>
         </div>
-        <p className="mt-2 text-xs text-muted-foreground">Cây giữ mốc đã mở khóa, kể cả khi chuỗi học bị ngắt.</p>
-        <button type="button" onClick={() => { setPreviewStage(tree.highestUnlockedMilestone); setOpen(true); }} className="student-control student-control--secondary mt-3 inline-flex w-full items-center justify-center gap-2 px-4">
-          <History className="size-4" aria-hidden="true" /> Xem hành trình phát triển
-        </button>
-      </PaperSurface>
+      </div>
+      <div className="vprogress-milestone-track" aria-label="Các mốc phát triển của cây">
+        {[3, 7, 14, 30].map((milestone) => (
+          <div key={milestone} className="vprogress-milestone-marker">
+            <span className={milestone <= tree.highestUnlockedMilestone ? "is-unlocked" : ""}>
+              {milestone <= tree.highestUnlockedMilestone ? <Check className="size-3" aria-hidden="true" /> : null}
+            </span>
+            <small>{milestone} ngày</small>
+          </div>
+        ))}
+      </div>
+      <button
+        type="button"
+        onClick={() => {
+          setPreviewStage(tree.highestUnlockedMilestone);
+          setOpen(true);
+        }}
+        className="student-control student-control--secondary vprogress-tree-action"
+      >
+        <History className="size-4" aria-hidden="true" /> Xem hành trình phát triển
+      </button>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="vprogress-journey-dialog w-[calc(100%-1.25rem)] max-w-[700px] border-2 border-border bg-background p-4 sm:p-6">
           <DialogHeader>
             <DialogTitle className="student-section-title">Hành trình của cây mai</DialogTitle>
-            <DialogDescription>Chọn mốc để xem cây phát triển. Các mốc chưa đạt chỉ được xem thử trong bản mock.</DialogDescription>
+            <DialogDescription>
+              Chọn mốc để xem cây phát triển. Mốc chưa đạt chỉ được xem thử trong bản mock.
+            </DialogDescription>
           </DialogHeader>
-          <div className="mx-auto w-full max-w-[360px]">
-            <MemoryMaiTree key={replayKey + "-" + previewStage} stage={previewStage} />
+          <div className="mx-auto w-full max-w-[350px]">
+            <MemoryMaiTree key={previewStage + "-" + replayKey} stage={previewStage} />
           </div>
           <div className="grid grid-cols-5 gap-1.5 sm:gap-2" role="group" aria-label="Xem các mốc cây mai">
             {MEMORY_MAI_STAGES.map((milestone) => (
-              <button key={milestone} type="button" aria-pressed={previewStage === milestone} onClick={() => { setPreviewStage(milestone); setReplayKey((value) => value + 1); }}
-                className={"vprogress-milestone " + (previewStage === milestone ? "is-selected" : "")}>
-                <span className="font-bold">{milestone === 0 ? "0" : milestone}</span>
+              <button
+                key={milestone}
+                type="button"
+                aria-pressed={previewStage === milestone}
+                onClick={() => {
+                  setPreviewStage(milestone);
+                  setReplayKey((value) => value + 1);
+                }}
+                className={"vprogress-milestone " + (previewStage === milestone ? "is-selected" : "")}
+              >
+                <span className="font-bold">{milestone}</span>
                 <span className="text-[10px] sm:text-xs">{STAGE_LABELS[milestone]}</span>
-                {milestone <= tree.highestUnlockedMilestone && <Check className="mx-auto size-3" aria-label="Đã mở khóa" />}
+                {milestone <= tree.highestUnlockedMilestone && (
+                  <Check className="mx-auto size-3" aria-label="Đã mở khóa" />
+                )}
               </button>
             ))}
           </div>
-          <button type="button" className="student-control student-control--quiet mx-auto inline-flex items-center gap-2 px-4" onClick={() => setReplayKey((value) => value + 1)}>
-            <Sparkles className="size-4" /> Phát lại hiệu ứng
+          <button
+            type="button"
+            className="student-control student-control--quiet mx-auto inline-flex items-center gap-2 px-4"
+            onClick={() => setReplayKey((value) => value + 1)}
+          >
+            <Sparkles className="size-4" aria-hidden="true" /> Phát lại hiệu ứng
           </button>
         </DialogContent>
       </Dialog>
-    </>
+    </div>
   );
 }
 
-function OverviewCard({ data }: { data: VocabularyProgressDashboard }) {
+/** Presentation model: the row is intentionally not tied to Unit-specific markup.
+ * A future Collection API can adapt its payload to this shape without new cards. */
+type ContentProgressItem = {
+  key: string;
+  title: string;
+  subtitle: string;
+  learned: number;
+  total: number;
+  href: string;
+};
+
+function ContentProgressRow({ item }: { item: ContentProgressItem }) {
+  const progress = item.total > 0 ? Math.round(item.learned / item.total * 100) : 0;
+  return (
+    <Link href={item.href} className="vprogress-content-row">
+      <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+        <div className="flex items-center justify-between gap-2">
+          <strong className="min-w-0 truncate text-sm">{item.title}</strong>
+          <span className="shrink-0 text-xs font-semibold tabular-nums">
+            {item.learned}/{item.total}
+          </span>
+        </div>
+        <div className="vprogress-track vprogress-track--small">
+          <span style={{ width: progress + "%" }} />
+        </div>
+        <span className="text-xs text-muted-foreground">{item.subtitle}</span>
+      </div>
+      <ChevronRight className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+    </Link>
+  );
+}
+
+function ContentProgress({ data }: { data: VocabularyProgressDashboard }) {
   const { overview } = data;
-  const percent = overview.totalWords > 0 ? Math.round(overview.learnedWords / overview.totalWords * 100) : 0;
+  const percentage = overview.totalWords
+    ? Math.round(overview.learnedWords / overview.totalWords * 100)
+    : 0;
+  const items: ContentProgressItem[] = data.units.slice(0, 4).map((unit) => ({
+    key: "unit-" + unit.unitId,
+    title: unit.name,
+    subtitle: unit.dueCount + " từ đến hạn · " + unit.newCount + " từ chưa học",
+    learned: unit.learnedCount,
+    total: unit.totalCount,
+    href: "/student/vocabulary/units/" + unit.unitId,
+  }));
+
   return (
-    <PaperSurface as="section" className="p-5 sm:p-6">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <SectionHeading eyebrow="03 / THƯ VIỆN" title="Từ vựng của bạn" hint="Đã học là từ đã có lịch FSRS, không đồng nghĩa đã thuộc vững." />
-        <span className="vprogress-badge">{percent}% đã bắt đầu học</span>
+    <PaperSurface as="section" className="vprogress-learning-panel">
+      <MaiBlossomAccent className="vprogress-content-flower" />
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <SectionHeading
+          eyebrow="03 / TIẾN ĐỘ"
+          title="Nội dung đang học"
+          hint="Tổng quan nhanh, không thay thế thư viện từ vựng."
+        />
+        <span className="vprogress-badge">Theo Unit</span>
       </div>
-      <div className="mt-5 grid grid-cols-3 gap-2 sm:gap-4">
-        {[
-          { label: "Tổng số từ", value: overview.totalWords, tone: "all" },
-          { label: "Đã học", value: overview.learnedWords, tone: "learned" },
-          { label: "Chưa học", value: overview.newWords, tone: "new" },
-        ].map((item) => (
-          <div className={"vprogress-number vprogress-number--" + item.tone} key={item.label}>
-            <span className="block text-2xl font-extrabold tabular-nums sm:text-3xl">{item.value}</span>
-            <span className="mt-1 block text-xs font-medium">{item.label}</span>
+      <div className="vprogress-learning-overview">
+        <div className="flex flex-wrap items-end justify-between gap-2">
+          <div className="flex items-baseline gap-2">
+            <strong className="vprogress-learning-number tabular-nums">{overview.learnedWords}</strong>
+            <span className="text-sm text-muted-foreground">/ {overview.totalWords} từ đã học</span>
           </div>
-        ))}
+          <span className="text-sm font-bold text-foreground tabular-nums">{percentage}%</span>
+        </div>
+        <div className="vprogress-track" role="progressbar" aria-label="Từ đã bắt đầu học" aria-valuenow={percentage} aria-valuemin={0} aria-valuemax={100}>
+          <span style={{ width: percentage + "%" }} />
+        </div>
+        <p className="text-xs text-muted-foreground">
+          {overview.newWords} từ chưa học · “Đã học” là từ đã có lịch FSRS, chưa đồng nghĩa đã thuộc vững.
+        </p>
       </div>
-      <div className="vprogress-track mt-4" role="progressbar" aria-label="Tỷ lệ từ đã học" aria-valuenow={percent} aria-valuemin={0} aria-valuemax={100}><span style={{ width: percent + "%" }} /></div>
+      <div className="vprogress-content-list">
+        <div className="flex items-center justify-between">
+          <h3 className="text-sm font-bold text-foreground">Bộ từ đang học</h3>
+          <span className="text-xs text-muted-foreground">Đã hiển thị {items.length} Unit</span>
+        </div>
+        {items.length > 0
+          ? items.map((item) => <ContentProgressRow key={item.key} item={item} />)
+          : <p className="text-sm text-muted-foreground">Chưa có bộ từ nào.</p>}
+      </div>
+      <Link href="/student/vocabulary" className="vprogress-text-link">
+        Xem tất cả trong thư viện <ArrowRight className="size-4" aria-hidden="true" />
+      </Link>
     </PaperSurface>
   );
 }
 
-function ReviewSchedule({ data }: { data: VocabularyProgressDashboard }) {
-  const [selected, setSelected] = useState(data.upcomingReviews[0]?.date ?? "");
-  const max = Math.max(1, ...data.upcomingReviews.map((day) => day.dueCount));
-  const selectedDay = data.upcomingReviews.find((day) => day.date === selected);
-  return (
-    <PaperSurface as="section" className="p-5 sm:p-6">
-      <SectionHeading eyebrow="04 / LỊCH DỰ KIẾN" title="7 ngày ôn tập sắp tới" hint="Số từ đến hạn có thể thay đổi sau mỗi lần ôn theo FSRS." />
-      <div className="vprogress-schedule mt-5" role="group" aria-label="Chọn ngày xem lịch ôn">
-        {data.upcomingReviews.map((day) => (
-          <button key={day.date} type="button" aria-pressed={selected === day.date} onClick={() => setSelected(day.date)} className={"vprogress-schedule-day " + (selected === day.date ? "is-selected" : "")}>
-            <span className="text-xs font-semibold">{weekdayLabel(day.date)}</span>
-            <span className="text-[11px] text-muted-foreground">{dateLabel(day.date)}</span>
-            <span className="vprogress-bar-holder"><span className="vprogress-bar" style={{ height: Math.max(7, day.dueCount / max * 82) + "%" }} /></span>
-            <span className="text-sm font-extrabold tabular-nums">{day.dueCount}</span>
-          </button>
-        ))}
-      </div>
-      {selectedDay && <p className="mt-4 rounded-lg bg-secondary/50 p-3 text-sm text-foreground"><CalendarDays className="mr-2 inline size-4 text-primary" aria-hidden="true" /><strong>{dateLabel(selectedDay.date)}:</strong> dự kiến {selectedDay.dueCount} từ đến hạn ôn.</p>}
-    </PaperSurface>
+function LearningActivity({ data }: { data: VocabularyProgressDashboard }) {
+  const [selectedReviewDate, setSelectedReviewDate] = useState(
+    data.upcomingReviews[0]?.date ?? "",
   );
-}
+  const [selectedActivityDate, setSelectedActivityDate] = useState(
+    data.activityDays.at(-1)?.date ?? "",
+  );
+  const maxDue = Math.max(1, ...data.upcomingReviews.map((day) => day.dueCount));
+  const selectedReview = data.upcomingReviews.find((day) => day.date === selectedReviewDate);
+  const selectedActivity = data.activityDays.find((day) => day.date === selectedActivityDate);
+  const qualifiedDays = data.activityDays.filter((day) => day.qualifiedDay).length;
 
-function ActivityHeatmap({ data }: { data: VocabularyProgressDashboard }) {
-  const [selected, setSelected] = useState(data.activityDays.at(-1)?.date ?? "");
-  const chosen = data.activityDays.find((day) => day.date === selected);
-  const qualified = data.activityDays.filter((d) => d.qualifiedDay).length;
   return (
-    <PaperSurface as="section" className="p-5 sm:p-6">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <SectionHeading eyebrow="05 / THÓI QUEN" title="12 tuần học từ vựng" hint="Mỗi ô là một ngày. Từ 5 từ khác nhau được đánh giá HARD/GOOD/EASY là ngày hợp lệ." />
-        <span className="vprogress-badge">{qualified} ngày đạt mục tiêu trong mẫu</span>
+    <PaperSurface as="section" className="vprogress-activity-panel">
+      <div className="flex items-center justify-between gap-2">
+        <SectionHeading eyebrow="04 / NHỊP HỌC TẬP" title="Lịch ôn & hoạt động" />
+        <CalendarDays className="size-5 shrink-0 text-primary" aria-hidden="true" />
       </div>
-      <div className="mt-5 overflow-x-auto pb-2" aria-label="Lịch hoạt động 12 tuần, có thể cuộn ngang">
-        <div className="vprogress-heatmap">
-          {data.activityDays.map((day) => {
-            const count = day.qualifiedWordCount;
-            const level = count === null ? "future" : count === 0 ? "empty" : count < 5 ? "low" : count < 9 ? "medium" : "high";
-            return (
-              <button key={day.date} type="button" className={"vprogress-heat-cell vprogress-heat-cell--" + level + (selected === day.date ? " is-selected" : "")}
-                aria-label={`${dateLabel(day.date)}: ${count ?? "chưa có dữ liệu"} từ, ${day.qualifiedDay ? "đạt mục tiêu" : "chưa đạt mục tiêu"}`}
-                aria-pressed={selected === day.date} title={`${dateLabel(day.date)}: ${count ?? "-"} từ`} onClick={() => setSelected(day.date)} />
-            );
-          })}
+      <div className="vprogress-activity-section">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h3 className="vprogress-subheading">7 ngày ôn tập</h3>
+          <span className="text-xs text-muted-foreground">Dự kiến theo FSRS</span>
+        </div>
+        <div className="vprogress-schedule" role="group" aria-label="Chọn ngày xem lịch ôn">
+          {data.upcomingReviews.map((day) => (
+            <button
+              key={day.date}
+              type="button"
+              aria-pressed={selectedReviewDate === day.date}
+              onClick={() => setSelectedReviewDate(day.date)}
+              className={"vprogress-schedule-day " + (selectedReviewDate === day.date ? "is-selected" : "")}
+            >
+              <span className="text-xs font-bold">{weekdayLabel(day.date)}</span>
+              <span className="text-[10px] text-muted-foreground">{dateLabel(day.date)}</span>
+              <span className="vprogress-bar-holder">
+                <span className="vprogress-bar" style={{ height: Math.max(7, day.dueCount / maxDue * 100) + "%" }} />
+              </span>
+              <span className="text-xs font-extrabold tabular-nums">{day.dueCount}</span>
+            </button>
+          ))}
+        </div>
+        <p className="vprogress-activity-note">
+          <Clock3 className="size-3.5 shrink-0 text-primary" aria-hidden="true" />
+          {selectedReview
+            ? dateLabel(selectedReview.date) + ": dự kiến " + selectedReview.dueCount + " từ đến hạn."
+            : "Chưa có lịch ôn tập."}
+          <span className="ml-1 text-muted-foreground">Lịch có thể thay đổi sau khi ôn.</span>
+        </p>
+      </div>
+      <div className="vprogress-activity-section vprogress-activity-section--heatmap">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h3 className="vprogress-subheading">12 tuần hoạt động</h3>
+          <span className="text-xs font-semibold text-muted-foreground">{qualifiedDays} ngày đạt mục tiêu (mẫu)</span>
+        </div>
+        <p className="text-xs text-muted-foreground">
+          Mỗi ô là một ngày · Đủ 5 từ khác nhau được đánh giá HARD / GOOD / EASY là ngày hợp lệ.
+        </p>
+        <div className="vprogress-heatmap-wrap" aria-label="Lịch hoạt động 12 tuần">
+          <div className="vprogress-heatmap">
+            {data.activityDays.map((day) => {
+              const count = day.qualifiedWordCount;
+              const level = count === null
+                ? "future"
+                : count === 0 ? "empty" : count < 5 ? "low" : count < 9 ? "medium" : "high";
+              return (
+                <button
+                  key={day.date}
+                  type="button"
+                  aria-pressed={selectedActivityDate === day.date}
+                  onClick={() => setSelectedActivityDate(day.date)}
+                  className={"vprogress-heat-cell vprogress-heat-cell--" + level +
+                    (selectedActivityDate === day.date ? " is-selected" : "")}
+                  aria-label={dateLabel(day.date) + ": " + (count ?? "chưa có dữ liệu") +
+                    " từ, " + (day.qualifiedDay ? "đạt mục tiêu" : "chưa đạt mục tiêu")}
+                  title={dateLabel(day.date) + ": " + (count ?? "-") + " từ"}
+                />
+              );
+            })}
+          </div>
+        </div>
+        <div className="vprogress-heatmap-footer">
+          <p className="text-xs text-muted-foreground">
+            {selectedActivity
+              ? dateLabel(selectedActivity.date) + ": " + (selectedActivity.qualifiedWordCount ?? 0) +
+                " từ · " + (selectedActivity.qualifiedDay ? "Đạt mục tiêu" : "Chưa đạt mục tiêu")
+              : "Chọn một ngày để xem chi tiết."}
+          </p>
+          <div className="vprogress-heat-legend">
+            <span>Ít</span>
+            <i className="vprogress-heat-key vprogress-heat-cell--empty" />
+            <i className="vprogress-heat-key vprogress-heat-cell--low" />
+            <i className="vprogress-heat-key vprogress-heat-cell--medium" />
+            <i className="vprogress-heat-key vprogress-heat-cell--high" />
+            <span>Nhiều</span>
+          </div>
         </div>
       </div>
-      <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-        <p className="text-xs text-muted-foreground">{chosen ? `${dateLabel(chosen.date)}: ${chosen.qualifiedWordCount ?? 0} từ · ${chosen.qualifiedDay ? "Đã đạt mục tiêu" : "Chưa đạt mục tiêu"}` : "Chọn một ngày để xem số từ."}</p>
-        <div className="flex items-center gap-1.5 text-xs text-muted-foreground"><span>Ít</span><i className="vprogress-heat-key vprogress-heat-cell--empty" /><i className="vprogress-heat-key vprogress-heat-cell--low" /><i className="vprogress-heat-key vprogress-heat-cell--medium" /><i className="vprogress-heat-key vprogress-heat-cell--high" /><span>Nhiều</span></div>
-      </div>
-    </PaperSurface>
-  );
-}
-
-function UnitProgress({ data }: { data: VocabularyProgressDashboard }) {
-  const [expanded, setExpanded] = useState(false);
-  const shown = expanded ? data.units : data.units.slice(0, 4);
-  return (
-    <PaperSurface as="section" className="p-5 sm:p-6">
-      <SectionHeading eyebrow="06 / THEO UNIT" title="Các bộ từ đang học" hint="Tiến độ theo số từ đã có FSRS card." />
-      <div className="mt-5 space-y-4">
-        {shown.map((unit) => {
-          const percent = unit.totalCount ? Math.round(unit.learnedCount / unit.totalCount * 100) : 0;
-          return <div key={unit.unitId} className="space-y-1.5">
-            <div className="flex items-center justify-between gap-3">
-              <p className="min-w-0 truncate text-sm font-bold text-foreground">{unit.name}</p>
-              <span className="shrink-0 text-xs font-bold tabular-nums">{unit.learnedCount}/{unit.totalCount}</span>
-            </div>
-            <div className="vprogress-track" role="progressbar" aria-label={`Đã học ${unit.name}`} aria-valuenow={percent} aria-valuemin={0} aria-valuemax={100}><span style={{ width: percent + "%" }} /></div>
-            <p className="text-xs text-muted-foreground">{unit.dueCount} từ cần ôn · {unit.newCount} từ chưa học</p>
-          </div>;
-        })}
-      </div>
-      {data.units.length > 4 && <button type="button" onClick={() => setExpanded((value) => !value)} className="student-control student-control--quiet mt-5 flex w-full items-center justify-center gap-1 px-4">
-        {expanded ? "Thu gọn" : `Xem thêm ${data.units.length - 4} Unit`} <ChevronRight className={"size-4 transition-transform " + (expanded ? "-rotate-90" : "rotate-90")} />
-      </button>}
-      <Link href="/student/vocabulary" className="mt-3 inline-flex items-center gap-1 text-sm font-bold text-primary hover:underline">
-        Đến thư viện từ vựng <ArrowRight className="size-4" aria-hidden="true" />
-      </Link>
     </PaperSurface>
   );
 }
 
 function AttentionWords({ data }: { data: VocabularyProgressDashboard }) {
-  const [openWord, setOpenWord] = useState<number | null>(null);
+  const [expandedWord, setExpandedWord] = useState<number | null>(null);
   return (
-    <PaperSurface as="section" className="p-5 sm:p-6">
-      <SectionHeading eyebrow="07 / CỦNG CỐ" title="Những từ cần chú ý" hint="Ví dụ minh họa theo số lần đánh giá AGAIN và HARD gần đây, chưa phải xếp hạng thật." />
-      <div className="mt-4 divide-y divide-border">
-        {data.attentionWords.map((word) => (
-          <div key={word.wordId} className="py-3">
-            <button type="button" aria-expanded={openWord === word.wordId} onClick={() => setOpenWord((value) => value === word.wordId ? null : word.wordId)} className="flex w-full items-center gap-3 text-left">
-              <div className="vprogress-word-index"><BookOpen className="size-4" aria-hidden="true" /></div>
-              <span className="min-w-0 flex-1"><strong className="block text-sm text-foreground">{word.word}</strong><span className="block text-xs text-muted-foreground">{word.meaningVi} · {word.unitName}</span></span>
-              <ChevronRight className={"size-4 shrink-0 text-muted-foreground transition-transform " + (openWord === word.wordId ? "rotate-90" : "")} aria-hidden="true" />
+    <PaperSurface as="section" className="vprogress-attention">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <SectionHeading
+          eyebrow="05 / CỦNG CỐ"
+          title="Những từ cần chú ý"
+          hint="Gợi ý các từ thường được đánh giá AGAIN hoặc HARD trong dữ liệu mẫu."
+        />
+        <Link href="/student/vocabulary" className="vprogress-text-link">
+          Đến thư viện <ArrowRight className="size-4" aria-hidden="true" />
+        </Link>
+      </div>
+      <div className="vprogress-word-grid">
+        {data.attentionWords.slice(0, 3).map((word) => (
+          <div key={word.wordId} className="vprogress-word">
+            <button
+              type="button"
+              className="vprogress-word-toggle"
+              aria-expanded={expandedWord === word.wordId}
+              onClick={() => setExpandedWord((current) => current === word.wordId ? null : word.wordId)}
+            >
+              <span className="vprogress-word-icon" aria-hidden="true"><BookOpen className="size-4" /></span>
+              <span className="min-w-0 flex-1">
+                <strong className="block truncate text-sm">{word.word}</strong>
+                <span className="block truncate text-xs text-muted-foreground">
+                  {word.meaningVi} · {word.unitName}
+                </span>
+              </span>
+              <ChevronRight
+                className={"size-4 shrink-0 transition-transform " +
+                  (expandedWord === word.wordId ? "rotate-90" : "")}
+                aria-hidden="true"
+              />
             </button>
-            {openWord === word.wordId && <div className="ml-12 mt-2 rounded-lg bg-secondary/50 p-3 text-xs text-foreground">
-              Lần đánh giá Khó: {word.hardCount} · Chưa nhớ: {word.againCount}. Đây chỉ là dữ liệu mẫu.
-            </div>}
+            <div className="vprogress-word-tags">
+              <span>AGAIN × {word.againCount}</span>
+              <span>HARD × {word.hardCount}</span>
+            </div>
+            {expandedWord === word.wordId && (
+              <p className="vprogress-word-detail">
+                Các lượt đánh giá này chỉ là dữ liệu minh họa, chưa có thuật toán xếp hạng từ khó.
+              </p>
+            )}
           </div>
         ))}
       </div>
-      <Link href="/student/vocabulary" className="mt-3 inline-flex items-center gap-1 text-sm font-bold text-primary hover:underline">
-        Mở thư viện để luyện tập <ArrowRight className="size-4" aria-hidden="true" />
-      </Link>
     </PaperSurface>
   );
 }
 
-export function StudentVocabularyProgressPage({ data = vocabularyProgressMock }: { data?: VocabularyProgressDashboard }) {
+export function StudentVocabularyProgressPage({
+  data = vocabularyProgressMock,
+}: { data?: VocabularyProgressDashboard }) {
   return (
-    <main className="student-vocab vprogress mx-auto max-w-[1180px] space-y-5 pb-12 sm:space-y-6">
-      <header className="vprogress-page-header flex flex-wrap items-start justify-between gap-4">
-        <div className="space-y-1.5">
-          <p className="student-meta text-primary">SỔ TAY TỪ VỰNG / TIẾN ĐỘ</p>
-          <ScrapbookHeading as="h1" className="student-page-title">Hành trình từ vựng</ScrapbookHeading>
-          <p className="student-body text-muted-foreground">Mỗi ngày học một chút, cây tri thức lớn thêm một phần.</p>
-          <p className="vprogress-mock-notice">Bản xem trước · Dữ liệu minh họa, chưa kết nối tài khoản</p>
+    <main className="student-vocab vprogress mx-auto max-w-[1200px] space-y-5 pb-12 sm:space-y-6">
+      <header className="vprogress-page-header">
+        <div className="vprogress-page-title">
+          <span className="student-meta text-primary">SỔ TAY TỪ VỰNG / TIẾN ĐỘ</span>
+          <div className="vprogress-heading-line">
+            <ScrapbookHeading as="h1" className="student-page-title">
+              Hành trình từ vựng
+            </ScrapbookHeading>
+            <MaiBlossomAccent className="vprogress-header-flower" />
+          </div>
+          <p className="student-body text-muted-foreground">
+            Mỗi ngày học một chút, cây tri thức lớn thêm một phần.
+          </p>
+          <span className="vprogress-mock-notice">
+            Bản xem trước · Dữ liệu minh họa, chưa kết nối tài khoản
+          </span>
         </div>
-        <Link href="/student/vocabulary" className="student-control student-control--quiet inline-flex items-center gap-2 px-4">
-          <ArrowLeft className="size-4" aria-hidden="true" /> <LibraryBig className="size-4" aria-hidden="true" /> Thư viện từ
+        <Link
+          href="/student/vocabulary"
+          className="student-control student-control--quiet inline-flex items-center gap-2 px-4"
+        >
+          <ArrowLeft className="size-4" aria-hidden="true" />
+          <LibraryBig className="size-4" aria-hidden="true" />
+          Thư viện từ
         </Link>
       </header>
-      <div className="vprogress-hero-grid">
-        <TodayCard data={data} />
-        <TreeCard data={data} />
+      <PaperSurface as="section" className="vprogress-hero">
+        <TodayPanel today={data.today} />
+        <TreePanel tree={data.tree} />
+      </PaperSurface>
+      <div className="vprogress-body-grid">
+        <ContentProgress data={data} />
+        <LearningActivity data={data} />
       </div>
-      <OverviewCard data={data} />
-      <ReviewSchedule data={data} />
-      <ActivityHeatmap data={data} />
-      <div className="vprogress-bottom-grid">
-        <UnitProgress data={data} />
-        <AttentionWords data={data} />
-      </div>
-      <p className="text-center text-xs text-muted-foreground">Mock UI · Chưa tính streak, lịch FSRS hoặc thống kê từ dữ liệu thật.</p>
+      <AttentionWords data={data} />
+      <p className="text-center text-xs text-muted-foreground">
+        Mock UI · Chưa tính streak, lịch FSRS hay danh sách từ khó từ dữ liệu thực.
+      </p>
     </main>
   );
 }

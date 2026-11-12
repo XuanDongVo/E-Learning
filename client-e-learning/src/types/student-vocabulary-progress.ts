@@ -1,6 +1,7 @@
 /**
- * Mirrors VocabularyProgressDashboardResponse.java (the future read-only payload).
- * This preview must NOT call a backend endpoint: see vocabulary-progress.mock.ts.
+ * Mirrors VocabularyProgressDashboardResponse.java for GET /v1/student/vocabulary/progress.
+ * The transport lives in student-vocabulary-progress.service.ts.
+ * The UI continues using vocabulary-progress.mock.ts until backend aggregation is ready.
  */
 export type MemoryTreeMilestone = 0 | 3 | 7 | 14 | 30;
 

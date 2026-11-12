@@ -5,8 +5,9 @@ import java.time.Instant;
 import java.util.List;
 
 /**
- * Future read-only /v1/student/vocabulary/progress contract.
- * No controller, repository, migration, or persistence is implemented in the UI preview phase.
+ * Read-only GET /v1/student/vocabulary/progress response contract.
+ * Controller and service are scaffolded, but aggregation is intentionally not yet implemented.
+ * No new persistence model is required.
  *
  * Daily qualification: >= 5 DISTINCT words with HARD/GOOD/EASY ratings, based on the
  * student's local date (timeZone). AGAIN and game answers do not qualify.

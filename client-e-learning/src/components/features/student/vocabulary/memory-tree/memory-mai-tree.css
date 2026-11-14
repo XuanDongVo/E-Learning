@@ -1,0 +1,52 @@
+.memory-mai-tree {
+  width: 100%;
+  min-width: 0;
+  isolation: isolate;
+}
+.memory-mai-tree__canvas {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  outline-offset: 4px;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.memory-mai-tree__canvas:disabled {
+  cursor: default;
+}
+.memory-mai-tree__canvas:focus-visible {
+  outline: 3px solid #8b9d65;
+  border-radius: 12px;
+}
+.memory-mai-tree__canvas svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+.memory-mai-falling-petal {
+  transform-box: fill-box;
+  transform-origin: center;
+  opacity: 0;
+  pointer-events: none;
+  animation-name: memory-mai-petal-fall;
+  animation-timing-function: cubic-bezier(.31, .12, .7, .94);
+  animation-fill-mode: both;
+}
+.memory-mai-falling-petal--idle {
+  animation-iteration-count: infinite;
+}
+.memory-mai-falling-petal--burst {
+  animation-iteration-count: 1;
+}
+@keyframes memory-mai-petal-fall {
+  0% { opacity: 0; transform: translate3d(0, -8px, 0) rotate(0deg); }
+  12% { opacity: .85; }
+  88% { opacity: .84; }
+  100% { opacity: 0; transform: translate3d(var(--mai-drift, 42px), 232px, 0) rotate(190deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .memory-mai-falling-petal { animation: none !important; }
+}

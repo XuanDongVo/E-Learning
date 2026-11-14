@@ -8,6 +8,10 @@ import java.util.Optional;
 
 public interface StudentVocabularyProgressRepository extends JpaRepository<StudentVocabularyProgress, Long> {
     List<StudentVocabularyProgress> findAllByStudentIdAndWordUnitId(Long studentId, Long unitId);
+
+    List<StudentVocabularyProgress> findAllByStudentIdAndWordUnitIdIn(Long studentId, List<Long> unitIds);
+
     Optional<StudentVocabularyProgress> findByStudentIdAndWordId(Long studentId, Long wordId);
+
     boolean existsByWordId(Long wordId);
 }

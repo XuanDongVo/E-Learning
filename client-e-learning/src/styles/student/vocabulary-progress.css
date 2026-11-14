@@ -1,0 +1,799 @@
+/* Vocabulary Progress: student-only, mock-first page. */
+.vprogress {
+  --vp-olive: #788b5b;
+  --vp-olive-dark: #536f4b;
+  --vp-gold: #c79d54;
+  --vp-cream: #f8f0dc;
+  min-width: 0;
+}
+.vprogress-page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.1rem 0 0.15rem;
+}
+.vprogress-page-title {
+  min-width: 0;
+  display: grid;
+  gap: 0.4rem;
+}
+.vprogress-heading-line {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.vprogress-header-flower {
+  width: 36px;
+  height: 36px;
+  flex: none;
+  transform: rotate(-12deg);
+}
+.vprogress-mock-notice {
+  width: fit-content;
+  display: inline-block;
+  margin-top: 0.25rem;
+  padding: 0.28rem 0.55rem;
+  border: 1px dashed color-mix(in srgb, var(--vp-gold) 70%, var(--border));
+  border-radius: 0.4rem;
+  background: color-mix(in srgb, var(--vp-cream) 63%, var(--background));
+  color: var(--foreground);
+  font-size: 0.72rem;
+  font-weight: 650;
+}
+.vprogress-hero {
+  display: grid;
+  grid-template-columns: minmax(250px, 0.58fr) minmax(0, 1.42fr);
+  align-items: stretch;
+  overflow: hidden;
+  padding: 0;
+}
+.vprogress-hero-today {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: clamp(1.15rem, 2.8vw, 2rem);
+  border-right: 1px dashed color-mix(in srgb, var(--border) 80%, transparent);
+  background-image: repeating-linear-gradient(
+    transparent 0,
+    transparent 35px,
+    color-mix(in srgb, var(--vp-olive) 11%, transparent) 36px,
+    transparent 37px
+  );
+}
+.vprogress-hero-title {
+  margin-top: 0.3rem;
+  font-family: var(--student-font-heading, inherit);
+  color: var(--foreground);
+  font-size: clamp(1.2rem, 2vw, 1.6rem);
+  line-height: 1.2;
+  font-weight: 800;
+}
+.vprogress-today-total {
+  display: flex;
+  align-items: baseline;
+  gap: 0.55rem;
+  margin-top: 1rem;
+  /* margin-top: clamp(1.5rem, 3vw, 2.5rem); */
+}
+.vprogress-today-number {
+  color: var(--foreground);
+  font-size: clamp(3.4rem, 6vw, 5rem);
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.06em;
+}
+.vprogress-today-denominator {
+  color: var(--foreground);
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+.vprogress-track {
+  height: 0.68rem;
+  width: 100%;
+  border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
+  border-radius: 100px;
+  background: color-mix(in srgb, var(--foreground) 8%, var(--background));
+  overflow: hidden;
+}
+.vprogress-track > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--vp-olive);
+  transition: width 0.3s ease;
+}
+.vprogress-track--small {
+  height: 0.47rem;
+}
+.vprogress-today-due {
+  display: flex;
+  gap: 0.55rem;
+  align-items: center;
+  border-top: 1px solid var(--border);
+  margin-top: 1.1rem;
+  padding-top: 0.8rem;
+  padding-bottom: 0.65rem;
+  font-size: 0.9rem;
+}
+.vprogress-main-action {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 44px;
+  padding: 0.65rem 1rem;
+}
+/* .vprogress-hero-tree {
+  min-width: 0;
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1.12fr) minmax(175px, 0.88fr);
+  grid-template-rows: auto auto auto auto;
+  column-gap: 0.5rem;
+  row-gap: 0.35rem;
+  padding: 1.2rem clamp(1rem, 2.3vw, 1.6rem) 1.3rem;
+  background: radial-gradient(
+    ellipse at 38% 48%,
+    color-mix(in srgb, #ead9aa 20%, transparent),
+    transparent 65%
+  );
+} */
+
+.vprogress-hero-tree {
+  position: relative;
+
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1fr)
+    minmax(0, 1fr);
+
+  align-items: center;
+  gap: 1rem;
+
+  min-width: 0;
+  padding: 1.2rem clamp(1rem, 2.3vw, 1.6rem) 1.3rem;
+
+  background: radial-gradient(ellipse at 38% 48%, #ead9aa33, transparent 65%);
+}
+
+/* Cột trái — Cây mai */
+.vprogress-tree-art {
+  width: 100%;
+  min-width: 0;
+  max-width: 500px;
+  margin-inline: auto;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.vprogress-tree-art .memory-mai-tree {
+  width: 100%;
+}
+
+/* Cột phải — Nội dung */
+.vprogress-tree-content {
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  align-items: stretch;
+  justify-content: flex-start;
+
+  gap: 1.25rem;
+}
+
+/* Tiêu đề */
+.vprogress-tree-heading {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+
+  gap: 0.6rem;
+  min-width: 0;
+  position: relative;
+  z-index: 1;
+}
+
+/* Streak */
+.vprogress-tree-details {
+  flex-direction: row;
+  gap: 2rem;
+  min-width: 0;
+  display: flex;
+}
+
+.vprogress-tree-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.vprogress-tree-stat > span {
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+}
+
+.vprogress-tree-stat strong {
+  font-size: 1.38rem;
+  line-height: 1.15;
+  font-weight: 850;
+  color: var(--foreground);
+}
+
+.vprogress-tree-stat small {
+  font-size: 0.73rem;
+  font-weight: 600;
+}
+
+/* Thanh milestone */
+.vprogress-milestone-track {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+
+  gap: 0.3rem;
+  margin: 0;
+
+  position: relative;
+}
+
+/* Nút */
+.vprogress-tree-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 0.5rem;
+  width: 100%;
+  min-height: 42px;
+
+  padding: 0.6rem 1rem;
+}
+
+.vprogress-hero-tree {
+  position: relative;
+
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1fr)
+    minmax(0, 1fr);
+
+  align-items: center;
+  gap: 1rem;
+
+  min-width: 0;
+  padding: 1.2rem clamp(1rem, 2.3vw, 1.6rem) 1.3rem;
+
+  background: radial-gradient(ellipse at 38% 48%, #ead9aa33, transparent 65%);
+}
+
+.vprogress-tree-sprig {
+  position: absolute;
+  width: 82px;
+  height: auto;
+  top: -13px;
+  right: -17px;
+  opacity: 0.58;
+  pointer-events: none;
+  transform: rotate(14deg);
+}
+/* .vprogress-tree-heading {
+  position: relative;
+  grid-column: 2;
+  grid-row: 1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.7rem;
+  z-index: 1;
+} */
+.vprogress-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.35rem 0.68rem;
+  background: color-mix(in srgb, #dec58e 26%, var(--background));
+  color: var(--foreground);
+  font-size: 0.72rem;
+  font-weight: 750;
+  border: 1px solid color-mix(in srgb, var(--vp-gold) 61%, var(--border));
+  border-radius: 99px;
+  white-space: nowrap;
+}
+/* .vprogress-tree-layout {
+  display: contents;
+} */
+/* .vprogress-tree-art {
+  grid-column: 1;
+  grid-row: 1 / 5;
+  width: 100%;
+  max-width: 500px;
+  margin-inline: auto;
+  align-self: center;
+} */
+/* .vprogress-tree-details {
+  grid-column: 2;
+  grid-row: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  min-width: 0;
+} */
+.vprogress-tree-stat {
+  display: grid;
+  gap: 0.14rem;
+}
+.vprogress-tree-stat > span {
+  color: var(--muted-foreground);
+  font-size: 0.75rem;
+}
+.vprogress-tree-stat strong {
+  color: var(--foreground);
+  font-size: 1.38rem;
+  line-height: 1.15;
+  font-weight: 850;
+}
+.vprogress-tree-stat small {
+  font-size: 0.73rem;
+  font-weight: 600;
+}
+.vprogress-milestone-track {
+  grid-column: 2;
+  grid-row: 3;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.3rem;
+  margin: -0.15rem 0.1rem 0.8rem;
+  position: relative;
+}
+.vprogress-milestone-track::before {
+  content: "";
+  position: absolute;
+  top: 11px;
+  left: 11%;
+  right: 11%;
+  height: 2px;
+  background: color-mix(in srgb, var(--vp-olive) 35%, var(--border));
+}
+.vprogress-milestone-marker {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  justify-items: center;
+  gap: 0.2rem;
+  color: var(--foreground);
+}
+.vprogress-milestone-marker > span {
+  width: 23px;
+  height: 23px;
+  display: grid;
+  place-items: center;
+  border: 2px solid var(--vp-olive);
+  border-radius: 50%;
+  background: var(--background);
+}
+.vprogress-milestone-marker > span.is-unlocked {
+  background: var(--vp-olive);
+  color: #fff;
+}
+.vprogress-milestone-marker small {
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+/* .vprogress-tree-action {
+  grid-column: 2;
+  grid-row: 4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  min-height: 42px;
+  padding: 0.45rem 1rem;
+} */
+.vprogress-body-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+  gap: 1.25rem;
+  align-items: stretch;
+}
+.vprogress-learning-panel,
+.vprogress-activity-panel,
+.vprogress-attention {
+  position: relative;
+  min-width: 0;
+  padding: 1.3rem clamp(1rem, 2.2vw, 1.65rem);
+}
+.vprogress-content-flower {
+  position: absolute;
+  width: 33px;
+  height: 33px;
+  top: -17px;
+  right: 14px;
+  transform: rotate(20deg);
+  opacity: 0.72;
+  pointer-events: none;
+}
+.vprogress-learning-overview {
+  margin-top: 1.35rem;
+  padding: 1rem 0 1.1rem;
+  border-bottom: 1px dashed var(--border);
+  display: grid;
+  gap: 0.6rem;
+}
+.vprogress-learning-number {
+  font-size: clamp(2.1rem, 4vw, 3.1rem);
+  line-height: 1;
+  color: var(--foreground);
+  letter-spacing: -0.045em;
+}
+.vprogress-content-list {
+  margin-top: 1.25rem;
+  display: grid;
+  gap: 0.8rem;
+}
+.vprogress-content-row {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
+  border-radius: 0.65rem;
+  color: var(--foreground);
+  background: color-mix(in srgb, var(--background) 84%, var(--secondary));
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+.vprogress-content-row:hover {
+  border-color: var(--vp-olive);
+  background: color-mix(in srgb, var(--vp-olive) 9%, var(--background));
+}
+.vprogress-text-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  width: fit-content;
+  margin-top: 1rem;
+  color: var(--primary);
+  font-size: 0.84rem;
+  font-weight: 750;
+  text-decoration: none;
+}
+.vprogress-text-link:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.vprogress-activity-section {
+  margin-top: 1.15rem;
+  display: grid;
+  gap: 0.65rem;
+}
+.vprogress-activity-section--heatmap {
+  padding-top: 1.05rem;
+  margin-top: 1.1rem;
+  border-top: 1px dashed var(--border);
+}
+.vprogress-subheading {
+  color: var(--foreground);
+  font-size: 0.98rem;
+  font-weight: 800;
+}
+.vprogress-schedule {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0.35rem;
+  min-width: 0;
+}
+.vprogress-schedule-day {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.55rem 0.1rem 0.45rem;
+  border: 1px solid var(--border);
+  border-radius: 0.55rem;
+  background: color-mix(in srgb, var(--background) 84%, var(--secondary));
+  color: var(--foreground);
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+.vprogress-schedule-day:hover {
+  border-color: var(--vp-olive);
+}
+.vprogress-schedule-day.is-selected {
+  border-color: var(--vp-olive);
+  background: color-mix(in srgb, var(--vp-olive) 13%, var(--background));
+}
+.vprogress-bar-holder {
+  width: 100%;
+  height: 63px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+}
+.vprogress-bar {
+  display: block;
+  width: min(58%, 30px);
+  min-height: 5px;
+  border-radius: 4px 4px 1px 1px;
+  background: var(--vp-olive);
+}
+.vprogress-activity-note {
+  display: flex;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: 0.5rem;
+  background: color-mix(in srgb, var(--vp-cream) 60%, var(--background));
+  color: var(--foreground);
+  font-size: 0.76rem;
+}
+.vprogress-heatmap-wrap {
+  width: 100%;
+  overflow-x: auto;
+  padding: 4px 2px;
+}
+.vprogress-heatmap {
+  width: 100%;
+  min-width: 250px;
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  grid-template-rows: repeat(7, 17px);
+  grid-auto-flow: column;
+  gap: 4px;
+}
+.vprogress-heat-cell {
+  width: 100%;
+  min-width: 0;
+  height: 17px;
+  padding: 0;
+  border-radius: 3px;
+  border: 0;
+  cursor: pointer;
+}
+.vprogress-heat-cell--empty {
+  background: color-mix(in srgb, var(--foreground) 8%, var(--background));
+}
+.vprogress-heat-cell--low {
+  background: #c7d4a8;
+}
+.vprogress-heat-cell--medium {
+  background: #83a875;
+}
+.vprogress-heat-cell--high {
+  background: #416e55;
+}
+.vprogress-heat-cell--future {
+  border: 1px dashed var(--border);
+  background: transparent;
+}
+.vprogress-heat-cell.is-selected {
+  outline: 2px solid var(--foreground);
+  outline-offset: 1px;
+}
+.vprogress-heatmap-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+.vprogress-heat-legend {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.7rem;
+  color: var(--muted-foreground);
+  white-space: nowrap;
+}
+.vprogress-heat-key {
+  width: 0.75rem;
+  height: 0.75rem;
+  display: inline-block;
+  border-radius: 2px;
+}
+.vprogress-word-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.8rem;
+  margin-top: 1.1rem;
+}
+.vprogress-word {
+  min-width: 0;
+  padding: 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: 0.7rem;
+  background: color-mix(in srgb, var(--background) 78%, var(--secondary));
+}
+.vprogress-word-toggle {
+  display: flex;
+  align-items: center;
+  text-align: left;
+  width: 100%;
+  gap: 0.65rem;
+  color: var(--foreground);
+}
+.vprogress-word-icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--vp-olive) 14%, var(--background));
+  color: var(--vp-olive-dark);
+}
+.vprogress-word-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0.65rem 0 0 2.65rem;
+}
+.vprogress-word-tags span {
+  border: 1px solid color-mix(in srgb, var(--vp-gold) 55%, var(--border));
+  border-radius: 99px;
+  padding: 0.12rem 0.5rem;
+  color: var(--foreground);
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+.vprogress-word-detail {
+  margin: 0.55rem 0 0 2.65rem;
+  color: var(--muted-foreground);
+  font-size: 0.75rem;
+}
+.vprogress-milestone {
+  min-width: 0;
+  min-height: 4.6rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.2rem;
+  padding: 0.4rem 0.1rem;
+  border: 1px solid var(--border);
+  border-radius: 0.55rem;
+  background: var(--background);
+  color: var(--foreground);
+}
+.vprogress-milestone.is-selected {
+  border-color: var(--vp-olive);
+  background: color-mix(in srgb, var(--vp-olive) 16%, var(--background));
+}
+.vprogress-journey-dialog {
+  max-height: min(92dvh, 790px);
+  overflow-y: auto;
+}
+.vprogress :is(a, button):focus-visible,
+.vprogress-journey-dialog button:focus-visible {
+  outline: 2px solid var(--vp-olive);
+  outline-offset: 3px;
+}
+@media (max-width: 1020px) {
+  .vprogress-hero {
+    grid-template-columns: minmax(230px, 0.7fr) minmax(0, 1.3fr);
+  }
+  .vprogress-hero-tree {
+    grid-template-columns: minmax(0, 1fr) minmax(150px, 0.78fr);
+  }
+  .vprogress-tree-details {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.45rem;
+  }
+  .vprogress-tree-details > p {
+    grid-column: 1 / -1;
+  }
+}
+@media (max-width: 800px) {
+  .vprogress-hero {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .vprogress-hero-today {
+    border-right: 0;
+    border-bottom: 1px dashed var(--border);
+  }
+
+  .vprogress-today-due {
+    margin-top: 1.5rem;
+  }
+  .vprogress-hero-tree {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+  .vprogress-tree-content {
+    display: contents;
+  }
+
+  .vprogress-tree-heading {
+    order: 1;
+  }
+
+  .vprogress-tree-art {
+    order: 2;
+    width: 100%;
+    max-width: 350px;
+    margin-inline: auto;
+    align-self: center;
+  }
+
+  .vprogress-tree-details {
+    order: 3;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+  }
+
+  .vprogress-milestone-track {
+    order: 4;
+    width: 100%;
+    margin: 0.5rem 0 0;
+  }
+
+  .vprogress-tree-action {
+    order: 5;
+    width: 100%;
+  }
+}
+@media (max-width: 550px) {
+  .vprogress-page-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .vprogress-tree-details {
+    gap: 0.6rem;
+  }
+  .vprogress-tree-stat strong {
+    font-size: 1.12rem;
+  }
+  .vprogress-tree-details > p {
+    font-size: 0.68rem;
+  }
+  .vprogress-tree-sprig {
+    width: 60px;
+  }
+  .vprogress-badge {
+    font-size: 0.66rem;
+  }
+  .vprogress-word-grid {
+    grid-template-columns: 1fr;
+    gap: 0.55rem;
+  }
+  .vprogress-word {
+    padding: 0.75rem;
+  }
+}
+@media (max-width: 370px) {
+  .vprogress-tree-art {
+    max-width: 300px;
+  }
+  .vprogress-tree-details {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .vprogress-tree-details > p {
+    grid-column: 1 / -1;
+  }
+  .vprogress-schedule {
+    gap: 0.18rem;
+  }
+  .vprogress-schedule-day {
+    padding: 0.45rem 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .vprogress-track > span,
+  .vprogress-content-row,
+  .vprogress-schedule-day {
+    transition: none;
+  }
+}

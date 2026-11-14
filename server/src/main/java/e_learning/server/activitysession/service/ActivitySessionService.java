@@ -63,6 +63,7 @@ public class ActivitySessionService {
                 || !hasCurrentGradeAccess(student.getId(), activity.getUnit().getGrade().getId())) {
             throw new AppException(ErrorCode.ACTIVITY_SESSION_NOT_ACCESSIBLE);
         }
+        requireClassicRuntime(activity);
         return new ActivitySessionOptionsResponse(activity.getId(), activity.getMode(), activity.getQuestionDifficulty(),
                 activity.getAvailableSelectionStrategies(), activity.getTimeLimitSeconds(), activity.getLives());
     }
@@ -77,6 +78,7 @@ public class ActivitySessionService {
                 || !hasCurrentGradeAccess(studentId, activity.getUnit().getGrade().getId())) {
             throw new AppException(ErrorCode.ACTIVITY_SESSION_NOT_ACCESSIBLE);
         }
+        requireClassicRuntime(activity);
 
         ActivityMode mode = resolveMode(activity, request == null ? null : request.mode());
         SelectionStrategy strategy = resolveStrategy(activity, request == null ? null : request.selectionStrategy());
@@ -270,6 +272,14 @@ public class ActivitySessionService {
         if (requested != null && requested != activity.getMode())
             throw new AppException(ErrorCode.ACTIVITY_SESSION_INVALID_MODE);
         return activity.getMode();
+    }
+
+    /** M2 must never run Guided content through the Classic response/answer flow; M3 owns that runtime. */
+    private void requireClassicRuntime(Activity activity) {
+        if (activity.getPracticeType() == ActivityPracticeType.GUIDED_REASONING) {
+            throw new AppException(ErrorCode.ACTIVITY_SESSION_NOT_READY,
+                    "Guided Reasoning runtime is not available until its session flow is deployed");
+        }
     }
 
     private SelectionStrategy resolveStrategy(Activity activity, SelectionStrategy requested) {

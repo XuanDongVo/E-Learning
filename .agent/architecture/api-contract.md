@@ -35,6 +35,15 @@ PATCH /v1/activities/{id}/status
 GET /v1/activities/{id}/readiness
 POST /v1/activities/{id}/preview
 
+Activity create/update/response additionally carries `practiceType`:
+`CLASSIC` or `GUIDED_REASONING`. Existing records are migrated as `CLASSIC`.
+`GUIDED_REASONING` is server-enforced to `mode=LEARNING` and exactly one
+selection strategy, `RANDOM`; readiness, preview and later runtime selection use
+only complete Questions with a READY, revision-matching Guided Definition.
+The Guided Student session flow is not implemented yet, and Guided Activities are
+therefore rejected by the current Classic ActivitySession runtime rather than
+being allowed to leak Final content.
+
 No current GameTemplate endpoint.
 
 ## Assignment
@@ -158,6 +167,26 @@ Both endpoints require `ROLE_STUDENT`; student id comes only from the JWT, never
 - Student runtime payloads must not expose correctness flags, accepted answers, normalized values, or explanations before the corresponding Practice/review rule allows them. Hint content is returned through the explicit hint action so use can be recorded.
 - ActivitySession uses the session endpoints above; do not reintroduce the legacy polymorphic `/v1/attempts/{id}` API from the historical tail of the old Phase 7 draft.
 - Accepted Question Engine domain contract: see `.agent/architecture/question-engine-v1.md` and ADR 0023 (lifecycle refined by ADR 0025; Assignment scoring/display refined by ADR 0026). The discriminated QuestionSpec contract is accepted, but the new implementation/wire DTOs are not yet delivered; do not represent planned endpoints as current routes.
+
+## Guided Reasoning authoring (M1 implemented)
+
+Teacher-only endpoints under the existing `/v1/content/**` security boundary:
+
+- `GET /v1/content/questions/{questionId}/guided`
+- `PUT /v1/content/questions/{questionId}/guided` — saves a DRAFT with required
+  `expectedVersion`; first save uses version `0`.
+- `POST /v1/content/questions/{questionId}/guided/validate` — validates the
+  current version and marks it READY only when all rules pass; otherwise returns
+  `ready=false` and path-addressable issues without changing the Draft.
+- `DELETE /v1/content/questions/{questionId}/guided`
+- `GET /v1/content/guided/capabilities`
+
+Guided authoring is only for Question Bank Questions. It supports `SINGLE_CHOICE`,
+`TRUE_FALSE` and `TYPE_ANSWER` Steps, while a READY definition requires a complete
+supported Final Question and one or more ordered Steps. The authoring DTO contains
+answer keys and must never be reused by a Student runtime projection. Activity
+selection, student sessions, hints/retry runtime, review and XP are not current
+API contracts yet.
 
 
 ## Assignment Composition and AssessmentAttempt — accepted target contract, not yet implemented

@@ -3,7 +3,11 @@
 **Functional Requirements Specification — E-Learning**  
 **Phiên bản:** 1.1, cập nhật 14/11/2026 theo Guided-first + Hint/Retry từng Step  
 **Branch:** `feature/guided-reasoning-v1` (tạo từ `main` @ `268bcf0b03cb87e0c72cf14a9d28998698b8421b`)  
-**Tình trạng:** Specification only. API/schema bên dưới **chưa tồn tại** trừ khi ghi rõ EXISTING.  
+**Tình trạng:** M1 đã có schema và Teacher authoring API (definition Draft/Ready,
+validation, optimistic version, capabilities); M2 đã có Activity `practiceType`,
+Guided eligibility/readiness, Teacher Activity configuration, và Teacher
+`GuidedDefinitionEditor` trên trang sửa Question đã lưu. M3–M5 — runtime,
+review và Student UI — vẫn là specification, trừ khi ghi rõ EXISTING.<br>
 **SRS:** [02_SRS_Guided_Reasoning_v1.md](02_SRS_Guided_Reasoning_v1.md)
 
 > **CONFIRMED:** Product Owner đã chốt. **PROPOSED:** Policy triển khai chi tiết có thể thay đổi khi review, được ghi nhãn rõ; không được xem là Product Owner đã duyệt. **EXISTING:** Từ mã nguồn `main` tại base SHA.
@@ -261,7 +265,17 @@ Teacher vào Student detail → Activity Sessions → Guided Session Review, th�
 
 Các Session CLASSIC cũ không có step records; API mới trả `steps=[]` hoặc `guided=null`, không lỗi. Student Classical result chưa được phép phụ thuộc local picks cho Guided, nhưng không thay đổi Classic UI/gamification ngoài phạm vi cần thiết.
 
-## 8. Proposed API contracts (not implemented)
+## 8. API contracts
+
+**M1 Teacher editor implemented:** `GuidedDefinitionEditor` is attached to the
+saved Question edit screen and uses the authoring contracts below. It supports
+ordered Steps, per-Step Hint/Retry, draft save, ready validation with field
+issues, delete/reset, and a Teacher-only guided-first flow preview.
+
+**M1 implemented:** toàn bộ endpoint authoring ở §8.1, theo `ApiResponse` hiện có.
+**M2 implemented:** phần cấu hình Activity ở §8.2 (`practiceType`, Guided-only
+LEARNING/RANDOM, eligibility/readiness/preview/selection). **Chưa implemented:**
+Student runtime và Review (§8.3–8.4).
 
 Bên dưới là **contract gợi ý**, cần phù hợp ApiResponse/error code convention hiện tại. IDs `sessionQuestionId` là **row ID** của ActivitySessionQuestion, không phải Question Bank ID.
 

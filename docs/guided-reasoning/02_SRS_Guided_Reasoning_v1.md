@@ -2,7 +2,9 @@
 
 **Software Requirements Specification — E-Learning**  
 **Phiên bản:** 1.1 — cập nhật theo thay đổi nghiệp vụ ngày 14/11/2026  
-**Trạng thái:** Baseline đặc tả để bắt đầu phát triển; **chưa triển khai code**  
+**Trạng thái:** M1 authoring và M2 Activity configuration/eligibility đã triển
+khai trên branch nêu dưới; runtime, Student UI/review và release verification vẫn
+chưa triển khai.<br>
 **Repo/branch triển khai:** `XuanDongVo/E-Learning` · `feature/guided-reasoning-v1`  
 **Base:** `main` tại `268bcf0b03cb87e0c72cf14a9d28998698b8421b`  
 **Tài liệu đi kèm:** [03_FRS_Guided_Reasoning_v1.md](03_FRS_Guided_Reasoning_v1.md)

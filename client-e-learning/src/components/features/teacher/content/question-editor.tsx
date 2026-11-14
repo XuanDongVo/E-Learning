@@ -22,6 +22,7 @@ import {
 import { contentService } from "@/services/content.service";
 import { QUERY_KEYS } from "@/services/query-keys";
 import { formatDateTime } from "@/utils/format";
+import { GuidedDefinitionEditor } from "./guided-definition-editor";
 import { QuestionForm, makeDraftQuestion } from "./components/question-form";
 
 const NAVIGATE_AFTER_SAVE_MS = 900;
@@ -236,6 +237,15 @@ function QuestionEditorForm({
           {initialQuestion && <MetadataCard question={initialQuestion} bankName={bankName} />}
         </aside>
       </div>
+
+      {questionId && (
+        <div className="mt-6">
+          <GuidedDefinitionEditor
+            questionId={questionId}
+            finalQuestionType={initialQuestion?.type ?? draft.type}
+          />
+        </div>
+      )}
     </>
   );
 }

@@ -75,6 +75,11 @@ public class Activity {
     @Column(nullable = false, length = 20)
     private ActivityMode mode;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "practice_type", nullable = false, length = 30)
+    @Builder.Default
+    private ActivityPracticeType practiceType = ActivityPracticeType.CLASSIC;
+
     @Column(name = "time_limit_seconds")
     private Integer timeLimitSeconds;
 

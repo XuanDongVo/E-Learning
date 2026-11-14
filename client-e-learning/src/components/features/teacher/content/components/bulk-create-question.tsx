@@ -154,6 +154,7 @@ export function BulkQuestionCreator({
     <QuestionComposer
       key={String(bankId) + ":" + (activeImportId ?? "manual")}
       title={"Create questions for " + bankName}
+      description="Fill in and save the final Questions first. To add Guided Reasoning steps, open an individual saved Question from this bank and choose Set up guided steps."
       storageKey={storageKey}
       importReport={state.entry?.result}
       onDraftCleared={() => {

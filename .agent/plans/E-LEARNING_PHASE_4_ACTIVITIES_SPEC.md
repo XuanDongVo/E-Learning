@@ -13,6 +13,7 @@ Activity belongs to exactly one Unit.
 - total_questions
 - available_selection_strategies: RANDOM/WEAKNESS_PRIORITY
 - mode: LEARNING/TRY_HARD/BOTH
+- practice_type: CLASSIC/GUIDED_REASONING (Guided Reasoning requires LEARNING and RANDOM)
 - time_limit_seconds: seconds per question when Try Hard is offered
 - lives when Try Hard is offered
 
@@ -27,6 +28,11 @@ Draft may be incomplete, including zero sources.
 Readiness is derived.
 PUBLISH requires READY and sufficient complete Questions.
 Publish validation errors must be stable.
+
+For `GUIDED_REASONING`, an eligible Question must also have a READY Guided
+Definition whose saved source Question revision matches the current Question
+revision. Guided runtime is governed by the Guided Reasoning specification and
+must never fall through to the Classic ActivitySession flow.
 
 ## Strategy
 One configured strategy may be auto-selected.

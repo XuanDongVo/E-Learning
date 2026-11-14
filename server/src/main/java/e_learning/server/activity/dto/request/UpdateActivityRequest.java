@@ -14,6 +14,7 @@ public record UpdateActivityRequest(
     @NotNull ActivityDifficulty questionDifficulty,
     @NotNull List<SelectionStrategy> availableSelectionStrategies,
     @NotNull ActivityMode mode,
+    @NotNull ActivityPracticeType practiceType,
     @Min(1) Integer timeLimitSeconds,
     @Min(1) Integer lives,
     List<@Valid ActivityBankRequest> banks

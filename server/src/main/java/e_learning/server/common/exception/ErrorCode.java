@@ -44,6 +44,9 @@ public enum ErrorCode {
     QUESTION_NOT_IN_BANK(HttpStatus.BAD_REQUEST, "QUESTION_NOT_IN_BANK", "All questions must belong to the specified question bank"),
     QUESTION_DEFINITION_INVALID(HttpStatus.BAD_REQUEST, "QUESTION_DEFINITION_INVALID", "The question definition is invalid"),
     EMPTY_QUESTION(HttpStatus.BAD_REQUEST, "EMPTY_QUESTION", "At least one question is required"),
+    GUIDED_DEFINITION_NOT_FOUND(HttpStatus.NOT_FOUND, "GUIDED_DEFINITION_NOT_FOUND", "Guided definition was not found"),
+    GUIDED_DEFINITION_INVALID(HttpStatus.BAD_REQUEST, "GUIDED_DEFINITION_INVALID", "The guided definition is invalid"),
+    GUIDED_DEFINITION_VERSION_CONFLICT(HttpStatus.CONFLICT, "GUIDED_DEFINITION_VERSION_CONFLICT", "The guided definition has changed; reload before saving"),
 
     MEDIA_NOT_FOUND(HttpStatus.NOT_FOUND, "MEDIA_NOT_FOUND", "Media was not found"),
     MEDIA_NOT_READY(HttpStatus.CONFLICT, "MEDIA_NOT_READY", "Media is not ready"),

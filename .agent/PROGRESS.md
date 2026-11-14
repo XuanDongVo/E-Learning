@@ -1,5 +1,50 @@
 # Project Progress
 
+## 2026-11-14 Guided Reasoning v1 — M2 Activity configuration and eligibility
+
+Screen Brief
+User: Teacher
+Goal: Configure whether an Activity is Classic or Guided Reasoning and see the matching eligible-question counts.
+Page type: Editor / Detail
+Primary action: Save the Activity Draft
+States covered: loading, source error/empty, invalid configuration, insufficient readiness, disabled save, success toast.
+
+- Added `ActivityPracticeType` (`CLASSIC`, `GUIDED_REASONING`) through Flyway V59,
+  Activity requests/responses, validation, and the Teacher Activity editor/detail/list.
+- Guided Activity is server-enforced as `LEARNING` with exactly `RANDOM`; the
+  Teacher editor selects those values automatically and hides incompatible controls.
+- One shared eligibility service now powers source counts, readiness, preview and
+  selection. Guided pools require a complete, supported Question with a READY
+  Guided Definition whose source revision still matches the Question revision.
+- Classic Activity behavior is retained. Guided Activities cannot enter the
+  existing Classic Session runtime; M3 will replace that guard with the
+  guided-first snapshot/step/final flow.
+- Added focused validation tests. Java 21 and Node.js are unavailable in this
+  environment, so Maven/Flyway and frontend lint/build remain pending; static
+  `git diff --check` passes.
+
+## 2026-11-14 Guided Reasoning v1 — M1 authoring backend
+
+- Added Flyway V58 and the one-to-one `GuidedDefinition` persistence model for a
+  Question, including a JSONB Guided payload, DRAFT/READY lifecycle,
+  source-question revision capture, and optimistic versioning.
+- Attached `GuidedDefinitionEditor` to the saved Question edit screen. Teachers
+  can create, order, edit, validate, reset, and remove Draft/Ready definitions,
+  configure per-Step Hint/Retry, and preview the guided-first flow. It is
+  intentionally post-save: bulk Add Questions has no stable Question ID to own
+  a Guided Definition.
+- Added Teacher-only Guided authoring APIs: read/save Draft, validate-and-mark
+  Ready, delete, and capabilities. Draft supports empty/incomplete Steps while
+  READY requires a complete supported Final Question, at least one structurally
+  ordered Step, valid optional hints, and QuestionEngine-valid Step specs.
+- Guided Step validation is restricted to SINGLE_CHOICE, TRUE_FALSE and
+  TYPE_ANSWER; it delegates definition checks to the existing QuestionEngine.
+  No Activity `practiceType`, session snapshot/runtime, Student UI, review, XP,
+  or selection behavior has changed yet (M2–M5 remain).
+- Added focused source tests for Draft/Ready and the three supported Step types.
+  Maven tests and Flyway execution are pending because Java 21 is unavailable in
+  this environment; `git diff --check` passes.
+
 ## 2026-11-12 Vocabulary progress API integration
 
 - Connected the Student Vocabulary Progress page to the authenticated dashboard API

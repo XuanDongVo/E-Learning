@@ -7,6 +7,7 @@ import { activityService } from "@/services/activity.service";
 import { QUERY_KEYS } from "@/services/query-keys";
 import type {
   ActivityMode,
+  ActivityPracticeType,
   ActivityStatus,
   SelectionStrategy,
 } from "@/types/activity";
@@ -27,6 +28,10 @@ const modeHints: Record<ActivityMode, string> = {
 const strategyLabels: Record<SelectionStrategy, string> = {
   RANDOM: "Random",
   WEAKNESS_PRIORITY: "Weakness priority",
+};
+const practiceTypeLabels: Record<ActivityPracticeType, string> = {
+  CLASSIC: "Classic practice",
+  GUIDED_REASONING: "Guided reasoning",
 };
 
 const btnBase =
@@ -151,7 +156,7 @@ export function ActivityDetail({ activityId }: { activityId: number }) {
           </div>
 
           {/* Key numbers */}
-          <dl className="mt-6 grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-border-color bg-border-color md:grid-cols-5">
+          <dl className="mt-6 grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-border-color bg-border-color md:grid-cols-6">
             <Stat label="Question banks" value={String(a.banks.length)} />
             <Stat
               label="Ready questions"
@@ -159,6 +164,7 @@ export function ActivityDetail({ activityId }: { activityId: number }) {
               hint={allocatedTotal ? `${coverage}% of what's needed` : undefined}
             />
             <Stat label="Mode" value={modeLabels[a.mode]} />
+            <Stat label="Format" value={practiceTypeLabels[a.practiceType]} />
             <Stat label="Difficulty" value={ACTIVITY_DIFFICULTY_LABELS[a.questionDifficulty]} />
             <Stat
               label="Practice"
@@ -296,10 +302,13 @@ export function ActivityDetail({ activityId }: { activityId: number }) {
           <section className="rounded-xl border-2 border-ink shadow-pop bg-card-bg p-5">
             <h2 className="text-section-title font-bold">Student experience</h2>
             <p className="mt-1 text-body-sm text-neutral-muted">
-              {modeHints[a.mode]}
+              {a.practiceType === "GUIDED_REASONING"
+                ? "Students complete guided steps before the final question."
+                : modeHints[a.mode]}
             </p>
             <dl className="mt-4 grid gap-3 sm:grid-cols-2">
               <Tile label="Mode" value={modeLabels[a.mode]} />
+              <Tile label="Format" value={practiceTypeLabels[a.practiceType]} />
               <Tile
                 label="Time limit"
                 value={

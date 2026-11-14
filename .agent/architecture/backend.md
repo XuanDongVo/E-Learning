@@ -28,7 +28,7 @@ Current feature areas include activity, assignment, assessmentattempt, content, 
 - ActivitySession runtime state is separate from Activity configuration. AssessmentAttempt runtime state is separate from Assignment configuration.
 
 ## Activity
-Unit-scoped; available strategies live on Activity; concrete strategy and mode live on ActivitySession; Try Hard deadline is per question; preview is non-mutating; GameTemplate is not a current dependency.
+Unit-scoped; available strategies live on Activity; concrete strategy and mode live on ActivitySession; Try Hard deadline is per question; preview is non-mutating; GameTemplate is not a current dependency. `practiceType` is `CLASSIC` or `GUIDED_REASONING`; Guided is restricted to LEARNING/RANDOM and only selects revision-matching READY Guided Definitions. Its dedicated Session runtime remains a later slice and must not fall through to Classic handling.
 
 ## Assignment
 Owns AssignmentQuestion. No position; Composition positions define official order and question_id ASC is legacy backfill only. show_score_after_submit controls score display, while show_answers_after_submit independently controls answer/explanation reveal. time_limit_minutes is the whole Attempt duration stored in minutes. The server calculates and persists deadline_at from started_at plus the configured minutes. No Release Answers timestamp/endpoint.

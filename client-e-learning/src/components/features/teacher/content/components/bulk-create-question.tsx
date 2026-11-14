@@ -12,7 +12,8 @@ import {
   type QuestionImportHandoff,
 } from "@/services/content/question-import-handoff";
 import { contentService } from "@/services/content.service";
-import type { ContentView, CreateQuestionRequest } from "@/types/content";
+import { questionService } from "@/services/content/content.question.service";
+import type { ContentView } from "@/types/content";
 import type { DraftQuestion } from "@/types/question";
 
 type EditorState =
@@ -154,7 +155,8 @@ export function BulkQuestionCreator({
     <QuestionComposer
       key={String(bankId) + ":" + (activeImportId ?? "manual")}
       title={"Create questions for " + bankName}
-      description="Fill in and save the final Questions first. To add Guided Reasoning steps, open an individual saved Question from this bank and choose Set up guided steps."
+      onBack={() => onNavigate("bank", bankId)}
+      description="Create direct or Guided Questions in one draft. Guided steps are saved atomically with their final Question."
       storageKey={storageKey}
       importReport={state.entry?.result}
       onDraftCleared={() => {
@@ -170,7 +172,16 @@ export function BulkQuestionCreator({
         return { id: response.data.id, url: response.data.url };
       }}
       onSave={async (questions) => {
-        const payload: CreateQuestionRequest[] = questions.map((question) => ({
+        const payload = questions.map((question) => ({
+          draftId: question.draftId,
+          guidedDefinition: question.guidedDefinition?.enabled && question.type !== "MATCHING" && question.type !== "CLOZE"
+            ? {
+                expectedVersion: 0,
+                introContent: question.guidedDefinition.introContent.trim() || null,
+                steps: question.guidedDefinition.steps,
+              }
+            : undefined,
+          question: {
           questionBankId: bankId,
           type: question.type,
           difficulty: question.difficulty,
@@ -189,8 +200,9 @@ export function BulkQuestionCreator({
               ? question.acceptedAnswers.map((answer) => ({ rawValue: answer.trim() }))
               : undefined,
           mediaIds: question.media.map((media) => Number(media.id)).filter((id) => !Number.isNaN(id)),
+          },
         }));
-        await contentService.createQuestion(payload);
+        await questionService.createWithGuided(payload);
       }}
       successDescription={"Saved in " + bankName + "."}
       onSaveSuccess={() => {

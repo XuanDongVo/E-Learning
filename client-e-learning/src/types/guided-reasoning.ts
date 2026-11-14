@@ -52,3 +52,10 @@ export type GuidedCapabilities = {
 export type GuidedDefinitionDraft = Pick<GuidedDefinition, "introContent" | "steps"> & {
   expectedVersion: number;
 };
+
+/** Local authoring state used before a Bulk Question has a server ID. */
+export type GuidedDefinitionDraftState = {
+  enabled: boolean;
+  introContent: string;
+  steps: GuidedStep[];
+};

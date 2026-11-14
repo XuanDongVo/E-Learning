@@ -170,6 +170,11 @@ Both endpoints require `ROLE_STUDENT`; student id comes only from the JWT, never
 
 ## Guided Reasoning authoring (M1 implemented)
 
+- `POST /v1/content/questions/bulk-with-guided` — atomic Bulk Composer write.
+  Each item has `draftId`, `question` (the normal create payload), and an
+  optional `guidedDefinition` draft. On any validation failure the whole request
+  rolls back; success returns `draftId` mapped to the created Question.
+
 Teacher-only endpoints under the existing `/v1/content/**` security boundary:
 
 - `GET /v1/content/questions/{questionId}/guided`

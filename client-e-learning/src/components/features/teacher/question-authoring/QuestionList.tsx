@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Copy, MoreVertical, Plus, Trash2 } from "lucide-react";
+import { Brain, CheckCircle2, Copy, MoreVertical, Plus, Trash2 } from "lucide-react";
 
 import type { DraftQuestion } from "@/types/question";
 import { isQuestionComplete } from "./question-validator";
@@ -27,9 +27,9 @@ export function QuestionList({
   onDelete: (draftId: string) => void;
 }) {
   return (
-    <aside className="flex h-full min-h-0 flex-col overflow-hidden border-b-2 border-r-2 border-slate-300 bg-white dark:border-slate-700 dark:bg-slate-900">
+    <aside className="flex h-full min-h-0 flex-col overflow-hidden border-b-2 border-r-2 border-border bg-card">
       {/* Header */}
-      <div className="shrink-0 border-b-2 border-slate-300 bg-white p-3 dark:border-slate-700 dark:bg-slate-900">
+      <div className="shrink-0 border-b-2 border-border bg-card p-3">
         <div className="flex items-center gap-2">
           <button
             type="button"
@@ -37,7 +37,7 @@ export function QuestionList({
             className="
               inline-flex flex-1 items-center justify-center gap-1.5
               rounded-lg border-2 border-primary bg-primary px-3 py-2
-              text-xs font-bold text-white shadow-none
+              text-body-sm font-bold text-primary-foreground shadow-pop-sm
               transition hover:bg-primary-hover hover:border-primary-hover
             "
           >
@@ -50,12 +50,11 @@ export function QuestionList({
             onClick={() => onAddMany(5)}
             className="
               shrink-0 rounded-lg
-              border-2 border-slate-300 bg-white
+              border-2 border-border bg-card
               px-2.5 py-2
-              text-xs font-bold text-slate-700 shadow-none
+              text-body-sm font-bold text-foreground shadow-pop-sm
               transition
-              hover:border-primary hover:bg-primary/5 hover:text-primary
-              dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-primary
+              hover:border-primary hover:bg-primary-soft hover:text-primary
             "
             title="Add 5 questions"
           >
@@ -64,11 +63,11 @@ export function QuestionList({
         </div>
 
         <div className="mt-2.5 flex items-center justify-between px-0.5">
-          <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">
+          <span className="text-body-sm font-bold text-muted-foreground">
             {questions.length} questions
           </span>
 
-          <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+          <span className="text-body-sm font-semibold text-muted-foreground">
             {questions.filter(isQuestionComplete).length} ready
           </span>
         </div>
@@ -79,11 +78,9 @@ export function QuestionList({
         className="
           min-h-0 flex-1 overflow-y-auto
           overscroll-contain
-          [scrollbar-color:#94A3B8_transparent]
-          [scrollbar-width:thin]
         "
       >
-        <ul className="border-b-2 border-slate-200 dark:border-slate-800">
+        <ul className="border-b-2 border-border">
           {questions.map((question, index) => (
             <QuestionListItem
               key={question.draftId}
@@ -101,7 +98,7 @@ export function QuestionList({
       </div>
 
       {/* Bottom Footer Border Bar */}
-      <div className="shrink-0 border-t-2 border-slate-300 bg-slate-50 px-3 py-2 text-center text-[10px] font-bold text-slate-400 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-500">
+      <div className="shrink-0 border-t-2 border-border bg-secondary px-3 py-2 text-center text-body-sm font-bold text-muted-foreground">
         End of questions list
       </div>
     </aside>
@@ -168,10 +165,10 @@ function QuestionListItem({
       onClick={onSelect}
       className={`group relative flex min-h-[68px] cursor-pointer items-center gap-2.5 border-b-2 border-l-4 px-3 py-2.5 transition ${
         showError
-          ? "border-b-red-200 border-l-red-500 bg-red-50/80 hover:bg-red-100/70 dark:border-b-red-900/50 dark:bg-red-950/40"
+          ? "border-b-destructive/30 border-l-destructive bg-destructive-soft hover:bg-destructive-soft"
           : isActive
-            ? "border-b-slate-200 border-l-primary bg-primary/10 hover:bg-primary/15 dark:border-b-slate-800 dark:bg-primary/20"
-            : "border-b-slate-200 border-l-transparent bg-white hover:bg-slate-100/80 dark:border-b-slate-800 dark:bg-slate-900 dark:hover:bg-slate-800"
+            ? "border-b-border border-l-primary bg-primary-soft hover:bg-primary-soft"
+            : "border-b-border border-l-transparent bg-card hover:bg-secondary"
       }`}
     >
       {/* Number */}
@@ -179,7 +176,7 @@ function QuestionListItem({
         className={`flex w-6 shrink-0 justify-center text-xs font-bold tabular-nums ${
           isActive
             ? "text-primary"
-            : "text-slate-500 dark:text-slate-400"
+            : "text-muted-foreground"
         }`}
       >
         {index + 1}
@@ -190,17 +187,17 @@ function QuestionListItem({
         <div
           className={`truncate text-xs leading-5 ${
             isActive
-              ? "font-bold text-slate-900 dark:text-slate-100"
-              : "font-semibold text-slate-700 dark:text-slate-300"
+              ? "font-bold text-foreground"
+              : "font-semibold text-foreground"
           }`}
         >
           {question.text || (
-            <span className="italic text-slate-400 dark:text-slate-500">Untitled question</span>
+            <span className="italic text-muted-foreground">Untitled question</span>
           )}
         </div>
 
         <div className="mt-1 flex items-center gap-1.5">
-          <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
+          <span className="text-body-sm font-medium text-muted-foreground">
             {question.type === "SINGLE_CHOICE"
               ? "Single choice"
               : question.type === "MULTIPLE_CHOICE"
@@ -219,6 +216,16 @@ function QuestionListItem({
                 Incomplete
               </span>
             </>
+          )}
+          {question.guidedDefinition?.enabled && (
+            <span className="inline-flex items-center gap-1 text-body-sm font-semibold text-primary">
+              <Brain size={12} aria-hidden /> Guided ({question.guidedDefinition.steps.length})
+            </span>
+          )}
+          {complete && (
+            <span className="inline-flex items-center gap-1 text-body-sm font-semibold text-success">
+              <CheckCircle2 size={12} aria-hidden /> Ready
+            </span>
           )}
         </div>
       </div>

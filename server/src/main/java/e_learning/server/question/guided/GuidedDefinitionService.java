@@ -6,6 +6,7 @@ import e_learning.server.content.question.entity.ContentQuestion;
 import e_learning.server.content.question.repository.ContentQuestionRepository;
 import e_learning.server.question.engine.types.text.MatchingMode;
 import e_learning.server.question.enums.QuestionType;
+import e_learning.server.question.entity.Question;
 import e_learning.server.question.guided.dto.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -88,14 +89,31 @@ public class GuidedDefinitionService {
                 false, false, 2);
     }
 
+    /** Creates a DRAFT for a Question created in the same Bulk Composer transaction. */
+    public void createDraftForNewQuestion(Question question, GuidedDefinitionUpsertRequest request) {
+        GuidedDefinitionPayload payload = toPayload(request);
+        List<GuidedDefinitionIssue> draftIssues = validationService.validateDraftShape(payload);
+        if (!draftIssues.isEmpty()) {
+            throw new AppException(ErrorCode.GUIDED_DEFINITION_INVALID,
+                    "Invalid guided draft structure: " + draftIssues.getFirst().path());
+        }
+        GuidedDefinition definition = newDefinition(question);
+        definition.setDefinitionPayload(toMap(payload));
+        guidedDefinitionRepository.save(definition);
+    }
+
     private ContentQuestion findContentQuestion(Long questionId) {
         return contentQuestionRepository.findById(questionId)
                 .orElseThrow(() -> new AppException(ErrorCode.QUESTION_NOT_FOUND));
     }
 
     private GuidedDefinition newDefinition(ContentQuestion contentQuestion) {
+        return newDefinition(contentQuestion.getQuestion());
+    }
+
+    private GuidedDefinition newDefinition(Question question) {
         GuidedDefinition definition = new GuidedDefinition();
-        definition.setQuestion(contentQuestion.getQuestion());
+        definition.setQuestion(question);
         definition.setSchemaVersion(SCHEMA_VERSION);
         definition.setStatus(GuidedDefinitionStatus.DRAFT);
         return definition;

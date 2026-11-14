@@ -132,6 +132,8 @@ export function ContentRoutePage({ view, id }: ContentRoutePageProps) {
   const searchParams = useSearchParams();
   const mode = searchParams.get("mode");
   const source = searchParams.get("source") === "global" ? "global" : "content";
+  const bankId = Number(searchParams.get("bankId")) || undefined;
+  const bankName = searchParams.get("bankName") ?? undefined;
 
   const navigate = (
     nextView: ContentView,
@@ -222,7 +224,12 @@ export function ContentRoutePage({ view, id }: ContentRoutePageProps) {
     if (mode === "bulk-create")
       return (
         <div className="space-y-6">
-          <BulkQuestionCreator bankId={id} bankName="" importId={searchParams.get("importId") ?? undefined} onNavigate={navigate} />
+          <BulkQuestionCreator
+            bankId={id}
+            bankName={bankName}
+            importId={searchParams.get("importId") ?? undefined}
+            onNavigate={navigate}
+          />
         </div>
       );
     if (mode === "import")
@@ -238,8 +245,6 @@ export function ContentRoutePage({ view, id }: ContentRoutePageProps) {
     );
   }
 
-  const bankId = Number(searchParams.get("bankId")) || undefined;
-  const bankName = searchParams.get("bankName") ?? undefined;
   return (
     <div className="space-y-6">
       <QuestionRouteBreadcrumb questionId={id} bankId={bankId} />

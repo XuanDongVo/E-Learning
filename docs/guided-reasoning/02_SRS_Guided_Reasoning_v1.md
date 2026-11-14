@@ -21,7 +21,7 @@ Mở rộng Question hiện hành bằng một Guided Definition tùy chọn. Te
 |---|---|---|
 | Question / Question Engine | Question có type, answer/option/definition; `QuestionEngine` hỗ trợ validation, parse, grade và `QuestionTypeHandlerRegistry` | Step dùng QuestionSpec + handler hiện có, **không tạo Question Entity riêng** |
 | Question types | Activity chọn năm loại: SINGLE_CHOICE, MULTIPLE_CHOICE, TRUE_FALSE, FILL_IN_BLANK, TYPE_ANSWER; Question Engine còn có MATCHING/CLOZE | Guided Step v1 hỗ trợ ba loại; không mở rộng Matching/Cloze trong Activity |
-| Teacher Question | `/v1/content/questions` có bulk create và update | Giữ bulk; thêm Guided Editor sau khi Question có ID |
+| Teacher Question | `/v1/content/questions` có bulk create và update | Bulk Composer cho phép Guided draft tùy chọn và lưu atomic cùng Question; Question đã lưu vẫn có Guided maintenance/READY validation |
 | Activity | Unit + Question Bank distribution EQUAL/PERCENTAGE/FIXED_COUNT; LEARNING/TRY_HARD/BOTH, RANDOM/WEAKNESS_PRIORITY | Bổ sung `practiceType`; Guided chỉ LEARNING + RANDOM |
 | Session | Snapshot Question schema v2; server xử lý answer, hint, finish, XP/streak | Snapshot Guided riêng + Step state/hint/attempts/Final review |
 | Grading | ActivityService hiện tự chấm Final qua `isCorrect(snapshot, answer)`, Learning có retry một lần | Step dùng QuestionEngine; Final giữ policy hiện tại, tránh đổi XP |
@@ -62,14 +62,14 @@ Mở rộng Question hiện hành bằng một Guided Definition tùy chọn. Te
 | Question Bank hiển thị availability Guided; Activity Guided riêng biệt | Step types MULTIPLE_CHOICE/FILL_IN_BLANK/MATCHING/CLOZE; Final MATCHING/CLOZE |
 | Student Step → feedback → optional hint/retry → Final → Result | Adaptive branching, AI-generated hints/answers, fuzzy/LLM grading |
 | Persist server-side snapshot/attempt/hint state; resume refresh; idempotency | TRY_HARD, Weakness Priority, timer/lives Step |
-| Student & Teacher review từng attempt/step và Final, có RBAC | Bulk Guided Create, Teacher class analytics aggregate, sửa Assignment |
+| Student & Teacher review từng attempt/step và Final, có RBAC | Teacher class analytics aggregate, sửa Assignment |
 | Giữ CLASSIC, XP/streak và lịch sử Session | Chấm XP/bonus/hint penalty dựa trên Step (đề xuất v1) |
 
 ## 5. Workflow hệ thống
 
 ### 5.1. Teacher
 
-1. Tạo/bulk tạo Question thông thường trong Question Bank; mở chung Guided Editor khi Question đã có ID.
+1. Tạo/bulk tạo Question trong Question Bank; Teacher có thể thêm Guided draft trong cùng Bulk Composer. Server lưu Question và Guided draft atomic; READY validation vẫn xảy ra sau khi Question đã tồn tại.
 2. Biên soạn **introContent** nếu Step cần bối cảnh, nhưng **không hiển thị Question chính trước Final**.
 3. Thêm một hoặc nhiều Step, chọn QuestionType; cấu hình hintEnabled + hint text, retryEnabled từng Step; sắp xếp/preview.
 4. Save Draft hoặc validate để READY; revalidate nếu Question gốc đã thay đổi.

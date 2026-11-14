@@ -1,5 +1,27 @@
 # Project Progress
 
+## 2026-11-14 Unified Bulk Guided Composer
+
+Screen Brief
+User: Teacher
+Goal: Create direct or Guided Questions in one bulk draft and test the Student flow safely.
+Page type: Editor / Preview dialog
+Primary action: Save all Questions
+States covered: loading capabilities, empty Guided steps, invalid draft, atomic save error, disabled save, local preview reset and success.
+
+- Accepted ADR 0035: optional Guided drafts are created in the Bulk Composer and
+  saved atomically with their Questions through a dedicated endpoint. Persisted
+  Guided remains a one-to-one extension, not a QuestionWrite definition.
+- Added Main Question / Guided Reasoning tabs, per-Question Guided state in the
+  local bulk draft, collapsed Step cards with duplicate/delete/reorder controls,
+  and a local Student-themed Preview Exam for Direct and Guided flows.
+- Preview is intentionally write-free: it does not start an ActivitySession,
+  award XP, or store Student progress. The existing Student runtime has not been
+  migrated to this presentation component; that remains M3 work.
+- Added the atomic endpoint and focused service test. Java and Node execution
+  remain unavailable in this environment; validation is limited to static review
+  and `git diff --check`.
+
 ## 2026-11-14 Guided Reasoning v1 — M2 Activity configuration and eligibility
 
 Screen Brief
@@ -28,8 +50,8 @@ States covered: loading, source error/empty, invalid configuration, insufficient
 - Added Flyway V58 and the one-to-one `GuidedDefinition` persistence model for a
   Question, including a JSONB Guided payload, DRAFT/READY lifecycle,
   source-question revision capture, and optimistic versioning.
-- Attached `GuidedDefinitionEditor` to the saved Question edit screen. Teachers
-  can create, order, edit, validate, reset, and remove Draft/Ready definitions,
+- Attached Guided Reasoning authoring to the saved Question edit workspace.
+  Teachers can create, order, edit, validate, and remove Draft/Ready definitions,
   configure per-Step Hint/Retry, and preview the guided-first flow. It is
   intentionally post-save: bulk Add Questions has no stable Question ID to own
   a Guided Definition.
@@ -590,6 +612,13 @@ States covered: loading, source error/empty, invalid configuration, insufficient
   and viewport screenshot review remain open.
 
 ## Verification
+
+## Question edit workspace simplification (2026-11-14)
+
+- Replaced the sidebar-heavy Edit Question screen with the same compact authoring workspace used by Create: one main editor, Main Question / Guided Reasoning tabs, one Preview Exam entry point and focused save actions.
+- Edit now reuses `QuestionForm`, `GuidedDraftEditor` and `PreviewExamDialog`; the superseded expanded `GuidedDefinitionEditor` was removed.
+- Guided persistence remains unchanged: save creates/updates a server draft, validate marks a saved definition ready, and turning it off removes the persisted definition.
+- This is a Teacher-only layout change. Student preview continues to be scoped to the existing Student visual system.
 
 - Frontend global page layout refactor completed on this branch: TeacherLayout and StudentShell now own the standard `1440px` page container; only the two Student runtime routes use immersive `h-dvh` rendering.
 - Student rewards leaderboard presentation was refined with a clearer streak-first hierarchy, responsive current-student summary, accessible disabled states for unavailable ranking criteria, and token-only feature styling. It remains explicitly backed by presentation-only mock gamification data.

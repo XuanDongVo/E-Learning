@@ -1,3 +1,5 @@
+import type { GuidedDefinitionDraftState } from "./guided-reasoning";
+
 export type QuestionDifficulty = "EASY" | "MEDIUM" | "HARD";
 export type QuestionMatchingMode = "CASE_INSENSITIVE_TRIM" | "CASE_SENSITIVE_TRIM";
 export type TrueFalseAnswer = "TRUE" | "FALSE";
@@ -8,7 +10,7 @@ export interface MatchingDraftDefinition { items: { key: string; prompt: string 
 export interface ClozeDraftDefinition { segments: { text: string }[]; blanks: { key: string; acceptedAnswers: string[] }[]; caseSensitive?: boolean; }
 export interface DraftQuestion {
   draftId: string; type: QuestionType; difficulty: QuestionDifficulty; text: string; options: QuestionOptionDraft[]; correctOptionIds: string[]; trueFalseAnswer: TrueFalseAnswer;
-  acceptedAnswers: string[]; media: QuestionMediaDraft[]; explanation: string; hint?: string; matchingDefinition?: MatchingDraftDefinition; clozeDefinition?: ClozeDraftDefinition;
+  acceptedAnswers: string[]; media: QuestionMediaDraft[]; explanation: string; hint?: string; guidedDefinition?: GuidedDefinitionDraftState; matchingDefinition?: MatchingDraftDefinition; clozeDefinition?: ClozeDraftDefinition;
 }
 export type QuestionType = "SINGLE_CHOICE" | "MULTIPLE_CHOICE" | "TRUE_FALSE" | "FILL_IN_BLANK" | "TYPE_ANSWER" | "MATCHING" | "CLOZE";
 export interface QuestionCommonSpec { content: string; difficulty: QuestionDifficulty; explanation?: string; hint?: string; media: QuestionMediaDraft[]; }

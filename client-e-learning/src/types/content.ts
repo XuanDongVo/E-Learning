@@ -5,6 +5,7 @@ import type {
   QuestionMatchingMode,
   QuestionType,
 } from "./question";
+import type { GuidedDefinitionDraft } from "./guided-reasoning";
 export type {
   DraftQuestion,
   QuestionMediaDraft,
@@ -198,6 +199,17 @@ export interface CreateQuestionRequest {
   mediaIds?: number[];
   matchingMode?: QuestionMatchingMode;
   definition?: QuestionDefinition;
+}
+
+export interface BulkQuestionWithGuidedRequest {
+  draftId: string;
+  question: CreateQuestionRequest;
+  guidedDefinition?: GuidedDefinitionDraft;
+}
+
+export interface BulkCreateQuestionWithGuidedResponse {
+  draftId: string;
+  question: QuestionResponse;
 }
 
 export interface UpdateQuestionRequest {

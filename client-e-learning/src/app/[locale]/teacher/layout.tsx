@@ -1,5 +1,11 @@
 "use client";
 
+// Preview Exam mounts an explicitly scoped .student-theme surface. These files
+// only target that scope, so Teacher/base tokens remain unchanged.
+import "@/styles/student/theme.css";
+import "@/styles/student/surfaces.css";
+import "@/styles/student/typography.css";
+
 import { Link, usePathname } from "@/i18n/navigation";
 import {
   Bell,

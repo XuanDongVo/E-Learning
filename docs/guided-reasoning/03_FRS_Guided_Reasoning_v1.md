@@ -6,7 +6,7 @@
 **Tình trạng:** M1 đã có schema và Teacher authoring API (definition Draft/Ready,
 validation, optimistic version, capabilities); M2 đã có Activity `practiceType`,
 Guided eligibility/readiness, Teacher Activity configuration, và Teacher
-`GuidedDefinitionEditor` trên trang sửa Question đã lưu. M3–M5 — runtime,
+workspace sửa Question đã lưu. M3–M5 — runtime,
 review và Student UI — vẫn là specification, trừ khi ghi rõ EXISTING.<br>
 **SRS:** [02_SRS_Guided_Reasoning_v1.md](02_SRS_Guided_Reasoning_v1.md)
 
@@ -31,7 +31,7 @@ review và Student UI — vẫn là specification, trừ khi ghi rõ EXISTING.<b
 
 `Question` hiện hành vẫn là Final Question và nguồn kết quả/XP. `GuidedDefinition` là extension tùy chọn của Question; `GuidedStep` là embedded QuestionSpec, không tạo Question Entity; QuestionType chính độc lập với QuestionType của Step. `PracticeType` của Activity là `CLASSIC | GUIDED_REASONING`, không phải QuestionType hay ActivityMode.
 
-**Scope:** Teacher Guided Editor + per-Step Hint/Retry; Guided Activity readiness/selection; Guided-first Student Runner; snapshot, state, grading, result Student/Teacher. **Out of scope:** Error Detective, Retrieval, Mixed Activity, Bulk Guided, TRY_HARD/WEAKNESS_PRIORITY Guided, Matching/Cloze Activity, branching/AI grading, XP per Step.
+**Scope:** Teacher Guided Editor + per-Step Hint/Retry, Bulk Guided draft authoring and local Preview Exam; Guided Activity readiness/selection; Guided-first Student Runner; snapshot, state, grading, result Student/Teacher. **Out of scope:** Error Detective, Retrieval, Mixed Activity, TRY_HARD/WEAKNESS_PRIORITY Guided, Matching/Cloze Activity, branching/AI grading, XP per Step.
 
 ### 1.2. Type matrix
 
@@ -80,7 +80,9 @@ Nếu Product Owner đổi retry limit, hint policy hoặc ảnh hưởng XP, c�
 
 - FK `question_id` unique và non-null; 0..1 Guided Definition/Question.
 - Guided không được nhúng vào `QuestionWriteRequest.definition` (định nghĩa type-specific như Matching/Cloze hiện tại).
-- Guided được biên soạn sau khi Question tồn tại/đã có ID; Bulk Create hiện tại không đổi.
+- Saved Question maintenance uses the existing per-Question endpoints. Bulk Composer may
+  carry an optional Guided DRAFT alongside its local Question draft through the dedicated
+  atomic endpoint; Guided is still not embedded in `QuestionWriteRequest.definition`.
 
 ### FRS-GR-002 — Definition schema
 
@@ -267,10 +269,10 @@ Các Session CLASSIC cũ không có step records; API mới trả `steps=[]` ho�
 
 ## 8. API contracts
 
-**M1 Teacher editor implemented:** `GuidedDefinitionEditor` is attached to the
-saved Question edit screen and uses the authoring contracts below. It supports
-ordered Steps, per-Step Hint/Retry, draft save, ready validation with field
-issues, delete/reset, and a Teacher-only guided-first flow preview.
+**M1 Teacher editor implemented:** the saved Question edit workspace reuses the
+same Main Question / Guided Reasoning authoring pattern as Create. It supports
+ordered Steps, per-Step Hint/Retry, draft save, ready validation, deletion, and
+a Teacher-only guided-first flow preview.
 
 **M1 implemented:** toàn bộ endpoint authoring ở §8.1, theo `ApiResponse` hiện có.
 **M2 implemented:** phần cấu hình Activity ở §8.2 (`practiceType`, Guided-only
@@ -280,6 +282,13 @@ Student runtime và Review (§8.3–8.4).
 Bên dưới là **contract gợi ý**, cần phù hợp ApiResponse/error code convention hiện tại. IDs `sessionQuestionId` là **row ID** của ActivitySessionQuestion, không phải Question Bank ID.
 
 ### 8.1. Authoring
+
+`POST /v1/content/questions/bulk-with-guided` is implemented for the Unified
+Bulk Composer. Each item contains a client `draftId`, a standard Question create
+payload, and optional Guided DRAFT payload. The endpoint is atomic: any invalid
+Question or Guided draft rolls back the complete batch. A successful response
+maps each `draftId` to its persisted Question; Guided status stays `DRAFT` until
+the normal validation endpoint marks it `READY`.
 
 | Method / path | Mục đích |
 |---|---|
@@ -592,9 +601,9 @@ Avoid duplicating `QuestionEngine` grading logic or introducing an extensible Fl
 
 ```text
 teacher/content/
-  GuidedDefinitionEditor
-  GuidedStepEditor
-  GuidedPreview (intro → steps → final)
+  QuestionEditor (Main Question / Guided Reasoning tabs)
+  GuidedDraftEditor
+  PreviewExamDialog (intro → steps → final)
 teacher/activities/
   practiceType + Guided-ready pool
 student/activities/

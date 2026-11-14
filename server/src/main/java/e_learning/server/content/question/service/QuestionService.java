@@ -3,22 +3,24 @@ package e_learning.server.content.question.service;
 import e_learning.server.common.dto.PageResponse;
 import e_learning.server.common.exception.AppException;
 import e_learning.server.common.exception.ErrorCode;
-import e_learning.server.content.question.dto.BulkDeleteQuestionsRequest;
-import e_learning.server.content.question.dto.CreateQuestionRequest;
-import e_learning.server.content.question.dto.QuestionResponse;
-import e_learning.server.content.question.dto.UpdateQuestionRequest;
+import e_learning.server.content.question.dto.*;
 import e_learning.server.content.question.entity.ContentQuestion;
 import e_learning.server.content.question.repository.ContentQuestionRepository;
+import e_learning.server.content.questionBank.entity.QuestionBank;
 import e_learning.server.content.questionBank.repository.QuestionBankRepository;
 import e_learning.server.question.dto.response.QuestionContentResponse;
 import e_learning.server.question.entity.Question;
 import e_learning.server.question.enums.Difficulty;
 import e_learning.server.question.enums.QuestionType;
+import e_learning.server.question.guided.GuidedDefinitionService;
 import e_learning.server.question.service.QuestionPersistenceService;
 import e_learning.server.question.service.QuestionResponseMapper;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,6 +37,7 @@ public class QuestionService {
     private final ContentQuestionRepository contentQuestionRepository;
     private final QuestionBankRepository questionBankRepository;
     private final QuestionPersistenceService questionPersistenceService;
+    private final GuidedDefinitionService guidedDefinitionService;
     private final QuestionResponseMapper questionResponseMapper;
 
     public PageResponse<QuestionResponse> getQuestions(Long questionBankId, String search, QuestionType type,
@@ -82,6 +85,51 @@ public class QuestionService {
         List<QuestionResponse> responses = new ArrayList<>(questions.size());
         for (int i = 0; i < questions.size(); i++) {
             responses.add(toResponse(questions.get(i), requests.get(i).getQuestionBankId()));
+        }
+        return responses;
+    }
+
+    /**
+     * Bulk Composer save: Question and optional Guided draft commit atomically.
+     */
+    @Transactional
+    public List<BulkCreateQuestionWithGuidedResponse> createQuestionsWithGuided(
+            BulkCreateQuestionsWithGuidedRequest request) {
+        List<BulkQuestionWithGuidedRequest> items = request.questions();
+        List<CreateQuestionRequest> questionsToCreate = items.stream()
+                .map(BulkQuestionWithGuidedRequest::question)
+                .toList();
+
+        for (CreateQuestionRequest question : questionsToCreate) {
+            questionBankRepository.findById(question.getQuestionBankId())
+                    .orElseThrow(() -> new AppException(ErrorCode.QUESTION_BANK_NOT_FOUND));
+        }
+
+        List<Question> created = questionPersistenceService.createQuestions(questionsToCreate);
+        List<BulkCreateQuestionWithGuidedResponse> responses = new ArrayList<>(created.size());
+
+        List<ContentQuestion> contentQuestions = new ArrayList<>(created.size());
+        Long bankId = request.questions().getFirst().question().getQuestionBankId();
+        QuestionBank bank = questionBankRepository.findById(bankId)
+                .orElseThrow(() ->new AppException(ErrorCode.QUESTION_BANK_NOT_FOUND));
+
+        for (int index = 0; index < created.size(); index++) {
+            contentQuestions.add(
+                    ContentQuestion.builder()
+                            .question(created.get(index))
+                            .questionBank(bank)
+                            .build()
+            );
+        }
+        contentQuestionRepository.saveAll(contentQuestions);
+
+        for (int index = 0; index < created.size(); index++) {
+            BulkQuestionWithGuidedRequest item = items.get(index);
+            if (item.guidedDefinition() != null) {
+                guidedDefinitionService.createDraftForNewQuestion(created.get(index), item.guidedDefinition());
+            }
+            responses.add(new BulkCreateQuestionWithGuidedResponse(
+                    item.draftId(), toResponse(created.get(index), item.question().getQuestionBankId())));
         }
         return responses;
     }

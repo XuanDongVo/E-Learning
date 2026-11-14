@@ -1,86 +1,73 @@
 "use client";
 
 import { useState } from "react";
-import { useLocale, useTranslations } from "next-intl";
-import { getAppErrorMessage } from "@/lib/errors/app-error";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-  CheckCircle2,
-  Circle,
-  Image as ImageIcon,
-  Music,
-} from "lucide-react";
+import { ArrowLeft, Check, Eye, Save } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
-import {
-  type ContentView,
-  type QuestionOptionDraft,
-  type QuestionMediaDraft,
-  type QuestionResponse,
-} from "@/types/content";
-
+import { getAppErrorMessage, toAppError } from "@/lib/errors/app-error";
 import { contentService } from "@/services/content.service";
+import { guidedDefinitionService } from "@/services/content/guided-definition.service";
 import { QUERY_KEYS } from "@/services/query-keys";
-import { formatDateTime } from "@/utils/format";
-import { GuidedDefinitionEditor } from "./guided-definition-editor";
-import { QuestionForm, makeDraftQuestion } from "./components/question-form";
+import type {
+  ContentView,
+  QuestionMediaDraft,
+  QuestionOptionDraft,
+  QuestionResponse,
+} from "@/types/content";
+import type {
+  GuidedDefinition,
+  GuidedDefinitionDraftState,
+  GuidedDefinitionIssue,
+} from "@/types/guided-reasoning";
+import { GuidedDraftEditor } from "@/components/features/teacher/question-authoring/GuidedDraftEditor";
+import { PreviewExamDialog } from "@/components/features/teacher/question-authoring/PreviewExamDialog";
 
-const NAVIGATE_AFTER_SAVE_MS = 900;
+import {
+  QuestionForm,
+  isQuestionComplete,
+  makeDraftQuestion,
+} from "./components/question-form";
 
-function toDraft(q: QuestionResponse) {
-  const loadedOptions: QuestionOptionDraft[] =
-    q.options && q.options.length > 0
-      ? q.options.map((opt, i) => ({
-          id: String.fromCharCode(65 + i),
-          text: opt.content,
-        }))
-      : [
-          { id: "A", text: "" },
-          { id: "B", text: "" },
-          { id: "C", text: "" },
-          { id: "D", text: "" },
-        ];
+type EditorTab = "question" | "guided";
 
-  const loadedCorrectIds: string[] =
-    q.options && q.options.length > 0
-      ? (q.options
-          .map((opt, i) => (opt.isCorrect ? String.fromCharCode(65 + i) : null))
-          .filter(Boolean) as string[])
-      : ["A"];
+function toDraft(question: QuestionResponse) {
+  const options: QuestionOptionDraft[] = question.options?.length
+    ? question.options.map((option, index) => ({
+        id: String.fromCharCode(65 + index),
+        text: option.content,
+      }))
+    : ["A", "B", "C", "D"].map((id) => ({ id, text: "" }));
 
-  const loadedTf: "TRUE" | "FALSE" =
-    q.answers && q.answers.length > 0 && q.answers[0].rawValue === "FALSE"
-      ? "FALSE"
-      : "TRUE";
+  const correctOptionIds = question.options?.length
+    ? question.options.flatMap((option, index) =>
+        option.isCorrect ? [String.fromCharCode(65 + index)] : [],
+      )
+    : ["A"];
 
-  const loadedAccepted: string[] =
-    q.answers && q.answers.length > 0 ? q.answers.map((a) => a.rawValue) : [""];
+  const media: QuestionMediaDraft[] = question.media?.map((item) => ({
+    id: String(item.mediaId || item.id),
+    name: `Media #${item.mediaId || item.id}`,
+    kind: item.mediaType?.toLowerCase().includes("audio") ? "audio" : "image",
+  })) ?? [];
 
-  const loadedMedia: QuestionMediaDraft[] =
-    q.media && q.media.length > 0
-      ? q.media.map((m) => ({
-          id: String(m.mediaId || m.id),
-          name: `Media #${m.mediaId || m.id}`,
-          kind:
-            m.mediaType && m.mediaType.toLowerCase().includes("audio")
-              ? "audio"
-              : "image",
-        }))
-      : [];
-
-  return {
-    draftId: String(q.id),
-    type: q.type,
-    difficulty: q.difficulty,
-    text: q.content,
-    options: loadedOptions,
-    correctOptionIds: loadedCorrectIds,
-    trueFalseAnswer: loadedTf,
-    acceptedAnswers: loadedAccepted,
-    media: loadedMedia,
-    explanation: q.explanation ?? "",
-    hint: q.hint ?? "",
-  };
+  return makeDraftQuestion({
+    draftId: String(question.id),
+    type: question.type,
+    difficulty: question.difficulty,
+    text: question.content,
+    options,
+    correctOptionIds,
+    trueFalseAnswer:
+      question.answers?.[0]?.rawValue === "FALSE" ? "FALSE" : "TRUE",
+    acceptedAnswers: question.answers?.length
+      ? question.answers.map((answer) => answer.rawValue)
+      : [""],
+    media,
+    explanation: question.explanation ?? "",
+    hint: question.hint ?? "",
+  });
 }
 
 export function QuestionEditor({
@@ -95,55 +82,53 @@ export function QuestionEditor({
   const questionQuery = useQuery({
     queryKey: QUERY_KEYS.contentQuestion(questionId!),
     queryFn: async () => (await contentService.getQuestion(questionId!)).data,
-    enabled: !!questionId,
+    enabled: Boolean(questionId),
   });
 
   if (questionQuery.isLoading) {
-    return (
-      <div className="p-8 text-center text-sm text-slate-400">
-        Loading question data...
-      </div>
-    );
+    return <div className="p-8 text-center text-body-sm text-muted-foreground">Loading question…</div>;
+  }
+
+  if (!questionId || !questionQuery.data) {
+    return <div className="p-8 text-center text-body-sm text-muted-foreground">Question could not be loaded.</div>;
   }
 
   return (
-    <QuestionEditorForm
-      key={questionId ?? "new"}
-      questionId={questionId}
-      initialQuestion={questionQuery.data ?? undefined}
+    <QuestionEditorWorkspace
+      key={questionId}
+      question={questionQuery.data}
       bankName={bankName}
       onNavigate={onNavigate}
     />
   );
 }
 
-function QuestionEditorForm({
-  questionId,
-  initialQuestion,
+function QuestionEditorWorkspace({
+  question,
   bankName,
   onNavigate,
 }: {
-  questionId?: number;
-  initialQuestion?: QuestionResponse;
+  question: QuestionResponse;
   bankName?: string;
   onNavigate: (view: ContentView, id?: number, bankName?: string) => void;
 }) {
   const tErrors = useTranslations("errors");
-  const client = useQueryClient();
-  const [isSaving, setIsSaving] = useState(false);
-  const [draft, setDraft] = useState(() =>
-    initialQuestion ? toDraft(initialQuestion) : makeDraftQuestion(),
-  );
+  const queryClient = useQueryClient();
+  const [draft, setDraft] = useState(() => toDraft(question));
+  const [tab, setTab] = useState<EditorTab>("question");
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const isReady = isQuestionComplete(draft);
 
-  const handleSave = async () => {
-    if (!questionId) {
-      toast.error("No question ID specified for editing.");
+  const saveQuestion = async () => {
+    if (!isReady) {
+      toast.error("Complete the required question fields before saving.");
       return;
     }
 
-    setIsSaving(true);
+    setSaving(true);
     try {
-      const payload = {
+      await contentService.updateQuestion(question.id, {
         type: draft.type,
         difficulty: draft.difficulty,
         content: draft.text.trim(),
@@ -151,296 +136,235 @@ function QuestionEditorForm({
         hint: draft.hint?.trim() || undefined,
         options:
           draft.type === "SINGLE_CHOICE" || draft.type === "MULTIPLE_CHOICE"
-            ? draft.options.map((opt) => ({
-              content: opt.text.trim(),
-              isCorrect: draft.correctOptionIds.includes(opt.id),
-            }))
+            ? draft.options.map((option) => ({
+                content: option.text.trim(),
+                isCorrect: draft.correctOptionIds.includes(option.id),
+              }))
             : undefined,
         answers:
           draft.type === "TRUE_FALSE"
             ? [{ rawValue: draft.trueFalseAnswer }]
             : draft.type === "FILL_IN_BLANK" || draft.type === "TYPE_ANSWER"
-              ? draft.acceptedAnswers.map((ans) => ({ rawValue: ans.trim() }))
+              ? draft.acceptedAnswers.map((answer) => ({ rawValue: answer.trim() }))
               : undefined,
-        mediaIds: draft.media.map((m) => Number(m.id)).filter((id) => !isNaN(id)),
-      };
-
-      await contentService.updateQuestion(questionId, payload);
-
-
-      await client.invalidateQueries({
-        queryKey: ["content", "questions"],
-        refetchType: "all",
+        mediaIds: draft.media.map((item) => Number(item.id)).filter(Number.isFinite),
       });
-      await client.invalidateQueries({
-        queryKey: QUERY_KEYS.contentQuestion(questionId),
-        refetchType: "all",
-      });
-
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.contentQuestion(question.id) }),
+        queryClient.invalidateQueries({ queryKey: ["content", "questions"] }),
+      ]);
       toast.success("Question saved", {
         description: bankName ? `Updated in ${bankName}.` : undefined,
       });
-      setTimeout(() => {
-        onNavigate("bank", initialQuestion?.questionBankId);
-      }, NAVIGATE_AFTER_SAVE_MS);
-    } catch (err: unknown) {
-      toast.error("Could not save changes", {
-        description: getAppErrorMessage(err, tErrors as (key: string) => string),
+    } catch (error) {
+      toast.error("Could not save question", {
+        description: getAppErrorMessage(error, tErrors as (key: string) => string),
       });
-      setIsSaving(false);
+    } finally {
+      setSaving(false);
     }
   };
 
   return (
     <>
-      {/* Header */}
-      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-page-title font-bold text-slate-900">
-            Edit Question #{questionId}
-          </h1>
-          <p className="mt-1 text-xs text-slate-500">
-            Update prompt, options, answers, and media attachments.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
+      <header className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex items-center gap-3">
           <button
             type="button"
-            onClick={() => onNavigate("bank")}
-            className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50"
+            onClick={() => onNavigate("bank", question.questionBankId, bankName)}
+            className="mt-0.5 inline-flex size-10 shrink-0 items-center justify-center rounded-lg border-2 border-border bg-card text-foreground shadow-pop-sm transition hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            aria-label="Back to question bank"
           >
-            Cancel
+            <ArrowLeft size={18} aria-hidden />
+          </button>
+            <p className="text-sm text-muted-foreground pt-1">{bankName ?? "Question bank"}</p>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setPreviewOpen(true)}
+            className="inline-flex min-h-10 items-center gap-2 rounded-lg border-2 border-border bg-card px-4 text-body-sm font-semibold text-foreground shadow-pop-sm transition hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          >
+            <Eye size={16} aria-hidden /> Preview Exam
           </button>
           <button
             type="button"
-            disabled={isSaving}
-            onClick={handleSave}
-            className="rounded-lg bg-primary px-5 py-2 text-xs font-bold text-white transition hover:bg-primary-hover disabled:opacity-50"
+            onClick={saveQuestion}
+            disabled={saving || !isReady}
+            className="inline-flex min-h-10 items-center gap-2 rounded-lg border-2 border-ink bg-primary px-4 text-body-sm font-bold text-primary-foreground shadow-pop-sm transition hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-40"
           >
-            {isSaving ? "Saving..." : "Save Changes"}
+            <Save size={16} aria-hidden /> {saving ? "Saving…" : "Save question"}
           </button>
         </div>
-      </div>
+      </header>
 
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_340px] ">
-        <div className="rounded-xl border-2 border-ink shadow-pop bg-white p-5 shadow-[0_5px_18px_rgba(94,134,173,0.04)]">
-          <QuestionForm
-            question={draft}
-            onChange={(patch) => setDraft((prev) => ({ ...prev, ...patch }))}
-          />
+      <section className="overflow-hidden rounded-xl border-2 border-ink bg-card shadow-pop">
+        <div className="flex border-b-2 border-border px-3 pt-3">
+          <TabButton active={tab === "question"} onClick={() => setTab("question")}>Main Question</TabButton>
+          <TabButton active={tab === "guided"} onClick={() => setTab("guided")}>Guided Reasoning</TabButton>
         </div>
-
-        <aside className="flex flex-col gap-4 lg:sticky lg:top-5 lg:self-start">
-          <QuestionPreviewCard draft={draft} />
-          <CompletionChecklistCard draft={draft} />
-          {initialQuestion && <MetadataCard question={initialQuestion} bankName={bankName} />}
-        </aside>
-      </div>
-
-      {questionId && (
-        <div className="mt-6">
-          <GuidedDefinitionEditor
-            questionId={questionId}
-            finalQuestionType={initialQuestion?.type ?? draft.type}
-          />
+        <div className="p-5 md:p-6">
+          {tab === "question" ? (
+            <QuestionForm
+              question={draft}
+              onChange={(patch) => setDraft((current) => ({ ...current, ...patch }))}
+            />
+          ) : (
+            <PersistedGuidedTab questionId={question.id} finalQuestionType={draft.type} />
+          )}
         </div>
+      </section>
+
+      {previewOpen && (
+        <PreviewExamDialog
+          questions={[draft]}
+          initialIndex={0}
+          onClose={() => setPreviewOpen(false)}
+        />
       )}
     </>
   );
 }
 
-// Sidebar: live preview
-function QuestionPreviewCard({ draft }: { draft: ReturnType<typeof makeDraftQuestion> }) {
+function TabButton({ active, children, onClick }: {
+  active: boolean;
+  children: string;
+  onClick: () => void;
+}) {
   return (
-    <section className="rounded-xl border-2 border-ink shadow-pop bg-white p-4 shadow-[0_5px_18px_rgba(94,134,173,0.04)]">
-      <h3 className="mb-3 text-xs font-bold uppercase tracking-wide text-slate-400">
-        Student preview
-      </h3>
+    <button
+      type="button"
+      onClick={onClick}
+      className={`-mb-0.5 border-b-2 px-4 py-3 text-body-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${active ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"}`}
+      aria-current={active ? "page" : undefined}
+    >
+      {children}
+    </button>
+  );
+}
 
-      <div className="rounded-lg border border-slate-100 bg-slate-50/60 p-4">
-        {draft.media.length > 0 && (
-          <div className="mb-3 flex flex-wrap gap-2">
-            {draft.media.map((item) => (
-              <span
-                key={item.id}
-                className="inline-flex items-center gap-1 rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] text-slate-500"
-              >
-                {item.kind === "audio" ? <Music size={12} /> : <ImageIcon size={12} />}
-                {item.name}
-              </span>
-            ))}
-          </div>
-        )}
+function PersistedGuidedTab({ questionId, finalQuestionType }: {
+  questionId: number;
+  finalQuestionType: ReturnType<typeof makeDraftQuestion>["type"];
+}) {
+  const definitionQuery = useQuery({
+    queryKey: QUERY_KEYS.guidedDefinition(questionId),
+    queryFn: async () => (await guidedDefinitionService.get(questionId)).data,
+    retry: false,
+  });
 
-        <p className="text-sm font-medium text-slate-800">
-          {draft.text.trim() || (
-            <span className="italic text-slate-300">Your question prompt will appear here…</span>
-          )}
+  if (definitionQuery.isLoading) {
+    return <div className="py-8 text-center text-body-sm text-muted-foreground">Loading guided definition…</div>;
+  }
+
+  if (definitionQuery.isError && toAppError(definitionQuery.error).code !== "GUIDED_DEFINITION_NOT_FOUND") {
+    return <p role="alert" className="rounded-lg border border-destructive bg-destructive-soft p-4 text-body-sm text-destructive">Could not load Guided Reasoning. Refresh and try again.</p>;
+  }
+
+  return (
+    <PersistedGuidedForm
+      key={definitionQuery.data?.version ?? "new"}
+      questionId={questionId}
+      finalQuestionType={finalQuestionType}
+      initial={definitionQuery.data}
+    />
+  );
+}
+
+function PersistedGuidedForm({ questionId, finalQuestionType, initial }: {
+  questionId: number;
+  finalQuestionType: ReturnType<typeof makeDraftQuestion>["type"];
+  initial?: GuidedDefinition;
+}) {
+  const queryClient = useQueryClient();
+  const [draft, setDraft] = useState<GuidedDefinitionDraftState | undefined>(() => initial && {
+    enabled: true,
+    introContent: initial.introContent ?? "",
+    steps: initial.steps,
+  });
+  const [saving, setSaving] = useState(false);
+  const [validating, setValidating] = useState(false);
+  const [issues, setIssues] = useState<GuidedDefinitionIssue[]>([]);
+  const enabled = draft?.enabled ?? false;
+  const dirty = Boolean(draft) && JSON.stringify({
+    introContent: draft.introContent,
+    steps: draft.steps,
+  }) !== JSON.stringify(initial && {
+    introContent: initial.introContent ?? "",
+    steps: initial.steps,
+  });
+
+  const refresh = () => queryClient.invalidateQueries({ queryKey: QUERY_KEYS.guidedDefinition(questionId) });
+
+  const save = async () => {
+    setSaving(true);
+    try {
+      if (!enabled) {
+        if (initial) await guidedDefinitionService.remove(questionId);
+        toast.success(initial ? "Guided Reasoning removed" : "No Guided Reasoning to save");
+      } else if (draft) {
+        await guidedDefinitionService.saveDraft(questionId, {
+          expectedVersion: initial?.version ?? 0,
+          introContent: draft.introContent.trim() || null,
+          steps: draft.steps,
+        });
+        setIssues([]);
+        toast.success("Guided draft saved");
+      }
+      await refresh();
+    } catch (error) {
+      toast.error("Could not save Guided Reasoning", { description: toAppError(error).message });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const validate = async () => {
+    if (!initial || dirty) return;
+    setValidating(true);
+    try {
+      const response = await guidedDefinitionService.validate(questionId, initial.version);
+      await refresh();
+      const result = response.data;
+      setIssues(result?.issues ?? []);
+      if (result?.ready) {
+        toast.success("Guided Reasoning is ready");
+      } else {
+        toast.error("Guided draft still needs attention");
+      }
+    } catch (error) {
+      toast.error("Guided validation failed", { description: toAppError(error).message });
+    } finally {
+      setValidating(false);
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-secondary/40 p-3">
+        <p className="text-body-sm text-muted-foreground">
+          {enabled && initial?.status === "READY" && !dirty
+            ? "Ready for students"
+            : enabled
+              ? "Draft — save then validate when the steps are complete."
+              : "Guided Reasoning will be removed when you save."}
         </p>
-
-        {(draft.type === "SINGLE_CHOICE" || draft.type === "MULTIPLE_CHOICE") && (
-          <div className="mt-3 space-y-1.5">
-            {draft.options.map((option) => {
-              const isCorrect = draft.correctOptionIds.includes(option.id);
-              return (
-                <div
-                  key={option.id}
-                  className={`flex items-center gap-2 rounded-md border px-2.5 py-1.5 text-xs ${isCorrect
-                    ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-                    : "border-slate-200 bg-white text-slate-600"
-                    }`}
-                >
-                  <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-white text-[10px] font-bold text-slate-400 ring-1 ring-inset ring-slate-200">
-                    {option.id}
-                  </span>
-                  <span className="min-w-0 flex-1 truncate">
-                    {option.text.trim() || <span className="italic text-slate-300">Empty option</span>}
-                  </span>
-                  {isCorrect && <CheckCircle2 size={13} className="shrink-0" />}
-                </div>
-              );
-            })}
-          </div>
-        )}
-
-        {draft.type === "TRUE_FALSE" && (
-          <div className="mt-3 flex gap-2">
-            {(["TRUE", "FALSE"] as const).map((value) => (
-              <span
-                key={value}
-                className={`rounded-md border px-3 py-1.5 text-xs font-medium ${draft.trueFalseAnswer === value
-                  ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-                  : "border-slate-200 bg-white text-slate-500"
-                  }`}
-              >
-                {value === "TRUE" ? "True" : "False"}
-              </span>
-            ))}
-          </div>
-        )}
-
-        {(draft.type === "FILL_IN_BLANK" || draft.type === "TYPE_ANSWER") && (
-          <div className="mt-3 rounded-md border border-dashed border-slate-300 bg-white px-3 py-2 text-xs text-slate-400">
-            Student types an answer here
-          </div>
-        )}
+        <div className="flex gap-2">
+          <button type="button" onClick={validate} disabled={!initial || dirty || validating} className="inline-flex min-h-9 items-center gap-1.5 rounded-lg border-2 border-border bg-card px-3 text-body-sm font-semibold text-foreground disabled:cursor-not-allowed disabled:opacity-40">
+            <Check size={15} aria-hidden /> {validating ? "Validating…" : "Validate ready"}
+          </button>
+          <button type="button" onClick={save} disabled={saving} className="inline-flex min-h-9 items-center gap-1.5 rounded-lg border-2 border-ink bg-primary px-3 text-body-sm font-bold text-primary-foreground shadow-pop-sm disabled:cursor-not-allowed disabled:opacity-40">
+            <Save size={15} aria-hidden /> {saving ? "Saving…" : "Save guided draft"}
+          </button>
+        </div>
       </div>
-
-      {draft.explanation.trim() && (
-        <p className="mt-3 text-xs text-slate-400">
-          <span className="font-semibold text-slate-500">Explanation: </span>
-          {draft.explanation}
+      {issues.length > 0 && (
+        <p role="alert" className="rounded-lg border border-destructive bg-destructive-soft px-3 py-2 text-body-sm text-destructive">
+          {issues.slice(0, 3).map((issue) => `${issue.path}: ${issue.code}`).join(" · ")}
         </p>
       )}
-    </section>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Sidebar: completion checklist — the same logic isQuestionComplete() uses,
-// broken into individual conditions so a teacher can see exactly what's
-// missing instead of a single opaque Ready/Incomplete badge.
-// ---------------------------------------------------------------------------
-
-function CompletionChecklistCard({ draft }: { draft: ReturnType<typeof makeDraftQuestion> }) {
-  const items = getCompletionItems(draft);
-  const doneCount = items.filter((item) => item.done).length;
-
-  return (
-    <section className="rounded-xl border-2 border-ink shadow-pop bg-white p-4 shadow-[0_5px_18px_rgba(94,134,173,0.04)]">
-      <div className="mb-3 flex items-center justify-between">
-        <h3 className="text-xs font-bold uppercase tracking-wide text-slate-400">
-          Ready to save
-        </h3>
-        <span className="text-xs font-semibold text-slate-500">
-          {doneCount}/{items.length}
-        </span>
-      </div>
-
-      <ul className="space-y-2">
-        {items.map((item) => (
-          <li key={item.label} className="flex items-start gap-2 text-xs">
-            {item.done ? (
-              <CheckCircle2 size={15} className="mt-0.5 shrink-0 text-emerald-500" />
-            ) : (
-              <Circle size={15} className="mt-0.5 shrink-0 text-slate-300" />
-            )}
-            <span className={item.done ? "text-slate-500" : "text-slate-700"}>{item.label}</span>
-          </li>
-        ))}
-      </ul>
-    </section>
-  );
-}
-
-function getCompletionItems(draft: ReturnType<typeof makeDraftQuestion>) {
-  const items: { label: string; done: boolean }[] = [
-    { label: "Question prompt is filled in", done: draft.text.trim().length > 0 },
-  ];
-
-  if (draft.type === "SINGLE_CHOICE" || draft.type === "MULTIPLE_CHOICE") {
-    items.push(
-      {
-        label: "At least 2 options have text",
-        done: draft.options.filter((o) => o.text.trim().length > 0).length >= 2,
-      },
-      {
-        label: draft.type === "SINGLE_CHOICE" ? "Exactly one correct option selected" : "At least one correct option selected",
-        done:
-          draft.type === "SINGLE_CHOICE"
-            ? draft.correctOptionIds.length === 1
-            : draft.correctOptionIds.length >= 1,
-      },
-    );
-  }
-
-  if (draft.type === "FILL_IN_BLANK" || draft.type === "TYPE_ANSWER") {
-    items.push({
-      label: "At least one accepted answer provided",
-      done: draft.acceptedAnswers.some((a) => a.trim().length > 0),
-    });
-  }
-
-  if (draft.type === "FILL_IN_BLANK") {
-    items.push({
-      label: "Prompt contains a ____ blank marker",
-      done: draft.text.includes("____"),
-    });
-  }
-
-  return items;
-}
-
-// Sidebar: metadata — read-only reference info, not editable here.
-function MetadataCard({ question, bankName }: { question: QuestionResponse; bankName?: string }) {
-  const locale = useLocale();
-
-  return (
-    <section className="rounded-xl border-2 border-ink shadow-pop bg-white p-4 shadow-[0_5px_18px_rgba(94,134,173,0.04)]">
-      <h3 className="mb-3 text-xs font-bold uppercase tracking-wide text-slate-400">
-        Details
-      </h3>
-      <dl className="space-y-2 text-xs">
-        <div className="flex justify-between gap-3">
-          <dt className="text-slate-400">Question ID</dt>
-          <dd className="font-medium text-slate-700">#{question.id}</dd>
-        </div>
-        {question.questionBankId !== undefined && (
-          <div className="flex justify-between gap-3">
-            <dt className="text-slate-400">Question bank</dt>
-            <dd className="font-medium text-slate-700">#{bankName}</dd>
-          </div>
-        )}
-        <div className="flex justify-between gap-3">
-          <dt className="text-slate-400">Created</dt>
-          <dd className="font-medium text-slate-700">{formatDateTime(question.createdAt, locale)}</dd>
-        </div>
-        <div className="flex justify-between gap-3">
-          <dt className="text-slate-400">Last updated</dt>
-          <dd className="font-medium text-slate-700">{formatDateTime(question.updatedAt, locale)}</dd>
-        </div>
-      </dl>
-    </section>
+      <GuidedDraftEditor value={draft} onChange={setDraft} finalQuestionType={finalQuestionType} />
+    </div>
   );
 }

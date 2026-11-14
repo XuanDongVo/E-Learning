@@ -3,20 +3,19 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { getAppErrorMessage } from "@/lib/errors/app-error";
-import { AlertTriangle, CheckCircle2, Eye, Loader2, RotateCcw } from "lucide-react";
+import { AlertTriangle, ArrowLeft, CheckCircle2, Eye, Loader2, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 
 import type { DraftQuestion } from "@/types/question";
 import { QuestionList } from "./QuestionList";
-import { BulkSaveBar } from "./BulkSaveBar";
 import {
   QuestionForm,
   type QuestionMediaUploadHandler,
 } from "./QuestionForm";
 import { makeDraftQuestion } from "./question-draft";
 import { isQuestionComplete } from "./question-validator";
-import { QuestionPreviewModal } from "./QuestionPreviewModal";
-import { draftQuestionToPreview } from "./question-preview.mapper";
+import { GuidedDraftEditor } from "./GuidedDraftEditor";
+import { PreviewExamDialog } from "./PreviewExamDialog";
 import { QuestionImportReport } from "@/components/features/teacher/content/components/question-import-report";
 import type { CsvValidationResult } from "@/types/question-import";
 
@@ -33,6 +32,7 @@ export interface QuestionComposerProps {
   successDescription?: string;
   importReport?: CsvValidationResult;
   onDraftCleared?: () => void;
+  onBack?: () => void;
 }
 
 type AutoSaveStatus = "idle" | "saving" | "saved";
@@ -48,6 +48,7 @@ export function QuestionComposer({
   successDescription,
   importReport,
   onDraftCleared,
+  onBack,
 }: QuestionComposerProps) {
   const tErrors = useTranslations("errors");
   const [questions, setQuestions] = useState<DraftQuestion[]>(() => {
@@ -74,6 +75,7 @@ export function QuestionComposer({
   const [isSaving, setIsSaving] = useState(false);
   const [showValidation, setShowValidation] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [editorTab, setEditorTab] = useState<"question" | "guided">("question");
   const [clearDraftOpen, setClearDraftOpen] = useState(false);
   const [autoSaveStatus, setAutoSaveStatus] =
     useState<AutoSaveStatus>("idle");
@@ -152,6 +154,17 @@ export function QuestionComposer({
       options: source.options.map((option) => ({ ...option })),
       acceptedAnswers: [...source.acceptedAnswers],
       media: source.media.map((media) => ({ ...media })),
+      guidedDefinition: source.guidedDefinition
+        ? {
+            ...source.guidedDefinition,
+            steps: source.guidedDefinition.steps.map((step) => ({
+              ...step,
+              stepKey: `${step.stepKey}-copy-${Date.now()}`,
+              options: step.options.map((option) => ({ ...option })),
+              acceptedAnswers: [...step.acceptedAnswers],
+            })),
+          }
+        : undefined,
     };
 
     setQuestions((current) => {
@@ -250,9 +263,10 @@ export function QuestionComposer({
       {/* Top Header Bar */}
       <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-black tracking-tight text-foreground sm:text-3xl">
-            {title}
-          </h1>
+          <div className="flex items-center gap-2">
+            {onBack && <button type="button" onClick={onBack} className="inline-flex size-9 items-center justify-center rounded-lg border-2 border-ink bg-card text-foreground shadow-pop-sm hover:bg-secondary" aria-label="Back"><ArrowLeft size={16} /></button>}
+            <h1 className="text-page-title font-bold text-foreground">{title}</h1>
+          </div>
           <p className="mt-1 text-xs font-semibold text-muted-foreground">{description}</p>
         </div>
 
@@ -276,6 +290,9 @@ export function QuestionComposer({
           >
             <RotateCcw size={14} />
             Clear Draft
+          </button>
+          <button type="button" disabled={isSaving || !isAllValid} onClick={handleSave} className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-body-sm font-bold text-primary-foreground shadow-pop-sm hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-50">
+            {isSaving ? "Saving…" : `Save all (${validCount}/${questions.length})`}
           </button>
         </div>
       </div>
@@ -323,14 +340,15 @@ export function QuestionComposer({
                   {activeQuestion.type}
                 </span>
               </div>
-
-              <div className="rounded-xl border-2 border-ink bg-card p-5 shadow-pop-sm">
-                <QuestionForm
-                  question={activeQuestion}
-                  onChange={updateActive}
-                  onUploadMedia={onUploadMedia}
-                />
+              <div className="flex gap-2 border-b border-border" role="tablist" aria-label="Question editor tabs">
+                <button type="button" role="tab" aria-selected={editorTab === "question"} className={`border-b-2 px-3 py-2 text-body-sm font-bold ${editorTab === "question" ? "border-primary text-primary" : "border-transparent text-muted-foreground"}`} onClick={() => setEditorTab("question")}>Main question</button>
+                <button type="button" role="tab" aria-selected={editorTab === "guided"} className={`border-b-2 px-3 py-2 text-body-sm font-bold ${editorTab === "guided" ? "border-primary text-primary" : "border-transparent text-muted-foreground"}`} onClick={() => setEditorTab("guided")}>Guided Reasoning{activeQuestion.guidedDefinition?.enabled ? ` (${activeQuestion.guidedDefinition.steps.length})` : ""}</button>
               </div>
+              {editorTab === "question" ? (
+                <div className="rounded-xl border-2 border-ink bg-card p-5 shadow-pop-sm">
+                  <QuestionForm question={activeQuestion} onChange={updateActive} onUploadMedia={onUploadMedia} />
+                </div>
+              ) : <GuidedDraftEditor finalQuestionType={activeQuestion.type} value={activeQuestion.guidedDefinition} onChange={(guidedDefinition) => updateActive({ guidedDefinition })} />}
             </div>
           ) : (
             <div className="flex h-full flex-col items-center justify-center py-16 text-center text-xs font-semibold text-muted-foreground">
@@ -340,27 +358,9 @@ export function QuestionComposer({
         </div>
       </div>
 
-      {/* Bottom Floating Save Bar */}
-      <BulkSaveBar
-        total={questions.length}
-        validCount={validCount}
-        isSaving={isSaving}
-        onSave={handleSave}
-      />
-
-      {/* Quick Preview Modal */}
+      {/* Student-faithful local preview; it never creates a server Session. */}
       {previewOpen && (
-        <QuestionPreviewModal
-          title={title}
-          questions={questions.map(draftQuestionToPreview)}
-          initialIndex={Math.max(
-            0,
-            questions.findIndex(
-              (question) => question.draftId === activeDraftId,
-            ),
-          )}
-          onClose={() => setPreviewOpen(false)}
-        />
+        <PreviewExamDialog questions={questions} initialIndex={Math.max(0, questions.findIndex((question) => question.draftId === activeDraftId))} onClose={() => setPreviewOpen(false)} />
       )}
 
       {/* Clear Draft Confirmation Dialog */}

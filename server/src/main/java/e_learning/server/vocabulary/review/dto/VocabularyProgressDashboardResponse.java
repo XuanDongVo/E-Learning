@@ -6,7 +6,6 @@ import java.util.List;
 
 /**
  * Read-only GET /v1/student/vocabulary/progress response contract.
- * Controller and service are scaffolded, but aggregation is intentionally not yet implemented.
  * No new persistence model is required.
  *
  * Daily qualification: >= 5 DISTINCT words with HARD/GOOD/EASY ratings, based on the
@@ -54,6 +53,7 @@ public record VocabularyProgressDashboardResponse(
     /** null qualifiedWordCount means the date has not occurred yet. */
     public record ActivityDay(LocalDate date, Integer qualifiedWordCount, boolean qualifiedDay) {}
 
+    /** At most three recently reviewed visible Units are returned. */
     public record UnitProgress(
             Long unitId,
             String code,
@@ -64,7 +64,7 @@ public record VocabularyProgressDashboardResponse(
             long dueCount
     ) {}
 
-    /** Suggested candidates: recent AGAIN/HARD reviews, not a mastery score. */
+    /** At most twelve recent AGAIN/HARD candidates, not a mastery score. */
     public record AttentionWord(
             Long wordId,
             String word,

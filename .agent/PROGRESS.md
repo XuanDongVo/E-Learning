@@ -1,5 +1,23 @@
 # Project Progress
 
+## 2026-11-12 Vocabulary progress API integration
+
+- Connected the Student Vocabulary Progress page to the authenticated dashboard API
+  with loading, error/retry, and live-data rendering states.
+- Removed the progress mock fixture and mock-only copy, centralized progress UI
+  types in `src/types/student-vocabulary-progress.ts`, and moved page CSS into
+  the Student styles layer.
+- Frontend ESLint, TypeScript, and `git diff --check` pass.
+
+## 2026-11-12 Vocabulary progress backend aggregation
+
+- Implemented the authenticated Student Vocabulary Progress dashboard aggregation:
+  visible Unit scoping, today/due counts, 7-day schedule, 84-day activity,
+  streak/tree milestones, overview counts, recent Unit progress, and attention words.
+- `UnitProgress` is capped at 3 recently reviewed Units; `AttentionWord` is capped
+  at 12 recent AGAIN/HARD words. Database projections aggregate review history.
+- Backend compile could not run because `JAVA_HOME`/Java 21 is unavailable in the environment.
+
 ## 2026-11-12 Vocabulary progress hero layout
 
 - Refined the Student vocabulary progress hero to mirror the reference composition:

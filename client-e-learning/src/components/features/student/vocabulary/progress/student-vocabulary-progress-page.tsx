@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   ArrowLeft,
   ArrowRight,
@@ -11,6 +12,7 @@ import {
   Clock3,
   History,
   LibraryBig,
+  RefreshCw,
   Sparkles,
 } from "lucide-react";
 import { Link } from "@/i18n/navigation";
@@ -31,15 +33,15 @@ import {
   MaiBlossomAccent,
   MaiBranchAccent,
 } from "./vocabulary-progress-botanicals";
-import { vocabularyProgressMock } from "./vocabulary-progress.mock";
+import { QUERY_KEYS } from "@/services/query-keys";
+import { studentVocabularyProgressService } from "@/services/student/student-vocabulary-progress.service";
 import type {
   MemoryTreeMilestone,
   VocabularyProgressDashboard,
+  VocabularyProgressContentItem,
+  VocabularyProgressToday,
+  VocabularyProgressTree,
 } from "@/types/student-vocabulary-progress";
-import "./vocabulary-progress.css";
-
-type Today = VocabularyProgressDashboard["today"];
-type Tree = VocabularyProgressDashboard["tree"];
 
 const STAGE_LABELS: Record<MemoryTreeMilestone, string> = {
   0: "Hạt giống",
@@ -87,7 +89,7 @@ function SectionHeading({
   );
 }
 
-function TodayPanel({ today }: { today: Today }) {
+function TodayPanel({ today }: { today: VocabularyProgressToday }) {
   const target = Math.max(1, today.dailyTarget);
   const remaining = Math.max(0, target - today.completedDistinctWords);
   const progress = Math.min(100, (today.completedDistinctWords / target) * 100);
@@ -136,7 +138,7 @@ function TodayPanel({ today }: { today: Today }) {
   );
 }
 
-function TreePanel({ tree }: { tree: Tree }) {
+function TreePanel({ tree }: { tree: VocabularyProgressTree }) {
   const [open, setOpen] = useState(false);
   const [previewStage, setPreviewStage] = useState<MemoryTreeMilestone>(
     tree.highestUnlockedMilestone,
@@ -281,16 +283,7 @@ function TreePanel({ tree }: { tree: Tree }) {
   );
 }
 
-type ContentProgressItem = {
-  key: string;
-  title: string;
-  subtitle: string;
-  learned: number;
-  total: number;
-  href: string;
-};
-
-function ContentProgressRow({ item }: { item: ContentProgressItem }) {
+function ContentProgressRow({ item }: { item: VocabularyProgressContentItem }) {
   const progress =
     item.total > 0 ? Math.round((item.learned / item.total) * 100) : 0;
   return (
@@ -320,7 +313,9 @@ function ContentProgress({ data }: { data: VocabularyProgressDashboard }) {
   const percentage = overview.totalWords
     ? Math.round((overview.learnedWords / overview.totalWords) * 100)
     : 0;
-  const items: ContentProgressItem[] = data.units.slice(0, 4).map((unit) => ({
+  const items: VocabularyProgressContentItem[] = data.units
+    .slice(0, 4)
+    .map((unit) => ({
     key: "unit-" + unit.unitId,
     title: unit.name,
     subtitle: unit.dueCount + " từ đến hạn · " + unit.newCount + " từ chưa học",
@@ -621,11 +616,50 @@ function AttentionWords({ data }: { data: VocabularyProgressDashboard }) {
   );
 }
 
-export function StudentVocabularyProgressPage({
-  data = vocabularyProgressMock,
-}: {
-  data?: VocabularyProgressDashboard;
-}) {
+export function StudentVocabularyProgressPage() {
+  const dashboard = useQuery({
+    queryKey: QUERY_KEYS.studentVocabularyProgress,
+    queryFn: studentVocabularyProgressService.getDashboard,
+  });
+  const data = dashboard.data?.data;
+
+  if (dashboard.isLoading) {
+    return (
+      <main className="student-vocab vprogress mx-auto max-w-[1200px] pb-12">
+        <PaperSurface className="p-6" role="status">
+          Đang tải tiến độ từ vựng...
+        </PaperSurface>
+      </main>
+    );
+  }
+
+  if (dashboard.isError) {
+    return (
+      <main className="student-vocab vprogress mx-auto max-w-[1200px] pb-12">
+        <PaperSurface as="section" className="space-y-3 p-6" role="alert">
+          <h1 className="student-section-title">Chưa thể tải tiến độ</h1>
+          <p className="student-body text-destructive">
+            {dashboard.error instanceof Error
+              ? dashboard.error.message
+              : "Có lỗi kết nối, hãy thử lại."}
+          </p>
+          <button
+            type="button"
+            onClick={() => void dashboard.refetch()}
+            className="student-control student-control--action inline-flex items-center gap-2 px-4"
+          >
+            <RefreshCw className="size-4" aria-hidden="true" />
+            Thử lại
+          </button>
+        </PaperSurface>
+      </main>
+    );
+  }
+
+  if (!data) {
+    return null;
+  }
+
   return (
     <main className="student-vocab vprogress mx-auto max-w-[1200px] space-y-5 pb-12 sm:space-y-6">
       <header className="vprogress-page-header">
@@ -642,9 +676,6 @@ export function StudentVocabularyProgressPage({
           <p className="student-body text-muted-foreground">
             Mỗi ngày học một chút, cây tri thức lớn thêm một phần.
           </p>
-          <span className="vprogress-mock-notice">
-            Bản xem trước · Dữ liệu minh họa, chưa kết nối tài khoản
-          </span>
         </div>
         <Link
           href="/student/vocabulary"
@@ -664,10 +695,6 @@ export function StudentVocabularyProgressPage({
         <LearningActivity data={data} />
       </div>
       <AttentionWords data={data} />
-      <p className="text-center text-xs text-muted-foreground">
-        Mock UI · Chưa tính streak, lịch FSRS hay danh sách từ khó từ dữ liệu
-        thực.
-      </p>
     </main>
   );
 }

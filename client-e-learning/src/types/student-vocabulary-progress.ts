@@ -1,8 +1,4 @@
-/**
- * Mirrors VocabularyProgressDashboardResponse.java for GET /v1/student/vocabulary/progress.
- * The transport lives in student-vocabulary-progress.service.ts.
- * The UI continues using vocabulary-progress.mock.ts until backend aggregation is ready.
- */
+
 export type MemoryTreeMilestone = 0 | 3 | 7 | 14 | 30;
 
 export interface VocabularyProgressDashboard {
@@ -14,11 +10,13 @@ export interface VocabularyProgressDashboard {
     qualifiedToday: boolean;
     dueNow: number;
   };
+
   overview: {
     totalWords: number;
-    learnedWords: number; // FSRS card exists; not necessarily mastered
+    learnedWords: number; 
     newWords: number;
   };
+
   tree: {
     currentStreak: number;
     longestStreak: number;
@@ -32,7 +30,7 @@ export interface VocabularyProgressDashboard {
   }>;
   activityDays: Array<{
     date: string;
-    qualifiedWordCount: number | null; // null = future date
+    qualifiedWordCount: number | null; 
     qualifiedDay: boolean;
   }>;
   units: Array<{
@@ -54,4 +52,16 @@ export interface VocabularyProgressDashboard {
     hardCount: number;
     dueAt: string | null;
   }>;
+}
+
+export type VocabularyProgressToday = VocabularyProgressDashboard["today"];
+export type VocabularyProgressTree = VocabularyProgressDashboard["tree"];
+
+export interface VocabularyProgressContentItem {
+  key: string;
+  title: string;
+  subtitle: string;
+  learned: number;
+  total: number;
+  href: string;
 }

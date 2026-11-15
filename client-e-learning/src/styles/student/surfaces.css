@@ -1,6 +1,6 @@
 
 /* 1. NỀN TOÀN TRANG (Thớ giấy sổ tay vân hạt li ti) */
-:is(.student-theme, body:has(.student-theme)) {
+:is(.student-theme, body:has(.student-theme):not(:has(.teacher-workspace))) {
   background-color: var(--student-canvas);
   background-image: 
     radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--student-ink) 5.5%, transparent) 0.75px, transparent 0.75px),
@@ -299,8 +299,17 @@
   color: var(--student-ink);
   padding: 8px 30px;
   font-family: var(--student-font-body);
-  font-size: 0.875rem;
+  font-size: var(--app-font-body-size);
   outline: none;
+}
+
+/* Keep form fields readable on small-screen Safari without changing body text. */
+@media (max-width: 639px) {
+  :is(.student-theme, body:has(.student-theme)) input.student-field,
+  :is(.student-theme, body:has(.student-theme)) textarea.student-field,
+  :is(.student-theme, body:has(.student-theme)) select.student-field {
+    font-size: 1rem;
+  }
 }
 
 :is(.student-theme, body:has(.student-theme)) .student-field:focus-visible {
@@ -345,7 +354,7 @@
   box-shadow: var(--elevation-lg);
 }
 
-body:has(.student-theme) [data-slot="dialog-overlay"] {
+body:has(.student-theme):not(:has(.teacher-workspace)) [data-slot="dialog-overlay"] {
   background: color-mix(in srgb, var(--student-ink) 70%, transparent);
 }
 

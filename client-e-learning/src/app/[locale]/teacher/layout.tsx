@@ -251,7 +251,7 @@ export default function TeacherLayout({
 
   return (
     <AuthGuard requiredRole="TEACHER">
-      <div className="min-h-screen bg-background-app text-foreground font-sans">
+      <div className="teacher-workspace min-h-screen bg-background-app text-foreground font-sans">
         <TeacherSidebar
           open={sidebarOpen}
           onClose={() => setSidebarOpen(false)}

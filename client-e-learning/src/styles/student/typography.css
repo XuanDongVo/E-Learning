@@ -96,7 +96,7 @@
 
 :is(.student-theme, body:has(.student-theme)) .student-profile {
   font-family: var(--student-font-body);
-  font-size: 0.875rem;
+  font-size: var(--app-font-body-size);
   line-height: 1.55;
 }
 

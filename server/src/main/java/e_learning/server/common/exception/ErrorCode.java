@@ -89,6 +89,10 @@ public enum ErrorCode {
     ACTIVITY_SESSION_RETRY_EXHAUSTED(HttpStatus.CONFLICT, "ACTIVITY_SESSION_RETRY_EXHAUSTED", "No retry is available for this question"),
     ACTIVITY_SESSION_HINT_UNAVAILABLE(HttpStatus.CONFLICT, "ACTIVITY_SESSION_HINT_UNAVAILABLE", "A hint is not available for this question"),
     ACTIVITY_SESSION_NOT_READY(HttpStatus.CONFLICT, "ACTIVITY_SESSION_NOT_READY", "The activity is not ready"),
+    GUIDED_STEP_OUT_OF_ORDER(HttpStatus.CONFLICT, "GUIDED_STEP_OUT_OF_ORDER", "Only the current guided step can be answered"),
+    GUIDED_STEP_ALREADY_RESOLVED(HttpStatus.CONFLICT, "GUIDED_STEP_ALREADY_RESOLVED", "This guided step is no longer active"),
+    GUIDED_HINT_UNAVAILABLE(HttpStatus.CONFLICT, "GUIDED_HINT_UNAVAILABLE", "A hint is not available for this guided step"),
+    GUIDED_IDEMPOTENCY_CONFLICT(HttpStatus.CONFLICT, "GUIDED_IDEMPOTENCY_CONFLICT", "This request ID was already used for different guided step data"),
 
     ASSESSMENT_ATTEMPT_NOT_FOUND(HttpStatus.NOT_FOUND, "ASSESSMENT_ATTEMPT_NOT_FOUND", "The assessment attempt was not found"),
     ASSESSMENT_ATTEMPT_ACCESS_DENIED(HttpStatus.FORBIDDEN, "ASSESSMENT_ATTEMPT_ACCESS_DENIED", "The student cannot access this assessment attempt"),

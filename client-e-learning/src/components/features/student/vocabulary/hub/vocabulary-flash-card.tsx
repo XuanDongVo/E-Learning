@@ -38,7 +38,6 @@ export function VocabularyFlashcard({
   mode = "browse",
   onReveal,
   onToggleFavorite,
-  isFavorite,
 }: VocabularyFlashcardProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
@@ -90,7 +89,7 @@ export function VocabularyFlashcard({
       speakVocabulary(currentCard.word, targetVoice);
       setTimeout(() => setActiveVoice(null), 1000);
     },
-    [currentCard?.word, settings.voice],
+    [currentCard, settings.voice],
   );
 
   // Tự động phát âm khi lật trở lại mặt trước (isFlipped = false)

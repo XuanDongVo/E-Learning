@@ -40,9 +40,10 @@ Activity create/update/response additionally carries `practiceType`:
 `GUIDED_REASONING` is server-enforced to `mode=LEARNING` and exactly one
 selection strategy, `RANDOM`; readiness, preview and later runtime selection use
 only complete Questions with a READY, revision-matching Guided Definition.
-The Guided Student session flow is not implemented yet, and Guided Activities are
-therefore rejected by the current Classic ActivitySession runtime rather than
-being allowed to leak Final content.
+Guided ActivitySession runtime is an M3 source slice. It creates a separate
+immutable Guided snapshot and never falls through to the Classic projection:
+the public session payload exposes only the current Step until the Final gate
+opens. Verification remains pending.
 
 No current GameTemplate endpoint.
 
@@ -135,6 +136,8 @@ GET /v1/activities/{activityId}/session-options
 GET /v1/activity-sessions/{sessionId}
 POST /v1/activity-sessions/{sessionId}/questions/{sessionQuestionId}/answer
 POST /v1/activity-sessions/{sessionId}/questions/{sessionQuestionId}/hint
+POST /v1/activity-sessions/{sessionId}/questions/{sessionQuestionId}/steps/{stepKey}/answer
+POST /v1/activity-sessions/{sessionId}/questions/{sessionQuestionId}/steps/{stepKey}/hint
 POST /v1/activity-sessions/{sessionId}/finish
 GET /v1/activity-sessions/{sessionId}/result
 
@@ -150,7 +153,11 @@ Activity exposes more than one choice. The start response includes the complete 
 correct answers, accepted answers or explanations. Activity answers are evaluated server-side and are not persisted
 as answer history.
 
-The Activity start response returns the complete selected question set. Correct answers are never included before the runtime flow permits them.
+Classic start responses return the selected question set. Guided public responses
+contain only the current Step (without correct flags, answer keys, explanation
+or Final content) until all Steps are resolved. Step answer requests include a
+UUID `requestId`; replaying the same id and payload is idempotent, while a
+different payload is rejected.
 
 ## Student Gamification (Streak / Level)
 
@@ -190,8 +197,9 @@ Guided authoring is only for Question Bank Questions. It supports `SINGLE_CHOICE
 `TRUE_FALSE` and `TYPE_ANSWER` Steps, while a READY definition requires a complete
 supported Final Question and one or more ordered Steps. The authoring DTO contains
 answer keys and must never be reused by a Student runtime projection. Activity
-selection, student sessions, hints/retry runtime, review and XP are not current
-API contracts yet.
+selection and M3 Student session runtime are implemented as source slices;
+review remains M4. The Student Step projection is separate from this authoring
+DTO and never contains answer keys or explanations.
 
 
 ## Assignment Composition and AssessmentAttempt — accepted target contract, not yet implemented

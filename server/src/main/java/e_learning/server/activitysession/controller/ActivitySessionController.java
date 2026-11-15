@@ -54,6 +54,20 @@ public class ActivitySessionController {
         return ApiResponse.success(service.hint(sessionId, questionId, studentId(jwt)));
     }
 
+    @PostMapping("/v1/activity-sessions/{sessionId}/questions/{questionId}/steps/{stepKey}/answer")
+    public ApiResponse<GuidedStepAnswerResponse> answerGuidedStep(
+            @PathVariable Long sessionId, @PathVariable Long questionId, @PathVariable String stepKey,
+            @AuthenticationPrincipal Jwt jwt, @Valid @RequestBody GuidedStepAnswerRequest request) {
+        return ApiResponse.success(service.answerGuidedStep(sessionId, questionId, stepKey, studentId(jwt), request));
+    }
+
+    @PostMapping("/v1/activity-sessions/{sessionId}/questions/{questionId}/steps/{stepKey}/hint")
+    public ApiResponse<GuidedStepHintResponse> hintGuidedStep(
+            @PathVariable Long sessionId, @PathVariable Long questionId, @PathVariable String stepKey,
+            @AuthenticationPrincipal Jwt jwt) {
+        return ApiResponse.success(service.hintGuidedStep(sessionId, questionId, stepKey, studentId(jwt)));
+    }
+
     @PostMapping("/v1/activity-sessions/{sessionId}/finish")
     public ApiResponse<ActivitySessionResponse> finish(@PathVariable Long sessionId, @AuthenticationPrincipal Jwt jwt) {
         return ApiResponse.success(service.finish(sessionId, studentId(jwt)));

@@ -2,8 +2,11 @@ package e_learning.server.activitysession.entity;
 
 import e_learning.server.question.entity.Question;
 import e_learning.server.gamification.xp.entity.XpQuestionOutcome;
+import e_learning.server.activitysession.enums.GuidedQuestionStage;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import java.time.LocalDateTime;
 
 @Entity
@@ -17,6 +20,18 @@ public class ActivitySessionQuestion {
     @Column(name = "snapshot_schema_version") private Integer snapshotSchemaVersion;
     @Column(name = "snapshot_content_revision") private Long snapshotContentRevision;
     @Column(name = "snapshot_payload", columnDefinition = "TEXT") private String snapshotPayload;
+    @Column(name = "guided_snapshot_schema_version") private Integer guidedSnapshotSchemaVersion;
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "guided_snapshot_payload", columnDefinition = "jsonb") private String guidedSnapshotPayload;
+    @Enumerated(EnumType.STRING) @Column(name = "guided_stage", length = 30) private GuidedQuestionStage guidedStage;
+    @Column(name = "guided_current_step_index") private Integer guidedCurrentStepIndex;
+    // Null means Classic. GuidedRuntimeService initializes all three mutable
+    // fields together with its immutable snapshot before persistence.
+    @Column(name = "guided_current_step_attempts") private Integer guidedCurrentStepAttempts;
+    @Column(name = "guided_current_step_hint_used") private Boolean guidedCurrentStepHintUsed;
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "guided_hint_used_step_keys", columnDefinition = "jsonb")
+    private String guidedHintUsedStepKeys;
     @Column(nullable = false) private int position;
     @Column(name = "served_at") private LocalDateTime servedAt;
     @Column(name = "deadline_at") private LocalDateTime deadlineAt;

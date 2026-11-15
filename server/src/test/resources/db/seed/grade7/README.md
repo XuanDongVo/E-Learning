@@ -110,6 +110,13 @@ Log into a Grade 7 student, open Student Units: you should see 6 Units. Each Uni
 
 In the Teacher UI, review the Grade 7 Question Banks (12 banks, 200 questions, 5 types) and the Grade 7 integrated Assignment (20 owned questions including five MATCHING and five CLOZE). Verify all questions have a correct answer, and that the integrated Assignment can start, autosave, submit and display permitted answers.
 
+## Guided runtime UI fixture
+
+After this Grade 7 seed and Flyway V60 are applied in the same disposable database,
+run [`../guided-runtime/01_guided_runtime.sql`](../guided-runtime/01_guided_runtime.sql).
+It adds a separate, idempotent Guided Learning Activity for UI/API verification;
+its own README documents the supported Step, Hint and Retry cases.
+
 ### Implementation references
 
 - Backend: `activity/service/ActivityReadinessService.java`

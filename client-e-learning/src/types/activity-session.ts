@@ -21,7 +21,7 @@ export type ActivitySessionQuestion = {
   id: number;
   position: number;
   type: "SINGLE_CHOICE" | "MULTIPLE_CHOICE" | "TRUE_FALSE" | "FILL_IN_BLANK" | "TYPE_ANSWER";
-  content: string;
+  content?: string | null;
   options: { key: string; content: string }[];
   // ISO-8601 timestamp with server offset; never an unzoned local time.
   deadlineAt?: string | null;
@@ -32,6 +32,31 @@ export type ActivitySessionQuestion = {
   finalCorrect?: boolean;
   hintUsed: boolean;
   hasHint: boolean;
+  guided?: GuidedQuestionState | null;
+};
+
+export type GuidedQuestionStage =
+  | "STEP_ACTIVE"
+  | "STEP_RETRY"
+  | "FINAL_PENDING"
+  | "FINAL_RETRY"
+  | "QUESTION_RESOLVED";
+
+export type GuidedQuestionState = {
+  stage: GuidedQuestionStage;
+  introContent?: string | null;
+  currentStep?: {
+    stepKey: string;
+    position: number;
+    totalSteps: number;
+    type: "SINGLE_CHOICE" | "TRUE_FALSE" | "TYPE_ANSWER";
+    prompt: string;
+    options: { key: string; content: string }[];
+    hintAvailable: boolean;
+    hintUsed: boolean;
+    attemptsUsed: number;
+    attemptsAllowed: number;
+  } | null;
 };
 
 export type ActivitySession = {
@@ -58,6 +83,15 @@ export type ActivitySessionAnswerFeedback = {
   answerRevealed: boolean;
   correctAnswer?: string;
   explanation?: string;
+};
+
+export type GuidedStepAnswerFeedback = {
+  session: ActivitySession;
+  correct: boolean;
+  attemptNumber: number;
+  retryAvailable: boolean;
+  stepResolved: boolean;
+  stage: GuidedQuestionStage;
 };
 
 export type ActivityXpQuestionOutcome =

@@ -9,6 +9,6 @@ public record ActivitySessionQuestionResponse(
         Long id, int position, QuestionType type, String content,
         List<Option> options, OffsetDateTime deadlineAt, boolean resolved,
         int answerAttempts, Boolean firstCorrect, Boolean finalCorrect, boolean hintUsed, boolean hasHint,
-        ActivityQuestionResolution resolutionReason) {
+        ActivityQuestionResolution resolutionReason, GuidedQuestionResponse guided) {
     public record Option(String key, String content) {}
 }

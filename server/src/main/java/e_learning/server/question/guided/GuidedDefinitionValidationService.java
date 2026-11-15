@@ -9,6 +9,7 @@ import e_learning.server.question.engine.types.text.TypeAnswerSpec;
 import e_learning.server.question.engine.types.truefalse.TrueFalseSpec;
 import e_learning.server.question.entity.Question;
 import e_learning.server.question.enums.QuestionType;
+import e_learning.server.question.enums.Difficulty;
 import e_learning.server.question.guided.dto.GuidedDefinitionIssue;
 import org.springframework.stereotype.Service;
 
@@ -81,8 +82,13 @@ public class GuidedDefinitionValidationService {
     }
 
     public QuestionSpec toSpec(Question question, GuidedStepPayload step) {
+        return toSpec(question.getDifficulty(), step);
+    }
+
+    /** Runtime grades an immutable Step snapshot, never the mutable Question row. */
+    public QuestionSpec toSpec(Difficulty difficulty, GuidedStepPayload step) {
         QuestionSpec.QuestionCommon common = new QuestionSpec.QuestionCommon(
-                valueOrEmpty(step.prompt()), question.getDifficulty(), step.explanation(), null, List.of());
+                valueOrEmpty(step.prompt()), difficulty, step.explanation(), null, List.of());
         return switch (step.type()) {
             case SINGLE_CHOICE -> new SingleChoiceSpec(common,
                     step.options().stream().map(choice -> new QuestionSpec.Choice(

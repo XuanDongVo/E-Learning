@@ -6,8 +6,9 @@
 **Tình trạng:** M1 đã có schema và Teacher authoring API (definition Draft/Ready,
 validation, optimistic version, capabilities); M2 đã có Activity `practiceType`,
 Guided eligibility/readiness, Teacher Activity configuration, và Teacher
-workspace sửa Question đã lưu. M3–M5 — runtime,
-review và Student UI — vẫn là specification, trừ khi ghi rõ EXISTING.<br>
+workspace sửa Question đã lưu. M3 runtime source slice (snapshot, gated Step
+API and Student runner) is in progress and not yet verified; M4–M5 — review,
+QA and release — remain specification, unless marked EXISTING.<br>
 **SRS:** [02_SRS_Guided_Reasoning_v1.md](02_SRS_Guided_Reasoning_v1.md)
 
 > **CONFIRMED:** Product Owner đã chốt. **PROPOSED:** Policy triển khai chi tiết có thể thay đổi khi review, được ghi nhãn rõ; không được xem là Product Owner đã duyệt. **EXISTING:** Từ mã nguồn `main` tại base SHA.
@@ -607,11 +608,12 @@ teacher/content/
 teacher/activities/
   practiceType + Guided-ready pool
 student/activities/
-  GuidedStepRunner
-  GuidedStepFeedback
-  GuidedStepHint
-  GuidedFinalStage
-  GuidedStepReview
+  PracticeRunner (one session shell and lifecycle owner)
+  runtime/
+    GuidedStage (Step + Final stage renderer; no separate session runner)
+    GuidedStepFeedback
+    GuidedStepHint
+    GuidedStepReview
 teacher/student/
   GuidedSessionReview
 ```

@@ -1,5 +1,33 @@
 # Project Progress
 
+## 2026-11-14 Guided Reasoning v1 — M3 runtime (in progress)
+
+Screen Brief
+User: Student
+Goal: Complete Guided Steps before seeing the Final Question.
+Page type: Student flow
+Primary action: Submit current Step answer
+States covered: loading, answer validation, hint, retry, final gate, terminal result.
+
+- Added M3 session persistence/source: immutable Guided snapshot per session
+  question, current-step state, and idempotent persisted Step attempts.
+- Guided Activities now enter their own staged session projection rather than the
+  Classic flow. Before `FINAL_PENDING`, API responses exclude Final content and
+  correct Step values; Step submit/hint endpoints are server-gated to the active
+  Question and Step.
+- `PracticeRunner` remains the only Student session owner (start/resume, result,
+  navigation and mutations). Guided is rendered as the focused
+  `activities/runtime/GuidedStage`, not as a second runner or visual shell.
+- Added the disposable `server/src/test/resources/db/seed/guided-runtime/`
+  fixture: one Guided Learning Activity with READY definitions covering Single
+  Choice, True/False, Type Answer, Hint and Retry states for real UI/API QA.
+- V61 corrects the runtime persistence discriminator: a Classic
+  `ActivitySessionQuestion` has every Guided runtime column `NULL`; a Guided
+  question has an immutable snapshot and complete Guided state. The database
+  check constraint prevents either partial shape from being persisted.
+- This slice remains in progress: Java/Node tooling is unavailable here, so
+  migration, tests, lint/build and browser verification are still required.
+
 ## 2026-11-14 Unified Bulk Guided Composer
 
 Screen Brief

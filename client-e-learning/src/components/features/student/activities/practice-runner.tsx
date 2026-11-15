@@ -26,6 +26,7 @@ import type {
   ActivitySession,
   ActivitySessionMode,
   ActivitySessionQuestion,
+  GuidedStepAnswerFeedback,
   SelectionStrategy,
 } from "@/types/student/activity-session";
 import { PracticeSettings } from "./practice-setting";
@@ -38,6 +39,7 @@ import {
   type NavStatus,
 } from "./question-navigator";
 import { HintPanel, HintStatus } from "./hint-panel";
+import { GuidedStage } from "./runtime/guided-stage";
 import {
   TYPE_LABEL,
   formatAnswer,
@@ -102,6 +104,9 @@ export function PracticeRunner({
   const [feedbacks, setFeedbacks] = useState<Record<number, Feedback>>({});
   const [hints, setHints] = useState<Record<number, string>>({});
   const [hintOpenFor, setHintOpenFor] = useState<number | null>(null);
+  const [guidedFeedback, setGuidedFeedback] =
+    useState<GuidedStepAnswerFeedback>();
+  const [guidedHint, setGuidedHint] = useState<string>();
   const [settings, setSettings] = useState(false);
   const [navOpen, setNavOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -157,6 +162,8 @@ export function PracticeRunner({
       setFeedbacks({});
       setHints({});
       setHintOpenFor(null);
+      setGuidedFeedback(undefined);
+      setGuidedHint(undefined);
       setShowResult(false);
     },
   });
@@ -184,9 +191,15 @@ export function PracticeRunner({
       }));
       setPicks((p) => ({ ...p, [v.questionId]: v.draft }));
       setDrafts((d) => ({ ...d, [v.questionId]: [] }));
+      if (
+        data.session.status !== "IN_PROGRESS" &&
+        data.session.questions.some((question) => question.guided)
+      ) {
+        setShowResult(true);
+      }
     },
   });
-  const { mutate: sendAnswer, isPending: answering } = answerMutation;
+  const { mutate: sendAnswer, isPending: answerPending } = answerMutation;
   const hintMutation = useMutation({
     mutationFn: (v: { questionId: number }) =>
       activitySessionService.hint(session!.id, v.questionId),
@@ -208,6 +221,45 @@ export function PracticeRunner({
     },
   });
   const { mutate: sendHint, isPending: hinting } = hintMutation;
+  const guidedStepAnswerMutation = useMutation({
+    mutationFn: (value: {
+      questionId: number;
+      stepKey: string;
+      answer: string;
+    }) =>
+      activitySessionService.answerGuidedStep(
+        session!.id,
+        value.questionId,
+        value.stepKey,
+        crypto.randomUUID(),
+        value.answer,
+      ),
+    onSuccess: (result, value) => {
+      const data = result.data;
+      if (!data) return;
+      syncServerClock(data.session);
+      setSession(data.session);
+      setGuidedFeedback(data);
+      setGuidedHint(undefined);
+      setDrafts((drafts) => ({ ...drafts, [value.questionId]: [] }));
+    },
+  });
+  const guidedHintMutation = useMutation({
+    mutationFn: (value: { questionId: number; stepKey: string }) =>
+      activitySessionService.hintGuidedStep(
+        session!.id,
+        value.questionId,
+        value.stepKey,
+      ),
+    onSuccess: (result) => {
+      const data = result.data;
+      if (!data) return;
+      syncServerClock(data.session);
+      setSession(data.session);
+      setGuidedHint(data.hint);
+    },
+  });
+  const answering = answerPending || guidedStepAnswerMutation.isPending;
   const finish = useMutation({
     mutationFn: () => activitySessionService.finish(session!.id),
     onSuccess: (result) => {
@@ -301,6 +353,7 @@ export function PracticeRunner({
     !timeoutPending;
   const hintAvailable =
     !!question &&
+    !question.guided &&
     session?.mode === "LEARNING" &&
     question.hasHint &&
     !locked &&
@@ -432,6 +485,8 @@ export function PracticeRunner({
     setFeedbacks({});
     setHints({});
     setHintOpenFor(null);
+    setGuidedFeedback(undefined);
+    setGuidedHint(undefined);
     setTimeoutNotice(null);
     lastTimeoutPollAt.current = 0;
     timeoutMutation.reset();
@@ -851,6 +906,54 @@ export function PracticeRunner({
                   )}
                   onRetry={retry}
                 />
+              ) : question.guided ? (
+                <GuidedStage
+                  question={question}
+                  draft={draft}
+                  feedback={guidedFeedback}
+                  finalFeedback={feedback}
+                  hint={guidedHint}
+                  error={
+                    guidedStepAnswerMutation.isError || guidedHintMutation.isError
+                      ? getAppErrorMessage(
+                          guidedStepAnswerMutation.error ?? guidedHintMutation.error,
+                          tErrors as (key: string) => string,
+                        )
+                      : undefined
+                  }
+                  pending={answering}
+                  hintPending={guidedHintMutation.isPending}
+                  onDraftChange={(next) => setDraft(question.id, () => next)}
+                  onSubmitStep={() => {
+                    const step = question.guided?.currentStep;
+                    if (!step || !(draft[0] ?? "").trim()) return;
+                    guidedStepAnswerMutation.mutate({
+                      questionId: question.id,
+                      stepKey: step.stepKey,
+                      answer: draft[0] ?? "",
+                    });
+                  }}
+                  onUseHint={() => {
+                    const step = question.guided?.currentStep;
+                    if (!step) return;
+                    guidedHintMutation.mutate({
+                      questionId: question.id,
+                      stepKey: step.stepKey,
+                    });
+                  }}
+                  onContinue={() => {
+                    setGuidedFeedback(undefined);
+                    setGuidedHint(undefined);
+                  }}
+                  onSubmitFinal={() => {
+                    if (!draft.length) return;
+                    sendAnswer({
+                      questionId: question.id,
+                      answer: answerFor(question, draft),
+                      draft,
+                    });
+                  }}
+                />
               ) : (
                 <>
                   <div className="mb-3 flex flex-wrap gap-2 text-xs font-bold">
@@ -1039,13 +1142,13 @@ export function PracticeRunner({
               )}
             </div>
           </div>
-          {!complete && <QuestionNavigator {...navProps} />}
+          {!complete && !question.guided && <QuestionNavigator {...navProps} />}
         </div>
         <footer className="mt-auto flex items-center justify-between gap-3">
-          {!complete && (
+          {!complete && !question.guided && (
             <QuestionNavigatorSheet {...navProps} onOpenChange={setNavOpen} />
           )}{" "}
-          {!complete && (
+          {!complete && !question.guided && (
             <div className="flex flex-wrap justify-end gap-2">
               <Button
                 variant="outline"
@@ -1128,7 +1231,7 @@ export function PracticeRunner({
           }
         }}
       >
-        <AlertDialogContent className="z-[70] max-w-[440px] rounded-[20px] border-practice-border bg-practice-paper text-practice-ink">
+        <AlertDialogContent className="z-[70] max-w-[440px] rounded-[20px] border-2 bg-practice-paper text-practice-ink">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-lg font-extrabold">
               Rời khỏi hoạt động?

@@ -28,6 +28,7 @@ export function PracticeWorkspace({
     tErrors, session, question, picks, locked, feedback, draft, over, hintOpen,
     questions, statuses, index, tryHard, goTo, deadlineExpired, complete,
     resultQuery, feedbacks, retry, guidedFeedback, guidedHint,
+    guidedReview, guidedFinalReview, dismissGuidedReview, dismissGuidedFinalReview,
     guidedStepAnswerMutation, guidedHintMutation, answering, setDraft,
     requestIds, submitGuidedStep, setGuidedFeedback, setGuidedHint,
     setFeedbacks, hinting, hintMutation, hintSlow, hintError, sendHint,
@@ -189,6 +190,10 @@ export function PracticeWorkspace({
                   question={question}
                   draft={draft}
                   feedback={guidedFeedback}
+                  review={guidedReview?.questionId === question.id ? guidedReview : undefined}
+                  finalReview={guidedFinalReview?.questionId === question.id ? guidedFinalReview : undefined}
+                  onDismissReview={dismissGuidedReview}
+                  onDismissFinalReview={dismissGuidedFinalReview}
                   finalFeedback={feedback}
                   hint={guidedHint}
                   error={

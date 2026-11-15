@@ -61,6 +61,8 @@ export function PracticeDialogs({
     setLeaveDialogOpen,
     setSettings,
     settings,
+    soundEnabled,
+    setSoundEnabled,
   } = controller;
 
   return (
@@ -131,6 +133,8 @@ export function PracticeDialogs({
         onOpenChange={setSettings}
         background={background}
         onBackgroundChange={setBackground}
+        soundEnabled={soundEnabled}
+        onSoundEnabledChange={setSoundEnabled}
       />
     </>
   );

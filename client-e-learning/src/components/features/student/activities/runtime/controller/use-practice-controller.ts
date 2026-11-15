@@ -3,7 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { getAppErrorMessage } from "@/lib/errors/app-error";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { activitySessionService } from "@/services/student/student-activity-session.service";
 import type {
@@ -19,6 +19,7 @@ import { useLogicalRequestId } from "../use-logical-request-id";
 import { usePracticeQuestionCursor } from "../use-practice-question-cursor";
 import { usePracticeKeyboard } from "./use-practice-keyboard";
 import { usePracticeTimeoutEffects } from "./use-practice-timeout-effects";
+import { playPracticeFeedback, unlockPracticeAudio } from "../practice-feedback-sound";
 
 type Feedback = {
   correct: boolean;
@@ -26,6 +27,21 @@ type Feedback = {
   answerRevealed: boolean;
   correctAnswer?: string;
   explanation?: string;
+};
+
+type GuidedStep = NonNullable<NonNullable<ActivitySessionQuestion["guided"]>["currentStep"]>;
+
+type GuidedReview = {
+  questionId: number;
+  step: GuidedStep;
+  feedback: GuidedStepAnswerFeedback;
+  receivedAt: number;
+};
+
+type GuidedFinalReview = {
+  questionId: number;
+  feedback: Feedback;
+  receivedAt: number;
 };
 
 const answerFor = (
@@ -56,6 +72,9 @@ export function usePracticeController({
   const [guidedFeedback, setGuidedFeedback] =
     useState<GuidedStepAnswerFeedback>();
   const [guidedHint, setGuidedHint] = useState<string>();
+  const [guidedReview, setGuidedReview] = useState<GuidedReview>();
+  const [guidedFinalReview, setGuidedFinalReview] = useState<GuidedFinalReview>();
+  const [soundEnabled, setSoundEnabled] = useState(true);
   const [settings, setSettings] = useState(false);
   const [navOpen, setNavOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -114,6 +133,8 @@ export function usePracticeController({
       setHintOpenFor(null);
       setGuidedFeedback(undefined);
       setGuidedHint(undefined);
+      setGuidedReview(undefined);
+      setGuidedFinalReview(undefined);
       setShowResult(false);
     },
   });
@@ -136,33 +157,29 @@ export function usePracticeController({
       syncServerClock(data.session);
       setTimeoutNotice(null);
       setSession(data.session);
-      setFeedbacks((f) => ({
-        ...f,
-        [v.questionId]: {
-          correct: data.correct,
-          retryAvailable: data.retryAvailable,
-          answerRevealed: data.answerRevealed,
-          correctAnswer: data.correctAnswer,
-          explanation: data.explanation,
-        },
-      }));
+      const answerFeedback: Feedback = {
+        correct: data.correct,
+        retryAvailable: data.retryAvailable,
+        answerRevealed: data.answerRevealed,
+        correctAnswer: data.correctAnswer,
+        explanation: data.explanation,
+      };
+      setFeedbacks((f) => ({ ...f, [v.questionId]: answerFeedback }));
+      if (soundEnabled) playPracticeFeedback(data.correct);
       setPicks((p) => ({ ...p, [v.questionId]: v.draft }));
       setDrafts((d) => ({ ...d, [v.questionId]: [] }));
       requestIds.clear(`final:${v.questionId}`);
       const answeredQuestion = data.session.questions.find(
         (question) => question.id === v.questionId,
       );
-      if (
-        answeredQuestion?.guided &&
-        answeredQuestion.resolved &&
-        data.session.status === "IN_PROGRESS"
-      ) {
-        setCurrentId(
-          data.session.questions.find((question) => !question.resolved)?.id ??
-            v.questionId,
-        );
-      }
-      if (
+      // Guided final feedback must remain visible before advancing the cursor.
+      if (answeredQuestion?.guided) {
+        setGuidedFinalReview({
+          questionId: v.questionId,
+          feedback: answerFeedback,
+          receivedAt: Date.now(),
+        });
+      } else if (
         data.session.status !== "IN_PROGRESS" &&
         data.session.questions.some((question) => question.guided)
       ) {
@@ -198,6 +215,7 @@ export function usePracticeController({
       stepKey: string;
       requestId: string;
       answer: string;
+      reviewStep: GuidedStep;
     }) =>
       activitySessionService.answerGuidedStep(
         session!.id,
@@ -212,6 +230,13 @@ export function usePracticeController({
       syncServerClock(data.session);
       setSession(data.session);
       setGuidedFeedback(data);
+      setGuidedReview({
+        questionId: value.questionId,
+        step: value.reviewStep,
+        feedback: data,
+        receivedAt: Date.now(),
+      });
+      if (soundEnabled) playPracticeFeedback(data.correct);
       setGuidedHint(undefined);
       setDrafts((drafts) => ({ ...drafts, [value.questionId]: [] }));
       requestIds.clear(`step:${value.questionId}:${value.stepKey}`);
@@ -368,6 +393,8 @@ export function usePracticeController({
       setCurrentId(id);
       setGuidedFeedback(undefined);
       setGuidedHint(undefined);
+      setGuidedReview(undefined);
+      setGuidedFinalReview(undefined);
     },
     [setCurrentId],
   );
@@ -385,10 +412,11 @@ export function usePracticeController({
   );
   const pick = useCallback(
     (key: string) => {
-      if (!question || locked || answering || deadlineExpired || timeoutPending)
+      if (!question || locked || answering || deadlineExpired || timeoutPending || guidedReview || guidedFinalReview)
         return;
+      const effectiveType = question.guided?.currentStep?.type ?? question.type;
       setDraft(question.id, (cur) =>
-        question.type === "MULTIPLE_CHOICE"
+        effectiveType === "MULTIPLE_CHOICE"
           ? cur.includes(key)
             ? cur.filter((k) => k !== key)
             : [...cur, key]
@@ -402,33 +430,89 @@ export function usePracticeController({
       answering,
       deadlineExpired,
       timeoutPending,
+      guidedReview,
+      guidedFinalReview,
       setDraft,
       requestIds,
     ],
   );
   const submit = useCallback(() => {
-    if (!question || !canSubmit) return;
+    if (!question || !canSubmit || guidedFinalReview) return;
+    if (soundEnabled) unlockPracticeAudio();
     sendAnswer({
       questionId: question.id,
       requestId: requestIds.acquire(`final:${question.id}`),
       answer: answerFor(question, draft),
       draft,
     });
-  }, [question, canSubmit, sendAnswer, draft, requestIds]);
+  }, [question, canSubmit, guidedFinalReview, soundEnabled, sendAnswer, draft, requestIds]);
   const submitGuidedStep = useCallback(() => {
     const step = question?.guided?.currentStep;
-    if (!question || !step || !(draft[0] ?? "").trim() || answering) return;
+    if (!question || !step || !(draft[0] ?? "").trim() || answering || guidedReview) return;
+    if (soundEnabled) unlockPracticeAudio();
     guidedStepAnswerMutation.mutate({
       questionId: question.id,
       stepKey: step.stepKey,
       requestId: requestIds.acquire(`step:${question.id}:${step.stepKey}`),
       answer: draft[0] ?? "",
+      reviewStep: { ...step, options: [...step.options] },
     });
-  }, [question, draft, answering, guidedStepAnswerMutation, requestIds]);
+  }, [question, draft, answering, guidedReview, soundEnabled, guidedStepAnswerMutation, requestIds]);
+  const dismissGuidedReview = useCallback(() => {
+    setGuidedReview(undefined);
+    setGuidedFeedback(undefined);
+    setGuidedHint(undefined);
+  }, []);
+  const dismissGuidedFinalReview = useCallback(() => {
+    if (!guidedFinalReview) return;
+    setGuidedFinalReview(undefined);
+    if (guidedFinalReview.feedback.retryAvailable) {
+      setFeedbacks((current) => {
+        const next = { ...current };
+        delete next[guidedFinalReview.questionId];
+        return next;
+      });
+    } else if (session?.status !== "IN_PROGRESS") {
+      setShowResult(true);
+    } else {
+      const next = session?.questions.find((item) => !item.resolved);
+      if (next) setCurrentId(next.id);
+    }
+  }, [guidedFinalReview, session, setCurrentId]);
+
+  useEffect(() => {
+    if (!guidedReview) return;
+    const timer = window.setTimeout(
+      dismissGuidedReview,
+      guidedReview.feedback.retryAvailable ? 1400 : 1900,
+    );
+    return () => window.clearTimeout(timer);
+  }, [guidedReview, dismissGuidedReview]);
+
+  useEffect(() => {
+    if (!guidedFinalReview) return;
+    const timer = window.setTimeout(
+      dismissGuidedFinalReview,
+      guidedFinalReview.feedback.retryAvailable ? 1400 : 1900,
+    );
+    return () => window.clearTimeout(timer);
+  }, [guidedFinalReview, dismissGuidedFinalReview]);
+
   const submitCurrent = useCallback(() => {
+    if (guidedReview?.questionId === question?.id) {
+      if (Date.now() - guidedReview.receivedAt >= 650) dismissGuidedReview();
+      return;
+    }
+    if (guidedFinalReview?.questionId === question?.id) {
+      if (Date.now() - guidedFinalReview.receivedAt >= 650) dismissGuidedFinalReview();
+      return;
+    }
     if (question?.guided?.currentStep) submitGuidedStep();
     else submit();
-  }, [question, submit, submitGuidedStep]);
+  }, [
+    question, submit, submitGuidedStep, guidedReview, guidedFinalReview,
+    dismissGuidedReview, dismissGuidedFinalReview,
+  ]);
   const reset = useCallback(() => {
     if (!question || locked || answering || deadlineExpired) return;
     setDraft(question.id, () => []);
@@ -491,6 +575,8 @@ export function usePracticeController({
     setHintOpenFor(null);
     setGuidedFeedback(undefined);
     setGuidedHint(undefined);
+    setGuidedReview(undefined);
+    setGuidedFinalReview(undefined);
     setTimeoutNotice(null);
     requestIds.clearAll();
     lastTimeoutPollAt.current = 0;
@@ -519,7 +605,7 @@ export function usePracticeController({
     tryHard,
   });
   usePracticeKeyboard({
-    blocked: !session || settings || complete || navOpen || confirmOpen,
+    blocked: !session || settings || complete || navOpen || confirmOpen || leaveDialogOpen || answering || deadlineExpired || timeoutPending,
     question,
     tryHard,
     locked,
@@ -536,7 +622,9 @@ export function usePracticeController({
     picks, locked, feedback, draft, over, hintOpen, questions, statuses, index,
     tryHard, goTo, goNext, deadlineExpired, hasDraft, canSubmit, background, leave,
     settings, setSettings, secondsLeft, complete, resultQuery, feedbacks, retry,
-    guidedFeedback, guidedHint, guidedStepAnswerMutation, guidedHintMutation,
+    guidedFeedback, guidedHint, guidedReview, guidedFinalReview,
+    dismissGuidedReview, dismissGuidedFinalReview,
+    soundEnabled, setSoundEnabled, guidedStepAnswerMutation, guidedHintMutation,
     answering, setDraft, requestIds, submitGuidedStep, setGuidedFeedback,
     setGuidedHint, setFeedbacks, hinting, hintMutation, hintSlow,
     hintError, sendHint, hintText, setHintOpenFor, answerSlow, answerMutation,

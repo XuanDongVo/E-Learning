@@ -1,6 +1,5 @@
 import { useEffect } from "react";
 import type { ActivitySessionQuestion } from "@/types/student/activity-session";
-import { isChoice } from "@/utils/practice-utils";
 
 export function usePracticeKeyboard({
   blocked,
@@ -27,20 +26,24 @@ export function usePracticeKeyboard({
 }) {
   useEffect(() => {
     function onKey(event: KeyboardEvent) {
-      if (blocked) return;
+      if (blocked || event.isComposing || event.repeat || event.altKey || event.metaKey) return;
+      const target = event.target;
+      if (target instanceof HTMLElement && target.closest("[role=dialog], [role=alertdialog], [data-state=open][role=menu]")) return;
       const typing =
         event.target instanceof HTMLInputElement ||
         event.target instanceof HTMLTextAreaElement;
-      if (event.key === "Enter") {
+      if (event.key === "Enter" && !event.ctrlKey && !event.shiftKey) {
         event.preventDefault();
         submit();
         return;
       }
-      if (typing) return;
       if (event.ctrlKey && event.key.toLowerCase() === "h") {
         event.preventDefault();
         requestHint();
-      } else if (event.key === "ArrowLeft") {
+        return;
+      }
+      if (typing || event.ctrlKey) return;
+      if (event.key === "ArrowLeft") {
         event.preventDefault();
         goPrevious();
       } else if (event.key === "ArrowRight") {
@@ -59,7 +62,9 @@ export function usePracticeKeyboard({
                 ? ["TRUE", "FALSE"]
                 : question.options.map((option) => option.key);
         const key = options[Number(event.key) - 1];
-        if (key && (isChoice(question) || question.type === "TRUE_FALSE")) {
+        const type = step?.type ?? question.type;
+        if (key && (type === "SINGLE_CHOICE" || type === "MULTIPLE_CHOICE" || type === "TRUE_FALSE")) {
+          event.preventDefault();
           pick(key);
         }
       }

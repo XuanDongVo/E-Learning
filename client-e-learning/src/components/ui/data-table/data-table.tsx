@@ -70,8 +70,8 @@ export function DataTable<T>({
 
   return (
     <div className={cn("overflow-x-auto rounded-2xl border-2 border-ink bg-card shadow-pop", className)}>
-      <table className="w-full text-left" style={{ minWidth }}>
-        <thead className="border-b-2 border-border bg-background-app/70 text-body-sm tracking-wide text-neutral-muted">
+      <table className="w-full text-left text-sm" style={{ minWidth }}>
+        <thead className="border-b-2 border-border bg-background-app/70 text-sm tracking-wide text-neutral-muted">
           <tr className="border-b-2 border-border bg-card">
             {columns.map((column) => (
               <th
@@ -79,7 +79,7 @@ export function DataTable<T>({
                 scope="col"
                 style={{ width: column.width }}
                 className={cn(
-                  "px-4 py-3 text-label font-semibold text-neutral-muted",
+                  "px-4 py-3 text-sm font-semibold text-neutral-muted",
                   alignmentClasses[column.align ?? "left"],
                   column.headerClassName,
                 )}
@@ -142,7 +142,7 @@ function DataTablePaginationBar({
   } = pagination;
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border-color px-5 py-4 text-body-sm">
+    <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border-color px-5 py-4 text-sm">
       <div className="flex items-center gap-3">
         <b>{totalLabel ?? `Total: ${totalElements}`}</b>
         <label className="flex items-center gap-2">

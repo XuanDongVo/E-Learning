@@ -8,56 +8,60 @@ import type {
   GuidedStepAnswerFeedback,
 } from "@/types/student/activity-session";
 import { QuestionStageView } from "./question-stage-view";
-import { AnswerFeedback } from "./question-stage/answer-feedback";
 import { GuidedProgress } from "./question-stage/guided-progress";
 import { QuestionActions } from "./question-stage/question-actions";
 
-type FinalFeedback = {
-  correct: boolean;
-  retryAvailable: boolean;
-  answerRevealed: boolean;
-  correctAnswer?: string;
-  explanation?: string;
-};
+type GuidedStep = NonNullable<
+  NonNullable<ActivitySessionQuestion["guided"]>["currentStep"]
+>;
 
 type Props = {
   question: ActivitySessionQuestion;
   draft: string[];
-  feedback?: GuidedStepAnswerFeedback;
-  finalFeedback?: FinalFeedback;
   hint?: string;
   error?: string;
   review?: {
-    step: NonNullable<NonNullable<ActivitySessionQuestion["guided"]>["currentStep"]>;
+    step: GuidedStep;
     feedback: GuidedStepAnswerFeedback;
+    answer: string;
   };
-  finalReview?: { feedback: FinalFeedback };
-  onDismissReview: () => void;
-  onDismissFinalReview: () => void;
+  finalReview?: {
+    feedback: { correct: boolean; retryAvailable: boolean };
+    answer: string[];
+  };
   pending: boolean;
   hintPending: boolean;
   onDraftChange: (next: string[]) => void;
   onSubmitStep: () => void;
   onUseHint: () => void;
-  onContinue: () => void;
-  onRetryStep: () => void;
-  onRetryFinal: () => void;
+  onDismissReview: () => void;
+  onDismissFinalReview: () => void;
   onSubmitFinal: () => void;
 };
 
-export function GuidedStage(props: Props) {
-  const { question, draft, hint, error, pending } = props;
+export function GuidedStage({
+  question,
+  draft,
+  hint,
+  error,
+  review,
+  finalReview,
+  pending,
+  hintPending,
+  onDraftChange,
+  onSubmitStep,
+  onUseHint,
+  onDismissReview,
+  onDismissFinalReview,
+  onSubmitFinal,
+}: Props) {
   const areaRef = useRef<HTMLDivElement>(null);
   const guided = question.guided;
-  const review = props.review;
-  const finalReview = props.finalReview;
-  const feedback = review?.feedback ?? props.feedback;
-  const finalFeedback = finalReview?.feedback ?? props.finalFeedback;
 
   useEffect(() => {
     if (review || finalReview) return;
     if (guided?.stage !== "STEP_RETRY" && guided?.stage !== "FINAL_RETRY") return;
-    const id = window.requestAnimationFrame(() => {
+    const frame = window.requestAnimationFrame(() => {
       const input = areaRef.current?.querySelector<HTMLInputElement>(
         "input:not(:disabled)",
       );
@@ -70,68 +74,33 @@ export function GuidedStage(props: Props) {
         )?.focus();
       }
     });
-    return () => window.cancelAnimationFrame(id);
+    return () => window.cancelAnimationFrame(frame);
   }, [review, finalReview, guided?.stage]);
 
   if (!guided) return null;
 
-  // Server advances immediately; keep showing the answered step until the
-  // feedback dwell finishes so the learner can actually read the result.
+  // The backend may already be on the next step. Keep the original question
+  // and the submitted answer in view while PracticeWorkspace shows feedback.
   const step = review?.step ?? guided.currentStep;
-  const finalVisible = !review && (Boolean(finalReview) ||
-    guided.stage === "FINAL_PENDING" || guided.stage === "FINAL_RETRY");
-  const resolved = !review && !finalReview && guided.stage === "QUESTION_RESOLVED";
-  const stepFeedback = feedback ? (
-    <AnswerFeedback
-      tone={
-        feedback.correct
-          ? "correct"
-          : feedback.retryAvailable
-            ? "retry"
-            : "incorrect"
-      }
-    >
-      {feedback.correct
-        ? "Chính xác!"
-        : feedback.retryAvailable
-          ? "Chưa đúng, bạn còn một lần thử."
-          : "Đã ghi nhận. Hãy tiếp tục."}
-    </AnswerFeedback>
-  ) : null;
-  const finalResult = finalFeedback ? (
-    <AnswerFeedback
-      tone={
-        finalFeedback.correct
-          ? "correct"
-          : finalFeedback.retryAvailable
-            ? "retry"
-            : "incorrect"
-      }
-    >
-      {finalFeedback.correct
-        ? "Chính xác!"
-        : finalFeedback.retryAvailable
-          ? "Chưa đúng, bạn còn một lần thử."
-          : "Câu trả lời đã được ghi nhận."}
-    </AnswerFeedback>
-  ) : null;
+  const finalVisible =
+    !review &&
+    (Boolean(finalReview) ||
+      guided.stage === "FINAL_PENDING" ||
+      guided.stage === "FINAL_RETRY");
 
   return (
-    <div ref={areaRef} className="space-y-5" aria-live="polite">
-      {/* <span className="student-meta rounded-full bg-secondary px-2.5 py-1 text-secondary-foreground">
-        Câu {question.position + 1}
-      </span> */}
-      {step && !finalVisible ? (
+    <div ref={areaRef} className="space-y-5">
+      {step && !finalVisible && (
         <QuestionStageView
-          key={`guided:${step.stepKey}:${review ? "feedback" : "answer"}`}
+          key={`guided:${step.stepKey}:${review ? "review" : "answer"}`}
           type={step.type}
           prompt={step.prompt}
           options={step.options}
-          draft={draft}
-          disabled={pending || Boolean(review) || Boolean(feedback)}
+          draft={review ? [review.answer] : draft}
+          disabled={pending || Boolean(review)}
           inputLabel="Câu trả lời của bạn"
           inputPlaceholder="Nhập câu trả lời"
-          onDraftChange={props.onDraftChange}
+          onDraftChange={onDraftChange}
           guidedProgress={
             <GuidedProgress
               intro={guided.introContent}
@@ -141,43 +110,44 @@ export function GuidedStage(props: Props) {
           }
           feedback={
             <>
-              {hint ? (
+              {hint && (
                 <p className="student-body rounded-xl border border-learning/30 bg-learning-soft px-3 py-2">
                   Gợi ý: {hint}
                 </p>
-              ) : null}
-              {stepFeedback}
-              {error ? (
+              )}
+              {error && (
                 <p role="alert" className="student-body text-destructive">
                   {error}
                 </p>
-              ) : null}
+              )}
             </>
           }
           actions={
             <QuestionActions>
-              {step.hintAvailable && !hint && !feedback ? (
+              {step.hintAvailable && !hint && !review && (
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={props.onUseHint}
-                  disabled={props.hintPending}
+                  onClick={onUseHint}
+                  disabled={hintPending}
                 >
                   <Lightbulb size={16} /> Gợi ý
                 </Button>
-              ) : null}
+              )}
               {review ? (
-                <Button type="button" onClick={props.onDismissReview}>
-                  {feedback?.retryAvailable ? <RefreshCw size={16} /> : <Check size={16} />}
-                  {feedback?.retryAvailable ? "Thử lại ngay" : "Tiếp tục ngay"}
+                <Button type="button" onClick={onDismissReview}>
+                  {review.feedback.retryAvailable ? (
+                    <RefreshCw size={16} />
+                  ) : (
+                    <Check size={16} />
+                  )}
+                  {review.feedback.retryAvailable ? "Thử lại ngay" : "Tiếp tục ngay"}
                 </Button>
               ) : (
                 <Button
                   type="button"
-                  onClick={props.onSubmitStep}
-                  disabled={
-                    !(draft[0] ?? "").trim() || pending || Boolean(feedback)
-                  }
+                  onClick={onSubmitStep}
+                  disabled={!(draft[0] ?? "").trim() || pending}
                 >
                   <Send size={16} /> Gửi câu trả lời
                 </Button>
@@ -185,35 +155,38 @@ export function GuidedStage(props: Props) {
             </QuestionActions>
           }
         />
-      ) : null}
-      {finalVisible ? (
+      )}
+      {finalVisible && (
         <div className="border-t-2 border-border pt-5">
           <QuestionStageView
-            key={`final:${question.id}:${finalReview ? "feedback" : guided.stage}`}
+            key={`final:${question.id}:${finalReview ? "review" : guided.stage}`}
             type={question.type}
             prompt={question.content}
             options={question.options}
-            draft={draft}
-            disabled={pending || Boolean(finalReview) || Boolean(finalFeedback)}
+            draft={finalReview?.answer ?? draft}
+            disabled={pending || Boolean(finalReview)}
             inputLabel="Đáp án cuối cùng"
             inputPlaceholder="Nhập đáp án"
-            onDraftChange={props.onDraftChange}
+            onDraftChange={onDraftChange}
             guidedProgress={<GuidedProgress intro={guided.introContent} />}
-            feedback={finalResult}
             actions={
               <QuestionActions>
                 {finalReview ? (
-                  <Button type="button" onClick={props.onDismissFinalReview}>
-                    {finalFeedback?.retryAvailable ? <RefreshCw size={16} /> : <Check size={16} />}
-                    {finalFeedback?.retryAvailable ? "Thử lại ngay" : "Tiếp tục ngay"}
+                  <Button type="button" onClick={onDismissFinalReview}>
+                    {finalReview.feedback.retryAvailable ? (
+                      <RefreshCw size={16} />
+                    ) : (
+                      <Check size={16} />
+                    )}
+                    {finalReview.feedback.retryAvailable
+                      ? "Thử lại ngay"
+                      : "Tiếp tục ngay"}
                   </Button>
                 ) : (
                   <Button
                     type="button"
-                    onClick={props.onSubmitFinal}
-                    disabled={
-                      draft.length === 0 || pending || Boolean(finalFeedback)
-                    }
+                    onClick={onSubmitFinal}
+                    disabled={draft.length === 0 || pending}
                   >
                     <Send size={16} /> Gửi đáp án
                   </Button>
@@ -222,14 +195,7 @@ export function GuidedStage(props: Props) {
             }
           />
         </div>
-      ) : null}
-      {resolved ? (
-        <AnswerFeedback tone={question.finalCorrect ? "correct" : "incorrect"}>
-          {question.finalCorrect
-            ? "Câu hỏi này đã được hoàn thành chính xác."
-            : "Câu hỏi này đã được hoàn thành."}
-        </AnswerFeedback>
-      ) : null}
+      )}
     </div>
   );
 }

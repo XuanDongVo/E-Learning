@@ -34,12 +34,14 @@ type GuidedStep = NonNullable<NonNullable<ActivitySessionQuestion["guided"]>["cu
 type GuidedReview = {
   questionId: number;
   step: GuidedStep;
+  answer: string;
   feedback: GuidedStepAnswerFeedback;
   receivedAt: number;
 };
 
 type GuidedFinalReview = {
   questionId: number;
+  answer: string[];
   feedback: Feedback;
   receivedAt: number;
 };
@@ -69,8 +71,6 @@ export function usePracticeController({
   const [feedbacks, setFeedbacks] = useState<Record<number, Feedback>>({});
   const [hints, setHints] = useState<Record<number, string>>({});
   const [hintOpenFor, setHintOpenFor] = useState<number | null>(null);
-  const [guidedFeedback, setGuidedFeedback] =
-    useState<GuidedStepAnswerFeedback>();
   const [guidedHint, setGuidedHint] = useState<string>();
   const [guidedReview, setGuidedReview] = useState<GuidedReview>();
   const [guidedFinalReview, setGuidedFinalReview] = useState<GuidedFinalReview>();
@@ -131,7 +131,6 @@ export function usePracticeController({
       setFeedbacks({});
       setHints({});
       setHintOpenFor(null);
-      setGuidedFeedback(undefined);
       setGuidedHint(undefined);
       setGuidedReview(undefined);
       setGuidedFinalReview(undefined);
@@ -176,6 +175,7 @@ export function usePracticeController({
       if (answeredQuestion?.guided) {
         setGuidedFinalReview({
           questionId: v.questionId,
+          answer: v.draft,
           feedback: answerFeedback,
           receivedAt: Date.now(),
         });
@@ -229,10 +229,10 @@ export function usePracticeController({
       if (!data) return;
       syncServerClock(data.session);
       setSession(data.session);
-      setGuidedFeedback(data);
       setGuidedReview({
         questionId: value.questionId,
         step: value.reviewStep,
+        answer: value.answer,
         feedback: data,
         receivedAt: Date.now(),
       });
@@ -391,7 +391,6 @@ export function usePracticeController({
   const goTo = useCallback(
     (id: number) => {
       setCurrentId(id);
-      setGuidedFeedback(undefined);
       setGuidedHint(undefined);
       setGuidedReview(undefined);
       setGuidedFinalReview(undefined);
@@ -460,7 +459,6 @@ export function usePracticeController({
   }, [question, draft, answering, guidedReview, soundEnabled, guidedStepAnswerMutation, requestIds]);
   const dismissGuidedReview = useCallback(() => {
     setGuidedReview(undefined);
-    setGuidedFeedback(undefined);
     setGuidedHint(undefined);
   }, []);
   const dismissGuidedFinalReview = useCallback(() => {
@@ -573,7 +571,6 @@ export function usePracticeController({
     setFeedbacks({});
     setHints({});
     setHintOpenFor(null);
-    setGuidedFeedback(undefined);
     setGuidedHint(undefined);
     setGuidedReview(undefined);
     setGuidedFinalReview(undefined);
@@ -622,10 +619,10 @@ export function usePracticeController({
     picks, locked, feedback, draft, over, hintOpen, questions, statuses, index,
     tryHard, goTo, goNext, deadlineExpired, hasDraft, canSubmit, background, leave,
     settings, setSettings, secondsLeft, complete, resultQuery, feedbacks, retry,
-    guidedFeedback, guidedHint, guidedReview, guidedFinalReview,
+    guidedHint, guidedReview, guidedFinalReview,
     dismissGuidedReview, dismissGuidedFinalReview,
     soundEnabled, setSoundEnabled, guidedStepAnswerMutation, guidedHintMutation,
-    answering, setDraft, requestIds, submitGuidedStep, setGuidedFeedback,
+    answering, setDraft, requestIds, submitGuidedStep,
     setGuidedHint, setFeedbacks, hinting, hintMutation, hintSlow,
     hintError, sendHint, hintText, setHintOpenFor, answerSlow, answerMutation,
     finish, timeoutNotice, hintAvailable, requestHint, navOpen, setNavOpen,

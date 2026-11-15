@@ -27,11 +27,10 @@ export function PracticeWorkspace({
   const {
     tErrors, session, question, picks, locked, feedback, draft, over, hintOpen,
     questions, statuses, index, tryHard, goTo, deadlineExpired, complete,
-    resultQuery, feedbacks, retry, guidedFeedback, guidedHint,
+    resultQuery, feedbacks, retry, guidedHint,
     guidedReview, guidedFinalReview, dismissGuidedReview, dismissGuidedFinalReview,
     guidedStepAnswerMutation, guidedHintMutation, answering, setDraft,
-    requestIds, submitGuidedStep, setGuidedFeedback, setGuidedHint,
-    setFeedbacks, hinting, hintMutation, hintSlow, hintError, sendHint,
+    requestIds, submitGuidedStep, setGuidedHint, hinting, hintMutation, hintSlow, hintError, sendHint,
     hintText, setHintOpenFor, answerSlow, answerMutation, finish,
     timeoutNotice, timeoutPending, retryTimeout, timeoutError, submit,
   } = controller;
@@ -51,13 +50,19 @@ export function PracticeWorkspace({
     }
     return draft.includes(key) ? ("selected" as const) : undefined;
   };
-  const revealedText =
-    feedback?.answerRevealed && feedback.correctAnswer
+  // One shared presentation for classic answers, guided steps and guided finals.
+  const activeGuidedStep = guidedReview?.questionId === question.id ? guidedReview : undefined;
+  const activeGuidedFinal = guidedFinalReview?.questionId === question.id ? guidedFinalReview : undefined;
+  const activeFeedback = activeGuidedStep?.feedback ?? activeGuidedFinal?.feedback ?? (!question.guided ? feedback : undefined);
+  const isGuidedStepFeedback = Boolean(activeGuidedStep);
+  const displayAnswer = activeGuidedFinal?.feedback ?? (!question.guided ? feedback : undefined);
+  const revealedAnswer =
+    displayAnswer?.answerRevealed && displayAnswer.correctAnswer
       ? formatAnswer(
           question,
           isChoice(question) || question.type === "TRUE_FALSE"
-            ? splitKeys(feedback.correctAnswer)
-            : [feedback.correctAnswer],
+            ? splitKeys(displayAnswer.correctAnswer)
+            : [displayAnswer.correctAnswer],
         )
       : "";
   const gameOver = session.status === "GAME_OVER";
@@ -66,10 +71,10 @@ export function PracticeWorkspace({
     ? gameOver
       ? "Bạn hết mạng rồi, nhưng đừng buồn! Cùng xem kết quả nhé!"
       : "Tuyệt vời! Bạn đã hoàn thành tất cả câu hỏi!"
-    : feedback
-      ? feedback.correct
+    : activeFeedback
+      ? activeFeedback.correct
         ? "Giỏi quá! Việt Cường tự hào về bạn!"
-        : feedback.retryAvailable
+        : activeFeedback.retryAvailable
           ? "Chưa đúng, bạn còn một lần thử nữa nhé!"
           : "Không sao đâu, mình cùng xem đáp án nhé!"
       : hintOpen
@@ -189,12 +194,10 @@ export function PracticeWorkspace({
                 <GuidedStage
                   question={question}
                   draft={draft}
-                  feedback={guidedFeedback}
                   review={guidedReview?.questionId === question.id ? guidedReview : undefined}
                   finalReview={guidedFinalReview?.questionId === question.id ? guidedFinalReview : undefined}
                   onDismissReview={dismissGuidedReview}
                   onDismissFinalReview={dismissGuidedFinalReview}
-                  finalFeedback={feedback}
                   hint={guidedHint}
                   error={
                     guidedStepAnswerMutation.isError || guidedHintMutation.isError
@@ -221,21 +224,6 @@ export function PracticeWorkspace({
                     guidedHintMutation.mutate({
                       questionId: question.id,
                       stepKey: step.stepKey,
-                    });
-                  }}
-                  onContinue={() => {
-                    setGuidedFeedback(undefined);
-                    setGuidedHint(undefined);
-                  }}
-                  onRetryStep={() => {
-                    setGuidedFeedback(undefined);
-                    setGuidedHint(undefined);
-                  }}
-                  onRetryFinal={() => {
-                    setFeedbacks((current) => {
-                      const next = { ...current };
-                      delete next[question.id];
-                      return next;
                     });
                   }}
                   onSubmitFinal={submit}
@@ -301,86 +289,6 @@ export function PracticeWorkspace({
                         )}
                       </p>
                     )}
-                    {feedback && (
-                      <div
-                        role="status"
-                        aria-live="polite"
-                        className={cn(
-                          "mt-4 flex items-start gap-3 rounded-2xl border-2 p-3.5",
-                          feedback.correct && "border-success bg-success-soft",
-                          !feedback.correct &&
-                            feedback.retryAvailable &&
-                            "border-warning bg-warning-soft",
-                          !feedback.correct &&
-                            !feedback.retryAvailable &&
-                            "border-destructive bg-destructive-soft",
-                        )}
-                      >
-                        <span
-                          className={cn(
-                            "grid size-9 shrink-0 place-items-center rounded-full",
-                            feedback.correct &&
-                              "bg-success text-primary-foreground",
-                            !feedback.correct &&
-                              feedback.retryAvailable &&
-                              "bg-warning text-accent-foreground",
-                            !feedback.correct &&
-                              !feedback.retryAvailable &&
-                              "bg-destructive text-destructive-foreground",
-                          )}
-                        >
-                          {feedback.correct ? (
-                            <Check size={18} />
-                          ) : feedback.retryAvailable ? (
-                            <RefreshCw size={18} />
-                          ) : (
-                            <X size={18} />
-                          )}
-                        </span>
-
-                        <div className="min-w-0 flex-1">
-                          <p
-                            className={cn(
-                              "text-sm font-extrabold",
-                              feedback.correct && "text-success",
-                              !feedback.correct &&
-                                feedback.retryAvailable &&
-                                "text-warning",
-                              !feedback.correct &&
-                                !feedback.retryAvailable &&
-                                "text-destructive",
-                            )}
-                          >
-                            {feedback.correct
-                              ? "Chính xác!"
-                              : feedback.retryAvailable
-                                ? "Thử lại nhé!"
-                                : "Chưa chính xác"}
-                          </p>
-
-                          <p className="mt-0.5 text-sm font-semibold leading-6 text-foreground">
-                            {feedback.correct
-                              ? "Bạn làm tốt lắm. Tiếp tục phát huy nhé!"
-                              : feedback.retryAvailable
-                                ? "Bạn còn một lần thử lại."
-                                : revealedText
-                                  ? `Đáp án đúng: ${revealedText}`
-                                  : "Hãy xem lại đáp án và ghi nhớ nhé."}
-                          </p>
-
-                          {feedback.answerRevealed && feedback.explanation && (
-                            <div className="mt-2 border-t border-current/15 pt-2">
-                              <p className="text-xs font-extrabold text-muted-foreground">
-                                GIẢI THÍCH
-                              </p>
-                              <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                                {feedback.explanation}
-                              </p>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    )}
                     {finished && (
                       <div
                         role="status"
@@ -394,6 +302,86 @@ export function PracticeWorkspace({
                   </div>
                 </>
               )}
+                    {activeFeedback && (
+                      <div
+                        role="status"
+                        aria-live="polite"
+                        className={cn(
+                          "mt-4 flex items-start gap-3 rounded-2xl border-2 p-3.5",
+                          activeFeedback.correct && "border-success bg-success-soft",
+                          !activeFeedback.correct &&
+                            activeFeedback.retryAvailable &&
+                            "border-warning bg-warning-soft",
+                          !activeFeedback.correct &&
+                            !activeFeedback.retryAvailable &&
+                            "border-destructive bg-destructive-soft",
+                        )}
+                      >
+                        <span
+                          className={cn(
+                            "grid size-9 shrink-0 place-items-center rounded-full",
+                            activeFeedback.correct &&
+                              "bg-success text-primary-foreground",
+                            !activeFeedback.correct &&
+                              activeFeedback.retryAvailable &&
+                              "bg-warning text-accent-foreground",
+                            !activeFeedback.correct &&
+                              !activeFeedback.retryAvailable &&
+                              "bg-destructive text-destructive-foreground",
+                          )}
+                        >
+                          {activeFeedback.correct ? (
+                            <Check size={18} />
+                          ) : activeFeedback.retryAvailable ? (
+                            <RefreshCw size={18} />
+                          ) : (
+                            <X size={18} />
+                          )}
+                        </span>
+
+                        <div className="min-w-0 flex-1">
+                          <p
+                            className={cn(
+                              "text-sm font-extrabold",
+                              activeFeedback.correct && "text-success",
+                              !activeFeedback.correct &&
+                                activeFeedback.retryAvailable &&
+                                "text-warning",
+                              !activeFeedback.correct &&
+                                !activeFeedback.retryAvailable &&
+                                "text-destructive",
+                            )}
+                          >
+                            {activeFeedback.correct
+                              ? "Chính xác!"
+                              : activeFeedback.retryAvailable
+                                ? "Thử lại nhé!"
+                                : "Chưa chính xác"}
+                          </p>
+
+                          <p className="mt-0.5 text-sm font-semibold leading-6 text-foreground">
+                            {activeFeedback.correct
+                              ? isGuidedStepFeedback ? "Bạn đã trả lời đúng bước này!" : "Bạn làm tốt lắm. Tiếp tục phát huy nhé!"
+                              : activeFeedback.retryAvailable
+                                ? "Bạn còn một lần thử lại."
+                                : revealedAnswer
+                                  ? `Đáp án đúng: ${revealedAnswer}`
+                                  : "Hãy xem lại đáp án và ghi nhớ nhé."}
+                          </p>
+
+                          {displayAnswer?.answerRevealed && displayAnswer?.explanation && (
+                            <div className="mt-2 border-t border-current/15 pt-2">
+                              <p className="text-xs font-extrabold text-muted-foreground">
+                                GIẢI THÍCH
+                              </p>
+                              <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                                {displayAnswer?.explanation}
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
             </div>
           </div>
           {!complete && <QuestionNavigator {...navProps} />}

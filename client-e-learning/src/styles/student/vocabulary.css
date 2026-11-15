@@ -31,7 +31,7 @@
   background: var(--secondary);
   color: var(--foreground);
   font-family: var(--student-font-body);
-  font-size: 0.875rem;
+  font-size: var(--app-font-body-size);
   font-weight: 700;
 }
 
@@ -47,6 +47,7 @@
   background: var(--student-paper);
   color: var(--foreground);
   font-family: var(--student-font-body);
+  font-size: var(--app-font-body-size);
   font-weight: 700;
   transition: background-color 120ms ease;
 }

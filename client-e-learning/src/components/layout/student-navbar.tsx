@@ -213,7 +213,7 @@ export function StudentNavbar() {
                   href={item.href}
                   aria-current={active ? "page" : undefined}
                   className={cn(
-                    "student-nav-item flex min-h-12 items-center gap-3 rounded-lg px-4 text-base font-semibold transition-colors",
+                    "student-nav-item flex min-h-12 items-center gap-3 rounded-lg px-4 text-sm font-semibold transition-colors",
                     active
                       ? "bg-primary-light text-primary"
                       : "text-neutral-muted hover:bg-background-app hover:text-neutral-dark",

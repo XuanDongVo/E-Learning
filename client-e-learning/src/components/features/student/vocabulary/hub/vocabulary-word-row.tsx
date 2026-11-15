@@ -67,13 +67,13 @@ export function VocabularyWordRow({
               {card.word}
             </h3>
             {posFormatted && (
-              <span className="student-typewriter text-xs text-muted-foreground">
+              <span className="text-xs text-muted-foreground">
                 ({posFormatted})
               </span>
             )}
           </div>
 
-          <div className="student-vocab-word-row-pronunciation mt-2 space-y-1.5 text-xs text-muted-foreground student-typewriter">
+          <div className="student-vocab-word-row-pronunciation mt-2 space-y-1.5 text-xs text-muted-foreground">
             {hasBothDistinct ? (
               <>
                 <button
@@ -85,7 +85,7 @@ export function VocabularyWordRow({
                   className="flex max-w-full flex-wrap items-center gap-1.5 rounded-md px-1.5 py-0.5 -ml-1.5 text-left transition-colors hover:bg-muted hover:text-foreground"
                   title="Nghe phát âm UK"
                 >
-                  <span className="text-[11px] font-semibold text-muted-foreground">UK:</span>
+                  <span className="text-xs font-semibold text-muted-foreground">UK:</span>
                   <span className="break-all">{uk}</span>
                   <Volume2
                     className={`size-3.5 shrink-0 ${
@@ -102,7 +102,7 @@ export function VocabularyWordRow({
                   className="flex max-w-full flex-wrap items-center gap-1.5 rounded-md px-1.5 py-0.5 -ml-1.5 text-left transition-colors hover:bg-muted hover:text-foreground"
                   title="Nghe phát âm US"
                 >
-                  <span className="text-[11px] font-semibold text-muted-foreground">US:</span>
+                  <span className="text-xs font-semibold text-muted-foreground">US:</span>
                   <span className="break-all">{us}</span>
                   <Volume2
                     className={`size-3.5 shrink-0 ${
@@ -124,7 +124,7 @@ export function VocabularyWordRow({
                 {defaultUsPhonetic ? (
                   <span className="break-all">{defaultUsPhonetic}</span>
                 ) : (
-                  <span className="text-[11px] text-muted-foreground">Phát âm US</span>
+                  <span className="text-xs text-muted-foreground">Phát âm US</span>
                 )}
                 <Volume2
                   className={`size-3.5 shrink-0 ${
@@ -138,7 +138,7 @@ export function VocabularyWordRow({
 
         {/* CỘT 2: NGHĨA & CÂU VÍ DỤ SONG NGỮ */}
         <div className="student-vocab-word-row-definition min-w-0 flex-1 space-y-1.5">
-          <p className="student-body font-bold text-foreground md:text-base leading-snug">
+          <p className="student-body font-bold text-foreground leading-snug">
             {card.meaningVi}
           </p>
 
@@ -149,7 +149,7 @@ export function VocabularyWordRow({
           )}
 
           {card.exampleMeaningVi && (
-            <p className="student-body text-xs text-muted-foreground leading-relaxed">
+            <p className="student-body text-sm text-muted-foreground leading-relaxed">
               ({card.exampleMeaningVi})
             </p>
           )}

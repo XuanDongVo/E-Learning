@@ -132,6 +132,7 @@ Assignment/Attempt codes must be verified against ErrorCode.java before implemen
 
 ## Activity Session Runtime
 POST /v1/activities/{activityId}/sessions
+GET /v1/activities/{activityId}/sessions?page={page}&size={size}&period={ALL|TODAY|LAST_7_DAYS|LAST_30_DAYS}&mode={LEARNING|TRY_HARD}&status={COMPLETED|GAME_OVER|ABANDONED}
 GET /v1/activities/{activityId}/session-options
 GET /v1/activity-sessions/{sessionId}
 POST /v1/activity-sessions/{sessionId}/questions/{sessionQuestionId}/answer
@@ -140,6 +141,15 @@ POST /v1/activity-sessions/{sessionId}/questions/{sessionQuestionId}/steps/{step
 POST /v1/activity-sessions/{sessionId}/questions/{sessionQuestionId}/steps/{stepKey}/hint
 POST /v1/activity-sessions/{sessionId}/finish
 GET /v1/activity-sessions/{sessionId}/result
+GET /v1/activity-sessions/{sessionId}/review
+
+The Student Activity history route returns only the authenticated Student's
+terminal sessions for the requested Activity, newest completion first, in the
+standard 1-indexed `PageResponse`. `mode` and terminal `status` are optional;
+`IN_PROGRESS` is rejected with `ACTIVITY_SESSION_HISTORY_STATUS_INVALID`.
+The server validates that the Activity exists and that the Student still has
+Grade access. Each row contains its `sessionId`, which is the only link to the
+standalone Review endpoint.
 
 The terminal Activity Result includes nullable `xpReward` and `xpQuestions`.
 `xpReward` is an immutable server receipt (`questionXp`, `completionBonus`,
@@ -148,6 +158,14 @@ is `null` for legacy or rollout-disabled sessions; reading this endpoint never
 calculates or commits XP. `xpQuestions` contains only persisted resolved-question
 audit values and is empty when no finalized reward exists.
 
+The Student Review endpoint returns the complete ordered Session projection in
+one response with `questions[]`. It requires ownership. Persisted Step and Final
+attempts are returned in attempt order. Correct answers and explanations are
+included only for a resolved Session Question; unfinished Guided questions omit
+future Steps and pre-gate Final content. Historical questions with business
+attempts but no V62 Final-attempt rows use `LEGACY_UNAVAILABLE` and never receive
+a reconstructed submitted answer.
+
 ActivitySession start accepts optional `mode` and `selectionStrategy`; both are required only when the
 Activity exposes more than one choice. The start response includes the complete selected question set without
 correct answers, accepted answers or explanations. Activity answers are evaluated
@@ -155,8 +173,8 @@ server-side. New Classic and Guided Final submissions include a stable UUID
 `requestId` and are persisted as immutable Activity attempt history.
 
 Classic start responses return the selected question set. Guided public responses
-contain only the current Step (without correct flags, answer keys, explanation
-or Final content) until all Steps are resolved. Step answer requests include a
+contain only each Question's current Step (without correct flags, answer keys,
+explanation or pre-gate Final content). Step answer requests include a
 UUID `requestId`; replaying the same id and payload is idempotent, while a
 different payload is rejected. Final answers follow the same rule; replay can
 return its stored outcome even after that submission made the Session terminal.

@@ -27,10 +27,10 @@ export function PracticeWorkspace({
   const {
     tErrors, session, question, picks, locked, feedback, draft, over, hintOpen,
     questions, statuses, index, tryHard, goTo, deadlineExpired, complete,
-    resultQuery, feedbacks, retry, guidedHint,
+    resultQuery, reviewQuery, retry, guidedHint,
     guidedReview, guidedFinalReview, dismissGuidedReview, dismissGuidedFinalReview,
     guidedStepAnswerMutation, guidedHintMutation, answering, setDraft,
-    requestIds, submitGuidedStep, setGuidedHint, hinting, hintMutation, hintSlow, hintError, sendHint,
+    requestIds, submitGuidedStep, hinting, hintMutation, hintSlow, hintError, sendHint,
     hintText, setHintOpenFor, answerSlow, answerMutation, finish,
     timeoutNotice, timeoutPending, retryTimeout, timeoutError, submit,
   } = controller;
@@ -176,18 +176,17 @@ export function PracticeWorkspace({
                       : undefined
                   }
                   onRetryXpReward={() => void resultQuery.refetch()}
-                  picks={picks}
-                  revealed={Object.fromEntries(
-                    Object.entries(feedbacks).map(([id, f]) => [
-                      id,
-                      f.answerRevealed
-                        ? {
-                            correctAnswer: f.correctAnswer,
-                            explanation: f.explanation,
-                          }
-                        : {},
-                    ]),
-                  )}
+                  review={reviewQuery.data?.data ?? undefined}
+                  reviewPending={reviewQuery.isLoading}
+                  reviewError={
+                    reviewQuery.isError
+                      ? getAppErrorMessage(
+                          reviewQuery.error,
+                          tErrors as (key: string) => string,
+                        )
+                      : undefined
+                  }
+                  onRetryReview={() => void reviewQuery.refetch()}
                   onRetry={retry}
                 />
               ) : question.guided ? (

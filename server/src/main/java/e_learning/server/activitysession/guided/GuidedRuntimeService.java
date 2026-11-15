@@ -1,7 +1,7 @@
 package e_learning.server.activitysession.guided;
 
-import e_learning.server.activitysession.dto.GuidedCurrentStepResponse;
-import e_learning.server.activitysession.dto.GuidedQuestionResponse;
+import e_learning.server.activitysession.dto.response.GuidedCurrentStepResponse;
+import e_learning.server.activitysession.dto.response.GuidedQuestionResponse;
 import e_learning.server.activitysession.entity.*;
 import e_learning.server.activitysession.enums.GuidedQuestionStage;
 import e_learning.server.activitysession.enums.QuestionDeliveryType;

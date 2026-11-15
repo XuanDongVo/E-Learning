@@ -293,8 +293,9 @@ a Teacher-only guided-first flow preview.
 
 **M1 implemented:** toàn bộ endpoint authoring ở §8.1, theo `ApiResponse` hiện có.
 **M2 implemented:** phần cấu hình Activity ở §8.2 (`practiceType`, Guided-only
-LEARNING/RANDOM, eligibility/readiness/preview/selection). **Chưa implemented:**
-Student runtime và Review (§8.3–8.4).
+LEARNING/RANDOM, eligibility/readiness/preview/selection). **M3 implemented:**
+Student runtime ở §8.3. **M4 partial:** Student Review ở §8.4 đã triển khai;
+Teacher Review còn lại.
 
 Bên dưới là **contract gợi ý**, cần phù hợp ApiResponse/error code convention hiện tại. IDs `sessionQuestionId` là **row ID** của ActivitySessionQuestion, không phải Question Bank ID.
 
@@ -432,36 +433,47 @@ Hint response:
 
 | Method/path | Quyền |
 |---|---|
-| `GET /v1/activity-sessions/{sessionId}/review` | Student owns session |
+| `GET /v1/activity-sessions/{sessionId}/review` | Implemented; Student owns session; returns all ordered `questions[]` |
 | `GET /v1/teacher/students/{studentId}/activity-sessions/{sessionId}/review` | Teacher permitted to view student + session |
 
 Sample review shape (no key for unresolved Final):
 
+For historical Questions with `answerAttempts > 0` but no persisted V62 Final
+attempt, `final.historyState=LEGACY_UNAVAILABLE` and `attempts=[]`. The server
+must not reconstruct a submitted answer from aggregate fields or current
+Question data.
+
 ```json
 {
   "sessionId": 402,
-  "sessionQuestionId": 901,
-  "stage": "QUESTION_RESOLVED",
-  "steps": [
+  "questions": [
     {
-      "stepKey": "s-1",
-      "prompt": "Đại từ nào là ngôi thứ ba số ít?",
-      "type": "SINGLE_CHOICE",
-      "hintUsed": true,
-      "attempts": [
-        {"attemptNumber": 1, "submittedAnswer": "A", "correct": false},
-        {"attemptNumber": 2, "submittedAnswer": "B", "correct": true}
-      ],
-      "correctAnswer": "B",
-      "explanation": "She là chủ ngữ ngôi thứ ba số ít."
+      "sessionQuestionId": 901,
+      "deliveryType": "GUIDED_REASONING",
+      "resolved": true,
+      "guided": {
+        "stage": "QUESTION_RESOLVED",
+        "steps": [
+          {
+            "stepKey": "s-1",
+            "prompt": "Đại từ nào là ngôi thứ ba số ít?",
+            "hintUsed": true,
+            "attempts": [
+              {"attemptNumber": 1, "submittedAnswer": "A", "correct": false},
+              {"attemptNumber": 2, "submittedAnswer": "B", "correct": true}
+            ],
+            "correctAnswers": ["B"]
+          }
+        ]
+      },
+      "finalAnswer": {
+        "historyState": "AVAILABLE",
+        "attempts": [
+          {"attemptNumber": 1, "submittedAnswer": "B", "correct": true}
+        ]
+      }
     }
-  ],
-  "final": {
-    "firstCorrect": true,
-    "finalCorrect": true,
-    "submittedAnswers": ["B"],
-    "answerRevealed": true
-  }
+  ]
 }
 ```
 

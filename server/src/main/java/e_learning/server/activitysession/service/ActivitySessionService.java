@@ -1,32 +1,48 @@
 package e_learning.server.activitysession.service;
 
-import e_learning.server.activitysession.snapshot.ActivityQuestionSnapshotAssembler;
-import e_learning.server.activitysession.selection.ActivityQuestionSelectionService;
-import e_learning.server.activitysession.guided.GuidedRuntimeService;
-
-
-import e_learning.server.activity.entity.*;
-import e_learning.server.activity.enums.*;
-import e_learning.server.activity.repository.*;
+import e_learning.server.activity.entity.Activity;
+import e_learning.server.activity.enums.ActivityMode;
+import e_learning.server.activity.enums.ActivityPracticeType;
+import e_learning.server.activity.enums.ActivityStatus;
+import e_learning.server.activity.enums.SelectionStrategy;
+import e_learning.server.activity.repository.ActivityRepository;
 import e_learning.server.activity.service.ActivityReadinessService;
-import e_learning.server.activitysession.dto.*;
+import e_learning.server.activitysession.dto.request.ActivitySessionAnswerRequest;
+import e_learning.server.activitysession.dto.request.ActivitySessionStartRequest;
+import e_learning.server.activitysession.dto.request.GuidedStepAnswerRequest;
+import e_learning.server.activitysession.dto.response.*;
 import e_learning.server.activitysession.entity.*;
+import e_learning.server.activitysession.enums.ActivityHistoryPeriod;
 import e_learning.server.activitysession.enums.ActivitySessionStatus;
 import e_learning.server.activitysession.enums.QuestionDeliveryType;
-import e_learning.server.activitysession.repository.*;
+import e_learning.server.activitysession.guided.GuidedRuntimeService;
+import e_learning.server.activitysession.repository.ActivitySessionFinalAnswerAttemptRepository;
+import e_learning.server.activitysession.repository.ActivitySessionQuestionRepository;
+import e_learning.server.activitysession.repository.ActivitySessionRepository;
+import e_learning.server.activitysession.selection.ActivityQuestionSelectionService;
+import e_learning.server.activitysession.snapshot.ActivityQuestionSnapshotAssembler;
 import e_learning.server.classes.repository.ClassMemberRepository;
-import e_learning.server.common.exception.*;
+import e_learning.server.common.dto.PageResponse;
+import e_learning.server.common.exception.AppException;
+import e_learning.server.common.exception.ErrorCode;
+import e_learning.server.gamification.streak.service.StudentStreakService;
 import e_learning.server.gamification.xp.dto.ActivityXpPolicySnapshot;
 import e_learning.server.gamification.xp.dto.ActivityXpQuestionReceipt;
 import e_learning.server.gamification.xp.dto.ActivityXpRewardReceipt;
 import e_learning.server.gamification.xp.service.ActivityXpRewardWorkflow;
 import e_learning.server.gamification.xp.service.ActivityXpSessionAuditService;
-import e_learning.server.gamification.streak.service.StudentStreakService;
-import e_learning.server.question.entity.*;
-import e_learning.server.question.repository.*;
+import e_learning.server.question.entity.Question;
+import e_learning.server.question.repository.QuestionAnswerRepository;
+import e_learning.server.question.repository.QuestionOptionRepository;
 import e_learning.server.user.entity.User;
 import e_learning.server.user.repository.UserRepository;
+import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.JsonNode;
@@ -57,6 +73,101 @@ public class ActivitySessionService {
     private final ActivityXpSessionAuditService activityXpAuditService;
     private final ActivityXpRewardWorkflow activityXpRewardWorkflow;
     private final StudentStreakService studentStreakService;
+
+
+    @Transactional(readOnly = true)
+    public PageResponse<ActivitySessionHistoryItemResponse> getActivitySessions(
+            int page,
+            int size,
+            Long activityId,
+            Long userId,
+            ActivityHistoryPeriod period,
+            ActivityMode mode,
+            ActivitySessionStatus status
+    ) {
+        User student = userRepository.findById(userId)
+                .orElseThrow(() -> new AppException(ErrorCode.STUDENT_NOT_FOUND));
+        Activity activity = activityRepository.findById(activityId)
+                .orElseThrow(() -> new AppException(ErrorCode.ACTIVITY_NOT_FOUND));
+        if (!hasCurrentGradeAccess(student.getId(), activity.getUnit().getGrade().getId())) {
+            throw new AppException(ErrorCode.ACTIVITY_SESSION_NOT_ACCESSIBLE);
+        }
+        if (status == ActivitySessionStatus.IN_PROGRESS) {
+            throw new AppException(ErrorCode.ACTIVITY_SESSION_HISTORY_STATUS_INVALID);
+        }
+        if (mode == ActivityMode.BOTH) {
+            throw new AppException(ErrorCode.ACTIVITY_SESSION_INVALID_MODE);
+        }
+
+        int safePage = Math.max(0, page - 1);
+        int safeSize = size <= 0 ? 10 : Math.min(size, 50);
+
+        ActivityHistoryPeriod selectedPeriod = period == null ? ActivityHistoryPeriod.ALL : period;
+
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime from = null;
+        LocalDateTime to = null;
+
+        switch (selectedPeriod) {
+            case TODAY -> {
+                from = now.toLocalDate().atStartOfDay();
+                to = from.plusDays(1);
+            }
+            case LAST_7_DAYS -> {
+                from = now.minusDays(7);
+                to = now;
+            }
+            case LAST_30_DAYS -> {
+                from = now.minusDays(30);
+                to = now;
+            }
+            case ALL -> {
+            }
+        }
+
+        final LocalDateTime fromTime = from;
+        final LocalDateTime toTime = to;
+
+        Specification<ActivitySession> spec = (root, query, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
+
+            predicates.add(cb.equal(root.get("student").get("id"), userId));
+
+            predicates.add(cb.equal(root.get("activity").get("id"), activityId));
+
+            predicates.add(root.get("completedAt").isNotNull());
+
+            predicates.add(cb.notEqual(root.get("status"), ActivitySessionStatus.IN_PROGRESS));
+
+            if (mode != null) {
+                predicates.add(cb.equal(root.get("mode"), mode));
+            }
+
+            if (status != null) {
+                predicates.add(cb.equal(root.get("status"), status));
+            }
+
+            if (fromTime != null) {
+                predicates.add(cb.greaterThanOrEqualTo(root.get("completedAt"), fromTime));
+            }
+
+            if (toTime != null) {
+                predicates.add(cb.lessThan(root.get("completedAt"), toTime));
+            }
+
+            return cb.and(predicates.toArray(new Predicate[0]));
+        };
+
+        Pageable pageable = PageRequest.of(safePage, safeSize,
+                Sort.by(Sort.Order.desc("completedAt"), Sort.Order.desc("id"))
+        );
+
+        Page<ActivitySessionHistoryItemResponse> result = sessionRepository.findAll(spec, pageable)
+                .map(ActivitySessionHistoryItemResponse::fromEntity);
+
+        return PageResponse.from(result);
+    }
+
 
     @Transactional(readOnly = true)
     public ActivitySessionOptionsResponse options(Long activityId, Long studentId) {
@@ -392,7 +503,9 @@ public class ActivitySessionService {
         return item.getDeadlineAt() != null && LocalDateTime.now().isAfter(item.getDeadlineAt().plusSeconds(NETWORK_GRACE_SECONDS));
     }
 
-    /** Try Hard only accepts the first unresolved question, not a future ID supplied by a client. */
+    /**
+     * Try Hard only accepts the first unresolved question, not a future ID supplied by a client.
+     */
     private void requireCurrentTryHardQuestion(ActivitySession session, ActivitySessionQuestion item) {
         if (session.getMode() != ActivityMode.TRY_HARD) return;
         ActivitySessionQuestion current = session.getQuestions().stream()
@@ -417,7 +530,9 @@ public class ActivitySessionService {
         advanceAfterResolution(session);
     }
 
-    /** Start the next question's server timer immediately after the previous one is resolved. */
+    /**
+     * Start the next question's server timer immediately after the previous one is resolved.
+     */
     private void advanceAfterResolution(ActivitySession session) {
         if (session.getStatus() != ActivitySessionStatus.IN_PROGRESS) return;
         if (session.getQuestions().stream().allMatch(ActivitySessionQuestion::isResolved)) {

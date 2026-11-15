@@ -81,6 +81,7 @@ public enum ErrorCode {
     ACTIVITY_SESSION_NOT_FOUND(HttpStatus.NOT_FOUND, "ACTIVITY_SESSION_NOT_FOUND", "Activity session was not found"),
     ACTIVITY_SESSION_INVALID_MODE(HttpStatus.BAD_REQUEST, "ACTIVITY_SESSION_INVALID_MODE", "The selected activity mode is not available"),
     ACTIVITY_SESSION_INVALID_STRATEGY(HttpStatus.BAD_REQUEST, "ACTIVITY_SESSION_INVALID_STRATEGY", "The selected question strategy is not available"),
+    ACTIVITY_SESSION_HISTORY_STATUS_INVALID(HttpStatus.BAD_REQUEST, "ACTIVITY_SESSION_HISTORY_STATUS_INVALID", "Practice history only includes finished sessions"),
     ACTIVITY_SESSION_NOT_ACCESSIBLE(HttpStatus.FORBIDDEN, "ACTIVITY_SESSION_NOT_ACCESSIBLE", "The student cannot access this activity"),
     ACTIVITY_SESSION_NOT_ACTIVE(HttpStatus.CONFLICT, "ACTIVITY_SESSION_NOT_ACTIVE", "The activity session is not in progress"),
     ACTIVITY_SESSION_QUESTION_NOT_FOUND(HttpStatus.NOT_FOUND, "ACTIVITY_SESSION_QUESTION_NOT_FOUND", "The session question was not found"),

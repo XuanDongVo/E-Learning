@@ -1,13 +1,17 @@
+"use client";
+
 import { Link } from "@/i18n/navigation";
 import {
   Clock3,
   Flame,
   Heart,
+  History,
   Lightbulb,
   Play,
   Sparkles,
   Zap,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import type { StudentActivity } from "@/types/student-unit";
 import { PaperSurface } from "@/components/student-ui/paper-surface";
 
@@ -23,6 +27,7 @@ export function ActivityCard({
   activity: StudentActivity;
   topicNames: string[];
 }) {
+  const t = useTranslations("student.activities.history");
   const hasPractice = activity.mode !== "TRY_HARD";
   const hasTryHard = activity.mode !== "LEARNING";
 
@@ -127,13 +132,21 @@ export function ActivityCard({
       </div>
 
       {/* ─── Nút hành động 3D Tactile CTA ─── */}
-      <div className="mt-auto border-t border-border pt-3">
+      <div className="mt-auto grid grid-cols-[1fr_auto] gap-2 border-t border-border pt-3">
         <Link
           href={`/student/units/${unitId}/activities/${activity.id}`}
           className="student-control student-control--action w-full"
         >
             <span>Bắt đầu</span>
             <Play className="h-4 w-4 fill-current" aria-hidden="true" />
+        </Link>
+        <Link
+          href={`/student/units/${unitId}/activities/${activity.id}/history`}
+          aria-label={`${t("openHistory")}: ${activity.name}`}
+          className="student-control student-control--quiet inline-flex items-center justify-center gap-2 px-4"
+        >
+          <History className="h-4 w-4" aria-hidden="true" />
+          <span className="hidden sm:inline">{t("openHistory")}</span>
         </Link>
       </div>
     </PaperSurface>

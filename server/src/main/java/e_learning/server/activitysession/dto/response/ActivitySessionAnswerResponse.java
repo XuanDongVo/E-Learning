@@ -1,4 +1,4 @@
-package e_learning.server.activitysession.dto;
+package e_learning.server.activitysession.dto.response;
 
 public record ActivitySessionAnswerResponse(
         ActivitySessionResponse session, boolean correct, boolean retryAvailable,

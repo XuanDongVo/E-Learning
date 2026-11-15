@@ -62,6 +62,7 @@
     "ACTIVITY_SESSION_NOT_FOUND": "Không tìm thấy phiên hoạt động.",
     "ACTIVITY_SESSION_INVALID_MODE": "Chế độ hoạt động đã chọn không khả dụng.",
     "ACTIVITY_SESSION_INVALID_STRATEGY": "Chiến lược câu hỏi đã chọn không khả dụng.",
+    "ACTIVITY_SESSION_HISTORY_STATUS_INVALID": "Lịch sử luyện tập chỉ hiển thị các lượt đã kết thúc.",
     "ACTIVITY_SESSION_ANSWER_INVALID": "Dữ liệu chưa hợp lệ. Vui lòng kiểm tra lại.",
     "STUDENT_NOT_IN_ACTIVE_CLASS": "Bạn không có quyền thực hiện thao tác này.",
     "ACTIVITY_SESSION_NOT_ACCESSIBLE": "Bạn không có quyền thực hiện thao tác này.",

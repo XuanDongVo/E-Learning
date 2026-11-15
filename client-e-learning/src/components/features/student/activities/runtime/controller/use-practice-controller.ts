@@ -274,6 +274,12 @@ export function usePracticeController({
     enabled: showResult && !!session && session.status !== "IN_PROGRESS",
     staleTime: Number.POSITIVE_INFINITY,
   });
+  const reviewQuery = useQuery({
+    queryKey: ["activity-session-review", session?.id],
+    queryFn: () => activitySessionService.review(session!.id),
+    enabled: showResult && !!session && session.status !== "IN_PROGRESS",
+    staleTime: Number.POSITIVE_INFINITY,
+  });
 
   const timeoutMutation = useMutation({
     mutationFn: (v: { sessionId: number; questionId: number }) =>
@@ -618,7 +624,7 @@ export function usePracticeController({
     effectiveMode, setMode, effectiveStrategy, setStrategy, start, startSlow,
     picks, locked, feedback, draft, over, hintOpen, questions, statuses, index,
     tryHard, goTo, goNext, deadlineExpired, hasDraft, canSubmit, background, leave,
-    settings, setSettings, secondsLeft, complete, resultQuery, feedbacks, retry,
+    settings, setSettings, secondsLeft, complete, resultQuery, reviewQuery, feedbacks, retry,
     guidedHint, guidedReview, guidedFinalReview,
     dismissGuidedReview, dismissGuidedFinalReview,
     soundEnabled, setSoundEnabled, guidedStepAnswerMutation, guidedHintMutation,

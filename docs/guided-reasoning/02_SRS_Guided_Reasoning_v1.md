@@ -9,14 +9,13 @@ attempt outcomes, and persists new Classic/Guided Final submissions for
 idempotency and future review. Classic and Guided use one Student runner and a
 shared question-stage renderer. Focused backend tests and affected-file ESLint
 pass. Full TypeScript validation is blocked by existing Teacher editor nullable
-draft errors. M4 Student/Teacher review endpoints and UI are not part of this
-slice and remain next.
+draft errors. M4 Student review endpoint/UI is implemented; Teacher review
+endpoint/UI remains the next slice.
 
 **Software Requirements Specification — E-Learning**  
 **Phiên bản:** 1.1 — cập nhật theo thay đổi nghiệp vụ ngày 14/11/2026  
-**Trạng thái:** M1 authoring và M2 Activity configuration/eligibility đã triển
-khai trên branch nêu dưới; runtime, Student UI/review và release verification vẫn
-chưa triển khai.<br>
+**Trạng thái:** M1–M3 và M4 Student Review đã triển khai trên branch nêu dưới;
+M4 Teacher Review và release verification vẫn chưa triển khai.<br>
 **Repo/branch triển khai:** `XuanDongVo/E-Learning` · `feature/guided-reasoning-v1`  
 **Base:** `main` tại `268bcf0b03cb87e0c72cf14a9d28998698b8421b`  
 **Tài liệu đi kèm:** [03_FRS_Guided_Reasoning_v1.md](03_FRS_Guided_Reasoning_v1.md)

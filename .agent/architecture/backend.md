@@ -45,6 +45,14 @@ See .agent/architecture/question-engine-v1.md and ADR 0023 (lifecycle refined by
   0036, new Activity Sessions persist immutable Final attempts for idempotency
   and review; this is practice history, not an AssessmentAttempt or official grade.
 - ActivitySession orchestration delegates question selection to activitysession/selection and immutable snapshot assembly to activitysession/snapshot; runtime lifecycle remains in ActivitySessionService until behavior-focused tests support further extraction.
+- Read-only Activity review projection lives in `activitysession/review` and
+  reads immutable Question/Guided snapshots plus persisted Step/Final attempts.
+  It enforces reveal policy while mapping; clients never receive keys for an
+  unresolved Session Question.
+- Student Activity history is a read-only, ownership-scoped terminal Session
+  query. It validates the requested Activity and current Grade access, excludes
+  `IN_PROGRESS`, orders by completion/id descending and returns a paged summary;
+  detailed answers remain exclusively in the Review projection.
 - Never edit applied migrations. Select the next unused migration version after inspecting the current branch.
 
 ## Assignment Composition / AssessmentAttempt

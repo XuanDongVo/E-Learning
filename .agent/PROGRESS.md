@@ -1,5 +1,35 @@
 # Project Progress
 
+## 2026-11-15 Guided Reasoning v1 — M4 Student review implemented
+
+Screen Brief
+User: Student
+Goal: Review persisted Classic/Guided answers after a terminal Activity Session.
+Page type: Detail / terminal result section
+Primary action: Inspect Question, Guided Step and Final attempt history.
+States covered: loading, error/retry, empty, legacy history unavailable, success.
+
+- Added the own-session `GET /v1/activity-sessions/{sessionId}/review` endpoint.
+  It returns one Session with ordered `questions[]`, persisted Step/Final
+  attempts, Step Hint timing and snapshot-backed prompts/options.
+- Review projection is security-sensitive: only a resolved Session Question
+  exposes correct answers/explanations. An unfinished Guided Question exposes
+  only Steps reached so far and never exposes future Steps or Final content.
+- Historical rows with `answerAttempts > 0` but no V62 Final-attempt rows return
+  `LEGACY_UNAVAILABLE`; the UI says detailed history is unavailable and never
+  reconstructs or fabricates a submitted answer.
+- `PracticeResult` now loads the server Review projection and includes Guided
+  Steps before the Final result. A reloadable Student route is available at
+  `/student/activity-sessions/{sessionId}/review`; both surfaces reuse the same
+  Indie Scrapbook review component and semantic Student tokens.
+- Focused validation passes: backend compile; 14/14 Review + Activity runtime
+  tests; 3/3 frontend cursor tests; focused Student Activity ESLint. Full
+  TypeScript validation remains blocked only by the three pre-existing nullable
+  Guided draft errors in Teacher `question-editor.tsx`. Browser verification is
+  pending because local frontend/backend services were not running.
+- Teacher Review endpoint and Teacher Student Hub detail UI remain the next M4
+  slice. No database migration or scoring/XP behavior changed in this slice.
+
 ## 2026-11-15 Guided Reasoning v1 — M3 runtime refactor implemented
 
 Screen Brief
@@ -663,6 +693,22 @@ States covered: loading, source error/empty, invalid configuration, insufficient
   and viewport screenshot review remain open.
 
 ## Verification
+
+## Student Activity history (2026-11-15)
+
+- Added a History action to Student Activity cards and the Indie Scrapbook route
+  `/student/units/{unitId}/activities/{activityId}/history`.
+- The screen uses the real paginated Session-history API with time, mode and
+  terminal-status filters; loading, empty, filtered-empty, error, success and
+  pagination states are explicit. Every row opens the shared Review route using
+  its persisted `sessionId`.
+- Hardened the new backend query with Student/Activity/Grade-access validation.
+  `IN_PROGRESS` is outside the history contract and returns structured error
+  `ACTIVITY_SESSION_HISTORY_STATUS_INVALID`, localized in both error catalogs.
+- Focused ESLint passes. TypeScript reports only the three existing Teacher
+  `question-editor.tsx` errors (lines 270, 291 and 292), with no Activity-history
+  errors. Backend compile could not complete because Maven needed a missing FSRS
+  artifact and network permission was declined; Java validation remains open.
 
 ## Question edit workspace simplification (2026-11-14)
 

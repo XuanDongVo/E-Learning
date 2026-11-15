@@ -9,6 +9,7 @@ import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
+import e_learning.server.activitysession.enums.GuidedQuestionStage;
 
 @Entity
 @Table(name = "activity_session_guided_step_attempts")
@@ -39,18 +40,33 @@ public class ActivitySessionGuidedStepAttempt {
     @Column(nullable = false)
     private boolean correct;
 
+    @Column(name = "retry_available")
+    private Boolean retryAvailable;
+
+    @Column(name = "step_resolved")
+    private Boolean stepResolved;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "stage_after", length = 30)
+    private GuidedQuestionStage stageAfter;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     public ActivitySessionGuidedStepAttempt(ActivitySessionQuestion sessionQuestion, String stepKey,
                                             int attemptNumber, UUID requestId,
-                                            String submittedAnswer, boolean correct) {
+                                            String submittedAnswer, boolean correct,
+                                            boolean retryAvailable, boolean stepResolved,
+                                            GuidedQuestionStage stageAfter) {
         this.sessionQuestion = sessionQuestion;
         this.stepKey = stepKey;
         this.attemptNumber = attemptNumber;
         this.requestId = requestId;
         this.submittedAnswer = submittedAnswer;
         this.correct = correct;
+        this.retryAvailable = retryAvailable;
+        this.stepResolved = stepResolved;
+        this.stageAfter = stageAfter;
         this.createdAt = LocalDateTime.now();
     }
 }

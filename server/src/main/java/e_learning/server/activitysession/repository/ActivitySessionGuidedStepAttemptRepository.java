@@ -8,4 +8,5 @@ import java.util.UUID;
 
 public interface ActivitySessionGuidedStepAttemptRepository extends JpaRepository<ActivitySessionGuidedStepAttempt, Long> {
     Optional<ActivitySessionGuidedStepAttempt> findBySessionQuestionIdAndRequestId(Long sessionQuestionId, UUID requestId);
+    long countBySessionQuestionIdAndStepKey(Long sessionQuestionId, String stepKey);
 }

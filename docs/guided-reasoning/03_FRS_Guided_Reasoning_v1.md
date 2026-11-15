@@ -1,5 +1,16 @@
 # 03 — FRS: Guided Reasoning v1
 
+## Implementation update — 2026-11-15
+
+M3 runtime now dispatches by frozen
+`ActivitySessionQuestion.deliveryType`, with Guided-only state in
+`ActivitySessionGuidedProgress`. Step attempts store their replay outcome,
+Step hints are idempotently persisted per Step, and Final submissions for new
+Classic and Guided Sessions are immutable/idempotent. The server commits the
+next Step immediately; Continue only dismisses feedback in the Student UI.
+Classic and Guided share the same runner and question renderer. M4 review
+projections, RBAC endpoints and review screens remain unimplemented.
+
 **Functional Requirements Specification — E-Learning**  
 **Phiên bản:** 1.1, cập nhật 14/11/2026 theo Guided-first + Hint/Retry từng Step  
 **Branch:** `feature/guided-reasoning-v1` (tạo từ `main` @ `268bcf0b03cb87e0c72cf14a9d28998698b8421b`)  
@@ -176,6 +187,11 @@ Khi state là STEP_ACTIVE / STEP_RETRY, public GET Session cho Student chỉ tr�
 ### FRS-GR-018 — Resume
 
 GET /v1/activity-sessions/{id} server recompute current state từ DB, không phụ thuộc UI. Refresh sau nộp Step, sau dùng hint, sau lần sai có retry, và giữa Final retry đều giữ đúng số attempts/hintUsed. Không mở lại Step đã đóng.
+
+Trong Learning, response phải chiếu public Guided state đã sanitize của tất cả
+Session Question để Question Navigator có thể chuyển câu. Chuyển câu không
+advance/reset Step; server chỉ enforce active `stepKey` và Final gate trong
+chính Session Question được chọn.
 
 ## 6. UC-GR-04: Step submission, Hint, Retry và Final
 

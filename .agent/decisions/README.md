@@ -39,6 +39,8 @@ An accepted ADR overrides lower-level documents. Never delete an ADR; supersede 
 | 0032 | XP/Streak Leaderboard, Top 50, honors and ActivitySession feed | **Accepted; source under verification** |
 | 0033 | Absolute seven-day auth session lifecycle | **Accepted; implemented, validation deferred by owner** |
 | 0034 | Teacher Assignment portfolio summary | **Accepted; operational list summary** |
+| 0035 | Unified Bulk Guided Composer | **Accepted; implemented source slice** |
+| 0036 | Activity session delivery and attempt history | **Accepted; V62/M3 runtime contract** |
 
 ## Current decision chain
 
@@ -52,6 +54,8 @@ ADR 0017 stores the selected Activity strategy on ActivitySession.
 ADR 0018 remains historical for AssignmentQuestion ordering; ADR 0024 defines canonical persisted Composition order.
 ADR 0019 controls Assignment post-submit answer visibility through show_answers_after_submit.
 ADR 0021 separates ActivitySession from formal AssessmentAttempt and forbids a shared polymorphic Attempt.
+ADR 0036 freezes per-question delivery at Session start and supersedes only ADR
+0022 item 14 by persisting Activity Final attempts for idempotency and M4 review.
 ADR 0023 accepts Question Engine D1–D8. ADR 0025 governs Assignment hard-lock and Activity update/snapshot semantics. ADR 0026 defines automatic Assignment scoring and visibility.
 ADR 0027 defines the Phase 7B single-active-tab/resumable session policy: Web Locks provides same-browser exclusive tab coordination, a stable session credential is persisted for recovery, another tab is rejected immediately, and there is no heartbeat-driven stale takeover in MVP.
 ADR 0033 defines authentication session lifetime and recovery: seven days is an absolute deadline from login, refresh does not extend it, inactive users are blocked on their next protected request, and the frontend coordinates one-time refresh/replay across tabs.

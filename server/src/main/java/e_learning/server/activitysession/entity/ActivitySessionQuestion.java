@@ -3,6 +3,7 @@ package e_learning.server.activitysession.entity;
 import e_learning.server.question.entity.Question;
 import e_learning.server.gamification.xp.entity.XpQuestionOutcome;
 import e_learning.server.activitysession.enums.GuidedQuestionStage;
+import e_learning.server.activitysession.enums.QuestionDeliveryType;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
@@ -20,6 +21,11 @@ public class ActivitySessionQuestion {
     @Column(name = "snapshot_schema_version") private Integer snapshotSchemaVersion;
     @Column(name = "snapshot_content_revision") private Long snapshotContentRevision;
     @Column(name = "snapshot_payload", columnDefinition = "TEXT") private String snapshotPayload;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "delivery_type", nullable = false, length = 30)
+    private QuestionDeliveryType deliveryType;
+    @OneToOne(mappedBy = "sessionQuestion", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private ActivitySessionGuidedProgress guidedProgress;
     @Column(name = "guided_snapshot_schema_version") private Integer guidedSnapshotSchemaVersion;
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "guided_snapshot_payload", columnDefinition = "jsonb") private String guidedSnapshotPayload;
@@ -54,5 +60,10 @@ public class ActivitySessionQuestion {
         this.snapshotSchemaVersion = snapshot.schemaVersion();
         this.snapshotContentRevision = snapshot.contentRevision();
         this.snapshotPayload = snapshot.payload();
+    }
+
+    public void attachGuidedProgress(ActivitySessionGuidedProgress progress) {
+        this.guidedProgress = progress;
+        progress.setSessionQuestion(this);
     }
 }

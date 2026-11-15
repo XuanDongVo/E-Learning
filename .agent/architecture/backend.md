@@ -28,7 +28,7 @@ Current feature areas include activity, assignment, assessmentattempt, content, 
 - ActivitySession runtime state is separate from Activity configuration. AssessmentAttempt runtime state is separate from Assignment configuration.
 
 ## Activity
-Unit-scoped; available strategies live on Activity; concrete strategy and mode live on ActivitySession; Try Hard deadline is per question; preview is non-mutating; GameTemplate is not a current dependency. `practiceType` is `CLASSIC` or `GUIDED_REASONING`; Guided is restricted to LEARNING/RANDOM and only selects revision-matching READY Guided Definitions. Its dedicated Session runtime remains a later slice and must not fall through to Classic handling.
+Unit-scoped; available strategies live on Activity; concrete strategy and mode live on ActivitySession; Try Hard deadline is per question; preview is non-mutating; GameTemplate is not a current dependency. `practiceType` is `CLASSIC` or `GUIDED_REASONING`; Guided is restricted to LEARNING/RANDOM and only selects revision-matching READY Guided Definitions. Each selected Session Question freezes `deliveryType`; runtime never re-reads live Activity configuration. Guided state lives in its one-to-one progress record and separate Step-attempt/Hint tables.
 
 ## Assignment
 Owns AssignmentQuestion. No position; Composition positions define official order and question_id ASC is legacy backfill only. show_score_after_submit controls score display, while show_answers_after_submit independently controls answer/explanation reveal. time_limit_minutes is the whole Attempt duration stored in minutes. The server calculates and persists deadline_at from started_at plus the configured minutes. No Release Answers timestamp/endpoint.
@@ -41,7 +41,9 @@ See .agent/architecture/question-engine-v1.md and ADR 0023 (lifecycle refined by
 - QuestionSpecMapper is the persistence-to-engine boundary. Engine code must not depend on JPA repositories/entities, Spring web DTOs, or Jackson JsonNode.
 - Preserve existing question-type semantics with characterization tests when moving behavior.
 - Keep teacher and student projections separate.
-- ActivitySession and AssessmentAttempt remain separate aggregates. Activity has no persisted detailed answer history under ADRs 0021/0022.
+- ActivitySession and AssessmentAttempt remain separate aggregates. Under ADR
+  0036, new Activity Sessions persist immutable Final attempts for idempotency
+  and review; this is practice history, not an AssessmentAttempt or official grade.
 - ActivitySession orchestration delegates question selection to activitysession/selection and immutable snapshot assembly to activitysession/snapshot; runtime lifecycle remains in ActivitySessionService until behavior-focused tests support further extraction.
 - Never edit applied migrations. Select the next unused migration version after inspecting the current branch.
 

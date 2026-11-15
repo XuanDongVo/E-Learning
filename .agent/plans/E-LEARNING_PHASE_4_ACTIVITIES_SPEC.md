@@ -34,6 +34,11 @@ Definition whose saved source Question revision matches the current Question
 revision. Guided runtime is governed by the Guided Reasoning specification and
 must never fall through to the Classic ActivitySession flow.
 
+Guided Step order is scoped to one Session Question. In Learning mode the
+Student may navigate among Activity questions freely; switching questions does
+not advance, reset or otherwise alter either question's Guided Step progress.
+Each Guided Final remains hidden until that same question's Steps are complete.
+
 ## Strategy
 One configured strategy may be auto-selected.
 Multiple configured strategies require student choice at run start.

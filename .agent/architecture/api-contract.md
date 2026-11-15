@@ -150,14 +150,16 @@ audit values and is empty when no finalized reward exists.
 
 ActivitySession start accepts optional `mode` and `selectionStrategy`; both are required only when the
 Activity exposes more than one choice. The start response includes the complete selected question set without
-correct answers, accepted answers or explanations. Activity answers are evaluated server-side and are not persisted
-as answer history.
+correct answers, accepted answers or explanations. Activity answers are evaluated
+server-side. New Classic and Guided Final submissions include a stable UUID
+`requestId` and are persisted as immutable Activity attempt history.
 
 Classic start responses return the selected question set. Guided public responses
 contain only the current Step (without correct flags, answer keys, explanation
 or Final content) until all Steps are resolved. Step answer requests include a
 UUID `requestId`; replaying the same id and payload is idempotent, while a
-different payload is rejected.
+different payload is rejected. Final answers follow the same rule; replay can
+return its stored outcome even after that submission made the Session terminal.
 
 ## Student Gamification (Streak / Level)
 

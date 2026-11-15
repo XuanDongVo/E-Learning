@@ -12,6 +12,7 @@ import e_learning.server.activity.service.ActivityReadinessService;
 import e_learning.server.activitysession.dto.*;
 import e_learning.server.activitysession.entity.*;
 import e_learning.server.activitysession.enums.ActivitySessionStatus;
+import e_learning.server.activitysession.enums.QuestionDeliveryType;
 import e_learning.server.activitysession.repository.*;
 import e_learning.server.classes.repository.ClassMemberRepository;
 import e_learning.server.common.exception.*;
@@ -52,6 +53,7 @@ public class ActivitySessionService {
     private final ActivityQuestionSnapshotAssembler snapshotAssembler;
     private final ActivityQuestionSelectionService questionSelectionService;
     private final GuidedRuntimeService guidedRuntimeService;
+    private final ActivitySessionFinalAnswerAttemptRepository finalAnswerAttemptRepository;
     private final ActivityXpSessionAuditService activityXpAuditService;
     private final ActivityXpRewardWorkflow activityXpRewardWorkflow;
     private final StudentStreakService studentStreakService;
@@ -102,7 +104,12 @@ public class ActivitySessionService {
         xpPolicy.ifPresent(snapshot -> activityXpAuditService.applyStartSnapshot(session, snapshot));
         for (int i = 0; i < selected.size(); i++) {
             ActivitySessionQuestion item = new ActivitySessionQuestion(selected.get(i), i, questionSnapshots.get(i));
-            if (activity.getPracticeType() == ActivityPracticeType.GUIDED_REASONING) {
+            QuestionDeliveryType deliveryType =
+                    activity.getPracticeType() == ActivityPracticeType.GUIDED_REASONING
+                            ? QuestionDeliveryType.GUIDED_REASONING
+                            : QuestionDeliveryType.CLASSIC;
+            item.setDeliveryType(deliveryType);
+            if (deliveryType == QuestionDeliveryType.GUIDED_REASONING) {
                 guidedRuntimeService.initialize(item);
             }
             session.addQuestion(item);
@@ -126,9 +133,22 @@ public class ActivitySessionService {
     public ActivitySessionAnswerResponse answer(Long sessionId, Long questionId, Long studentId,
                                                 ActivitySessionAnswerRequest request) {
         ActivitySession session = ownSessionForUpdate(sessionId, studentId);
-        requireActive(session);
         requireCurrentGradeAccess(session, studentId);
         ActivitySessionQuestion item = question(sessionId, questionId);
+        UUID requestId = finalRequestId(request.requestId());
+        ActivitySessionFinalAnswerAttempt existing = finalAnswerAttemptRepository
+                .findBySessionQuestionIdAndRequestId(item.getId(), requestId).orElse(null);
+        if (existing != null) {
+            if (!existing.getSubmittedAnswer().equals(answerPayload(request.answer()))) {
+                throw new AppException(ErrorCode.ACTIVITY_SESSION_IDEMPOTENCY_CONFLICT);
+            }
+            ActivityQuestionSnapshot storedSnapshot = snapshotAssembler.read(item);
+            return new ActivitySessionAnswerResponse(toResponse(session), existing.isCorrect(),
+                    existing.isRetryAvailable(), existing.isAnswerRevealed(),
+                    existing.isAnswerRevealed() ? correctAnswer(storedSnapshot) : null,
+                    existing.isAnswerRevealed() ? storedSnapshot.explanation() : null);
+        }
+        requireActive(session);
         if (item.isResolved()) throw new AppException(ErrorCode.ACTIVITY_SESSION_RETRY_EXHAUSTED);
         if (guidedRuntimeService.isGuided(item) && !guidedRuntimeService.finalAvailable(item)) {
             throw new AppException(ErrorCode.GUIDED_STEP_OUT_OF_ORDER);
@@ -181,13 +201,31 @@ public class ActivitySessionService {
         if (item.isResolved()) {
             guidedRuntimeService.markFinalResolved(item);
             activityXpAuditService.auditResolvedQuestion(item, snapshot);
+        } else if (retry) {
+            guidedRuntimeService.markFinalRetry(item);
         }
+        finalAnswerAttemptRepository.save(new ActivitySessionFinalAnswerAttempt(
+                item, attempt, requestId, answerPayload(request.answer()),
+                correct, retry, item.isResolved(), reveal));
         advanceAfterResolution(session);
         settleXpIfTerminal(session);
         sessionRepository.save(session);
         String correctAnswer = reveal ? correctAnswer(snapshot) : null;
         String explanation = reveal ? snapshot.explanation() : null;
         return new ActivitySessionAnswerResponse(toResponse(session), correct, retry, reveal, correctAnswer, explanation);
+    }
+
+    private UUID finalRequestId(String requestId) {
+        if (requestId == null || requestId.isBlank()) return UUID.randomUUID();
+        try {
+            return UUID.fromString(requestId);
+        } catch (IllegalArgumentException error) {
+            throw new AppException(ErrorCode.INVALID_REQUEST, "requestId must be a UUID");
+        }
+    }
+
+    private String answerPayload(JsonNode answer) {
+        return answer == null ? "null" : answer.toString();
     }
 
     /**
@@ -265,7 +303,6 @@ public class ActivitySessionService {
         requireCurrentGradeAccess(session, studentId);
         ActivitySessionQuestion item = question(sessionId, questionId);
         if (!guidedRuntimeService.isGuided(item)) throw new AppException(ErrorCode.GUIDED_STEP_OUT_OF_ORDER);
-        requireCurrentGuidedQuestion(session, item);
         GuidedRuntimeService.StepResult result = guidedRuntimeService.answer(item, stepKey, request.requestId(), request.answer());
         sessionRepository.save(session);
         return new GuidedStepAnswerResponse(toResponse(session), result.correct(), result.attemptNumber(),
@@ -279,7 +316,6 @@ public class ActivitySessionService {
         requireCurrentGradeAccess(session, studentId);
         ActivitySessionQuestion item = question(sessionId, questionId);
         if (!guidedRuntimeService.isGuided(item)) throw new AppException(ErrorCode.GUIDED_STEP_OUT_OF_ORDER);
-        requireCurrentGuidedQuestion(session, item);
         String hint = guidedRuntimeService.useHint(item, stepKey);
         sessionRepository.save(session);
         return new GuidedStepHintResponse(toResponse(session), hint);
@@ -365,17 +401,6 @@ public class ActivitySessionService {
                 .orElseThrow(() -> new AppException(ErrorCode.ACTIVITY_SESSION_NOT_ACTIVE));
         if (!Objects.equals(current.getId(), item.getId())) {
             throw new AppException(ErrorCode.ACTIVITY_SESSION_QUESTION_OUT_OF_ORDER);
-        }
-    }
-
-    /** Guided always gates the current Question, even though Learning normally permits navigation. */
-    private void requireCurrentGuidedQuestion(ActivitySession session, ActivitySessionQuestion item) {
-        ActivitySessionQuestion current = session.getQuestions().stream()
-                .filter(question -> !question.isResolved())
-                .findFirst()
-                .orElseThrow(() -> new AppException(ErrorCode.ACTIVITY_SESSION_NOT_ACTIVE));
-        if (!Objects.equals(current.getId(), item.getId())) {
-            throw new AppException(ErrorCode.GUIDED_STEP_OUT_OF_ORDER);
         }
     }
 
@@ -499,21 +524,15 @@ public class ActivitySessionService {
     }
 
     private ActivitySessionResponse toResponse(ActivitySession session) {
-        ActivitySessionQuestion current = session.getQuestions().stream()
-                .filter(item -> !item.isResolved()).findFirst().orElse(null);
         return new ActivitySessionResponse(session.getId(), session.getStatus(), session.getMode(), session.getSelectionStrategy(),
                 session.getStartedAt(), session.getCompletedAt(), session.getTotalQuestions(), session.getFirstCorrectCount(),
                 session.getFinalCorrectCount(), session.getHintUsedCount(), session.getScore(), session.getLives(),
-                session.getQuestions().stream().map(item -> toQuestionResponse(item, item == current)).toList(),
+                session.getQuestions().stream().map(this::toQuestionResponse).toList(),
                 OffsetDateTime.now());
     }
 
-    private ActivitySessionQuestionResponse toQuestionResponse(ActivitySessionQuestion item, boolean isCurrent) {
+    private ActivitySessionQuestionResponse toQuestionResponse(ActivitySessionQuestion item) {
         ActivityQuestionSnapshot snapshot = snapshotAssembler.read(item);
-        if (guidedRuntimeService.isGuided(item) && !isCurrent && !item.isResolved()) {
-            return new ActivitySessionQuestionResponse(item.getId(), item.getPosition(), null, null, List.of(),
-                    null, false, 0, null, null, false, false, null, null);
-        }
         if (guidedRuntimeService.isGuided(item) && !guidedRuntimeService.finalAvailable(item)) {
             return new ActivitySessionQuestionResponse(item.getId(), item.getPosition(), null, null, List.of(),
                     null, false, 0, null, null, false, false, null,

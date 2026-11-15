@@ -8,13 +8,19 @@ import e_learning.server.activity.dto.response.ActivityReadinessResponse;
 import e_learning.server.activity.repository.ActivityRepository;
 import e_learning.server.activity.service.ActivityReadinessService;
 import e_learning.server.activitysession.dto.ActivitySessionAnswerRequest;
+import e_learning.server.activitysession.dto.GuidedStepAnswerRequest;
 import e_learning.server.activitysession.entity.ActivityQuestionResolution;
 import e_learning.server.activitysession.entity.ActivityQuestionSnapshot;
 import e_learning.server.activitysession.entity.ActivitySession;
 import e_learning.server.activitysession.entity.ActivitySessionQuestion;
+import e_learning.server.activitysession.entity.ActivitySessionFinalAnswerAttempt;
 import e_learning.server.activitysession.enums.ActivitySessionStatus;
+import e_learning.server.activitysession.enums.GuidedQuestionStage;
+import e_learning.server.activitysession.enums.QuestionDeliveryType;
 import e_learning.server.activitysession.repository.ActivitySessionQuestionRepository;
 import e_learning.server.activitysession.repository.ActivitySessionRepository;
+import e_learning.server.activitysession.repository.ActivitySessionFinalAnswerAttemptRepository;
+import e_learning.server.activitysession.guided.GuidedRuntimeService;
 import e_learning.server.activitysession.selection.ActivityQuestionSelectionService;
 import e_learning.server.activitysession.snapshot.ActivityQuestionSnapshotAssembler;
 import e_learning.server.classes.entity.ClassEntity;
@@ -24,6 +30,8 @@ import e_learning.server.common.exception.AppException;
 import e_learning.server.content.unit.entity.Unit;
 import e_learning.server.grades.entity.Grade;
 import e_learning.server.gamification.xp.service.ActivityXpSessionAuditService;
+import e_learning.server.gamification.xp.service.ActivityXpRewardWorkflow;
+import e_learning.server.gamification.streak.service.StudentStreakService;
 import e_learning.server.gamification.xp.dto.ActivityXpPolicySnapshot;
 import e_learning.server.question.entity.Question;
 import e_learning.server.question.enums.Difficulty;
@@ -37,6 +45,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.InOrder;
 import org.mockito.Mock;
+import org.mockito.ArgumentCaptor;
 import org.mockito.junit.jupiter.MockitoExtension;
 import tools.jackson.databind.JsonNode;
 
@@ -44,6 +53,8 @@ import java.time.LocalDateTime;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -64,12 +75,20 @@ class ActivitySessionTimeoutTest {
     @Mock private ActivityQuestionSnapshotAssembler snapshotAssembler;
     @Mock private ActivityQuestionSelectionService questionSelectionService;
     @Mock private ActivityXpSessionAuditService activityXpAuditService;
+    @Mock private GuidedRuntimeService guidedRuntimeService;
+    @Mock private ActivitySessionFinalAnswerAttemptRepository finalAnswerAttemptRepository;
+    @Mock private ActivityXpRewardWorkflow activityXpRewardWorkflow;
+    @Mock private StudentStreakService studentStreakService;
     @InjectMocks private ActivitySessionService service;
 
     private record Fixture(ActivitySession session, ActivitySessionQuestion first,
                            ActivitySessionQuestion second) {}
 
     private Fixture fixture(int totalQuestions, int lives) {
+        return fixture(ActivityMode.TRY_HARD, totalQuestions, lives);
+    }
+
+    private Fixture fixture(ActivityMode mode, int totalQuestions, Integer lives) {
         User student = mock(User.class);
         when(student.getId()).thenReturn(STUDENT_ID);
         Grade grade = mock(Grade.class);
@@ -85,8 +104,9 @@ class ActivitySessionTimeoutTest {
         when(classMemberRepository.findActiveMembershipByUserId(STUDENT_ID))
                 .thenReturn(Optional.of(member));
 
-        ActivitySession session = new ActivitySession(student, activity, ActivityMode.TRY_HARD,
-                SelectionStrategy.RANDOM, totalQuestions, lives, 30);
+        ActivitySession session = new ActivitySession(student, activity, mode,
+                SelectionStrategy.RANDOM, totalQuestions, lives,
+                mode == ActivityMode.TRY_HARD ? 30 : null);
         session.setId(SESSION_ID);
         ActivityQuestionSnapshot snapshot = new ActivityQuestionSnapshot(
                 2, 1L, QuestionType.SINGLE_CHOICE, Difficulty.EASY,
@@ -107,6 +127,27 @@ class ActivitySessionTimeoutTest {
                 .thenReturn(Optional.of(first));
         when(sessionRepository.findByIdForUpdate(SESSION_ID)).thenReturn(Optional.of(session));
         return new Fixture(session, first, second);
+    }
+
+    @Test
+    void guidedLearningCanWorkOnAnyActivityQuestionWhileStepOrderRemainsInternal() {
+        Fixture fixture = fixture(ActivityMode.LEARNING, 2, null);
+        JsonNode answer = mock(JsonNode.class);
+        String requestId = UUID.randomUUID().toString();
+        GuidedRuntimeService.StepResult stepResult = new GuidedRuntimeService.StepResult(
+                true, 1, false, true, GuidedQuestionStage.FINAL_PENDING);
+        when(guidedRuntimeService.isGuided(fixture.second())).thenReturn(true);
+        when(guidedRuntimeService.answer(fixture.second(), "step-1", requestId, answer))
+                .thenReturn(stepResult);
+
+        var response = service.answerGuidedStep(
+                SESSION_ID, fixture.second().getId(), "step-1", STUDENT_ID,
+                new GuidedStepAnswerRequest(requestId, answer));
+
+        assertTrue(response.correct());
+        assertEquals(GuidedQuestionStage.FINAL_PENDING, response.stage());
+        verify(guidedRuntimeService).answer(fixture.second(), "step-1", requestId, answer);
+        verify(guidedRuntimeService).publicView(fixture.second());
     }
 
     @Test
@@ -166,7 +207,7 @@ class ActivitySessionTimeoutTest {
         f.first().setDeadlineAt(LocalDateTime.now().plusSeconds(30));
 
         assertThrows(AppException.class,
-                () -> service.answer(SESSION_ID, 102L, STUDENT_ID, new ActivitySessionAnswerRequest(null)));
+                () -> service.answer(SESSION_ID, 102L, STUDENT_ID, new ActivitySessionAnswerRequest(null, null)));
         assertThrows(AppException.class,
                 () -> service.timeout(SESSION_ID, 102L, STUDENT_ID));
         assertFalse(f.second().isResolved());
@@ -179,7 +220,7 @@ class ActivitySessionTimeoutTest {
         f.first().setServedAt(LocalDateTime.now().minusMinutes(1));
         f.first().setDeadlineAt(LocalDateTime.now().minusSeconds(8));
 
-        var state = service.answer(SESSION_ID, 101L, STUDENT_ID, new ActivitySessionAnswerRequest(null));
+        var state = service.answer(SESSION_ID, 101L, STUDENT_ID, new ActivitySessionAnswerRequest(null, null));
 
         assertFalse(state.correct());
         assertEquals(ActivitySessionStatus.COMPLETED, state.session().status());
@@ -194,11 +235,44 @@ class ActivitySessionTimeoutTest {
         f.first().setServedAt(LocalDateTime.now());
         f.first().setDeadlineAt(LocalDateTime.now().plusSeconds(30));
 
-        service.answer(SESSION_ID, 101L, STUDENT_ID, new ActivitySessionAnswerRequest(null));
+        service.answer(SESSION_ID, 101L, STUDENT_ID, new ActivitySessionAnswerRequest(null, null));
 
         assertEquals(ActivityQuestionResolution.WRONG, f.first().getResolutionReason());
         assertEquals(ActivitySessionStatus.GAME_OVER, f.session().getStatus());
         assertEquals(0, f.session().getLives());
+    }
+
+    @Test
+    void classicFinalAnswerReplayIsIdempotentAfterSessionBecomesTerminal() {
+        Fixture fixture = fixture(1, 1);
+        fixture.first().setServedAt(LocalDateTime.now());
+        fixture.first().setDeadlineAt(LocalDateTime.now().plusSeconds(30));
+        String requestId = UUID.randomUUID().toString();
+        AtomicReference<ActivitySessionFinalAnswerAttempt> stored = new AtomicReference<>();
+        when(finalAnswerAttemptRepository.findBySessionQuestionIdAndRequestId(
+                101L, UUID.fromString(requestId)))
+                .thenAnswer(invocation -> Optional.ofNullable(stored.get()));
+        when(finalAnswerAttemptRepository.save(any(ActivitySessionFinalAnswerAttempt.class)))
+                .thenAnswer(invocation -> {
+                    ActivitySessionFinalAnswerAttempt attempt = invocation.getArgument(0);
+                    stored.set(attempt);
+                    return attempt;
+                });
+
+        var first = service.answer(
+                SESSION_ID, 101L, STUDENT_ID,
+                new ActivitySessionAnswerRequest(requestId, null));
+        var replay = service.answer(
+                SESSION_ID, 101L, STUDENT_ID,
+                new ActivitySessionAnswerRequest(requestId, null));
+
+        assertFalse(first.correct());
+        assertEquals(first.correct(), replay.correct());
+        assertEquals(first.answerRevealed(), replay.answerRevealed());
+        assertEquals(1, fixture.first().getAnswerAttempts());
+        assertEquals(ActivitySessionStatus.GAME_OVER, fixture.session().getStatus());
+        verify(finalAnswerAttemptRepository, times(1))
+                .save(any(ActivitySessionFinalAnswerAttempt.class));
     }
 
     @Test
@@ -236,7 +310,7 @@ class ActivitySessionTimeoutTest {
         when(snapshotAssembler.read(item)).thenReturn(snapshot);
 
         var first = service.answer(
-                SESSION_ID, 101L, STUDENT_ID, new ActivitySessionAnswerRequest(null));
+                SESSION_ID, 101L, STUDENT_ID, new ActivitySessionAnswerRequest(null, null));
 
         assertTrue(first.retryAvailable());
         assertFalse(item.isResolved());
@@ -248,7 +322,7 @@ class ActivitySessionTimeoutTest {
         JsonNode correctAnswer = mock(JsonNode.class);
         when(correctAnswer.asText()).thenReturn("A");
         service.answer(
-                SESSION_ID, 101L, STUDENT_ID, new ActivitySessionAnswerRequest(correctAnswer));
+                SESSION_ID, 101L, STUDENT_ID, new ActivitySessionAnswerRequest(null, correctAnswer));
 
         assertTrue(item.isResolved());
         assertEquals(ActivityQuestionResolution.CORRECT, item.getResolutionReason());
@@ -319,7 +393,10 @@ class ActivitySessionTimeoutTest {
                 STUDENT_ID, List.of(ActivitySessionStatus.IN_PROGRESS));
         order.verify(activityXpAuditService).captureStartSnapshot(STUDENT_ID, List.of(questionSnapshot));
         order.verify(activityXpAuditService).applyStartSnapshot(any(ActivitySession.class), eq(policy));
-        order.verify(sessionRepository).save(any(ActivitySession.class));
+        ArgumentCaptor<ActivitySession> savedSession = ArgumentCaptor.forClass(ActivitySession.class);
+        order.verify(sessionRepository).save(savedSession.capture());
+        assertEquals(QuestionDeliveryType.CLASSIC,
+                savedSession.getValue().getQuestions().getFirst().getDeliveryType());
         assertEquals(ActivitySessionStatus.ABANDONED, oldSession.getStatus());
     }
 }

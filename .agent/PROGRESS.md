@@ -1,6 +1,6 @@
 # Project Progress
 
-## 2026-11-14 Guided Reasoning v1 — M3 runtime (in progress)
+## 2026-11-15 Guided Reasoning v1 — M3 runtime refactor implemented
 
 Screen Brief
 User: Student
@@ -9,24 +9,47 @@ Page type: Student flow
 Primary action: Submit current Step answer
 States covered: loading, answer validation, hint, retry, final gate, terminal result.
 
-- Added M3 session persistence/source: immutable Guided snapshot per session
-  question, current-step state, and idempotent persisted Step attempts.
+- V62 adds and backfills the frozen per-question `deliveryType`, separates
+  Guided snapshot/stage/index into `ActivitySessionGuidedProgress`, moves Step
+  Hint usage to its own table, expands persisted Step outcomes, and adds
+  immutable Final attempts for new Classic and Guided submissions.
+- Backend runtime dispatch now uses `deliveryType`, never nullable Guided
+  columns. Guided request replay is checked before current-Step validation;
+  Final replay is safe even after the original request made a Session terminal.
 - Guided Activities now enter their own staged session projection rather than the
   Classic flow. Before `FINAL_PENDING`, API responses exclude Final content and
-  correct Step values; Step submit/hint endpoints are server-gated to the active
-  Question and Step.
-- `PracticeRunner` remains the only Student session owner (start/resume, result,
-  navigation and mutations). Guided is rendered as the focused
-  `activities/runtime/GuidedStage`, not as a second runner or visual shell.
+  correct Step values. Learning-mode navigation may select any Activity
+  Question; Step submit/hint endpoints still enforce the current Step within
+  that selected Question.
+- `PracticeRunner` remains the only Student session owner. Classic and Guided
+  share `QuestionStageView`; request-id and question-cursor behavior are split
+  into focused hooks. Guided retry now reopens input, Continue is UI-only, and a
+  resolved Guided Final advances to the next unresolved question.
+- Runtime maintainability refactor completed: `practice-runner.tsx` is now a
+  15-line composition root; controller, keyboard, timeout, shell,
+  workspace/header/footer/dialogs and shared question-stage primitives live in
+  focused folders. `QuestionMedia` is an explicit renderer boundary but stays
+  empty until the server snapshot defines a media contract.
+- Guided and Classic now share the same desktop Question navigator and mobile
+  navigator sheet. Switching Questions preserves per-question drafts/progress,
+  clears transient Guided feedback, and does not confuse Activity Question
+  navigation with Guided Step progression. Removed undefined `practice-*` and
+  `student-media` CSS classes in favor of approved semantic tokens/recipes.
 - Added the disposable `server/src/test/resources/db/seed/guided-runtime/`
   fixture: one Guided Learning Activity with READY definitions covering Single
   Choice, True/False, Type Answer, Hint and Retry states for real UI/API QA.
-- V61 corrects the runtime persistence discriminator: a Classic
+- V61 remains unchanged and corrects the legacy persistence shape: a Classic
   `ActivitySessionQuestion` has every Guided runtime column `NULL`; a Guided
   question has an immutable snapshot and complete Guided state. The database
   check constraint prevents either partial shape from being persisted.
-- This slice remains in progress: Java/Node tooling is unavailable here, so
-  migration, tests, lint/build and browser verification are still required.
+- Focused validation for the navigation follow-up passes: 10/10 tests in
+  `ActivitySessionTimeoutTest`, including non-first Guided Question access, and
+  3/3 frontend question-cursor tests; ESLint passes for the Student Activity
+  runtime and navigator. Full TypeScript validation is currently blocked by
+  pre-existing nullable Guided draft errors in Teacher `question-editor.tsx`;
+  browser verification remains pending.
+- M4 review endpoints/UI remain the next phase. V62 persists the data M4 needs;
+  historical raw Final answers cannot be reconstructed.
 
 ## 2026-11-14 Unified Bulk Guided Composer
 

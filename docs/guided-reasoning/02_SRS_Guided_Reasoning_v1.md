@@ -1,5 +1,17 @@
 # 02 — SRS: Guided Reasoning v1
 
+## Implementation update — 2026-11-15
+
+M3 runtime is implemented as a source slice under ADR 0036. Activity.practiceType
+remains Teacher configuration; ActivitySessionQuestion.deliveryType is frozen at
+Session start. V62 separates GuidedProgress and Step Hint usage, expands Step
+attempt outcomes, and persists new Classic/Guided Final submissions for
+idempotency and future review. Classic and Guided use one Student runner and a
+shared question-stage renderer. Focused backend tests and affected-file ESLint
+pass. Full TypeScript validation is blocked by existing Teacher editor nullable
+draft errors. M4 Student/Teacher review endpoints and UI are not part of this
+slice and remain next.
+
 **Software Requirements Specification — E-Learning**  
 **Phiên bản:** 1.1 — cập nhật theo thay đổi nghiệp vụ ngày 14/11/2026  
 **Trạng thái:** M1 authoring và M2 Activity configuration/eligibility đã triển
@@ -116,6 +128,8 @@ Mở rộng Question hiện hành bằng một Guided Definition tùy chọn. Te
 | SRS-GR-011 | Student và Teacher review chi tiết theo quyền, chỉ reveal đáp án khi cho phép |
 | SRS-GR-012 | Không làm thay đổi Classic/Assignment/legacy XP-streak/old Session |
 | SRS-GR-013 | Preview Teacher đúng luồng Guided Steps trước, Final sau, có test nội dung/gợi ý |
+
+| SRS-GR-014 | Trong Learning, Student được điều hướng tự do giữa các Activity Question; thứ tự Guided Step chỉ ràng buộc bên trong từng Session Question |
 
 ## 7. Kiến trúc mức cao
 

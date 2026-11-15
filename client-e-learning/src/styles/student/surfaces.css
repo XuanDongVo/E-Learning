@@ -8,23 +8,7 @@
   background-size: 12px 12px, 24px 24px;
 }
 
-/* 2. TYPOGRAPHY TIỆN ÍCH */
-:is(.student-theme, body:has(.student-theme)) .student-handwriting {
-  font-family: var(--student-font-hand);
-  font-weight: 700;
-  letter-spacing: 0.015em;
-  line-height: 1.15;
-}
-
-:is(.student-theme, body:has(.student-theme)) .student-note {
-  font-family: var(--student-font-note);
-  line-height: 1.25;
-}
-
-:is(.student-theme, body:has(.student-theme)) .student-typewriter {
-  font-family: var(--student-font-mono);
-  letter-spacing: 0.04em;
-}
+/* Typography utilities are defined only in student/typography.css. */
 
 /* 3. THẺ GIẤY CẮT DÁN (Hand-Drawn Paper Cards) */
 :is(.student-theme, body:has(.student-theme)) .student-paper {
@@ -257,7 +241,7 @@
   background: var(--student-paper);
   color: var(--student-ink);
   font-family: var(--student-font-body);
-  font-size: 0.875rem;
+  font-size: var(--app-font-body-size);
   font-weight: 700;
 }
 

@@ -5,6 +5,7 @@ import e_learning.server.question.engine.types.choice.MultipleChoiceHandler;
 import e_learning.server.question.engine.types.choice.SingleChoiceHandler;
 import e_learning.server.question.engine.types.compound.ClozeHandler;
 import e_learning.server.question.engine.types.compound.MatchingHandler;
+import e_learning.server.question.engine.types.ordering.OrderingHandler;
 import e_learning.server.question.engine.types.text.FillInBlankHandler;
 import e_learning.server.question.engine.types.text.TypeAnswerHandler;
 import e_learning.server.question.engine.types.truefalse.TrueFalseHandler;
@@ -28,7 +29,8 @@ public final class QuestionTypeHandlerRegistry {
 
     public QuestionTypeHandlerRegistry() {
         this(List.of(new SingleChoiceHandler(), new MultipleChoiceHandler(), new TrueFalseHandler(),
-                new FillInBlankHandler(), new TypeAnswerHandler(), new MatchingHandler(), new ClozeHandler()));
+                new FillInBlankHandler(), new TypeAnswerHandler(), new MatchingHandler(), new ClozeHandler(),
+                new OrderingHandler()));
     }
 
     public QuestionTypeHandler get(QuestionType type) {

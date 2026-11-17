@@ -249,6 +249,7 @@ public class AssessmentAttemptGradingService {
                         || Boolean.TRUE.equals(studentSpec.get("caseSensitive"));
                 yield new ClozeSpec(common, segments, blanks, caseSensitive);
             }
+            case ORDERING -> throw new AppException(ErrorCode.ORDERING_NOT_SUPPORTED_IN_ASSIGNMENT);
         };
     }
 
@@ -258,6 +259,7 @@ public class AssessmentAttemptGradingService {
             case MULTIPLE_CHOICE -> new RawAnswer(payload.get("selectedKeys"));
             case TRUE_FALSE, FILL_IN_BLANK, TYPE_ANSWER -> new RawAnswer(payload.get("value"));
             case CLOZE -> new RawAnswer(payload.get("values"));
+            case ORDERING -> throw new AppException(ErrorCode.ORDERING_NOT_SUPPORTED_IN_ASSIGNMENT);
         };
     }
 

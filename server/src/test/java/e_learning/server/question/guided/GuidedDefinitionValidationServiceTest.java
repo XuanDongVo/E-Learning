@@ -62,6 +62,24 @@ class GuidedDefinitionValidationServiceTest {
                         && issue.code().equals("required_when_hint_enabled")));
     }
 
+    @Test
+    void orderingIsSupportedAsFinalButNotAsStep() {
+        GuidedDefinitionPayload validSteps = new GuidedDefinitionPayload(null, List.of(
+                new GuidedStepPayload("step-a", 0, QuestionType.TRUE_FALSE, "True or false?", List.of(),
+                        null, Boolean.TRUE, List.of(), MatchingMode.CASE_INSENSITIVE_TRIM,
+                        null, false, null, false)
+        ));
+        assertTrue(service.validateReady(question(QuestionType.ORDERING, true), validSteps).isEmpty());
+
+        GuidedDefinitionPayload orderingStep = new GuidedDefinitionPayload(null, List.of(
+                new GuidedStepPayload("step-a", 0, QuestionType.ORDERING, "Order these", List.of(),
+                        null, null, List.of(), MatchingMode.CASE_INSENSITIVE_TRIM,
+                        null, false, null, false)
+        ));
+        assertTrue(service.validateDraftShape(orderingStep).stream()
+                .anyMatch(issue -> issue.path().equals("steps[0].type") && issue.code().equals("unsupported")));
+    }
+
     private Question question(QuestionType type, boolean complete) {
         return Question.builder().type(type).difficulty(Difficulty.EASY).content("Final question")
                 .complete(complete).contentRevision(4L).build();

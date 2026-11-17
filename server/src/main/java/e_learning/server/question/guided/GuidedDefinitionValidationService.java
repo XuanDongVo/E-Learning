@@ -22,7 +22,7 @@ public class GuidedDefinitionValidationService {
             QuestionType.SINGLE_CHOICE, QuestionType.TRUE_FALSE, QuestionType.TYPE_ANSWER);
     private static final Set<QuestionType> SUPPORTED_FINAL_TYPES = EnumSet.of(
             QuestionType.SINGLE_CHOICE, QuestionType.MULTIPLE_CHOICE, QuestionType.TRUE_FALSE,
-            QuestionType.FILL_IN_BLANK, QuestionType.TYPE_ANSWER);
+            QuestionType.FILL_IN_BLANK, QuestionType.TYPE_ANSWER, QuestionType.ORDERING);
 
     private final QuestionEngine questionEngine;
 

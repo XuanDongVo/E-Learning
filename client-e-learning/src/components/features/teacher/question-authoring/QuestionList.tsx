@@ -206,7 +206,13 @@ function QuestionListItem({
                   ? "True / False"
                   : question.type === "FILL_IN_BLANK"
                     ? "Fill in blank"
-                    : "Type answer"}
+                    : question.type === "TYPE_ANSWER"
+                      ? "Type answer"
+                      : question.type === "ORDERING"
+                        ? `Ordering ${question.orderingDefinition?.subtype ?? ""} · ${question.orderingDefinition?.items.length ?? 0} items`
+                        : question.type === "MATCHING"
+                          ? "Matching"
+                          : "Cloze"}
           </span>
 
           {!complete && (

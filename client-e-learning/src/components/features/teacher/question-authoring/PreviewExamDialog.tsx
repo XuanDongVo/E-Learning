@@ -19,6 +19,8 @@ import {
 } from "lucide-react";
 import type { DraftQuestion, QuestionType } from "@/types/question";
 import type { GuidedStep } from "@/types/guided-reasoning";
+import { OrderingPreviewControls } from "./ordering/OrderingPreviewControls";
+import { gradeOrderingDraft } from "./ordering/ordering-validation";
 
 type Phase =
   | { kind: "step"; step: GuidedStep; index: number }
@@ -256,7 +258,9 @@ export function StudentExperienceView({
   const canSubmit =
     supported &&
     feedback === null &&
-    value.length > 0 &&
+    (type === "ORDERING"
+      ? value.length === question.orderingDefinition?.items.length
+      : value.length > 0) &&
     value.every((item) => Boolean(item.trim()));
 
   const resetForNextPhase = () => {
@@ -357,6 +361,8 @@ export function StudentExperienceView({
               ? "Chọn Đúng hoặc Sai."
               : type === "TYPE_ANSWER" || type === "FILL_IN_BLANK"
                 ? "Nhập câu trả lời của bạn."
+                : type === "ORDERING"
+                  ? "Chọn đủ các mảnh, sau đó dùng nút lên/xuống để điều chỉnh thứ tự."
                 : "Chọn một đáp án đúng."}
         </p>
       </div>
@@ -367,6 +373,7 @@ export function StudentExperienceView({
       <AnswerControls
         type={type}
         options={options}
+        orderingDefinition={question.orderingDefinition}
         value={value}
         disabled={feedback !== null || !supported}
         onChange={setValue}
@@ -471,17 +478,30 @@ type Option = { id: string; text: string };
 function AnswerControls({
   type,
   options,
+  orderingDefinition,
   value,
   disabled,
   onChange,
 }: {
   type: QuestionType | GuidedStep["type"];
   options: Option[];
+  orderingDefinition?: DraftQuestion["orderingDefinition"];
   value: string[];
   disabled: boolean;
   onChange: (value: string[]) => void;
 }) {
   if (type === "MATCHING" || type === "CLOZE") return null;
+
+  if (type === "ORDERING") {
+    return orderingDefinition ? (
+      <OrderingPreviewControls
+        definition={orderingDefinition}
+        value={value}
+        disabled={disabled}
+        onChange={onChange}
+      />
+    ) : null;
+  }
 
   if (type === "TYPE_ANSWER" || type === "FILL_IN_BLANK") {
     return (
@@ -643,6 +663,9 @@ function gradeQuestion(question: DraftQuestion, value: string[]) {
       value.every((item) => question.correctOptionIds.includes(item))
     );
   if (question.type === "TRUE_FALSE") return value[0] === question.trueFalseAnswer;
+  if (question.type === "ORDERING" && question.orderingDefinition) {
+    return gradeOrderingDraft(question.orderingDefinition, value);
+  }
   return compare(value[0], question.acceptedAnswers, "CASE_INSENSITIVE_TRIM");
 }
 

@@ -12,8 +12,6 @@ import { guidedDefinitionService } from "@/services/content/guided-definition.se
 import { QUERY_KEYS } from "@/services/query-keys";
 import type {
   ContentView,
-  QuestionMediaDraft,
-  QuestionOptionDraft,
   QuestionResponse,
 } from "@/types/content";
 import type {
@@ -23,6 +21,8 @@ import type {
 } from "@/types/guided-reasoning";
 import { GuidedDraftEditor } from "@/components/features/teacher/question-authoring/GuidedDraftEditor";
 import { PreviewExamDialog } from "@/components/features/teacher/question-authoring/PreviewExamDialog";
+import { draftQuestionToWriteRequest } from "@/components/features/teacher/question-authoring/question-payload.mapper";
+import { questionResponseToDraft } from "@/components/features/teacher/question-authoring/question-response.mapper";
 
 import {
   QuestionForm,
@@ -31,44 +31,6 @@ import {
 } from "./components/question-form";
 
 type EditorTab = "question" | "guided";
-
-function toDraft(question: QuestionResponse) {
-  const options: QuestionOptionDraft[] = question.options?.length
-    ? question.options.map((option, index) => ({
-        id: String.fromCharCode(65 + index),
-        text: option.content,
-      }))
-    : ["A", "B", "C", "D"].map((id) => ({ id, text: "" }));
-
-  const correctOptionIds = question.options?.length
-    ? question.options.flatMap((option, index) =>
-        option.isCorrect ? [String.fromCharCode(65 + index)] : [],
-      )
-    : ["A"];
-
-  const media: QuestionMediaDraft[] = question.media?.map((item) => ({
-    id: String(item.mediaId || item.id),
-    name: `Media #${item.mediaId || item.id}`,
-    kind: item.mediaType?.toLowerCase().includes("audio") ? "audio" : "image",
-  })) ?? [];
-
-  return makeDraftQuestion({
-    draftId: String(question.id),
-    type: question.type,
-    difficulty: question.difficulty,
-    text: question.content,
-    options,
-    correctOptionIds,
-    trueFalseAnswer:
-      question.answers?.[0]?.rawValue === "FALSE" ? "FALSE" : "TRUE",
-    acceptedAnswers: question.answers?.length
-      ? question.answers.map((answer) => answer.rawValue)
-      : [""],
-    media,
-    explanation: question.explanation ?? "",
-    hint: question.hint ?? "",
-  });
-}
 
 export function QuestionEditor({
   questionId,
@@ -114,7 +76,7 @@ function QuestionEditorWorkspace({
 }) {
   const tErrors = useTranslations("errors");
   const queryClient = useQueryClient();
-  const [draft, setDraft] = useState(() => toDraft(question));
+  const [draft, setDraft] = useState(() => questionResponseToDraft(question));
   const [tab, setTab] = useState<EditorTab>("question");
   const [previewOpen, setPreviewOpen] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -128,27 +90,10 @@ function QuestionEditorWorkspace({
 
     setSaving(true);
     try {
-      await contentService.updateQuestion(question.id, {
-        type: draft.type,
-        difficulty: draft.difficulty,
-        content: draft.text.trim(),
-        explanation: draft.explanation.trim() || undefined,
-        hint: draft.hint?.trim() || undefined,
-        options:
-          draft.type === "SINGLE_CHOICE" || draft.type === "MULTIPLE_CHOICE"
-            ? draft.options.map((option) => ({
-                content: option.text.trim(),
-                isCorrect: draft.correctOptionIds.includes(option.id),
-              }))
-            : undefined,
-        answers:
-          draft.type === "TRUE_FALSE"
-            ? [{ rawValue: draft.trueFalseAnswer }]
-            : draft.type === "FILL_IN_BLANK" || draft.type === "TYPE_ANSWER"
-              ? draft.acceptedAnswers.map((answer) => ({ rawValue: answer.trim() }))
-              : undefined,
-        mediaIds: draft.media.map((item) => Number(item.id)).filter(Number.isFinite),
-      });
+      await contentService.updateQuestion(
+        question.id,
+        draftQuestionToWriteRequest(draft),
+      );
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: QUERY_KEYS.contentQuestion(question.id) }),
         queryClient.invalidateQueries({ queryKey: ["content", "questions"] }),
@@ -267,7 +212,7 @@ function PersistedGuidedTab({ questionId, finalQuestionType }: {
       key={definitionQuery.data?.version ?? "new"}
       questionId={questionId}
       finalQuestionType={finalQuestionType}
-      initial={definitionQuery.data}
+      initial={definitionQuery.data ?? undefined}
     />
   );
 }
@@ -287,13 +232,15 @@ function PersistedGuidedForm({ questionId, finalQuestionType, initial }: {
   const [validating, setValidating] = useState(false);
   const [issues, setIssues] = useState<GuidedDefinitionIssue[]>([]);
   const enabled = draft?.enabled ?? false;
-  const dirty = Boolean(draft) && JSON.stringify({
-    introContent: draft.introContent,
-    steps: draft.steps,
-  }) !== JSON.stringify(initial && {
-    introContent: initial.introContent ?? "",
-    steps: initial.steps,
-  });
+  const dirty = draft
+    ? JSON.stringify({
+        introContent: draft.introContent,
+        steps: draft.steps,
+      }) !== JSON.stringify(initial && {
+        introContent: initial.introContent ?? "",
+        steps: initial.steps,
+      })
+    : false;
 
   const refresh = () => queryClient.invalidateQueries({ queryKey: QUERY_KEYS.guidedDefinition(questionId) });
 

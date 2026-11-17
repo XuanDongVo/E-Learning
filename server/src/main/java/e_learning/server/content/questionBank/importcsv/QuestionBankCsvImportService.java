@@ -142,9 +142,9 @@ public class QuestionBankCsvImportService {
         QuestionType type = null;
         try {
             type = QuestionType.valueOf(typeText);
-            if (type == QuestionType.MATCHING || type == QuestionType.CLOZE) {
+            if (type == QuestionType.MATCHING || type == QuestionType.CLOZE || type == QuestionType.ORDERING) {
                 errors.add(error(row, "type", "UNSUPPORTED_QUESTION_TYPE",
-                        "MATCHING and CLOZE are not supported in Question Bank CSV", typeText));
+                        "MATCHING, CLOZE, and ORDERING are not supported in Question Bank CSV", typeText));
                 return null;
             }
         } catch (IllegalArgumentException ex) {

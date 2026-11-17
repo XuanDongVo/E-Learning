@@ -14,7 +14,7 @@ import {
 import { contentService } from "@/services/content.service";
 import { questionService } from "@/services/content/content.question.service";
 import type { ContentView } from "@/types/content";
-import type { DraftQuestion } from "@/types/question";
+import { draftQuestionToCreateRequest } from "@/components/features/teacher/question-authoring/question-payload.mapper";
 
 type EditorState =
   | { kind: "loading" }
@@ -182,24 +182,7 @@ export function BulkQuestionCreator({
               }
             : undefined,
           question: {
-          questionBankId: bankId,
-          type: question.type,
-          difficulty: question.difficulty,
-          content: question.text.trim(),
-          explanation: question.explanation?.trim() || undefined,
-          hint: question.hint?.trim() || undefined,
-          options: question.type === "SINGLE_CHOICE" || question.type === "MULTIPLE_CHOICE"
-            ? question.options.map((option) => ({
-                content: option.text.trim(),
-                isCorrect: question.correctOptionIds.includes(option.id),
-              }))
-            : undefined,
-          answers: question.type === "TRUE_FALSE"
-            ? [{ rawValue: question.trueFalseAnswer }]
-            : question.type === "FILL_IN_BLANK" || question.type === "TYPE_ANSWER"
-              ? question.acceptedAnswers.map((answer) => ({ rawValue: answer.trim() }))
-              : undefined,
-          mediaIds: question.media.map((media) => Number(media.id)).filter((id) => !Number.isNaN(id)),
+            ...draftQuestionToCreateRequest(question, bankId),
           },
         }));
         await questionService.createWithGuided(payload);

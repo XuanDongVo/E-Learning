@@ -2,7 +2,7 @@
 
 **Software Requirements Specification — E-Learning**  
 **Phiên bản:** 1.1 — Product Owner đã duyệt phương án PROPOSED, 16/11/2026  
-**Trạng thái:** **BUSINESS REQUIREMENTS APPROVED / UI PROTOTYPE REVIEW** — chưa triển khai ứng dụng hoặc tạo migration; SRS được lưu trong nhánh chuẩn bị triển khai  
+**Trạng thái:** **BUSINESS REQUIREMENTS APPROVED / M1 IMPLEMENTED** — nền tảng authoring đã triển khai; Activity runtime thuộc M2/M3
 **Repository:** `XuanDongVo/E-Learning`  
 **Nguồn đối chiếu:** `feature/guided-reasoning-v1` tại commit `88f8f87878661aa575c2f9dee4e66e7f62cd3810`  
 **Tài liệu tham khảo cấu trúc:** `docs/guided-reasoning/02_SRS_Guided_Reasoning_v1.md`
@@ -13,6 +13,10 @@
 > **EXISTING** — quan sát từ code được kiểm tra trên branch nêu trên.  
 > **OUT OF SCOPE** — loại trừ khỏi Ordering v1.  
 > Mọi JSON/API/UI trong tài liệu là **thiết kế đề xuất**, không phải contract đang tồn tại.
+
+> **Implementation note — 17/11/2026:** M1 đã triển khai enum/schema/engine/persistence,
+> Teacher CRUD/preview và các scope gate. Các yêu cầu Classic/Guided Student runtime,
+> snapshot và XP vẫn chưa được mở cho đến M2/M3.
 
 ---
 
@@ -463,4 +467,4 @@ Ordering chỉ Ready để release khi:
 
 ---
 
-**Trạng thái cuối:** Quyết định nghiệp vụ đã duyệt; đang review prototype UI trước khi viết FRS. **Chưa có thay đổi repository**.
+**Trạng thái cuối:** Quyết định nghiệp vụ đã duyệt; **M1 authoring foundation đã triển khai**. M2–M4 vẫn chờ triển khai.

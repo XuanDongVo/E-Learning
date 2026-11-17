@@ -1,5 +1,30 @@
 # Project Progress
 
+## 2026-11-17 Ordering Question v1 — M1 authoring foundation implemented
+
+- Added `QuestionType.ORDERING`, Flyway V63, the schema-v1 Ordering DTO/spec,
+  subtype/item/order validation, canonicalization, persistence mapping and
+  binary grading in the Question Engine.
+- Teacher Question Bank create/edit/duplicate/quick-preview/local exam preview
+  now supports WORD, PHRASE and SENTENCE Ordering definitions. Authoring UI is
+  split into the `question-authoring/ordering/` business folder instead of one
+  large TSX component.
+- Accepted orders support alternatives and duplicate visible text safely. A
+  definition is rejected when server shuffle cannot produce any visibly
+  incorrect permutation.
+- Guided Reasoning accepts Ordering only as the Final Question. Guided Steps,
+  Activity eligibility/runtime, Assignment/Assessment and CSV import remain
+  closed. Assignment mutation, publish, snapshot, answer and grading paths
+  explicitly fail closed for Ordering.
+- Validation: focused frontend tests 6/6, TypeScript `tsc --noEmit` passed,
+  focused ESLint passed with two pre-existing bulk-import warnings. Next build
+  could not start because the installed SWC native binding/cache is unavailable.
+  Ordering Question Engine handlers/enums compile with JDK 21. Full backend tests
+  could not start because Maven needed an uncached FSRS dependency and network
+  access was not approved.
+- M2 remains the next slice: Activity eligibility, immutable snapshot/projection
+  and Student answer contract. No Student runtime or XP behavior changed in M1.
+
 ## 2026-11-15 Guided Reasoning v1 — M4 Student review implemented
 
 Screen Brief

@@ -1,7 +1,7 @@
 # Spec Status — Current Contract vs Implementation
 
-**Audit date:** 2026-11-07
-**Branch:** `feature/student-gamification`
+**Audit date:** 2026-11-17
+**Branch:** `feature/guided-reasoning-v1`
 **Canonical implementation state:** `.agent/CURRENT_STATE.md`
 
 This file is a drift register, not a historical audit. Accepted ADRs define intended product behavior; this table records whether the current branch actually implements or verifies each contract.
@@ -34,7 +34,7 @@ This file is a drift register, not a historical audit. Accepted ADRs define inte
 
 | ID | Contract | Current implementation | Status |
 |---|---|---|---|
-| Q-01 | Canonical question semantics | Question Engine contains seven types: SINGLE_CHOICE, MULTIPLE_CHOICE, TRUE_FALSE, FILL_IN_BLANK, TYPE_ANSWER, MATCHING, CLOZE | Implemented structurally |
+| Q-01 | Canonical question semantics | Question Engine contains eight types, including ORDERING schema v1 with WORD/PHRASE/SENTENCE subtypes | Implemented structurally; Ordering Activity runtime pending M2/M3 |
 | Q-02 | Type behavior centralized | Handlers/registry exist, but ActivitySessionService still contains semantic branches | Partially implemented |
 | Q-03 | Teacher/student projection separation | Teacher-oriented mappings exist; student leakage boundary requires endpoint-wide verification | Partially implemented; verification required |
 | Q-04 | Explicit option order | V31/schema and API `displayOrder` support exist | Implemented |
@@ -42,6 +42,8 @@ This file is a drift register, not a historical audit. Accepted ADRs define inte
 | Q-06 | FILL_IN_BLANK remains distinct from multi-blank CLOZE | Separate types/specs exist | Implemented structurally |
 | Q-07 | Hint round-trip across all authoring paths | Shared mapping exists, but endpoint-wide parity is not fully verified | Verification gap |
 | Q-08 | Handler/contract tests | Focused tests exist | Implemented; full integration test gate remains |
+| Q-09 | Ordering authoring and persistence | V63, Ordering handler/spec, persistence mappers and split Teacher authoring/preview components exist | M1 implemented; backend execution not verified in current environment |
+| Q-10 | Ordering scope gates | Guided Final accepts Ordering; Guided Steps, Assignment/Assessment, CSV and Activity runtime remain closed | M1 implemented; Activity enablement deferred to M2/M3 |
 
 ## Assignment Composition / Phase 7B
 
@@ -63,7 +65,7 @@ This file is a drift register, not a historical audit. Accepted ADRs define inte
 
 ## Current migration baseline
 
-The current branch contains migrations through **V42**. Older documents that say V30/V31/V32/V33 is the current baseline are historical and must not be used for migration numbering.
+The current branch contains migrations through **V63**. Older documents that name an earlier migration as the current baseline are historical and must not be used for migration numbering.
 
 ## Current UI routing contract
 

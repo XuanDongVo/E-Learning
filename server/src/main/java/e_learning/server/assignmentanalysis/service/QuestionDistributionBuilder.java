@@ -43,6 +43,7 @@ public final class QuestionDistributionBuilder {
             case TYPE_ANSWER, FILL_IN_BLANK -> buildText(snapshot, attemptsAtPosition);
             case CLOZE -> buildCloze(snapshot, attemptsAtPosition);
             case MATCHING -> buildMatching(snapshot, attemptsAtPosition);
+            case ORDERING -> QuestionAnswerDistribution.empty("ORDERING", sample);
         };
     }
 

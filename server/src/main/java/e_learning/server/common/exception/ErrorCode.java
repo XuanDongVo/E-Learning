@@ -77,6 +77,7 @@ public enum ErrorCode {
     ASSIGNMENT_LOCKED_AFTER_ATTEMPT(HttpStatus.CONFLICT, "ASSIGNMENT_LOCKED_AFTER_ATTEMPT", "This assignment can no longer be edited because a student attempt has already started. Clone the assignment to make changes."),
     ASSIGNMENT_NOT_READY(HttpStatus.CONFLICT, "ASSIGNMENT_NOT_READY", "The assignment is not ready to be published"),
     ASSIGNMENT_STATUS_TRANSITION_INVALID(HttpStatus.BAD_REQUEST, "ASSIGNMENT_STATUS_TRANSITION_INVALID", "The requested status transition is not allowed"),
+    ORDERING_NOT_SUPPORTED_IN_ASSIGNMENT(HttpStatus.BAD_REQUEST, "ORDERING_NOT_SUPPORTED_IN_ASSIGNMENT", "Ordering questions are not supported in assignments"),
 
     ACTIVITY_SESSION_NOT_FOUND(HttpStatus.NOT_FOUND, "ACTIVITY_SESSION_NOT_FOUND", "Activity session was not found"),
     ACTIVITY_SESSION_INVALID_MODE(HttpStatus.BAD_REQUEST, "ACTIVITY_SESSION_INVALID_MODE", "The selected activity mode is not available"),

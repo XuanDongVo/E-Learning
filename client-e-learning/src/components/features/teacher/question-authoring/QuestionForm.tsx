@@ -24,6 +24,8 @@ import {
   type QuestionDifficulty,
 } from "@/types/question";
 import { makeOptions } from "./question-draft";
+import { makeOrderingDefinition } from "./ordering/ordering-draft";
+import { OrderingEditor } from "./ordering/OrderingEditor";
 
 export type {
   DraftQuestion,
@@ -39,7 +41,9 @@ export type QuestionMediaUploadHandler = (
   file: File,
 ) => Promise<QuestionMediaUploadResult>;
 
-export const questionTypes = questionTypeOptions;
+export const questionTypes = questionTypeOptions.filter(
+  ({ value }) => !["CLOZE", "MATCHING"].includes(value)
+);
 export const difficultyOptions = questionDifficultyOptions;
 
 // Input & Select: Viền border-2 sắc nét, tương phản cao, TUYỆT ĐỐI không dùng shadow / focus-ring mờ
@@ -135,7 +139,9 @@ export function QuestionForm({
     if (nextType === question.type) return;
     const hasData =
       question.options.some((o) => o.text.trim()) ||
-      question.acceptedAnswers.some((a) => a.trim());
+      question.acceptedAnswers.some((a) => a.trim()) ||
+      question.orderingDefinition?.items.some((item) => item.content.trim()) ||
+      (question.orderingDefinition?.acceptedOrders.length ?? 0) > 1;
     if (hasData) {
       setPendingTypeChange(nextType);
     } else {
@@ -153,6 +159,8 @@ export function QuestionForm({
       patch.trueFalseAnswer = "TRUE";
     } else if (nextType === "FILL_IN_BLANK" || nextType === "TYPE_ANSWER") {
       patch.acceptedAnswers = [""];
+    } else if (nextType === "ORDERING") {
+      patch.orderingDefinition = makeOrderingDefinition();
     }
     onChange(patch);
     setPendingTypeChange(null);
@@ -478,6 +486,13 @@ export function QuestionForm({
             ))}
           </div>
         </div>
+      )}
+
+      {question.type === "ORDERING" && question.orderingDefinition && (
+        <OrderingEditor
+          value={question.orderingDefinition}
+          onChange={(orderingDefinition) => onChange({ orderingDefinition })}
+        />
       )}
 
       {/* Explanation */}

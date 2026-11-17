@@ -10,6 +10,7 @@ import e_learning.server.assignment.repository.AssignmentSectionRepository;
 import e_learning.server.assignment.repository.AssignmentItemRepository;
 import e_learning.server.assignment.entity.AssignmentSection;
 import e_learning.server.assignment.entity.AssignmentItem;
+import e_learning.server.assignment.policy.AssignmentQuestionTypePolicy;
 import e_learning.server.classes.entity.ClassEntity;
 import e_learning.server.classes.repository.ClassRepository;
 import e_learning.server.common.exception.AppException;
@@ -37,6 +38,7 @@ public class AssignmentService {
     private final ClassRepository classRepository;
     private final GradeRepository gradeRepository;
     private final AssignmentEditabilityService editabilityService;
+    private final AssignmentQuestionTypePolicy questionTypePolicy;
 
     @Transactional(readOnly = true)
     public List<AssignmentResponse> list(Long teacherId) {
@@ -189,6 +191,7 @@ public class AssignmentService {
             if (ownership.getQuestion() == null || !ownership.getQuestion().isComplete()) {
                 throw notReady("Question " + questionId + " is incomplete and prevents publishing.");
             }
+            questionTypePolicy.requireSupported(ownership.getQuestion().getType());
         }
 
         List<AssignmentSection> sections =

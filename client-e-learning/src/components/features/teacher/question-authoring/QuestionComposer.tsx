@@ -18,6 +18,7 @@ import { GuidedDraftEditor } from "./GuidedDraftEditor";
 import { PreviewExamDialog } from "./PreviewExamDialog";
 import { QuestionImportReport } from "@/components/features/teacher/content/components/question-import-report";
 import type { CsvValidationResult } from "@/types/question-import";
+import { cloneOrderingDefinition } from "./ordering/ordering-draft";
 
 const AUTOSAVE_DEBOUNCE_MS = 1000;
 
@@ -154,6 +155,7 @@ export function QuestionComposer({
       options: source.options.map((option) => ({ ...option })),
       acceptedAnswers: [...source.acceptedAnswers],
       media: source.media.map((media) => ({ ...media })),
+      orderingDefinition: cloneOrderingDefinition(source.orderingDefinition),
       guidedDefinition: source.guidedDefinition
         ? {
             ...source.guidedDefinition,
@@ -267,7 +269,7 @@ export function QuestionComposer({
             {onBack && <button type="button" onClick={onBack} className="inline-flex size-9 items-center justify-center rounded-lg border-2 border-ink bg-card text-foreground shadow-pop-sm hover:bg-secondary" aria-label="Back"><ArrowLeft size={16} /></button>}
             <h1 className="text-page-title font-bold text-foreground">{title}</h1>
           </div>
-          <p className="mt-1 text-xs font-semibold text-muted-foreground">{description}</p>
+          <p className="mt-1 text- font-semibold text-muted-foreground">{description}</p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5">

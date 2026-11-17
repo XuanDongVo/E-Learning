@@ -93,6 +93,6 @@ class QuestionEngineCharacterizationTest {
         QuestionSpec invalid = new FillInBlankSpec(common, List.of("answer"), MatchingMode.CASE_INSENSITIVE_TRIM);
         assertEquals(DefinitionValidation.Status.INCOMPLETE, engine.validateDefinition(incomplete).status());
         assertEquals(DefinitionValidation.Status.INVALID, engine.validateDefinition(invalid).status());
-        assertEquals(7, QuestionType.values().length);
+        assertEquals(8, QuestionType.values().length);
     }
 }

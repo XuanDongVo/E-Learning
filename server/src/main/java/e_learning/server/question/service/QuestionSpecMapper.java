@@ -3,12 +3,14 @@ package e_learning.server.question.service;
 import e_learning.server.question.dto.request.ClozeDefinitionRequest;
 import e_learning.server.question.dto.request.MatchingDefinitionRequest;
 import e_learning.server.question.dto.request.QuestionDefinitionRequest;
+import e_learning.server.question.dto.request.ordering.OrderingDefinitionRequest;
 import e_learning.server.question.engine.exception.QuestionEngineException;
 import e_learning.server.question.engine.model.QuestionSpec;
 import e_learning.server.question.engine.types.choice.MultipleChoiceSpec;
 import e_learning.server.question.engine.types.choice.SingleChoiceSpec;
 import e_learning.server.question.engine.types.compound.ClozeSpec;
 import e_learning.server.question.engine.types.compound.MatchingSpec;
+import e_learning.server.question.engine.types.ordering.OrderingSpec;
 import e_learning.server.question.engine.types.text.FillInBlankSpec;
 import e_learning.server.question.engine.types.text.MatchingMode;
 import e_learning.server.question.engine.types.text.TypeAnswerSpec;
@@ -47,7 +49,21 @@ public class QuestionSpecMapper {
             case TYPE_ANSWER -> new TypeAnswerSpec(common, answerValues(question), matchingMode(question));
             case MATCHING -> matchingSpec(common, question);
             case CLOZE -> clozeSpec(common, question);
+            case ORDERING -> orderingSpec(common, question);
         };
+    }
+
+    private OrderingSpec orderingSpec(QuestionSpec.QuestionCommon common, Question question) {
+        QuestionDefinitionRequest definition = readDefinition(question);
+        OrderingDefinitionRequest ordering = definition == null ? null : definition.getOrdering();
+        if (ordering == null) return new OrderingSpec(common, OrderingSpec.SCHEMA_VERSION, null, List.of(), List.of());
+        List<OrderingSpec.Item> items = ordering.getItems() == null ? List.of() : ordering.getItems().stream()
+                .filter(Objects::nonNull)
+                .map(item -> new OrderingSpec.Item(item.getKey(), item.getContent()))
+                .toList();
+        return new OrderingSpec(common,
+                ordering.getSchemaVersion() == null ? OrderingSpec.SCHEMA_VERSION : ordering.getSchemaVersion(),
+                ordering.getSubtype(), items, ordering.getAcceptedOrders());
     }
 
     private MatchingSpec matchingSpec(QuestionSpec.QuestionCommon common, Question question) {

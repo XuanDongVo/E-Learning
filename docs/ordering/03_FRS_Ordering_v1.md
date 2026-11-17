@@ -2,7 +2,7 @@
 
 **Functional Requirements Specification — E-Learning**  
 **Phiên bản:** 1.0 — 17/11/2026  
-**Trạng thái:** **FRS FOR IMPLEMENTATION — chưa triển khai code**  
+**Trạng thái:** **M1 IMPLEMENTED — M2/M3/M4 PENDING**
 **Repository:** `XuanDongVo/E-Learning`  
 **Baseline được đối chiếu:** `feature/guided-reasoning-v1` @ `88f8f87878661aa575c2f9dee4e66e7f62cd3810`  
 **SRS nguồn:** [02_SRS_Ordering_v1.md](02_SRS_Ordering_v1.md) — v1.1, các quyết định `DEC-ORD-01..14` đã duyệt  
@@ -10,6 +10,11 @@
 **Tham chiếu quy trình:** `docs/guided-reasoning/03_FRS_Guided_Reasoning_v1.md`
 
 > **Chú giải:** **APPROVED** = quy tắc đã chốt trong SRS; **EXISTING** = quan sát từ baseline; **FRS DESIGN** = chi tiết đề xuất để implement, chưa phải API/DB đang có. Tài liệu này **không xác nhận tính năng đã được triển khai**. Nếu FRS DESIGN thay đổi chính sách đã duyệt, SRS có quyền ưu tiên.
+
+> **Implementation note — 17/11/2026:** M1 đã hiện thực Question Engine,
+> persistence/migration, Teacher authoring/preview, Guided Final compatibility và
+> Assignment fail-closed. Activity snapshot, Student runtime, integration và rollout
+> thuộc các phase tiếp theo; các phần FRS đó vẫn là thiết kế chưa triển khai.
 
 ---
 
@@ -737,4 +742,4 @@ Không trả accepted orders trong error detail cho Student.
 
 **Chưa xây dựng:** Ordering trong Guided Steps/Assignment, Teacher Analytics, CSV import, AI grading, partial XP/score hoặc new PracticeType. Những yêu cầu này phải có change request trước khi triển khai.
 
-**Kết luận trạng thái:** FRS hoàn chỉnh ở mức thiết kế để Product Owner review. Prototype chỉ mô phỏng UI; **không có migration, API hoặc commit mới được thực hiện**.
+**Kết luận trạng thái:** FRS đã được dùng để triển khai **M1 authoring foundation**. M2–M4 chưa triển khai; chưa mở Ordering trong Activity/Student runtime.

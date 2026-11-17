@@ -70,7 +70,7 @@ class CompoundQuestionHandlerTest {
 
     @Test
     void compoundHandlersAreRegisteredAsFirstClassTypes() {
-        assertEquals(7, e_learning.server.question.enums.QuestionType.values().length);
+        assertEquals(8, e_learning.server.question.enums.QuestionType.values().length);
         assertNotNull(new MatchingHandler());
         assertNotNull(new ClozeHandler());
     }

@@ -22,6 +22,7 @@ public class QuestionAnswerFormatValidator {
             case FILL_IN_BLANK, TYPE_ANSWER -> validateTextAnswer(answerPayload);
             case CLOZE -> validateCloze(studentSpec, answerPayload);
             case MATCHING -> validateMatching(answerPayload);
+            case ORDERING -> throw new AppException(ErrorCode.ORDERING_NOT_SUPPORTED_IN_ASSIGNMENT);
             default -> throw new AppException(ErrorCode.ASSESSMENT_ATTEMPT_INVALID_ANSWER);
         }
     }

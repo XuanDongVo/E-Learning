@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import type { ColorTone } from "./theme";
 import type {
+  OrderingDraftDefinition,
   QuestionDifficulty,
   QuestionMatchingMode,
   QuestionType,
@@ -127,6 +128,7 @@ export type QuestionDefinition =
   | {
       matching: { poolId: string | null; correctEntryId: string | null };
       cloze?: never;
+      ordering?: never;
     }
   | {
       cloze: {
@@ -135,6 +137,12 @@ export type QuestionDefinition =
         blanks: { key: string; acceptedAnswers: string[] }[];
       };
       matching?: never;
+      ordering?: never;
+    }
+  | {
+      ordering: OrderingDraftDefinition;
+      matching?: never;
+      cloze?: never;
     };
 
 export interface QuestionResponse {

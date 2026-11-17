@@ -7,6 +7,7 @@ import e_learning.server.assignment.entity.AssignmentQuestionIdempotency;
 import e_learning.server.assignment.repository.AssignmentQuestionRepository;
 import e_learning.server.assignment.repository.AssignmentQuestionIdempotencyRepository;
 import e_learning.server.assignment.repository.AssignmentRepository;
+import e_learning.server.assignment.policy.AssignmentQuestionTypePolicy;
 import e_learning.server.common.exception.AppException;
 import e_learning.server.common.exception.ErrorCode;
 import e_learning.server.question.entity.Question;
@@ -35,6 +36,7 @@ public class AssignmentQuestionService {
     private final QuestionResponseMapper questionResponseMapper;
     private final ObjectMapper objectMapper;
     private final AssignmentEditabilityService editabilityService;
+    private final AssignmentQuestionTypePolicy questionTypePolicy;
 
     public List<AssignmentQuestionResponse> list(Long assignmentId) {
         findAssignment(assignmentId);
@@ -56,6 +58,7 @@ public class AssignmentQuestionService {
         if (requests == null || requests.isEmpty()) {
             throw new AppException(ErrorCode.EMPTY_QUESTION);
         }
+        requests.forEach(request -> questionTypePolicy.requireSupported(request.getType()));
         if (idempotencyKey != null && !idempotencyKey.isBlank()) {
             if (requests.size() != 1) {
                 throw new AppException(ErrorCode.INVALID_REQUEST);
@@ -88,6 +91,7 @@ public class AssignmentQuestionService {
             CreateAssignmentQuestionRequest request,
             String idempotencyKey
     ) {
+        questionTypePolicy.requireSupported(request.getType());
         String requestHash = hash(request);
         Optional<AssignmentQuestionIdempotency> existing =
                 idempotencyRepository.findByAssignmentIdAndIdempotencyKey(
@@ -152,6 +156,7 @@ public class AssignmentQuestionService {
     ) {
         Assignment assignment = findAssignment(assignmentId);
         editabilityService.ensureEditableForQuestion(assignment);
+        questionTypePolicy.requireSupported(request.getType());
         AssignmentQuestion ownership = findOwnershipOrCreate(assignment, questionId);
         Question question = questionPersistenceService.updateQuestion(questionId, request);
         ownership.setQuestion(question);

@@ -16,7 +16,7 @@ export function VocabularyRatingPanel({
   times?: Partial<Record<VocabularyFsrsRating, string>>;
 }) {
   const options = [
-    { rating: "AGAIN", label: "Học lại", time: "Trong buổi" },
+    { rating: "AGAIN", label: "Học lại", time: "1 phút" },
     { rating: "HARD", label: "Khó", time: times?.HARD ?? "Theo FSRS" },
     { rating: "GOOD", label: "Tốt", time: times?.GOOD ?? "Theo FSRS" },
     { rating: "EASY", label: "Dễ", time: times?.EASY ?? "Theo FSRS" },

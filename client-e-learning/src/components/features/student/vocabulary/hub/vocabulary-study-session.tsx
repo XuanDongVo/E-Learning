@@ -24,19 +24,35 @@ const MODES = [
   { key: "PRONUNCIATION", label: "Phát âm" },
 ] as const;
 
+type StudySessionProps = {
+  unitId: number;
+  card: StudentVocabularyStudyCard;
+  allCards: StudentVocabularyStudyCard[];
+} & (
+  | {
+      sessionMode?: "INITIAL_LEARN";
+      onRetry: () => void;
+      onRecorded: () => void;
+      onPracticeDone?: never;
+    }
+  | {
+      sessionMode: "FREE_PRACTICE";
+      onRetry?: never;
+      onRecorded?: never;
+      onPracticeDone: () => void;
+    }
+);
+
 export function VocabularyStudySession({
   unitId,
   card,
   allCards,
   onRetry,
   onRecorded,
-}: {
-  unitId: number;
-  card: StudentVocabularyStudyCard;
-  allCards: StudentVocabularyStudyCard[];
-  onRetry: () => void;
-  onRecorded: () => void;
-}) {
+  onPracticeDone,
+  sessionMode = "INITIAL_LEARN",
+}: StudySessionProps) {
+  const practiceOnly = sessionMode === "FREE_PRACTICE";
   const [mode, setMode] = useState<StudyMode>("WORD");
   const [modeReady, setModeReady] = useState(false);
   const [modeVisit, setModeVisit] = useState(0);
@@ -47,7 +63,7 @@ export function VocabularyStudySession({
   const preview = useQuery({
     queryKey: ["student", "vocabulary", "review-preview", card.wordId],
     queryFn: () => studentVocabularyReviewService.previewReview(card.wordId),
-    enabled: ratingOpen,
+    enabled: !practiceOnly && ratingOpen,
     staleTime: 0,
   });
   const dueTimes = preview.data?.data?.dueAtByRating;
@@ -62,7 +78,7 @@ export function VocabularyStudySession({
     mutationFn: (payload: RecordVocabularyReviewRequest) =>
       studentVocabularyReviewService.recordReview(card.wordId, payload),
     onSuccess: async () => {
-      onRecorded();
+      onRecorded?.();
       await Promise.all([
         queryClient.invalidateQueries({
           queryKey: vocabularyUnitCardsKey(unitId),
@@ -75,9 +91,9 @@ export function VocabularyStudySession({
   });
 
   const handleRate = (rating: VocabularyFsrsRating) => {
-    if (review.isPending || pendingAttempt) return;
+    if (practiceOnly || review.isPending || pendingAttempt) return;
     if (rating === "AGAIN") {
-      onRetry();
+      onRetry?.();
       return;
     }
     const payload = { requestId: crypto.randomUUID(), rating };
@@ -94,6 +110,11 @@ export function VocabularyStudySession({
 
   return (
     <div className="student-vocab-study space-y-4">
+      {practiceOnly && (
+        <p className="student-caption text-muted-foreground">
+          Luyện tự do: kết quả chỉ phục vụ luyện tập, không thay đổi lịch ôn FSRS của từ này.
+        </p>
+      )}
       <div
         className="student-vocab-study-modes"
         role="tablist"
@@ -155,7 +176,7 @@ export function VocabularyStudySession({
         )}
       </div>
       <div className="student-vocab-study-actions" aria-live="polite">
-        {!ratingOpen && modeReady && (
+        {modeReady && !ratingOpen && (
           <div className="student-vocab-study-action-grid">
             <button
               type="button"
@@ -165,18 +186,28 @@ export function VocabularyStudySession({
                 selectMode(MODES[(index + 1) % MODES.length].key);
               }}
             >
-              Chưa nhớ · Luyện tiếp
+              {practiceOnly ? "Luyện bước tiếp" : "Chưa nhớ · Luyện tiếp"}
             </button>
-            <button
-              type="button"
-              className="student-control student-control--action student-vocab-study-action"
-              onClick={() => setRatingOpen(true)}
-            >
-              Đã thuộc · Đánh giá
-            </button>
+            {practiceOnly ? (
+              <button
+                type="button"
+                className="student-control student-control--action student-vocab-study-action"
+                onClick={onPracticeDone}
+              >
+                Xong từ này · Chọn từ khác
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="student-control student-control--action student-vocab-study-action"
+                onClick={() => setRatingOpen(true)}
+              >
+                Đã thuộc · Đánh giá
+              </button>
+            )}
           </div>
         )}
-        {ratingOpen && (
+        {!practiceOnly && ratingOpen && (
           <>
             {preview.isPending && (
               <p
@@ -207,7 +238,7 @@ export function VocabularyStudySession({
           </>
         )}
       </div>
-      {review.isPending && (
+      {!practiceOnly && review.isPending && (
         <p
           role="status"
           className="student-body text-center text-muted-foreground"
@@ -215,7 +246,7 @@ export function VocabularyStudySession({
           Đang lưu lịch ôn...
         </p>
       )}
-      {review.isError && (
+      {!practiceOnly && review.isError && (
         <PaperSurface as="section" role="alert" className="space-y-3 p-4">
           <p className="student-body text-destructive">
             {review.error instanceof Error

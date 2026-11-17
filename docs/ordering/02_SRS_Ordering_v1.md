@@ -31,7 +31,7 @@ Không mở Ordering trong Guided Steps hoặc Assignment ở v1. Không triển
 
 ### 1.2. Giá trị học tập và phạm vi chương trình
 
-Ordering hướng tới hoạt động tiếng Anh THCS (lớp 6–9), như:
+Ordering áp dụng theo các Grade/Unit mà hệ thống đang hỗ trợ, không hardcode giới hạn cấp lớp trong Question Type hoặc Activity. Các ví dụ THCS dưới đây chỉ minh họa, không phải ràng buộc chỉ hỗ trợ lớp 6–9:
 
 | Subtype | Kỹ năng chính | Ví dụ nội dung |
 |---|---|---|
@@ -73,8 +73,10 @@ Các ví dụ chỉ mang tính biên soạn minh họa. Teacher vẫn chịu tr�
 | `DEC-ORD-10` | Teacher có thể cấu hình **nhiều accepted orders** cho một Question | **CONFIRMED — PO approved** |
 | `DEC-ORD-11` | Một Question có khoảng **3–8 item** để kiểm soát UX; thông số có thể thay đổi | **CONFIRMED — PO approved** |
 | `DEC-ORD-12` | Classic kế thừa LEARNING / TRY_HARD khi cả thời gian, retry và controls đã tương thích | **CONFIRMED — PO approved** |
-| `DEC-ORD-13` | Re-shuffle giữa các Session; **giữ nguyên thứ tự trình bày trong cùng Session, kể cả retry/reload** | **CONFIRMED — PO approved** |
+| `DEC-ORD-13` | Re-shuffle giữa các Session; **giữ nguyên thứ tự trình bày khi retry/chuyển câu trong Session còn hiệu lực**. Refresh/rời runtime tuân ADR 0012: không resume, mở lại tạo lượt mới | **CONFIRMED — PO approved** |
 | `DEC-ORD-14` | Không chấm sai khi hai item giống hệt nhau về nội dung hiển thị chỉ vì đổi ID; cần quy tắc tương đương rõ | **CONFIRMED — PO approved** |
+
+**Bổ sung 17/11/2026:** ADR 0012 quyết định Activity không resume; phản hồi reload trong DEC-ORD-13 được làm rõ như trên. Scope Grade không giới hạn cứng, Assignment guard thuộc M1 và eligibility mở theo từng phase.
 
 **Lưu ý cập nhật 16/11/2026:** Product Owner đã duyệt toàn bộ các quyết định `DEC-ORD-09` đến `DEC-ORD-14`. Chúng được xem là phạm vi v1 bắt buộc; thay đổi cần được review riêng.
 
@@ -254,7 +256,8 @@ Một Ordering Question được READY nếu: có prompt, difficulty, số item 
 - Server tạo một hoán vị ngẫu nhiên **không thuộc tập đáp án được chấp nhận, kể cả các hoán vị tương đương về nội dung hiển thị** (nếu policy duplicate-content được duyệt).
 - Shuffle theo IDs, không biến đổi text, dấu câu, khoảng trắng có ý nghĩa.
 - Lưu `presentationOrder` vào immutable Session Question snapshot hoặc payload phiên bản hóa tương đương.
-- Giữ presentation order cố định khi retry, refresh, khôi phục Session và truy xuất Review.
+- Giữ presentation order cố định khi retry hoặc chuyển câu trong Session đang hoạt động; Review đọc từ immutable snapshot lịch sử.
+- **ADR 0012:** Activity chưa hoàn thành không resume. Refresh/rời runtime kết thúc lượt cũ theo leave/abandon policy, mở Activity lại tạo Session mới (random câu và presentationOrder mới); không khôi phục draft chưa nộp.
 - Khi câu có không gian hoán vị quá nhỏ hoặc mọi hoán vị đều được chấp nhận, **không READY** thay vì vòng lặp shuffle vô hạn.
 - Không ghi một field `shuffleItems`; hành vi này là **quy tắc hệ thống**.
 
@@ -263,7 +266,7 @@ Một Ordering Question được READY nếu: có prompt, difficulty, số item 
 - Chỉ đúng toàn bộ order mới `correct = true`; không cộng XP cho từng item.
 - `QuestionEngine` có thể trả `GradeResult` với một phần grade toàn câu; Activity tiếp tục quy đổi ra correctness theo policy đã chọn.
 - Retry, hint, timeout, GAME_OVER, ABANDONED, Replay, Completion Bonus kế thừa hợp đồng hiện hành; không tạo rule Ordering riêng.
-- Mọi lần nộp dùng cơ chế idempotency `requestId` và concurrency guard hiện có; refresh không tự tạo attempt mới.
+- Mọi lần nộp dùng cơ chế idempotency `requestId` và concurrency guard hiện có; refresh/rời runtime không tự submit draft hoặc tạo attempt mới. Khi mở lại Activity, start lượt mới theo ADR 0012.
 - Partial score và các chỉ số đảo vị trí **không** tác động Activity Score/XP v1.
 
 ### 7.4. Answer reveal / bảo mật
@@ -343,7 +346,7 @@ Một Ordering Question được READY nếu: có prompt, difficulty, số item 
 | Teacher thay một item sau khi lưu | Revalidate accepted orders và READY status |
 | Shuffle trúng accepted order hoặc order tương đương khi text lặp | Resample / thuật toán chọn thứ tự không được chấp nhận |
 | Tất cả permutations đều accepted | Reject READY vì không thể trộn thành đề chưa giải |
-| Reload khi đang làm | Presentation order ổn định; không tự submit; draft recovery chỉ khi có cơ chế lưu |
+| Refresh/rời Activity đang làm | Không resume; lượt cũ không tính kết quả/XP, mở lại tạo Session mới với câu và presentationOrder được chọn/trộn lại theo ADR 0012 |
 | Retry sau lần sai | Không cấp thêm XP; giữ lịch sử attempts và thứ tự đầu của Session |
 | Guided chưa xong Steps | Không trả Final Ordering payload |
 | Guided Final đã xong | Reveal theo rule hiện hành, review chính xác thứ tự |
@@ -364,7 +367,7 @@ Một Ordering Question được READY nếu: có prompt, difficulty, số item 
 | `AC-02` | Teacher dùng nhiều accepted orders | Mọi order được khai báo đều grade đúng; order khác grade sai |
 | `AC-03` | Teacher vào Ordering Editor | **Không** có field Shuffle ở UI/API definition |
 | `AC-04` | Student bắt đầu Session | Item được trộn, không trùng bất kỳ accepted order |
-| `AC-05` | Student reload/retry | Thứ tự item ban đầu giữ nguyên cho Session đó |
+| `AC-05` | Retry/chuyển câu trong Session; refresh/rời Activity | Retry/chuyển câu giữ order khi Session còn hiệu lực; refresh/rời không resume, mở lại tạo Session mới và shuffle mới theo ADR 0012 |
 | `AC-06` | Classic Learning: sai → retry → đúng | Attempt, feedback và XP outcome đúng quy tắc cũ |
 | `AC-07` | Classic TRY_HARD: hết hạn | Timeout/lives/XP giữ hành vi cũ, không phá navigation |
 | `AC-08` | Guided Final Ordering | Guided Steps xong mới lộ Final; Final grade/retry/review thành công |
@@ -394,10 +397,10 @@ Ordering chỉ Ready để release khi:
 
 | Milestone | Nội dung | Đầu ra |
 |---|---|---|
-| **M1 — Question foundation** | Enum, typed definition, Handler, mapper, validator, DB constraint, Teacher Editor/Preview | Ordering authoring hoạt động |
-| **M2 — Classic runtime** | Eligibility, snapshot+shuffle, public DTO, Student UI, answer validation/grading, feedback | Classic Ordering hoàn chỉnh |
+| **M1 — Question foundation + compatibility guard** | Enum, typed definition, Handler, mapper, validator, DB constraint, Teacher Editor/Preview; Assignment fail-closed từ UI + backend | Ordering authoring hoạt động, Assignment không nhận ORDERING |
+| **M2 — Classic runtime** | Bật eligibility ORDERING riêng cho CLASSIC; snapshot+shuffle, public DTO, Student UI, grading/feedback; Guided vẫn chặn ORDERING cho tới M3 | Classic Ordering hoàn chỉnh; Guided không chọn Ordering sớm |
 | **M3 — Guided Final** | Final readiness, Guided UI/server gate, submit/feedback/retry, review | Ordering làm Guided Final |
-| **M4 — Compatibility & QA** | Assignment fail-closed, Student Review/History, XP/regression/mobile/a11y | Release candidate |
+| **M4 — Compatibility & QA** | Regression Assignment guard đã làm tại M1, Student Review/History, snapshot v2/v3 + XP regression, mobile/a11y | Release candidate |
 
 **Không bao gồm** Teacher Analytics mới, Assignment Ordering, Guided Ordering Steps, CSV import Ordering hoặc thuật toán đánh giá ngữ pháp tự động.
 

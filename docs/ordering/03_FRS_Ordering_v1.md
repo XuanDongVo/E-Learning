@@ -60,7 +60,7 @@ Không bổ sung `ActivityPracticeType`, không tạo XP từng item, không xâ
 | DEC-ORD-10 | Nhiều `acceptedOrders` |
 | DEC-ORD-11 | **3–8 items** cho mỗi Question trong V1 |
 | DEC-ORD-12 | Classic TRY_HARD trong phạm vi; phải test timeout UI |
-| DEC-ORD-13 | Freeze thứ tự hiển thị trong Session, cả retry/reload |
+| DEC-ORD-13 | Freeze thứ tự hiển thị trong Session còn hiệu lực (retry/chuyển câu); refresh/rời runtime không resume theo ADR 0012 |
 | DEC-ORD-14 | Hai item có text giống hệt nhau không bị chấm sai vì đổi ID vô hình |
 
 ---
@@ -70,7 +70,7 @@ Không bổ sung `ActivityPracticeType`, không tạo XP từng item, không xâ
 | Actor | Use case hợp lệ | Bảo vệ bắt buộc |
 |---|---|---|
 | Teacher sở hữu nội dung | Tạo/sửa/duplicate/preview Ordering; gắn Guided Definition; cấu hình Activity | Kiểm tra quyền Question/Bank hiện có; không bypass READY |
-| Student | Start/resume, chọn/sắp xếp/nộp, hint/retry nếu được phép, xem result/review | Session thuộc principal JWT, không truy cập Session khác; server chấm |
+| Student | Start lượt mới, chọn/sắp xếp/nộp, hint/retry trong lượt còn hiệu lực, xem result/review | Activity không resume khi rời/refresh (ADR 0012); Session thuộc principal JWT, server chấm |
 | Backend | Normalize/validate definition, chọn, shuffle, snapshot, grade, quyết toán XP | Không tin key/correctness/difficulty/accepted orders do Student gửi |
 | Assignment author/runtime | Không thể dùng Ordering | Guard cả API và UI, không chỉ ẩn lựa chọn |
 
@@ -234,7 +234,7 @@ Khi start Session, backend select Question bằng logic bank allocation hiện c
 
 - Lưu immutable snapshot của **subtype, item keys/text, acceptedOrders, canonicalization/grading version, difficulty, prompt, hint, explanation**.
 - Sinh `presentationOrder` đã trộn và lưu **cùng snapshot/session question** trước khi phục vụ Student.
-- `presentationOrder` không bị tái tạo ở GET/resume/retry/timeout; New Session/replay có thể cho order khác.
+- `presentationOrder` không bị tái tạo ở các thao tác GET/trả lời/retry/chuyển câu trong **cùng Session còn hiệu lực**; ở New Session/replay chọn/trộn lại. GET Review lịch sử đọc snapshot mà không resume.
 - Student public DTO chỉ nhận `items` theo `presentationOrder` hoặc danh sách key order đó, **không nhận** acceptedOrders/secret correctness.
 
 **Versioning:** Baseline có Question Snapshot schema v2 và XP guard strict version. FRS DESIGN khuyến nghị **schema v3 riêng cho Ordering** (hoặc extension tương đương được version hóa) và cập nhật XP eligibility để cho phép snapshot compatible v2/v3 **theo kiểm tra rõ từng version**, không dùng `schemaVersion >= 2` vô điều kiện. Không rewrite snapshots cũ.
@@ -271,12 +271,12 @@ Ví dụ **sau khi Final được phép xuất hiện**:
 
 Đây là fragment logic mới, **không phải khẳng định DTO trong repo đã có property `ordering`**. Không gửi `acceptedOrders`, không gửi `correct` trên từng item. Khi Guided đang STEP_ACTIVE/STEP_RETRY, không gửi **Final prompt, Ordering items, hint hoặc explanation** ở bất kỳ field lồng nào.
 
-### FRS-ORD-033 — Resume/refresh
+### FRS-ORD-033 — Refresh/leave: no resume (ADR 0012)
 
-- GET Session luôn trả cùng `presentationOrder` khi Question được phép xem.
-- Draft chưa submit có thể được phục hồi client-side như cải tiến UI; **server không mặc định lưu draft của một Answer chưa nộp**.
-- Resume server-side bảo toàn attempts, hintUsed, retryAvailable, time limits và Guided gate.
-- Không tự submit khi mount/reload. New session có independent randomization.
+- **Activity chưa hoàn thành không được resume.** Khi Student refresh/rời runtime, lượt cũ bị abandon theo leave lifecycle hiện hành; nếu mở lại Activity, start **Session mới** với lựa chọn câu và Ordering shuffle mới.
+- Không khôi phục client draft chưa nộp, attempts, hintUsed, retryAvailable hay Guided gate từ lượt cũ vào lượt mới.
+- Trong **một Session còn hiệu lực** (retry hoặc điều hướng giữa các câu trong Classic Learning), backend giữ nguyên `presentationOrder` đã snapshot. GET Review lịch sử chỉ đọc dữ liệu đã lưu, không làm Session hoạt động lại.
+- Không tự submit khi mount/unmount/refresh. ABANDONED không cấp XP/streak hoặc tính kết quả theo ADR 0012. Cần xử lý mất kết nối/unload theo lifecycle hiện có và không phát triển recovery riêng cho Ordering.
 
 ---
 
@@ -562,8 +562,10 @@ Không trả accepted orders trong error detail cho Student.
 ### AC-ORD-05 — Stable shuffle
 
 **Given** Session đã khởi tạo một Ordering Question  
-**When** Student reload, nhận retry, chuyển câu rồi quay lại  
-**Then** `presentationOrder` không đổi và không trùng accepted visible order.
+**When** Student retry hoặc chuyển câu trong cùng Session đang hoạt động  
+**Then** `presentationOrder` không đổi và không trùng accepted visible order.  
+**When** Student refresh/rời runtime rồi mở lại Activity  
+**Then** lượt cũ không resume; lượt mới được chọn và shuffle lại theo ADR 0012.
 
 ### AC-ORD-06 — Classic LEARNING
 
@@ -681,10 +683,12 @@ Không trả accepted orders trong error detail cho Student.
 
 | Phase | Scope | Exit criteria |
 |---|---|---|
-| **M1 — Definition + Teacher UI** | Enum/Handler/mapper/validator/persistence; Editor/Preview; Guided Final compatibility | Teacher tạo 3 subtype/alt orders; save/reload; registry boot |
-| **M2 — Classic runtime** | Eligibility, server shuffle/frozen snapshot, Ordering UI, binary grading, retry/hint/timeout | LEARNING & TRY_HARD pass, XP no duplicate |
+| **M1 — Definition + Teacher UI + Assignment guard** | Enum/Handler/mapper/validator/persistence; Editor/Preview; **Assignment UI filter + backend fail-closed**; chuẩn bị Guided Final authoring, chưa bật runtime | Teacher tạo 3 subtype/alt orders; registry boot; Assignment chặn ORDERING |
+| **M2 — Classic runtime** | **Chỉ bật ORDERING cho CLASSIC**; server shuffle/frozen snapshot, Ordering UI, binary grading, retry/hint/timeout; Guided eligibility vẫn loại ORDERING | LEARNING & TRY_HARD pass, XP no duplicate, Guided không được chọn trước M3 |
 | **M3 — Guided Final** | Final gate, Guided UI/submit, final feedback & review | Ordering Final only; Steps không đổi, no early leak |
-| **M4 — Compatibility & QA** | Assignment fail-closed, Student Review, mobile/keyboard, snapshot migration regression | All AC-ORD-01..15 pass |
+| **M4 — Compatibility & QA** | Regression Assignment guard M1, Student Review, mobile/keyboard, snapshot v2/v3 và XP guard regression | All AC-ORD-01..15 pass |
+
+**ADR 0012 / no-resume:** Refresh/rời Activity không được xem là phương án khôi phục Ordering Session. `presentationOrder` ổn định chỉ trong lượt đang hoạt động và cho Review lịch sử.
 
 **Go-live:** Không release nếu UI chỉ drag-drop, Guided lộ Final, shuffle có thể ra đáp án đúng sẵn, duplicate text bị chấm sai, Assignment nhận Ordering hoặc XP/session snapshot regression.
 

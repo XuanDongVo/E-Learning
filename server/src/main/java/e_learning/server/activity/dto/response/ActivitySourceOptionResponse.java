@@ -19,4 +19,8 @@ public class ActivitySourceOptionResponse {
     private long easyReadyQuestions;
     private long mediumReadyQuestions;
     private long hardReadyQuestions;
+    private long guidedReadyQuestions;
+    private long guidedEasyReadyQuestions;
+    private long guidedMediumReadyQuestions;
+    private long guidedHardReadyQuestions;
 }

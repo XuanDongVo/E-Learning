@@ -1,1 +1,74 @@
-{}
+{
+  "history": {
+    "pageTitle": "Practice history",
+    "subtitle": "Review finished sessions and open the details of each attempt.",
+    "backToUnit": "Back to unit",
+    "activityFallback": "Activity #{id}",
+    "periodLabel": "Time period",
+    "periods": {
+      "ALL": "All time",
+      "TODAY": "Today",
+      "LAST_7_DAYS": "7 days",
+      "LAST_30_DAYS": "30 days"
+    },
+    "modeLabel": "Mode",
+    "allModes": "All modes",
+    "modes": {
+      "LEARNING": "Practice",
+      "TRY_HARD": "Try hard"
+    },
+    "statusLabel": "Status",
+    "allStatuses": "All statuses",
+    "statuses": {
+      "COMPLETED": "Completed",
+      "GAME_OVER": "Out of lives",
+      "ABANDONED": "Stopped"
+    },
+    "resultCount": "{count, plural, =0 {No matching sessions} one {# matching session} other {# matching sessions}}",
+    "loading": "Loading practice history…",
+    "loadError": "Practice history could not be loaded.",
+    "retry": "Try again",
+    "emptyTitle": "No practice sessions yet",
+    "emptyDescription": "Finish a session in this activity to review it here.",
+    "filteredEmptyTitle": "No matching sessions",
+    "filteredEmptyDescription": "Change or clear the filters to see other sessions.",
+    "clearFilters": "Clear filters",
+    "session": "Session #{id}",
+    "questions": "{correct}/{total} correct",
+    "hints": "{count, plural, =0 {No hints used} one {# hint used} other {# hints used}}",
+    "xp": "+{count} XP",
+    "score": "{score}%",
+    "noScore": "No score",
+    "openReview": "Review session #{id}",
+    "previousPage": "Previous page",
+    "nextPage": "Next page",
+    "page": "Page {page}/{totalPages}",
+    "openHistory": "History"
+  },
+  "review": {
+    "pageTitle": "Practice review",
+    "loading": "Loading your answer history…",
+    "error": "Your answer history could not be loaded.",
+    "retryLoad": "Try again",
+    "backToUnit": "Back to unit",
+    "empty": "This practice session has no questions to review.",
+    "question": "Question {number}",
+    "guidedQuestion": "Guided Reasoning",
+    "classicQuestion": "Direct question",
+    "guidedSteps": "Guided steps",
+    "finalQuestion": "Main question",
+    "step": "Step {number}",
+    "attempt": "Answer {number}",
+    "usedHint": "Hint used",
+    "correctAnswer": "Correct answer",
+    "submittedOrder": "Submitted order",
+    "suggestedOrder": "Suggested order",
+    "correct": "Correct",
+    "incorrect": "Not correct",
+    "notAnswered": "Not answered",
+    "historyUnavailable": "Detailed history is not available for this older answer.",
+    "snapshotUnavailable": "The saved question content is not available for this older session.",
+    "promptHidden": "The main question was not unlocked in this session.",
+    "noStepHistory": "No guided steps were completed."
+  }
+}

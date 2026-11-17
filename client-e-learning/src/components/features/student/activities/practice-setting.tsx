@@ -8,6 +8,7 @@ import {
   Keyboard,
   Lightbulb,
   SlidersHorizontal,
+  Volume2,
   X,
 } from "lucide-react";
 import { useState } from "react";
@@ -27,16 +28,20 @@ export function PracticeSettings({
   onOpenChange,
   background,
   onBackgroundChange,
+  soundEnabled,
+  onSoundEnabledChange,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   background: string;
   onBackgroundChange: (background: string) => void;
+  soundEnabled: boolean;
+  onSoundEnabledChange: (enabled: boolean) => void;
 }) {
   const [tab, setTab] = useState("keys");
   const shortcuts = [
     { label: "Gợi ý tiếp theo", keys: ["Ctrl", "H"], hint: true },
-    { label: "Kiểm tra / nộp đáp án", keys: ["Enter"] },
+    { label: "Kiểm tra / tiếp tục / thử lại", keys: ["Enter"] },
     { label: "Chọn phương án 1–4", keys: ["1", "2", "3", "4"] },
     { label: "Chuyển câu trước / sau", keys: ["←", "→"] },
     { label: "Làm lại câu hiện tại", keys: ["Esc"] },
@@ -96,6 +101,15 @@ export function PracticeSettings({
           <div className="min-h-[315px] pt-4" role="tabpanel">
             {tab === "keys" && (
               <>
+                <label className="mb-4 flex items-center justify-between gap-3 rounded-xl border border-border bg-background p-3 text-sm font-bold">
+                  <span className="flex items-center gap-2"><Volume2 size={17} /> Âm thanh đúng / sai</span>
+                  <input
+                    type="checkbox"
+                    checked={soundEnabled}
+                    onChange={(event) => onSoundEnabledChange(event.target.checked)}
+                    className="size-5 accent-learning"
+                  />
+                </label>
                 <h3 className="text-sm font-extrabold">Phím tắt khi chơi</h3>
                 <p className="mt-1 text-[11px] text-muted-foreground">
                   Dùng trên laptop; Ctrl + H vẫn hoạt động khi đang nhập đáp án.

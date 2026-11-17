@@ -1,5 +1,11 @@
 "use client";
 
+// Preview Exam mounts an explicitly scoped .student-theme surface. These files
+// only target that scope, so Teacher/base tokens remain unchanged.
+import "@/styles/student/theme.css";
+import "@/styles/student/surfaces.css";
+import "@/styles/student/typography.css";
+
 import { Link, usePathname } from "@/i18n/navigation";
 import {
   Bell,
@@ -106,7 +112,7 @@ function TeacherSidebar({
             <p className="text-[0.95rem] font-extrabold tracking-tight">
               Class<span className="text-primary">Room</span>
             </p>
-            <p className="text-[0.625rem] font-semibold text-muted-foreground">
+            <p className="text-xs font-semibold text-muted-foreground">
               {tNav("studioTagline")}
             </p>
           </div>
@@ -123,7 +129,7 @@ function TeacherSidebar({
           className="flex-1 space-y-1.5 px-3 py-4"
           aria-label={tNav("teacherNavigation")}
         >
-          <p className="px-2 pb-1.5 text-[0.625rem] font-bold uppercase tracking-wider text-muted-foreground/80">
+          <p className="px-2 pb-1.5 text-xs font-bold uppercase tracking-wider text-muted-foreground/80">
             {tNav("teacherWorkspace")}
           </p>
           {navigation.map(({ key, href, icon: Icon, customLabel }) => {
@@ -136,7 +142,7 @@ function TeacherSidebar({
                 key={href}
                 href={href}
                 onClick={onClose}
-                className={`flex h-10 items-center gap-3 rounded-xl px-3 text-[0.8125rem] font-bold transition-all ${
+                className={`flex h-10 items-center gap-3 rounded-xl px-3 text-sm font-bold transition-all ${
                   active
                     ? "border border-border bg-card text-primary shadow-pop-sm"
                     : "text-muted-foreground hover:bg-muted/70 hover:text-foreground"
@@ -155,7 +161,7 @@ function TeacherSidebar({
               type="button"
               aria-expanded={contentExpanded}
               onClick={() => setContentExpandedOverride(!contentExpanded)}
-              className={`flex h-10 w-full items-center gap-3 rounded-xl px-3 text-[0.8125rem] font-bold transition-all ${
+              className={`flex h-10 w-full items-center gap-3 rounded-xl px-3 text-sm font-bold transition-all ${
                 explorerActive || questionBanksActive
                   ? "border border-border bg-card text-primary shadow-pop-sm"
                   : "text-muted-foreground hover:bg-muted/70 hover:text-foreground"
@@ -175,7 +181,7 @@ function TeacherSidebar({
                   href="/teacher/content"
                   onClick={onClose}
                   aria-current={explorerActive ? "page" : undefined}
-                  className={`flex h-8 items-center rounded-lg px-2.5 text-xs font-semibold transition-all ${
+                  className={`flex h-8 items-center rounded-lg px-2.5 text-sm font-semibold transition-all ${
                     explorerActive
                       ? "border border-border bg-card text-primary shadow-pop-sm"
                       : "text-muted-foreground hover:bg-muted/70 hover:text-foreground"
@@ -187,7 +193,7 @@ function TeacherSidebar({
                   href="/teacher/content/question-banks"
                   onClick={onClose}
                   aria-current={questionBanksActive ? "page" : undefined}
-                  className={`flex h-8 items-center rounded-lg px-2.5 text-xs font-semibold transition-all ${
+                  className={`flex h-8 items-center rounded-lg px-2.5 text-sm font-semibold transition-all ${
                     questionBanksActive
                       ? "border border-border bg-card text-primary shadow-pop-sm"
                       : "text-muted-foreground hover:bg-muted/70 hover:text-foreground"
@@ -208,8 +214,8 @@ function TeacherSidebar({
 
           {/* Teacher info */}
           <div className="min-w-0 flex-1">
-            <p className="truncate text-[0.75rem] font-extrabold">Test</p>
-            <p className="truncate text-[0.625rem] font-semibold text-muted-foreground">
+            <p className="truncate text-sm font-extrabold">Test</p>
+            <p className="truncate text-xs font-semibold text-muted-foreground">
               {tNav("englishTeacher")}
             </p>
           </div>
@@ -245,7 +251,7 @@ export default function TeacherLayout({
 
   return (
     <AuthGuard requiredRole="TEACHER">
-      <div className="min-h-screen bg-background-app text-foreground font-sans">
+      <div className="teacher-workspace min-h-screen bg-background-app text-foreground font-sans">
         <TeacherSidebar
           open={sidebarOpen}
           onClose={() => setSidebarOpen(false)}
@@ -263,7 +269,7 @@ export default function TeacherLayout({
               <div className="relative hidden w-full max-w-md sm:block">
                 <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                 <input
-                  className="h-10 w-full rounded-xl border-2 border-border bg-card pl-9 pr-3 text-[0.8125rem] font-medium outline-none placeholder:text-muted-foreground shadow-pop-sm transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+                  className="h-10 w-full rounded-xl border-2 border-border bg-card pl-9 pr-3 text-sm font-medium outline-none placeholder:text-muted-foreground shadow-pop-sm transition focus:border-primary focus:ring-2 focus:ring-primary/20"
                   placeholder={tNav("searchGlobal")}
                   aria-label={tNav("search")}
                 />

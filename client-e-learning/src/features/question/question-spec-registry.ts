@@ -70,6 +70,24 @@ const validators: Record<QuestionType, QuestionSpecValidator> = {
     }
     return errors;
   },
+  ORDERING: (spec) => {
+    if (spec.type !== "ORDERING") return ["question.type.invalid"];
+    const errors = commonErrors(spec);
+    if (spec.items.length < 3 || spec.items.length > 8) {
+      errors.push("ordering.items.size");
+    }
+    const keys = spec.items.map((item) => item.key);
+    if (keys.some((key) => !key.trim()) || new Set(keys).size !== keys.length) {
+      errors.push("ordering.items.key.invalid");
+    }
+    if (spec.items.some((item) => !item.content.trim())) {
+      errors.push("ordering.items.content.required");
+    }
+    if (!spec.acceptedOrders.length) {
+      errors.push("ordering.accepted_orders.required");
+    }
+    return errors;
+  },
 };
 
 export const questionSpecRegistry = {

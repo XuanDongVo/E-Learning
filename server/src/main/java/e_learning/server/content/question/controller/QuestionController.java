@@ -43,6 +43,14 @@ public class QuestionController {
                 .body(ApiResponse.success("Question created successfully", questionService.createQuestion(request)));
     }
 
+    @PostMapping("/bulk-with-guided")
+    public ResponseEntity<ApiResponse<List<BulkCreateQuestionWithGuidedResponse>>> createWithGuided(
+            @Valid @RequestBody BulkCreateQuestionsWithGuidedRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(
+                "Questions and guided drafts created successfully",
+                questionService.createQuestionsWithGuided(request)));
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<QuestionResponse>> update(
             @PathVariable Long id,

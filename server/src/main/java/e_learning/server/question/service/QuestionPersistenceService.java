@@ -20,6 +20,7 @@ import e_learning.server.question.repository.QuestionAnswerRepository;
 import e_learning.server.question.repository.QuestionMediaRepository;
 import e_learning.server.question.repository.QuestionOptionRepository;
 import e_learning.server.question.repository.QuestionRepository;
+import e_learning.server.question.service.ordering.OrderingDefinitionNormalizer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,12 +43,14 @@ public class QuestionPersistenceService {
     private final QuestionSpecRequestFactory questionSpecRequestFactory;
     private final EntityManager entityManager;
     private final ObjectMapper objectMapper;
+    private final OrderingDefinitionNormalizer orderingDefinitionNormalizer;
 
     @Transactional
     public List<Question> createQuestions(List<? extends QuestionWriteRequest> requests) {
         if (requests == null || requests.isEmpty()) throw new AppException(ErrorCode.EMPTY_QUESTION);
         List<Question> questions = new ArrayList<>();
         for (QuestionWriteRequest request : requests) {
+            orderingDefinitionNormalizer.normalize(request);
             normalizeMatchingMode(request);
             boolean complete = questionEngine.validateDefinition(questionSpecRequestFactory.toSpec(request)).isReady();
             Question question = Question.builder().type(request.getType())
@@ -67,6 +70,7 @@ public class QuestionPersistenceService {
     @Transactional
     public Question updateQuestion(Long questionId, QuestionWriteRequest request) {
         Question question = questionRepository.findById(questionId).orElseThrow(() -> new AppException(ErrorCode.QUESTION_NOT_FOUND));
+        orderingDefinitionNormalizer.normalize(request);
         normalizeMatchingMode(request);
         question.setType(request.getType());
         question.setDifficulty(request.getDifficulty() != null ? request.getDifficulty() : question.getDifficulty());
@@ -107,6 +111,7 @@ public class QuestionPersistenceService {
         QuestionType type = request.getType();
         boolean supportsDefinition = type == QuestionType.MATCHING
                 || type == QuestionType.CLOZE
+                || type == QuestionType.ORDERING
                 || type == QuestionType.TYPE_ANSWER
                 || type == QuestionType.FILL_IN_BLANK;
 

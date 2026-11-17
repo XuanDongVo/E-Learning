@@ -36,6 +36,9 @@ export const QUERY_KEYS = {
   contentQuestions: (params: Record<string, unknown>) =>
     ["content", "questions", params] as const,
   contentQuestion: (id: number) => ["content", "question", id] as const,
+  guidedDefinition: (questionId: number) =>
+    ["content", "questions", questionId, "guided"] as const,
+  guidedCapabilities: ["content", "guided", "capabilities"] as const,
   activities: (unitId: number, includeArchived = false) =>
     ["activities", unitId, { includeArchived }] as const,
   activity: (id: number) => ["activity", id] as const,

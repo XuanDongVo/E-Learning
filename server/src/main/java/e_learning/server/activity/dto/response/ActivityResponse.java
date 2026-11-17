@@ -26,6 +26,7 @@ public class ActivityResponse {
     private ActivityDifficulty questionDifficulty;
     private List<SelectionStrategy> availableSelectionStrategies;
     private ActivityMode mode;
+    private ActivityPracticeType practiceType;
     private Integer timeLimitSeconds;
     private Integer lives;
     private List<ActivityBankResponse> banks;

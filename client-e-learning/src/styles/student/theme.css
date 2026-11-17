@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Courier+Prime:wght@400;700&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,400&family=Patrick+Hand&family=Special+Elite&display=swap");
+/* Font faces are loaded once in globals.css; only Student tokens belong here. */
 
 /*
  * ADR 0032 — Indie Illustrated Scrapbook Design Tokens.
@@ -6,7 +6,7 @@
  * :has() đảm bảo Radix Dialog, Popover, Select và Sonner portal kế thừa toàn vẹn.
  */
 .student-theme,
-body:has(.student-theme) {
+body:has(.student-theme):not(:has(.teacher-workspace)) {
   color-scheme: light;
 
   /* ========================================================================
@@ -96,7 +96,7 @@ body:has(.student-theme) {
   /* ========================================================================
      3. HỆ THỐNG NGHỆ THUẬT CHỮ (Typography System)
      ======================================================================== */
-  --student-font-body: "Nunito", "Segoe UI", sans-serif;
+  --student-font-body: "Plus Jakarta Sans", "Segoe UI", sans-serif;
   --student-font-hand: "Patrick Hand", "Caveat", cursive;
   --student-font-note: "Caveat", "Patrick Hand", cursive;
   --student-font-mono: "Courier Prime", "Special Elite", monospace;
@@ -114,13 +114,13 @@ body:has(.student-theme) {
 /* ==========================================================================
    GHI ĐÈ AN TOÀN CHO TOÀN BỘ PORTAL / TOAST / DIALOG
    ========================================================================== */
-body:has(.student-theme) {
+body:has(.student-theme):not(:has(.teacher-workspace)) {
   background-color: var(--student-canvas);
   color: var(--student-ink);
 }
 
 .student-theme .font-sans,
-body:has(.student-theme) .font-sans {
+body:has(.student-theme):not(:has(.teacher-workspace)) .font-sans {
   font-family: var(--student-font-body);
 }
 
@@ -133,7 +133,7 @@ body:has(.student-theme) .font-sans {
   outline-offset: 2.5px;
 }
 
-body:has(.student-theme) [data-sonner-toast] {
+body:has(.student-theme):not(:has(.teacher-workspace)) [data-sonner-toast] {
   font-family: var(--student-font-body);
   border: 2px solid var(--student-ink);
   border-radius: 14px 4px 16px 5px / 4px 16px 5px 14px;

@@ -51,7 +51,7 @@ export function GameHub() {
           <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground">
             Đấu trường Từ vựng Tiếng Anh
           </h1>
-          <p className="text-base text-muted-foreground">
+          <p className="text-sm text-muted-foreground">
             Chọn khối lớp và bài học bạn muốn chinh phục. Thử tài phản xạ với <strong className="text-foreground">Bubble Pop</strong> và tư duy chính tả cùng <strong className="text-foreground">Mưa từ</strong>!
           </p>
         </div>
@@ -80,7 +80,7 @@ export function GameHub() {
                   key={grade.id}
                   type="button"
                   onClick={() => setSelectedGradeId(grade.id)}
-                  className={`flex items-center gap-2 rounded-2xl px-6 py-3 text-base font-extrabold transition-all duration-200 active:scale-95 ${
+                  className={`flex items-center gap-2 rounded-2xl px-6 py-3 text-sm font-extrabold transition-all duration-200 active:scale-95 ${
                     isSelected
                       ? "bg-primary text-primary-foreground shadow-md shadow-primary/25 scale-105"
                       : "bg-card text-muted-foreground border-2 border-border hover:border-primary/50 hover:text-foreground"

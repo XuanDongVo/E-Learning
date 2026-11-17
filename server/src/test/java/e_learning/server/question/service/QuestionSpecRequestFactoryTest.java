@@ -2,12 +2,16 @@ package e_learning.server.question.service;
 
 import e_learning.server.question.dto.request.QuestionAnswerRequest;
 import e_learning.server.question.dto.request.QuestionWriteRequest;
+import e_learning.server.question.dto.request.QuestionDefinitionRequest;
+import e_learning.server.question.dto.request.ordering.OrderingDefinitionRequest;
 import e_learning.server.question.engine.core.QuestionEngine;
 import e_learning.server.question.engine.result.DefinitionValidation;
 import e_learning.server.question.engine.types.text.FillInBlankSpec;
 import e_learning.server.question.engine.types.text.MatchingMode;
 import e_learning.server.question.engine.types.text.TypeAnswerSpec;
 import e_learning.server.question.engine.types.truefalse.TrueFalseSpec;
+import e_learning.server.question.engine.types.ordering.OrderingSpec;
+import e_learning.server.question.engine.types.ordering.OrderingSubtype;
 import e_learning.server.question.enums.QuestionType;
 import org.junit.jupiter.api.Test;
 
@@ -63,6 +67,34 @@ class QuestionSpecRequestFactoryTest {
         TypeAnswerSpec spec = (TypeAnswerSpec) factory.toSpec(request);
 
         assertEquals(MatchingMode.CASE_SENSITIVE_TRIM, spec.matchingMode());
+    }
+
+    @Test
+    void mapsOrderingDefinitionWithoutLosingStableKeysOrOrder() {
+        QuestionWriteRequest request = new QuestionWriteRequest();
+        request.setType(QuestionType.ORDERING);
+        request.setContent("Order the words");
+        OrderingDefinitionRequest ordering = new OrderingDefinitionRequest();
+        ordering.setSchemaVersion(1);
+        ordering.setSubtype(OrderingSubtype.WORD);
+        ordering.setItems(List.of(item("w1", "She"), item("w2", "learns"), item("w3", "English")));
+        ordering.setAcceptedOrders(List.of(List.of("w1", "w2", "w3")));
+        QuestionDefinitionRequest definition = new QuestionDefinitionRequest();
+        definition.setOrdering(ordering);
+        request.setDefinition(definition);
+
+        OrderingSpec spec = (OrderingSpec) factory.toSpec(request);
+
+        assertEquals(List.of("w1", "w2", "w3"), spec.items().stream().map(OrderingSpec.Item::key).toList());
+        assertEquals(List.of(List.of("w1", "w2", "w3")), spec.acceptedOrders());
+        assertEquals(DefinitionValidation.Status.READY, engine.validateDefinition(spec).status());
+    }
+
+    private OrderingDefinitionRequest.Item item(String key, String content) {
+        OrderingDefinitionRequest.Item item = new OrderingDefinitionRequest.Item();
+        item.setKey(key);
+        item.setContent(content);
+        return item;
     }
 
     private QuestionWriteRequest textRequest(QuestionType type) {

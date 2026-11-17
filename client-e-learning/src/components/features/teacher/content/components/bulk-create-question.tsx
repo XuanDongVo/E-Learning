@@ -12,8 +12,9 @@ import {
   type QuestionImportHandoff,
 } from "@/services/content/question-import-handoff";
 import { contentService } from "@/services/content.service";
-import type { ContentView, CreateQuestionRequest } from "@/types/content";
-import type { DraftQuestion } from "@/types/question";
+import { questionService } from "@/services/content/content.question.service";
+import type { ContentView } from "@/types/content";
+import { draftQuestionToCreateRequest } from "@/components/features/teacher/question-authoring/question-payload.mapper";
 
 type EditorState =
   | { kind: "loading" }
@@ -154,6 +155,8 @@ export function BulkQuestionCreator({
     <QuestionComposer
       key={String(bankId) + ":" + (activeImportId ?? "manual")}
       title={"Create questions for " + bankName}
+      onBack={() => onNavigate("bank", bankId)}
+      description="Create direct or Guided Questions in one draft. Guided steps are saved atomically with their final Question."
       storageKey={storageKey}
       importReport={state.entry?.result}
       onDraftCleared={() => {
@@ -169,27 +172,20 @@ export function BulkQuestionCreator({
         return { id: response.data.id, url: response.data.url };
       }}
       onSave={async (questions) => {
-        const payload: CreateQuestionRequest[] = questions.map((question) => ({
-          questionBankId: bankId,
-          type: question.type,
-          difficulty: question.difficulty,
-          content: question.text.trim(),
-          explanation: question.explanation?.trim() || undefined,
-          hint: question.hint?.trim() || undefined,
-          options: question.type === "SINGLE_CHOICE" || question.type === "MULTIPLE_CHOICE"
-            ? question.options.map((option) => ({
-                content: option.text.trim(),
-                isCorrect: question.correctOptionIds.includes(option.id),
-              }))
+        const payload = questions.map((question) => ({
+          draftId: question.draftId,
+          guidedDefinition: question.guidedDefinition?.enabled && question.type !== "MATCHING" && question.type !== "CLOZE"
+            ? {
+                expectedVersion: 0,
+                introContent: question.guidedDefinition.introContent.trim() || null,
+                steps: question.guidedDefinition.steps,
+              }
             : undefined,
-          answers: question.type === "TRUE_FALSE"
-            ? [{ rawValue: question.trueFalseAnswer }]
-            : question.type === "FILL_IN_BLANK" || question.type === "TYPE_ANSWER"
-              ? question.acceptedAnswers.map((answer) => ({ rawValue: answer.trim() }))
-              : undefined,
-          mediaIds: question.media.map((media) => Number(media.id)).filter((id) => !Number.isNaN(id)),
+          question: {
+            ...draftQuestionToCreateRequest(question, bankId),
+          },
         }));
-        await contentService.createQuestion(payload);
+        await questionService.createWithGuided(payload);
       }}
       successDescription={"Saved in " + bankName + "."}
       onSaveSuccess={() => {

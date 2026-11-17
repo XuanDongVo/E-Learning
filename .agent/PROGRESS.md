@@ -1,5 +1,301 @@
 # Project Progress
 
+## 2026-11-17 Student Activity runtime — mobile responsive pass
+
+- Reworked the immersive Practice shell, header, workspace and footer for narrow
+  viewports: compact icon controls, reduced decorative chrome, safe-area-aware
+  sticky actions and a single-column question surface.
+- Ordering keeps readable learning content and 44px drag/remove targets while
+  reducing nested padding; Guided question actions expand to full width on mobile.
+- Desktop composition and Activity runtime behavior remain unchanged.
+
+## 2026-11-17 Student Activity runtime — answer feedback placement
+
+- Extracted the shared answer-result presentation into the focused
+  `runtime/question-stage/` business folder.
+- Classic, Guided Step and Guided Final now render answer feedback through the
+  shared Question Stage feedback slot, immediately above their actions.
+- No API, persistence or scoring behavior changed.
+
+## 2026-11-17 Ordering Question v1 — M4 compatibility, QA and seed implemented
+
+Screen Brief
+User: Student and QA developer
+Goal: Verify Ordering end to end across authoring guards, runtime, Review and edge cases.
+Page type: Student flow and terminal Review
+Primary action: Complete and inspect a full ordered answer without drag-only interaction.
+States covered: mobile/desktop, keyboard, invalid answer, retry, timeout, resolved Review and legacy snapshots.
+
+- Runtime controls now expose an atomic ordered-progress description, 44px Reset
+  target and labelled per-item control groups. WORD/PHRASE draft rows become
+  full-width on phones, while SENTENCE remains full-width at every breakpoint;
+  long content and eight-item Questions do not depend on horizontal scrolling.
+- Ordering Review uses a dedicated semantic ordered-list component shared by
+  submitted and suggested answers. Duplicate visible content keeps separate keys
+  and numbered positions for screen readers and visual inspection.
+- Focused regression coverage now includes missing/duplicate/unknown item keys,
+  alternative accepted orders, duplicate visible text, stable frozen projection,
+  invalid-answer no-attempt/no-XP behavior, v2/v3 snapshot reads and XP schema
+  guards. Existing focused tests continue covering Guided Final gates, Review and
+  Assignment fail-closed behavior.
+- Added the disposable `server/src/test/resources/db/seed/ordering/` fixture. It
+  creates Classic BOTH and Guided Learning Activities with WORD/PHRASE/SENTENCE,
+  alternative orders, duplicate text, one eight-item long-content Question and a
+  READY Guided Ordering Final.
+- No production migration, endpoint, Question scope or XP policy changed.
+- Validation: frontend TypeScript and focused ESLint passed; seed Ordering/Guided
+  JSON parsed successfully. Changed production sources and all nine focused
+  Ordering/Guided/Assignment/Review test classes compile with JDK 21. The exact
+  targeted Maven command stopped before tests because FSRS is absent from the
+  offline cache; the seed was not executed because no disposable PostgreSQL
+  connection was provided. Frontend test/build and full Maven were not run per
+  request.
+- Ordering M1–M4 source implementation is complete. Runtime Maven execution,
+  disposable-database seed execution and viewport inspection remain release
+  verification gates rather than a new implementation phase.
+
+## 2026-11-17 Ordering Question v1 — M3 Guided Final implemented
+
+Screen Brief
+User: Student
+Goal: Complete Guided Steps, then arrange and submit the Ordering Final.
+Page type: Immersive Activity runtime
+Primary action: Submit the complete frozen Final order after the Step gate opens.
+States covered: pre-gate, final pending, partial/complete draft, hint, retry, resolved and review.
+
+- Guided Activity eligibility now includes complete Ordering Questions only through
+  the existing READY, revision-matching Guided Definition query. Guided Step types
+  remain unchanged and still exclude Ordering.
+- Before `FINAL_PENDING`, Student session and Review projections omit Final type,
+  prompt, items, hint and answer. A direct pre-gate Ordering Final submit fails with
+  `ORDERING_FINAL_NOT_AVAILABLE` without creating an attempt or XP outcome.
+- After the Step gate, Guided Final reuses the M2 schema-v3 snapshot, frozen public
+  item order, typed `{ order: [...] }` answer adapter, binary grading, request-id
+  idempotency, Learning retry and XP settlement.
+- Guided runtime UI is split into orchestration, Step and Final components under
+  `runtime/guided/`. Final Ordering reuses the split `runtime/ordering/` controls,
+  requires every item before Submit and supports the existing Final Hint policy.
+- Activity Review now carries a sanitized Ordering projection and one typed sample
+  accepted order after resolution. Submitted `{ order: [...] }` attempts and the
+  suggested answer render as ordered content instead of `[object Object]`; Review
+  rendering is split under `review/ordering/`.
+- No endpoint, migration, Guided Step type or XP policy changed.
+- Validation: frontend TypeScript and focused ESLint passed through the VS Code Node
+  runtime; frontend tests/build were intentionally not run per request. Changed M3
+  production sources and three focused test classes compile with JDK 21. The exact
+  five-test Maven command could not execute because FSRS is absent from the local
+  cache and network approval was declined; no full Maven suite was run.
+- M4 remains next: compatibility/regression QA across Assignment guards, legacy
+  snapshots, mobile/keyboard and complete Ordering acceptance criteria.
+
+## 2026-11-17 Ordering Question v1 — M2 Classic runtime implemented
+
+Screen Brief
+User: Student
+Goal: Complete an Ordering Question in Classic Learning or Try Hard.
+Page type: Immersive Activity runtime
+Primary action: Arrange every item and submit the frozen order.
+States covered: initial, partial, complete draft, submitting, retry, resolved and timeout.
+
+- Classic Activity eligibility now includes complete Ordering Questions while
+  Guided Reasoning eligibility still excludes Ordering until M3.
+- Ordering sessions use schema-v3 immutable snapshots containing subtype, frozen
+  items, accepted orders, grading/canonicalization versions and one server-made
+  `presentationOrder`. Bounded shuffle plus deterministic fallback guarantees
+  termination and never serves an accepted visible order.
+- Student session DTOs expose only subtype and items in frozen presentation
+  order. Accepted orders remain server-only. Answer submit reuses the existing
+  endpoint with `{ answer: { order: [...] } }`; malformed permutations fail
+  before business attempts, lives or XP are changed.
+- Binary grading delegates to the canonical Ordering Question Engine. Existing
+  Learning retry/hint, Try Hard timeout/lives, request-id idempotency, result and
+  XP settlement remain the lifecycle owners. Reveal returns one typed sample
+  order only after the existing reveal policy permits it.
+- Student UI is split under `runtime/ordering/`: item pool, ordered draft and
+  orchestration components. WORD/PHRASE use wrapping controls; SENTENCE uses a
+  full-width vertical list. Tap, reset, remove and directional buttons support
+  completion without drag-and-drop and use existing Student semantic recipes.
+- Validation: frontend TypeScript and focused ESLint passed; frontend test/build
+  were intentionally not run per request. The M2 Activity API cluster and four
+  targeted test classes compile with JDK 21. Targeted Maven execution was
+  attempted but could not start because the sandbox denied access/download for
+  the FSRS dependency; no full Maven suite was run.
+- M3 remains next: enable Ordering only as a Guided Final after all Steps and add
+  its gated Final UI/submit behavior. Student Review stays in M4.
+
+## 2026-11-17 Ordering Question v1 — M1 authoring foundation implemented
+
+- Added `QuestionType.ORDERING`, Flyway V63, the schema-v1 Ordering DTO/spec,
+  subtype/item/order validation, canonicalization, persistence mapping and
+  binary grading in the Question Engine.
+- Teacher Question Bank create/edit/duplicate/quick-preview/local exam preview
+  now supports WORD, PHRASE and SENTENCE Ordering definitions. Authoring UI is
+  split into the `question-authoring/ordering/` business folder instead of one
+  large TSX component.
+- Accepted orders support alternatives and duplicate visible text safely. A
+  definition is rejected when server shuffle cannot produce any visibly
+  incorrect permutation.
+- Guided Reasoning accepts Ordering only as the Final Question. Guided Steps,
+  Activity eligibility/runtime, Assignment/Assessment and CSV import remain
+  closed. Assignment mutation, publish, snapshot, answer and grading paths
+  explicitly fail closed for Ordering.
+- Validation: focused frontend tests 6/6, TypeScript `tsc --noEmit` passed,
+  focused ESLint passed with two pre-existing bulk-import warnings. Next build
+  could not start because the installed SWC native binding/cache is unavailable.
+  Ordering Question Engine handlers/enums compile with JDK 21. Full backend tests
+  could not start because Maven needed an uncached FSRS dependency and network
+  access was not approved.
+- M2 remains the next slice: Activity eligibility, immutable snapshot/projection
+  and Student answer contract. No Student runtime or XP behavior changed in M1.
+
+## 2026-11-15 Guided Reasoning v1 — M4 Student review implemented
+
+Screen Brief
+User: Student
+Goal: Review persisted Classic/Guided answers after a terminal Activity Session.
+Page type: Detail / terminal result section
+Primary action: Inspect Question, Guided Step and Final attempt history.
+States covered: loading, error/retry, empty, legacy history unavailable, success.
+
+- Added the own-session `GET /v1/activity-sessions/{sessionId}/review` endpoint.
+  It returns one Session with ordered `questions[]`, persisted Step/Final
+  attempts, Step Hint timing and snapshot-backed prompts/options.
+- Review projection is security-sensitive: only a resolved Session Question
+  exposes correct answers/explanations. An unfinished Guided Question exposes
+  only Steps reached so far and never exposes future Steps or Final content.
+- Historical rows with `answerAttempts > 0` but no V62 Final-attempt rows return
+  `LEGACY_UNAVAILABLE`; the UI says detailed history is unavailable and never
+  reconstructs or fabricates a submitted answer.
+- `PracticeResult` now loads the server Review projection and includes Guided
+  Steps before the Final result. A reloadable Student route is available at
+  `/student/activity-sessions/{sessionId}/review`; both surfaces reuse the same
+  Indie Scrapbook review component and semantic Student tokens.
+- Focused validation passes: backend compile; 14/14 Review + Activity runtime
+  tests; 3/3 frontend cursor tests; focused Student Activity ESLint. Full
+  TypeScript validation remains blocked only by the three pre-existing nullable
+  Guided draft errors in Teacher `question-editor.tsx`. Browser verification is
+  pending because local frontend/backend services were not running.
+- Teacher Review endpoint and Teacher Student Hub detail UI remain the next M4
+  slice. No database migration or scoring/XP behavior changed in this slice.
+
+## 2026-11-15 Guided Reasoning v1 — M3 runtime refactor implemented
+
+Screen Brief
+User: Student
+Goal: Complete Guided Steps before seeing the Final Question.
+Page type: Student flow
+Primary action: Submit current Step answer
+States covered: loading, answer validation, hint, retry, final gate, terminal result.
+
+- V62 adds and backfills the frozen per-question `deliveryType`, separates
+  Guided snapshot/stage/index into `ActivitySessionGuidedProgress`, moves Step
+  Hint usage to its own table, expands persisted Step outcomes, and adds
+  immutable Final attempts for new Classic and Guided submissions.
+- Backend runtime dispatch now uses `deliveryType`, never nullable Guided
+  columns. Guided request replay is checked before current-Step validation;
+  Final replay is safe even after the original request made a Session terminal.
+- Guided Activities now enter their own staged session projection rather than the
+  Classic flow. Before `FINAL_PENDING`, API responses exclude Final content and
+  correct Step values. Learning-mode navigation may select any Activity
+  Question; Step submit/hint endpoints still enforce the current Step within
+  that selected Question.
+- `PracticeRunner` remains the only Student session owner. Classic and Guided
+  share `QuestionStageView`; request-id and question-cursor behavior are split
+  into focused hooks. Guided retry now reopens input, Continue is UI-only, and a
+  resolved Guided Final advances to the next unresolved question.
+- Runtime maintainability refactor completed: `practice-runner.tsx` is now a
+  15-line composition root; controller, keyboard, timeout, shell,
+  workspace/header/footer/dialogs and shared question-stage primitives live in
+  focused folders. `QuestionMedia` is an explicit renderer boundary but stays
+  empty until the server snapshot defines a media contract.
+- Guided and Classic now share the same desktop Question navigator and mobile
+  navigator sheet. Switching Questions preserves per-question drafts/progress,
+  clears transient Guided feedback, and does not confuse Activity Question
+  navigation with Guided Step progression. Removed undefined `practice-*` and
+  `student-media` CSS classes in favor of approved semantic tokens/recipes.
+- Added the disposable `server/src/test/resources/db/seed/guided-runtime/`
+  fixture: one Guided Learning Activity with READY definitions covering Single
+  Choice, True/False, Type Answer, Hint and Retry states for real UI/API QA.
+- V61 remains unchanged and corrects the legacy persistence shape: a Classic
+  `ActivitySessionQuestion` has every Guided runtime column `NULL`; a Guided
+  question has an immutable snapshot and complete Guided state. The database
+  check constraint prevents either partial shape from being persisted.
+- Focused validation for the navigation follow-up passes: 10/10 tests in
+  `ActivitySessionTimeoutTest`, including non-first Guided Question access, and
+  3/3 frontend question-cursor tests; ESLint passes for the Student Activity
+  runtime and navigator. Full TypeScript validation is currently blocked by
+  pre-existing nullable Guided draft errors in Teacher `question-editor.tsx`;
+  browser verification remains pending.
+- M4 review endpoints/UI remain the next phase. V62 persists the data M4 needs;
+  historical raw Final answers cannot be reconstructed.
+
+## 2026-11-14 Unified Bulk Guided Composer
+
+Screen Brief
+User: Teacher
+Goal: Create direct or Guided Questions in one bulk draft and test the Student flow safely.
+Page type: Editor / Preview dialog
+Primary action: Save all Questions
+States covered: loading capabilities, empty Guided steps, invalid draft, atomic save error, disabled save, local preview reset and success.
+
+- Accepted ADR 0035: optional Guided drafts are created in the Bulk Composer and
+  saved atomically with their Questions through a dedicated endpoint. Persisted
+  Guided remains a one-to-one extension, not a QuestionWrite definition.
+- Added Main Question / Guided Reasoning tabs, per-Question Guided state in the
+  local bulk draft, collapsed Step cards with duplicate/delete/reorder controls,
+  and a local Student-themed Preview Exam for Direct and Guided flows.
+- Preview is intentionally write-free: it does not start an ActivitySession,
+  award XP, or store Student progress. The existing Student runtime has not been
+  migrated to this presentation component; that remains M3 work.
+- Added the atomic endpoint and focused service test. Java and Node execution
+  remain unavailable in this environment; validation is limited to static review
+  and `git diff --check`.
+
+## 2026-11-14 Guided Reasoning v1 — M2 Activity configuration and eligibility
+
+Screen Brief
+User: Teacher
+Goal: Configure whether an Activity is Classic or Guided Reasoning and see the matching eligible-question counts.
+Page type: Editor / Detail
+Primary action: Save the Activity Draft
+States covered: loading, source error/empty, invalid configuration, insufficient readiness, disabled save, success toast.
+
+- Added `ActivityPracticeType` (`CLASSIC`, `GUIDED_REASONING`) through Flyway V59,
+  Activity requests/responses, validation, and the Teacher Activity editor/detail/list.
+- Guided Activity is server-enforced as `LEARNING` with exactly `RANDOM`; the
+  Teacher editor selects those values automatically and hides incompatible controls.
+- One shared eligibility service now powers source counts, readiness, preview and
+  selection. Guided pools require a complete, supported Question with a READY
+  Guided Definition whose source revision still matches the Question revision.
+- Classic Activity behavior is retained. Guided Activities cannot enter the
+  existing Classic Session runtime; M3 will replace that guard with the
+  guided-first snapshot/step/final flow.
+- Added focused validation tests. Java 21 and Node.js are unavailable in this
+  environment, so Maven/Flyway and frontend lint/build remain pending; static
+  `git diff --check` passes.
+
+## 2026-11-14 Guided Reasoning v1 — M1 authoring backend
+
+- Added Flyway V58 and the one-to-one `GuidedDefinition` persistence model for a
+  Question, including a JSONB Guided payload, DRAFT/READY lifecycle,
+  source-question revision capture, and optimistic versioning.
+- Attached Guided Reasoning authoring to the saved Question edit workspace.
+  Teachers can create, order, edit, validate, and remove Draft/Ready definitions,
+  configure per-Step Hint/Retry, and preview the guided-first flow. It is
+  intentionally post-save: bulk Add Questions has no stable Question ID to own
+  a Guided Definition.
+- Added Teacher-only Guided authoring APIs: read/save Draft, validate-and-mark
+  Ready, delete, and capabilities. Draft supports empty/incomplete Steps while
+  READY requires a complete supported Final Question, at least one structurally
+  ordered Step, valid optional hints, and QuestionEngine-valid Step specs.
+- Guided Step validation is restricted to SINGLE_CHOICE, TRUE_FALSE and
+  TYPE_ANSWER; it delegates definition checks to the existing QuestionEngine.
+  No Activity `practiceType`, session snapshot/runtime, Student UI, review, XP,
+  or selection behavior has changed yet (M2–M5 remain).
+- Added focused source tests for Draft/Ready and the three supported Step types.
+  Maven tests and Flyway execution are pending because Java 21 is unavailable in
+  this environment; `git diff --check` passes.
+
 ## 2026-11-12 Vocabulary progress API integration
 
 - Connected the Student Vocabulary Progress page to the authenticated dashboard API
@@ -545,6 +841,29 @@
   and viewport screenshot review remain open.
 
 ## Verification
+
+## Student Activity history (2026-11-15)
+
+- Added a History action to Student Activity cards and the Indie Scrapbook route
+  `/student/units/{unitId}/activities/{activityId}/history`.
+- The screen uses the real paginated Session-history API with time, mode and
+  terminal-status filters; loading, empty, filtered-empty, error, success and
+  pagination states are explicit. Every row opens the shared Review route using
+  its persisted `sessionId`.
+- Hardened the new backend query with Student/Activity/Grade-access validation.
+  `IN_PROGRESS` is outside the history contract and returns structured error
+  `ACTIVITY_SESSION_HISTORY_STATUS_INVALID`, localized in both error catalogs.
+- Focused ESLint passes. TypeScript reports only the three existing Teacher
+  `question-editor.tsx` errors (lines 270, 291 and 292), with no Activity-history
+  errors. Backend compile could not complete because Maven needed a missing FSRS
+  artifact and network permission was declined; Java validation remains open.
+
+## Question edit workspace simplification (2026-11-14)
+
+- Replaced the sidebar-heavy Edit Question screen with the same compact authoring workspace used by Create: one main editor, Main Question / Guided Reasoning tabs, one Preview Exam entry point and focused save actions.
+- Edit now reuses `QuestionForm`, `GuidedDraftEditor` and `PreviewExamDialog`; the superseded expanded `GuidedDefinitionEditor` was removed.
+- Guided persistence remains unchanged: save creates/updates a server draft, validate marks a saved definition ready, and turning it off removes the persisted definition.
+- This is a Teacher-only layout change. Student preview continues to be scoped to the existing Student visual system.
 
 - Frontend global page layout refactor completed on this branch: TeacherLayout and StudentShell now own the standard `1440px` page container; only the two Student runtime routes use immersive `h-dvh` rendering.
 - Student rewards leaderboard presentation was refined with a clearer streak-first hierarchy, responsive current-student summary, accessible disabled states for unavailable ranking criteria, and token-only feature styling. It remains explicitly backed by presentation-only mock gamification data.

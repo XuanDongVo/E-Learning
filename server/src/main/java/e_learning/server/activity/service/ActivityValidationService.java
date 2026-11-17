@@ -28,12 +28,14 @@ public class ActivityValidationService {
             Integer totalQuestions,
             List<SelectionStrategy> availableSelectionStrategies,
             ActivityMode mode,
+            ActivityPracticeType practiceType,
             Integer timeLimitSeconds,
             Integer lives,
             List<ActivityBankRequest> banks
     ) {
-        validateCommon(unit, distributionMode, totalQuestions, mode, timeLimitSeconds, lives, banks);
+        validateCommon(unit, distributionMode, totalQuestions, mode, practiceType, timeLimitSeconds, lives, banks);
         validateSelectionStrategies(availableSelectionStrategies);
+        validatePracticeType(practiceType, mode, availableSelectionStrategies);
         validateSources(unit, banks);
         validateDistribution(totalQuestions, distributionMode, banks);
     }
@@ -52,6 +54,7 @@ public class ActivityValidationService {
             DistributionMode distributionMode,
             Integer totalQuestions,
             ActivityMode mode,
+            ActivityPracticeType practiceType,
             Integer timeLimitSeconds,
             Integer lives,
             List<ActivityBankRequest> banks
@@ -61,6 +64,7 @@ public class ActivityValidationService {
                 || totalQuestions == null
                 || totalQuestions < 1
                 || mode == null
+                || practiceType == null
                 || banks == null
                 || totalQuestions < banks.size()) {
             throw new AppException(ErrorCode.ACTIVITY_INVALID_CONFIGURATION);
@@ -72,6 +76,15 @@ public class ActivityValidationService {
             }
         } else if (timeLimitSeconds == null || timeLimitSeconds < 1
                 || lives == null || lives < 1) {
+            throw new AppException(ErrorCode.ACTIVITY_INVALID_CONFIGURATION);
+        }
+    }
+
+    private void validatePracticeType(ActivityPracticeType practiceType, ActivityMode mode,
+                                      List<SelectionStrategy> strategies) {
+        if (practiceType == ActivityPracticeType.GUIDED_REASONING
+                && (mode != ActivityMode.LEARNING
+                || !List.of(SelectionStrategy.RANDOM).equals(strategies))) {
             throw new AppException(ErrorCode.ACTIVITY_INVALID_CONFIGURATION);
         }
     }

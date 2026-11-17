@@ -1,1 +1,74 @@
-{}
+{
+  "history": {
+    "pageTitle": "Lịch sử luyện tập",
+    "subtitle": "Xem lại các lượt đã hoàn thành và mở chi tiết từng bài làm.",
+    "backToUnit": "Về Unit",
+    "activityFallback": "Hoạt động #{id}",
+    "periodLabel": "Khoảng thời gian",
+    "periods": {
+      "ALL": "Tất cả",
+      "TODAY": "Hôm nay",
+      "LAST_7_DAYS": "7 ngày",
+      "LAST_30_DAYS": "30 ngày"
+    },
+    "modeLabel": "Chế độ",
+    "allModes": "Tất cả chế độ",
+    "modes": {
+      "LEARNING": "Luyện tập",
+      "TRY_HARD": "Thử thách"
+    },
+    "statusLabel": "Trạng thái",
+    "allStatuses": "Tất cả trạng thái",
+    "statuses": {
+      "COMPLETED": "Hoàn thành",
+      "GAME_OVER": "Hết mạng",
+      "ABANDONED": "Đã dừng"
+    },
+    "resultCount": "{count, plural, =0 {Không có lượt phù hợp} other {# lượt phù hợp}}",
+    "loading": "Đang tải lịch sử luyện tập…",
+    "loadError": "Không thể tải lịch sử luyện tập.",
+    "retry": "Thử lại",
+    "emptyTitle": "Chưa có lượt luyện tập",
+    "emptyDescription": "Hoàn thành một lượt trong hoạt động này để xem lại tại đây.",
+    "filteredEmptyTitle": "Không có lượt phù hợp",
+    "filteredEmptyDescription": "Hãy đổi hoặc xóa bộ lọc để xem các lượt khác.",
+    "clearFilters": "Xóa bộ lọc",
+    "session": "Lượt #{id}",
+    "questions": "{correct}/{total} câu đúng",
+    "hints": "{count, plural, =0 {Không dùng gợi ý} other {Đã dùng # gợi ý}}",
+    "xp": "+{count} XP",
+    "score": "{score}%",
+    "noScore": "Chưa có điểm",
+    "openReview": "Xem lại lượt #{id}",
+    "previousPage": "Trang trước",
+    "nextPage": "Trang sau",
+    "page": "Trang {page}/{totalPages}",
+    "openHistory": "Lịch sử"
+  },
+  "review": {
+    "pageTitle": "Xem lại bài luyện tập",
+    "loading": "Đang tải lịch sử bài làm…",
+    "error": "Không tải được lịch sử bài làm.",
+    "retryLoad": "Thử lại",
+    "backToUnit": "Về Unit",
+    "empty": "Lượt luyện tập này không có câu hỏi để xem lại.",
+    "question": "Câu {number}",
+    "guidedQuestion": "Guided Reasoning",
+    "classicQuestion": "Câu hỏi trực tiếp",
+    "guidedSteps": "Các bước hướng dẫn",
+    "finalQuestion": "Câu hỏi chính",
+    "step": "Bước {number}",
+    "attempt": "Lần trả lời {number}",
+    "usedHint": "Đã dùng gợi ý",
+    "correctAnswer": "Đáp án đúng",
+    "submittedOrder": "Thứ tự đã trả lời",
+    "suggestedOrder": "Thứ tự gợi ý",
+    "correct": "Đúng",
+    "incorrect": "Chưa đúng",
+    "notAnswered": "Chưa trả lời",
+    "historyUnavailable": "Không có lịch sử chi tiết cho câu trả lời cũ này.",
+    "snapshotUnavailable": "Nội dung câu hỏi cũ không còn bản snapshot để hiển thị.",
+    "promptHidden": "Câu hỏi chính chưa được mở trong lượt làm này.",
+    "noStepHistory": "Chưa có bước hướng dẫn nào được thực hiện."
+  }
+}

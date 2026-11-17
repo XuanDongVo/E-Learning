@@ -36,6 +36,7 @@ import {
   questionTypeOptions,
   questionDifficultyOptions,
 } from "@/types/content";
+import { OrderingDefinitionSummary } from "@/components/features/teacher/question-authoring/ordering/OrderingDefinitionSummary";
 
 export function QuestionBankDetail({
   bankId,
@@ -971,6 +972,13 @@ export function QuestionBankDetail({
                       ))}
                     </div>
                   </div>
+                )}
+
+              {previewQuestion.type === "ORDERING" &&
+                previewQuestion.definition?.ordering && (
+                  <OrderingDefinitionSummary
+                    definition={previewQuestion.definition.ordering}
+                  />
                 )}
 
               {/* Lời giải thích */}

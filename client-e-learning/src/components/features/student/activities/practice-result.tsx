@@ -12,18 +12,16 @@ import {
   Target,
   Timer,
   Trophy,
-  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import type { ActivitySession, ActivityXpRewardReceipt } from "@/types/activity-session";
-import { formatAnswer, splitKeys } from "@/utils/practice-utils";
+import { RegionState } from "@/components/feedback";
+import type { ActivitySession, ActivitySessionReview, ActivityXpRewardReceipt } from "@/types/activity-session";
+import { ActivityReviewDetails } from "./review/activity-review-details";
 
 const blueBtn =
   "bg-learning text-primary-foreground shadow-pop-sm hover:bg-learning/90 hover:text-primary-foreground";
 const paperBtn =
   "border-2 border-border bg-card-bg text-foreground shadow-pop-sm hover:bg-secondary hover:text-foreground";
-
-export type RevealedAnswer = { correctAnswer?: string; explanation?: string };
 
 export function PracticeResult({
   unitId,
@@ -32,8 +30,10 @@ export function PracticeResult({
   xpRewardPending,
   xpRewardError,
   onRetryXpReward,
-  picks,
-  revealed,
+  review,
+  reviewPending,
+  reviewError,
+  onRetryReview,
   onRetry,
 }: {
   unitId: number;
@@ -42,8 +42,10 @@ export function PracticeResult({
   xpRewardPending: boolean;
   xpRewardError?: string;
   onRetryXpReward: () => void;
-  picks: Record<number, string[]>;
-  revealed: Record<number, RevealedAnswer>;
+  review?: ActivitySessionReview;
+  reviewPending: boolean;
+  reviewError?: string;
+  onRetryReview: () => void;
   onRetry: () => void;
 }) {
   const provisional = session.score == null;
@@ -114,58 +116,28 @@ export function PracticeResult({
           <div key={s.label} className="rounded-2xl border-2 border-border bg-background p-3 text-center">
             <s.icon size={18} className="mx-auto text-learning" />
             <p className="mt-1 text-lg font-extrabold">{s.value}</p>
-            <p className="text-[11px] text-muted-foreground">{s.label}</p>
+            <p className="student-caption text-muted-foreground">{s.label}</p>
           </div>
         ))}
       </div>
 
       <section>
         <h2 className="mb-2 font-extrabold">Chi tiết câu hỏi &amp; đáp án</h2>
-        <ol className="space-y-2">
-          {session.questions.map((q, i) => {
-            const ok = q.finalCorrect === true;
-            const picked = picks[q.id];
-            const reveal = revealed[q.id];
-            const correctText = reveal?.correctAnswer
-              ? formatAnswer(q, q.type === "TRUE_FALSE" || q.options.length > 0 ? splitKeys(reveal.correctAnswer) : [reveal.correctAnswer])
-              : "";
-            return (
-              <li
-                key={q.id}
-                className={`rounded-2xl border-2 bg-background p-3 ${ok ? "border-success/40" : "border-destructive/40"}`}
-              >
-                <div className="flex items-start gap-3">
-                  <span
-                    className={`grid size-7 shrink-0 place-items-center rounded-full ${ok ? "bg-success-soft text-success" : "bg-destructive-soft text-destructive"}`}
-                  >
-                    {ok ? <Check size={15} /> : <X size={15} />}
-                  </span>
-                  <div className="min-w-0 flex-1 text-sm">
-                    <p className="font-bold">
-                      Câu {i + 1}. {q.content}
-                    </p>
-                    <p className="mt-1">
-                      <span className="text-muted-foreground">Bạn chọn: </span>
-                      <span className={ok ? "font-semibold text-success" : "font-semibold text-destructive"}>
-                        {picked?.length ? formatAnswer(q, picked) : "Bỏ qua"}
-                      </span>
-                    </p>
-                    {!ok && correctText && (
-                      <p>
-                        <span className="text-muted-foreground">Đáp án đúng: </span>
-                        <span className="font-semibold text-success">{correctText}</span>
-                      </p>
-                    )}
-                    {!ok && reveal?.explanation && <p className="mt-1 text-muted-foreground">{reveal.explanation}</p>}
-                  </div>
-                  <span className="text-xs font-bold text-muted-foreground">
-                    {q.hintUsed ? "Có dùng gợi ý" : ""}
-                  </span>
-                </div>
-              </li>
-            );
-          })}
-        </ol>
+        {reviewPending ? (
+          <RegionState variant="loading" description="Đang tải lịch sử trả lời…" />
+        ) : reviewError ? (
+          <RegionState
+            variant="error"
+            description={reviewError}
+            action={
+              <Button variant="outline" size="sm" onClick={onRetryReview}>
+                <RefreshCw size={15} /> Thử lại
+              </Button>
+            }
+          />
+        ) : review ? (
+          <ActivityReviewDetails review={review} />
+        ) : null}
       </section>
 
       <div className="flex flex-wrap justify-center gap-2">
@@ -173,8 +145,21 @@ export function PracticeResult({
           <RotateCcw size={16} />
           Luyện tập lại
         </Button>
-        <Button  variant="outline" className={paperBtn}>
-          <Link href={`/student/units/${unitId}`}>Về Unit</Link>
+        <Button
+          nativeButton={false}
+          render={<Link href={`/student/activity-sessions/${session.id}/review`} />}
+          variant="outline"
+          className={paperBtn}
+        >
+          Xem lại sau
+        </Button>
+        <Button
+          nativeButton={false}
+          render={<Link href={`/student/units/${unitId}`} />}
+          variant="outline"
+          className={paperBtn}
+        >
+          Về Unit
         </Button>
       </div>
     </div>

@@ -249,6 +249,9 @@ public class AssessmentAttemptCreationService {
     }
 
     private Map<String, Object> questionSnapshot(Question question) {
+        if (question.getType() == QuestionType.ORDERING) {
+            throw new AppException(ErrorCode.ORDERING_NOT_SUPPORTED_IN_ASSIGNMENT);
+        }
         Map<String, Object> definition = parseDefinition(question.getDefinition());
         List<QuestionOption> options = questionOptionRepository.findByQuestionIdOrderByDisplayOrderAsc(question.getId());
         List<QuestionAnswer> answers = questionAnswerRepository.findByQuestionId(question.getId());

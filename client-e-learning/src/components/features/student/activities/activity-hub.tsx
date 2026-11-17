@@ -1,7 +1,7 @@
 "use client";
 
 import { Link } from "@/i18n/navigation";
-import { ArrowLeft, ArrowRight, Clock3, Gamepad2, Sparkles } from "lucide-react";
+import { ArrowLeft, ArrowRight, Clock3, Gamepad2, History, Sparkles } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { getAppErrorMessage } from "@/lib/errors/app-error";
@@ -98,6 +98,7 @@ export function ActivityHub({ unitId }: { unitId?: number }) {
 }
 
 function HubActivityCard({ unitId, activity }: { unitId: number; activity: Activity }) {
+  const t = useTranslations("student.activities.history");
   const supportsPractice = activity.mode === "LEARNING" || activity.mode === "BOTH";
   const supportsTryHard = activity.mode === "TRY_HARD" || activity.mode === "BOTH";
 
@@ -133,12 +134,22 @@ function HubActivityCard({ unitId, activity }: { unitId: number; activity: Activ
           </span>
         )}
       </div>
-      <Link
-        href={`/student/units/${unitId}/activities/${activity.id}`}
-        className="student-control student-control--action mt-auto w-full"
-      >
-        Bắt đầu hoạt động <ArrowRight className="h-4 w-4" aria-hidden="true" />
-      </Link>
+      <div className="mt-auto grid grid-cols-[1fr_auto] gap-2">
+        <Link
+          href={`/student/units/${unitId}/activities/${activity.id}`}
+          className="student-control student-control--action w-full"
+        >
+          Bắt đầu hoạt động <ArrowRight className="h-4 w-4" aria-hidden="true" />
+        </Link>
+        <Link
+          href={`/student/units/${unitId}/activities/${activity.id}/history`}
+          aria-label={`${t("openHistory")}: ${activity.name}`}
+          className="student-control student-control--quiet inline-flex items-center justify-center gap-2 px-4"
+        >
+          <History className="h-4 w-4" aria-hidden="true" />
+          <span className="hidden sm:inline">{t("openHistory")}</span>
+        </Link>
+      </div>
     </PaperSurface>
   );
 }

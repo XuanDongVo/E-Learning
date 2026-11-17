@@ -7,27 +7,40 @@ import e_learning.server.activity.enums.SelectionStrategy;
 import e_learning.server.activity.dto.response.ActivityReadinessResponse;
 import e_learning.server.activity.repository.ActivityRepository;
 import e_learning.server.activity.service.ActivityReadinessService;
-import e_learning.server.activitysession.dto.ActivitySessionAnswerRequest;
+import e_learning.server.activitysession.dto.request.ActivitySessionAnswerRequest;
+import e_learning.server.activitysession.dto.request.GuidedStepAnswerRequest;
 import e_learning.server.activitysession.entity.ActivityQuestionResolution;
 import e_learning.server.activitysession.entity.ActivityQuestionSnapshot;
 import e_learning.server.activitysession.entity.ActivitySession;
 import e_learning.server.activitysession.entity.ActivitySessionQuestion;
+import e_learning.server.activitysession.entity.ActivitySessionFinalAnswerAttempt;
 import e_learning.server.activitysession.enums.ActivitySessionStatus;
+import e_learning.server.activitysession.enums.GuidedQuestionStage;
+import e_learning.server.activitysession.enums.QuestionDeliveryType;
 import e_learning.server.activitysession.repository.ActivitySessionQuestionRepository;
 import e_learning.server.activitysession.repository.ActivitySessionRepository;
+import e_learning.server.activitysession.repository.ActivitySessionFinalAnswerAttemptRepository;
+import e_learning.server.activitysession.guided.GuidedRuntimeService;
+import e_learning.server.activitysession.ordering.OrderingRuntimeService;
+import e_learning.server.activitysession.ordering.OrderingRuntimeSnapshot;
+import e_learning.server.activitysession.dto.response.ordering.OrderingQuestionResponse;
 import e_learning.server.activitysession.selection.ActivityQuestionSelectionService;
 import e_learning.server.activitysession.snapshot.ActivityQuestionSnapshotAssembler;
 import e_learning.server.classes.entity.ClassEntity;
 import e_learning.server.classes.entity.ClassMember;
 import e_learning.server.classes.repository.ClassMemberRepository;
 import e_learning.server.common.exception.AppException;
+import e_learning.server.common.exception.ErrorCode;
 import e_learning.server.content.unit.entity.Unit;
 import e_learning.server.grades.entity.Grade;
 import e_learning.server.gamification.xp.service.ActivityXpSessionAuditService;
+import e_learning.server.gamification.xp.service.ActivityXpRewardWorkflow;
+import e_learning.server.gamification.streak.service.StudentStreakService;
 import e_learning.server.gamification.xp.dto.ActivityXpPolicySnapshot;
 import e_learning.server.question.entity.Question;
 import e_learning.server.question.enums.Difficulty;
 import e_learning.server.question.enums.QuestionType;
+import e_learning.server.question.engine.types.ordering.OrderingSubtype;
 import e_learning.server.question.repository.QuestionAnswerRepository;
 import e_learning.server.question.repository.QuestionOptionRepository;
 import e_learning.server.user.entity.User;
@@ -37,6 +50,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.InOrder;
 import org.mockito.Mock;
+import org.mockito.ArgumentCaptor;
 import org.mockito.junit.jupiter.MockitoExtension;
 import tools.jackson.databind.JsonNode;
 
@@ -44,6 +58,8 @@ import java.time.LocalDateTime;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -64,12 +80,21 @@ class ActivitySessionTimeoutTest {
     @Mock private ActivityQuestionSnapshotAssembler snapshotAssembler;
     @Mock private ActivityQuestionSelectionService questionSelectionService;
     @Mock private ActivityXpSessionAuditService activityXpAuditService;
+    @Mock private GuidedRuntimeService guidedRuntimeService;
+    @Mock private OrderingRuntimeService orderingRuntimeService;
+    @Mock private ActivitySessionFinalAnswerAttemptRepository finalAnswerAttemptRepository;
+    @Mock private ActivityXpRewardWorkflow activityXpRewardWorkflow;
+    @Mock private StudentStreakService studentStreakService;
     @InjectMocks private ActivitySessionService service;
 
     private record Fixture(ActivitySession session, ActivitySessionQuestion first,
                            ActivitySessionQuestion second) {}
 
     private Fixture fixture(int totalQuestions, int lives) {
+        return fixture(ActivityMode.TRY_HARD, totalQuestions, lives);
+    }
+
+    private Fixture fixture(ActivityMode mode, int totalQuestions, Integer lives) {
         User student = mock(User.class);
         when(student.getId()).thenReturn(STUDENT_ID);
         Grade grade = mock(Grade.class);
@@ -85,8 +110,9 @@ class ActivitySessionTimeoutTest {
         when(classMemberRepository.findActiveMembershipByUserId(STUDENT_ID))
                 .thenReturn(Optional.of(member));
 
-        ActivitySession session = new ActivitySession(student, activity, ActivityMode.TRY_HARD,
-                SelectionStrategy.RANDOM, totalQuestions, lives, 30);
+        ActivitySession session = new ActivitySession(student, activity, mode,
+                SelectionStrategy.RANDOM, totalQuestions, lives,
+                mode == ActivityMode.TRY_HARD ? 30 : null);
         session.setId(SESSION_ID);
         ActivityQuestionSnapshot snapshot = new ActivityQuestionSnapshot(
                 2, 1L, QuestionType.SINGLE_CHOICE, Difficulty.EASY,
@@ -107,6 +133,27 @@ class ActivitySessionTimeoutTest {
                 .thenReturn(Optional.of(first));
         when(sessionRepository.findByIdForUpdate(SESSION_ID)).thenReturn(Optional.of(session));
         return new Fixture(session, first, second);
+    }
+
+    @Test
+    void guidedLearningCanWorkOnAnyActivityQuestionWhileStepOrderRemainsInternal() {
+        Fixture fixture = fixture(ActivityMode.LEARNING, 2, null);
+        JsonNode answer = mock(JsonNode.class);
+        String requestId = UUID.randomUUID().toString();
+        GuidedRuntimeService.StepResult stepResult = new GuidedRuntimeService.StepResult(
+                true, 1, false, true, GuidedQuestionStage.FINAL_PENDING);
+        when(guidedRuntimeService.isGuided(fixture.second())).thenReturn(true);
+        when(guidedRuntimeService.answer(fixture.second(), "step-1", requestId, answer))
+                .thenReturn(stepResult);
+
+        var response = service.answerGuidedStep(
+                SESSION_ID, fixture.second().getId(), "step-1", STUDENT_ID,
+                new GuidedStepAnswerRequest(requestId, answer));
+
+        assertTrue(response.correct());
+        assertEquals(GuidedQuestionStage.FINAL_PENDING, response.stage());
+        verify(guidedRuntimeService).answer(fixture.second(), "step-1", requestId, answer);
+        verify(guidedRuntimeService).publicView(fixture.second());
     }
 
     @Test
@@ -166,7 +213,7 @@ class ActivitySessionTimeoutTest {
         f.first().setDeadlineAt(LocalDateTime.now().plusSeconds(30));
 
         assertThrows(AppException.class,
-                () -> service.answer(SESSION_ID, 102L, STUDENT_ID, new ActivitySessionAnswerRequest(null)));
+                () -> service.answer(SESSION_ID, 102L, STUDENT_ID, new ActivitySessionAnswerRequest(null, null)));
         assertThrows(AppException.class,
                 () -> service.timeout(SESSION_ID, 102L, STUDENT_ID));
         assertFalse(f.second().isResolved());
@@ -179,7 +226,7 @@ class ActivitySessionTimeoutTest {
         f.first().setServedAt(LocalDateTime.now().minusMinutes(1));
         f.first().setDeadlineAt(LocalDateTime.now().minusSeconds(8));
 
-        var state = service.answer(SESSION_ID, 101L, STUDENT_ID, new ActivitySessionAnswerRequest(null));
+        var state = service.answer(SESSION_ID, 101L, STUDENT_ID, new ActivitySessionAnswerRequest(null, null));
 
         assertFalse(state.correct());
         assertEquals(ActivitySessionStatus.COMPLETED, state.session().status());
@@ -194,11 +241,159 @@ class ActivitySessionTimeoutTest {
         f.first().setServedAt(LocalDateTime.now());
         f.first().setDeadlineAt(LocalDateTime.now().plusSeconds(30));
 
-        service.answer(SESSION_ID, 101L, STUDENT_ID, new ActivitySessionAnswerRequest(null));
+        service.answer(SESSION_ID, 101L, STUDENT_ID, new ActivitySessionAnswerRequest(null, null));
 
         assertEquals(ActivityQuestionResolution.WRONG, f.first().getResolutionReason());
         assertEquals(ActivitySessionStatus.GAME_OVER, f.session().getStatus());
         assertEquals(0, f.session().getLives());
+    }
+
+    @Test
+    void classicFinalAnswerReplayIsIdempotentAfterSessionBecomesTerminal() {
+        Fixture fixture = fixture(1, 1);
+        fixture.first().setServedAt(LocalDateTime.now());
+        fixture.first().setDeadlineAt(LocalDateTime.now().plusSeconds(30));
+        String requestId = UUID.randomUUID().toString();
+        AtomicReference<ActivitySessionFinalAnswerAttempt> stored = new AtomicReference<>();
+        when(finalAnswerAttemptRepository.findBySessionQuestionIdAndRequestId(
+                101L, UUID.fromString(requestId)))
+                .thenAnswer(invocation -> Optional.ofNullable(stored.get()));
+        when(finalAnswerAttemptRepository.save(any(ActivitySessionFinalAnswerAttempt.class)))
+                .thenAnswer(invocation -> {
+                    ActivitySessionFinalAnswerAttempt attempt = invocation.getArgument(0);
+                    stored.set(attempt);
+                    return attempt;
+                });
+
+        var first = service.answer(
+                SESSION_ID, 101L, STUDENT_ID,
+                new ActivitySessionAnswerRequest(requestId, null));
+        var replay = service.answer(
+                SESSION_ID, 101L, STUDENT_ID,
+                new ActivitySessionAnswerRequest(requestId, null));
+
+        assertFalse(first.correct());
+        assertEquals(first.correct(), replay.correct());
+        assertEquals(first.answerRevealed(), replay.answerRevealed());
+        assertEquals(1, fixture.first().getAnswerAttempts());
+        assertEquals(ActivitySessionStatus.GAME_OVER, fixture.session().getStatus());
+        verify(finalAnswerAttemptRepository, times(1))
+                .save(any(ActivitySessionFinalAnswerAttempt.class));
+    }
+
+    @Test
+    void classicOrderingAnswerUsesTypedRuntimeGradingAndNormalSessionResolution() {
+        Fixture fixture = fixture(ActivityMode.LEARNING, 1, null);
+        OrderingRuntimeSnapshot ordering = new OrderingRuntimeSnapshot(1, 1, OrderingSubtype.WORD,
+                List.of(
+                        new OrderingRuntimeSnapshot.Item("a", "we"),
+                        new OrderingRuntimeSnapshot.Item("b", "learn"),
+                        new OrderingRuntimeSnapshot.Item("c", "English")),
+                List.of(List.of("a", "b", "c")), List.of("b", "a", "c"));
+        ActivityQuestionSnapshot snapshot = new ActivityQuestionSnapshot(
+                3, 1L, QuestionType.ORDERING, Difficulty.EASY,
+                "Order the words", null, null, null, List.of(), List.of(), "{}", ordering);
+        JsonNode answer = mock(JsonNode.class);
+        when(snapshotAssembler.read(fixture.first())).thenReturn(snapshot);
+        when(orderingRuntimeService.grade(snapshot, answer)).thenReturn(true);
+
+        var response = service.answer(SESSION_ID, fixture.first().getId(), STUDENT_ID,
+                new ActivitySessionAnswerRequest(UUID.randomUUID().toString(), answer));
+
+        assertTrue(response.correct());
+        assertEquals(ActivitySessionStatus.COMPLETED, response.session().status());
+        assertEquals(1, fixture.first().getAnswerAttempts());
+        assertTrue(fixture.first().isResolved());
+        verify(orderingRuntimeService).grade(snapshot, answer);
+        verify(activityXpAuditService).auditResolvedQuestion(fixture.first(), snapshot);
+    }
+
+    @Test
+    void guidedOrderingFinalIsHiddenAndRejectedBeforeStepGate() {
+        Fixture fixture = fixture(ActivityMode.LEARNING, 1, null);
+        when(fixture.first().getQuestion().getType()).thenReturn(QuestionType.ORDERING);
+        when(guidedRuntimeService.isGuided(fixture.first())).thenReturn(true);
+        when(guidedRuntimeService.finalAvailable(fixture.first())).thenReturn(false);
+        when(sessionRepository.findById(SESSION_ID)).thenReturn(Optional.of(fixture.session()));
+
+        var state = service.get(SESSION_ID, STUDENT_ID);
+        var question = state.questions().getFirst();
+        var error = assertThrows(AppException.class, () -> service.answer(
+                SESSION_ID, fixture.first().getId(), STUDENT_ID,
+                new ActivitySessionAnswerRequest(UUID.randomUUID().toString(), mock(JsonNode.class))));
+
+        assertNull(question.type());
+        assertNull(question.content());
+        assertNull(question.ordering());
+        assertEquals(ErrorCode.ORDERING_FINAL_NOT_AVAILABLE, error.getErrorCode());
+        assertEquals(0, fixture.first().getAnswerAttempts());
+        verify(orderingRuntimeService, never()).grade(any(), any());
+    }
+
+    @Test
+    void guidedOrderingFinalUsesSharedProjectionGradingAndResolutionAfterGate() {
+        Fixture fixture = fixture(ActivityMode.LEARNING, 1, null);
+        OrderingRuntimeSnapshot ordering = new OrderingRuntimeSnapshot(1, 1, OrderingSubtype.WORD,
+                List.of(
+                        new OrderingRuntimeSnapshot.Item("a", "we"),
+                        new OrderingRuntimeSnapshot.Item("b", "learn"),
+                        new OrderingRuntimeSnapshot.Item("c", "English")),
+                List.of(List.of("a", "b", "c")), List.of("b", "a", "c"));
+        ActivityQuestionSnapshot snapshot = new ActivityQuestionSnapshot(
+                3, 1L, QuestionType.ORDERING, Difficulty.EASY,
+                "Order the words", null, "Start with we", null,
+                List.of(), List.of(), "{}", ordering);
+        JsonNode answer = mock(JsonNode.class);
+        var publicOrdering = new OrderingQuestionResponse(OrderingSubtype.WORD, List.of(
+                new OrderingQuestionResponse.Item("b", "learn"),
+                new OrderingQuestionResponse.Item("a", "we"),
+                new OrderingQuestionResponse.Item("c", "English")));
+        when(snapshotAssembler.read(fixture.first())).thenReturn(snapshot);
+        when(guidedRuntimeService.isGuided(fixture.first())).thenReturn(true);
+        when(guidedRuntimeService.finalAvailable(fixture.first())).thenReturn(true);
+        when(orderingRuntimeService.publicView(ordering)).thenReturn(publicOrdering);
+        when(orderingRuntimeService.grade(snapshot, answer)).thenReturn(true);
+
+        var response = service.answer(
+                SESSION_ID, fixture.first().getId(), STUDENT_ID,
+                new ActivitySessionAnswerRequest(UUID.randomUUID().toString(), answer));
+        var finalQuestion = response.session().questions().getFirst();
+
+        assertTrue(response.correct());
+        assertEquals(QuestionType.ORDERING, finalQuestion.type());
+        assertEquals(publicOrdering, finalQuestion.ordering());
+        assertEquals(ActivitySessionStatus.COMPLETED, response.session().status());
+        verify(guidedRuntimeService).markFinalResolved(fixture.first());
+        verify(orderingRuntimeService).grade(snapshot, answer);
+    }
+
+    @Test
+    void invalidOrderingPermutationDoesNotConsumeAttemptOrCreateXpOutcome() {
+        Fixture fixture = fixture(ActivityMode.LEARNING, 1, null);
+        OrderingRuntimeSnapshot ordering = new OrderingRuntimeSnapshot(1, 1, OrderingSubtype.WORD,
+                List.of(
+                        new OrderingRuntimeSnapshot.Item("a", "we"),
+                        new OrderingRuntimeSnapshot.Item("b", "learn"),
+                        new OrderingRuntimeSnapshot.Item("c", "English")),
+                List.of(List.of("a", "b", "c")), List.of("b", "a", "c"));
+        ActivityQuestionSnapshot snapshot = new ActivityQuestionSnapshot(
+                3, 1L, QuestionType.ORDERING, Difficulty.EASY,
+                "Order the words", null, null, null,
+                List.of(), List.of(), "{}", ordering);
+        JsonNode malformed = mock(JsonNode.class);
+        when(snapshotAssembler.read(fixture.first())).thenReturn(snapshot);
+        when(orderingRuntimeService.grade(snapshot, malformed))
+                .thenThrow(new AppException(ErrorCode.ORDERING_INVALID_PERMUTATION));
+
+        var error = assertThrows(AppException.class, () -> service.answer(
+                SESSION_ID, fixture.first().getId(), STUDENT_ID,
+                new ActivitySessionAnswerRequest(UUID.randomUUID().toString(), malformed)));
+
+        assertEquals(ErrorCode.ORDERING_INVALID_PERMUTATION, error.getErrorCode());
+        assertEquals(0, fixture.first().getAnswerAttempts());
+        assertFalse(fixture.first().isResolved());
+        verify(finalAnswerAttemptRepository, never()).save(any());
+        verify(activityXpAuditService, never()).auditResolvedQuestion(any(), any());
     }
 
     @Test
@@ -236,7 +431,7 @@ class ActivitySessionTimeoutTest {
         when(snapshotAssembler.read(item)).thenReturn(snapshot);
 
         var first = service.answer(
-                SESSION_ID, 101L, STUDENT_ID, new ActivitySessionAnswerRequest(null));
+                SESSION_ID, 101L, STUDENT_ID, new ActivitySessionAnswerRequest(null, null));
 
         assertTrue(first.retryAvailable());
         assertFalse(item.isResolved());
@@ -248,7 +443,7 @@ class ActivitySessionTimeoutTest {
         JsonNode correctAnswer = mock(JsonNode.class);
         when(correctAnswer.asText()).thenReturn("A");
         service.answer(
-                SESSION_ID, 101L, STUDENT_ID, new ActivitySessionAnswerRequest(correctAnswer));
+                SESSION_ID, 101L, STUDENT_ID, new ActivitySessionAnswerRequest(null, correctAnswer));
 
         assertTrue(item.isResolved());
         assertEquals(ActivityQuestionResolution.CORRECT, item.getResolutionReason());
@@ -319,7 +514,10 @@ class ActivitySessionTimeoutTest {
                 STUDENT_ID, List.of(ActivitySessionStatus.IN_PROGRESS));
         order.verify(activityXpAuditService).captureStartSnapshot(STUDENT_ID, List.of(questionSnapshot));
         order.verify(activityXpAuditService).applyStartSnapshot(any(ActivitySession.class), eq(policy));
-        order.verify(sessionRepository).save(any(ActivitySession.class));
+        ArgumentCaptor<ActivitySession> savedSession = ArgumentCaptor.forClass(ActivitySession.class);
+        order.verify(sessionRepository).save(savedSession.capture());
+        assertEquals(QuestionDeliveryType.CLASSIC,
+                savedSession.getValue().getQuestions().getFirst().getDeliveryType());
         assertEquals(ActivitySessionStatus.ABANDONED, oldSession.getStatus());
     }
 }

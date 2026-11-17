@@ -2,7 +2,7 @@
 
 import { Link } from "@/i18n/navigation";
 import { DataTable, type DataTableColumn } from "@/components/ui/data-table/data-table";
-import type { Activity, ActivityMode } from "@/types/activity";
+import type { Activity, ActivityMode, ActivityPracticeType } from "@/types/activity";
 import { useTranslations } from "next-intl";
 
 export function ActivityTable({
@@ -27,6 +27,10 @@ export function ActivityTable({
     LEARNING: t("modes.learning"),
     TRY_HARD: t("modes.tryHard"),
     BOTH: t("modes.both"),
+  };
+  const practiceTypes: Record<ActivityPracticeType, string> = {
+    CLASSIC: "Classic",
+    GUIDED_REASONING: "Guided",
   };
   const columns: DataTableColumn<Activity>[] = [
     {
@@ -54,7 +58,11 @@ export function ActivityTable({
     {
       id: "mode",
       header: t("mode"),
-      cell: (activity) => <span className="text-neutral-muted">{modes[activity.mode]}</span>,
+      cell: (activity) => (
+        <span className="text-neutral-muted">
+          {practiceTypes[activity.practiceType]} {modes[activity.mode]}
+        </span>
+      ),
     },
     {
       id: "status",

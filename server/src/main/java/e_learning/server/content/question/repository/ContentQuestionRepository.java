@@ -1,6 +1,7 @@
 package e_learning.server.content.question.repository;
 
 import e_learning.server.content.question.entity.ContentQuestion;
+import e_learning.server.question.guided.GuidedDefinitionStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -44,4 +45,18 @@ public interface ContentQuestionRepository
         order by cq.questionId asc
         """)
     List<ContentQuestion> findAllByQuestionBankIdAndQuestionCompleteTrueOrderByQuestionIdAsc(@Param("questionBankId") Long questionBankId);
+
+    @Query("""
+        select cq from ContentQuestion cq
+        join cq.question q
+        join GuidedDefinition guided on guided.question = q
+        where cq.questionBank.id = :questionBankId
+          and q.complete = true
+          and guided.status = :status
+          and guided.sourceQuestionRevision = q.contentRevision
+        order by cq.questionId asc
+        """)
+    List<ContentQuestion> findAllGuidedReadyByQuestionBankIdOrderByQuestionIdAsc(
+            @Param("questionBankId") Long questionBankId,
+            @Param("status") GuidedDefinitionStatus status);
 }

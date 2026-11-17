@@ -3,14 +3,12 @@ package e_learning.server.activitysession.selection;
 import e_learning.server.activity.distribution.ActivityDistributionCalculator;
 import e_learning.server.activity.entity.Activity;
 import e_learning.server.activity.entity.ActivityBank;
-import e_learning.server.activity.enums.ActivityDifficulty;
 import e_learning.server.activity.repository.ActivityBankRepository;
+import e_learning.server.activity.service.ActivityQuestionEligibilityService;
 import e_learning.server.common.exception.AppException;
 import e_learning.server.common.exception.ErrorCode;
 import e_learning.server.content.question.entity.ContentQuestion;
-import e_learning.server.content.question.repository.ContentQuestionRepository;
 import e_learning.server.question.entity.Question;
-import e_learning.server.question.enums.QuestionType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -28,27 +26,15 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ActivityQuestionSelectionService {
     private final ActivityBankRepository activityBankRepository;
-    private final ContentQuestionRepository contentQuestionRepository;
-
-    private boolean isActivitySupportedType(QuestionType type) {
-        return type == QuestionType.SINGLE_CHOICE
-                || type == QuestionType.MULTIPLE_CHOICE
-                || type == QuestionType.TRUE_FALSE
-                || type == QuestionType.FILL_IN_BLANK
-                || type == QuestionType.TYPE_ANSWER;
-    }
+    private final ActivityQuestionEligibilityService eligibilityService;
 
     public List<Question> selectQuestions(Activity activity) {
         List<ActivityBank> banks = activityBankRepository.findByActivityIdOrderByDisplayOrderAsc(activity.getId());
         Map<Long, Integer> allocations = ActivityDistributionCalculator.calculate(activity, banks);
         List<Question> result = new ArrayList<>();
         for (ActivityBank bank : banks) {
-            List<Question> pool = contentQuestionRepository
-                    .findAllByQuestionBankIdAndQuestionCompleteTrueOrderByQuestionIdAsc(bank.getQuestionBank().getId())
+            List<Question> pool = eligibilityService.eligibleQuestions(activity, bank.getQuestionBank().getId())
                     .stream().map(ContentQuestion::getQuestion)
-                    .filter(question -> isActivitySupportedType(question.getType()))
-                    .filter(question -> activity.getQuestionDifficulty() == ActivityDifficulty.MIXED
-                            || question.getDifficulty().name().equals(activity.getQuestionDifficulty().name()))
                     .collect(Collectors.toCollection(ArrayList::new));
             Collections.shuffle(pool);
             int count = allocations.getOrDefault(bank.getQuestionBank().getId(), 0);

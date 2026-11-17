@@ -1,5 +1,6 @@
 export type ActivityStatus = "DRAFT" | "PUBLISHED" | "ARCHIVED";
 export type ActivityMode = "LEARNING" | "TRY_HARD" | "BOTH";
+export type ActivityPracticeType = "CLASSIC" | "GUIDED_REASONING";
 export type DistributionMode = "EQUAL" | "PERCENTAGE" | "FIXED_COUNT";
 export type SelectionStrategy = "RANDOM" | "WEAKNESS_PRIORITY";
 export type ActivityDifficulty = "EASY" | "MEDIUM" | "HARD" | "MIXED";
@@ -35,6 +36,8 @@ export interface ActivitySourceOption {
   topicName: string; sectionName: string; status: ActivityStatus;
   totalQuestions: number; readyQuestions: number;
   easyReadyQuestions: number; mediumReadyQuestions: number; hardReadyQuestions: number;
+  guidedReadyQuestions: number; guidedEasyReadyQuestions: number;
+  guidedMediumReadyQuestions: number; guidedHardReadyQuestions: number;
 }
 export interface Activity {
   id: number; gradeId: number; gradeName: string; unitId: number;
@@ -42,6 +45,7 @@ export interface Activity {
   displayOrder: number; status: ActivityStatus; distributionMode: DistributionMode;
   totalQuestions: number; questionDifficulty: ActivityDifficulty; availableSelectionStrategies: SelectionStrategy[];
   mode: ActivityMode; timeLimitSeconds: number | null; lives: number | null;
+  practiceType: ActivityPracticeType;
   banks: ActivityBank[]; readiness: ActivityReadiness; createdAt: string;
   updatedAt: string; publishedAt: string | null;
 }
@@ -53,6 +57,7 @@ export interface CreateActivityRequest {
   distributionMode: DistributionMode; totalQuestions: number;
   questionDifficulty: ActivityDifficulty;
   availableSelectionStrategies: SelectionStrategy[]; mode: ActivityMode;
+  practiceType: ActivityPracticeType;
   timeLimitSeconds?: number; lives?: number; banks: ActivityBankRequest[];
 }
 export interface UpdateActivityRequest {
@@ -60,5 +65,6 @@ export interface UpdateActivityRequest {
   totalQuestions: number; questionDifficulty: ActivityDifficulty;
   availableSelectionStrategies: SelectionStrategy[];
   mode: ActivityMode; timeLimitSeconds?: number; lives?: number;
+  practiceType: ActivityPracticeType;
   banks: ActivityBankRequest[];
 }

@@ -32,6 +32,7 @@ public class ActivityService {
     private final UnitRepository unitRepository;
     private final QuestionBankRepository questionBankRepository;
     private final ContentQuestionRepository contentQuestionRepository;
+    private final ActivityQuestionEligibilityService eligibilityService;
 
     @Transactional(readOnly = true)
     public List<ActivityResponse> listByUnit(Long unitId, boolean includeArchived) {
@@ -58,6 +59,7 @@ public class ActivityService {
         validationService.validateActivity(
                 unit, request.distributionMode(), request.totalQuestions(),
                 request.availableSelectionStrategies(), request.mode(),
+                request.practiceType(),
                 request.timeLimitSeconds(), request.lives(), request.banks()
         );
 
@@ -69,6 +71,7 @@ public class ActivityService {
                 .questionDifficulty(request.questionDifficulty())
                 .availableSelectionStrategies(request.availableSelectionStrategies())
                 .mode(request.mode())
+                .practiceType(request.practiceType())
                 .timeLimitSeconds(request.timeLimitSeconds())
                 .lives(request.lives())
                 .build();
@@ -83,6 +86,7 @@ public class ActivityService {
         validationService.validateActivity(
                 activity.getUnit(), request.distributionMode(), request.totalQuestions(),
                 request.availableSelectionStrategies(), request.mode(),
+                request.practiceType(),
                 request.timeLimitSeconds(), request.lives(), request.banks()
         );
 
@@ -98,6 +102,7 @@ public class ActivityService {
         activity.setQuestionDifficulty(request.questionDifficulty());
         activity.setAvailableSelectionStrategies(request.availableSelectionStrategies());
         activity.setMode(request.mode());
+        activity.setPracticeType(request.practiceType());
         activity.setTimeLimitSeconds(request.timeLimitSeconds());
         activity.setLives(request.lives());
 
@@ -144,11 +149,8 @@ public class ActivityService {
             if (required == null || required < 1) {
                 continue;
             }
-            contentQuestionRepository
-                    .findTop100ByQuestionBankIdAndQuestionCompleteTrueOrderByQuestionIdAsc(bank.getQuestionBank().getId())
+            eligibilityService.eligibleQuestions(activity, bank.getQuestionBank().getId())
                     .stream()
-                    .filter(cq -> activity.getQuestionDifficulty() == ActivityDifficulty.MIXED
-                            || cq.getQuestion().getDifficulty().name().equals(activity.getQuestionDifficulty().name()))
                     .limit(required)
                     .map(contentQuestion -> contentQuestion.getQuestionId())
                     .forEach(sampleQuestionIds::add);
@@ -167,8 +169,8 @@ public class ActivityService {
         return questionBankRepository.findByUnitIdOrderBySectionAndTopicAndDisplayOrder(unitId)
                 .stream()
                 .map(bank -> {
-                    var readyQuestions = contentQuestionRepository
-                            .findAllByQuestionBankIdAndQuestionCompleteTrueOrderByQuestionIdAsc(bank.getId());
+                    var readyQuestions = eligibilityService.classicCandidates(bank.getId());
+                    var guidedReadyQuestions = eligibilityService.guidedCandidates(bank.getId());
                     return ActivitySourceOptionResponse.builder()
                             .questionBankId(bank.getId()).questionBankName(bank.getName())
                             .topicId(bank.getTopic().getId()).topicName(bank.getTopic().getName())
@@ -180,6 +182,13 @@ public class ActivityService {
                             .mediumReadyQuestions(readyQuestions.stream()
                                     .filter(cq -> cq.getQuestion().getDifficulty().name().equals("MEDIUM")).count())
                             .hardReadyQuestions(readyQuestions.stream()
+                                    .filter(cq -> cq.getQuestion().getDifficulty().name().equals("HARD")).count())
+                            .guidedReadyQuestions(guidedReadyQuestions.size())
+                            .guidedEasyReadyQuestions(guidedReadyQuestions.stream()
+                                    .filter(cq -> cq.getQuestion().getDifficulty().name().equals("EASY")).count())
+                            .guidedMediumReadyQuestions(guidedReadyQuestions.stream()
+                                    .filter(cq -> cq.getQuestion().getDifficulty().name().equals("MEDIUM")).count())
+                            .guidedHardReadyQuestions(guidedReadyQuestions.stream()
                                     .filter(cq -> cq.getQuestion().getDifficulty().name().equals("HARD")).count())
                             .build();
                 })
@@ -268,7 +277,8 @@ public class ActivityService {
                         .displayOrder(bank.getDisplayOrder()).percentage(bank.getPercentage())
                         .fixedCount(bank.getFixedCount())
                         .totalQuestions(contentQuestionRepository.countByQuestionBankId(bank.getQuestionBank().getId()))
-                        .readyQuestions(contentQuestionRepository.countByQuestionBankIdAndQuestionCompleteTrue(bank.getQuestionBank().getId()))
+                        .readyQuestions((long) eligibilityService
+                                .eligibleQuestions(activity, bank.getQuestionBank().getId()).size())
                         .allocatedQuestions(allocations.get(bank.getQuestionBank().getId()))
                         .build()
         ).toList();
@@ -282,7 +292,8 @@ public class ActivityService {
                 .totalQuestions(activity.getTotalQuestions())
                 .questionDifficulty(activity.getQuestionDifficulty())
                 .availableSelectionStrategies(activity.getAvailableSelectionStrategies())
-                .mode(activity.getMode()).timeLimitSeconds(activity.getTimeLimitSeconds()).lives(activity.getLives())
+                .mode(activity.getMode()).practiceType(activity.getPracticeType())
+                .timeLimitSeconds(activity.getTimeLimitSeconds()).lives(activity.getLives())
                 .banks(bankResponses).readiness(readiness)
                 .createdAt(activity.getCreatedAt()).updatedAt(activity.getUpdatedAt()).publishedAt(activity.getPublishedAt())
                 .build();

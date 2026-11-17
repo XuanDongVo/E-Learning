@@ -35,6 +35,16 @@ PATCH /v1/activities/{id}/status
 GET /v1/activities/{id}/readiness
 POST /v1/activities/{id}/preview
 
+Activity create/update/response additionally carries `practiceType`:
+`CLASSIC` or `GUIDED_REASONING`. Existing records are migrated as `CLASSIC`.
+`GUIDED_REASONING` is server-enforced to `mode=LEARNING` and exactly one
+selection strategy, `RANDOM`; readiness, preview and later runtime selection use
+only complete Questions with a READY, revision-matching Guided Definition.
+Guided ActivitySession runtime is an M3 source slice. It creates a separate
+immutable Guided snapshot and never falls through to the Classic projection:
+the public session payload exposes only the current Step until the Final gate
+opens. Verification remains pending.
+
 No current GameTemplate endpoint.
 
 ## Assignment
@@ -122,12 +132,24 @@ Assignment/Attempt codes must be verified against ErrorCode.java before implemen
 
 ## Activity Session Runtime
 POST /v1/activities/{activityId}/sessions
+GET /v1/activities/{activityId}/sessions?page={page}&size={size}&period={ALL|TODAY|LAST_7_DAYS|LAST_30_DAYS}&mode={LEARNING|TRY_HARD}&status={COMPLETED|GAME_OVER|ABANDONED}
 GET /v1/activities/{activityId}/session-options
 GET /v1/activity-sessions/{sessionId}
 POST /v1/activity-sessions/{sessionId}/questions/{sessionQuestionId}/answer
 POST /v1/activity-sessions/{sessionId}/questions/{sessionQuestionId}/hint
+POST /v1/activity-sessions/{sessionId}/questions/{sessionQuestionId}/steps/{stepKey}/answer
+POST /v1/activity-sessions/{sessionId}/questions/{sessionQuestionId}/steps/{stepKey}/hint
 POST /v1/activity-sessions/{sessionId}/finish
 GET /v1/activity-sessions/{sessionId}/result
+GET /v1/activity-sessions/{sessionId}/review
+
+The Student Activity history route returns only the authenticated Student's
+terminal sessions for the requested Activity, newest completion first, in the
+standard 1-indexed `PageResponse`. `mode` and terminal `status` are optional;
+`IN_PROGRESS` is rejected with `ACTIVITY_SESSION_HISTORY_STATUS_INVALID`.
+The server validates that the Activity exists and that the Student still has
+Grade access. Each row contains its `sessionId`, which is the only link to the
+standalone Review endpoint.
 
 The terminal Activity Result includes nullable `xpReward` and `xpQuestions`.
 `xpReward` is an immutable server receipt (`questionXp`, `completionBonus`,
@@ -136,12 +158,34 @@ is `null` for legacy or rollout-disabled sessions; reading this endpoint never
 calculates or commits XP. `xpQuestions` contains only persisted resolved-question
 audit values and is empty when no finalized reward exists.
 
+The Student Review endpoint returns the complete ordered Session projection in
+one response with `questions[]`. It requires ownership. Persisted Step and Final
+attempts are returned in attempt order. Correct answers and explanations are
+included only for a resolved Session Question; unfinished Guided questions omit
+future Steps and pre-gate Final content. Historical questions with business
+attempts but no V62 Final-attempt rows use `LEGACY_UNAVAILABLE` and never receive
+a reconstructed submitted answer.
+
 ActivitySession start accepts optional `mode` and `selectionStrategy`; both are required only when the
 Activity exposes more than one choice. The start response includes the complete selected question set without
-correct answers, accepted answers or explanations. Activity answers are evaluated server-side and are not persisted
-as answer history.
+correct answers, accepted answers or explanations. Activity answers are evaluated
+server-side. New Classic and Guided Final submissions include a stable UUID
+`requestId` and are persisted as immutable Activity attempt history.
 
-The Activity start response returns the complete selected question set. Correct answers are never included before the runtime flow permits them.
+Classic start responses return the selected question set. Guided public responses
+contain only each Question's current Step (without correct flags, answer keys,
+explanation or pre-gate Final content). Step answer requests include a
+UUID `requestId`; replaying the same id and payload is idempotent, while a
+different payload is rejected. Final answers follow the same rule; replay can
+return its stored outcome even after that submission made the Session terminal.
+
+Ordering is supported as a Classic Question and as a Guided Final only. Before
+the Guided Final gate, its type, prompt, hint and ordered items are absent. After
+the gate, the Question projection includes `ordering: { subtype, items[] }` and
+Final submit uses `{ answer: { order: [itemKey, ...] } }`. Resolved Review returns
+the frozen public items, persisted ordered attempts and at most one typed sample
+accepted order; accepted-order sets remain server-only. Guided Steps do not
+support Ordering.
 
 ## Student Gamification (Streak / Level)
 
@@ -158,6 +202,32 @@ Both endpoints require `ROLE_STUDENT`; student id comes only from the JWT, never
 - Student runtime payloads must not expose correctness flags, accepted answers, normalized values, or explanations before the corresponding Practice/review rule allows them. Hint content is returned through the explicit hint action so use can be recorded.
 - ActivitySession uses the session endpoints above; do not reintroduce the legacy polymorphic `/v1/attempts/{id}` API from the historical tail of the old Phase 7 draft.
 - Accepted Question Engine domain contract: see `.agent/architecture/question-engine-v1.md` and ADR 0023 (lifecycle refined by ADR 0025; Assignment scoring/display refined by ADR 0026). The discriminated QuestionSpec contract is accepted, but the new implementation/wire DTOs are not yet delivered; do not represent planned endpoints as current routes.
+
+## Guided Reasoning authoring (M1 implemented)
+
+- `POST /v1/content/questions/bulk-with-guided` — atomic Bulk Composer write.
+  Each item has `draftId`, `question` (the normal create payload), and an
+  optional `guidedDefinition` draft. On any validation failure the whole request
+  rolls back; success returns `draftId` mapped to the created Question.
+
+Teacher-only endpoints under the existing `/v1/content/**` security boundary:
+
+- `GET /v1/content/questions/{questionId}/guided`
+- `PUT /v1/content/questions/{questionId}/guided` — saves a DRAFT with required
+  `expectedVersion`; first save uses version `0`.
+- `POST /v1/content/questions/{questionId}/guided/validate` — validates the
+  current version and marks it READY only when all rules pass; otherwise returns
+  `ready=false` and path-addressable issues without changing the Draft.
+- `DELETE /v1/content/questions/{questionId}/guided`
+- `GET /v1/content/guided/capabilities`
+
+Guided authoring is only for Question Bank Questions. It supports `SINGLE_CHOICE`,
+`TRUE_FALSE` and `TYPE_ANSWER` Steps, while a READY definition requires a complete
+supported Final Question and one or more ordered Steps. The authoring DTO contains
+answer keys and must never be reused by a Student runtime projection. Activity
+selection and M3 Student session runtime are implemented as source slices;
+review remains M4. The Student Step projection is separate from this authoring
+DTO and never contains answer keys or explanations.
 
 
 ## Assignment Composition and AssessmentAttempt — accepted target contract, not yet implemented

@@ -42,6 +42,27 @@ ActivitySession stores concrete Activity mode and selection_strategy.
 ActivitySessionQuestion.position is runtime sequence metadata only.
 AssessmentAttempt is a separate Assignment runtime contract.
 
+Student Activity runtime has one composition root and one visual renderer:
+`PracticeRunner` creates `usePracticeController` and renders
+`PracticeShell`. Controller-only hooks own keyboard, timeout and idempotency
+behavior. The shell is split into header, workspace, footer and dialogs.
+`QuestionStageView` composes QuestionPrompt, QuestionMedia, AnswerControls,
+AnswerFeedback and QuestionActions; GuidedProgress is an optional Guided-only
+slot. GuidedStage adapts Guided state into this shared renderer and is not a
+second runner or visual shell.
+
+Student Activity review uses one server-backed `ActivityReviewDetails`
+renderer in both terminal `PracticeResult` and the reloadable
+`/student/activity-sessions/{sessionId}/review` route. Review must not be rebuilt
+from transient picks or feedback kept by the runner.
+
+Student Activity cards expose a secondary History action. The route
+`/student/units/{unitId}/activities/{activityId}/history` owns terminal-session
+filters and pagination, calls `GET /v1/activities/{activityId}/sessions`, and
+links each row to the shared standalone Review route by `sessionId`. Server error
+codes are rendered through `getAppErrorMessage` and locale `error.json`, not
+feature-local copies of backend messages.
+
 Follow `ui/UI_ARCHITECTURE_GUIDELINES.md` for shared UI architecture, accessibility and responsive behavior. ADR 0032 establishes the exclusive Student visual language in `ui/INDIE_ILLUSTRATED_SCRAPBOOK_DESIGN_SYSTEM.md`; Teacher retains its existing visual language.
 
 **Implemented theme isolation contract:** `app/[locale]/student/layout.tsx` activates the scoped Student theme from `styles/student/`; Teacher/base variables remain unchanged. Student feature code uses semantic aliases, typography roles and `components/student-ui` recipes instead of page-local colors or geometry. Root-mounted dialogs and Sonner are covered through the active Student body scope. Any new portal/popover/select must still be checked for scope escape, focus, contrast and reduced motion.

@@ -1,5 +1,5 @@
 import { request } from "@/services/api.service";
-import type { CreateQuestionRequest, PageResponse, QuestionResponse, UpdateQuestionRequest, ListQuestionsParams } from "@/types/content";
+import type { BulkCreateQuestionWithGuidedResponse, BulkQuestionWithGuidedRequest, CreateQuestionRequest, PageResponse, QuestionResponse, UpdateQuestionRequest, ListQuestionsParams } from "@/types/content";
 
 export const questionService = {
     list: (params: ListQuestionsParams) => {
@@ -19,9 +19,15 @@ export const questionService = {
     create: (payload: CreateQuestionRequest[]) =>
         request<QuestionResponse[]>("/v1/content/questions", { method: "POST", body: JSON.stringify(payload) }),
 
+    createWithGuided: (questions: BulkQuestionWithGuidedRequest[]) =>
+        request<BulkCreateQuestionWithGuidedResponse[]>("/v1/content/questions/bulk-with-guided", {
+            method: "POST",
+            body: JSON.stringify({ questions }),
+        }),
+
     update: (id: number, payload: UpdateQuestionRequest) =>
         request<QuestionResponse>(`/v1/content/questions/${id}`, { method: "PUT", body: JSON.stringify(payload) }),
 
     bulkDeleteQuestions: (payload: { questionBankId: number; ids: number[]; }) =>
         request<void>("/v1/content/questions/bulk-delete", { method: "DELETE", body: JSON.stringify(payload) }),
-};  
+};

@@ -1,6 +1,7 @@
 "use client";
 
 import type { DraftQuestion } from "@/types/question";
+import { makeOrderingDefinition } from "./ordering/ordering-draft";
 
 export type DraftOption = DraftQuestion["options"][number];
 
@@ -28,6 +29,7 @@ export function makeDraftQuestion(
     media: [],
     explanation: "",
     hint: "",
+    orderingDefinition: makeOrderingDefinition(),
     ...overrides,
   };
 }

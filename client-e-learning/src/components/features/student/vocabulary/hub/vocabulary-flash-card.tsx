@@ -38,7 +38,6 @@ export function VocabularyFlashcard({
   mode = "browse",
   onReveal,
   onToggleFavorite,
-  isFavorite,
 }: VocabularyFlashcardProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
@@ -90,7 +89,7 @@ export function VocabularyFlashcard({
       speakVocabulary(currentCard.word, targetVoice);
       setTimeout(() => setActiveVoice(null), 1000);
     },
-    [currentCard?.word, settings.voice],
+    [currentCard, settings.voice],
   );
 
   // Tự động phát âm khi lật trở lại mặt trước (isFlipped = false)
@@ -189,8 +188,11 @@ export function VocabularyFlashcard({
         >
           {/* MẶT TRƯỚC (Front - Tiếng Anh) */}
           <div
-            onClick={() => { setIsFlipped(true); onReveal?.(); }}
-            className={`w-full min-h-[380px] cursor-pointer rounded-2xl border-2 border-border/75 bg-card p-6 shadow-sm sm:p-8 flex flex-col justify-between transition-colors hover:border-primary/40 ${
+            onClick={() => {
+              setIsFlipped(true);
+              onReveal?.();
+            }}
+            className={`w-full min-h-[380px] cursor-pointer rounded-2xl border-2 border-ink bg-card p-6 sm:p-8 flex flex-col justify-between transition-colors  ${
               isFlipped
                 ? "student-flashcard-face pointer-events-none absolute inset-0"
                 : "relative"
@@ -223,14 +225,16 @@ export function VocabularyFlashcard({
                   <Star className="size-4" />
                 </button>
 
-                {mode === "browse" && <button
-                  type="button"
-                  onClick={handleShuffle}
-                  className="rounded-lg p-2 transition-colors hover:bg-muted hover:text-foreground"
-                  title="Xáo trộn ngẫu nhiên"
-                >
-                  <Shuffle className="size-4" />
-                </button>}
+                {mode === "browse" && (
+                  <button
+                    type="button"
+                    onClick={handleShuffle}
+                    className="rounded-lg p-2 transition-colors hover:bg-muted hover:text-foreground"
+                    title="Xáo trộn ngẫu nhiên"
+                  >
+                    <Shuffle className="size-4" />
+                  </button>
+                )}
 
                 <button
                   type="button"
@@ -245,7 +249,7 @@ export function VocabularyFlashcard({
 
                 {/* Popover Cài đặt chuẩn theme Student */}
                 {showSettings && (
-                  <div className="absolute right-0 top-full z-30 mt-2 w-64 rounded-xl border-2 border-border bg-popover p-4 text-sm shadow-md space-y-3.5">
+                  <div className="absolute right-0 top-full z-30 mt-2 w-64 rounded-xl border-2 border-border bg-popover p-4 text-sm  space-y-3.5">
                     <h4 className="student-card-title text-foreground text-sm">
                       Cài đặt thẻ
                     </h4>
@@ -354,7 +358,7 @@ export function VocabularyFlashcard({
                           }
                           className={`rounded-md px-2 py-0.5 text-xs font-bold transition-all ${
                             settings.voice === "US"
-                              ? "bg-card text-foreground shadow-2xs"
+                              ? "bg-card text-foreground "
                               : "text-muted-foreground hover:text-foreground"
                           }`}
                         >
@@ -367,7 +371,7 @@ export function VocabularyFlashcard({
                           }
                           className={`rounded-md px-2 py-0.5 text-xs font-bold transition-all ${
                             settings.voice === "UK"
-                              ? "bg-card text-foreground shadow-2xs"
+                              ? "bg-card text-foreground "
                               : "text-muted-foreground hover:text-foreground"
                           }`}
                         >
@@ -446,7 +450,7 @@ export function VocabularyFlashcard({
           {/* MẶT SAU (Back - Tiếng Việt & Ngữ cảnh) */}
           <div
             onClick={() => setIsFlipped(false)}
-            className={`w-full min-h-[380px] cursor-pointer rounded-2xl border-2 border-border/75 bg-card p-6 shadow-sm sm:p-8 flex flex-col justify-between transition-colors hover:border-primary/40 student-flashcard-back ${
+            className={`w-full min-h-[380px] cursor-pointer rounded-2xl border-2 border-ink bg-card p-6  sm:p-8 flex flex-col justify-between transition-colors  student-flashcard-back ${
               !isFlipped
                 ? "student-flashcard-face pointer-events-none absolute inset-0"
                 : "relative"
@@ -561,35 +565,37 @@ export function VocabularyFlashcard({
       </div>
 
       {/* Điều hướng từ trước/sau */}
-      {mode === "browse" && <div className="flex flex-col items-center gap-1.5 text-muted-foreground pt-1">
-        <div className="flex items-center gap-4">
-          <button
-            type="button"
-            onClick={handlePrev}
-            className="flex size-9 items-center justify-center rounded-xl border border-border bg-card text-foreground shadow-xs transition-colors hover:bg-muted active:scale-95"
-            aria-label="Từ trước đó"
-          >
-            <ChevronLeft className="size-5" />
-          </button>
+      {mode === "browse" && (
+        <div className="flex flex-col items-center gap-1.5 text-muted-foreground pt-1">
+          <div className="flex items-center gap-4">
+            <button
+              type="button"
+              onClick={handlePrev}
+              className="flex size-9 items-center justify-center rounded-xl border border-border bg-card text-foreground  transition-colors hover:bg-muted active:scale-95"
+              aria-label="Từ trước đó"
+            >
+              <ChevronLeft className="size-5" />
+            </button>
 
-          <span className="student-typewriter text-sm font-bold text-foreground">
-            {currentIndex + 1} / {cards.length}
-          </span>
+            <span className="student-typewriter text-sm font-bold text-foreground">
+              {currentIndex + 1} / {cards.length}
+            </span>
 
-          <button
-            type="button"
-            onClick={handleNext}
-            className="flex size-9 items-center justify-center rounded-xl border border-border bg-card text-foreground shadow-xs transition-colors hover:bg-muted active:scale-95"
-            aria-label="Từ tiếp theo"
-          >
-            <ChevronRight className="size-5" />
-          </button>
+            <button
+              type="button"
+              onClick={handleNext}
+              className="flex size-9 items-center justify-center rounded-xl border border-border bg-card text-foreground  transition-colors hover:bg-muted active:scale-95"
+              aria-label="Từ tiếp theo"
+            >
+              <ChevronRight className="size-5" />
+            </button>
+          </div>
+
+          <p className="student-typewriter text-[11px] text-muted-foreground">
+            ← → chuyển từ · Space lật thẻ
+          </p>
         </div>
-
-        <p className="student-typewriter text-[11px] text-muted-foreground">
-          ← → chuyển từ · Space lật thẻ
-        </p>
-      </div>}
+      )}
     </div>
   );
 }

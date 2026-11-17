@@ -7,5 +7,6 @@ public enum QuestionType {
     FILL_IN_BLANK,
     TYPE_ANSWER,
     MATCHING,
-    CLOZE
+    CLOZE,
+    ORDERING
 }

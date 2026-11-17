@@ -1,10 +1,12 @@
 import type { ReactNode } from "react";
 import type { ColorTone } from "./theme";
 import type {
+  OrderingDraftDefinition,
   QuestionDifficulty,
   QuestionMatchingMode,
   QuestionType,
 } from "./question";
+import type { GuidedDefinitionDraft } from "./guided-reasoning";
 export type {
   DraftQuestion,
   QuestionMediaDraft,
@@ -126,6 +128,7 @@ export type QuestionDefinition =
   | {
       matching: { poolId: string | null; correctEntryId: string | null };
       cloze?: never;
+      ordering?: never;
     }
   | {
       cloze: {
@@ -134,6 +137,12 @@ export type QuestionDefinition =
         blanks: { key: string; acceptedAnswers: string[] }[];
       };
       matching?: never;
+      ordering?: never;
+    }
+  | {
+      ordering: OrderingDraftDefinition;
+      matching?: never;
+      cloze?: never;
     };
 
 export interface QuestionResponse {
@@ -198,6 +207,17 @@ export interface CreateQuestionRequest {
   mediaIds?: number[];
   matchingMode?: QuestionMatchingMode;
   definition?: QuestionDefinition;
+}
+
+export interface BulkQuestionWithGuidedRequest {
+  draftId: string;
+  question: CreateQuestionRequest;
+  guidedDefinition?: GuidedDefinitionDraft;
+}
+
+export interface BulkCreateQuestionWithGuidedResponse {
+  draftId: string;
+  question: QuestionResponse;
 }
 
 export interface UpdateQuestionRequest {

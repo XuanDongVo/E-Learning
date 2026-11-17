@@ -1,4 +1,5 @@
 import type { DraftQuestion } from "@/types/question";
+import { isOrderingDefinitionComplete } from "./ordering/ordering-validation";
 
 export function isQuestionComplete(question: DraftQuestion): boolean {
   if (!question.text.trim()) return false;
@@ -33,6 +34,10 @@ export function isQuestionComplete(question: DraftQuestion): boolean {
     return question.acceptedAnswers.some(
       (answer) => answer.trim().length > 0,
     );
+  }
+
+  if (question.type === "ORDERING") {
+    return isOrderingDefinitionComplete(question.orderingDefinition);
   }
 
   return true;

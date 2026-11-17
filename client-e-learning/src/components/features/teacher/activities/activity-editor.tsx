@@ -17,6 +17,7 @@ import { QUERY_KEYS } from "@/services/query-keys";
 import { ACTIVITY_DIFFICULTY_LABELS } from "@/types/activity";
 import type {
   ActivityMode,
+  ActivityPracticeType,
   ActivityDifficulty,
   ActivitySourceOption,
   DistributionMode,
@@ -72,6 +73,19 @@ const modes: { value: ActivityMode; label: string; description: string }[] = [
     value: "BOTH",
     label: "Both",
     description: "Student chooses Practice or Try Hard at start.",
+  },
+];
+
+const practiceTypes: { value: ActivityPracticeType; label: string; description: string }[] = [
+  {
+    value: "CLASSIC",
+    label: "Classic practice",
+    description: "Students answer each activity question directly.",
+  },
+  {
+    value: "GUIDED_REASONING",
+    label: "Guided reasoning",
+    description: "Students complete teacher-authored steps before the final question.",
   },
 ];
 
@@ -172,6 +186,9 @@ function ActivityEditorForm({
   const [mode, setMode] = useState<ActivityMode>(
     initialActivity?.mode ?? "BOTH",
   );
+  const [practiceType, setPracticeType] = useState<ActivityPracticeType>(
+    initialActivity?.practiceType ?? "CLASSIC",
+  );
   const [timeLimitSeconds, setTimeLimitSeconds] = useState<number | undefined>(
     initialActivity
       ? initialActivity.mode === "LEARNING"
@@ -256,15 +273,20 @@ function ActivityEditorForm({
     }));
   }, [banks, distribution, total]);
 
-  const difficultyCounts = (source: ActivitySourceOption) => ({
-    EASY: source.easyReadyQuestions,
-    MEDIUM: source.mediumReadyQuestions,
-    HARD: source.hardReadyQuestions,
-    MIXED:
-      source.easyReadyQuestions +
-      source.mediumReadyQuestions +
-      source.hardReadyQuestions,
-  });
+  const difficultyCounts = (source: ActivitySourceOption) => {
+    const counts = practiceType === "GUIDED_REASONING"
+      ? {
+          EASY: source.guidedEasyReadyQuestions,
+          MEDIUM: source.guidedMediumReadyQuestions,
+          HARD: source.guidedHardReadyQuestions,
+        }
+      : {
+          EASY: source.easyReadyQuestions,
+          MEDIUM: source.mediumReadyQuestions,
+          HARD: source.hardReadyQuestions,
+        };
+    return { ...counts, MIXED: counts.EASY + counts.MEDIUM + counts.HARD };
+  };
   const sourceForBank = (questionBankId: number) =>
     (sources.data || []).find(
       (source) => source.questionBankId === questionBankId,
@@ -322,6 +344,7 @@ function ActivityEditorForm({
         questionDifficulty,
         availableSelectionStrategies,
         mode,
+        practiceType,
         timeLimitSeconds: mode === "LEARNING" ? undefined : timeLimitSeconds,
         lives: mode === "LEARNING" ? undefined : lives,
         banks: banks.map(
@@ -367,6 +390,10 @@ function ActivityEditorForm({
           ...cur,
           {
             ...source,
+            readyQuestions:
+              practiceType === "GUIDED_REASONING"
+                ? source.guidedReadyQuestions
+                : source.readyQuestions,
             displayOrder: cur.length,
             ...(distribution === "PERCENTAGE" ? { percentage: 0 } : {}),
             ...(distribution === "FIXED_COUNT" ? { fixedCount: 1 } : {}),
@@ -418,6 +445,25 @@ function ActivityEditorForm({
     } else {
       setTimeLimitSeconds((v) => v || 60);
       setLives((v) => v || 3);
+    }
+  };
+
+  const changePracticeType = (next: ActivityPracticeType) => {
+    setPracticeType(next);
+    setBanks((current) => current.map((bank) => {
+      const source = sourceForBank(bank.questionBankId);
+      return source
+        ? {
+            ...bank,
+            readyQuestions: next === "GUIDED_REASONING"
+              ? source.guidedReadyQuestions
+              : source.readyQuestions,
+          }
+        : bank;
+    }));
+    if (next === "GUIDED_REASONING") {
+      setAvailableSelectionStrategies(["RANDOM"]);
+      changeMode("LEARNING");
     }
   };
 
@@ -492,6 +538,23 @@ function ActivityEditorForm({
                 placeholder="What should students practice?"
               />
             </Field>
+          </EditorSection>
+
+          <EditorSection
+            title="Learning format"
+            description="Guided reasoning keeps the existing Activity structure but requires a ready Guided definition for every selected question."
+          >
+            <div className="grid gap-2 md:grid-cols-2">
+              {practiceTypes.map((option) => (
+                <OptionCard
+                  key={option.value}
+                  on={practiceType === option.value}
+                  onClick={() => changePracticeType(option.value)}
+                  title={option.label}
+                  description={option.description}
+                />
+              ))}
+            </div>
           </EditorSection>
 
           {/* Question difficulty */}
@@ -584,6 +647,9 @@ function ActivityEditorForm({
                         {list.map((source) => {
                           const on = selected.has(source.questionBankId);
                           const available = selectedDifficultyTotal(source);
+                          const availableTotal = practiceType === "GUIDED_REASONING"
+                            ? source.guidedReadyQuestions
+                            : source.readyQuestions;
                           const noneReady = available === 0;
                           return (
                             <button
@@ -614,7 +680,7 @@ function ActivityEditorForm({
                                 ].toLowerCase()}{" "}
                                 ready
                                 <span className="ml-1 text-neutral-muted">
-                                  ({source.readyQuestions} complete total)
+                                  ({availableTotal} eligible total)
                                 </span>
                               </span>
                             </button>
@@ -870,6 +936,16 @@ function ActivityEditorForm({
           </EditorSection>
 
           {/* Practice options */}
+          {practiceType === "GUIDED_REASONING" ? (
+            <EditorSection
+              title="Guided activity rules"
+              description="Guided activities always use Practice mode and Random selection. Configure the individual steps from each Question after it has been created."
+            >
+              <div className="rounded-lg border-l-4 border-primary bg-background-app p-3 text-body-sm text-foreground">
+                Questions without a current Guided definition are excluded from readiness and selection.
+              </div>
+            </EditorSection>
+          ) : (
           <EditorSection
             title="Practice options"
             description="Students can choose one of the enabled selection strategies when more than one is allowed."
@@ -896,9 +972,10 @@ function ActivityEditorForm({
               })}
             </div>
           </EditorSection>
+          )}
 
           {/* Student mode */}
-          <EditorSection
+          {practiceType === "GUIDED_REASONING" ? null : <EditorSection
             title="Student mode"
             description="Practice has no timer. Try Hard uses a separate timer for each question."
           >
@@ -942,7 +1019,7 @@ function ActivityEditorForm({
                 </Field>
               </div>
             )}
-          </EditorSection>
+          </EditorSection>}
         </main>
 
         {/* ───────── Summary ───────── */}
@@ -971,6 +1048,10 @@ function ActivityEditorForm({
               <Row
                 label="Practice options"
                 value={String(availableSelectionStrategies.length)}
+              />
+              <Row
+                label="Format"
+                value={practiceTypes.find((x) => x.value === practiceType)?.label || practiceType}
               />
               <Row
                 label="Mode"

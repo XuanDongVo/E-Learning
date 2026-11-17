@@ -27,6 +27,9 @@
 - Maximum 2 answers per question: first answer + 1 retry.
 - Hint usage is recorded and may affect future XP.
 - No hint in Try Hard.
+- Activity question navigation is free in Learning mode. Guided Step order and
+  Final availability are enforced within each Session Question and do not lock
+  navigation to the first unresolved Activity question.
 - Topic formula/reference sheet is deferred.
 
 ## Assignment

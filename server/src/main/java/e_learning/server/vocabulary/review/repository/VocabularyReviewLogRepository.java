@@ -1,6 +1,7 @@
 package e_learning.server.vocabulary.review.repository;
 
 import e_learning.server.vocabulary.review.entity.VocabularyReviewLog;
+import e_learning.server.vocabulary.review.entity.VocabularyReviewSource;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -36,6 +37,18 @@ public interface VocabularyReviewLogRepository extends JpaRepository<VocabularyR
 
     Optional<VocabularyReviewLog> findByStudentIdAndRequestId(Long studentId, UUID requestId);
 
+    List<VocabularyReviewLog> findAllByStudentIdAndWordId(Long studentId, Long wordId);
+
+    @Query("""
+            SELECT l.word.id FROM VocabularyReviewLog l JOIN l.progress p
+            WHERE l.student.id = :studentId AND l.word.unit.id = :unitId
+              AND l.source = :source AND l.reviewCount = 1 AND p.reviewCount = 1
+            """)
+    List<Long> findReversibleBrowseMarkWordIds(
+            @Param("studentId") Long studentId,
+            @Param("unitId") Long unitId,
+            @Param("source") VocabularyReviewSource source);
+
     @Query(value = """
             SELECT (l.reviewed_at AT TIME ZONE 'Asia/Ho_Chi_Minh')::date AS "reviewDate",
                    COUNT(DISTINCT l.word_id) AS "distinctWordCount"
@@ -46,6 +59,7 @@ public interface VocabularyReviewLogRepository extends JpaRepository<VocabularyR
               AND u.id IN (:unitIds)
               AND w.status = 'ACTIVE'
               AND l.rating IN ('HARD', 'GOOD', 'EASY')
+              AND l.source = 'STUDY'
             GROUP BY (l.reviewed_at AT TIME ZONE 'Asia/Ho_Chi_Minh')::date
             ORDER BY "reviewDate"
             """, nativeQuery = true)
@@ -87,6 +101,7 @@ public interface VocabularyReviewLogRepository extends JpaRepository<VocabularyR
               AND u.id IN (:unitIds)
               AND w.status = 'ACTIVE'
               AND l.rating IN ('AGAIN', 'HARD')
+              AND l.source = 'STUDY'
             GROUP BY w.id, w.word, w.meaning_vi, u.id, u.name, p.due_at
             ORDER BY MAX(l.reviewed_at) DESC, w.id DESC
             """, nativeQuery = true)

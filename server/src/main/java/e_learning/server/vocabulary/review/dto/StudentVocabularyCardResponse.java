@@ -19,5 +19,6 @@ public record StudentVocabularyCardResponse(
         String state,
         Instant dueAt,
         int reviewCount,
-        boolean due
+        boolean due,
+        boolean canUndoBrowseMark
 ) {}

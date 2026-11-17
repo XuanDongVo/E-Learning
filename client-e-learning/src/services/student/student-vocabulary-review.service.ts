@@ -19,6 +19,12 @@ export const studentVocabularyReviewService = {
       method: "POST",
       body: JSON.stringify(payload),
     }),
+  markKnown: (wordId: number, requestId: string) =>
+    request<VocabularyReviewResult>(`/v1/student/vocabulary/words/${wordId}/mark`, {
+      method: "POST", body: JSON.stringify({ requestId }),
+    }),
+  unmarkKnown: (wordId: number) =>
+    request<void>(`/v1/student/vocabulary/words/${wordId}/mark`, { method: "DELETE" }),
   previewReview: (wordId: number) =>
     request<VocabularyReviewPreview>(`/v1/student/vocabulary/words/${wordId}/review-preview`),
 };

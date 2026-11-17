@@ -1,6 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { studentVocabularyReviewService } from "@/services/student/student-vocabulary-review.service";
 import {
   Search,
   BookOpen,
@@ -26,7 +28,23 @@ export function VocabularyBrowseTab({
   const [searchTerm, setSearchTerm] = useState("");
   const [browseFilter, setBrowseFilter] = useState<"all" | "new" | "due">("all");
   const [favorites, setFavorites] = useState<Set<number>>(new Set());
-  const [mastered, setMastered] = useState<Set<number>>(new Set());
+  const queryClient = useQueryClient();
+  const requestIds = useRef(new Map<number, string>());
+  const markMutation = useMutation({
+    mutationFn: ({ wordId, action, requestId }: {
+      wordId: number; action: "mark" | "unmark"; requestId?: string;
+    }) => action === "mark"
+      ? studentVocabularyReviewService.markKnown(wordId, requestId!)
+      : studentVocabularyReviewService.unmarkKnown(wordId),
+    onSuccess: async (_, variables) => {
+      requestIds.current.delete(variables.wordId);
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["student", "vocabulary", "units"] }),
+        queryClient.invalidateQueries({ queryKey: ["student", "vocabulary", "overview"] }),
+        queryClient.invalidateQueries({ queryKey: ["student", "vocabulary", "progress"] }),
+      ]);
+    },
+  });
 
   const handleToggleFavorite = (wordId: number) => {
     setFavorites((prev) => {
@@ -37,22 +55,24 @@ export function VocabularyBrowseTab({
     });
   };
 
-  const handleToggleMastered = (wordId: number) => {
-    setMastered((prev) => {
-      const next = new Set(prev);
-      if (next.has(wordId)) next.delete(wordId);
-      else next.add(wordId);
-      return next;
-    });
+  const handleToggleMastered = (card: StudentVocabularyStudyCard) => {
+    if (markMutation.isPending) return;
+    const action = card.state === "NEW" ? "mark" : card.canUndoBrowseMark ? "unmark" : null;
+    if (!action) return;
+    const requestId = action === "mark"
+      ? (requestIds.current.get(card.wordId) ?? crypto.randomUUID())
+      : undefined;
+    if (requestId) requestIds.current.set(card.wordId, requestId);
+    markMutation.mutate({ wordId: card.wordId, action, requestId });
   };
 
   // Derived data
   const dueCards = useMemo(
-    () => cards.filter((card) => card.due),
+    () => cards.filter((card) => card.state !== "NEW" && card.due),
     [cards]
   );
 
-  const masteredCount = mastered.size;
+  const learnedCount = cards.filter((card) => card.state !== "NEW").length;
 
   // Filter cards
   const visibleBrowseCards = useMemo(() => {
@@ -63,7 +83,7 @@ export function VocabularyBrowseTab({
         browseFilter === "all" ||
         (browseFilter === "new"
           ? !card.state || card.state === "NEW"
-          : card.due);
+          : card.state !== "NEW" && card.due);
 
       const matchSearch =
         !normalizedSearch ||
@@ -154,11 +174,17 @@ export function VocabularyBrowseTab({
 
           <span className="flex items-center gap-1 student-typewriter">
             <CheckCircle2 className="size-3.5 text-success" />
-            Đã thuộc ({masteredCount})
+            Đã thuộc ({learnedCount})
           </span>
         
         </div>
       </div>
+
+      {markMutation.isError && (
+        <p role="alert" className="student-body rounded-lg border border-destructive/40 p-3 text-destructive">
+          {markMutation.error instanceof Error ? markMutation.error.message : "Không cập nhật được đánh dấu. Hãy thử lại."}
+        </p>
+      )}
 
       {/* Vocabulary list and progress */}
       <div className="flex flex-col gap-6 lg:gap-8">
@@ -179,7 +205,9 @@ export function VocabularyBrowseTab({
                 onToggleFavorite={handleToggleFavorite}
                 onToggleMastered={handleToggleMastered}
                 isFavorite={favorites.has(card.wordId)}
-                isMastered={mastered.has(card.wordId)}
+                isMastered={card.state !== "NEW"}
+                canUndoBrowseMark={card.canUndoBrowseMark}
+                markBusy={markMutation.isPending}
               />
             ))
           )}
@@ -200,7 +228,7 @@ export function VocabularyBrowseTab({
                     <span>Đã ghi nhớ</span>
                     <span className="font-bold text-foreground">
                       {cards.length > 0
-                        ? `${Math.round((masteredCount / cards.length) * 100)}%`
+                        ? `${Math.round((learnedCount / cards.length) * 100)}%`
                         : "0%"}
                     </span>
                   </div>
@@ -211,7 +239,7 @@ export function VocabularyBrowseTab({
                       style={{
                         width:
                           cards.length > 0
-                            ? `${(masteredCount / cards.length) * 100}%`
+                            ? `${(learnedCount / cards.length) * 100}%`
                             : "0%",
                       }}
                     />

@@ -36,6 +36,11 @@ public class VocabularyReviewLog {
     @Column(name = "request_id", nullable = false)
     private UUID requestId;
 
+    @Builder.Default
+    @Enumerated(EnumType.STRING)
+    @Column(name = "source", nullable = false, length = 20)
+    private VocabularyReviewSource source = VocabularyReviewSource.STUDY;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 10)
     private Rating rating;

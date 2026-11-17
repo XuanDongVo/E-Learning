@@ -12,6 +12,8 @@ import e_learning.server.vocabulary.entity.VocabularyWord;
 import e_learning.server.vocabulary.enums.VocabularyStatus;
 import e_learning.server.vocabulary.repository.VocabularyWordRepository;
 import e_learning.server.vocabulary.review.dto.RecordVocabularyReviewRequest;
+import e_learning.server.vocabulary.review.dto.MarkVocabularyWordRequest;
+import e_learning.server.vocabulary.review.entity.VocabularyReviewSource;
 import e_learning.server.vocabulary.review.entity.StudentVocabularyProgress;
 import e_learning.server.vocabulary.review.entity.VocabularyReviewLog;
 import e_learning.server.vocabulary.review.repository.StudentVocabularyProgressRepository;
@@ -77,7 +79,7 @@ class StudentVocabularyReviewServiceTest {
     }
 
     @Test
-    void newActiveWordIsImmediatelyDueWithoutPersistingAProgressRow() {
+    void newActiveWordIsAvailableToLearnButNotDueForFsrsReview() {
         when(progress.findAllByStudentIdAndWordUnitId(7L, 2L)).thenReturn(List.of());
         when(words.findByUnitIdAndStatusOrderByDisplayOrderAsc(2L, VocabularyStatus.ACTIVE))
                 .thenReturn(List.of(word()));
@@ -86,7 +88,8 @@ class StudentVocabularyReviewServiceTest {
 
         assertThat(cards).hasSize(1);
         assertThat(cards.getFirst().state()).isEqualTo("NEW");
-        assertThat(cards.getFirst().due()).isTrue();
+        assertThat(cards.getFirst().due()).isFalse();
+        assertThat(cards.getFirst().canUndoBrowseMark()).isFalse();
         assertThat(cards.getFirst().dueAt()).isNull();
         verify(progress, never()).save(any());
     }
@@ -138,6 +141,79 @@ class StudentVocabularyReviewServiceTest {
                         exception -> assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.VOCABULARY_REVIEW_NOT_DUE));
         verify(progress, never()).save(any());
         verify(logs, never()).save(any());
+    }
+
+    @Test
+    void browseMarkCreatesFirstHardRatingDueAfterSixHours() {
+        User student = mock(User.class);
+        when(student.getRole()).thenReturn(Role.STUDENT);
+        when(users.findByIdForVocabularyReview(7L)).thenReturn(Optional.of(student));
+        when(words.findById(10L)).thenReturn(Optional.of(word()));
+        when(progress.findByStudentIdAndWordId(7L, 10L)).thenReturn(Optional.empty());
+        when(progress.save(any(StudentVocabularyProgress.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        AtomicReference<VocabularyReviewLog> stored = new AtomicReference<>();
+        when(logs.save(any(VocabularyReviewLog.class))).thenAnswer(invocation -> {
+            stored.set(invocation.getArgument(0));
+            return invocation.getArgument(0);
+        });
+        var result = service.markKnown(7L, 10L, new MarkVocabularyWordRequest(UUID.randomUUID()));
+        assertThat(result.rating()).isEqualTo(Rating.HARD);
+        assertThat(result.dueAt()).isEqualTo(result.reviewedAt().plusSeconds(6 * 3600));
+        assertThat(result.reviewCount()).isEqualTo(1);
+        assertThat(stored.get().getSource()).isEqualTo(VocabularyReviewSource.BROWSE_MARK);
+    }
+
+    @Test
+    void browseMarkCanBeUndoneBeforeAnyFurtherReview() {
+        User student = mock(User.class);
+        when(student.getRole()).thenReturn(Role.STUDENT);
+        when(users.findByIdForVocabularyReview(7L)).thenReturn(Optional.of(student));
+        when(words.findById(10L)).thenReturn(Optional.of(word()));
+        StudentVocabularyProgress card = StudentVocabularyProgress.builder()
+                .id(11L).student(student).word(word()).reviewCount(1).build();
+        VocabularyReviewLog log = VocabularyReviewLog.builder()
+                .id(12L).student(student).word(word()).progress(card)
+                .source(VocabularyReviewSource.BROWSE_MARK).rating(Rating.HARD).build();
+        when(progress.findByStudentIdAndWordId(7L, 10L)).thenReturn(Optional.of(card));
+        when(logs.findAllByStudentIdAndWordId(7L, 10L)).thenReturn(List.of(log));
+        service.unmarkKnown(7L, 10L);
+        var inOrder = inOrder(logs, progress);
+        inOrder.verify(logs).delete(log);
+        inOrder.verify(logs).flush();
+        inOrder.verify(progress).delete(card);
+    }
+
+    @Test
+    void cannotUndoBrowseMarkAfterAnotherReview() {
+        User student = mock(User.class);
+        when(student.getRole()).thenReturn(Role.STUDENT);
+        when(users.findByIdForVocabularyReview(7L)).thenReturn(Optional.of(student));
+        when(words.findById(10L)).thenReturn(Optional.of(word()));
+        StudentVocabularyProgress card = StudentVocabularyProgress.builder()
+                .student(student).word(word()).reviewCount(2).build();
+        when(progress.findByStudentIdAndWordId(7L, 10L)).thenReturn(Optional.of(card));
+        assertThatThrownBy(() -> service.unmarkKnown(7L, 10L))
+                .isInstanceOfSatisfying(AppException.class,
+                        e -> assertThat(e.getErrorCode()).isEqualTo(ErrorCode.VOCABULARY_MARK_NOT_REVERSIBLE));
+        verify(logs, never()).delete(any());
+    }
+
+    @Test
+    void cannotUndoFirstReviewCreatedInLearnInsteadOfBrowse() {
+        User student = mock(User.class);
+        when(student.getRole()).thenReturn(Role.STUDENT);
+        when(users.findByIdForVocabularyReview(7L)).thenReturn(Optional.of(student));
+        when(words.findById(10L)).thenReturn(Optional.of(word()));
+        StudentVocabularyProgress card = StudentVocabularyProgress.builder()
+                .id(11L).student(student).word(word()).reviewCount(1).build();
+        VocabularyReviewLog log = VocabularyReviewLog.builder().progress(card)
+                .source(VocabularyReviewSource.STUDY).build();
+        when(progress.findByStudentIdAndWordId(7L, 10L)).thenReturn(Optional.of(card));
+        when(logs.findAllByStudentIdAndWordId(7L, 10L)).thenReturn(List.of(log));
+        assertThatThrownBy(() -> service.unmarkKnown(7L, 10L))
+                .isInstanceOfSatisfying(AppException.class,
+                        e -> assertThat(e.getErrorCode()).isEqualTo(ErrorCode.VOCABULARY_MARK_NOT_REVERSIBLE));
+        verify(logs, never()).delete(any());
     }
 
     private VocabularyWord word() {

@@ -35,6 +35,19 @@ public class StudentVocabularyReviewController {
         return ApiResponse.success(service.recordReview(Long.valueOf(jwt.getSubject()), wordId, request));
     }
 
+    @PostMapping("/words/{wordId}/mark")
+    public ApiResponse<VocabularyReviewResultResponse> markKnown(
+            @AuthenticationPrincipal Jwt jwt, @PathVariable Long wordId,
+            @Valid @RequestBody MarkVocabularyWordRequest request) {
+        return ApiResponse.success(service.markKnown(Long.valueOf(jwt.getSubject()), wordId, request));
+    }
+
+    @DeleteMapping("/words/{wordId}/mark")
+    public ApiResponse<Void> unmarkKnown(@AuthenticationPrincipal Jwt jwt, @PathVariable Long wordId) {
+        service.unmarkKnown(Long.valueOf(jwt.getSubject()), wordId);
+        return ApiResponse.success(null);
+    }
+
     @GetMapping("/words/{wordId}/review-preview")
     public ApiResponse<VocabularyReviewPreviewResponse> preview(
             @AuthenticationPrincipal Jwt jwt, @PathVariable Long wordId) {

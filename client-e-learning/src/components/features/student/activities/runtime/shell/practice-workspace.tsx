@@ -1,21 +1,20 @@
 "use client";
 
 import Image from "next/image";
-import { Check, RefreshCw, X } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import { getAppErrorMessage } from "@/lib/errors/app-error";
 import { PracticeResult } from "../../practice-result";
 import { QuestionNavigator } from "../../question-navigator";
 import { HintPanel, HintStatus } from "../../hint-panel";
 import { GuidedStage } from "../guided-stage";
 import { QuestionStageView } from "../question-stage-view";
+import { AnswerResultFeedback } from "../question-stage/answer-result-feedback";
 import { TYPE_LABEL, formatAnswer, isChoice, splitKeys } from "@/utils/practice-utils";
 import mascot from "../../../../../../../public/assets/practice-mascot.png";
 import type { PracticeController } from "../controller/use-practice-controller";
 
 const quietButton = "student-control student-control--quiet";
-const card = "student-paper";
 
 export function PracticeWorkspace({
   unitId,
@@ -67,6 +66,15 @@ export function PracticeWorkspace({
               : [displayAnswer.correctAnswer],
           )
         : "";
+  const resultFeedback = (
+    <AnswerResultFeedback
+      feedback={activeFeedback}
+      isGuidedStep={isGuidedStepFeedback}
+      revealedAnswer={revealedAnswer}
+      answerRevealed={displayAnswer?.answerRevealed}
+      explanation={displayAnswer?.explanation}
+    />
+  );
   const gameOver = session.status === "GAME_OVER";
   const finished = over && locked;
   const mascotText = finished
@@ -130,18 +138,18 @@ export function PracticeWorkspace({
           className={
             complete
               ? "mt-6 flex flex-1 items-center justify-center py-4"
-              : "mt-6 grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_248px]"
+              : "mt-4 grid min-w-0 items-start gap-4 sm:mt-6 sm:gap-5 lg:grid-cols-[minmax(0,1fr)_248px]"
           }
         >
           <div
             className={
               complete
                 ? "w-full max-w-[760px]"
-                : "grid items-start gap-5 sm:grid-cols-[140px_minmax(0,1fr)]"
+                : "grid min-w-0 items-start gap-5 sm:grid-cols-[112px_minmax(0,1fr)] lg:grid-cols-[140px_minmax(0,1fr)]"
             }
           >
             {!complete && (
-              <aside className="flex items-center gap-3 max-sm:order-2 max-sm:justify-center sm:mt-11 sm:flex-col sm:gap-2">
+              <aside className="hidden items-center gap-3 sm:mt-11 sm:flex sm:flex-col sm:gap-2">
                 <div className="relative rounded-[18px] bg-card-bg px-3 py-3 text-center text-xs leading-5 shadow-pop">
                   {mascotText}
                 </div>
@@ -150,16 +158,16 @@ export function PracticeWorkspace({
                   alt="Việt Cường đang cổ vũ bạn"
                   width={816}
                   height={816}
-                  className="size-20 object-contain sm:size-32"
+                  className="size-24 object-contain lg:size-32"
                 />
               </aside>
             )}
-            <div className={`${card} rounded-[24px] p-[18px] sm:p-5`}>
-               <div className="mb-3 flex flex-wrap gap-2 text-xs font-bold">
-                    <span className="bg-secondary text-secondary-foreground rounded-full px-2.5 py-1">
+            <div className="min-w-0 rounded-[18px] bg-card-bg p-3 shadow-pop-sm sm:rounded-[24px] sm:p-5 sm:shadow-pop-lg">
+               <div className="mb-3 flex flex-wrap gap-2">
+                    <span className="student-chip">
                       Câu {index + 1}/{questions.length}
                     </span>
-                    <span className="bg-secondary text-secondary-foreground rounded-full px-2.5 py-1">
+                    <span className="student-chip">
                       {TYPE_LABEL[question.type]}
                     </span>
                   </div>
@@ -197,10 +205,11 @@ export function PracticeWorkspace({
                   draft={draft}
                   review={guidedReview?.questionId === question.id ? guidedReview : undefined}
                   finalReview={guidedFinalReview?.questionId === question.id ? guidedFinalReview : undefined}
+                  resultFeedback={resultFeedback}
                   onDismissReview={dismissGuidedReview}
                   onDismissFinalReview={dismissGuidedFinalReview}
-                  hint={guidedHint}
-                  error={
+                  stepHint={guidedHint}
+                  stepError={
                     guidedStepAnswerMutation.isError || guidedHintMutation.isError
                       ? getAppErrorMessage(
                           guidedStepAnswerMutation.error ?? guidedHintMutation.error,
@@ -208,8 +217,18 @@ export function PracticeWorkspace({
                         )
                       : undefined
                   }
+                  finalHint={hintOpen ? hintText : undefined}
+                  finalError={
+                    answerMutation.isError
+                      ? getAppErrorMessage(
+                          answerMutation.error,
+                          tErrors as (key: string) => string,
+                        )
+                      : hintError
+                  }
                   pending={answering}
-                  hintPending={guidedHintMutation.isPending}
+                  stepHintPending={guidedHintMutation.isPending}
+                  finalHintPending={hinting}
                   onDraftChange={(next) => {
                     requestIds.clear(
                       question.guided?.currentStep
@@ -219,7 +238,7 @@ export function PracticeWorkspace({
                     setDraft(question.id, () => next);
                   }}
                   onSubmitStep={submitGuidedStep}
-                  onUseHint={() => {
+                  onUseStepHint={() => {
                     const step = question.guided?.currentStep;
                     if (!step) return;
                     guidedHintMutation.mutate({
@@ -227,6 +246,7 @@ export function PracticeWorkspace({
                       stepKey: step.stepKey,
                     });
                   }}
+                  onUseFinalHint={() => sendHint({ questionId: question.id })}
                   onSubmitFinal={submit}
                 />
               ) : (
@@ -255,6 +275,7 @@ export function PracticeWorkspace({
                     inputLabel="Đáp án của bạn"
                     inputPlaceholder="Nhập đáp án"
                     optionState={optionState}
+                    feedback={resultFeedback}
                     onDraftChange={(next) => {
                       requestIds.clear(`final:${question.id}`);
                       setDraft(question.id, () => next);
@@ -304,86 +325,6 @@ export function PracticeWorkspace({
                   </div>
                 </>
               )}
-                    {activeFeedback && (
-                      <div
-                        role="status"
-                        aria-live="polite"
-                        className={cn(
-                          "mt-4 flex items-start gap-3 rounded-2xl border-2 p-3.5",
-                          activeFeedback.correct && "border-success bg-success-soft",
-                          !activeFeedback.correct &&
-                            activeFeedback.retryAvailable &&
-                            "border-warning bg-warning-soft",
-                          !activeFeedback.correct &&
-                            !activeFeedback.retryAvailable &&
-                            "border-destructive bg-destructive-soft",
-                        )}
-                      >
-                        <span
-                          className={cn(
-                            "grid size-9 shrink-0 place-items-center rounded-full",
-                            activeFeedback.correct &&
-                              "bg-success text-primary-foreground",
-                            !activeFeedback.correct &&
-                              activeFeedback.retryAvailable &&
-                              "bg-warning text-accent-foreground",
-                            !activeFeedback.correct &&
-                              !activeFeedback.retryAvailable &&
-                              "bg-destructive text-destructive-foreground",
-                          )}
-                        >
-                          {activeFeedback.correct ? (
-                            <Check size={18} />
-                          ) : activeFeedback.retryAvailable ? (
-                            <RefreshCw size={18} />
-                          ) : (
-                            <X size={18} />
-                          )}
-                        </span>
-
-                        <div className="min-w-0 flex-1">
-                          <p
-                            className={cn(
-                              "text-sm font-extrabold",
-                              activeFeedback.correct && "text-success",
-                              !activeFeedback.correct &&
-                                activeFeedback.retryAvailable &&
-                                "text-warning",
-                              !activeFeedback.correct &&
-                                !activeFeedback.retryAvailable &&
-                                "text-destructive",
-                            )}
-                          >
-                            {activeFeedback.correct
-                              ? "Chính xác!"
-                              : activeFeedback.retryAvailable
-                                ? "Thử lại nhé!"
-                                : "Chưa chính xác"}
-                          </p>
-
-                          <p className="mt-0.5 text-sm font-semibold leading-6 text-foreground">
-                            {activeFeedback.correct
-                              ? isGuidedStepFeedback ? "Bạn đã trả lời đúng bước này!" : "Bạn làm tốt lắm. Tiếp tục phát huy nhé!"
-                              : activeFeedback.retryAvailable
-                                ? "Bạn còn một lần thử lại."
-                                : revealedAnswer
-                                  ? `Đáp án đúng: ${revealedAnswer}`
-                                  : "Hãy xem lại đáp án và ghi nhớ nhé."}
-                          </p>
-
-                          {displayAnswer?.answerRevealed && displayAnswer?.explanation && (
-                            <div className="mt-2 border-t border-current/15 pt-2">
-                              <p className="text-xs font-extrabold text-muted-foreground">
-                                GIẢI THÍCH
-                              </p>
-                              <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                                {displayAnswer?.explanation}
-                              </p>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    )}
             </div>
           </div>
           {!complete && <QuestionNavigator {...navProps} />}

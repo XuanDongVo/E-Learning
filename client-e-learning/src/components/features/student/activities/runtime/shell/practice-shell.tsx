@@ -79,7 +79,7 @@ export function PracticeShell({
         priority
         className={`fixed inset-0 h-full w-full object-cover ${background === "calm" ? "hue-rotate-[25deg] saturate-[0.65]" : ""}`}
       />
-      <div className="relative mx-auto flex min-h-svh max-w-[880px] flex-col px-4 pb-5 pt-7 max-sm:pt-[18px] lg:max-w-[1140px]">
+      <div className="relative mx-auto flex min-h-svh max-w-[880px] flex-col px-3 pb-0 pt-3 sm:px-4 sm:pb-5 sm:pt-7 lg:max-w-[1140px]">
         <PracticeHeader controller={controller} />
         <PracticeWorkspace unitId={unitId} controller={controller} />
         <PracticeFooter controller={controller} />

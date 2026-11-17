@@ -218,9 +218,7 @@ export function StudentVocabularyLibrary() {
                       >
                         Học <ArrowRight className="size-4" aria-hidden="true" />
                       </Link>
-                      {/* <Link href={`/student/vocabulary/units/${unit.unitId}`} className="student-control student-control--action inline-flex items-center gap-1.5 px-4">
-                        Xem từ <ArrowRight className="size-4" aria-hidden="true" />
-                      </Link> */}
+                    
                       {unit.dueCount > 0 && (
                         <Link
                           href={`/student/vocabulary/units/${unit.unitId}?mode=review`}

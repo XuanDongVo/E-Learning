@@ -12,6 +12,12 @@ import type {
   ActivityReviewStep,
   ActivitySessionReview,
 } from "@/types/student/activity-session";
+import { OrderingAttemptAnswer } from "./ordering/OrderingAttemptAnswer";
+import { OrderingSuggestedAnswer } from "./ordering/OrderingSuggestedAnswer";
+import type {
+  ReviewOrdering,
+  ReviewOrderingAnswer,
+} from "./ordering/ordering-review-types";
 
 function answerValues(answer: unknown): string[] {
   if (Array.isArray(answer)) return answer.map(String);
@@ -49,9 +55,11 @@ function OutcomeIcon({ correct }: { correct?: boolean | null }) {
 function AttemptList({
   attempts,
   options,
+  ordering,
 }: {
   attempts: ActivityReviewAttempt[];
   options: ActivityReviewOption[];
+  ordering?: ReviewOrdering | null;
 }) {
   const t = useTranslations("student.activities.review");
   const locale = useLocale();
@@ -73,9 +81,18 @@ function AttemptList({
             <p className="student-meta text-muted-foreground">
               {formatDateTime(attempt.submittedAt, locale)}
             </p>
-            <p className="student-body break-words">
-              {answerText(attempt.submittedAnswer, options, t("notAnswered"))}
-            </p>
+            {ordering ? (
+              <OrderingAttemptAnswer
+                answer={attempt.submittedAnswer}
+                ordering={ordering}
+                fallback={t("notAnswered")}
+                label={t("submittedOrder")}
+              />
+            ) : (
+              <p className="student-body break-words">
+                {answerText(attempt.submittedAnswer, options, t("notAnswered"))}
+              </p>
+            )}
           </div>
           {attempt.hintUsedBeforeAttempt ? (
             <span className="student-meta inline-flex items-center gap-1 text-warning">
@@ -92,21 +109,30 @@ function AttemptList({
 function CorrectAnswer({
   answers,
   options,
+  orderingAnswer,
   explanation,
 }: {
   answers: string[];
   options: ActivityReviewOption[];
+  orderingAnswer?: ReviewOrderingAnswer | null;
   explanation?: string | null;
 }) {
   const t = useTranslations("student.activities.review");
-  if (!answers.length && !explanation) return null;
+  if (!answers.length && !orderingAnswer && !explanation) return null;
   return (
     <div className="rounded-xl border border-success/30 bg-success-soft px-3 py-2.5">
-      {answers.length ? (
-        <p className="student-body">
-          <span className="student-label text-success">{t("correctAnswer")}: </span>
-          {answerText(answers, options, "")}
-        </p>
+      {answers.length || orderingAnswer ? (
+        <div className="student-body">
+          <p className="student-label text-success">{t("correctAnswer")}</p>
+          {orderingAnswer ? (
+            <OrderingSuggestedAnswer
+              answer={orderingAnswer}
+              label={t("suggestedOrder")}
+            />
+          ) : (
+            <p>{answerText(answers, options, "")}</p>
+          )}
+        </div>
       ) : null}
       {explanation ? (
         <p className="student-body mt-1 text-muted-foreground">{explanation}</p>
@@ -225,11 +251,13 @@ function QuestionReview({ question }: { question: ActivityReviewQuestion }) {
               <AttemptList
                 attempts={question.finalAnswer.attempts}
                 options={question.options}
+                ordering={question.ordering}
               />
             )}
             <CorrectAnswer
               answers={question.finalAnswer.correctAnswers}
               options={question.options}
+              orderingAnswer={question.finalAnswer.orderingAnswer}
               explanation={question.finalAnswer.explanation}
             />
           </section>

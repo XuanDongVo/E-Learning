@@ -43,8 +43,10 @@ This file is a drift register, not a historical audit. Accepted ADRs define inte
 | Q-07 | Hint round-trip across all authoring paths | Shared mapping exists, but endpoint-wide parity is not fully verified | Verification gap |
 | Q-08 | Handler/contract tests | Focused tests exist | Implemented; full integration test gate remains |
 | Q-09 | Ordering authoring and persistence | V63, Ordering handler/spec, persistence mappers and split Teacher authoring/preview components exist | M1 implemented; backend execution not verified in current environment |
-| Q-10 | Ordering scope gates | Classic runtime accepts Ordering; Guided Final authoring accepts it but Guided runtime, Guided Steps, Assignment/Assessment and CSV remain closed | M2 implemented; Guided runtime deferred to M3 |
+| Q-10 | Ordering scope gates | Classic and Guided Final runtime accept Ordering; Guided Steps, Assignment/Assessment and CSV remain closed | M3 implemented; unsupported scopes remain fail-closed |
 | Q-11 | Ordering Classic runtime | Classic eligibility, schema-v3 frozen shuffle, sanitized Student projection, typed answer, binary grading and Student controls exist | M2 implemented; targeted Maven execution blocked by environment |
+| Q-12 | Ordering Guided Final runtime | READY/revision eligibility, pre-Final gate, shared Ordering submit/grading, Final Hint/retry and typed Review projection exist | M3 implemented; targeted Maven execution blocked by missing FSRS dependency |
+| Q-13 | Ordering compatibility and QA | Assignment guard, malformed answer safety, alternative/duplicate grading, snapshot v2/v3 XP guards, mobile/keyboard semantics and disposable Classic/Guided seed exist | M4 source implemented; Maven and disposable-DB execution remain environment verification gates |
 
 ## Assignment Composition / Phase 7B
 

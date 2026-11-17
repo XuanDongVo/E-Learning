@@ -36,18 +36,21 @@ export function PracticeHeader({
   if (!session) return null;
 
   return (
-    <header className="flex items-center gap-3 max-sm:gap-2">
+    <header className="flex min-w-0 flex-wrap items-center gap-2 sm:flex-nowrap sm:gap-3">
       <Button
         variant="outline"
-        className={`${quietButton} shrink-0 px-3`}
+        className={`${quietButton} size-11 shrink-0 px-0 sm:w-auto sm:px-3`}
+        aria-label={finish.isPending ? "Đang thoát" : "Quay lại"}
         onClick={leave}
         disabled={finish.isPending}
       >
         <ArrowLeft size={16} />
-        <span>{finish.isPending ? "Đang thoát…" : "Quay lại"}</span>
+        <span className="hidden sm:inline">
+          {finish.isPending ? "Đang thoát…" : "Quay lại"}
+        </span>
       </Button>
       <div
-        className="h-2.5 min-w-6 flex-1 overflow-hidden rounded-full bg-primary-foreground/25"
+        className="h-2.5 min-w-14 flex-1 overflow-hidden rounded-full bg-primary-foreground/25"
         role="progressbar"
         aria-label="Tiến độ luyện tập"
         aria-valuenow={index + 1}
@@ -65,7 +68,7 @@ export function PracticeHeader({
           aria-pressed={hintOpen}
           aria-busy={hinting}
           disabled={hinting}
-          className={`${hintOpen ? "border-accent bg-accent text-accent-foreground hover:bg-accent hover:text-accent-foreground" : quietButton} px-3`}
+          className={`${hintOpen ? "border-accent bg-accent text-accent-foreground hover:bg-accent hover:text-accent-foreground" : quietButton} size-11 shrink-0 px-0 sm:w-auto sm:px-3`}
           onClick={requestHint}
         >
           <Lightbulb size={16} />
@@ -75,7 +78,7 @@ export function PracticeHeader({
         </Button>
       ) : null}
       {tryHard && !complete ? (
-        <div className="flex shrink-0 items-center gap-3 rounded-full bg-foreground/25 px-3 py-1.5 text-sm font-extrabold text-primary-foreground">
+        <div className="flex shrink-0 items-center gap-3 rounded-full bg-foreground/25 px-3 py-1.5 text-sm font-extrabold text-primary-foreground max-sm:order-last max-sm:ml-auto">
           {secondsLeft !== undefined ? (
             <span
               className={`flex items-center gap-1 ${secondsLeft <= 5 ? "text-accent" : ""}`}
@@ -92,7 +95,7 @@ export function PracticeHeader({
         </div>
       ) : null}
       <span
-        className="grid size-11 shrink-0 place-items-center rounded-full border-2 border-accent bg-foreground/25 text-lg font-extrabold text-primary-foreground ring-3 ring-foreground/40"
+        className="grid size-10 shrink-0 place-items-center rounded-full border-2 border-accent bg-foreground/25 text-lg font-extrabold text-primary-foreground ring-3 ring-foreground/40 sm:size-11"
         title="Số câu trả lời đúng"
       >
         {session.finalCorrectCount}
@@ -109,7 +112,7 @@ export function PracticeHeader({
       <Button
         variant="outline"
         size="icon"
-        className={`${quietButton} shrink-0 outline-2 outline-offset-[3px] outline-primary-foreground/65`}
+        className={`${quietButton} size-11 shrink-0 outline-2 outline-offset-[3px] outline-primary-foreground/65`}
         aria-label="Cài đặt trò chơi"
         onClick={() => setSettings(true)}
       >

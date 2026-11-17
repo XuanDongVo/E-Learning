@@ -48,6 +48,40 @@ class OrderingRuntimeServiceTest {
         AppException error = assertThrows(AppException.class, () -> service.grade(snapshot,
                 objectMapper.readTree("{\"order\":[\"a\",\"a\",\"c\"]}")));
         assertEquals(ErrorCode.ORDERING_INVALID_PERMUTATION, error.getErrorCode());
+        assertEquals(ErrorCode.ORDERING_INVALID_PERMUTATION,
+                assertThrows(AppException.class, () -> service.grade(snapshot,
+                        objectMapper.readTree("{\"order\":[\"a\",\"b\"]}"))).getErrorCode());
+        assertEquals(ErrorCode.ORDERING_INVALID_PERMUTATION,
+                assertThrows(AppException.class, () -> service.grade(snapshot,
+                        objectMapper.readTree("{\"order\":[\"a\",\"b\",\"unknown\"]}"))).getErrorCode());
+    }
+
+    @Test
+    void preservesAlternativeOrdersAndDuplicateVisibleContent() throws Exception {
+        QuestionSpec.QuestionCommon common = new QuestionSpec.QuestionCommon(
+                "Order the words", Difficulty.MEDIUM, null, null, List.of());
+        OrderingSpec spec = new OrderingSpec(common, 1, OrderingSubtype.WORD,
+                List.of(
+                        new OrderingSpec.Item("a", "very"),
+                        new OrderingSpec.Item("b", "very"),
+                        new OrderingSpec.Item("c", "useful"),
+                        new OrderingSpec.Item("d", "today")),
+                List.of(List.of("a", "b", "c", "d"), List.of("d", "a", "b", "c")));
+        OrderingRuntimeSnapshot ordering = service.snapshot(spec);
+        ActivityQuestionSnapshot snapshot = activitySnapshot(ordering);
+        var firstProjection = service.publicView(ordering);
+
+        assertEquals(firstProjection, service.publicView(ordering),
+                "the frozen presentation must remain stable inside the session");
+        assertFalse(ordering.acceptedOrders().stream().anyMatch(accepted ->
+                visible(ordering, accepted).equals(firstProjection.items().stream()
+                        .map(item -> item.content()).toList())));
+        assertTrue(service.grade(snapshot,
+                objectMapper.readTree("{\"order\":[\"b\",\"a\",\"c\",\"d\"]}")),
+                "swapping duplicate visible items remains equivalent");
+        assertTrue(service.grade(snapshot,
+                objectMapper.readTree("{\"order\":[\"d\",\"a\",\"b\",\"c\"]}")),
+                "an explicitly accepted alternative remains correct");
     }
 
     @Test
@@ -72,5 +106,13 @@ class OrderingRuntimeServiceTest {
         return new ActivityQuestionSnapshot(3, 1L, QuestionType.ORDERING, Difficulty.EASY,
                 "Order the phrases", "Explanation", "Hint", null,
                 List.of(), List.of(), "{}", ordering);
+    }
+
+    private List<String> visible(OrderingRuntimeSnapshot snapshot, List<String> order) {
+        var byKey = snapshot.items().stream().collect(
+                java.util.stream.Collectors.toMap(
+                        OrderingRuntimeSnapshot.Item::key,
+                        OrderingRuntimeSnapshot.Item::content));
+        return order.stream().map(byKey::get).toList();
     }
 }

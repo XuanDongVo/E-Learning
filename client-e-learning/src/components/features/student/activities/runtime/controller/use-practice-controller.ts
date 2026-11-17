@@ -369,9 +369,14 @@ export function usePracticeController({
     !answering &&
     !deadlineExpired &&
     !timeoutPending;
+  const guidedFinalAvailable =
+    !!question?.guided &&
+    !question.guided.currentStep &&
+    (question.guided.stage === "FINAL_PENDING" ||
+      question.guided.stage === "FINAL_RETRY");
   const hintAvailable =
     !!question &&
-    !question.guided &&
+    (!question.guided || guidedFinalAvailable) &&
     session?.mode === "LEARNING" &&
     question.hasHint &&
     !locked &&

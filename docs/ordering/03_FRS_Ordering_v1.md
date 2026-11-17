@@ -2,7 +2,7 @@
 
 **Functional Requirements Specification — E-Learning**  
 **Phiên bản:** 1.0 — 17/11/2026  
-**Trạng thái:** **M1–M2 IMPLEMENTED — M3/M4 PENDING**
+**Trạng thái:** **M1–M4 SOURCE IMPLEMENTED — ENVIRONMENT VERIFICATION PENDING**
 **Repository:** `XuanDongVo/E-Learning`  
 **Baseline được đối chiếu:** `feature/guided-reasoning-v1` @ `88f8f87878661aa575c2f9dee4e66e7f62cd3810`  
 **SRS nguồn:** [02_SRS_Ordering_v1.md](02_SRS_Ordering_v1.md) — v1.1, các quyết định `DEC-ORD-01..14` đã duyệt  
@@ -14,11 +14,16 @@
 > **Implementation note — 17/11/2026:** M1 đã hiện thực Question Engine,
 > persistence/migration, Teacher authoring/preview, Guided Final compatibility và
 > Assignment fail-closed. M2 sau đó đã triển khai Classic snapshot/Student runtime;
-> Guided integration và Review vẫn thuộc các phase tiếp theo.
+> M3 sau đó đã mở Guided Final sau Step gate và bổ sung typed Ordering Review.
 
 > **M2 update — 17/11/2026:** Ordering đã được mở riêng cho Classic Activity với
 > snapshot v3, frozen presentation order, sanitized DTO, typed answer adapter,
-> binary grading và Student controls. Guided Final runtime vẫn chưa mở.
+> binary grading và Student controls. M3 dùng lại contract này cho Guided Final.
+
+> **M4 update — 17/11/2026:** Compatibility tests, snapshot v2/v3 guards,
+> mobile/keyboard semantics, typed Review và disposable Classic/Guided Ordering
+> seed đã có trong source. Maven runtime và PostgreSQL seed execution chưa chạy do
+> dependency/environment gate.
 
 ---
 
@@ -746,4 +751,4 @@ Không trả accepted orders trong error detail cho Student.
 
 **Chưa xây dựng:** Ordering trong Guided Steps/Assignment, Teacher Analytics, CSV import, AI grading, partial XP/score hoặc new PracticeType. Những yêu cầu này phải có change request trước khi triển khai.
 
-**Kết luận trạng thái:** FRS đã được dùng để triển khai **M1 authoring foundation và M2 Classic runtime**. M3–M4 chưa triển khai; Guided Ordering vẫn bị chặn.
+**Kết luận trạng thái:** FRS đã được dùng để triển khai **M1–M4 ở source**. Guided Ordering Steps vẫn bị chặn đúng phạm vi; targeted Maven, disposable PostgreSQL seed và viewport QA còn là release verification gates.

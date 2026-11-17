@@ -2,7 +2,7 @@
 
 **Software Requirements Specification — E-Learning**  
 **Phiên bản:** 1.1 — Product Owner đã duyệt phương án PROPOSED, 16/11/2026  
-**Trạng thái:** **BUSINESS REQUIREMENTS APPROVED / M1–M2 IMPLEMENTED** — authoring và Classic runtime đã triển khai; Guided Final runtime thuộc M3
+**Trạng thái:** **BUSINESS REQUIREMENTS APPROVED / M1–M4 IMPLEMENTED** — source implementation hoàn tất; runtime Maven/DB verification còn phụ thuộc môi trường
 **Repository:** `XuanDongVo/E-Learning`  
 **Nguồn đối chiếu:** `feature/guided-reasoning-v1` tại commit `88f8f87878661aa575c2f9dee4e66e7f62cd3810`  
 **Tài liệu tham khảo cấu trúc:** `docs/guided-reasoning/02_SRS_Guided_Reasoning_v1.md`
@@ -16,11 +16,15 @@
 
 > **Implementation note — 17/11/2026:** M1 đã triển khai enum/schema/engine/persistence,
 > Teacher CRUD/preview và các scope gate. M2 sau đó đã mở Classic Student runtime;
-> Guided Final runtime vẫn chờ M3.
+> M3 đã mở Guided Final Ordering sau Step gate; Guided Steps vẫn không hỗ trợ Ordering.
 
 > **M2 update — 17/11/2026:** Classic Learning/Try Hard đã có snapshot v3,
 > server shuffle, Student projection/UI, typed submit, grading/retry/hint/timeout và
-> XP lifecycle. Guided Ordering vẫn đóng cho đến M3.
+> XP lifecycle. Guided Final Ordering dùng lại chính sách hiện hành, không có XP theo item.
+
+> **M4 update — 17/11/2026:** Đã bổ sung compatibility regression, semantic
+> mobile/keyboard Review/runtime và disposable seed cho Classic + Guided Ordering.
+> Targeted Maven execution và chạy seed trên PostgreSQL disposable vẫn là verification gate.
 
 ---
 
@@ -471,4 +475,4 @@ Ordering chỉ Ready để release khi:
 
 ---
 
-**Trạng thái cuối:** Quyết định nghiệp vụ đã duyệt; **M1 authoring và M2 Classic runtime đã triển khai**. M3–M4 vẫn chờ triển khai.
+**Trạng thái cuối:** Quyết định nghiệp vụ đã duyệt; **M1–M4 đã triển khai ở source**. Targeted Maven runtime, chạy seed trên PostgreSQL disposable và viewport QA vẫn cần hoàn tất trước release.

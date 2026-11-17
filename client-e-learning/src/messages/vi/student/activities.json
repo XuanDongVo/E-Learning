@@ -61,6 +61,8 @@
     "attempt": "Lần trả lời {number}",
     "usedHint": "Đã dùng gợi ý",
     "correctAnswer": "Đáp án đúng",
+    "submittedOrder": "Thứ tự đã trả lời",
+    "suggestedOrder": "Thứ tự gợi ý",
     "correct": "Đúng",
     "incorrect": "Chưa đúng",
     "notAnswered": "Chưa trả lời",

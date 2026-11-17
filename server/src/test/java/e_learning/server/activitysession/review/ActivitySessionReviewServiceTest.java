@@ -8,6 +8,10 @@ import e_learning.server.activitysession.dto.response.ActivitySessionReviewRespo
 import e_learning.server.activitysession.enums.GuidedQuestionStage;
 import e_learning.server.activitysession.enums.QuestionDeliveryType;
 import e_learning.server.activitysession.guided.GuidedRuntimeSnapshot;
+import e_learning.server.activitysession.ordering.OrderingRuntimeService;
+import e_learning.server.activitysession.ordering.OrderingRuntimeSnapshot;
+import e_learning.server.activitysession.dto.response.ordering.OrderingAnswerRevealResponse;
+import e_learning.server.activitysession.dto.response.ordering.OrderingQuestionResponse;
 import e_learning.server.activitysession.repository.*;
 import e_learning.server.activitysession.snapshot.ActivityQuestionSnapshotAssembler;
 import e_learning.server.common.exception.AppException;
@@ -15,6 +19,7 @@ import e_learning.server.content.unit.entity.Unit;
 import e_learning.server.question.entity.Question;
 import e_learning.server.question.enums.Difficulty;
 import e_learning.server.question.enums.QuestionType;
+import e_learning.server.question.engine.types.ordering.OrderingSubtype;
 import e_learning.server.question.guided.*;
 import e_learning.server.user.entity.User;
 import org.junit.jupiter.api.BeforeEach;
@@ -37,6 +42,7 @@ class ActivitySessionReviewServiceTest {
             mock(ActivitySessionFinalAnswerAttemptRepository.class);
     private final ActivityQuestionSnapshotAssembler snapshotAssembler =
             mock(ActivityQuestionSnapshotAssembler.class);
+    private final OrderingRuntimeService orderingRuntimeService = mock(OrderingRuntimeService.class);
     private final ObjectMapper objectMapper = mock(ObjectMapper.class);
     private ActivitySessionReviewService service;
 
@@ -44,7 +50,7 @@ class ActivitySessionReviewServiceTest {
     void setUp() {
         service = new ActivitySessionReviewService(
                 sessionRepository, stepAttemptRepository, stepHintRepository,
-                finalAttemptRepository, snapshotAssembler, objectMapper);
+                finalAttemptRepository, snapshotAssembler, orderingRuntimeService, objectMapper);
     }
 
     @Test
@@ -124,6 +130,38 @@ class ActivitySessionReviewServiceTest {
         assertTrue(finalReview.attempts().isEmpty());
     }
 
+    @Test
+    void resolvedGuidedOrderingReviewUsesTypedItemsAndSuggestedOrder() throws Exception {
+        ActivitySession session = session(true);
+        ActivitySessionQuestion item = session.getQuestions().getFirst();
+        ActivityQuestionSnapshot snapshot = orderingSnapshot();
+        var publicOrdering = new OrderingQuestionResponse(OrderingSubtype.WORD, List.of(
+                new OrderingQuestionResponse.Item("b", "learn"),
+                new OrderingQuestionResponse.Item("a", "we"),
+                new OrderingQuestionResponse.Item("c", "English")));
+        var suggested = new OrderingAnswerRevealResponse(List.of(
+                new OrderingQuestionResponse.Item("a", "we"),
+                new OrderingQuestionResponse.Item("b", "learn"),
+                new OrderingQuestionResponse.Item("c", "English")));
+        when(sessionRepository.findById(10L)).thenReturn(Optional.of(session));
+        when(snapshotAssembler.read(item)).thenReturn(snapshot);
+        when(objectMapper.readValue("guided", GuidedRuntimeSnapshot.class)).thenReturn(guidedSnapshot());
+        when(stepHintRepository.findAllBySessionQuestionId(101L)).thenReturn(List.of());
+        when(stepAttemptRepository.findAllBySessionQuestionIdOrderByAttemptNumberAsc(101L)).thenReturn(List.of());
+        when(finalAttemptRepository.findAllBySessionQuestionIdOrderByAttemptNumberAsc(101L))
+                .thenReturn(List.of(new ActivitySessionFinalAnswerAttempt(
+                        item, 1, java.util.UUID.randomUUID(), "{\"order\":[\"a\",\"b\",\"c\"]}",
+                        true, false, true, false)));
+        when(orderingRuntimeService.publicView(snapshot.ordering())).thenReturn(publicOrdering);
+        when(orderingRuntimeService.reveal(snapshot)).thenReturn(suggested);
+
+        var question = service.studentReview(10L, 20L).questions().getFirst();
+
+        assertEquals(publicOrdering, question.ordering());
+        assertEquals(suggested, question.finalAnswer().orderingAnswer());
+        assertTrue(question.finalAnswer().correctAnswers().isEmpty());
+    }
+
     private ActivitySession session(boolean resolved) {
         User student = mock(User.class);
         when(student.getId()).thenReturn(20L);
@@ -161,6 +199,19 @@ class ActivitySessionReviewServiceTest {
                         new ActivityQuestionSnapshot.Option("A", "Answer", true),
                         new ActivityQuestionSnapshot.Option("B", "Other", false)),
                 List.of(), "snapshot");
+    }
+
+    private ActivityQuestionSnapshot orderingSnapshot() {
+        var ordering = new OrderingRuntimeSnapshot(1, 1, OrderingSubtype.WORD,
+                List.of(
+                        new OrderingRuntimeSnapshot.Item("a", "we"),
+                        new OrderingRuntimeSnapshot.Item("b", "learn"),
+                        new OrderingRuntimeSnapshot.Item("c", "English")),
+                List.of(List.of("a", "b", "c")), List.of("b", "a", "c"));
+        return new ActivityQuestionSnapshot(
+                3, 1L, QuestionType.ORDERING, Difficulty.EASY,
+                "Order the words", "Build the sentence", null, null,
+                List.of(), List.of(), "snapshot", ordering);
     }
 
     private GuidedRuntimeSnapshot guidedSnapshot() {

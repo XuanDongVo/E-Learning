@@ -27,11 +27,11 @@ export function StudentVocabularyHub({
   const [tab, setTab] = useState<HubTab>(initialTab);
 
   const validUnitId = Number.isSafeInteger(unitId) && unitId > 0;
-  const unitQuery = useQuery({
-    queryKey: QUERY_KEYS.unitDetail(String(unitId)),
-    queryFn: () => studentUnitService.getUnitDetail(unitId),
-    enabled: validUnitId,
-  });
+  // const unitQuery = useQuery({
+  //   queryKey: QUERY_KEYS.unitDetail(String(unitId)),
+  //   queryFn: () => studentUnitService.getUnitDetail(unitId),
+  //   enabled: validUnitId,
+  // });
 
   const cardsQuery = useQuery({
     queryKey: vocabularyUnitCardsKey(unitId),
@@ -40,7 +40,6 @@ export function StudentVocabularyHub({
     refetchInterval: 30_000,
   });
 
-  const unit = unitQuery.data?.data;
   const cards = useMemo(() => cardsQuery.data?.data ?? [], [cardsQuery.data?.data]);
 
   const dueCards = useMemo(() => cards.filter((card) => card.state !== "NEW" && card.due), [cards]);
@@ -52,11 +51,11 @@ export function StudentVocabularyHub({
 
 
   if (!validUnitId) return <FullPageState variant="error" title="Unit không hợp lệ" />;
-  if (cardsQuery.isLoading || unitQuery.isLoading)
+  if (cardsQuery.isLoading )
     return <FullPageState variant="loading" title="Đang mở sổ từ vựng" />;
 
-  if (cardsQuery.isError || unitQuery.isError || !unit) {
-    const error = cardsQuery.error ?? unitQuery.error;
+  if (cardsQuery.isError ) {
+    const error = cardsQuery.error ;
     return (
       <PaperSurface as="section" className="space-y-3 p-6">
         <h1 className="student-card-title text-foreground">Không mở được sổ từ vựng</h1>
@@ -68,7 +67,7 @@ export function StudentVocabularyHub({
           className="student-control student-control--action px-4"
           onClick={() => {
             void cardsQuery.refetch();
-            void unitQuery.refetch();
+            // void unitQuery.refetch();
           }}
         >
           Thử lại

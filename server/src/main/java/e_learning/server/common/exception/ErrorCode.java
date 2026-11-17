@@ -80,6 +80,7 @@ public enum ErrorCode {
     ORDERING_NOT_SUPPORTED_IN_ASSIGNMENT(HttpStatus.BAD_REQUEST, "ORDERING_NOT_SUPPORTED_IN_ASSIGNMENT", "Ordering questions are not supported in assignments"),
     ORDERING_INVALID_PERMUTATION(HttpStatus.BAD_REQUEST, "ORDERING_INVALID_PERMUTATION", "Ordering answer must contain every item key exactly once"),
     ORDERING_NO_VALID_SHUFFLE(HttpStatus.CONFLICT, "ORDERING_NO_VALID_SHUFFLE", "Ordering question has no valid shuffled presentation"),
+    ORDERING_FINAL_NOT_AVAILABLE(HttpStatus.CONFLICT, "ORDERING_FINAL_NOT_AVAILABLE", "Complete every guided step before answering the Ordering final"),
 
     ACTIVITY_SESSION_NOT_FOUND(HttpStatus.NOT_FOUND, "ACTIVITY_SESSION_NOT_FOUND", "Activity session was not found"),
     ACTIVITY_SESSION_INVALID_MODE(HttpStatus.BAD_REQUEST, "ACTIVITY_SESSION_INVALID_MODE", "The selected activity mode is not available"),

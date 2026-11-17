@@ -264,9 +264,7 @@ public class ActivitySessionService {
         }
         requireActive(session);
         if (item.isResolved()) throw new AppException(ErrorCode.ACTIVITY_SESSION_RETRY_EXHAUSTED);
-        if (guidedRuntimeService.isGuided(item) && !guidedRuntimeService.finalAvailable(item)) {
-            throw new AppException(ErrorCode.GUIDED_STEP_OUT_OF_ORDER);
-        }
+        requireGuidedFinalAvailable(item);
         requireCurrentTryHardQuestion(session, item);
         serveCurrent(session);
         ActivityQuestionSnapshot snapshot = snapshotAssembler.read(item);
@@ -360,9 +358,7 @@ public class ActivitySessionService {
         }
         requireCurrentGradeAccess(session, studentId);
         ActivitySessionQuestion item = question(sessionId, questionId);
-        if (guidedRuntimeService.isGuided(item) && !guidedRuntimeService.finalAvailable(item)) {
-            throw new AppException(ErrorCode.GUIDED_STEP_OUT_OF_ORDER);
-        }
+        requireGuidedFinalAvailable(item);
         if (item.isResolved()) {
             return toResponse(session);
         }
@@ -384,9 +380,7 @@ public class ActivitySessionService {
         if (session.getMode() != ActivityMode.LEARNING)
             throw new AppException(ErrorCode.ACTIVITY_SESSION_HINT_UNAVAILABLE);
         ActivitySessionQuestion item = question(sessionId, questionId);
-        if (guidedRuntimeService.isGuided(item) && !guidedRuntimeService.finalAvailable(item)) {
-            throw new AppException(ErrorCode.GUIDED_STEP_OUT_OF_ORDER);
-        }
+        requireGuidedFinalAvailable(item);
         ActivityQuestionSnapshot snapshot = snapshotAssembler.read(item);
         if (item.isResolved() || snapshot.hint() == null || snapshot.hint().isBlank()) {
             throw new AppException(ErrorCode.ACTIVITY_SESSION_HINT_UNAVAILABLE);
@@ -651,6 +645,14 @@ public class ActivitySessionService {
     private void requireActive(ActivitySession session) {
         if (session.getStatus() != ActivitySessionStatus.IN_PROGRESS)
             throw new AppException(ErrorCode.ACTIVITY_SESSION_NOT_ACTIVE);
+    }
+
+    private void requireGuidedFinalAvailable(ActivitySessionQuestion item) {
+        if (!guidedRuntimeService.isGuided(item) || guidedRuntimeService.finalAvailable(item)) return;
+        if (item.getQuestion().getType() == e_learning.server.question.enums.QuestionType.ORDERING) {
+            throw new AppException(ErrorCode.ORDERING_FINAL_NOT_AVAILABLE);
+        }
+        throw new AppException(ErrorCode.GUIDED_STEP_OUT_OF_ORDER);
     }
 
     private ActivitySessionResponse toResponse(ActivitySession session) {

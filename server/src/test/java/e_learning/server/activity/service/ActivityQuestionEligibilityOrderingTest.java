@@ -19,7 +19,7 @@ class ActivityQuestionEligibilityOrderingTest {
             new ActivityQuestionEligibilityService(repository);
 
     @Test
-    void orderingIsEligibleForClassicButRemainsClosedForGuided() {
+    void orderingIsEligibleForClassicAndGuidedFinal() {
         ContentQuestion ordering = contentQuestion(QuestionType.ORDERING);
         ContentQuestion choice = contentQuestion(QuestionType.SINGLE_CHOICE);
         when(repository.findAllByQuestionBankIdAndQuestionCompleteTrueOrderByQuestionIdAsc(9L))
@@ -29,7 +29,7 @@ class ActivityQuestionEligibilityOrderingTest {
                 .thenReturn(List.of(ordering, choice));
 
         assertEquals(List.of(ordering, choice), service.classicCandidates(9L));
-        assertEquals(List.of(choice), service.guidedCandidates(9L));
+        assertEquals(List.of(ordering, choice), service.guidedCandidates(9L));
     }
 
     private ContentQuestion contentQuestion(QuestionType type) {

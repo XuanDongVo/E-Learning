@@ -1,6 +1,7 @@
 package e_learning.server.activitysession.snapshot;
 
 import e_learning.server.activitysession.entity.ActivityQuestionSnapshot;
+import e_learning.server.activitysession.entity.ActivitySessionQuestion;
 import e_learning.server.activitysession.ordering.OrderingRuntimeService;
 import e_learning.server.activitysession.ordering.OrderingRuntimeSnapshot;
 import e_learning.server.question.engine.exception.QuestionEngineException;
@@ -15,8 +16,7 @@ import tools.jackson.databind.ObjectMapper;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 
 class ActivityQuestionSnapshotAssemblerXpTest {
@@ -41,6 +41,39 @@ class ActivityQuestionSnapshotAssemblerXpTest {
                 () -> assembler.requireXpEligible(new ActivityQuestionSnapshot(
                         3, 1L, QuestionType.SINGLE_CHOICE, Difficulty.EASY,
                         "Question", null, null, null, List.of(), List.of(), "{}")));
+        assertThrows(QuestionEngineException.class,
+                () -> assembler.requireXpEligible(new ActivityQuestionSnapshot(
+                        2, 1L, QuestionType.ORDERING, Difficulty.EASY,
+                        "Question", null, null, null, List.of(), List.of(), "{}",
+                        orderingSnapshot(Difficulty.EASY).ordering())));
+        assertThrows(QuestionEngineException.class,
+                () -> assembler.requireXpEligible(new ActivityQuestionSnapshot(
+                        3, 1L, QuestionType.ORDERING, Difficulty.EASY,
+                        "Question", null, null, null, List.of(), List.of(), "{}")));
+    }
+
+    @Test
+    void readsLegacyV2AndOrderingV3WithoutChangingTheirCompatibilityBoundary() throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        ActivityQuestionSnapshotAssembler reader = new ActivityQuestionSnapshotAssembler(
+                mock(QuestionOptionRepository.class),
+                mock(QuestionAnswerRepository.class),
+                mock(QuestionSpecMapper.class), mapper,
+                mock(OrderingRuntimeService.class));
+        ActivitySessionQuestion legacyItem = item(2, mapper.writeValueAsString(
+                snapshot(2, Difficulty.MEDIUM).withoutPayload()));
+        ActivitySessionQuestion orderingItem = item(3, mapper.writeValueAsString(
+                orderingSnapshot(Difficulty.HARD).withoutPayload()));
+
+        ActivityQuestionSnapshot legacy = reader.read(legacyItem);
+        ActivityQuestionSnapshot ordering = reader.read(orderingItem);
+
+        assertEquals(QuestionType.SINGLE_CHOICE, legacy.type());
+        assertNull(legacy.ordering());
+        assertEquals(QuestionType.ORDERING, ordering.type());
+        assertNotNull(ordering.ordering());
+        assertDoesNotThrow(() -> reader.requireXpEligible(legacy));
+        assertDoesNotThrow(() -> reader.requireXpEligible(ordering));
     }
 
     private static ActivityQuestionSnapshot snapshot(int schemaVersion, Difficulty difficulty) {
@@ -58,5 +91,13 @@ class ActivityQuestionSnapshotAssemblerXpTest {
                 List.of(List.of("a", "b", "c")), List.of("b", "a", "c"));
         return new ActivityQuestionSnapshot(3, 1L, QuestionType.ORDERING, difficulty,
                 "Question", null, null, null, List.of(), List.of(), "{}", ordering);
+    }
+
+    private static ActivitySessionQuestion item(int schemaVersion, String payload) {
+        ActivitySessionQuestion item = new ActivitySessionQuestion();
+        item.setSnapshotSchemaVersion(schemaVersion);
+        item.setSnapshotContentRevision(1L);
+        item.setSnapshotPayload(payload);
+        return item;
     }
 }

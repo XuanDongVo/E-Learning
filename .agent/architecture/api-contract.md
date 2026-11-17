@@ -179,6 +179,14 @@ UUID `requestId`; replaying the same id and payload is idempotent, while a
 different payload is rejected. Final answers follow the same rule; replay can
 return its stored outcome even after that submission made the Session terminal.
 
+Ordering is supported as a Classic Question and as a Guided Final only. Before
+the Guided Final gate, its type, prompt, hint and ordered items are absent. After
+the gate, the Question projection includes `ordering: { subtype, items[] }` and
+Final submit uses `{ answer: { order: [itemKey, ...] } }`. Resolved Review returns
+the frozen public items, persisted ordered attempts and at most one typed sample
+accepted order; accepted-order sets remain server-only. Guided Steps do not
+support Ordering.
+
 ## Student Gamification (Streak / Level)
 
 GET /v1/student/gamification/profile — own Lifetime XP, Level, XP-to-next, current effective Streak, longest Streak and qualification status.

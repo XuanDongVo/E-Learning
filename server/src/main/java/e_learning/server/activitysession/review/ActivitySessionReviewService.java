@@ -6,6 +6,7 @@ import e_learning.server.activitysession.entity.*;
 import e_learning.server.activitysession.enums.GuidedQuestionStage;
 import e_learning.server.activitysession.enums.QuestionDeliveryType;
 import e_learning.server.activitysession.guided.GuidedRuntimeSnapshot;
+import e_learning.server.activitysession.ordering.OrderingRuntimeService;
 import e_learning.server.activitysession.repository.*;
 import e_learning.server.activitysession.snapshot.ActivityQuestionSnapshotAssembler;
 import e_learning.server.common.exception.AppException;
@@ -27,6 +28,7 @@ public class ActivitySessionReviewService {
     private final ActivitySessionGuidedStepHintRepository stepHintRepository;
     private final ActivitySessionFinalAnswerAttemptRepository finalAttemptRepository;
     private final ActivityQuestionSnapshotAssembler snapshotAssembler;
+    private final OrderingRuntimeService orderingRuntimeService;
     private final ObjectMapper objectMapper;
 
     @Transactional(readOnly = true)
@@ -67,13 +69,17 @@ public class ActivitySessionReviewService {
                 ? snapshot.options().stream().map(option ->
                     new OptionReview(option.key(), option.content())).toList()
                 : List.of();
+        var ordering = snapshot != null && finalVisible
+                && snapshot.type() == e_learning.server.question.enums.QuestionType.ORDERING
+                ? orderingRuntimeService.publicView(snapshot.ordering())
+                : null;
         return new QuestionReview(
                 item.getId(), item.getPosition(), item.getDeliveryType(), item.isResolved(),
                 item.getResolutionReason(), item.getFirstCorrect(), item.getFinalCorrect(),
                 item.isHintUsed(), snapshot != null,
                 snapshot != null && finalVisible ? snapshot.type() : null,
                 snapshot != null && finalVisible ? snapshot.content() : null,
-                options,
+                options, ordering,
                 reveal && snapshot != null ? finalCorrectAnswers(snapshot) : List.of(),
                 reveal && snapshot != null ? snapshot.explanation() : null,
                 guided,
@@ -144,8 +150,12 @@ public class ActivitySessionReviewService {
                 attempt.getAttemptNumber(), parseAnswer(attempt.getSubmittedAnswer()),
                 attempt.isCorrect(), attempt.isRetryAvailable(), attempt.isResolved(),
                 attempt.getCreatedAt(), item.isHintUsed())).toList();
+        var orderingAnswer = reveal && snapshot != null
+                && snapshot.type() == e_learning.server.question.enums.QuestionType.ORDERING
+                ? orderingRuntimeService.reveal(snapshot)
+                : null;
         return new FinalReview(historyState, views,
-                reveal && snapshot != null ? finalCorrectAnswers(snapshot) : List.of(),
+                reveal && snapshot != null ? finalCorrectAnswers(snapshot) : List.of(), orderingAnswer,
                 reveal && snapshot != null ? snapshot.explanation() : null);
     }
 
@@ -168,6 +178,7 @@ public class ActivitySessionReviewService {
     }
 
     private List<String> finalCorrectAnswers(ActivityQuestionSnapshot snapshot) {
+        if (snapshot.type() == e_learning.server.question.enums.QuestionType.ORDERING) return List.of();
         if (snapshot.type() == e_learning.server.question.enums.QuestionType.SINGLE_CHOICE
                 || snapshot.type() == e_learning.server.question.enums.QuestionType.MULTIPLE_CHOICE) {
             return snapshot.options().stream().filter(ActivityQuestionSnapshot.Option::correct)

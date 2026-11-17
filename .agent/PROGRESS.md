@@ -1,5 +1,93 @@
 # Project Progress
 
+## 2026-11-17 Student Activity runtime — mobile responsive pass
+
+- Reworked the immersive Practice shell, header, workspace and footer for narrow
+  viewports: compact icon controls, reduced decorative chrome, safe-area-aware
+  sticky actions and a single-column question surface.
+- Ordering keeps readable learning content and 44px drag/remove targets while
+  reducing nested padding; Guided question actions expand to full width on mobile.
+- Desktop composition and Activity runtime behavior remain unchanged.
+
+## 2026-11-17 Student Activity runtime — answer feedback placement
+
+- Extracted the shared answer-result presentation into the focused
+  `runtime/question-stage/` business folder.
+- Classic, Guided Step and Guided Final now render answer feedback through the
+  shared Question Stage feedback slot, immediately above their actions.
+- No API, persistence or scoring behavior changed.
+
+## 2026-11-17 Ordering Question v1 — M4 compatibility, QA and seed implemented
+
+Screen Brief
+User: Student and QA developer
+Goal: Verify Ordering end to end across authoring guards, runtime, Review and edge cases.
+Page type: Student flow and terminal Review
+Primary action: Complete and inspect a full ordered answer without drag-only interaction.
+States covered: mobile/desktop, keyboard, invalid answer, retry, timeout, resolved Review and legacy snapshots.
+
+- Runtime controls now expose an atomic ordered-progress description, 44px Reset
+  target and labelled per-item control groups. WORD/PHRASE draft rows become
+  full-width on phones, while SENTENCE remains full-width at every breakpoint;
+  long content and eight-item Questions do not depend on horizontal scrolling.
+- Ordering Review uses a dedicated semantic ordered-list component shared by
+  submitted and suggested answers. Duplicate visible content keeps separate keys
+  and numbered positions for screen readers and visual inspection.
+- Focused regression coverage now includes missing/duplicate/unknown item keys,
+  alternative accepted orders, duplicate visible text, stable frozen projection,
+  invalid-answer no-attempt/no-XP behavior, v2/v3 snapshot reads and XP schema
+  guards. Existing focused tests continue covering Guided Final gates, Review and
+  Assignment fail-closed behavior.
+- Added the disposable `server/src/test/resources/db/seed/ordering/` fixture. It
+  creates Classic BOTH and Guided Learning Activities with WORD/PHRASE/SENTENCE,
+  alternative orders, duplicate text, one eight-item long-content Question and a
+  READY Guided Ordering Final.
+- No production migration, endpoint, Question scope or XP policy changed.
+- Validation: frontend TypeScript and focused ESLint passed; seed Ordering/Guided
+  JSON parsed successfully. Changed production sources and all nine focused
+  Ordering/Guided/Assignment/Review test classes compile with JDK 21. The exact
+  targeted Maven command stopped before tests because FSRS is absent from the
+  offline cache; the seed was not executed because no disposable PostgreSQL
+  connection was provided. Frontend test/build and full Maven were not run per
+  request.
+- Ordering M1–M4 source implementation is complete. Runtime Maven execution,
+  disposable-database seed execution and viewport inspection remain release
+  verification gates rather than a new implementation phase.
+
+## 2026-11-17 Ordering Question v1 — M3 Guided Final implemented
+
+Screen Brief
+User: Student
+Goal: Complete Guided Steps, then arrange and submit the Ordering Final.
+Page type: Immersive Activity runtime
+Primary action: Submit the complete frozen Final order after the Step gate opens.
+States covered: pre-gate, final pending, partial/complete draft, hint, retry, resolved and review.
+
+- Guided Activity eligibility now includes complete Ordering Questions only through
+  the existing READY, revision-matching Guided Definition query. Guided Step types
+  remain unchanged and still exclude Ordering.
+- Before `FINAL_PENDING`, Student session and Review projections omit Final type,
+  prompt, items, hint and answer. A direct pre-gate Ordering Final submit fails with
+  `ORDERING_FINAL_NOT_AVAILABLE` without creating an attempt or XP outcome.
+- After the Step gate, Guided Final reuses the M2 schema-v3 snapshot, frozen public
+  item order, typed `{ order: [...] }` answer adapter, binary grading, request-id
+  idempotency, Learning retry and XP settlement.
+- Guided runtime UI is split into orchestration, Step and Final components under
+  `runtime/guided/`. Final Ordering reuses the split `runtime/ordering/` controls,
+  requires every item before Submit and supports the existing Final Hint policy.
+- Activity Review now carries a sanitized Ordering projection and one typed sample
+  accepted order after resolution. Submitted `{ order: [...] }` attempts and the
+  suggested answer render as ordered content instead of `[object Object]`; Review
+  rendering is split under `review/ordering/`.
+- No endpoint, migration, Guided Step type or XP policy changed.
+- Validation: frontend TypeScript and focused ESLint passed through the VS Code Node
+  runtime; frontend tests/build were intentionally not run per request. Changed M3
+  production sources and three focused test classes compile with JDK 21. The exact
+  five-test Maven command could not execute because FSRS is absent from the local
+  cache and network approval was declined; no full Maven suite was run.
+- M4 remains next: compatibility/regression QA across Assignment guards, legacy
+  snapshots, mobile/keyboard and complete Ordering acceptance criteria.
+
 ## 2026-11-17 Ordering Question v1 — M2 Classic runtime implemented
 
 Screen Brief

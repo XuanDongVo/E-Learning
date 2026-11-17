@@ -23,12 +23,14 @@ import e_learning.server.activitysession.repository.ActivitySessionFinalAnswerAt
 import e_learning.server.activitysession.guided.GuidedRuntimeService;
 import e_learning.server.activitysession.ordering.OrderingRuntimeService;
 import e_learning.server.activitysession.ordering.OrderingRuntimeSnapshot;
+import e_learning.server.activitysession.dto.response.ordering.OrderingQuestionResponse;
 import e_learning.server.activitysession.selection.ActivityQuestionSelectionService;
 import e_learning.server.activitysession.snapshot.ActivityQuestionSnapshotAssembler;
 import e_learning.server.classes.entity.ClassEntity;
 import e_learning.server.classes.entity.ClassMember;
 import e_learning.server.classes.repository.ClassMemberRepository;
 import e_learning.server.common.exception.AppException;
+import e_learning.server.common.exception.ErrorCode;
 import e_learning.server.content.unit.entity.Unit;
 import e_learning.server.grades.entity.Grade;
 import e_learning.server.gamification.xp.service.ActivityXpSessionAuditService;
@@ -304,6 +306,94 @@ class ActivitySessionTimeoutTest {
         assertTrue(fixture.first().isResolved());
         verify(orderingRuntimeService).grade(snapshot, answer);
         verify(activityXpAuditService).auditResolvedQuestion(fixture.first(), snapshot);
+    }
+
+    @Test
+    void guidedOrderingFinalIsHiddenAndRejectedBeforeStepGate() {
+        Fixture fixture = fixture(ActivityMode.LEARNING, 1, null);
+        when(fixture.first().getQuestion().getType()).thenReturn(QuestionType.ORDERING);
+        when(guidedRuntimeService.isGuided(fixture.first())).thenReturn(true);
+        when(guidedRuntimeService.finalAvailable(fixture.first())).thenReturn(false);
+        when(sessionRepository.findById(SESSION_ID)).thenReturn(Optional.of(fixture.session()));
+
+        var state = service.get(SESSION_ID, STUDENT_ID);
+        var question = state.questions().getFirst();
+        var error = assertThrows(AppException.class, () -> service.answer(
+                SESSION_ID, fixture.first().getId(), STUDENT_ID,
+                new ActivitySessionAnswerRequest(UUID.randomUUID().toString(), mock(JsonNode.class))));
+
+        assertNull(question.type());
+        assertNull(question.content());
+        assertNull(question.ordering());
+        assertEquals(ErrorCode.ORDERING_FINAL_NOT_AVAILABLE, error.getErrorCode());
+        assertEquals(0, fixture.first().getAnswerAttempts());
+        verify(orderingRuntimeService, never()).grade(any(), any());
+    }
+
+    @Test
+    void guidedOrderingFinalUsesSharedProjectionGradingAndResolutionAfterGate() {
+        Fixture fixture = fixture(ActivityMode.LEARNING, 1, null);
+        OrderingRuntimeSnapshot ordering = new OrderingRuntimeSnapshot(1, 1, OrderingSubtype.WORD,
+                List.of(
+                        new OrderingRuntimeSnapshot.Item("a", "we"),
+                        new OrderingRuntimeSnapshot.Item("b", "learn"),
+                        new OrderingRuntimeSnapshot.Item("c", "English")),
+                List.of(List.of("a", "b", "c")), List.of("b", "a", "c"));
+        ActivityQuestionSnapshot snapshot = new ActivityQuestionSnapshot(
+                3, 1L, QuestionType.ORDERING, Difficulty.EASY,
+                "Order the words", null, "Start with we", null,
+                List.of(), List.of(), "{}", ordering);
+        JsonNode answer = mock(JsonNode.class);
+        var publicOrdering = new OrderingQuestionResponse(OrderingSubtype.WORD, List.of(
+                new OrderingQuestionResponse.Item("b", "learn"),
+                new OrderingQuestionResponse.Item("a", "we"),
+                new OrderingQuestionResponse.Item("c", "English")));
+        when(snapshotAssembler.read(fixture.first())).thenReturn(snapshot);
+        when(guidedRuntimeService.isGuided(fixture.first())).thenReturn(true);
+        when(guidedRuntimeService.finalAvailable(fixture.first())).thenReturn(true);
+        when(orderingRuntimeService.publicView(ordering)).thenReturn(publicOrdering);
+        when(orderingRuntimeService.grade(snapshot, answer)).thenReturn(true);
+
+        var response = service.answer(
+                SESSION_ID, fixture.first().getId(), STUDENT_ID,
+                new ActivitySessionAnswerRequest(UUID.randomUUID().toString(), answer));
+        var finalQuestion = response.session().questions().getFirst();
+
+        assertTrue(response.correct());
+        assertEquals(QuestionType.ORDERING, finalQuestion.type());
+        assertEquals(publicOrdering, finalQuestion.ordering());
+        assertEquals(ActivitySessionStatus.COMPLETED, response.session().status());
+        verify(guidedRuntimeService).markFinalResolved(fixture.first());
+        verify(orderingRuntimeService).grade(snapshot, answer);
+    }
+
+    @Test
+    void invalidOrderingPermutationDoesNotConsumeAttemptOrCreateXpOutcome() {
+        Fixture fixture = fixture(ActivityMode.LEARNING, 1, null);
+        OrderingRuntimeSnapshot ordering = new OrderingRuntimeSnapshot(1, 1, OrderingSubtype.WORD,
+                List.of(
+                        new OrderingRuntimeSnapshot.Item("a", "we"),
+                        new OrderingRuntimeSnapshot.Item("b", "learn"),
+                        new OrderingRuntimeSnapshot.Item("c", "English")),
+                List.of(List.of("a", "b", "c")), List.of("b", "a", "c"));
+        ActivityQuestionSnapshot snapshot = new ActivityQuestionSnapshot(
+                3, 1L, QuestionType.ORDERING, Difficulty.EASY,
+                "Order the words", null, null, null,
+                List.of(), List.of(), "{}", ordering);
+        JsonNode malformed = mock(JsonNode.class);
+        when(snapshotAssembler.read(fixture.first())).thenReturn(snapshot);
+        when(orderingRuntimeService.grade(snapshot, malformed))
+                .thenThrow(new AppException(ErrorCode.ORDERING_INVALID_PERMUTATION));
+
+        var error = assertThrows(AppException.class, () -> service.answer(
+                SESSION_ID, fixture.first().getId(), STUDENT_ID,
+                new ActivitySessionAnswerRequest(UUID.randomUUID().toString(), malformed)));
+
+        assertEquals(ErrorCode.ORDERING_INVALID_PERMUTATION, error.getErrorCode());
+        assertEquals(0, fixture.first().getAnswerAttempts());
+        assertFalse(fixture.first().isResolved());
+        verify(finalAnswerAttemptRepository, never()).save(any());
+        verify(activityXpAuditService, never()).auditResolvedQuestion(any(), any());
     }
 
     @Test

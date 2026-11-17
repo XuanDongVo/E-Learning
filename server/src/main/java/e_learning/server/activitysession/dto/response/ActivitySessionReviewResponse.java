@@ -5,6 +5,8 @@ import e_learning.server.activitysession.entity.ActivityQuestionResolution;
 import e_learning.server.activitysession.enums.ActivitySessionStatus;
 import e_learning.server.activitysession.enums.GuidedQuestionStage;
 import e_learning.server.activitysession.enums.QuestionDeliveryType;
+import e_learning.server.activitysession.dto.response.ordering.OrderingAnswerRevealResponse;
+import e_learning.server.activitysession.dto.response.ordering.OrderingQuestionResponse;
 import e_learning.server.question.enums.QuestionType;
 import tools.jackson.databind.JsonNode;
 
@@ -43,6 +45,7 @@ public record ActivitySessionReviewResponse(
             QuestionType type,
             String prompt,
             List<OptionReview> options,
+            OrderingQuestionResponse ordering,
             List<String> correctAnswers,
             String explanation,
             GuidedReview guided,
@@ -75,6 +78,7 @@ public record ActivitySessionReviewResponse(
             HistoryState historyState,
             List<AttemptReview> attempts,
             List<String> correctAnswers,
+            OrderingAnswerRevealResponse orderingAnswer,
             String explanation
     ) {}
 

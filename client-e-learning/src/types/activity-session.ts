@@ -206,6 +206,7 @@ export type ActivityReviewQuestion = {
   type?: ActivitySessionQuestion["type"] | null;
   prompt?: string | null;
   options: ActivityReviewOption[];
+  ordering?: ActivitySessionQuestion["ordering"];
   guided?: {
     stage: GuidedQuestionStage;
     introContent?: string | null;
@@ -215,6 +216,9 @@ export type ActivityReviewQuestion = {
     historyState: ActivityReviewHistoryState;
     attempts: ActivityReviewAttempt[];
     correctAnswers: string[];
+    orderingAnswer?: {
+      items: { key: string; content: string }[];
+    } | null;
     explanation?: string | null;
   };
 };

@@ -61,6 +61,8 @@
     "attempt": "Answer {number}",
     "usedHint": "Hint used",
     "correctAnswer": "Correct answer",
+    "submittedOrder": "Submitted order",
+    "suggestedOrder": "Suggested order",
     "correct": "Correct",
     "incorrect": "Not correct",
     "notAnswered": "Not answered",

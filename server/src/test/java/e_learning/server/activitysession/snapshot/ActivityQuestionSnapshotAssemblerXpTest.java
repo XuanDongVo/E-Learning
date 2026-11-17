@@ -1,9 +1,12 @@
 package e_learning.server.activitysession.snapshot;
 
 import e_learning.server.activitysession.entity.ActivityQuestionSnapshot;
+import e_learning.server.activitysession.ordering.OrderingRuntimeService;
+import e_learning.server.activitysession.ordering.OrderingRuntimeSnapshot;
 import e_learning.server.question.engine.exception.QuestionEngineException;
 import e_learning.server.question.enums.Difficulty;
 import e_learning.server.question.enums.QuestionType;
+import e_learning.server.question.engine.types.ordering.OrderingSubtype;
 import e_learning.server.question.repository.QuestionAnswerRepository;
 import e_learning.server.question.repository.QuestionOptionRepository;
 import e_learning.server.question.service.QuestionSpecMapper;
@@ -21,22 +24,39 @@ class ActivityQuestionSnapshotAssemblerXpTest {
             mock(QuestionOptionRepository.class),
             mock(QuestionAnswerRepository.class),
             mock(QuestionSpecMapper.class),
-            mock(ObjectMapper.class));
+            mock(ObjectMapper.class),
+            mock(OrderingRuntimeService.class));
 
     @Test
-    void acceptsOnlySchemaV2SnapshotWithFrozenDifficulty() {
+    void acceptsOnlyExplicitlyCompatibleSnapshotsWithFrozenDifficulty() {
         assertDoesNotThrow(() -> assembler.requireXpEligible(snapshot(2, Difficulty.EASY)));
+        assertDoesNotThrow(() -> assembler.requireXpEligible(orderingSnapshot(Difficulty.EASY)));
         assertThrows(QuestionEngineException.class,
                 () -> assembler.requireXpEligible(snapshot(1, Difficulty.EASY)));
         assertThrows(QuestionEngineException.class,
                 () -> assembler.requireXpEligible(snapshot(2, null)));
         assertThrows(QuestionEngineException.class,
                 () -> assembler.requireXpEligible(null));
+        assertThrows(QuestionEngineException.class,
+                () -> assembler.requireXpEligible(new ActivityQuestionSnapshot(
+                        3, 1L, QuestionType.SINGLE_CHOICE, Difficulty.EASY,
+                        "Question", null, null, null, List.of(), List.of(), "{}")));
     }
 
     private static ActivityQuestionSnapshot snapshot(int schemaVersion, Difficulty difficulty) {
         return new ActivityQuestionSnapshot(
                 schemaVersion, 1L, QuestionType.SINGLE_CHOICE, difficulty,
                 "Question", null, null, null, List.of(), List.of(), "{}");
+    }
+
+    private static ActivityQuestionSnapshot orderingSnapshot(Difficulty difficulty) {
+        OrderingRuntimeSnapshot ordering = new OrderingRuntimeSnapshot(1, 1, OrderingSubtype.WORD,
+                List.of(
+                        new OrderingRuntimeSnapshot.Item("a", "one"),
+                        new OrderingRuntimeSnapshot.Item("b", "two"),
+                        new OrderingRuntimeSnapshot.Item("c", "three")),
+                List.of(List.of("a", "b", "c")), List.of("b", "a", "c"));
+        return new ActivityQuestionSnapshot(3, 1L, QuestionType.ORDERING, difficulty,
+                "Question", null, null, null, List.of(), List.of(), "{}", ordering);
     }
 }

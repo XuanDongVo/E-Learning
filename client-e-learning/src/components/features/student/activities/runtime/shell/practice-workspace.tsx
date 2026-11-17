@@ -57,14 +57,16 @@ export function PracticeWorkspace({
   const isGuidedStepFeedback = Boolean(activeGuidedStep);
   const displayAnswer = activeGuidedFinal?.feedback ?? (!question.guided ? feedback : undefined);
   const revealedAnswer =
-    displayAnswer?.answerRevealed && displayAnswer.correctAnswer
-      ? formatAnswer(
-          question,
-          isChoice(question) || question.type === "TRUE_FALSE"
-            ? splitKeys(displayAnswer.correctAnswer)
-            : [displayAnswer.correctAnswer],
-        )
-      : "";
+    displayAnswer?.answerRevealed && displayAnswer.orderingAnswer
+      ? displayAnswer.orderingAnswer.items.map((item) => item.content).join(" → ")
+      : displayAnswer?.answerRevealed && displayAnswer.correctAnswer
+        ? formatAnswer(
+            question,
+            isChoice(question) || question.type === "TRUE_FALSE"
+              ? splitKeys(displayAnswer.correctAnswer)
+              : [displayAnswer.correctAnswer],
+          )
+        : "";
   const gameOver = session.status === "GAME_OVER";
   const finished = over && locked;
   const mascotText = finished
@@ -247,7 +249,8 @@ export function PracticeWorkspace({
                     type={question.type}
                     prompt={question.content}
                     options={question.options}
-                    draft={draft}
+                    ordering={question.ordering}
+                    draft={question.type === "ORDERING" && locked ? submitted : draft}
                     disabled={locked || answering}
                     inputLabel="Đáp án của bạn"
                     inputPlaceholder="Nhập đáp án"

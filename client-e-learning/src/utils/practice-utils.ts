@@ -7,6 +7,7 @@ export const TYPE_LABEL: Record<ActivitySessionQuestion["type"], string> = {
   TRUE_FALSE: "Đúng / Sai",
   FILL_IN_BLANK: "Điền vào chỗ trống",
   TYPE_ANSWER: "Nhập đáp án",
+  ORDERING: "Sắp xếp thứ tự",
 };
 
 export const isChoice = (q: Pick<ActivitySessionQuestion, "type">) =>
@@ -20,6 +21,10 @@ export const splitKeys = (value?: string) =>
 export function formatAnswer(q: ActivitySessionQuestion, answer: string[]) {
   if (answer.length === 0) return "";
   if (q.type === "TRUE_FALSE") return answer[0].toUpperCase() === "TRUE" ? "Đúng" : "Sai";
+  if (q.type === "ORDERING") {
+    const contentByKey = new Map(q.ordering?.items.map((item) => [item.key, item.content]));
+    return answer.map((key) => contentByKey.get(key) ?? key).join(" → ");
+  }
   if (!isChoice(q)) return answer.join(", ");
   return answer
     .map((key) => {

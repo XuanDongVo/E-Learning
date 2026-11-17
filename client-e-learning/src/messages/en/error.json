@@ -50,6 +50,8 @@
     "ACTIVITY_QUESTION_BANK_OUTSIDE_UNIT": "The question bank must belong to the same unit as the activity.",
     "ASSIGNMENT_NOT_READY": "This resource is not ready for this action.",
     "ORDERING_NOT_SUPPORTED_IN_ASSIGNMENT": "Ordering questions are not supported in assignments yet.",
+    "ORDERING_INVALID_PERMUTATION": "Arrange every item exactly once before submitting.",
+    "ORDERING_NO_VALID_SHUFFLE": "This ordering question cannot produce a valid shuffled version.",
     "ASSIGNMENT_NOT_FOUND": "The assignment could not be found.",
     "ASSIGNMENT_INVALID_CONFIGURATION": "The assignment configuration is invalid.",
     "ASSIGNMENT_COMPOSITION_INVALID": "The assignment composition is invalid.",

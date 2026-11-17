@@ -2,7 +2,7 @@
 
 **Software Requirements Specification — E-Learning**  
 **Phiên bản:** 1.1 — Product Owner đã duyệt phương án PROPOSED, 16/11/2026  
-**Trạng thái:** **BUSINESS REQUIREMENTS APPROVED / M1 IMPLEMENTED** — nền tảng authoring đã triển khai; Activity runtime thuộc M2/M3
+**Trạng thái:** **BUSINESS REQUIREMENTS APPROVED / M1–M2 IMPLEMENTED** — authoring và Classic runtime đã triển khai; Guided Final runtime thuộc M3
 **Repository:** `XuanDongVo/E-Learning`  
 **Nguồn đối chiếu:** `feature/guided-reasoning-v1` tại commit `88f8f87878661aa575c2f9dee4e66e7f62cd3810`  
 **Tài liệu tham khảo cấu trúc:** `docs/guided-reasoning/02_SRS_Guided_Reasoning_v1.md`
@@ -15,8 +15,12 @@
 > Mọi JSON/API/UI trong tài liệu là **thiết kế đề xuất**, không phải contract đang tồn tại.
 
 > **Implementation note — 17/11/2026:** M1 đã triển khai enum/schema/engine/persistence,
-> Teacher CRUD/preview và các scope gate. Các yêu cầu Classic/Guided Student runtime,
-> snapshot và XP vẫn chưa được mở cho đến M2/M3.
+> Teacher CRUD/preview và các scope gate. M2 sau đó đã mở Classic Student runtime;
+> Guided Final runtime vẫn chờ M3.
+
+> **M2 update — 17/11/2026:** Classic Learning/Try Hard đã có snapshot v3,
+> server shuffle, Student projection/UI, typed submit, grading/retry/hint/timeout và
+> XP lifecycle. Guided Ordering vẫn đóng cho đến M3.
 
 ---
 
@@ -467,4 +471,4 @@ Ordering chỉ Ready để release khi:
 
 ---
 
-**Trạng thái cuối:** Quyết định nghiệp vụ đã duyệt; **M1 authoring foundation đã triển khai**. M2–M4 vẫn chờ triển khai.
+**Trạng thái cuối:** Quyết định nghiệp vụ đã duyệt; **M1 authoring và M2 Classic runtime đã triển khai**. M3–M4 vẫn chờ triển khai.

@@ -8,11 +8,13 @@ import {
 } from "./question-stage/answer-controls";
 import { QuestionMedia } from "./question-stage/question-media";
 import { QuestionPrompt } from "./question-stage/question-prompt";
+import type { RuntimeOrdering } from "./ordering/ordering-types";
 
 type Props = {
   type: RuntimeQuestionType;
   prompt?: string | null;
   options: { key: string; content: string }[];
+  ordering?: RuntimeOrdering | null;
   draft: string[];
   disabled?: boolean;
   inputLabel: string;
@@ -30,6 +32,7 @@ export function QuestionStageView({
   type,
   prompt,
   options,
+  ordering,
   draft,
   disabled,
   inputLabel,
@@ -49,6 +52,7 @@ export function QuestionStageView({
       <AnswerControls
         type={type}
         options={options}
+        ordering={ordering}
         draft={draft}
         disabled={disabled}
         inputLabel={inputLabel}

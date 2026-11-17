@@ -20,7 +20,8 @@ public class ActivityQuestionEligibilityService {
 
     public List<ContentQuestion> eligibleQuestions(Activity activity, Long questionBankId) {
         return candidates(activity.getPracticeType(), questionBankId).stream()
-                .filter(question -> isActivitySupportedType(question.getQuestion().getType()))
+                .filter(question -> isActivitySupportedType(
+                        activity.getPracticeType(), question.getQuestion().getType()))
                 .filter(question -> activity.getQuestionDifficulty() == ActivityDifficulty.MIXED
                         || question.getQuestion().getDifficulty().name()
                         .equals(activity.getQuestionDifficulty().name()))
@@ -28,11 +29,13 @@ public class ActivityQuestionEligibilityService {
     }
 
     public List<ContentQuestion> classicCandidates(Long questionBankId) {
-        return filterSupported(candidates(ActivityPracticeType.CLASSIC, questionBankId));
+        return filterSupported(ActivityPracticeType.CLASSIC,
+                candidates(ActivityPracticeType.CLASSIC, questionBankId));
     }
 
     public List<ContentQuestion> guidedCandidates(Long questionBankId) {
-        return filterSupported(candidates(ActivityPracticeType.GUIDED_REASONING, questionBankId));
+        return filterSupported(ActivityPracticeType.GUIDED_REASONING,
+                candidates(ActivityPracticeType.GUIDED_REASONING, questionBankId));
     }
 
     private List<ContentQuestion> candidates(ActivityPracticeType practiceType, Long questionBankId) {
@@ -43,17 +46,21 @@ public class ActivityQuestionEligibilityService {
         return contentQuestionRepository.findAllByQuestionBankIdAndQuestionCompleteTrueOrderByQuestionIdAsc(questionBankId);
     }
 
-    private List<ContentQuestion> filterSupported(List<ContentQuestion> candidates) {
+    private List<ContentQuestion> filterSupported(
+            ActivityPracticeType practiceType,
+            List<ContentQuestion> candidates) {
         return candidates.stream()
-                .filter(question -> isActivitySupportedType(question.getQuestion().getType()))
+                .filter(question -> isActivitySupportedType(
+                        practiceType, question.getQuestion().getType()))
                 .toList();
     }
 
-    private boolean isActivitySupportedType(QuestionType type) {
-        return type == QuestionType.SINGLE_CHOICE
+    private boolean isActivitySupportedType(ActivityPracticeType practiceType, QuestionType type) {
+        boolean existingType = type == QuestionType.SINGLE_CHOICE
                 || type == QuestionType.MULTIPLE_CHOICE
                 || type == QuestionType.TRUE_FALSE
                 || type == QuestionType.FILL_IN_BLANK
                 || type == QuestionType.TYPE_ANSWER;
+        return existingType || (practiceType == ActivityPracticeType.CLASSIC && type == QuestionType.ORDERING);
     }
 }

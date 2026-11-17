@@ -2,7 +2,7 @@
 
 **Functional Requirements Specification — E-Learning**  
 **Phiên bản:** 1.0 — 17/11/2026  
-**Trạng thái:** **M1 IMPLEMENTED — M2/M3/M4 PENDING**
+**Trạng thái:** **M1–M2 IMPLEMENTED — M3/M4 PENDING**
 **Repository:** `XuanDongVo/E-Learning`  
 **Baseline được đối chiếu:** `feature/guided-reasoning-v1` @ `88f8f87878661aa575c2f9dee4e66e7f62cd3810`  
 **SRS nguồn:** [02_SRS_Ordering_v1.md](02_SRS_Ordering_v1.md) — v1.1, các quyết định `DEC-ORD-01..14` đã duyệt  
@@ -13,8 +13,12 @@
 
 > **Implementation note — 17/11/2026:** M1 đã hiện thực Question Engine,
 > persistence/migration, Teacher authoring/preview, Guided Final compatibility và
-> Assignment fail-closed. Activity snapshot, Student runtime, integration và rollout
-> thuộc các phase tiếp theo; các phần FRS đó vẫn là thiết kế chưa triển khai.
+> Assignment fail-closed. M2 sau đó đã triển khai Classic snapshot/Student runtime;
+> Guided integration và Review vẫn thuộc các phase tiếp theo.
+
+> **M2 update — 17/11/2026:** Ordering đã được mở riêng cho Classic Activity với
+> snapshot v3, frozen presentation order, sanitized DTO, typed answer adapter,
+> binary grading và Student controls. Guided Final runtime vẫn chưa mở.
 
 ---
 
@@ -742,4 +746,4 @@ Không trả accepted orders trong error detail cho Student.
 
 **Chưa xây dựng:** Ordering trong Guided Steps/Assignment, Teacher Analytics, CSV import, AI grading, partial XP/score hoặc new PracticeType. Những yêu cầu này phải có change request trước khi triển khai.
 
-**Kết luận trạng thái:** FRS đã được dùng để triển khai **M1 authoring foundation**. M2–M4 chưa triển khai; chưa mở Ordering trong Activity/Student runtime.
+**Kết luận trạng thái:** FRS đã được dùng để triển khai **M1 authoring foundation và M2 Classic runtime**. M3–M4 chưa triển khai; Guided Ordering vẫn bị chặn.

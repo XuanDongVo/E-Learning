@@ -78,6 +78,8 @@ public enum ErrorCode {
     ASSIGNMENT_NOT_READY(HttpStatus.CONFLICT, "ASSIGNMENT_NOT_READY", "The assignment is not ready to be published"),
     ASSIGNMENT_STATUS_TRANSITION_INVALID(HttpStatus.BAD_REQUEST, "ASSIGNMENT_STATUS_TRANSITION_INVALID", "The requested status transition is not allowed"),
     ORDERING_NOT_SUPPORTED_IN_ASSIGNMENT(HttpStatus.BAD_REQUEST, "ORDERING_NOT_SUPPORTED_IN_ASSIGNMENT", "Ordering questions are not supported in assignments"),
+    ORDERING_INVALID_PERMUTATION(HttpStatus.BAD_REQUEST, "ORDERING_INVALID_PERMUTATION", "Ordering answer must contain every item key exactly once"),
+    ORDERING_NO_VALID_SHUFFLE(HttpStatus.CONFLICT, "ORDERING_NO_VALID_SHUFFLE", "Ordering question has no valid shuffled presentation"),
 
     ACTIVITY_SESSION_NOT_FOUND(HttpStatus.NOT_FOUND, "ACTIVITY_SESSION_NOT_FOUND", "Activity session was not found"),
     ACTIVITY_SESSION_INVALID_MODE(HttpStatus.BAD_REQUEST, "ACTIVITY_SESSION_INVALID_MODE", "The selected activity mode is not available"),

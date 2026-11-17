@@ -21,7 +21,7 @@ export type ActivitySessionOptions = {
 export type ActivitySessionQuestion = {
   id: number;
   position: number;
-  type: "SINGLE_CHOICE" | "MULTIPLE_CHOICE" | "TRUE_FALSE" | "FILL_IN_BLANK" | "TYPE_ANSWER";
+  type: "SINGLE_CHOICE" | "MULTIPLE_CHOICE" | "TRUE_FALSE" | "FILL_IN_BLANK" | "TYPE_ANSWER" | "ORDERING";
   content?: string | null;
   options: { key: string; content: string }[];
   // ISO-8601 timestamp with server offset; never an unzoned local time.
@@ -34,6 +34,10 @@ export type ActivitySessionQuestion = {
   hintUsed: boolean;
   hasHint: boolean;
   guided?: GuidedQuestionState | null;
+  ordering?: {
+    subtype: "WORD" | "PHRASE" | "SENTENCE";
+    items: { key: string; content: string }[];
+  } | null;
 };
 
 export type GuidedQuestionStage =
@@ -107,6 +111,9 @@ export type ActivitySessionAnswerFeedback = {
   retryAvailable: boolean;
   answerRevealed: boolean;
   correctAnswer?: string;
+  orderingAnswer?: {
+    items: { key: string; content: string }[];
+  } | null;
   explanation?: string;
 };
 

@@ -21,6 +21,8 @@ import e_learning.server.activitysession.repository.ActivitySessionQuestionRepos
 import e_learning.server.activitysession.repository.ActivitySessionRepository;
 import e_learning.server.activitysession.repository.ActivitySessionFinalAnswerAttemptRepository;
 import e_learning.server.activitysession.guided.GuidedRuntimeService;
+import e_learning.server.activitysession.ordering.OrderingRuntimeService;
+import e_learning.server.activitysession.ordering.OrderingRuntimeSnapshot;
 import e_learning.server.activitysession.selection.ActivityQuestionSelectionService;
 import e_learning.server.activitysession.snapshot.ActivityQuestionSnapshotAssembler;
 import e_learning.server.classes.entity.ClassEntity;
@@ -36,6 +38,7 @@ import e_learning.server.gamification.xp.dto.ActivityXpPolicySnapshot;
 import e_learning.server.question.entity.Question;
 import e_learning.server.question.enums.Difficulty;
 import e_learning.server.question.enums.QuestionType;
+import e_learning.server.question.engine.types.ordering.OrderingSubtype;
 import e_learning.server.question.repository.QuestionAnswerRepository;
 import e_learning.server.question.repository.QuestionOptionRepository;
 import e_learning.server.user.entity.User;
@@ -76,6 +79,7 @@ class ActivitySessionTimeoutTest {
     @Mock private ActivityQuestionSelectionService questionSelectionService;
     @Mock private ActivityXpSessionAuditService activityXpAuditService;
     @Mock private GuidedRuntimeService guidedRuntimeService;
+    @Mock private OrderingRuntimeService orderingRuntimeService;
     @Mock private ActivitySessionFinalAnswerAttemptRepository finalAnswerAttemptRepository;
     @Mock private ActivityXpRewardWorkflow activityXpRewardWorkflow;
     @Mock private StudentStreakService studentStreakService;
@@ -273,6 +277,33 @@ class ActivitySessionTimeoutTest {
         assertEquals(ActivitySessionStatus.GAME_OVER, fixture.session().getStatus());
         verify(finalAnswerAttemptRepository, times(1))
                 .save(any(ActivitySessionFinalAnswerAttempt.class));
+    }
+
+    @Test
+    void classicOrderingAnswerUsesTypedRuntimeGradingAndNormalSessionResolution() {
+        Fixture fixture = fixture(ActivityMode.LEARNING, 1, null);
+        OrderingRuntimeSnapshot ordering = new OrderingRuntimeSnapshot(1, 1, OrderingSubtype.WORD,
+                List.of(
+                        new OrderingRuntimeSnapshot.Item("a", "we"),
+                        new OrderingRuntimeSnapshot.Item("b", "learn"),
+                        new OrderingRuntimeSnapshot.Item("c", "English")),
+                List.of(List.of("a", "b", "c")), List.of("b", "a", "c"));
+        ActivityQuestionSnapshot snapshot = new ActivityQuestionSnapshot(
+                3, 1L, QuestionType.ORDERING, Difficulty.EASY,
+                "Order the words", null, null, null, List.of(), List.of(), "{}", ordering);
+        JsonNode answer = mock(JsonNode.class);
+        when(snapshotAssembler.read(fixture.first())).thenReturn(snapshot);
+        when(orderingRuntimeService.grade(snapshot, answer)).thenReturn(true);
+
+        var response = service.answer(SESSION_ID, fixture.first().getId(), STUDENT_ID,
+                new ActivitySessionAnswerRequest(UUID.randomUUID().toString(), answer));
+
+        assertTrue(response.correct());
+        assertEquals(ActivitySessionStatus.COMPLETED, response.session().status());
+        assertEquals(1, fixture.first().getAnswerAttempts());
+        assertTrue(fixture.first().isResolved());
+        verify(orderingRuntimeService).grade(snapshot, answer);
+        verify(activityXpAuditService).auditResolvedQuestion(fixture.first(), snapshot);
     }
 
     @Test

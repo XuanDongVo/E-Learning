@@ -26,6 +26,7 @@ type Feedback = {
   retryAvailable: boolean;
   answerRevealed: boolean;
   correctAnswer?: string;
+  orderingAnswer?: { items: { key: string; content: string }[] } | null;
   explanation?: string;
 };
 
@@ -49,8 +50,12 @@ type GuidedFinalReview = {
 const answerFor = (
   question: ActivitySessionQuestion,
   draft: string[],
-): string | string[] =>
-  question.type === "MULTIPLE_CHOICE" ? draft : (draft[0] ?? "");
+): string | string[] | { order: string[] } =>
+  question.type === "ORDERING"
+    ? { order: draft }
+    : question.type === "MULTIPLE_CHOICE"
+      ? draft
+      : (draft[0] ?? "");
 
 export function usePracticeController({
   unitId,
@@ -141,7 +146,7 @@ export function usePracticeController({
     mutationFn: (v: {
       questionId: number;
       requestId: string;
-      answer: string | string[];
+      answer: string | string[] | { order: string[] };
       draft: string[];
     }) =>
       activitySessionService.answer(
@@ -161,16 +166,23 @@ export function usePracticeController({
         retryAvailable: data.retryAvailable,
         answerRevealed: data.answerRevealed,
         correctAnswer: data.correctAnswer,
+        orderingAnswer: data.orderingAnswer,
         explanation: data.explanation,
       };
       setFeedbacks((f) => ({ ...f, [v.questionId]: answerFeedback }));
       if (soundEnabled) playPracticeFeedback(data.correct);
       setPicks((p) => ({ ...p, [v.questionId]: v.draft }));
-      setDrafts((d) => ({ ...d, [v.questionId]: [] }));
-      requestIds.clear(`final:${v.questionId}`);
       const answeredQuestion = data.session.questions.find(
         (question) => question.id === v.questionId,
       );
+      setDrafts((d) => ({
+        ...d,
+        [v.questionId]:
+          answeredQuestion?.type === "ORDERING" && data.retryAvailable
+            ? v.draft
+            : [],
+      }));
+      requestIds.clear(`final:${v.questionId}`);
       // Guided final feedback must remain visible before advancing the cursor.
       if (answeredQuestion?.guided) {
         setGuidedFinalReview({
@@ -343,7 +355,9 @@ export function usePracticeController({
     timeoutMutation.variables?.sessionId === session?.id &&
     timeoutMutation.variables?.questionId === question?.id;
   const hasDraft = question
-    ? isChoice(question) || question.type === "TRUE_FALSE"
+    ? question.type === "ORDERING"
+      ? draft.length === (question.ordering?.items.length ?? 0)
+      : isChoice(question) || question.type === "TRUE_FALSE"
       ? draft.length > 0
       : (draft[0] ?? "").trim().length > 0
     : false;

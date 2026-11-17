@@ -2,13 +2,16 @@
 
 import { Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { OrderingAnswer } from "../ordering/OrderingAnswer";
+import type { RuntimeOrdering } from "../ordering/ordering-types";
 
 export type RuntimeQuestionType =
   | "SINGLE_CHOICE"
   | "MULTIPLE_CHOICE"
   | "TRUE_FALSE"
   | "FILL_IN_BLANK"
-  | "TYPE_ANSWER";
+  | "TYPE_ANSWER"
+  | "ORDERING";
 
 export type AnswerOptionState =
   | "correct"
@@ -24,6 +27,7 @@ const truthOptions = [
 export function AnswerControls({
   type,
   options,
+  ordering,
   draft,
   disabled,
   inputLabel,
@@ -33,6 +37,7 @@ export function AnswerControls({
 }: {
   type: RuntimeQuestionType;
   options: { key: string; content: string }[];
+  ordering?: RuntimeOrdering | null;
   draft: string[];
   disabled?: boolean;
   inputLabel: string;
@@ -40,6 +45,17 @@ export function AnswerControls({
   onDraftChange: (next: string[]) => void;
   optionState?: (key: string) => AnswerOptionState;
 }) {
+  if (type === "ORDERING") {
+    return ordering ? (
+      <OrderingAnswer
+        ordering={ordering}
+        draft={draft}
+        disabled={disabled}
+        onChange={onDraftChange}
+      />
+    ) : null;
+  }
+
   const choices =
     type === "SINGLE_CHOICE" ||
     type === "MULTIPLE_CHOICE" ||

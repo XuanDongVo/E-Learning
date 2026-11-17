@@ -21,6 +21,7 @@ import e_learning.server.activitysession.repository.ActivitySessionQuestionRepos
 import e_learning.server.activitysession.repository.ActivitySessionRepository;
 import e_learning.server.activitysession.selection.ActivityQuestionSelectionService;
 import e_learning.server.activitysession.snapshot.ActivityQuestionSnapshotAssembler;
+import e_learning.server.activitysession.ordering.OrderingRuntimeService;
 import e_learning.server.classes.repository.ClassMemberRepository;
 import e_learning.server.common.dto.PageResponse;
 import e_learning.server.common.exception.AppException;
@@ -67,6 +68,7 @@ public class ActivitySessionService {
     private final QuestionOptionRepository optionRepository;
     private final QuestionAnswerRepository answerRepository;
     private final ActivityQuestionSnapshotAssembler snapshotAssembler;
+    private final OrderingRuntimeService orderingRuntimeService;
     private final ActivityQuestionSelectionService questionSelectionService;
     private final GuidedRuntimeService guidedRuntimeService;
     private final ActivitySessionFinalAnswerAttemptRepository finalAnswerAttemptRepository;
@@ -257,6 +259,7 @@ public class ActivitySessionService {
             return new ActivitySessionAnswerResponse(toResponse(session), existing.isCorrect(),
                     existing.isRetryAvailable(), existing.isAnswerRevealed(),
                     existing.isAnswerRevealed() ? correctAnswer(storedSnapshot) : null,
+                    existing.isAnswerRevealed() ? correctOrderingAnswer(storedSnapshot) : null,
                     existing.isAnswerRevealed() ? storedSnapshot.explanation() : null);
         }
         requireActive(session);
@@ -273,7 +276,7 @@ public class ActivitySessionService {
             settleXpIfTerminal(session);
             sessionRepository.save(session);
             return new ActivitySessionAnswerResponse(toResponse(session), false, false, true,
-                    correctAnswer(snapshot), snapshot.explanation());
+                    correctAnswer(snapshot), correctOrderingAnswer(snapshot), snapshot.explanation());
         }
         boolean correct = isCorrect(snapshot, request.answer());
         int attempt = item.getAnswerAttempts() + 1;
@@ -322,8 +325,10 @@ public class ActivitySessionService {
         settleXpIfTerminal(session);
         sessionRepository.save(session);
         String correctAnswer = reveal ? correctAnswer(snapshot) : null;
+        var orderingAnswer = reveal ? correctOrderingAnswer(snapshot) : null;
         String explanation = reveal ? snapshot.explanation() : null;
-        return new ActivitySessionAnswerResponse(toResponse(session), correct, retry, reveal, correctAnswer, explanation);
+        return new ActivitySessionAnswerResponse(toResponse(session), correct, retry, reveal,
+                correctAnswer, orderingAnswer, explanation);
     }
 
     private UUID finalRequestId(String requestId) {
@@ -543,6 +548,9 @@ public class ActivitySessionService {
     }
 
     private boolean isCorrect(ActivityQuestionSnapshot snapshot, JsonNode node) {
+        if (snapshot.type() == e_learning.server.question.enums.QuestionType.ORDERING) {
+            return orderingRuntimeService.grade(snapshot, node);
+        }
         if (node == null) return false;
         if (snapshot.type() == e_learning.server.question.enums.QuestionType.MULTIPLE_CHOICE) {
             Set<String> submitted = new TreeSet<>();
@@ -561,12 +569,19 @@ public class ActivitySessionService {
     }
 
     private String correctAnswer(ActivityQuestionSnapshot snapshot) {
+        if (snapshot.type() == e_learning.server.question.enums.QuestionType.ORDERING) return null;
         if (snapshot.type() == e_learning.server.question.enums.QuestionType.SINGLE_CHOICE
                 || snapshot.type() == e_learning.server.question.enums.QuestionType.MULTIPLE_CHOICE)
             return snapshot.options().stream().filter(ActivityQuestionSnapshot.Option::correct)
                     .map(ActivityQuestionSnapshot.Option::key).sorted().collect(java.util.stream.Collectors.joining(","));
         return snapshot.answers().stream()
                 .collect(java.util.stream.Collectors.joining(", "));
+    }
+
+    private e_learning.server.activitysession.dto.response.ordering.OrderingAnswerRevealResponse
+    correctOrderingAnswer(ActivityQuestionSnapshot snapshot) {
+        if (snapshot.type() != e_learning.server.question.enums.QuestionType.ORDERING) return null;
+        return orderingRuntimeService.reveal(snapshot);
     }
 
     private void complete(ActivitySession session) {
@@ -651,7 +666,7 @@ public class ActivitySessionService {
         if (guidedRuntimeService.isGuided(item) && !guidedRuntimeService.finalAvailable(item)) {
             return new ActivitySessionQuestionResponse(item.getId(), item.getPosition(), null, null, List.of(),
                     null, false, 0, null, null, false, false, null,
-                    guidedRuntimeService.publicView(item));
+                    guidedRuntimeService.publicView(item), null);
         }
         List<ActivitySessionQuestionResponse.Option> options = snapshot.options().stream()
                 .map(o -> new ActivitySessionQuestionResponse.Option(o.key(), o.content())).toList();
@@ -662,6 +677,8 @@ public class ActivitySessionService {
                 item.isResolved(), item.getAnswerAttempts(), item.getFirstCorrect(),
                 item.getFinalCorrect(), item.isHintUsed(),
                 snapshot.hint() != null && !snapshot.hint().isBlank(), item.getResolutionReason(),
-                guidedRuntimeService.isGuided(item) ? guidedRuntimeService.publicView(item) : null);
+                guidedRuntimeService.isGuided(item) ? guidedRuntimeService.publicView(item) : null,
+                snapshot.type() == e_learning.server.question.enums.QuestionType.ORDERING
+                        ? orderingRuntimeService.publicView(snapshot.ordering()) : null);
     }
 }

@@ -50,6 +50,8 @@
     "ACTIVITY_QUESTION_BANK_OUTSIDE_UNIT": "Ngân hàng câu hỏi phải thuộc cùng bài học với hoạt động.",
     "ASSIGNMENT_NOT_READY": "Nội dung chưa sẵn sàng để thực hiện thao tác này.",
     "ORDERING_NOT_SUPPORTED_IN_ASSIGNMENT": "Câu hỏi sắp xếp chưa được hỗ trợ trong bài tập được giao.",
+    "ORDERING_INVALID_PERMUTATION": "Hãy xếp mỗi mảnh đúng một lần trước khi gửi.",
+    "ORDERING_NO_VALID_SHUFFLE": "Câu hỏi sắp xếp này không thể tạo được thứ tự trộn hợp lệ.",
     "ASSIGNMENT_NOT_FOUND": "Không tìm thấy bài tập được giao.",
     "ASSIGNMENT_INVALID_CONFIGURATION": "Cấu hình bài tập được giao không hợp lệ.",
     "ASSIGNMENT_COMPOSITION_INVALID": "Thành phần bài tập được giao không hợp lệ.",

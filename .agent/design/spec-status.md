@@ -34,7 +34,7 @@ This file is a drift register, not a historical audit. Accepted ADRs define inte
 
 | ID | Contract | Current implementation | Status |
 |---|---|---|---|
-| Q-01 | Canonical question semantics | Question Engine contains eight types, including ORDERING schema v1 with WORD/PHRASE/SENTENCE subtypes | Implemented structurally; Ordering Activity runtime pending M2/M3 |
+| Q-01 | Canonical question semantics | Question Engine contains eight types, including ORDERING schema v1 with WORD/PHRASE/SENTENCE subtypes | Implemented structurally; Classic Ordering runtime implemented in M2 |
 | Q-02 | Type behavior centralized | Handlers/registry exist, but ActivitySessionService still contains semantic branches | Partially implemented |
 | Q-03 | Teacher/student projection separation | Teacher-oriented mappings exist; student leakage boundary requires endpoint-wide verification | Partially implemented; verification required |
 | Q-04 | Explicit option order | V31/schema and API `displayOrder` support exist | Implemented |
@@ -43,7 +43,8 @@ This file is a drift register, not a historical audit. Accepted ADRs define inte
 | Q-07 | Hint round-trip across all authoring paths | Shared mapping exists, but endpoint-wide parity is not fully verified | Verification gap |
 | Q-08 | Handler/contract tests | Focused tests exist | Implemented; full integration test gate remains |
 | Q-09 | Ordering authoring and persistence | V63, Ordering handler/spec, persistence mappers and split Teacher authoring/preview components exist | M1 implemented; backend execution not verified in current environment |
-| Q-10 | Ordering scope gates | Guided Final accepts Ordering; Guided Steps, Assignment/Assessment, CSV and Activity runtime remain closed | M1 implemented; Activity enablement deferred to M2/M3 |
+| Q-10 | Ordering scope gates | Classic runtime accepts Ordering; Guided Final authoring accepts it but Guided runtime, Guided Steps, Assignment/Assessment and CSV remain closed | M2 implemented; Guided runtime deferred to M3 |
+| Q-11 | Ordering Classic runtime | Classic eligibility, schema-v3 frozen shuffle, sanitized Student projection, typed answer, binary grading and Student controls exist | M2 implemented; targeted Maven execution blocked by environment |
 
 ## Assignment Composition / Phase 7B
 

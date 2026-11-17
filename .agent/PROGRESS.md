@@ -1,5 +1,40 @@
 # Project Progress
 
+## 2026-11-17 Ordering Question v1 — M2 Classic runtime implemented
+
+Screen Brief
+User: Student
+Goal: Complete an Ordering Question in Classic Learning or Try Hard.
+Page type: Immersive Activity runtime
+Primary action: Arrange every item and submit the frozen order.
+States covered: initial, partial, complete draft, submitting, retry, resolved and timeout.
+
+- Classic Activity eligibility now includes complete Ordering Questions while
+  Guided Reasoning eligibility still excludes Ordering until M3.
+- Ordering sessions use schema-v3 immutable snapshots containing subtype, frozen
+  items, accepted orders, grading/canonicalization versions and one server-made
+  `presentationOrder`. Bounded shuffle plus deterministic fallback guarantees
+  termination and never serves an accepted visible order.
+- Student session DTOs expose only subtype and items in frozen presentation
+  order. Accepted orders remain server-only. Answer submit reuses the existing
+  endpoint with `{ answer: { order: [...] } }`; malformed permutations fail
+  before business attempts, lives or XP are changed.
+- Binary grading delegates to the canonical Ordering Question Engine. Existing
+  Learning retry/hint, Try Hard timeout/lives, request-id idempotency, result and
+  XP settlement remain the lifecycle owners. Reveal returns one typed sample
+  order only after the existing reveal policy permits it.
+- Student UI is split under `runtime/ordering/`: item pool, ordered draft and
+  orchestration components. WORD/PHRASE use wrapping controls; SENTENCE uses a
+  full-width vertical list. Tap, reset, remove and directional buttons support
+  completion without drag-and-drop and use existing Student semantic recipes.
+- Validation: frontend TypeScript and focused ESLint passed; frontend test/build
+  were intentionally not run per request. The M2 Activity API cluster and four
+  targeted test classes compile with JDK 21. Targeted Maven execution was
+  attempted but could not start because the sandbox denied access/download for
+  the FSRS dependency; no full Maven suite was run.
+- M3 remains next: enable Ordering only as a Guided Final after all Steps and add
+  its gated Final UI/submit behavior. Student Review stays in M4.
+
 ## 2026-11-17 Ordering Question v1 — M1 authoring foundation implemented
 
 - Added `QuestionType.ORDERING`, Flyway V63, the schema-v1 Ordering DTO/spec,

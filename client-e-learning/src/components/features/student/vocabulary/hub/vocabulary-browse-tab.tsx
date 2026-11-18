@@ -15,14 +15,17 @@ import {
 import type { StudentVocabularyStudyCard } from "@/types/student-vocabulary-review";
 import { VocabularyWordRow } from "./vocabulary-word-row";
 import { VocabularyFlashcard } from "./vocabulary-flash-card";
+import { isVocabularyCardDue } from "./vocabulary-hub-types";
 
 interface VocabularyBrowseTabProps {
   cards: StudentVocabularyStudyCard[];
+  nowMs: number;
   onGoLearn?: () => void;
 }
 
 export function VocabularyBrowseTab({
   cards = [],
+  nowMs,
   onGoLearn,
 }: VocabularyBrowseTabProps) {
   const [searchTerm, setSearchTerm] = useState("");
@@ -68,8 +71,8 @@ export function VocabularyBrowseTab({
 
   // Derived data
   const dueCards = useMemo(
-    () => cards.filter((card) => card.state !== "NEW" && card.due),
-    [cards]
+    () => cards.filter((card) => isVocabularyCardDue(card, nowMs)),
+    [cards, nowMs]
   );
 
   const learnedCount = cards.filter((card) => card.state !== "NEW").length;
@@ -83,7 +86,7 @@ export function VocabularyBrowseTab({
         browseFilter === "all" ||
         (browseFilter === "new"
           ? !card.state || card.state === "NEW"
-          : card.state !== "NEW" && card.due);
+          : isVocabularyCardDue(card, nowMs));
 
       const matchSearch =
         !normalizedSearch ||
@@ -93,7 +96,7 @@ export function VocabularyBrowseTab({
 
       return matchFilter && matchSearch;
     });
-  }, [cards, browseFilter, searchTerm]);
+  }, [cards, browseFilter, searchTerm, nowMs]);
 
   return (
     <div className="space-y-6 ">

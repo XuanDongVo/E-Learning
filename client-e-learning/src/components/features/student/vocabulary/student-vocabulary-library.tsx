@@ -28,6 +28,7 @@ export function StudentVocabularyLibrary() {
   const overview = useQuery({
     queryKey: overviewKey,
     queryFn: studentVocabularyReviewService.listOverview,
+    refetchInterval: 60_000,
   });
   const units = overview.data?.data ?? [];
   const totalWords = units.reduce((count, unit) => count + unit.totalCount, 0);

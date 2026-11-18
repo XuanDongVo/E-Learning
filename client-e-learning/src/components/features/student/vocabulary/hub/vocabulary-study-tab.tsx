@@ -3,11 +3,12 @@
 import { useState } from "react";
 import { BookOpen } from "lucide-react";
 import { PaperSurface } from "@/components/student-ui/paper-surface";
-import type { StudentVocabularyStudyCard } from "@/types/student-vocabulary-review";
+import type { StudentVocabularyStudyCard, VocabularyReviewResult } from "@/types/student-vocabulary-review";
 import { VocabularyStudySession } from "./vocabulary-study-session";
 import { VocabularyReviewSession } from "./vocabulary-review-session";
 import { VocabularyFreePractice } from "./vocabulary-free-practice";
 import { useVocabularyLearnQueue } from "./use-vocabulary-learn-queue";
+import { isVocabularyCardDue, formatVocabularyReviewDate, formatVocabularyReviewDelay } from "./vocabulary-hub-types";
 
 type LearnMode = "new" | "practice";
 
@@ -15,14 +16,19 @@ export function VocabularyStudyTab({
   tab,
   unitId,
   cards,
+  nowMs,
 }: {
   tab: "learn" | "review";
   unitId: number;
   cards: StudentVocabularyStudyCard[];
+  nowMs: number;
 }) {
   const [learnMode, setLearnMode] = useState<LearnMode>("new");
+  const [reviewedIds, setReviewedIds] = useState<Set<number>>(() => new Set());
+  const [savedReview, setSavedReview] = useState<VocabularyReviewResult | null>(null);
   const learn = useVocabularyLearnQueue(unitId, cards);
-  const reviewCard = cards.find((card) => card.state !== "NEW" && card.due);
+  const dueCards = cards.filter((card) => isVocabularyCardDue(card, nowMs));
+  const reviewCard = dueCards.find((card) => !reviewedIds.has(card.wordId));
   const isReview = tab === "review";
   const learnedCount = cards.filter((card) => card.state !== "NEW").length;
 
@@ -55,18 +61,58 @@ export function VocabularyStudyTab({
       </div>
 
       {isReview ? (
-        reviewCard ? (
+        savedReview ? (
+          <PaperSurface as="section" className="space-y-3 p-5" role="status">
+            <h3 className="student-card-title text-foreground">Đã lưu lượt ôn</h3>
+            <p className="student-body text-muted-foreground">
+              {savedReview.rating === "AGAIN"
+                ? "Từ này cần củng cố thêm. Bạn có thể luyện lại trong tab Học."
+                : "Lịch ôn tiếp theo đã được cập nhật."}
+            </p>
+            <p className="student-body text-foreground">
+              Ôn tiếp: <strong>{formatVocabularyReviewDate(savedReview.dueAt)}</strong>
+              {" · "}{formatVocabularyReviewDelay(savedReview.dueAt, Date.parse(savedReview.reviewedAt))}
+            </p>
+            <button
+              type="button"
+              className="student-control student-control--action w-full"
+              onClick={() => {
+                setReviewedIds((previous) => new Set(previous).add(savedReview.wordId));
+                setSavedReview(null);
+              }}
+            >
+              Tiếp tục ôn từ khác
+            </button>
+          </PaperSurface>
+        ) : reviewCard ? (
           <VocabularyReviewSession
             key={`review-${reviewCard.wordId}`}
             unitId={unitId}
             card={reviewCard}
+            onRecorded={setSavedReview}
           />
         ) : (
           <PaperSurface as="section" className="space-y-2 p-8 text-center">
-            <h3 className="student-card-title text-foreground">Không có từ đến hạn ôn</h3>
+            <h3 className="student-card-title text-foreground">
+              {dueCards.length > 0 ? "Đã hoàn thành lượt ôn này!" : "Không có từ đến hạn ôn"}
+            </h3>
             <p className="student-body text-muted-foreground">
-              Các từ đã học sẽ xuất hiện khi đến lịch ôn tiếp theo.
+              {dueCards.length > 0
+                ? "Bạn đã xử lý các từ đến hạn trong lượt này. Những từ chọn Học lại có thể tiếp tục xuất hiện khi bắt đầu lượt ôn mới."
+                : "Các từ đã học sẽ xuất hiện khi đến lịch ôn tiếp theo."}
             </p>
+            {dueCards.length > 0 && (
+              <button
+                type="button"
+                className="student-control student-control--secondary px-4"
+                onClick={() => {
+                  setSavedReview(null);
+                  setReviewedIds(new Set());
+                }}
+              >
+                Kiểm tra lượt ôn mới
+              </button>
+            )}
           </PaperSurface>
         )
       ) : learnMode === "practice" ? (

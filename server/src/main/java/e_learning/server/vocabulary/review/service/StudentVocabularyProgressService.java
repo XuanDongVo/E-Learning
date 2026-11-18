@@ -4,7 +4,7 @@ import e_learning.server.content.unit.dto.student.StudentUnitSummaryResponse;
 import e_learning.server.content.unit.service.StudentUnitService;
 import e_learning.server.vocabulary.enums.VocabularyStatus;
 import e_learning.server.vocabulary.repository.VocabularyWordRepository;
-import e_learning.server.vocabulary.review.dto.VocabularyProgressDashboardResponse;
+import e_learning.server.vocabulary.review.dto.response.VocabularyProgressDashboardResponse;
 import e_learning.server.vocabulary.review.entity.StudentVocabularyProgress;
 import e_learning.server.vocabulary.review.repository.StudentVocabularyProgressRepository;
 import e_learning.server.vocabulary.review.repository.VocabularyReviewLogRepository;

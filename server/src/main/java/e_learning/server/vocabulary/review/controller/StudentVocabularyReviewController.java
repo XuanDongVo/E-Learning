@@ -1,7 +1,12 @@
 package e_learning.server.vocabulary.review.controller;
 
 import e_learning.server.common.response.ApiResponse;
-import e_learning.server.vocabulary.review.dto.*;
+import e_learning.server.vocabulary.review.dto.request.MarkVocabularyWordRequest;
+import e_learning.server.vocabulary.review.dto.request.RecordVocabularyReviewRequest;
+import e_learning.server.vocabulary.review.dto.response.StudentVocabularyCardResponse;
+import e_learning.server.vocabulary.review.dto.response.StudentVocabularyUnitOverviewResponse;
+import e_learning.server.vocabulary.review.dto.response.VocabularyReviewPreviewResponse;
+import e_learning.server.vocabulary.review.dto.response.VocabularyReviewResultResponse;
 import e_learning.server.vocabulary.review.service.StudentVocabularyReviewService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

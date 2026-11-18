@@ -36,7 +36,11 @@ export function VocabularyStudyTab({
           {isReview ? "Ôn tập đến hạn" : "Học và ghi nhớ"}
         </h2>
         {!isReview && (
-          <div className="flex flex-wrap gap-2" role="group" aria-label="Chọn cách học từ vựng">
+          <div
+            className="flex flex-wrap gap-2"
+            role="group"
+            aria-label="Chọn cách học từ vựng"
+          >
             <button
               type="button"
               aria-pressed={learnMode === "new"}
@@ -60,13 +64,17 @@ export function VocabularyStudyTab({
       {isReview ? (
         !reviewQueue.ready ? (
           <PaperSurface as="section" className="p-8 text-center" role="status">
-            <p className="student-body text-muted-foreground">Đang chuẩn bị lượt ôn...</p>
+            <p className="student-body text-muted-foreground">
+              Đang chuẩn bị lượt ôn...
+            </p>
           </PaperSurface>
         ) : reviewQueue.currentCard ? (
           <div className="space-y-4">
             <div className="space-y-2">
               <div className="flex items-center justify-between gap-2">
-                <p className="student-caption text-muted-foreground">Các từ đến hạn trong lượt này</p>
+                <p className="student-caption text-muted-foreground">
+                  Các từ đến hạn trong lượt này
+                </p>
                 <span className="student-typewriter text-sm font-bold">
                   Từ {reviewQueue.completedCount + 1}/{reviewQueue.totalCount}
                 </span>
@@ -81,7 +89,9 @@ export function VocabularyStudyTab({
               >
                 <div
                   className="h-full rounded-full bg-primary transition-[width] duration-300"
-                  style={{ width: `${(reviewQueue.completedCount / reviewQueue.totalCount) * 100}%` }}
+                  style={{
+                    width: `${(reviewQueue.completedCount / reviewQueue.totalCount) * 100}%`,
+                  }}
                 />
               </div>
             </div>
@@ -95,7 +105,9 @@ export function VocabularyStudyTab({
         ) : (
           <PaperSurface as="section" className="space-y-3 p-8 text-center">
             <h3 className="student-card-title text-foreground">
-              {reviewQueue.totalCount > 0 ? "Hoàn thành lượt ôn!" : "Không có từ đến hạn ôn"}
+              {reviewQueue.totalCount > 0
+                ? "Hoàn thành lượt ôn!"
+                : "Không có từ đến hạn ôn"}
             </h3>
             <p className="student-body text-muted-foreground">
               {reviewQueue.totalCount > 0
@@ -113,7 +125,7 @@ export function VocabularyStudyTab({
             )}
           </PaperSurface>
         )
-      : learnMode === "practice" ? (
+      ) : learnMode === "practice" ? (
         <VocabularyFreePractice
           unitId={unitId}
           cards={cards}
@@ -122,7 +134,8 @@ export function VocabularyStudyTab({
       ) : (
         <>
           <p className="student-caption text-muted-foreground !text-sm">
-            Hoàn thành: {learn.completedCount} · Chờ học lại: {learn.pendingRetryCount}/5 · Từ mới còn: {learn.remainingCount}
+            Hoàn thành: {learn.completedCount} · Chờ học lại:{" "}
+            {learn.pendingRetryCount}/5 · Từ mới còn: {learn.remainingCount}
           </p>
           {learn.currentCard ? (
             <VocabularyStudySession
@@ -136,13 +149,18 @@ export function VocabularyStudyTab({
             />
           ) : (
             <PaperSurface as="section" className="space-y-3 p-7 text-center">
-              <BookOpen className="mx-auto size-7 text-primary" aria-hidden="true" />
+              <BookOpen
+                className="mx-auto size-7 text-primary"
+                aria-hidden="true"
+              />
               <h3 className="student-card-title text-foreground">
-                {learnedCount > 0 ? "Bạn đã học hết từ mới!" : "Chưa có từ mới để học"}
+                {learnedCount > 0
+                  ? "Bạn đã học hết từ mới!"
+                  : "Chưa có từ mới để học"}
               </h3>
               <p className="student-body text-muted-foreground">
-                Bạn vẫn có thể luyện lại những từ đã học bất cứ lúc nào.
-                Luyện tự do không thay đổi lịch ôn FSRS.
+                Bạn vẫn có thể luyện lại những từ đã học bất cứ lúc nào. Luyện
+                tự do không thay đổi lịch ôn FSRS.
               </p>
               {learnedCount > 0 && (
                 <button

@@ -1,4 +1,4 @@
-package e_learning.server.vocabulary.review.dto;
+package e_learning.server.vocabulary.review.dto.response;
 
 public record StudentVocabularyUnitOverviewResponse(
         Long unitId,

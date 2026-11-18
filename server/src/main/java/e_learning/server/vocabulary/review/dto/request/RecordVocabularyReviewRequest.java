@@ -1,4 +1,4 @@
-package e_learning.server.vocabulary.review.dto;
+package e_learning.server.vocabulary.review.dto.request;
 
 import io.github.openspacedrepetition.Rating;
 import jakarta.validation.constraints.NotNull;

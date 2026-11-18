@@ -1,4 +1,4 @@
-package e_learning.server.vocabulary.review.dto;
+package e_learning.server.vocabulary.review.dto.response;
 
 import e_learning.server.vocabulary.enums.VocabularyPartOfSpeech;
 import e_learning.server.vocabulary.teacher.dto.VocabularyRelatedTermsDto;

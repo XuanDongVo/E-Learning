@@ -1,4 +1,4 @@
-package e_learning.server.vocabulary.review.dto;
+package e_learning.server.vocabulary.review.dto.response;
 
 import java.time.LocalDate;
 import java.time.Instant;

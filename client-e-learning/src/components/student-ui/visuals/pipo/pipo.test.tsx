@@ -11,6 +11,7 @@ describe("Pipo character render / compat", () => {
     expect(base).toContain("M89 27C67");
     expect(grown).toContain("M64 38L72");
     expect(grown).toContain("M78 105Q90 131");
+    expect(renderToStaticMarkup(<PipoCharacter mood="happy" prop="book" />)).toContain("M51 128Q70 119");
   });
 
   it("renders decorative Pipo outside a provider without exposing SVG as spoken content", () => {

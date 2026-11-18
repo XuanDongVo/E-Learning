@@ -4,18 +4,19 @@ import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { usePipo } from "./pipo-provider";
 import { PipoCharacter } from "./pipo-character";
-import type { MascotColor, PipoMood, PipoStage } from "./pipo.types";
+import type { MascotColor, PipoMood, PipoStage, PipoProp } from "./pipo.types";
 
 export type PipoProps = {
   mood?: PipoMood;
   size?: number;
   stage?: PipoStage;
   color?: MascotColor;
+  prop?: PipoProp;
   /** Decorative when placed next to text. Disabling Pipo never removes vital content. */
   className?: string;
 };
 
-export function Pipo({ mood, size = 280, stage = 2, color = "primary", className }: PipoProps) {
+export function Pipo({ mood, size = 280, stage = 2, color = "primary", prop, className }: PipoProps) {
   const { speech, enabled } = usePipo();
   const [blink, setBlink] = useState(false);
 
@@ -60,7 +61,7 @@ export function Pipo({ mood, size = 280, stage = 2, color = "primary", className
         className,
       )}
     >
-      <PipoCharacter mood={actualMood} size={size} stage={stage} color={color} blink={blink} />
+      <PipoCharacter mood={actualMood} size={size} stage={stage} color={color} blink={blink} prop={prop} />
     </span>
   );
 }

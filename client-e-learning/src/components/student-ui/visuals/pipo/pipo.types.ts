@@ -17,3 +17,4 @@ export const PIPO_LINES = [
 export type PipoMood = "idle" | "happy" | "cheer" | "oops" | "think" | "sleepy" | "wave" | "celebrate";
 export type MascotColor = "primary" | "learning" | "accent" | "success" | "teal" | "pink" | "warm";
 export type PipoStage = 1 | 2 | 3 | 4;
+export type PipoProp = "book" | "pencil" | "badge";

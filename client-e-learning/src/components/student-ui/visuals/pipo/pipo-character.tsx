@@ -1,6 +1,6 @@
 import type { CSSProperties } from "react";
 import { cn } from "@/lib/utils";
-import type { MascotColor, PipoMood, PipoStage } from "./pipo.types";
+import type { MascotColor, PipoMood, PipoStage, PipoProp } from "./pipo.types";
 
 export type PipoCharacterProps = {
   mood: PipoMood;
@@ -8,11 +8,12 @@ export type PipoCharacterProps = {
   size?: number;
   color?: MascotColor;
   blink?: boolean;
+  prop?: PipoProp;
 };
 
 /** The original Pipo silhouette: pure visual SVG with no timers or window listeners. */
 export function PipoCharacter({
-  mood, stage = 2, size = 280, color = "primary", blink = false,
+  mood, stage = 2, size = 280, color = "primary", blink = false, prop,
 }: PipoCharacterProps) {
   const shut = blink || mood === "sleepy" || mood === "oops";
   const cheerful = mood === "happy" || mood === "cheer" || mood === "celebrate";
@@ -70,6 +71,28 @@ export function PipoCharacter({
         <path d={cheerful ? "M78 105Q90 131 103 105Z" : "M80 106Q90 117 101 106"}
           stroke="var(--foreground)" strokeWidth="2.5"
           fill={cheerful ? "var(--foreground)" : "none"} strokeLinecap="round" />
+      )}
+      {prop === "book" && (
+        <g stroke="var(--foreground)" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round">
+          <path d="M51 128Q70 119 91 132L91 162Q70 151 53 161Z" fill="var(--card)" />
+          <path d="M91 132Q113 119 135 127L133 161Q111 152 91 162Z" fill="var(--secondary)" />
+          <path d="M91 133V161M63 139L81 143M103 142L122 138" fill="none" stroke="var(--learning)" strokeWidth="1.5" />
+        </g>
+      )}
+      {prop === "pencil" && (
+        <g transform="rotate(19 147 136)" stroke="var(--foreground)" strokeWidth="2" strokeLinejoin="round">
+          <path d="M142 103H152V160H142Z" fill="var(--accent)" />
+          <path d="M142 160L147 174L152 160Z" fill="var(--secondary)" />
+          <path d="M145 168L147 174L149 168" fill="var(--foreground)" />
+          <path d="M142 103H152V110H142Z" fill="var(--destructive)" />
+        </g>
+      )}
+      {prop === "badge" && (
+        <g stroke="var(--foreground)" strokeWidth="2" strokeLinejoin="round">
+          <path d="M119 138L115 169L127 162L139 169L138 138" fill="var(--learning)" />
+          <circle cx="126" cy="139" r="13" fill="var(--accent)" />
+          <path d="M126 129L129 136L137 137L131 142L132 150L126 146L120 150L121 142L115 137L123 136Z" fill="var(--card)" strokeWidth="1.2"/>
+        </g>
       )}
       {mood === "sleepy" && <text x="142" y="50" fill="var(--muted-foreground)" fontSize="14">zzz</text>}
     </svg>

@@ -65,6 +65,17 @@ export function StudentVisualGallery() {
             </div>
           ))}
         </div>
+        <p className="student-meta text-muted-foreground">Đạo cụ tái sử dụng trên Pipo gốc (không tạo mascot mới)</p>
+        <div className="grid grid-cols-3 gap-3 sm:max-w-sm">
+          {(["book", "pencil", "badge"] as const).map((prop) => (
+            <div key={prop} className="rounded-lg border border-border/70 bg-card p-2 text-center">
+              <div className="flex justify-center" aria-hidden="true">
+                <PipoCharacter mood="happy" prop={prop} size={90} />
+              </div>
+              <p className="student-caption text-muted-foreground">{prop}</p>
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   );

@@ -104,16 +104,16 @@ export function UnitsView() {
           <StudentIllustration id="illustration.no-results" decorative className="mx-auto w-28 sm:w-32" />
           <RegionState
             variant="empty"
-          title={`Không tìm thấy Unit phù hợp với từ khóa "${searchTerm}"`}
-          action={
-            <button
-              type="button"
-              onClick={() => setSearchTerm("")}
-              className="student-label min-h-11 text-primary hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-            >
-              Xóa tìm kiếm
-            </button>
-          }
+            title={`Không tìm thấy Unit phù hợp với từ khóa "${searchTerm}"`}
+            action={
+              <button
+                type="button"
+                onClick={() => setSearchTerm("")}
+                className="student-label min-h-11 text-primary hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+              >
+                Xóa tìm kiếm
+              </button>
+            }
           />
         </div>
       )}

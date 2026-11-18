@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
+import { createElement } from "react";
 import { StudentIllustration } from "@/components/student-ui/visuals/student-illustration";
 import { STUDENT_VISUAL_IDS, studentVisualRegistry } from "./registry";
 
@@ -20,7 +21,7 @@ describe("approved Student visual registry", () => {
 
   it("hides decorative assets from assistive tech", () => {
     const html = renderToStaticMarkup(
-      <StudentIllustration id="doodle.star-sticker" decorative />,
+      createElement(StudentIllustration, { id: "doodle.star-sticker", decorative: true }),
     );
     expect(html).toContain('alt=""');
     expect(html).toContain('aria-hidden="true"');
@@ -28,7 +29,7 @@ describe("approved Student visual registry", () => {
 
   it("requires a translated accessible description for meaningful art", () => {
     const html = renderToStaticMarkup(
-      <StudentIllustration id="illustration.no-results" alt="Không tìm thấy kết quả" />,
+      createElement(StudentIllustration, { id: "illustration.no-results", alt: "Không tìm thấy kết quả" }),
     );
     expect(html).toContain('alt="Không tìm thấy kết quả"');
   });

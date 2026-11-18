@@ -131,22 +131,22 @@ export function ActivityHistoryPage({
                   <StudentIllustration id="illustration.no-results" decorative className="mx-auto w-28" />
                   <RegionState
                     variant="empty"
-                  title={t(hasFilters ? "filteredEmptyTitle" : "emptyTitle")}
-                  description={t(
-                    hasFilters ? "filteredEmptyDescription" : "emptyDescription",
-                  )}
-                  action={
-                    hasFilters ? (
-                      <button
-                        type="button"
-                        className="student-control student-control--secondary px-4"
-                        onClick={clearFilters}
-                      >
-                        {t("clearFilters")}
-                      </button>
-                    ) : undefined
-                  }
-                  minHeight={220}
+                    title={t(hasFilters ? "filteredEmptyTitle" : "emptyTitle")}
+                    description={t(
+                      hasFilters ? "filteredEmptyDescription" : "emptyDescription",
+                    )}
+                    action={
+                      hasFilters ? (
+                        <button
+                          type="button"
+                          className="student-control student-control--secondary px-4"
+                          onClick={clearFilters}
+                        >
+                          {t("clearFilters")}
+                        </button>
+                      ) : undefined
+                    }
+                    minHeight={220}
                   />
                 </div>
               ) : (

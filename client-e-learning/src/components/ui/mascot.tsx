@@ -5,4 +5,4 @@
 export { Pipo } from "@/components/student-ui/visuals/pipo/pipo";
 export { PipoProvider, usePipo } from "@/components/student-ui/visuals/pipo/pipo-provider";
 export { PIPO_LINES } from "@/components/student-ui/visuals/pipo/pipo.types";
-export type { PipoMood, MascotColor, PipoStage } from "@/components/student-ui/visuals/pipo/pipo.types";
+export type { PipoMood, MascotColor, PipoStage, PipoProp } from "@/components/student-ui/visuals/pipo/pipo.types";

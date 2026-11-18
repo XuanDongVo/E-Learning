@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import {
-  ArrowLeft,
   CalendarClock,
   RefreshCw,
   Search,
@@ -13,10 +12,13 @@ import { RegionState } from "@/components/feedback";
 import { PaperSurface } from "@/components/student-ui/paper-surface";
 import { StudentTextField } from "@/components/student-ui/student-text-field";
 import { StudentIllustration } from "@/components/student-ui/visuals/student-illustration";
+import { StudentBackLink } from "@/components/student-ui/patterns/student-back-link";
+import { StudentPageHeading } from "@/components/student-ui/patterns/student-page-heading";
+import { StudentCollectionPanel } from "@/components/student-ui/patterns/student-collection-panel";
+import { StudentCollectionEmptyState } from "@/components/student-ui/patterns/student-collection-empty-state";
 import { StudentDataList } from "@/components/student-ui/data-list/student-data-list";
 import { StudentDataListItem } from "@/components/student-ui/data-list/student-data-list-item";
 import { StudentListPagination } from "@/components/student-ui/data-list/student-list-pagination";
-import { ScrapbookHeading } from "@/components/student-ui/scrapbook-heading";
 import { SkeletonList } from "@/components/ui/skeleton/skeleton-list";
 import { Link } from "@/i18n/navigation";
 import { getAppErrorMessage } from "@/lib/errors/app-error";
@@ -111,29 +113,16 @@ export function StudentVocabularyWordLibrary() {
 
   return (
     <main className="student-vocab mx-auto max-w-5xl space-y-4 pb-10">
-      <Link
-        href="/student/vocabulary"
-        className="student-label inline-flex min-h-11 items-center gap-2 text-muted-foreground hover:text-primary"
-      >
-        <ArrowLeft className="size-4" aria-hidden="true" />
-        {t("back")}
-      </Link>
+      <StudentBackLink href="/student/vocabulary">{t("back")}</StudentBackLink>
 
       <PaperSurface as="section" variant="kraft" emphasis="feature" tape tapePosition="right" className="space-y-3 p-4 sm:p-6">
-        <div className="flex min-w-0 items-center justify-between gap-4">
-          <div className="min-w-0 max-w-3xl space-y-1">
-            <p className="student-meta text-primary">{t("kicker")}</p>
-            <ScrapbookHeading as="h1" className="student-page-title text-foreground">
-              {t("title")}
-            </ScrapbookHeading>
-            <p className="student-body text-muted-foreground">{t("subtitle")}</p>
-          </div>
-          <StudentIllustration
-            id="illustration.word-collection"
-            decorative
-            className="hidden w-28 shrink-0 sm:block lg:w-36"
-          />
-        </div>
+        <StudentPageHeading
+          eyebrow={t("kicker")}
+          title={t("title")}
+          description={t("subtitle")}
+          artwork={<StudentIllustration id="illustration.word-collection" decorative className="w-28 lg:w-36" />}
+          artworkClassName="hidden sm:block"
+        />
         {summary?.dueCount ? (
           <Link href="/student/vocabulary/review" className="student-control student-control--action inline-flex w-fit items-center gap-2 px-4">
             <CalendarClock className="size-4" aria-hidden="true" />
@@ -158,8 +147,9 @@ export function StudentVocabularyWordLibrary() {
         ) : null}
       </PaperSurface>
 
-      <PaperSurface as="section" className="space-y-4 p-4 sm:p-5">
-        <div role="tablist" aria-label={t("tabsLabel")} className="flex flex-wrap gap-2 border-b border-dashed border-border pb-3">
+      <StudentCollectionPanel separator={false} toolbar={
+        <>
+          <div role="tablist" aria-label={t("tabsLabel")} className="flex flex-wrap gap-2 border-b border-dashed border-border pb-3">
           {STATUSES.map((item) => (
             <button
               key={item}
@@ -188,7 +178,8 @@ export function StudentVocabularyWordLibrary() {
           />
         </div>
 
-        <div aria-live="polite" className="space-y-3">
+        </>
+      }>
           {listQuery.isPending ? <SkeletonList count={5} /> : null}
           {listQuery.isError ? (
             <RegionState
@@ -207,8 +198,7 @@ export function StudentVocabularyWordLibrary() {
             <div className="space-y-4">
               <p className="student-label text-foreground">{t("resultCount", { count: result.totalElements })}</p>
               {result.items.length === 0 ? (
-                <RegionState
-                  variant="empty"
+                <StudentCollectionEmptyState
                   title={t(search ? "filteredEmptyTitle" : "emptyTitle")}
                   description={t(search ? "filteredEmptyDescription" : `emptyDescriptions.${status}`)}
                   action={search ? (
@@ -243,8 +233,7 @@ export function StudentVocabularyWordLibrary() {
               />
             </div>
           ) : null}
-        </div>
-      </PaperSurface>
+      </StudentCollectionPanel>
     </main>
   );
 }

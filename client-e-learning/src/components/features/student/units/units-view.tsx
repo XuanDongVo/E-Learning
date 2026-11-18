@@ -9,13 +9,13 @@ import { studentUnitService } from "@/services/student/student-unit.service";
 import { QUERY_KEYS } from "@/services/query-keys";
 import { StudentButton } from "@/components/student-ui/student-button";
 import { StudentTextField } from "@/components/student-ui/student-text-field";
-import { StudentIllustration } from "@/components/student-ui/visuals/student-illustration";
+import { StudentPageHeading } from "@/components/student-ui/patterns/student-page-heading";
+import { StudentCollectionEmptyState } from "@/components/student-ui/patterns/student-collection-empty-state";
 import { UnitCard } from "./unit-card";
 import { Pipo } from "@/components/ui/mascot";
 import { SkeletonGrid } from "@/components/ui/skeleton/skeleton-grid";
 import { RegionState } from "@/components/feedback";
 import { PaperSurface } from "@/components/student-ui/paper-surface";
-import { ScrapbookHeading } from "@/components/student-ui/scrapbook-heading";
 
 export function UnitsView() {
   const tErrors = useTranslations("errors");
@@ -41,18 +41,13 @@ export function UnitsView() {
   return (
     <div className="student-units-page space-y-6 pb-8">
       <PaperSurface as="section" variant="kraft" emphasis="feature" tape tapePosition="right" className="student-units-hero">
-        <div className="space-y-2">
-          <p className="student-meta text-primary">Learning</p>
-          <ScrapbookHeading as="h1" className="student-page-title text-foreground">
-            Chọn Unit để học
-          </ScrapbookHeading>
-          <p className="student-body max-w-xl text-muted-foreground">
-            Khám phá phần học và hoạt động luyện tập do giáo viên công bố.
-          </p>
-        </div>
-        <div className="hidden shrink-0 sm:block" aria-hidden="true">
-          <Pipo mood="happy" size={92} color="primary" stage={2} />
-        </div>
+        <StudentPageHeading
+          eyebrow="Learning"
+          title="Chọn Unit để học"
+          description="Khám phá phần học và hoạt động luyện tập do giáo viên công bố."
+          artwork={<Pipo mood="happy" size={92} color="primary" stage={2} />}
+          artworkClassName="hidden sm:block"
+        />
       </PaperSurface>
 
       {units.length > 0 && (
@@ -88,34 +83,27 @@ export function UnitsView() {
 
       {/* ─── Empty State ─── */}
       {units.length === 0 && !isLoading && !isError && (
-        <div className="space-y-2">
-          <StudentIllustration id="illustration.no-lessons" decorative className="mx-auto w-32 sm:w-40" />
-          <RegionState
-            variant="empty"
-            title="Chưa có bài học nào"
-            description="Giáo viên của bạn chưa công bố Unit nào cho lớp học này. Hãy quay lại sau nhé!"
-          />
-        </div>
+        <StudentCollectionEmptyState
+          illustration="illustration.no-lessons"
+          title="Chưa có bài học nào"
+          description="Giáo viên của bạn chưa công bố Unit nào cho lớp học này. Hãy quay lại sau nhé!"
+        />
       )}
 
       {/* ─── Không khớp tìm kiếm ─── */}
       {units.length > 0 && filteredUnits.length === 0 && (
-        <div className="space-y-2">
-          <StudentIllustration id="illustration.no-results" decorative className="mx-auto w-28 sm:w-32" />
-          <RegionState
-            variant="empty"
-            title={`Không tìm thấy Unit phù hợp với từ khóa "${searchTerm}"`}
-            action={
-              <button
-                type="button"
-                onClick={() => setSearchTerm("")}
-                className="student-label min-h-11 text-primary hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-              >
-                Xóa tìm kiếm
-              </button>
-            }
-          />
-        </div>
+        <StudentCollectionEmptyState
+          title={`Không tìm thấy Unit phù hợp với từ khóa "${searchTerm}"`}
+          action={
+            <button
+              type="button"
+              onClick={() => setSearchTerm("")}
+              className="student-label min-h-11 text-primary hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+            >
+              Xóa tìm kiếm
+            </button>
+          }
+        />
       )}
 
       {/* ─── Lưới Unit Cards ─── */}

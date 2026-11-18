@@ -2,13 +2,14 @@
 
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, BookOpen, CalendarClock, CheckCircle2, RefreshCw } from "lucide-react";
+import { BookOpen, CalendarClock, CheckCircle2, RefreshCw } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { RegionState } from "@/components/feedback";
 import { VocabularyFlashcard } from "@/components/features/student/vocabulary/hub/vocabulary-flash-card";
 import { VocabularyReviewSession } from "@/components/features/student/vocabulary/hub/vocabulary-review-session";
 import { PaperSurface } from "@/components/student-ui/paper-surface";
 import { ScrapbookHeading } from "@/components/student-ui/scrapbook-heading";
+import { StudentBackLink } from "@/components/student-ui/patterns/student-back-link";
 import { Link } from "@/i18n/navigation";
 import { getAppErrorMessage } from "@/lib/errors/app-error";
 import { studentVocabularyLibraryService } from "@/services/student/student-vocabulary-library.service";
@@ -39,13 +40,7 @@ export function StudentVocabularyReviewPage() {
 
   return (
     <main className="student-vocab mx-auto max-w-4xl space-y-6 pb-10">
-      <Link
-        href="/student/vocabulary/words"
-        className="student-label inline-flex min-h-11 items-center gap-2 text-muted-foreground hover:text-primary"
-      >
-        <ArrowLeft className="size-4" aria-hidden="true" />
-        {t("back")}
-      </Link>
+      <StudentBackLink href="/student/vocabulary/words">{t("back")}</StudentBackLink>
 
       <PaperSurface as="section" variant="kraft" emphasis="feature" tape tapePosition="right" className="space-y-2 p-5 sm:p-7">
         <p className="student-meta text-primary">{t("kicker")}</p>

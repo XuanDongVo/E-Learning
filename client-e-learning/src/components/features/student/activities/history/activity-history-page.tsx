@@ -2,14 +2,15 @@
 
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, History, RefreshCw } from "lucide-react";
+import { History, RefreshCw } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { RegionState } from "@/components/feedback";
 import { PaperSurface } from "@/components/student-ui/paper-surface";
-import { StudentIllustration } from "@/components/student-ui/visuals/student-illustration";
+import { StudentPageHeading } from "@/components/student-ui/patterns/student-page-heading";
+import { StudentBackLink } from "@/components/student-ui/patterns/student-back-link";
+import { StudentCollectionPanel } from "@/components/student-ui/patterns/student-collection-panel";
+import { StudentCollectionEmptyState } from "@/components/student-ui/patterns/student-collection-empty-state";
 import { StudentListPagination } from "@/components/student-ui/data-list/student-list-pagination";
-import { ScrapbookHeading } from "@/components/student-ui/scrapbook-heading";
-import { Link } from "@/i18n/navigation";
 import { getAppErrorMessage } from "@/lib/errors/app-error";
 import { QUERY_KEYS } from "@/services/query-keys";
 import { activitySessionService } from "@/services/student/student-activity-session.service";
@@ -63,28 +64,19 @@ export function ActivityHistoryPage({
 
   return (
     <div className="space-y-4 pb-8">
-      <Link
-        href={`/student/units/${unitId}`}
-        className="student-label inline-flex min-h-11 items-center gap-2 text-muted-foreground hover:text-primary"
-      >
-        <ArrowLeft className="size-4" aria-hidden="true" />
-        {t("backToUnit")}
-      </Link>
+      <StudentBackLink href={`/student/units/${unitId}`}>{t("backToUnit")}</StudentBackLink>
 
       <PaperSurface as="section" variant="kraft" emphasis="feature" tape tapePosition="right" className="student-units-hero">
-        <div className="max-w-2xl space-y-2">
-          <p className="student-meta text-primary">
-            {activity?.name ?? t("activityFallback", { id: activityId })}
-          </p>
-          <ScrapbookHeading as="h1" className="student-page-title text-foreground">
-            {t("pageTitle")}
-          </ScrapbookHeading>
-          <p className="student-body text-muted-foreground">{t("subtitle")}</p>
-        </div>
-        <History className="hidden size-12 shrink-0 text-primary sm:block" aria-hidden="true" />
+        <StudentPageHeading
+          eyebrow={activity?.name ?? t("activityFallback", { id: activityId })}
+          title={t("pageTitle")}
+          description={t("subtitle")}
+          artwork={<History className="size-12 text-primary" aria-hidden="true" />}
+          artworkClassName="hidden sm:block"
+        />
       </PaperSurface>
 
-      <PaperSurface as="section" className="space-y-4 p-4 sm:p-5">
+      <StudentCollectionPanel toolbar={
         <ActivityHistoryFilters
           period={period}
           mode={mode}
@@ -94,8 +86,7 @@ export function ActivityHistoryPage({
           onStatusChange={(value) => changeFilter(() => setStatus(value))}
           label={t}
         />
-
-        <div className="border-t border-dashed border-border pt-4" aria-live="polite">
+      }>
           {historyQuery.isLoading && (
             <RegionState variant="loading" description={t("loading")} minHeight={220} />
           )}
@@ -127,28 +118,20 @@ export function ActivityHistoryPage({
               </p>
 
               {history.items.length === 0 ? (
-                <div className="space-y-2">
-                  <StudentIllustration id="illustration.no-results" decorative className="mx-auto w-28" />
-                  <RegionState
-                    variant="empty"
-                    title={t(hasFilters ? "filteredEmptyTitle" : "emptyTitle")}
-                    description={t(
-                      hasFilters ? "filteredEmptyDescription" : "emptyDescription",
-                    )}
-                    action={
-                      hasFilters ? (
-                        <button
-                          type="button"
-                          className="student-control student-control--secondary px-4"
-                          onClick={clearFilters}
-                        >
-                          {t("clearFilters")}
-                        </button>
-                      ) : undefined
-                    }
-                    minHeight={220}
-                  />
-                </div>
+                <StudentCollectionEmptyState
+                  title={t(hasFilters ? "filteredEmptyTitle" : "emptyTitle")}
+                  description={t(hasFilters ? "filteredEmptyDescription" : "emptyDescription")}
+                  action={hasFilters ? (
+                    <button
+                      type="button"
+                      className="student-control student-control--secondary px-4"
+                      onClick={clearFilters}
+                    >
+                      {t("clearFilters")}
+                    </button>
+                  ) : undefined}
+                  minHeight={220}
+                />
               ) : (
                 <ActivityHistoryList items={history.items} label={t} />
               )}
@@ -164,8 +147,7 @@ export function ActivityHistoryPage({
               />
             </div>
           )}
-        </div>
-      </PaperSurface>
+      </StudentCollectionPanel>
     </div>
   );
 }

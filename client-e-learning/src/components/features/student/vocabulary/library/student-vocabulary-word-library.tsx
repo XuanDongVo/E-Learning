@@ -14,6 +14,9 @@ import { PaperSurface } from "@/components/student-ui/paper-surface";
 import { StudentDataList } from "@/components/student-ui/data-list/student-data-list";
 import { StudentDataListItem } from "@/components/student-ui/data-list/student-data-list-item";
 import { StudentListPagination } from "@/components/student-ui/data-list/student-list-pagination";
+import { StudentDataList } from "@/components/student-ui/data-list/student-data-list";
+import { StudentDataListItem } from "@/components/student-ui/data-list/student-data-list-item";
+import { StudentListPagination } from "@/components/student-ui/data-list/student-list-pagination";
 import { ScrapbookHeading } from "@/components/student-ui/scrapbook-heading";
 import { SkeletonList } from "@/components/ui/skeleton/skeleton-list";
 import { Link } from "@/i18n/navigation";
@@ -29,42 +32,33 @@ import { formatDateTime } from "@/utils/format";
 const PAGE_SIZE = 20;
 const STATUSES: VocabularyLibraryStatus[] = ["learned", "due", "waiting"];
 
-function WordRow({
-  item,
-  originLabel,
-  reviewedLabel,
-  dueLabel,
-}: {
+function WordRow({ item, originLabel, reviewedLabel, dueLabel }: {
   item: StudentVocabularyLibraryWord;
   originLabel: string;
   reviewedLabel: string;
   dueLabel: string;
 }) {
   const pronunciation = item.pronunciationUk ?? item.pronunciationUs;
-  const isDue = item.scheduleStatus === "DUE";
-
   return (
     <StudentDataListItem
       content={
         <div className="flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-0.5">
-          <h3 className="text-sm font-bold text-foreground">{item.word}</h3>
-          {item.partOfSpeech && (
-            <span className="text-xs italic text-muted-foreground">{item.partOfSpeech.toLowerCase().replaceAll("_", " ")}</span>
-          )}
+          <h3 className="text-base font-bold leading-snug text-foreground">{item.word}</h3>
+          {item.partOfSpeech && <span className="text-xs italic text-muted-foreground">{item.partOfSpeech.toLowerCase().replaceAll("_", " ")}</span>}
           {pronunciation && <span className="text-xs text-muted-foreground">{pronunciation}</span>}
+          <span className="w-full text-sm text-foreground/85">{item.meaningVi}</span>
         </div>
       }
       metadata={
-        <div className="space-y-0.5">
-          <p className="line-clamp-2 text-sm text-foreground/80">{item.meaningVi}</p>
-          <p className="truncate text-xs text-muted-foreground" title={originLabel}>{originLabel} · {reviewedLabel}</p>
+        <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+          <span className="truncate" title={originLabel}>{originLabel}</span>
+          <span>{reviewedLabel}</span>
         </div>
       }
       trailing={
-        <span className={isDue
+        <span className={item.scheduleStatus === "DUE"
           ? "inline-flex rounded-full bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary"
-          : "inline-flex rounded-full bg-secondary px-2.5 py-1 text-xs text-secondary-foreground"
-        }>
+          : "inline-flex rounded-full bg-secondary px-2.5 py-1 text-xs text-muted-foreground"}>
           {dueLabel}
         </span>
       }
@@ -127,7 +121,7 @@ export function StudentVocabularyWordLibrary() {
       </Link>
 
       <PaperSurface as="section" variant="kraft" tape tapePosition="right" className="space-y-3 p-4 sm:p-6">
-        <div className="max-w-3xl space-y-2">
+        <div className="min-w-0 max-w-3xl space-y-1">
           <p className="student-meta text-primary">{t("kicker")}</p>
           <ScrapbookHeading as="h1" className="student-page-title text-foreground">
             {t("title")}

@@ -43,7 +43,7 @@ export function StudentListPagination({
       <button
         type="button"
         aria-label={nextLabel}
-        disabled={disabled || page >= totalPages}
+        disabled={disabled || page >= totalPages || page < 1}
         onClick={() => onPageChange(page + 1)}
         className="student-control student-control--quiet inline-flex min-h-11 items-center gap-1.5 px-3 disabled:cursor-not-allowed"
       >

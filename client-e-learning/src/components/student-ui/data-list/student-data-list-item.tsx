@@ -14,16 +14,18 @@ export function StudentDataListItem({
 }: StudentDataListItemProps) {
   return (
     <li className={cn("min-w-0 transition-colors hover:bg-secondary/25 focus-within:bg-secondary/25", className)} {...props}>
-      <div className="flex min-w-0 flex-col gap-2.5 sm:flex-row sm:items-center sm:gap-4">
+      <div className="flex min-w-0 flex-wrap items-start gap-2.5 sm:flex-nowrap sm:items-center sm:gap-4">
         {leading != null && (
-          <div className="hidden size-10 shrink-0 items-center justify-center rounded-lg border border-border/60 bg-secondary/40 text-muted-foreground sm:flex">{leading}</div>
+          <div className="flex size-8 shrink-0 items-center justify-center rounded-lg border border-border/60 bg-secondary/40 text-muted-foreground sm:size-10">
+            {leading}
+          </div>
         )}
-        <div className="min-w-0 flex-1 space-y-1">
+        <div className="min-w-0 flex-[1_1_calc(100%-3rem)] space-y-1 sm:flex-1">
           {content}
           {metadata != null && <div className="min-w-0">{metadata}</div>}
         </div>
         {(trailing != null || actions != null) && (
-          <div className="flex min-w-0 items-center justify-between gap-3 sm:shrink-0 sm:justify-end sm:gap-4">
+          <div className="flex min-w-0 basis-full items-center justify-between gap-3 sm:basis-auto sm:shrink-0 sm:justify-end sm:gap-4">
             {trailing != null && <div className="min-w-0 sm:text-right">{trailing}</div>}
             {actions != null && <div className="shrink-0">{actions}</div>}
           </div>

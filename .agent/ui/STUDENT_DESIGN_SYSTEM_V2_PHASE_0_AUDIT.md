@@ -14,7 +14,7 @@ Define **one design language** with a restrained editorial hierarchy, contextual
 
 ## Route inventory (from the source tree)
 
-24 Student page.tsx routes were enumerated; these are paths in source, not verified runtime reachability.
+23 Student page.tsx routes were enumerated; these are paths in source, not verified runtime reachability.
 
 | Group | Routes | Archetype candidates / notes |
 |---|---|---|
@@ -26,7 +26,7 @@ Define **one design language** with a restrained editorial hierarchy, contextual
 | Games | /student/game; /student/game/[unitId]/[gameType] | Hub, Immersive |
 | Identity & ranking | /student/profile; /student/profile/[id]; /student/leaderboard; /student/progress | Profile, Detail, Ranking, placeholder progress page (must not invent live analytics) |
 
-The above table lists 23 route entries; the tree also contains /student/vocabulary/units/[unitId]/page.tsx represented as /student/vocabulary/units/[unitId], and /student/units/[unitId]/activities/[activityId]/history. Confirm route-count totals against the route inventory before using a numeric KPI; route details, not the aggregate count, are the audit evidence.
+The table covers all 23 discovered Student page.tsx routes; counts refer to source paths, not verified runtime route availability.
 
 ## Existing design inventory
 

@@ -63,7 +63,7 @@ Do not move files to this structure until consumers and migration strategy are p
 
 Asset metadata (in an eventual manifest) should include: unique ID, subject, role, owner, route usage, source/rights, aspect ratio, dimensions, optimized formats, alt text or decorative flag, palette version and mobile variant/focal point.
 
-Naming suggestion: pipo-<mood>-<prop>.svg; scene-<context>-<variant>.svg; illus-<concept>-<state>.svg. Use stable meaningful names; never duplicate files merely to rename for a page.
+Naming suggestion: pipo-{mood}-{prop}.svg; scene-{context}-{variant}.svg; illus-{concept}-{state}.svg. Use stable meaningful names; never duplicate files merely to rename for a page.
 
 Reuse order:
 1. Existing content-owned image / current approved asset.

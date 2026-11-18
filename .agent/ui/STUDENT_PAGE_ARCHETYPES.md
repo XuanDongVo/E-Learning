@@ -1,6 +1,6 @@
 # Student Page Archetypes & Composable Patterns — v2
 
-**Status:** Phase 1 proposed architecture; new React templates have **not** been implemented.  
+**Status:** Phase 4 minimal composable patterns implemented for proven Student use cases; full archetype templates and broad migration remain future work.  
 **Authority:** UI_ARCHITECTURE_GUIDELINES.md + accepted ADR 0032 for visuals; business/domain specs for functionality.  
 **Principle:** One Indie Illustrated Scrapbook design language across all routes. Archetypes vary **information architecture**, not palette, typography or mascot style.
 
@@ -106,7 +106,7 @@ Open questions and scope exclusions:
 - Identity/Insights: Profile and vocabulary botanical progress.
 - Game: current Game Hub is known visual drift; use it as a migration candidate, not the styling reference.
 
-Design Phase 4 should implement a **minimal** set of reusable patterns proven by these examples; avoid inventing abstractions for future speculative pages (Mistake Notebook, AI Tutor etc.).
+Phase 4 implements a **minimal** set of proven patterns; do not invent abstractions for speculative pages (Mistake Notebook, AI Tutor, etc.). See [STUDENT_PAGE_PATTERNS_PHASE_4.md](./STUDENT_PAGE_PATTERNS_PHASE_4.md) for files, migration table, usage and limits.
 
 ## 7. Acceptance
 

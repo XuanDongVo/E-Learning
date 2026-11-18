@@ -1,5 +1,14 @@
 # Project Progress
 
+## 2026-11-19 Student Design System v2 — Phase 4 reusable page patterns
+
+- Added `components/student-ui/patterns/`: StudentPageHeading, StudentBackLink, StudentCollectionPanel, StudentCollectionEmptyState (presentation only; no feature query or filter logic).
+- Adopted patterns in Activity History, Vocabulary Word Library, Units, Assignment hero, Vocabulary Review and Unit Detail.
+- Added Page Pattern gallery (Hub, Collection, Detail) to the development-only Design Lab, with clearly labeled fixtures and functional local search/reset.
+- Updated STUDENT_PAGE_ARCHETYPES.md and added STUDENT_PAGE_PATTERNS_PHASE_4.md with usage boundaries and regression checklist.
+- No route/API/backend/Teacher/assessment behavior intended to change. Source-level tests added; build, lint, real browser/mobile and Teacher regression checks have **not** been run by this GitHub-only workflow.
+
+
 ## 2026-11-19 Student Visual Storytelling — Phase 3A–E source implementation
 
 - 3A: Inventory and provenance/license register for retained assets, explicit external-license research and one original art direction.

@@ -1,7 +1,7 @@
 import type { LiHTMLAttributes, ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
-type StudentDataListItemProps = Omit<LiHTMLAttributes<HTMLLIElement>, "children"> & {
+type StudentDataListItemProps = Omit<LiHTMLAttributes<HTMLLIElement>, "children" | "content"> & {
   leading?: ReactNode;
   content: ReactNode;
   metadata?: ReactNode;

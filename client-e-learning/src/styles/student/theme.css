@@ -109,7 +109,7 @@ body:has(.student-theme):not(:has(.teacher-workspace)) {
   --student-type-caption-size: 0.75rem;
   /* Semantic paper importance, independent from paper material. */
   --student-surface-outline: color-mix(in srgb, var(--student-ink) 27%, transparent);
-  --student-surface-feature-shadow: 3px 4px 0 var(--student-ink);
+  --student-surface-feature-shadow: 2px 3px 0 var(--student-ink);
   --student-surface-hover-shadow: 2px 3px 0 var(--student-kraft-dark);
   --student-control-radius: 12px 5px 13px 5px / 5px 13px 5px 12px;
 

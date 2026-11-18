@@ -30,7 +30,21 @@
 | **Activity XP Engine Phases 1–4** | **Implemented behind default-off rollout; Phase 5 validation/enablement open** |
 | **Student Streak / Level v1** | **Service/API and Rewards UI source added; tests/build/E2E pending verification** |
 | **Auth / Session lifecycle** | **Absolute seven-day session, inactive-account enforcement and frontend recovery implemented; validation deferred** |
+| **Student Design System v2 foundations** | **Controls, fields, surface roles and interactive Design Lab implemented; device/Teacher regression open** |
 | **Vocabulary Library / all-DUE Review** | **Backend and Client implemented; browser/build verification open** |
+
+### Student Design System v2 foundations
+
+- Student-scoped Content/Feature/Accent surface importance is independent from
+  plain/lined/kraft material. Feature emphasis is deliberately restrained and
+  reserved for one focal layer.
+- Shared Student controls provide 44px targets, padding, focus, pressed,
+  disabled/loading semantics; fields provide linked hint/error/success feedback.
+- The internal Design Lab supports systematic variant/state/mobile comparison
+  and annotated type-role review. It is not a production Student learning page
+  and intentionally has no mascot quota or fabricated learning data.
+- Focused lint, component tests and TypeScript pass. Authenticated viewport,
+  portal, Teacher isolation and production-build verification remain open.
 
 ### Vocabulary Library / all-DUE Review
 

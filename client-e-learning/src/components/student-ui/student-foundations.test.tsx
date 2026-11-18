@@ -8,11 +8,12 @@ import { StudentTextField } from "./student-text-field";
 describe("Student Design System v2 foundations", () => {
   it("keeps paper material independent from visual importance", () => {
     const content = renderToStaticMarkup(
-      createElement(PaperSurface, { variant: "kraft", children: "Quiet content" }),
+      <PaperSurface variant="kraft">Quiet content</PaperSurface>,
     );
     const feature = renderToStaticMarkup(
-      createElement(PaperSurface, { as: "section", variant: "kraft",
-        emphasis: "feature", tape: true, children: "Header" }),
+      <PaperSurface as="section" variant="kraft" emphasis="feature" tape>
+        Header
+      </PaperSurface>,
     );
     expect(content).toContain("student-paper--kraft");
     expect(content).toContain("student-paper--content");
@@ -23,7 +24,7 @@ describe("Student Design System v2 foundations", () => {
 
   it("sets correct native loading and disabled semantics", () => {
     const html = renderToStaticMarkup(
-      createElement(StudentButton, { variant: "action", loading: true, children: "Đang tải" }),
+      <StudentButton variant="action" loading>Đang tải</StudentButton>,
     );
     expect(html).toContain('type="button"');
     expect(html).toContain('disabled=""');
@@ -45,5 +46,21 @@ describe("Student Design System v2 foundations", () => {
     expect(html).toContain('aria-invalid="true"');
     expect(html).toContain('aria-describedby="word-search-hint word-search-error"');
     expect(html).toContain('role="alert"');
+  });
+
+  it("announces a successful field without relying on color alone", () => {
+    const html = renderToStaticMarkup(
+      createElement(StudentTextField, {
+        id: "saved-name",
+        label: "Tên hiển thị",
+        defaultValue: "Mai",
+        success: "Đã lưu thay đổi",
+      }),
+    );
+    expect(html).toContain('data-validation="success"');
+    expect(html).toContain('aria-describedby="saved-name-success"');
+    expect(html).toContain('id="saved-name-success"');
+    expect(html).toContain('role="status"');
+    expect(html).toContain("Đã lưu thay đổi");
   });
 });

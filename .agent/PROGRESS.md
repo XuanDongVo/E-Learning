@@ -1,5 +1,23 @@
 # Project Progress
 
+## 2026-11-19 Student Design System v2 — interaction and Lab refinement
+
+- Standardized Student controls at a 44px minimum target with default horizontal
+  padding, consistent icon gap, explicit keyboard focus, pressed, disabled and
+  loading behavior. Existing button-styled links inherit the same scoped recipe.
+- Reduced Feature surface intensity while preserving one intentional focal layer;
+  Content remains flat and Accent remains contextual.
+- Extended `StudentTextField` with semantic success feedback that pairs its border
+  with linked status text and an icon instead of relying on color alone.
+- Rebuilt the development Design Lab as a component workbench: button
+  variant/state/device controls, 390px preview, annotated typography tokens and
+  usage guidance, field feedback, and a functional list-density specimen. No
+  mascot or decorative asset was added because this route is an internal tool.
+- Validation: focused ESLint passes; Student foundation tests pass 4/4; TypeScript
+  `--noEmit` passes; the running dev route returns HTTP 200. Windows Computer Use
+  visual inspection was unavailable because its native pipe could not connect;
+  production build and authenticated device/Teacher regression remain open.
+
 ## 2026-11-18 Student Design System v2 — Phase 2 foundations
 
 - Introduced Student-scoped semantic paper emphasis (content/feature/accent) independent of plain/lined/kraft material, and explicitly opted representative page heroes into feature emphasis.

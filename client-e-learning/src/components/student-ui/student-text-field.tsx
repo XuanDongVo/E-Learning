@@ -1,4 +1,5 @@
 import type { InputHTMLAttributes, ReactNode } from "react";
+import { CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type StudentTextFieldProps = Omit<InputHTMLAttributes<HTMLInputElement>, "size"> & {
@@ -7,6 +8,7 @@ type StudentTextFieldProps = Omit<InputHTMLAttributes<HTMLInputElement>, "size">
   leading?: ReactNode;
   hint?: string;
   error?: string;
+  success?: string;
   containerClassName?: string;
 };
 
@@ -17,6 +19,7 @@ export function StudentTextField({
   leading,
   hint,
   error,
+  success,
   containerClassName,
   className,
   "aria-describedby": describedBy,
@@ -26,7 +29,8 @@ export function StudentTextField({
 }: StudentTextFieldProps) {
   const hintId = hint ? id + "-hint" : undefined;
   const errorId = error ? id + "-error" : undefined;
-  const description = [describedBy, hintId, errorId].filter(Boolean).join(" ") || undefined;
+  const successId = success && !error ? id + "-success" : undefined;
+  const description = [describedBy, hintId, errorId, successId].filter(Boolean).join(" ") || undefined;
 
   return (
     <div className={cn("min-w-0 space-y-2", containerClassName)}>
@@ -42,11 +46,18 @@ export function StudentTextField({
           type={type}
           aria-describedby={description}
           aria-invalid={Boolean(error) || invalid || undefined}
+          data-validation={success && !error ? "success" : undefined}
           className={cn("student-field", leading != null && "student-field--with-leading", className)}
         />
       </div>
       {hint && <p id={hintId} className="student-caption text-muted-foreground">{hint}</p>}
       {error && <p id={errorId} role="alert" className="student-caption text-destructive">{error}</p>}
+      {success && !error ? (
+        <p id={successId} role="status" className="student-caption flex items-center gap-1.5 text-success">
+          <CheckCircle2 className="size-4 shrink-0" aria-hidden="true" />
+          {success}
+        </p>
+      ) : null}
     </div>
   );
 }

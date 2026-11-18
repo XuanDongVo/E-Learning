@@ -2,10 +2,11 @@
 
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, ChevronLeft, ChevronRight, History, RefreshCw } from "lucide-react";
+import { ArrowLeft, History, RefreshCw } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { RegionState } from "@/components/feedback";
 import { PaperSurface } from "@/components/student-ui/paper-surface";
+import { StudentListPagination } from "@/components/student-ui/data-list/student-list-pagination";
 import { ScrapbookHeading } from "@/components/student-ui/scrapbook-heading";
 import { Link } from "@/i18n/navigation";
 import { getAppErrorMessage } from "@/lib/errors/app-error";
@@ -60,7 +61,7 @@ export function ActivityHistoryPage({
   };
 
   return (
-    <div className="space-y-6 pb-8">
+    <div className="space-y-4 pb-8">
       <Link
         href={`/student/units/${unitId}`}
         className="student-label inline-flex min-h-11 items-center gap-2 text-muted-foreground hover:text-primary"
@@ -82,7 +83,7 @@ export function ActivityHistoryPage({
         <History className="hidden size-12 shrink-0 text-primary sm:block" aria-hidden="true" />
       </PaperSurface>
 
-      <PaperSurface as="section" className="space-y-5 p-4 sm:p-6">
+      <PaperSurface as="section" className="space-y-4 p-4 sm:p-5">
         <ActivityHistoryFilters
           period={period}
           mode={mode}
@@ -93,7 +94,7 @@ export function ActivityHistoryPage({
           label={t}
         />
 
-        <div className="border-t border-dashed border-border pt-5" aria-live="polite">
+        <div className="border-t border-dashed border-border pt-4" aria-live="polite">
           {historyQuery.isLoading && (
             <RegionState variant="loading" description={t("loading")} minHeight={220} />
           )}
@@ -148,34 +149,15 @@ export function ActivityHistoryPage({
                 <ActivityHistoryList items={history.items} label={t} />
               )}
 
-              {history.totalPages > 1 && (
-                <nav className="flex items-center justify-between gap-3" aria-label={t("page", {
-                  page: history.page,
-                  totalPages: history.totalPages,
-                })}>
-                  <button
-                    type="button"
-                    disabled={history.isFirst || historyQuery.isFetching}
-                    onClick={() => setPage((current) => Math.max(1, current - 1))}
-                    className="student-control student-control--quiet inline-flex items-center gap-2 px-3"
-                  >
-                    <ChevronLeft className="size-4" aria-hidden="true" />
-                    <span className="hidden sm:inline">{t("previousPage")}</span>
-                  </button>
-                  <span className="student-meta text-muted-foreground">
-                    {t("page", { page: history.page, totalPages: history.totalPages })}
-                  </span>
-                  <button
-                    type="button"
-                    disabled={history.isLast || historyQuery.isFetching}
-                    onClick={() => setPage((current) => current + 1)}
-                    className="student-control student-control--quiet inline-flex items-center gap-2 px-3"
-                  >
-                    <span className="hidden sm:inline">{t("nextPage")}</span>
-                    <ChevronRight className="size-4" aria-hidden="true" />
-                  </button>
-                </nav>
-              )}
+              <StudentListPagination
+                page={history.page}
+                totalPages={history.totalPages}
+                pageLabel={t("page", { page: history.page, totalPages: history.totalPages })}
+                previousLabel={t("previousPage")}
+                nextLabel={t("nextPage")}
+                onPageChange={setPage}
+                disabled={historyQuery.isFetching}
+              />
             </div>
           )}
         </div>

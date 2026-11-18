@@ -21,7 +21,7 @@ export function VocabularyRatingPanel({
   times?: Partial<Record<VocabularyFsrsRating, string>>;
 }) {
   const options = [
-    { rating: "AGAIN", label: "Học lại", time: againIsLocal ? "Trong lượt này" : (times?.AGAIN ?? "Theo FSRS") },
+    { rating: "AGAIN", label: "Học lại", time: againIsLocal ? "Trong lượt này" : "Học từ đầu" },
     { rating: "HARD", label: "Khó", time: times?.HARD ?? "Theo FSRS" },
     { rating: "GOOD", label: "Tốt", time: times?.GOOD ?? "Theo FSRS" },
     { rating: "EASY", label: "Dễ", time: times?.EASY ?? "Theo FSRS" },
@@ -48,7 +48,7 @@ export function VocabularyRatingPanel({
       <p className="student-caption text-center text-muted-foreground">
         {againIsLocal
           ? "Học lại: giữ từ trong hàng đợi học của lượt này, không ghi FSRS."
-          : "Học lại: lưu một lần ôn FSRS; thời điểm kế tiếp do hệ thống tính."}
+          : "Học lại: đưa từ về Học từ mới, bắt đầu lại lịch ghi nhớ. Lịch sử ôn vẫn được giữ."}
       </p>
       {onBack && (
         <button

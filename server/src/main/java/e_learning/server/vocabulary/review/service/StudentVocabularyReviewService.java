@@ -62,18 +62,21 @@ public class StudentVocabularyReviewService {
         studentUnitService.requireVisibleUnit(studentId, word.getUnit().getId());
         var progress = progressRepository.findByStudentIdAndWordId(studentId, wordId).orElse(null);
         Instant now = Instant.now();
-        if (progress != null && progress.getDueAt().isAfter(now)) {
+        if (progress != null && !progress.isNeedsRelearning() && progress.getDueAt().isAfter(now)) {
             throw new AppException(ErrorCode.VOCABULARY_REVIEW_NOT_DUE,
                     "Từ này chưa đến lịch ôn. Vui lòng trở lại khi đến hạn.");
         }
-        Card previous = progress == null ? Card.builder().due(now).build()
+        boolean initial = progress == null || progress.isNeedsRelearning();
+        Card previous = initial ? Card.builder().due(now).build()
                 : Card.fromJson(progress.getCardJson());
-        var schedule = progress == null ? Scheduler.builder().learningSteps(new Duration[] {}).build()
+        var schedule = initial ? Scheduler.builder().learningSteps(new Duration[] {}).build()
                 : Scheduler.builder().build();
         Map<Rating, Instant> times = new EnumMap<>(Rating.class);
         for (Rating rating : Rating.values()) {
-            Instant firstDue = progress == null ? firstLearningDue(now, rating) : null;
-            times.put(rating, firstDue != null ? firstDue
+            Instant firstDue = initial ? firstLearningDue(now, rating) : null;
+            // Product policy: an AGAIN during scheduled Review resets to NEW immediately.
+            times.put(rating, !initial && rating == Rating.AGAIN ? now
+                    : firstDue != null ? firstDue
                     : schedule.reviewCard(new Card(previous), rating, now).card().getDue());
         }
         return new VocabularyReviewPreviewResponse(wordId, times);
@@ -119,11 +122,12 @@ public class StudentVocabularyReviewService {
                             word.getPronunciationUk(), word.getPronunciationUs(), word.getPartOfSpeech(),
                             word.getImageUrl(), word.getExampleSentence(), word.getExampleMeaningVi(),
                             VocabularyRelatedTermsDto.fromValue(word.getRelatedTerms()),
-                            progress == null ? "NEW" : Card.fromJson(progress.getCardJson()).getState().name(),
-                            progress == null ? null : progress.getDueAt(),
+                            progress == null || progress.isNeedsRelearning() ? "NEW" : Card.fromJson(progress.getCardJson()).getState().name(),
+                            progress == null || progress.isNeedsRelearning() ? null : progress.getDueAt(),
                             progress == null ? 0 : progress.getReviewCount(),
-                            progress != null && !progress.getDueAt().isAfter(now),
-                            undoableBrowseMarks.contains(word.getId()));
+                            progress != null && !progress.isNeedsRelearning() && !progress.getDueAt().isAfter(now),
+                            undoableBrowseMarks.contains(word.getId()),
+                            progress != null && progress.isNeedsRelearning());
                 }).toList();
     }
 
@@ -152,7 +156,7 @@ public class StudentVocabularyReviewService {
 
         StudentVocabularyProgress progress = progressRepository.findByStudentIdAndWordId(studentId, wordId)
                 .orElseThrow(() -> new AppException(ErrorCode.VOCABULARY_MARK_NOT_REVERSIBLE));
-        if (progress.getReviewCount() != 1) throw new AppException(ErrorCode.VOCABULARY_MARK_NOT_REVERSIBLE);
+        if (progress.isNeedsRelearning() || progress.getReviewCount() != 1) throw new AppException(ErrorCode.VOCABULARY_MARK_NOT_REVERSIBLE);
 
         List<VocabularyReviewLog> history = reviewLogRepository.findAllByStudentIdAndWordId(studentId, wordId);
         if (history.size() != 1 || history.getFirst().getSource() != VocabularyReviewSource.BROWSE_MARK
@@ -196,20 +200,21 @@ public class StudentVocabularyReviewService {
         if (source == VocabularyReviewSource.BROWSE_MARK && progress != null) {
             throw new AppException(ErrorCode.VOCABULARY_MARK_ALREADY_RECORDED);
         }
-        if (progress != null && progress.getDueAt().isAfter(reviewedAt)) {
+        if (progress != null && !progress.isNeedsRelearning() && progress.getDueAt().isAfter(reviewedAt)) {
             throw new AppException(ErrorCode.VOCABULARY_REVIEW_NOT_DUE,
                     "Từ này chưa đến lịch ôn. Bạn có thể luyện thêm nhưng không ghi lịch FSRS trước hạn.");
         }
 
         // Never recalculate the FSRS algorithm ourselves; persist the complete library Card JSON.
-        Card previousCard = progress == null ? Card.builder().due(reviewedAt).build()
+        boolean initial = progress == null || progress.isNeedsRelearning();
+        Card previousCard = initial ? Card.builder().due(reviewedAt).build()
                 : Card.fromJson(progress.getCardJson());
-        Scheduler scheduler = progress == null ? Scheduler.builder().learningSteps(new Duration[] {}).build()
+        Scheduler scheduler = initial ? Scheduler.builder().learningSteps(new Duration[] {}).build()
                 : Scheduler.builder().build();
         CardAndReviewLog scheduled = scheduler
                 .reviewCard(previousCard, request.rating(), reviewedAt);
         Card nextCard = scheduled.card();
-        if (progress == null) {
+        if (initial) {
             Instant firstDue = firstLearningDue(reviewedAt, request.rating());
             if (firstDue != null) nextCard.setDue(firstDue);
         }
@@ -218,8 +223,12 @@ public class StudentVocabularyReviewService {
             progress = StudentVocabularyProgress.builder()
                     .student(student).word(word).build();
         }
-        progress.setCardJson(nextCard.toJson());
-        progress.setDueAt(nextCard.getDue());
+        // Keep the immutable AGAIN review, but reset the active FSRS card for guided learning.
+        boolean restart = !initial && source == VocabularyReviewSource.STUDY
+                && request.rating() == Rating.AGAIN;
+        progress.setCardJson(restart ? Card.builder().due(reviewedAt).build().toJson() : nextCard.toJson());
+        progress.setDueAt(restart ? reviewedAt : nextCard.getDue());
+        progress.setNeedsRelearning(restart);
         progress.setLastReviewedAt(reviewedAt);
         progress.setReviewCount(count);
         progress = progressRepository.save(progress);

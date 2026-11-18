@@ -21,8 +21,8 @@ public interface VocabularyWordRepository extends JpaRepository<VocabularyWord, 
 
     @Query(value = """
             SELECT w.unit_id AS "unitId", COUNT(*) AS "totalCount",
-                   COUNT(*) FILTER (WHERE p.id IS NULL) AS "newCount",
-                   COUNT(*) FILTER (WHERE p.id IS NOT NULL AND p.due_at <= :now) AS "dueCount"
+                   COUNT(*) FILTER (WHERE p.id IS NULL OR p.needs_relearning) AS "newCount",
+                   COUNT(*) FILTER (WHERE p.id IS NOT NULL AND NOT p.needs_relearning AND p.due_at <= :now) AS "dueCount"
             FROM vocabulary_words w
             LEFT JOIN student_vocabulary_progress p ON p.word_id = w.id AND p.student_id = :studentId
             WHERE w.unit_id IN (:unitIds) AND w.status = 'ACTIVE'

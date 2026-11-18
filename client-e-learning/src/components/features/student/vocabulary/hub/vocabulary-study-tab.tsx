@@ -3,12 +3,12 @@
 import { useState } from "react";
 import { BookOpen } from "lucide-react";
 import { PaperSurface } from "@/components/student-ui/paper-surface";
-import type { StudentVocabularyStudyCard, VocabularyReviewResult } from "@/types/student-vocabulary-review";
+import type { StudentVocabularyStudyCard } from "@/types/student-vocabulary-review";
 import { VocabularyStudySession } from "./vocabulary-study-session";
 import { VocabularyReviewSession } from "./vocabulary-review-session";
 import { VocabularyFreePractice } from "./vocabulary-free-practice";
 import { useVocabularyLearnQueue } from "./use-vocabulary-learn-queue";
-import { isVocabularyCardDue, formatVocabularyReviewDate, formatVocabularyReviewDelay } from "./vocabulary-hub-types";
+import { useVocabularyReviewQueue } from "./use-vocabulary-review-queue";
 
 type LearnMode = "new" | "practice";
 
@@ -24,12 +24,9 @@ export function VocabularyStudyTab({
   nowMs: number;
 }) {
   const [learnMode, setLearnMode] = useState<LearnMode>("new");
-  const [reviewedIds, setReviewedIds] = useState<Set<number>>(() => new Set());
-  const [savedReview, setSavedReview] = useState<VocabularyReviewResult | null>(null);
-  const learn = useVocabularyLearnQueue(unitId, cards);
-  const dueCards = cards.filter((card) => isVocabularyCardDue(card, nowMs));
-  const reviewCard = dueCards.find((card) => !reviewedIds.has(card.wordId));
   const isReview = tab === "review";
+  const learn = useVocabularyLearnQueue(unitId, cards);
+  const reviewQueue = useVocabularyReviewQueue(unitId, isReview, cards, nowMs);
   const learnedCount = cards.filter((card) => card.state !== "NEW").length;
 
   return (
@@ -61,61 +58,62 @@ export function VocabularyStudyTab({
       </div>
 
       {isReview ? (
-        savedReview ? (
-          <PaperSurface as="section" className="space-y-3 p-5" role="status">
-            <h3 className="student-card-title text-foreground">Đã lưu lượt ôn</h3>
-            <p className="student-body text-muted-foreground">
-              {savedReview.rating === "AGAIN"
-                ? "Từ này cần củng cố thêm. Bạn có thể luyện lại trong tab Học."
-                : "Lịch ôn tiếp theo đã được cập nhật."}
-            </p>
-            <p className="student-body text-foreground">
-              Ôn tiếp: <strong>{formatVocabularyReviewDate(savedReview.dueAt)}</strong>
-              {" · "}{formatVocabularyReviewDelay(savedReview.dueAt, Date.parse(savedReview.reviewedAt))}
-            </p>
-            <button
-              type="button"
-              className="student-control student-control--action w-full"
-              onClick={() => {
-                setReviewedIds((previous) => new Set(previous).add(savedReview.wordId));
-                setSavedReview(null);
-              }}
-            >
-              Tiếp tục ôn từ khác
-            </button>
+        !reviewQueue.ready ? (
+          <PaperSurface as="section" className="p-8 text-center" role="status">
+            <p className="student-body text-muted-foreground">Đang chuẩn bị lượt ôn...</p>
           </PaperSurface>
-        ) : reviewCard ? (
-          <VocabularyReviewSession
-            key={`review-${reviewCard.wordId}`}
-            unitId={unitId}
-            card={reviewCard}
-            onRecorded={setSavedReview}
-          />
+        ) : reviewQueue.currentCard ? (
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <div className="flex items-center justify-between gap-2">
+                <p className="student-caption text-muted-foreground">Các từ đến hạn trong lượt này</p>
+                <span className="student-typewriter text-sm font-bold">
+                  Từ {reviewQueue.completedCount + 1}/{reviewQueue.totalCount}
+                </span>
+              </div>
+              <div
+                role="progressbar"
+                aria-label="Tiến độ lượt ôn từ vựng"
+                aria-valuemin={0}
+                aria-valuemax={reviewQueue.totalCount}
+                aria-valuenow={reviewQueue.completedCount}
+                className="h-2.5 w-full overflow-hidden rounded-full bg-muted"
+              >
+                <div
+                  className="h-full rounded-full bg-primary transition-[width] duration-300"
+                  style={{ width: `${(reviewQueue.completedCount / reviewQueue.totalCount) * 100}%` }}
+                />
+              </div>
+            </div>
+            <VocabularyReviewSession
+              key={`review-${unitId}-${reviewQueue.currentCard.wordId}`}
+              unitId={unitId}
+              card={reviewQueue.currentCard}
+              onRecorded={reviewQueue.complete}
+            />
+          </div>
         ) : (
-          <PaperSurface as="section" className="space-y-2 p-8 text-center">
+          <PaperSurface as="section" className="space-y-3 p-8 text-center">
             <h3 className="student-card-title text-foreground">
-              {dueCards.length > 0 ? "Đã hoàn thành lượt ôn này!" : "Không có từ đến hạn ôn"}
+              {reviewQueue.totalCount > 0 ? "Hoàn thành lượt ôn!" : "Không có từ đến hạn ôn"}
             </h3>
             <p className="student-body text-muted-foreground">
-              {dueCards.length > 0
-                ? "Bạn đã xử lý các từ đến hạn trong lượt này. Những từ chọn Học lại có thể tiếp tục xuất hiện khi bắt đầu lượt ôn mới."
+              {reviewQueue.totalCount > 0
+                ? `Bạn đã xử lý ${reviewQueue.completedCount}/${reviewQueue.totalCount} từ đến hạn. Các từ quên sẽ quay về tab Học từ mới.`
                 : "Các từ đã học sẽ xuất hiện khi đến lịch ôn tiếp theo."}
             </p>
-            {dueCards.length > 0 && (
+            {reviewQueue.totalCount > 0 && (
               <button
                 type="button"
                 className="student-control student-control--secondary px-4"
-                onClick={() => {
-                  setSavedReview(null);
-                  setReviewedIds(new Set());
-                }}
+                onClick={reviewQueue.restart}
               >
                 Kiểm tra lượt ôn mới
               </button>
             )}
           </PaperSurface>
         )
-      ) : learnMode === "practice" ? (
+      : learnMode === "practice" ? (
         <VocabularyFreePractice
           unitId={unitId}
           cards={cards}

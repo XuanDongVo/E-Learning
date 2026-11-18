@@ -31,6 +31,7 @@ export interface StudentVocabularyStudyCard {
   reviewCount: number;
   due: boolean;
   canUndoBrowseMark: boolean;
+  needsRelearning: boolean;
 }
 
 export interface RecordVocabularyReviewRequest {

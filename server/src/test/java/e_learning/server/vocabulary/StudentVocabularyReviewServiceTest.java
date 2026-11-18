@@ -216,6 +216,66 @@ class StudentVocabularyReviewServiceTest {
         verify(logs, never()).delete(any());
     }
 
+    @Test
+    void againResetsProgressButPreservesReviewHistory() {
+        User student = mock(User.class);
+        when(student.getRole()).thenReturn(Role.STUDENT);
+        when(users.findByIdForVocabularyReview(7L)).thenReturn(Optional.of(student));
+        when(words.findById(10L)).thenReturn(Optional.of(word()));
+
+        Instant lastDue = Instant.now().minusSeconds(3600);
+        Card previous = io.github.openspacedrepetition.Scheduler.builder()
+                .learningSteps(new java.time.Duration[] {}).build()
+                .reviewCard(Card.builder().due(lastDue.minusSeconds(86400)).build(),
+                        Rating.GOOD, lastDue.minusSeconds(86400)).card();
+        previous.setDue(lastDue);
+        StudentVocabularyProgress existing = StudentVocabularyProgress.builder()
+                .id(11L).student(student).word(word()).cardJson(previous.toJson())
+                .dueAt(lastDue).reviewCount(4).needsRelearning(false).build();
+        when(progress.findByStudentIdAndWordId(7L, 10L)).thenReturn(Optional.of(existing));
+        when(progress.save(any(StudentVocabularyProgress.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        AtomicReference<VocabularyReviewLog> saved = new AtomicReference<>();
+        when(logs.save(any(VocabularyReviewLog.class))).thenAnswer(invocation -> {
+            saved.set(invocation.getArgument(0));
+            return invocation.getArgument(0);
+        });
+
+        var result = service.recordReview(7L, 10L,
+                new RecordVocabularyReviewRequest(UUID.randomUUID(), Rating.AGAIN));
+
+        assertThat(existing.isNeedsRelearning()).isTrue();
+        assertThat(existing.getDueAt()).isEqualTo(result.reviewedAt());
+        assertThat(existing.getReviewCount()).isEqualTo(5);
+        assertThat(saved.get().getRating()).isEqualTo(Rating.AGAIN);
+        assertThat(saved.get().getReviewCount()).isEqualTo(5);
+        verify(logs).save(any(VocabularyReviewLog.class));
+    }
+
+    @Test
+    void newLearningAfterAgainRestartsInitialIntervalsAndKeepsLogCount() {
+        User student = mock(User.class);
+        when(student.getRole()).thenReturn(Role.STUDENT);
+        when(users.findByIdForVocabularyReview(7L)).thenReturn(Optional.of(student));
+        when(words.findById(10L)).thenReturn(Optional.of(word()));
+
+        Instant lastReview = Instant.now().minusSeconds(600);
+        StudentVocabularyProgress existing = StudentVocabularyProgress.builder()
+                .id(11L).student(student).word(word())
+                .cardJson(Card.builder().due(lastReview).build().toJson())
+                .dueAt(lastReview).reviewCount(5).needsRelearning(true).build();
+        when(progress.findByStudentIdAndWordId(7L, 10L)).thenReturn(Optional.of(existing));
+        when(progress.save(any(StudentVocabularyProgress.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(logs.save(any(VocabularyReviewLog.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        var result = service.recordReview(7L, 10L,
+                new RecordVocabularyReviewRequest(UUID.randomUUID(), Rating.GOOD));
+
+        assertThat(result.dueAt()).isEqualTo(result.reviewedAt().plusSeconds(12 * 3600));
+        assertThat(existing.isNeedsRelearning()).isFalse();
+        assertThat(existing.getReviewCount()).isEqualTo(6);
+        assertThat(Card.fromJson(existing.getCardJson()).getDue()).isEqualTo(result.dueAt());
+    }
+
     private VocabularyWord word() {
         return VocabularyWord.builder().id(10L).unit(Unit.builder().id(2L).build())
                 .word("engage").meaningVi("tham gia").status(VocabularyStatus.ACTIVE).build();

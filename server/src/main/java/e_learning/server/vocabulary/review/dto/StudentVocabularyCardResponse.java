@@ -20,5 +20,6 @@ public record StudentVocabularyCardResponse(
         Instant dueAt,
         int reviewCount,
         boolean due,
-        boolean canUndoBrowseMark
+        boolean canUndoBrowseMark,
+        boolean needsRelearning
 ) {}

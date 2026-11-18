@@ -23,6 +23,7 @@ const baseCard: StudentVocabularyStudyCard = {
   reviewCount: 0,
   due: false,
   canUndoBrowseMark: false,
+  needsRelearning: false,
 };
 
 describe("Vocabulary due time helpers", () => {

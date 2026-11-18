@@ -42,7 +42,7 @@ public interface VocabularyReviewLogRepository extends JpaRepository<VocabularyR
     @Query("""
             SELECT l.word.id FROM VocabularyReviewLog l JOIN l.progress p
             WHERE l.student.id = :studentId AND l.word.unit.id = :unitId
-              AND l.source = :source AND l.reviewCount = 1 AND p.reviewCount = 1
+              AND l.source = :source AND l.reviewCount = 1 AND p.reviewCount = 1 AND p.needsRelearning = false
             """)
     List<Long> findReversibleBrowseMarkWordIds(
             @Param("studentId") Long studentId,

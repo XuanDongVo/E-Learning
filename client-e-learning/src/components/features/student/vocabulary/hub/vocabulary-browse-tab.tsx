@@ -59,7 +59,7 @@ export function VocabularyBrowseTab({
   };
 
   const handleToggleMastered = (card: StudentVocabularyStudyCard) => {
-    if (markMutation.isPending) return;
+    if (markMutation.isPending || card.needsRelearning) return;
     const action = card.state === "NEW" ? "mark" : card.canUndoBrowseMark ? "unmark" : null;
     if (!action) return;
     const requestId = action === "mark"

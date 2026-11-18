@@ -198,13 +198,13 @@ export function VocabularyWordRow({
                     e.stopPropagation();
                     onToggleMastered(card);
                   }}
-                  disabled={markBusy || (isMastered && !canUndoBrowseMark)}
+                  disabled={markBusy || card.needsRelearning || (isMastered && !canUndoBrowseMark)}
                   aria-pressed={isMastered}
-                  aria-label={isMastered ? (canUndoBrowseMark ? "Hủy đánh dấu đã thuộc" : "Từ đã có lịch học") : "Đánh dấu đã thuộc, ôn sau 6 giờ"}
+                  aria-label={card.needsRelearning ? "Từ đã quên: hãy học lại trong tab Học" : isMastered ? (canUndoBrowseMark ? "Hủy đánh dấu đã thuộc" : "Từ đã có lịch học") : "Đánh dấu đã thuộc, ôn sau 6 giờ"}
                   className={`rounded-md p-1.5 transition-colors hover:bg-muted disabled:cursor-default disabled:opacity-70 ${
                     isMastered ? "text-success" : "hover:text-foreground"
                   }`}
-                  title={isMastered
+                  title={card.needsRelearning ? "Từ đã quên: học lại trong tab Học từ mới" : isMastered
                     ? canUndoBrowseMark ? "Hủy đánh dấu (trở lại từ mới)" : "Từ đã có lịch ôn"
                     : "Đánh dấu đã thuộc · ôn sau 6 giờ"}
                 >

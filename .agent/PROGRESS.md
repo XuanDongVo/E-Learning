@@ -1,5 +1,14 @@
 # Project Progress
 
+## 2026-11-18 Student Design System v2 — Phase 2 foundations
+
+- Introduced Student-scoped semantic paper emphasis (content/feature/accent) independent of plain/lined/kraft material, and explicitly opted representative page heroes into feature emphasis.
+- Introduced dedicated Student typography roles (body 15px, reading 16px, label 14px, metadata 13px, caption 12px) without changing Teacher's global body size.
+- Added shared Student control/field recipes and typed StudentButton/StudentTextField for loading, error, disabled, focus and responsive behavior. Migrated Unit Explorer and Vocabulary Word Library search controls.
+- Added a development-only foundation preview and focused component unit tests; no production navigation entry.
+- No backend/API/database or Teacher component changes. Build, lint, tests, screenshots, portal and device QA are pending until run in a project environment; this documentation does not claim a successful browser verification.
+
+
 ## 2026-11-18 Student Design System v2 — Phase 0/1 documentation
 
 - Audited the feature/guided-reasoning-v1 Student route tree, representative Student views, Student layout/theme/typography/surface layers, Pipo, UnitCover, vocabulary art and reusable list primitives against ADR 0032.

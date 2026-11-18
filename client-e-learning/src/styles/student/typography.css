@@ -49,21 +49,21 @@
 
 :is(.student-theme, body:has(.student-theme)) .student-body {
   font-family: var(--student-font-body);
-  font-size: var(--app-font-body-size);
-  line-height: 1.55;
+  font-size: var(--student-type-body-size);
+  line-height: 1.6;
   font-weight: 400;
 }
 
 :is(.student-theme, body:has(.student-theme)) .student-label {
   font-family: var(--student-font-body);
-  font-size: var(--app-font-body-size);
+  font-size: var(--student-type-label-size);
   line-height: 1.4;
   font-weight: 700;
 }
 
 :is(.student-theme, body:has(.student-theme)) .student-meta {
   font-family: var(--student-font-body);
-  font-size: var(--app-font-meta-size);
+  font-size: var(--student-type-meta-size);
   line-height: 1.45;
   font-weight: 600;
   letter-spacing: 0;
@@ -71,7 +71,7 @@
 
 :is(.student-theme, body:has(.student-theme)) .student-caption {
   font-family: var(--student-font-body);
-  font-size: var(--app-font-meta-size);
+  font-size: var(--student-type-caption-size);
   line-height: 1.4;
   font-weight: 600;
   letter-spacing: 0;
@@ -96,8 +96,15 @@
 
 :is(.student-theme, body:has(.student-theme)) .student-profile {
   font-family: var(--student-font-body);
-  font-size: var(--app-font-body-size);
-  line-height: 1.55;
+  font-size: var(--student-type-body-size);
+  line-height: 1.6;
+}
+
+/* Reading paragraphs are a separate role, not a change to global body text. */
+:is(.student-theme, body:has(.student-theme)) .student-reading {
+  font-family: var(--student-font-body);
+  font-size: var(--student-type-reading-size);
+  line-height: 1.7;
 }
 
 @media (min-width: 640px) {

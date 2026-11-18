@@ -51,6 +51,7 @@ export function StudentVocabularyLibrary() {
       <PaperSurface
         as="section"
         variant="kraft"
+        emphasis="feature"
         tape
         tapePosition="right"
         className="student-vocab-library-hero space-y-3 p-5 sm:p-7"

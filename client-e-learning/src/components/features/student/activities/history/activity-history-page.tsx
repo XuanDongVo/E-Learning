@@ -70,7 +70,7 @@ export function ActivityHistoryPage({
         {t("backToUnit")}
       </Link>
 
-      <PaperSurface as="section" variant="kraft" tape tapePosition="right" className="student-units-hero">
+      <PaperSurface as="section" variant="kraft" emphasis="feature" tape tapePosition="right" className="student-units-hero">
         <div className="max-w-2xl space-y-2">
           <p className="student-meta text-primary">
             {activity?.name ?? t("activityFallback", { id: activityId })}

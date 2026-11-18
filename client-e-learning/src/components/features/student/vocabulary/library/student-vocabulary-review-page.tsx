@@ -47,7 +47,7 @@ export function StudentVocabularyReviewPage() {
         {t("back")}
       </Link>
 
-      <PaperSurface as="section" variant="kraft" tape tapePosition="right" className="space-y-2 p-5 sm:p-7">
+      <PaperSurface as="section" variant="kraft" emphasis="feature" tape tapePosition="right" className="space-y-2 p-5 sm:p-7">
         <p className="student-meta text-primary">{t("kicker")}</p>
         <ScrapbookHeading as="h1" className="student-page-title text-foreground">
           {t("title")}

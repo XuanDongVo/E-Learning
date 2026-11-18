@@ -11,6 +11,7 @@ import {
 import { useLocale, useTranslations } from "next-intl";
 import { RegionState } from "@/components/feedback";
 import { PaperSurface } from "@/components/student-ui/paper-surface";
+import { StudentTextField } from "@/components/student-ui/student-text-field";
 import { StudentDataList } from "@/components/student-ui/data-list/student-data-list";
 import { StudentDataListItem } from "@/components/student-ui/data-list/student-data-list-item";
 import { StudentListPagination } from "@/components/student-ui/data-list/student-list-pagination";
@@ -117,7 +118,7 @@ export function StudentVocabularyWordLibrary() {
         {t("back")}
       </Link>
 
-      <PaperSurface as="section" variant="kraft" tape tapePosition="right" className="space-y-3 p-4 sm:p-6">
+      <PaperSurface as="section" variant="kraft" emphasis="feature" tape tapePosition="right" className="space-y-3 p-4 sm:p-6">
         <div className="min-w-0 max-w-3xl space-y-1">
           <p className="student-meta text-primary">{t("kicker")}</p>
           <ScrapbookHeading as="h1" className="student-page-title text-foreground">
@@ -167,19 +168,16 @@ export function StudentVocabularyWordLibrary() {
 
         <div className="space-y-2">
           <p className="student-body text-muted-foreground">{t(`descriptions.${status}`)}</p>
-          <label htmlFor="vocabulary-library-search" className="student-label block">
-            {t("searchLabel")}
-          </label>
-          <div className="relative max-w-xl">
-            <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
-            <input
-              id="vocabulary-library-search"
-              value={searchInput}
-              onChange={(event) => setSearchInput(event.target.value)}
-              className="student-field pl-10"
-              placeholder={t("searchPlaceholder")}
-            />
-          </div>
+          <StudentTextField
+            id="vocabulary-library-search"
+            type="search"
+            label={t("searchLabel")}
+            value={searchInput}
+            onChange={(event) => setSearchInput(event.target.value)}
+            placeholder={t("searchPlaceholder")}
+            leading={<Search className="size-4" />}
+            containerClassName="max-w-xl"
+          />
         </div>
 
         <div aria-live="polite" className="space-y-3">

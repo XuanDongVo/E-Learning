@@ -107,7 +107,7 @@ export function UnitDetailView({ unitId, mascotSlot }: UnitDetailViewProps) {
         <span>Tất cả bài học</span>
       </Link>
 
-      <PaperSurface as="section" variant="kraft" tape tapePosition="right" className="student-unit-detail-hero">
+      <PaperSurface as="section" variant="kraft" emphasis="feature" tape tapePosition="right" className="student-unit-detail-hero">
         <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
           <div className="student-unit-cover-frame relative shrink-0 overflow-hidden sm:w-48">
             <UnitCover

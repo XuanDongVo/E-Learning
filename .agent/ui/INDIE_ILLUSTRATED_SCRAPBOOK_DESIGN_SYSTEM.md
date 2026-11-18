@@ -254,4 +254,4 @@ Before code: write a Screen Brief (UI_ARCHITECTURE_GUIDELINES.md), choose the ar
 - [ ] No invented API, entity, score, content or route.
 - [ ] Design intent vs implemented CSS/runtime and tests are reported separately.
 
-**Version boundary:** Sections 12–17 are Phase 1 proposed evolution of the accepted identity, and do not claim Phase 2–6 CSS, artwork, template or browser QA implementation.
+**Version boundary:** Sections 12–17 govern the v2 direction. Phase 2 implements Student-scoped type roles, surface emphasis, controls/fields and a development-only preview, with source-level checks; authenticated device, accessibility and Teacher regression QA remain to be executed. Phase 3 artwork and Phase 4 page archetypes are separate.

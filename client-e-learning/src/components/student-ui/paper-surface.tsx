@@ -7,6 +7,8 @@ type PaperSurfaceProps = HTMLAttributes<HTMLElement> & {
   tape?: boolean;
   tapePosition?: "left" | "center" | "right";
   interactive?: boolean;
+  /** Visual hierarchy is independent from paper material. */
+  emphasis?: "content" | "feature" | "accent";
   children: ReactNode;
 };
 
@@ -17,6 +19,7 @@ export function PaperSurface({
   tape = false,
   tapePosition = "left",
   interactive = false,
+  emphasis = "content",
   className,
   children,
   ...props
@@ -27,6 +30,7 @@ export function PaperSurface({
         "student-paper",
         variant === "lined" && "student-paper--lined",
         variant === "kraft" && "student-paper--kraft",
+        "student-paper--" + emphasis,
         className,
       )}
       data-interactive={interactive || undefined}

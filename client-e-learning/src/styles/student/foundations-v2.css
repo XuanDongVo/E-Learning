@@ -1,0 +1,161 @@
+/*
+ * Student Design System v2: semantic foundation overrides.
+ * Loaded after legacy student surfaces and feature styles. Future migration can
+ * consolidate old recipes once reference pages pass browser regression.
+ * These selectors are Student-scoped. Never change Teacher/global tokens here.
+ */
+:is(.student-theme, body:has(.student-theme):not(:has(.teacher-workspace))) .student-paper {
+  min-width: 0;
+  border: 1px solid var(--student-surface-outline);
+  border-radius: 18px 7px 17px 7px / 7px 17px 7px 18px;
+  background-color: var(--student-paper);
+  box-shadow: none;
+  transition: transform 160ms ease-out, border-color 160ms ease-out, box-shadow 160ms ease-out;
+}
+:is(.student-theme, body:has(.student-theme):not(:has(.teacher-workspace))) .student-paper--kraft,
+:is(.student-theme, body:has(.student-theme):not(:has(.teacher-workspace))) .student-paper--accent {
+  background-color: var(--student-kraft);
+}
+:is(.student-theme, body:has(.student-theme):not(:has(.teacher-workspace))) .student-paper--lined {
+  background-image: repeating-linear-gradient(to bottom, transparent 0, transparent 27px,
+    color-mix(in srgb, var(--student-denim) 9%, transparent) 28px, transparent 29px);
+}
+:is(.student-theme, body:has(.student-theme):not(:has(.teacher-workspace))) .student-paper--feature {
+  border: 2px solid var(--student-ink);
+  box-shadow: var(--student-surface-feature-shadow);
+}
+:is(.student-theme, body:has(.student-theme):not(:has(.teacher-workspace))) .student-paper[data-interactive="true"]:hover {
+  transform: translateY(-1px);
+  border-color: var(--student-ink);
+  box-shadow: var(--student-surface-hover-shadow);
+}
+:is(.student-theme, body:has(.student-theme):not(:has(.teacher-workspace))) .student-paper--feature[data-interactive="true"]:hover {
+  box-shadow: 4px 5px 0 var(--student-ink);
+}
+
+/* Buttons and button-styled Links use the same semantic roles. */
+:is(.student-theme, body:has(.student-theme):not(:has(.teacher-workspace))) .student-control {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: 1.5px solid var(--student-ink);
+  border-radius: var(--student-control-radius);
+  font-family: var(--student-font-body);
+  font-size: var(--student-type-body-size);
+  font-weight: 700;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 160ms ease-out, box-shadow 160ms ease-out, transform 160ms ease-out;
+}
+:is(.student-theme, body:has(.student-theme):not(:has(.teacher-workspace))) .student-control--compact {
+  padding-inline: 0.75rem;
+}
+:is(.student-theme, body:has(.student-theme):not(:has(.teacher-workspace))) .student-control--action:hover:not(:disabled):not([aria-disabled="true"]) {
+  background: var(--primary-hover);
+}
+:is(.student-theme, body:has(.student-theme):not(:has(.teacher-workspace))) .student-control--secondary:hover:not(:disabled):not([aria-disabled="true"]) {
+  background: var(--secondary-hover);
+}
+:is(.student-theme, body:has(.student-theme):not(:has(.teacher-workspace))) .student-control--quiet:hover:not(:disabled):not([aria-disabled="true"]) {
+  background: var(--student-kraft);
+}
+:is(.student-theme, body:has(.student-theme):not(:has(.teacher-workspace))) .student-control--accent:hover:not(:disabled):not([aria-disabled="true"]) {
+  background: var(--student-mustard);
+}
+:is(.student-theme, body:has(.student-theme):not(:has(.teacher-workspace))) .student-control--danger {
+  background: var(--destructive);
+  color: var(--destructive-foreground);
+}
+:is(.student-theme, body:has(.student-theme):not(:has(.teacher-workspace))) .student-control--danger:hover:not(:disabled):not([aria-disabled="true"]) {
+  background: color-mix(in srgb, var(--destructive) 85%, var(--student-ink));
+}
+:is(.student-theme, body:has(.student-theme):not(:has(.teacher-workspace))) .student-control:is(:disabled, [aria-disabled="true"]),
+:is(.student-theme, body:has(.student-theme):not(:has(.teacher-workspace))) .student-ink-button:is(:disabled, [aria-disabled="true"]) {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+:is(.student-theme, body:has(.student-theme):not(:has(.teacher-workspace))) .student-control[aria-busy="true"] {
+  cursor: progress;
+}
+:is(.student-theme, body:has(.student-theme):not(:has(.teacher-workspace))) .student-ink-button {
+  border: 1.5px solid var(--student-ink);
+  border-radius: var(--student-control-radius);
+  font-size: var(--student-type-body-size);
+  box-shadow: var(--student-surface-feature-shadow);
+}
+:is(.student-theme, body:has(.student-theme):not(:has(.teacher-workspace))) .student-filter-group,
+:is(.student-theme, body:has(.student-theme):not(:has(.teacher-workspace))) .student-period-group {
+  border: 1px solid var(--student-surface-outline);
+  box-shadow: none;
+}
+:is(.student-theme, body:has(.student-theme):not(:has(.teacher-workspace))) .student-filter-active,
+:is(.student-theme, body:has(.student-theme):not(:has(.teacher-workspace))) .student-filter-active:hover:not(:disabled) {
+  border-color: var(--student-ink);
+  background: var(--accent);
+  color: var(--accent-foreground);
+  box-shadow: inset 0 -2px 0 color-mix(in srgb, var(--student-ink) 18%, transparent);
+}
+
+/* All Student input types, including select and textarea, share readable states. */
+:is(.student-theme, body:has(.student-theme):not(:has(.teacher-workspace))) .student-field {
+  min-height: 44px;
+  border: 1.5px solid var(--input);
+  border-radius: var(--student-control-radius);
+  background: var(--student-paper);
+  color: var(--student-ink);
+  padding: 0.625rem 0.875rem;
+  font-family: var(--student-font-body);
+  font-size: var(--student-type-body-size);
+  transition: border-color 160ms ease-out, box-shadow 160ms ease-out;
+}
+:is(.student-theme, body:has(.student-theme):not(:has(.teacher-workspace))) .student-field--with-leading,
+:is(.student-theme, body:has(.student-theme):not(:has(.teacher-workspace))) .student-assignment-search {
+  padding-left: 2.5rem;
+}
+:is(.student-theme, body:has(.student-theme):not(:has(.teacher-workspace))) .student-field::placeholder {
+  color: var(--muted-foreground);
+  opacity: 0.85;
+}
+:is(.student-theme, body:has(.student-theme):not(:has(.teacher-workspace))) .student-field:disabled {
+  background: var(--muted);
+  color: var(--muted-foreground);
+  cursor: not-allowed;
+  opacity: 0.8;
+}
+:is(.student-theme, body:has(.student-theme):not(:has(.teacher-workspace))) .student-field[data-validation="success"] {
+  border-color: var(--success);
+}
+:is(.student-theme, body:has(.student-theme):not(:has(.teacher-workspace))) .student-field[aria-invalid="true"] {
+  border-color: var(--destructive);
+  box-shadow: 0 0 0 3px var(--destructive-soft);
+}
+
+/* One expressive hero is fine; default content/list sections remain quiet. */
+:is(.student-theme, body:has(.student-theme):not(:has(.teacher-workspace))) .student-home-hero {
+  box-shadow: var(--student-surface-feature-shadow);
+}
+:is(.student-theme, body:has(.student-theme):not(:has(.teacher-workspace))) .student-home-unit {
+  border-bottom-width: 1px;
+}
+@media (prefers-reduced-motion: reduce) {
+  :is(.student-theme, body:has(.student-theme):not(:has(.teacher-workspace))) .student-paper,
+  :is(.student-theme, body:has(.student-theme):not(:has(.teacher-workspace))) .student-control,
+  :is(.student-theme, body:has(.student-theme):not(:has(.teacher-workspace))) .student-ink-button,
+  :is(.student-theme, body:has(.student-theme):not(:has(.teacher-workspace))) .student-field,
+  :is(.student-theme, body:has(.student-theme):not(:has(.teacher-workspace))) .student-home-unit {
+    transition: none;
+  }
+  :is(.student-theme, body:has(.student-theme):not(:has(.teacher-workspace))) .student-paper[data-interactive="true"]:hover,
+  :is(.student-theme, body:has(.student-theme):not(:has(.teacher-workspace))) .student-control:hover,
+  :is(.student-theme, body:has(.student-theme):not(:has(.teacher-workspace))) .student-ink-button:hover {
+    transform: none;
+  }
+  :is(.student-theme, body:has(.student-theme):not(:has(.teacher-workspace))) .student-wiggle:hover {
+    animation: none;
+  }
+}

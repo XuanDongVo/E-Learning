@@ -12,7 +12,7 @@ export function AssignmentHero({ todoCount }: AssignmentHeroProps) {
   const t = useTranslations("student.assignments");
 
   return (
-    <PaperSurface as="section" variant="kraft" tape tapePosition="right" className="student-assignment-hero">
+    <PaperSurface as="section" variant="kraft" emphasis="feature" tape tapePosition="right" className="student-assignment-hero">
       <div className="min-w-0 space-y-2">
         <p className="student-meta text-primary">{t("hero.eyebrow")}</p>
         <ScrapbookHeading as="h1" className="student-page-title text-foreground">

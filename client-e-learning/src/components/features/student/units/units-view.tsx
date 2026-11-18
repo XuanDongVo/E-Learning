@@ -7,7 +7,8 @@ import { Search, RefreshCw } from "lucide-react";
 import { getAppErrorMessage } from "@/lib/errors/app-error";
 import { studentUnitService } from "@/services/student/student-unit.service";
 import { QUERY_KEYS } from "@/services/query-keys";
-import { Button } from "@/components/ui/button";
+import { StudentButton } from "@/components/student-ui/student-button";
+import { StudentTextField } from "@/components/student-ui/student-text-field";
 import { UnitCard } from "./unit-card";
 import { Pipo } from "@/components/ui/mascot";
 import { SkeletonGrid } from "@/components/ui/skeleton/skeleton-grid";
@@ -38,7 +39,7 @@ export function UnitsView() {
 
   return (
     <div className="student-units-page space-y-6 pb-8">
-      <PaperSurface as="section" variant="kraft" tape tapePosition="right" className="student-units-hero">
+      <PaperSurface as="section" variant="kraft" emphasis="feature" tape tapePosition="right" className="student-units-hero">
         <div className="space-y-2">
           <p className="student-meta text-primary">Learning</p>
           <ScrapbookHeading as="h1" className="student-page-title text-foreground">
@@ -54,20 +55,16 @@ export function UnitsView() {
       </PaperSurface>
 
       {units.length > 0 && (
-        <div className="relative max-w-md">
-          <label htmlFor="student-unit-search" className="student-label mb-2 block text-foreground">
-            Tìm bài học
-          </label>
-          <Search className="absolute bottom-3 left-3.5 h-4 w-4 text-muted-foreground" aria-hidden="true" />
-          <input
-            id="student-unit-search"
-            type="text"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Nhập tên Unit..."
-            className="student-field pl-10 pr-4 placeholder:text-muted-foreground"
-          />
-        </div>
+        <StudentTextField
+          id="student-unit-search"
+          label="Tìm bài học"
+          type="search"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          placeholder="Nhập tên Unit..."
+          leading={<Search className="size-4" />}
+          containerClassName="max-w-md"
+        />
       )}
 
       {/* ─── Loading State (Skeleton) ─── */}
@@ -80,10 +77,10 @@ export function UnitsView() {
           title="Không thể tải danh sách bài học"
           description={getAppErrorMessage(error, tErrors as (key: string) => string)}
           action={
-            <Button type="button" variant="secondary" onClick={() => void refetch()}>
+            <StudentButton variant="secondary" onClick={() => void refetch()}>
               <RefreshCw className="mr-1.5 h-4 w-4" />
               Thử lại
-            </Button>
+            </StudentButton>
           }
         />
       )}

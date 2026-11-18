@@ -159,3 +159,17 @@
     animation: none;
   }
 }
+
+/* Inputs must remain >=16px on phones to prevent Safari focus zoom. */
+@media (max-width: 639px) {
+  :is(.student-theme, body:has(.student-theme):not(:has(.teacher-workspace))) input.student-field,
+  :is(.student-theme, body:has(.student-theme):not(:has(.teacher-workspace))) textarea.student-field,
+  :is(.student-theme, body:has(.student-theme):not(:has(.teacher-workspace))) select.student-field {
+    font-size: 1rem;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  :is(.student-theme, body:has(.student-theme):not(:has(.teacher-workspace))) .student-control[aria-busy="true"] .animate-spin {
+    animation: none;
+  }
+}

@@ -75,9 +75,9 @@ Giữ grain thật mịn, không phủ texture lên chữ. Tránh chồng grid, 
 | Page title | 30px | 36px | Handwriting/serif phù hợp; độ cao dòng 1.15 |
 | Section title | 22px | 22px (current CSS) | Một tiêu điểm rõ ràng, không vượt page title |
 | Card title | 18px | 18px (current CSS) | Plus Jakarta Sans đậm hoặc Patrick Hand ngắn |
-| Body | 14px (current CSS) | 14px (current CSS) | Plus Jakarta Sans; tránh Typewriter cho văn bản thông thường |
+| Body | 15px (Phase 2 Student CSS) | 15px (Phase 2 Student CSS) | Plus Jakarta Sans; tránh Typewriter cho văn bản thông thường |
 | Field label / navigation | 13–14px | 13–14px | Plus Jakarta Sans semibold; không dùng Caveat |
-| Metadata | 12px | 12px | Courier Prime; chữ ngắn, giữ độ tương phản |
+| Metadata | 13px; caption 12px | 13px; caption 12px | Courier Prime; chữ ngắn, giữ độ tương phản |
 | Stats / numeric emphasis | 24px | 28px | Tabular nums, không dùng chữ viết tay cho số |
 
 - Trang Profile là **mốc tham chiếu mật độ nội dung**. Home không được phóng đại heading chỉ để giống giao diện game.
@@ -100,7 +100,8 @@ Giữ grain thật mịn, không phủ texture lên chữ. Tránh chồng grid, 
   `student-page-title`, `student-section-title`, `student-card-title`,
   `student-body`, `student-label`, `student-meta`, `student-caption` and
   `student-stat`; it does not compose `text-xs`/`text-3xl` or arbitrary sizes.
-- `components/student-ui` and `styles/student/surfaces.css` own repeatable paper,
+- `components/student-ui`, `styles/student/surfaces.css` (legacy recipes) and the
+  later-loaded `styles/student/foundations-v2.css` (Phase 2 semantic overrides) own repeatable paper,
   tape, control, field, progress, polaroid and dialog treatments. Fixed geometry
   is allowed inside these shared recipes; feature TSX must not copy it.
 - Student Home, Profile, the complete Units branch and Rewards are standardized reference routes. Use
@@ -225,7 +226,7 @@ Pipo and SVG language are shared across pages. Do not create page-local mascot i
 
 ## 15. Typography, density and target validation (v2)
 
-Current **implemented** roles are in styles/student/typography.css and theme.css. Plus Jakarta Sans is the actual body font; Patrick Hand is heading handwriting; Caveat is decorative; Courier Prime is short typewriter metadata. The preceding size table has been aligned with current CSS to avoid treating targets as implementation.
+Current **implemented** roles are in styles/student/typography.css and theme.css (with Phase 2 Student-only 15px body / 16px reading roles). Plus Jakarta Sans is the actual body font; Patrick Hand is heading handwriting; Caveat is decorative; Courier Prime is short typewriter metadata. The preceding size table has been aligned with current CSS to avoid treating targets as implementation.
 
 **Phase 2 candidate targets (NOT implemented):** body copy generally 15–16px after testing, supporting metadata >=12px, headings shorter and visually restrained. Long educational instructions and reading passages must not be set in handwriting or typewriter fonts. Do not globally change --app-font-body-size (Teacher also consumes it); target Student-scoped roles after contrast/spacing/browser validation.
 

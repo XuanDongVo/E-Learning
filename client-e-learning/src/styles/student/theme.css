@@ -63,7 +63,7 @@ body:has(.student-theme):not(:has(.teacher-workspace)) {
   --learning-soft: rgba(74, 107, 130, 0.12);
   --success: #35623b;
   --success-soft: rgba(107, 142, 103, 0.16);
-  --warning: #926009;
+  --warning: #825506; /* readable on kraft as well as paper */
   --warning-soft: rgba(217, 155, 38, 0.16);
   --info: #36566f;
   --info-soft: rgba(74, 107, 130, 0.12);

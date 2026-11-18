@@ -6,6 +6,7 @@
 - Introduced dedicated Student typography roles (body 15px, reading 16px, label 14px, metadata 13px, caption 12px) without changing Teacher's global body size.
 - Added shared Student control/field recipes and typed StudentButton/StudentTextField for loading, error, disabled, focus and responsive behavior. Migrated Unit Explorer and Vocabulary Word Library search controls.
 - Added a development-only foundation preview and focused component unit tests; no production navigation entry.
+- Refined mobile form font fallback to 16px at <=639px, suppressed loading-spinner motion with reduced-motion enabled and darkened the Student warning token to meet contrast on kraft.
 - No backend/API/database or Teacher component changes. Build, lint, tests, screenshots, portal and device QA are pending until run in a project environment; this documentation does not claim a successful browser verification.
 
 

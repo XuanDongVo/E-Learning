@@ -2,7 +2,7 @@
 
 **Visual identity:** Hand Drawn × Hipness Purgatory  
 **Status:** Canonical visual specification (ADR 0032).  
-**Purpose:** Rules about what the design looks and feels like. This file does **not** define routes, frontend architecture, backend data or migration plans.
+**Purpose:** The single Student visual identity under ADR 0032. Proposed v2 governance (sections 12 onward) records design constraints for future pages; it is not an implementation claim. Route/domain decisions stay in architecture and specs. See STUDENT_VISUAL_STORYTELLING.md, STUDENT_PAGE_ARCHETYPES.md and STUDENT_DESIGN_SYSTEM_V2_PHASE_0_AUDIT.md.
 
 ## 1. Triết lý & DNA cốt lõi
 
@@ -65,7 +65,7 @@ Giữ grain thật mịn, không phủ texture lên chữ. Tránh chồng grid, 
 |---|---|---|
 | Display handwriting | Patrick Hand | Tiêu đề và lời chào ngắn, mặc định không quá 36px |
 | Decorative handwriting | Caveat | Ghi chú hoặc caption ảnh, không dùng cho input |
-| Body/UI | Nunito | Văn bản, form, điều hướng, thông tin quan trọng |
+| Body/UI | Plus Jakarta Sans | Văn bản, form, điều hướng, thông tin quan trọng |
 | Typewriter | Courier Prime | Nhãn/metadata ngắn, seed, ngày tháng; không dùng cho đoạn văn dài |
 
 ### Quy chuẩn font-size (Student, rút từ nhịp Profile)
@@ -73,11 +73,11 @@ Giữ grain thật mịn, không phủ texture lên chữ. Tránh chồng grid, 
 | Vai trò | Mobile | Desktop | Quy tắc |
 |---|---:|---:|---|
 | Page title | 30px | 36px | Handwriting/serif phù hợp; độ cao dòng 1.15 |
-| Section title | 22px | 26px | Một tiêu điểm rõ ràng, không vượt page title |
-| Card title | 18px | 20px | Nunito đậm hoặc Patrick Hand ngắn |
-| Body | 14px | 16px | Nunito; tránh Typewriter cho văn bản thông thường |
-| Field label / navigation | 13–14px | 13–14px | Nunito semibold; không dùng Caveat |
-| Metadata | 11–12px | 11–12px | Courier Prime; chữ ngắn, giữ độ tương phản |
+| Section title | 22px | 22px (current CSS) | Một tiêu điểm rõ ràng, không vượt page title |
+| Card title | 18px | 18px (current CSS) | Plus Jakarta Sans đậm hoặc Patrick Hand ngắn |
+| Body | 14px (current CSS) | 14px (current CSS) | Plus Jakarta Sans; tránh Typewriter cho văn bản thông thường |
+| Field label / navigation | 13–14px | 13–14px | Plus Jakarta Sans semibold; không dùng Caveat |
+| Metadata | 12px | 12px | Courier Prime; chữ ngắn, giữ độ tương phản |
 | Stats / numeric emphasis | 24px | 28px | Tabular nums, không dùng chữ viết tay cho số |
 
 - Trang Profile là **mốc tham chiếu mật độ nội dung**. Home không được phóng đại heading chỉ để giống giao diện game.
@@ -188,3 +188,70 @@ Nét gạch chân, mũi tên, ngôi sao thủ công gợi ý điều cần chú 
 - [ ] Mobile, contrast, keyboard và reduced-motion được kiểm tra.
 
 > Bất toàn ở chất liệu, chính xác ở trải nghiệm.
+
+## 12. Product-wide direction (v2 design proposal)
+
+**One Student Experience. One Design Language. Many Learning Journeys.** The identity remains Indie Illustrated Scrapbook, interpreted as **A Personal Learning Journal**. "Editorial clarity" means predictable hierarchy, readability, spacing and interaction; it is **not** another aesthetic palette or a second style.
+
+- Every Student page, including future ones, uses the same scoped semantic tokens, typography roles, surface grammar, illustration identity and accessibility standard.
+- Archetype determines content composition, density and focus only; it does not create a new theme. Refer to STUDENT_PAGE_ARCHETYPES.md.
+- The website should feel alive without feeling crowded: mascot, contextual imagery, meaningful SVG and real-data visualizations share the page with quiet, readable content.
+- Consistency is in the rules and component semantics, **not** in identical page shapes. Avoid "hero + mascot on right + 3 KPI cards" everywhere.
+- Teacher remains separately styled. Existing immersive Activity/Assessment/Game interactions are functional exceptions, not new visual brands.
+
+## 13. Surface hierarchy & decoration policy (v2)
+
+Use one of these **semantic roles** regardless of PaperSurface material variant:
+
+| Role | Purpose | Visual intensity |
+|---|---|---|
+| Canvas | Overall page background | Quiet cream, optional very subtle texture |
+| Reading / Content | Learning text, input, large data lists | High legibility, flat/light border, no default pop shadow |
+| Feature | Intentional primary focus (one at a time) | Paper/ink outline and shadow-pop when earned |
+| Accent / State | Important reward, notice or contextual annotation | Controlled contrast, semantic label, no competing CTA |
+| Immersive stage | Single task/game canvas | Can use illustration/background; prompt/input stay readable |
+
+**Rule:** Material (plain/lined/kraft) is NOT importance. Do not equate every paper card with Feature elevation. Never stack strong ink borders, pop shadows and washi across nested surfaces. Limit each visually grouped composition to one dominant decorative treatment; simplify others with spacing/dividers.
+
+Existing PaperSurface/surfaces.css applies a strong border/shadow broadly. This is documented migration debt for Phase 2, not a change made by this phase.
+
+## 14. Page visuals (v2)
+
+Follow STUDENT_VISUAL_STORYTELLING.md. Each ordinary Student page must specify a meaningful **visual anchor** (approved Pipo, thematic scene, lesson/Unit art, identity avatar, useful diagram or truthful data visualization). Its place can be within content, a header or an empty/result state; it need not be a hero.
+
+For high-focus Assessment/Workspace, a brief may explicitly choose "no decorative anchor" to protect the task. No mandatory mascot quota. A large Lucide icon alone does not automatically satisfy an illustration need.
+
+Pipo and SVG language are shared across pages. Do not create page-local mascot identities, reuse unrelated stock photography or invent educational data to decorate a layout. All visuals have a mobile composition, alt/decorative semantics, asset provenance and reduced-motion handling.
+
+## 15. Typography, density and target validation (v2)
+
+Current **implemented** roles are in styles/student/typography.css and theme.css. Plus Jakarta Sans is the actual body font; Patrick Hand is heading handwriting; Caveat is decorative; Courier Prime is short typewriter metadata. The preceding size table has been aligned with current CSS to avoid treating targets as implementation.
+
+**Phase 2 candidate targets (NOT implemented):** body copy generally 15–16px after testing, supporting metadata >=12px, headings shorter and visually restrained. Long educational instructions and reading passages must not be set in handwriting or typewriter fonts. Do not globally change --app-font-body-size (Teacher also consumes it); target Student-scoped roles after contrast/spacing/browser validation.
+
+Density comes from archetype: collection may be compact while reading and assessment require comfortable scanning, but targets remain >=44px and text must not shrink merely to fit more widgets. Mobile reduction order: remove decoration -> simplify secondary metadata -> reflow layout; never hide essential controls/content.
+
+## 16. Component & asset governance (v2)
+
+- Foundations and visual recipes belong in styles/student/*.css and components/student-ui, scoped to Student. Avoid importing a new feature-specific design language or hardcoding colors into feature pages.
+- Shared components expose semantic variants (purpose, density, state) instead of raw paper styling or arbitrary colors.
+- Reuse source-owned imagery when meaningful; create art only for a documented semantic gap. Keep an asset manifest, rights/source and mobile variants when Phase 3 produces new files.
+- Visuals are not allowed to compete with important learning input, scoring feedback, keyboard focus or recovery actions.
+- One feature's new component or asset must be checked against at least one other archetype for reuse potential, without forcing all pages into a single giant component.
+
+## 17. New Student page quality gate (v2)
+
+Before code: write a Screen Brief (UI_ARCHITECTURE_GUIDELINES.md), choose the archetype (STUDENT_PAGE_ARCHETYPES.md), and write a Page Visual Brief (STUDENT_VISUAL_STORYTELLING.md). Inspect reusable assets and existing Student primitives. For each page confirm:
+
+- [ ] Clear goal, primary action and content priority within the first viewport.
+- [ ] Single visual identity; purposeful anchor or a justified high-focus exception.
+- [ ] Quiet reading surfaces, purposeful feature emphasis; no nested decorative overload.
+- [ ] Typography roles, safe text length and translation support.
+- [ ] Mobile 360/390px, 768px, 1024px and desktop composition; touch targets >=44px.
+- [ ] Loading, empty/filtered-empty, error, disabled, success and result feedback are truthful.
+- [ ] Accessible image meaning, keyboard/focus, contrast and reduced-motion behavior.
+- [ ] Teacher visual isolation and portal overlay regression.
+- [ ] No invented API, entity, score, content or route.
+- [ ] Design intent vs implemented CSS/runtime and tests are reported separately.
+
+**Version boundary:** Sections 12–17 are Phase 1 proposed evolution of the accepted identity, and do not claim Phase 2–6 CSS, artwork, template or browser QA implementation.

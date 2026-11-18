@@ -36,6 +36,8 @@ States covered:  loading, empty, error, disabled, success (Section 6.10)
 
 If the brief cannot be written, the screen is not ready to be designed.
 
+**Student v2 extension (Phase 1 proposal):** Also select a Student archetype from [STUDENT_PAGE_ARCHETYPES.md](./STUDENT_PAGE_ARCHETYPES.md) and write the [Page Visual Brief](./STUDENT_VISUAL_STORYTELLING.md#8-page-visual-brief-required-for-new-student-screens): visual purpose, existing asset reuse, Pipo usage (if appropriate), mobile fallbacks, alt text, states and motion. A high-focus Assessment may intentionally omit decorative imagery. Do not apply this Student-only illustration requirement to Teacher.
+
 ---
 
 ## 1. Main principle
@@ -545,6 +547,8 @@ Teacher UI is an **LMS / management system**. It should feel calm, editorial and
 
 **Only approved Student visual direction:** Hand Drawn × Hipness Purgatory (Indie Illustrated Scrapbook), per [ADR 0032](../decisions/0032-student-indie-scrapbook-visual-system.md). The canonical rules for palettes, typography, surfaces, linework, geometry, decoration and motion are in [INDIE_ILLUSTRATED_SCRAPBOOK_DESIGN_SYSTEM.md](./INDIE_ILLUSTRATED_SCRAPBOOK_DESIGN_SYSTEM.md). Do not use legacy Playful Classroom as a design instruction.
 
+**Student v2 design planning references:** [Phase 0 audit](./STUDENT_DESIGN_SYSTEM_V2_PHASE_0_AUDIT.md) records source findings; [Visual Storytelling](./STUDENT_VISUAL_STORYTELLING.md) defines Pipo/scene/SVG/data imagery; [Page Archetypes](./STUDENT_PAGE_ARCHETYPES.md) defines future-proof composition. These Phase 1 documents extend existing ADR 0032 direction; code migration remains Phase 2–6 work.
+
 ### 8.1 Boundaries
 
 - Applies to Student visual presentation regardless of route or screen type; do not maintain a hard-coded screen list inside the aesthetic document.
@@ -731,7 +735,7 @@ grep -rnE "(text|bg|border|ring)-(slate|gray|zinc|neutral|stone|red|rose|orange|
 - Use only tokens (Section 3) and the component rules (Section 6).
 - Build the information hierarchy before styling it.
 - Implement all five states (6.10), keyboard/focus behavior and responsive behavior.
-- Keep Teacher and Student visually one product (same tokens/components), while respecting their different densities.
+- Keep **consistent UX semantics** across Teacher and Student while retaining **separate approved visual scopes**: Teacher/base tokens and components vs Student Indie Illustrated Scrapbook tokens/recipes (ADR 0032).
 - Make the first viewport easy to scan: context, title, primary action, main content and important state.
 - Prefer one dominant content area over multiple competing cards.
 
@@ -755,7 +759,8 @@ If the hierarchy becomes clearer rather than worse, keep the simplification.
 
 ## 15. Definition of done for any UI change
 
-- [ ] Screen Brief written; page type chosen from 5.3
+- [ ] Screen Brief written; Teacher page type chosen from 5.3, or Student archetype chosen from STUDENT_PAGE_ARCHETYPES.md
+- [ ] For Student: Page Visual Brief records meaningful anchor or focus exception, reuse, accessibility and mobile fallback
 - [ ] Follows the shell grid and page anatomy (5.1, 5.2)
 - [ ] The first viewport passes the three-second scan test
 - [ ] One dominant content area; no unnecessary card wall or nested containers

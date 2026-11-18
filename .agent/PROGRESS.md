@@ -1,5 +1,14 @@
 # Project Progress
 
+## 2026-11-18 Student Design System v2 — Phase 0/1 documentation
+
+- Audited the feature/guided-reasoning-v1 Student route tree, representative Student views, Student layout/theme/typography/surface layers, Pipo, UnitCover, vocabulary art and reusable list primitives against ADR 0032.
+- Added .agent/ui/STUDENT_DESIGN_SYSTEM_V2_PHASE_0_AUDIT.md with source-based P0/P1/P2 drift, route/asset inventory and explicit limits of static review.
+- Expanded the canonical Indie Illustrated Scrapbook specification with one visual identity, surface importance roles, illustration/focus exceptions and a new-page quality gate; reconciled documented body font with implemented Plus Jakarta Sans.
+- Added .agent/ui/STUDENT_VISUAL_STORYTELLING.md and STUDENT_PAGE_ARCHETYPES.md; linked Student-specific briefs from UI_ARCHITECTURE_GUIDELINES.md and corrected its Teacher/Student visual-scope wording.
+- Phase 0/1 is documentation-only: no frontend CSS/component/asset, backend, database, API or route changes. Browser/device/a11y/performance/Teacher regression and build/lint are NOT claimed. Phase 2–6 migration awaits review and implementation.
+
+
 ## 2026-11-18 Vocabulary Library and Due Review — Backend and Client implemented
 
 - Recovered the Unit vocabulary dev route from a stale Turbopack

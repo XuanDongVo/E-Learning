@@ -4,7 +4,7 @@ Source integration on `feature/guided-reasoning-v1`; no API/domain assumptions. 
 
 | Page | Archetype | Anchor / role | Mobile | Fallback and accessibility |
 |---|---|---|---|---|
-| Learning Hub | Hub | Existing Pipo Polaroid; `illustration.no-lessons` only when Unit collection empty | Pipo remains hidden under md; empty image capped at 160px | `RegionState` text and navigation remain accessible when images fail |
+| Learning Hub | Hub | Pipo Polaroid at desktop, `scene.study-desk` on mobile; `illustration.no-lessons` only when Unit collection empty | `scene.study-desk` replaces Pipo anchor under md (144px); empty image capped at 160px | `RegionState` text and navigation remain accessible when images fail |
 | Units | Collection | Existing Pipo header; no-lessons / no-results image only for actual empty results | Illustration 128–160px | No state invented; `RegionState` communicates message/clear search |
 | Vocabulary Hub | Hub | `scene.open-notebook` contextual header, Unit cover is data-authored | Scene omitted under sm | Header text and actions always visible |
 | Vocabulary Word Library | Collection | `illustration.word-collection` compact header | Scene omitted under sm | Search/filter and server counts take priority |

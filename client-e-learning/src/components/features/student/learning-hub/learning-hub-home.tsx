@@ -48,6 +48,10 @@ export function LearningHubHome() {
             </Link>
           </div>
         </div>
+        {/* One visual anchor per breakpoint: study desk on mobile, Pipo Polaroid on desktop. */}
+        <div className="flex justify-center md:hidden" aria-hidden="true">
+          <StudentIllustration id="scene.study-desk" decorative className="w-36" />
+        </div>
         <div className="relative hidden md:block" aria-hidden="true">
           <PolaroidFrame caption="Keep learning, little by little">
             <Pipo mood="wave" color="primary" size={150} stage={2} />

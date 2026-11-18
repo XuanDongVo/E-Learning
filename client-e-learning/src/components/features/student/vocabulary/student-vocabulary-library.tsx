@@ -62,14 +62,24 @@ export function StudentVocabularyLibrary() {
         >
           Sổ tay từ vựng
         </ScrapbookHeading>
-        <Link
-          href="/student/vocabulary/progress"
-          className="student-control student-control--secondary inline-flex w-fit items-center gap-2 px-4"
-        >
-          <TrendingUp className="size-4" aria-hidden="true" />
-          Xem hành trình từ vựng
-          <ArrowRight className="size-4" aria-hidden="true" />
-        </Link>
+        <div className="flex flex-wrap gap-2">
+          <Link
+            href="/student/vocabulary/words"
+            className="student-control student-control--action inline-flex w-fit items-center gap-2 px-4"
+          >
+            <BookOpen className="size-4" aria-hidden="true" />
+            Mở kho từ
+            <ArrowRight className="size-4" aria-hidden="true" />
+          </Link>
+          <Link
+            href="/student/vocabulary/progress"
+            className="student-control student-control--secondary inline-flex w-fit items-center gap-2 px-4"
+          >
+            <TrendingUp className="size-4" aria-hidden="true" />
+            Xem hành trình từ vựng
+            <ArrowRight className="size-4" aria-hidden="true" />
+          </Link>
+        </div>
       </PaperSurface>
 
       {overview.isLoading && (

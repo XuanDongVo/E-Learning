@@ -19,6 +19,7 @@ import e_learning.server.vocabulary.review.entity.VocabularyReviewLog;
 import e_learning.server.vocabulary.review.repository.StudentVocabularyProgressRepository;
 import e_learning.server.vocabulary.review.repository.VocabularyReviewLogRepository;
 import e_learning.server.vocabulary.review.service.StudentVocabularyReviewService;
+import e_learning.server.vocabulary.review.service.StudentVocabularyAccessPolicy;
 import io.github.openspacedrepetition.Card;
 import io.github.openspacedrepetition.Rating;
 import org.junit.jupiter.api.Test;
@@ -45,6 +46,7 @@ class StudentVocabularyReviewServiceTest {
     @Mock private VocabularyWordRepository words;
     @Mock private StudentVocabularyProgressRepository progress;
     @Mock private VocabularyReviewLogRepository logs;
+    @Mock private StudentVocabularyAccessPolicy accessPolicy;
     @InjectMocks private StudentVocabularyReviewService service;
 
     @Test

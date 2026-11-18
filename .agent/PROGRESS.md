@@ -1,5 +1,56 @@
 # Project Progress
 
+## 2026-11-18 Vocabulary Library and Due Review — Backend and Client implemented
+
+- Recovered the Unit vocabulary dev route from a stale Turbopack
+  `MODULE_UNPARSABLE: Not a pattern` chunk. The Study tab now uses a guarded
+  progress-percent helper (also avoiding division by zero); Next regenerated a
+  valid client chunk and the authenticated route compilation returns HTTP 200.
+- Corrected the Browse mark/unmark mutation contract: discriminated variables
+  require a request ID only for `mark`, and the mutation normalizes both API
+  response shapes to `void` because success handling uses no response payload.
+- Accepted ADR 0037 and added the two-phase implementation specification for a
+  cross-source Learned/Due/Waiting Library plus complete all-DUE Review snapshot.
+- Review `AGAIN` now has a documented accepted contract matching V65/current
+  code: preserve the log, reset the active card, set `needsRelearning`, return to
+  Learn, and do not repeat in the current Review pass.
+- Browse lists remain paginated, while Review Queue is explicitly unpaginated,
+  unfiltered by search/current source and never silently truncated.
+- Defined a Vocabulary-owned Student access-policy seam. Current visibility is
+  unchanged (ACTIVE words in published Units of the current Grade); no Collection
+  entity, polymorphic owner or database change was introduced.
+- Replaced the incomplete controller/service skeleton with authenticated Summary,
+  Learned, Due and Waiting reads plus a complete non-paginated Review Queue.
+  Browse APIs use stable 1-based pagination, escaped word/meaning search and
+  `dueAt, wordId` ordering; Summary uses a repeatable-read snapshot.
+- Added a Vocabulary-owned access policy shared by Library reads and existing
+  preview/rating/mark writes. Current access remains ACTIVE words in PUBLISHED
+  Units of the Student's active-class Grade. Unit metadata is projected through
+  source-neutral `origin` display metadata; FSRS ownership remains word-based.
+- Review Queue returns every accessible DUE row with full Flashcard content in
+  one server snapshot. No Collection entity, new error code or migration was added.
+- Added the source-neutral Student word Library at `/student/vocabulary/words`
+  with Summary counts, Learned/Due/Waiting tabs, debounced search, pagination and
+  explicit skeleton/error/empty/disabled/success states. The Unit notebook now
+  links to this Library without changing its Unit-local behavior.
+- Added `/student/vocabulary/review` as a fixed all-DUE pass with read-only Browse
+  and Review views. It reuses the existing Flashcard/rating/session components,
+  advances immediately after a persisted rating, preserves request IDs on retry,
+  skips stale multi-tab conflicts and shows one completion summary.
+- Added typed Library/Queue services and query keys, bilingual feature copy and
+  every existing `VOCABULARY_*` error code to the central error catalogs. Global
+  Review invalidates Library/Summary/overview/progress caches while leaving queue
+  membership fixed; existing Unit progress invalidation remains disabled.
+- Validation: production compile passed; focused Vocabulary tests pass 17/17;
+  Spring application context and PostgreSQL/Flyway startup test pass. Full Maven
+  ran 142 tests with 136 passing and six unrelated existing failures: five null
+  Assignment publish-readiness fixtures and one Ordering unnecessary stub.
+- Client validation: locale JSON parsing passes; affected-file ESLint has 0 errors
+  and pre-existing warnings. The Browse mark/unmark TypeScript mismatch is fixed;
+  `tsc --noEmit` now reports only a stale generated `.next` route reference. Per
+  owner request, Client build, Server test rerun and authenticated responsive
+  browser QA were not run.
+
 ## 2026-11-17 Student Activity runtime — mobile responsive pass
 
 - Reworked the immersive Practice shell, header, workspace and footer for narrow

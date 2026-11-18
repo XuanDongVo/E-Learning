@@ -1,0 +1,74 @@
+{
+  "library": {
+    "back": "Về sổ từ vựng",
+    "kicker": "Mục lục ghi nhớ",
+    "title": "Kho từ của bạn",
+    "subtitle": "Xem những từ đã có lịch ghi nhớ, từ cần ôn ngay và những từ đang chờ đến lượt.",
+    "reviewAll": "Ôn tất cả {count} từ đến hạn",
+    "tabsLabel": "Chọn trạng thái từ vựng",
+    "tabs": {
+      "learned": "Đã học",
+      "due": "Cần ôn",
+      "waiting": "Đang chờ"
+    },
+    "descriptions": {
+      "learned": "Những từ đã có lịch FSRS, không có nghĩa là đã thành thạo.",
+      "due": "Những từ đã đến thời điểm ôn theo đồng hồ máy chủ.",
+      "waiting": "Những từ đã học và đang chờ lịch ôn tiếp theo."
+    },
+    "searchLabel": "Tìm trong kho từ",
+    "searchPlaceholder": "Nhập từ hoặc nghĩa tiếng Việt...",
+    "resultCount": "{count, plural, =0 {Không có từ nào} other {# từ}}",
+    "originUnit": "Unit {name}",
+    "dueNow": "Cần ôn ngay",
+    "nextReview": "Ôn tiếp {date}",
+    "reviewed": "Đã ôn {count, plural, =1 {1 lần} other {# lần}}",
+    "loading": "Đang mở các trang trong kho từ…",
+    "loadError": "Không thể tải kho từ.",
+    "retry": "Thử lại",
+    "emptyTitle": "Chưa có từ trong mục này",
+    "emptyDescriptions": {
+      "learned": "Học một từ trong sổ theo Unit để bắt đầu lịch ghi nhớ.",
+      "due": "Bạn đã xử lý hết từ đến hạn. Những từ khác sẽ xuất hiện đúng lịch.",
+      "waiting": "Chưa có từ nào đang chờ lịch ôn tiếp theo."
+    },
+    "filteredEmptyTitle": "Không tìm thấy từ phù hợp",
+    "filteredEmptyDescription": "Hãy thử một từ khóa ngắn hơn hoặc xóa tìm kiếm.",
+    "clearSearch": "Xóa tìm kiếm",
+    "previousPage": "Trang trước",
+    "nextPage": "Trang sau",
+    "page": "Trang {page}/{totalPages}"
+  },
+  "review": {
+    "back": "Về kho từ",
+    "kicker": "Lượt ôn toàn bộ",
+    "title": "Ôn những từ đến hạn",
+    "subtitle": "Danh sách được cố định khi bạn bắt đầu. Mỗi từ chỉ xuất hiện một lần trong lượt này.",
+    "viewsLabel": "Chọn cách xem lượt ôn",
+    "browseTab": "Xem từ",
+    "reviewTab": "Ôn tập",
+    "startReview": "Bắt đầu ôn {count} từ",
+    "loading": "Đang gom những từ đến hạn…",
+    "loadError": "Không thể chuẩn bị lượt ôn.",
+    "retry": "Thử lại",
+    "emptyTitle": "Không có từ đến hạn",
+    "emptyDescription": "Hãy quay lại kho từ để xem những từ đang chờ lịch tiếp theo.",
+    "progress": "Từ {current}/{total}",
+    "progressLabel": "Tiến độ lượt ôn từ vựng",
+    "completedTitle": "Hoàn thành lượt ôn!",
+    "completedDescription": "Bạn đã xử lý {completed}/{total} từ. {skipped, plural, =0 {Không có từ nào bị bỏ qua.} other {# từ đã được bỏ qua vì lịch thay đổi ở nơi khác.}}",
+    "backToLibrary": "Về kho từ",
+    "browseHint": "Lật và chuyển qua các thẻ để xem trước nội dung. Việc xem không thay đổi lịch FSRS."
+  },
+  "reviewSession": {
+    "flipHint": "Lật thẻ để xem đáp án, sau đó chọn mức độ ghi nhớ.",
+    "previewLoading": "Đang tính lịch ôn dự kiến…",
+    "previewError": "Không tải được lịch ôn.",
+    "reloadPreview": "Tải lại lịch ôn",
+    "saving": "Đang lưu lịch ôn…",
+    "saveError": "Không lưu được lượt ôn.",
+    "retrySave": "Thử gửi lại",
+    "discard": "Bỏ đánh giá",
+    "skipStale": "Bỏ qua và tiếp tục"
+  }
+}

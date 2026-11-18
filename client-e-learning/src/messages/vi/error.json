@@ -89,6 +89,14 @@
     "ASSESSMENT_ATTEMPT_SAVE_FAILED": "Không thể lưu câu trả lời. Vui lòng thử lại.",
     "ASSESSMENT_ATTEMPT_INVALID_STATE": "Lần làm bài hiện không ở trạng thái có thể chỉnh sửa.",
     "ASSESSMENT_ATTEMPT_REQUEST_REPLAY": "Yêu cầu này đã được xử lý.",
+    "VOCABULARY_WORD_NOT_FOUND": "Không tìm thấy từ vựng hoặc bạn không còn quyền truy cập từ này.",
+    "VOCABULARY_WORD_ALREADY_EXISTS": "Từ vựng này đã tồn tại trong nguồn nội dung.",
+    "VOCABULARY_RELATED_TERMS_INVALID": "Thông tin từ liên quan không hợp lệ.",
+    "VOCABULARY_REVIEW_NOT_DUE": "Từ này không còn đến hạn ôn. Lịch có thể đã được cập nhật ở nơi khác.",
+    "VOCABULARY_MARK_ALREADY_RECORDED": "Từ này đã có lịch học và không thể đánh dấu lại.",
+    "VOCABULARY_MARK_NOT_REVERSIBLE": "Không thể hủy đánh dấu vì từ đã có thêm lịch ôn.",
+    "VOCABULARY_REVIEW_REQUEST_CONFLICT": "Lượt ôn này xung đột với một yêu cầu đã gửi trước đó.",
+    "VOCABULARY_WORD_HAS_PROGRESS": "Từ đã có lịch học; hãy tạm ẩn thay vì xóa.",
     "UNKNOWN_ERROR": "Đã xảy ra lỗi. Vui lòng thử lại."
   }
 }

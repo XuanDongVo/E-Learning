@@ -48,6 +48,7 @@ public class StudentVocabularyReviewService {
     private final VocabularyWordRepository wordRepository;
     private final StudentVocabularyProgressRepository progressRepository;
     private final VocabularyReviewLogRepository reviewLogRepository;
+    private final StudentVocabularyAccessPolicy accessPolicy;
 
     /** First encounter is a product learning policy; later reviews use Java-FSRS. */
     private Instant firstLearningDue(Instant reviewedAt, Rating rating) {
@@ -64,7 +65,7 @@ public class StudentVocabularyReviewService {
         VocabularyWord word = wordRepository.findById(wordId)
                 .filter(value -> value.getStatus() == VocabularyStatus.ACTIVE)
                 .orElseThrow(() -> new AppException(ErrorCode.VOCABULARY_WORD_NOT_FOUND));
-        studentUnitService.requireVisibleUnit(studentId, word.getUnit().getId());
+        accessPolicy.requireAccessible(studentId, word);
         var progress = progressRepository.findByStudentIdAndWordId(studentId, wordId).orElse(null);
         Instant now = Instant.now();
         if (progress != null && !progress.isNeedsRelearning() && progress.getDueAt().isAfter(now)) {
@@ -157,7 +158,7 @@ public class StudentVocabularyReviewService {
         VocabularyWord word = wordRepository.findById(wordId)
                 .filter(value -> value.getStatus() == VocabularyStatus.ACTIVE)
                 .orElseThrow(() -> new AppException(ErrorCode.VOCABULARY_WORD_NOT_FOUND));
-        studentUnitService.requireVisibleUnit(studentId, word.getUnit().getId());
+        accessPolicy.requireAccessible(studentId, word);
 
         StudentVocabularyProgress progress = progressRepository.findByStudentIdAndWordId(studentId, wordId)
                 .orElseThrow(() -> new AppException(ErrorCode.VOCABULARY_MARK_NOT_REVERSIBLE));
@@ -197,7 +198,7 @@ public class StudentVocabularyReviewService {
         VocabularyWord word = wordRepository.findById(wordId)
                 .filter(value -> value.getStatus() == VocabularyStatus.ACTIVE)
                 .orElseThrow(() -> new AppException(ErrorCode.VOCABULARY_WORD_NOT_FOUND));
-        studentUnitService.requireVisibleUnit(studentId, word.getUnit().getId());
+        accessPolicy.requireAccessible(studentId, word);
 
         Instant reviewedAt = Instant.now();
         StudentVocabularyProgress progress = progressRepository.findByStudentIdAndWordId(studentId, wordId)

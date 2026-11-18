@@ -12,6 +12,10 @@ import { useVocabularyReviewQueue } from "./use-vocabulary-review-queue";
 
 type LearnMode = "new" | "practice";
 
+function reviewProgressPercent(completed: number, total: number) {
+  return total > 0 ? (completed / total) * 100 : 0;
+}
+
 export function VocabularyStudyTab({
   tab,
   unitId,
@@ -90,7 +94,10 @@ export function VocabularyStudyTab({
                 <div
                   className="h-full rounded-full bg-primary transition-[width] duration-300"
                   style={{
-                    width: `${(reviewQueue.completedCount / reviewQueue.totalCount) * 100}%`,
+                    width: `${reviewProgressPercent(
+                      reviewQueue.completedCount,
+                      reviewQueue.totalCount,
+                    )}%`,
                   }}
                 />
               </div>

@@ -6,10 +6,7 @@ import { studentVocabularyReviewService } from "@/services/student/student-vocab
 import {
   Search,
   BookOpen,
-  Star,
   CheckCircle2,
-  ChevronDown,
-  Sparkles,
 } from "lucide-react";
 
 import type { StudentVocabularyStudyCard } from "@/types/student-vocabulary-review";
@@ -23,10 +20,13 @@ interface VocabularyBrowseTabProps {
   onGoLearn?: () => void;
 }
 
+type MarkMutationVariables =
+  | { wordId: number; action: "mark"; requestId: string }
+  | { wordId: number; action: "unmark" };
+
 export function VocabularyBrowseTab({
   cards = [],
   nowMs,
-  onGoLearn,
 }: VocabularyBrowseTabProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [browseFilter, setBrowseFilter] = useState<"all" | "new" | "due">("all");
@@ -34,11 +34,16 @@ export function VocabularyBrowseTab({
   const queryClient = useQueryClient();
   const requestIds = useRef(new Map<number, string>());
   const markMutation = useMutation({
-    mutationFn: ({ wordId, action, requestId }: {
-      wordId: number; action: "mark" | "unmark"; requestId?: string;
-    }) => action === "mark"
-      ? studentVocabularyReviewService.markKnown(wordId, requestId!)
-      : studentVocabularyReviewService.unmarkKnown(wordId),
+    mutationFn: async (variables: MarkMutationVariables) => {
+      if (variables.action === "mark") {
+        await studentVocabularyReviewService.markKnown(
+          variables.wordId,
+          variables.requestId,
+        );
+        return;
+      }
+      await studentVocabularyReviewService.unmarkKnown(variables.wordId);
+    },
     onSuccess: async (_, variables) => {
       requestIds.current.delete(variables.wordId);
       await Promise.all([
@@ -62,11 +67,13 @@ export function VocabularyBrowseTab({
     if (markMutation.isPending || card.needsRelearning) return;
     const action = card.state === "NEW" ? "mark" : card.canUndoBrowseMark ? "unmark" : null;
     if (!action) return;
-    const requestId = action === "mark"
-      ? (requestIds.current.get(card.wordId) ?? crypto.randomUUID())
-      : undefined;
-    if (requestId) requestIds.current.set(card.wordId, requestId);
-    markMutation.mutate({ wordId: card.wordId, action, requestId });
+    if (action === "mark") {
+      const requestId = requestIds.current.get(card.wordId) ?? crypto.randomUUID();
+      requestIds.current.set(card.wordId, requestId);
+      markMutation.mutate({ wordId: card.wordId, action, requestId });
+      return;
+    }
+    markMutation.mutate({ wordId: card.wordId, action });
   };
 
   // Derived data

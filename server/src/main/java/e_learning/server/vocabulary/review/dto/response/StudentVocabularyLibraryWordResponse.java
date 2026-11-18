@@ -9,10 +9,8 @@ public record StudentVocabularyLibraryWordResponse(
         // Identity
         Long wordId,
 
-        // Unit information
-        Long unitId,
-        String unitCode,
-        String unitName,
+        // Current source display metadata; not the FSRS owner.
+        StudentVocabularyOriginResponse origin,
 
         // Vocabulary
         String word,

@@ -1,0 +1,74 @@
+{
+  "library": {
+    "back": "Back to vocabulary notebook",
+    "kicker": "Memory index",
+    "title": "Your word library",
+    "subtitle": "See words with an active memory schedule, words due now, and words waiting for their next review.",
+    "reviewAll": "Review all {count} due words",
+    "tabsLabel": "Choose vocabulary status",
+    "tabs": {
+      "learned": "Learned",
+      "due": "Due",
+      "waiting": "Waiting"
+    },
+    "descriptions": {
+      "learned": "Words with an active FSRS schedule; this does not mean mastered.",
+      "due": "Words whose review time has arrived on the server clock.",
+      "waiting": "Learned words waiting for their next scheduled review."
+    },
+    "searchLabel": "Search your word library",
+    "searchPlaceholder": "Enter a word or Vietnamese meaning...",
+    "resultCount": "{count, plural, =0 {No words} one {# word} other {# words}}",
+    "originUnit": "Unit {name}",
+    "dueNow": "Review now",
+    "nextReview": "Next review {date}",
+    "reviewed": "Reviewed {count, plural, =1 {once} other {# times}}",
+    "loading": "Opening your word library…",
+    "loadError": "The word library could not be loaded.",
+    "retry": "Try again",
+    "emptyTitle": "No words in this section yet",
+    "emptyDescriptions": {
+      "learned": "Learn a word from a Unit notebook to start its memory schedule.",
+      "due": "You have handled every due word. Other words will appear on schedule.",
+      "waiting": "No words are waiting for a future review yet."
+    },
+    "filteredEmptyTitle": "No matching words",
+    "filteredEmptyDescription": "Try a shorter search or clear it.",
+    "clearSearch": "Clear search",
+    "previousPage": "Previous page",
+    "nextPage": "Next page",
+    "page": "Page {page}/{totalPages}"
+  },
+  "review": {
+    "back": "Back to word library",
+    "kicker": "All-due review",
+    "title": "Review words due now",
+    "subtitle": "The list is fixed when you begin. Each word appears once in this pass.",
+    "viewsLabel": "Choose review view",
+    "browseTab": "Browse words",
+    "reviewTab": "Review",
+    "startReview": "Start reviewing {count} words",
+    "loading": "Gathering your due words…",
+    "loadError": "The review pass could not be prepared.",
+    "retry": "Try again",
+    "emptyTitle": "No words are due",
+    "emptyDescription": "Return to the library to see words waiting for their next review.",
+    "progress": "Word {current}/{total}",
+    "progressLabel": "Vocabulary review progress",
+    "completedTitle": "Review complete!",
+    "completedDescription": "You handled {completed}/{total} words. {skipped, plural, =0 {No words were skipped.} one {# word was skipped because its schedule changed elsewhere.} other {# words were skipped because their schedules changed elsewhere.}}",
+    "backToLibrary": "Back to word library",
+    "browseHint": "Flip and move through the cards to preview them. Browsing does not change the FSRS schedule."
+  },
+  "reviewSession": {
+    "flipHint": "Flip the card to reveal the answer, then rate your memory.",
+    "previewLoading": "Calculating the next review times…",
+    "previewError": "The review schedule could not be loaded.",
+    "reloadPreview": "Reload schedule",
+    "saving": "Saving the review…",
+    "saveError": "The review could not be saved.",
+    "retrySave": "Try sending again",
+    "discard": "Discard rating",
+    "skipStale": "Skip and continue"
+  }
+}

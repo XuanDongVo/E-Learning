@@ -30,6 +30,23 @@
 | **Activity XP Engine Phases 1–4** | **Implemented behind default-off rollout; Phase 5 validation/enablement open** |
 | **Student Streak / Level v1** | **Service/API and Rewards UI source added; tests/build/E2E pending verification** |
 | **Auth / Session lifecycle** | **Absolute seven-day session, inactive-account enforcement and frontend recovery implemented; validation deferred** |
+| **Vocabulary Library / all-DUE Review** | **Backend and Client implemented; browser/build verification open** |
+
+### Vocabulary Library / all-DUE Review
+
+- Student-authenticated Summary and paginated Learned/Due/Waiting APIs classify
+  active schedules with server time and exclude `needsRelearning` rows.
+- The Review Queue returns the complete accessible DUE snapshot with full
+  Flashcard data; it is not narrowed by browse pagination or search.
+- Vocabulary reads and word-level preview/write authorization share a
+  Vocabulary-owned access policy. Its current adapter preserves published-Unit
+  current-Grade access without making Unit the permanent FSRS owner.
+- ADR 0037 accepts V65 AGAIN reset-to-Learn behavior. No schema change or
+  Collection entity was introduced.
+- Student routes `/student/vocabulary/words` and `/student/vocabulary/review`
+  provide source-neutral Library browsing and one fixed, complete all-DUE pass.
+  They reuse Flashcard/rating UI, central query keys, shared loading/error/empty
+  primitives and error-code translations in both locales.
 
 ### Auth / Session lifecycle
 

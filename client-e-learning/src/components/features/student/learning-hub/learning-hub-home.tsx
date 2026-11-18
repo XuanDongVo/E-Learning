@@ -6,6 +6,7 @@ import { Link } from "@/i18n/navigation";
 import { RegionState } from "@/components/feedback";
 import { Button } from "@/components/ui/button";
 import { Pipo } from "@/components/ui/mascot";
+import { StudentIllustration } from "@/components/student-ui/visuals/student-illustration";
 import { PaperSurface } from "@/components/student-ui/paper-surface";
 import { PolaroidFrame } from "@/components/student-ui/polaroid-frame";
 import { ScrapbookHeading } from "@/components/student-ui/scrapbook-heading";
@@ -97,7 +98,8 @@ export function LearningHubHome() {
               />
             </div>
           ) : units.length === 0 ? (
-            <div className="p-5">
+            <div className="space-y-2 p-5">
+              <StudentIllustration id="illustration.no-lessons" decorative className="mx-auto w-32 sm:w-40" />
               <RegionState
                 variant="empty"
                 title="Chưa có bài học nào"

@@ -1,5 +1,15 @@
 # Project Progress
 
+## 2026-11-19 Student Visual Storytelling — Phase 3A–E source implementation
+
+- 3A: Inventory and provenance/license register for retained assets, explicit external-license research and one original art direction.
+- 3B: Split Pipo into provider, controller and original SVG character under `components/student-ui/visuals/pipo/` while keeping `components/ui/mascot.tsx` re-export compatibility; removed per-instance global pointer listeners and dead poke markup, retained moods/stages and stored mascot toggle.
+- 3C: Authored nine first-party SVGs for learning scenes, vocabulary, empty states, achievement and supporting doodles. No third-party illustration pack copied to repo.
+- 3D: Typed asset registry, accessible StudentIllustration/StudentDoodle components and Development Design Lab gallery with Pipo moods; React rendering and registry tests added.
+- 3E: Reused imagery in Learning Hub empty, Units empty/filter-empty, Vocabulary Hub, Vocabulary Word Library, Activity History empty; Progress Mai tree remains the meaningful source-backed visual. Student Design Lab is development-only.
+- QA still required locally: npm test, eslint, tsc, build, browser screenshots and regression for Student/Teacher, portal, mobile/animation; source commits alone are not acceptance of rendered UX.
+
+
 ## 2026-11-19 Student Design System v2 — interaction and Lab refinement
 
 - Standardized Student controls at a 44px minimum target with default horizontal

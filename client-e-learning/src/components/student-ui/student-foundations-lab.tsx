@@ -8,6 +8,7 @@ import { StudentButton, type StudentButtonVariant } from "./student-button";
 import { StudentTextField } from "./student-text-field";
 import { StudentDataList } from "./data-list/student-data-list";
 import { StudentDataListItem } from "./data-list/student-data-list-item";
+import { StudentVisualGallery } from "./visuals/student-visual-gallery";
 
 type ButtonState = "default" | "pressed" | "disabled" | "loading";
 type PreviewViewport = "desktop" | "mobile";
@@ -186,6 +187,7 @@ export function StudentFoundationsLab() {
           />
         </StudentDataList>
       </section>
+      <StudentVisualGallery />
     </div>
   );
 }

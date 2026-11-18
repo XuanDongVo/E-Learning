@@ -9,6 +9,7 @@ import { studentUnitService } from "@/services/student/student-unit.service";
 import { QUERY_KEYS } from "@/services/query-keys";
 import { StudentButton } from "@/components/student-ui/student-button";
 import { StudentTextField } from "@/components/student-ui/student-text-field";
+import { StudentIllustration } from "@/components/student-ui/visuals/student-illustration";
 import { UnitCard } from "./unit-card";
 import { Pipo } from "@/components/ui/mascot";
 import { SkeletonGrid } from "@/components/ui/skeleton/skeleton-grid";
@@ -87,17 +88,22 @@ export function UnitsView() {
 
       {/* ─── Empty State ─── */}
       {units.length === 0 && !isLoading && !isError && (
-        <RegionState
-          variant="empty"
-          title="Chưa có bài học nào"
-          description="Giáo viên của bạn chưa công bố Unit nào cho lớp học này. Hãy quay lại sau nhé!"
-        />
+        <div className="space-y-2">
+          <StudentIllustration id="illustration.no-lessons" decorative className="mx-auto w-32 sm:w-40" />
+          <RegionState
+            variant="empty"
+            title="Chưa có bài học nào"
+            description="Giáo viên của bạn chưa công bố Unit nào cho lớp học này. Hãy quay lại sau nhé!"
+          />
+        </div>
       )}
 
       {/* ─── Không khớp tìm kiếm ─── */}
       {units.length > 0 && filteredUnits.length === 0 && (
-        <RegionState
-          variant="empty"
+        <div className="space-y-2">
+          <StudentIllustration id="illustration.no-results" decorative className="mx-auto w-28 sm:w-32" />
+          <RegionState
+            variant="empty"
           title={`Không tìm thấy Unit phù hợp với từ khóa "${searchTerm}"`}
           action={
             <button
@@ -108,7 +114,8 @@ export function UnitsView() {
               Xóa tìm kiếm
             </button>
           }
-        />
+          />
+        </div>
       )}
 
       {/* ─── Lưới Unit Cards ─── */}

@@ -1,6 +1,6 @@
 # Student Visual Storytelling — Indie Illustrated Scrapbook v2
 
-**Status:** Phase 1 proposed design contract; implementation/asset migration is NOT implied.  
+**Status:** Phase 1 design contract; Phase 3 starter assets, Pipo refactor, registry and reference-page integration implemented in source. Visual/device QA remains open.  
 **Authority:** Accepted ADR 0032 and INDIE_ILLUSTRATED_SCRAPBOOK_DESIGN_SYSTEM.md.  
 **Scope:** All present and future Student pages. Teacher does not adopt Student mascots, decoration or illustration rules.
 

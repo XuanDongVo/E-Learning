@@ -12,6 +12,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { RegionState } from "@/components/feedback";
 import { PaperSurface } from "@/components/student-ui/paper-surface";
 import { StudentTextField } from "@/components/student-ui/student-text-field";
+import { StudentIllustration } from "@/components/student-ui/visuals/student-illustration";
 import { StudentDataList } from "@/components/student-ui/data-list/student-data-list";
 import { StudentDataListItem } from "@/components/student-ui/data-list/student-data-list-item";
 import { StudentListPagination } from "@/components/student-ui/data-list/student-list-pagination";
@@ -119,12 +120,19 @@ export function StudentVocabularyWordLibrary() {
       </Link>
 
       <PaperSurface as="section" variant="kraft" emphasis="feature" tape tapePosition="right" className="space-y-3 p-4 sm:p-6">
-        <div className="min-w-0 max-w-3xl space-y-1">
-          <p className="student-meta text-primary">{t("kicker")}</p>
-          <ScrapbookHeading as="h1" className="student-page-title text-foreground">
-            {t("title")}
-          </ScrapbookHeading>
-          <p className="student-body text-muted-foreground">{t("subtitle")}</p>
+        <div className="flex min-w-0 items-center justify-between gap-4">
+          <div className="min-w-0 max-w-3xl space-y-1">
+            <p className="student-meta text-primary">{t("kicker")}</p>
+            <ScrapbookHeading as="h1" className="student-page-title text-foreground">
+              {t("title")}
+            </ScrapbookHeading>
+            <p className="student-body text-muted-foreground">{t("subtitle")}</p>
+          </div>
+          <StudentIllustration
+            id="illustration.word-collection"
+            decorative
+            className="hidden w-28 shrink-0 sm:block lg:w-36"
+          />
         </div>
         {summary?.dueCount ? (
           <Link href="/student/vocabulary/review" className="student-control student-control--action inline-flex w-fit items-center gap-2 px-4">

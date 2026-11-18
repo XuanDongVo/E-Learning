@@ -6,6 +6,7 @@ import { ArrowLeft, History, RefreshCw } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { RegionState } from "@/components/feedback";
 import { PaperSurface } from "@/components/student-ui/paper-surface";
+import { StudentIllustration } from "@/components/student-ui/visuals/student-illustration";
 import { StudentListPagination } from "@/components/student-ui/data-list/student-list-pagination";
 import { ScrapbookHeading } from "@/components/student-ui/scrapbook-heading";
 import { Link } from "@/i18n/navigation";
@@ -126,8 +127,10 @@ export function ActivityHistoryPage({
               </p>
 
               {history.items.length === 0 ? (
-                <RegionState
-                  variant="empty"
+                <div className="space-y-2">
+                  <StudentIllustration id="illustration.no-results" decorative className="mx-auto w-28" />
+                  <RegionState
+                    variant="empty"
                   title={t(hasFilters ? "filteredEmptyTitle" : "emptyTitle")}
                   description={t(
                     hasFilters ? "filteredEmptyDescription" : "emptyDescription",
@@ -144,7 +147,8 @@ export function ActivityHistoryPage({
                     ) : undefined
                   }
                   minHeight={220}
-                />
+                  />
+                </div>
               ) : (
                 <ActivityHistoryList items={history.items} label={t} />
               )}

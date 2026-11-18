@@ -14,6 +14,7 @@ import {
 import { Link } from "@/i18n/navigation";
 import { PaperSurface } from "@/components/student-ui/paper-surface";
 import { ScrapbookHeading } from "@/components/student-ui/scrapbook-heading";
+import { StudentIllustration } from "@/components/student-ui/visuals/student-illustration";
 import {
   UnitCover,
   unitLabel,
@@ -56,13 +57,18 @@ export function StudentVocabularyLibrary() {
         tapePosition="right"
         className="student-vocab-library-hero space-y-3 p-5 sm:p-7"
       >
-        <p className="student-meta text-primary">MY VOCABULARY NOTEBOOK</p>
-        <ScrapbookHeading
-          as="h1"
-          className="student-page-title text-foreground"
-        >
-          Sổ tay từ vựng
-        </ScrapbookHeading>
+        <div className="flex items-center justify-between gap-3">
+          <div className="min-w-0 space-y-2">
+            <p className="student-meta text-primary">MY VOCABULARY NOTEBOOK</p>
+            <ScrapbookHeading
+              as="h1"
+              className="student-page-title text-foreground"
+            >
+              Sổ tay từ vựng
+            </ScrapbookHeading>
+          </div>
+          <StudentIllustration id="scene.open-notebook" decorative className="hidden w-32 shrink-0 sm:block" />
+        </div>
         <div className="flex flex-wrap gap-2">
           <Link
             href="/student/vocabulary/words"

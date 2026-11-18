@@ -7,7 +7,7 @@ export const TAB_ITEMS = [
   { key: "browse", label: "Xem từ", icon: BookOpen },
   { key: "learn", label: "Học", icon: Layers3 },
   { key: "review", label: "Ôn tập", icon: CalendarClock },
-  { key: "games", label: "Chơi", icon: Gamepad2 },
+  // { key: "games", label: "Chơi", icon: Gamepad2 },
 ] as const;
 
 export const vocabularyUnitCardsKey = (unitId: number) =>

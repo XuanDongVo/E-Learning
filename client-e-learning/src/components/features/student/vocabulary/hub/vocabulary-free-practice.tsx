@@ -1,123 +1,193 @@
+
 "use client";
 
 import { useMemo, useState } from "react";
-import { Search } from "lucide-react";
+import { BookOpen, CheckCircle2, RotateCcw } from "lucide-react";
 import { PaperSurface } from "@/components/student-ui/paper-surface";
 import type { StudentVocabularyStudyCard } from "@/types/student-vocabulary-review";
-import { getVocabularyDueLabel } from "./vocabulary-hub-types";
 import { VocabularyStudySession } from "./vocabulary-study-session";
+
+interface VocabularyFreePracticeProps {
+  unitId: number;
+  cards: StudentVocabularyStudyCard[];
+  onGoLearn: () => void;
+}
 
 export function VocabularyFreePractice({
   unitId,
   cards,
   onGoLearn,
-}: {
-  unitId: number;
-  cards: StudentVocabularyStudyCard[];
-  onGoLearn: () => void;
-}) {
-  const [wordId, setWordId] = useState<number | null>(null);
-  const [search, setSearch] = useState("");
+}: VocabularyFreePracticeProps) {
+  // Chỉ lấy các từ đã có tiến độ FSRS.
   const learnedCards = useMemo(
     () => cards.filter((card) => card.state !== "NEW"),
     [cards],
   );
-  const filtered = useMemo(() => {
-    const value = search.trim().toLocaleLowerCase("vi");
-    return learnedCards.filter((card) =>
-      !value || (card.word + " " + card.meaningVi).toLocaleLowerCase("vi").includes(value),
+
+  // Những từ đã hoàn thành trong lượt luyện hiện tại.
+  // Chỉ lưu ở frontend, không cập nhật FSRS.
+  const [completedIds, setCompletedIds] = useState<Set<number>>(
+    () => new Set(),
+  );
+
+  // Dùng để reset VocabularyStudySession khi luyện lại.
+  const [revision, setRevision] = useState(0);
+
+  const completedCount = learnedCards.filter((card) =>
+    completedIds.has(card.wordId),
+  ).length;
+
+  const totalCount = learnedCards.length;
+
+  const remainingCards = learnedCards.filter(
+    (card) => !completedIds.has(card.wordId),
+  );
+
+  // Tự động chọn từ tiếp theo.
+  const currentCard = remainingCards[0] ?? null;
+
+  const isComplete =
+    totalCount > 0 && remainingCards.length === 0;
+
+  const progress =
+    totalCount > 0
+      ? Math.round((completedCount / totalCount) * 100)
+      : 0;
+
+  const handlePracticeDone = () => {
+    if (!currentCard) return;
+
+    setCompletedIds((previous) => {
+      const next = new Set(previous);
+      next.add(currentCard.wordId);
+      return next;
+    });
+  };
+
+  const handleRestart = () => {
+    setCompletedIds(new Set());
+    setRevision((previous) => previous + 1);
+  };
+
+  // Chưa có từ đã học.
+  if (totalCount === 0) {
+    return (
+      <PaperSurface
+        as="section"
+        className="space-y-4 p-6 text-center sm:p-8"
+      >
+        <BookOpen
+          className="mx-auto size-9 text-primary"
+          aria-hidden="true"
+        />
+
+        <h3 className="student-card-title text-foreground">
+          Chưa có từ đã học
+        </h3>
+
+        <p className="student-body text-muted-foreground">
+          Hãy hoàn thành một từ trong chế độ Học từ mới
+          hoặc đánh dấu từ đã biết ở tab Xem từ
+          để bắt đầu luyện tự do.
+        </p>
+
+        <button
+          type="button"
+          className="student-control student-control--action px-5"
+          onClick={onGoLearn}
+        >
+          Học từ mới
+        </button>
+      </PaperSurface>
     );
-  }, [learnedCards, search]);
-  const current = learnedCards.find((card) => card.wordId === wordId);
+  }
+
+  // Đã luyện hết các từ.
+  if (isComplete) {
+    return (
+      <PaperSurface
+        as="section"
+        className="space-y-4 p-6 text-center sm:p-8"
+      >
+        <CheckCircle2
+          className="mx-auto size-10 text-success"
+          aria-hidden="true"
+        />
+
+        <h3 className="student-card-title text-foreground">
+          Hoàn thành lượt luyện!
+        </h3>
+
+        <p className="student-body text-muted-foreground">
+          Bạn đã luyện qua {totalCount} từ trong Unit này.
+        </p>
+
+        <p className="student-caption text-muted-foreground">
+          Đây là lượt luyện tự do.
+          Lịch ôn FSRS của các từ không thay đổi.
+        </p>
+
+        <button
+          type="button"
+          className="student-control student-control--action inline-flex items-center gap-2 px-5"
+          onClick={handleRestart}
+        >
+          <RotateCcw
+            className="size-4"
+            aria-hidden="true"
+          />
+          Luyện lại từ đầu
+        </button>
+      </PaperSurface>
+    );
+  }
+
+  if (!currentCard) return null;
 
   return (
-    <div className="space-y-4">
-      <p className="student-body text-muted-foreground">
-        Chọn từ đã học để luyện Flashcard, Trắc nghiệm, Gõ từ hoặc Phát âm.
-        Luyện tự do không ghi rating và không thay đổi lịch ôn FSRS.
-      </p>
+    <div className="student-vocab-free-practice space-y-4">
+      {/* Tiến độ lượt luyện */}
+      <div className="space-y-2">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="space-y-1">
+            <h3 className="student-card-title text-foreground">
+              Luyện tập tự do
+            </h3>
 
-      {current ? (
-        <>
-          <div className="flex flex-wrap items-center justify-between gap-2">
             <p className="student-caption text-muted-foreground">
-              Đang luyện: <strong className="text-foreground">{current.word}</strong>
-              {" · "}{getVocabularyDueLabel(current)}
+              Luyện lại các từ đã học mà không thay đổi lịch ôn.
             </p>
-            <button
-              type="button"
-              className="student-control student-control--quiet px-4"
-              onClick={() => setWordId(null)}
-            >
-              Chọn từ khác
-            </button>
           </div>
-          <VocabularyStudySession
-            key={current.wordId}
-            sessionMode="FREE_PRACTICE"
-            unitId={unitId}
-            card={current}
-            allCards={cards}
-            onPracticeDone={() => setWordId(null)}
+
+          <span className="student-typewriter text-sm font-bold text-foreground">
+            Từ {completedCount + 1}/{totalCount}
+          </span>
+        </div>
+
+        <div
+          className="h-2.5 w-full overflow-hidden rounded-full bg-muted"
+          role="progressbar"
+          aria-label="Tiến độ luyện từ vựng"
+          aria-valuemin={0}
+          aria-valuemax={totalCount}
+          aria-valuenow={completedCount}
+        >
+          <div
+            className="h-full rounded-full bg-primary transition-[width] duration-300"
+            style={{ width: `${progress}%` }}
           />
-        </>
-      ) : learnedCards.length === 0 ? (
-        <PaperSurface as="section" className="space-y-3 p-7 text-center">
-          <h3 className="student-card-title text-foreground">Chưa có từ đã học</h3>
-          <p className="student-body text-muted-foreground">
-            Hãy học từ mới hoặc đánh dấu một từ đã biết trong tab Xem từ để bắt đầu luyện.
-          </p>
-          <button
-            type="button"
-            className="student-control student-control--action px-5"
-            onClick={onGoLearn}
-          >
-            Học từ mới
-          </button>
-        </PaperSurface>
-      ) : (
-        <>
-          <div className="relative max-w-lg">
-            <label htmlFor="vocab-free-practice-search" className="student-label mb-2 block">
-              Tìm từ muốn luyện
-            </label>
-            <Search className="pointer-events-none absolute bottom-3.5 left-3.5 size-4 text-muted-foreground" aria-hidden="true" />
-            <input
-              id="vocab-free-practice-search"
-              type="search"
-              className="student-field pl-10"
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-              placeholder="Nhập từ hoặc nghĩa..."
-            />
-          </div>
-          {filtered.length === 0 ? (
-            <PaperSurface as="section" className="p-6 text-center">
-              <p className="student-body text-muted-foreground">Không tìm thấy từ phù hợp.</p>
-            </PaperSurface>
-          ) : (
-            <ul className="grid gap-2 sm:grid-cols-2">
-              {filtered.map((card) => (
-                <li key={card.wordId} className="min-w-0">
-                  <button
-                    type="button"
-                    className="student-control student-control--quiet flex h-full w-full min-w-0 items-center justify-between gap-3 px-4 py-3 text-left"
-                    onClick={() => setWordId(card.wordId)}
-                    aria-label={`Luyện lại từ ${card.word}`}
-                  >
-                    <span className="min-w-0 flex-1">
-                      <span className="student-body block break-words font-semibold text-foreground">{card.word}</span>
-                      <span className="student-caption block break-words text-muted-foreground">{card.meaningVi}</span>
-                      <span className="student-caption block text-muted-foreground">{getVocabularyDueLabel(card)}</span>
-                    </span>
-                    <span className="student-label shrink-0 text-primary">Luyện</span>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </>
-      )}
+        </div>
+      </div>
+
+      {/* Dùng lại giao diện StudySession hiện tại */}
+      <VocabularyStudySession
+        key={`${unitId}-${currentCard.wordId}-${revision}`}
+        unitId={unitId}
+        card={currentCard}
+        allCards={cards}
+        sessionMode="FREE_PRACTICE"
+        onPracticeDone={handlePracticeDone}
+      />
     </div>
   );
 }

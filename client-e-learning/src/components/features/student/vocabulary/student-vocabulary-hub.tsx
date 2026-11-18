@@ -102,7 +102,7 @@ export function StudentVocabularyHub({
   }
 
   return (
-    <main className="student-vocab student-vocab-unit mx-auto !max-w-4xl space-y-6 pb-10">
+    <main className="student-vocab student-vocab-unit mx-auto !max-w-4xl space-y-6 pb-10 p-1">
       <VocabularyHubHeader
         currentTab={tab}
         dueCount={dueCards.length}

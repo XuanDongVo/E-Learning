@@ -174,7 +174,7 @@ export function VocabularyWordRow({
               </div>
             )}
 
-            <div className="student-vocab-word-row-actions flex items-center gap-1 text-muted-foreground">
+            <div className=" flex items-center gap-1 text-muted-foreground">
               {onToggleFavorite && (
                 <button
                   type="button"

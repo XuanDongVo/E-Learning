@@ -8,6 +8,9 @@ describe("Student page patterns", () => {
     const minimal = renderToStaticMarkup(<StudentPageHeading title="Lịch sử học tập" />);
     expect(minimal.match(/<h1\b/g)).toHaveLength(1);
     expect(minimal).not.toContain("student-washi");
+    const embedded = renderToStaticMarkup(<StudentPageHeading as="h3" title="In the lab" />);
+    expect(embedded).not.toContain("<h1");
+    expect(embedded).toContain("<h3");
     const complete = renderToStaticMarkup(
       <StudentPageHeading eyebrow="Unit 01" title="Từ vựng" description="Danh sách từ"
         artwork={<span aria-hidden="true">visual</span>}
@@ -20,7 +23,7 @@ describe("Student page patterns", () => {
 
   it("preserves independent toolbar, results and pagination composition", () => {
     const html = renderToStaticMarkup(
-      <StudentCollectionPanel toolbar={<label>Filter</label>}
+      <StudentCollectionPanel toolbar={<label>Filter</label>} ariaLive="polite"
         footer={<nav aria-label="Pagination">Next</nav>}>
         <ul><li>Result</li></ul>
       </StudentCollectionPanel>,

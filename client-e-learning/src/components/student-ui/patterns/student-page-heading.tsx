@@ -16,6 +16,7 @@ export function StudentPageHeading({
   className,
   contentClassName,
   artworkClassName,
+  as: Heading = "h1",
 }: {
   eyebrow?: ReactNode;
   title: ReactNode;
@@ -25,12 +26,14 @@ export function StudentPageHeading({
   className?: string;
   contentClassName?: string;
   artworkClassName?: string;
+  /** h1 for a real page; h3 when embedded in a Design Lab section. */
+  as?: "h1" | "h2" | "h3";
 }) {
   return (
     <div className={cn("flex w-full min-w-0 items-center justify-between gap-4", className)}>
       <div className={cn("min-w-0 flex-1 space-y-2", contentClassName)}>
         {eyebrow != null && <p className="student-meta text-primary">{eyebrow}</p>}
-        <ScrapbookHeading as="h1" className="student-page-title text-foreground">
+        <ScrapbookHeading as={Heading} className="student-page-title text-foreground">
           {title}
         </ScrapbookHeading>
         {description != null && (

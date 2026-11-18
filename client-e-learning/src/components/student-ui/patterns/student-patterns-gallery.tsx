@@ -52,6 +52,7 @@ export function StudentPatternsGallery() {
       {view === "hub" && (
         <PaperSurface as="section" variant="kraft" emphasis="feature" className="p-5 sm:p-7">
           <StudentPageHeading
+            as="h3"
             eyebrow="HUB · Preview"
             title="Hôm nay học gì?"
             description="Một hành trình có điểm bắt đầu rõ ràng. Đây là demo, không phải trang học thật."
@@ -65,6 +66,7 @@ export function StudentPatternsGallery() {
         <div className="space-y-4">
           <PaperSurface as="section" variant="kraft" emphasis="feature" className="p-5 sm:p-6">
             <StudentPageHeading
+              as="h3"
               eyebrow="COLLECTION · Preview"
               title="Bộ sưu tập mẫu"
               description="Cấu trúc dữ liệu: lọc, danh sách và trạng thái trống."
@@ -73,6 +75,7 @@ export function StudentPatternsGallery() {
             />
           </PaperSurface>
           <StudentCollectionPanel
+            ariaLive="polite"
             toolbar={
               <StudentTextField
                 id="lab-pattern-search"
@@ -111,6 +114,7 @@ export function StudentPatternsGallery() {
           <StudentBackLink href="/student/units">Tất cả bài học (route thật)</StudentBackLink>
           <PaperSurface as="section" variant="kraft" emphasis="feature" className="p-5 sm:p-7">
             <StudentPageHeading
+              as="h3"
               eyebrow="DETAIL · Preview"
               title="Một Unit minh họa"
               description="Chi tiết có bối cảnh, nội dung chính và hành động riêng. Không cần copy hero từ Hub."

@@ -12,7 +12,7 @@ export function StudentCollectionPanel({
   children,
   footer,
   separator = true,
-  ariaLive = "polite",
+  ariaLive = "off",
   className,
   resultClassName,
 }: {

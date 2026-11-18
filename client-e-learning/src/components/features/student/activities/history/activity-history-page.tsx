@@ -76,7 +76,7 @@ export function ActivityHistoryPage({
         />
       </PaperSurface>
 
-      <StudentCollectionPanel toolbar={
+      <StudentCollectionPanel ariaLive="polite" toolbar={
         <ActivityHistoryFilters
           period={period}
           mode={mode}
@@ -119,6 +119,7 @@ export function ActivityHistoryPage({
 
               {history.items.length === 0 ? (
                 <StudentCollectionEmptyState
+                  illustration={hasFilters ? "illustration.no-results" : null}
                   title={t(hasFilters ? "filteredEmptyTitle" : "emptyTitle")}
                   description={t(hasFilters ? "filteredEmptyDescription" : "emptyDescription")}
                   action={hasFilters ? (

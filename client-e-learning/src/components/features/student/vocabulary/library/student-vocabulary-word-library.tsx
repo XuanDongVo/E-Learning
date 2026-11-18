@@ -147,7 +147,7 @@ export function StudentVocabularyWordLibrary() {
         ) : null}
       </PaperSurface>
 
-      <StudentCollectionPanel separator={false} toolbar={
+      <StudentCollectionPanel separator={false} ariaLive="polite" toolbar={
         <>
           <div role="tablist" aria-label={t("tabsLabel")} className="flex flex-wrap gap-2 border-b border-dashed border-border pb-3">
           {STATUSES.map((item) => (
@@ -199,6 +199,7 @@ export function StudentVocabularyWordLibrary() {
               <p className="student-label text-foreground">{t("resultCount", { count: result.totalElements })}</p>
               {result.items.length === 0 ? (
                 <StudentCollectionEmptyState
+                  illustration={search ? "illustration.no-results" : null}
                   title={t(search ? "filteredEmptyTitle" : "emptyTitle")}
                   description={t(search ? "filteredEmptyDescription" : `emptyDescriptions.${status}`)}
                   action={search ? (

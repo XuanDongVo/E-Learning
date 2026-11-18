@@ -10,9 +10,9 @@ Only four shared **presentation** patterns were added under `client-e-learning/s
 
 | Component | Purpose | Does NOT do |
 |---|---|---|
-| `StudentPageHeading` | One semantic H1, eyebrow, description, optional artwork and actions | Force a kraft hero, choose image/mascot, make API requests |
+| `StudentPageHeading` | Semantic H1 by default (configurable heading level for nested previews), eyebrow, description, optional artwork and actions | Force a kraft hero, choose image/mascot, make API requests |
 | `StudentBackLink` | Accessible, locale-aware contextual back navigation | Browser-history logic, infer parent route |
-| `StudentCollectionPanel` | Compose toolbar, results and optional footer inside quiet paper surface | Fetch data, apply filters, choose list/grid, own pagination |
+| `StudentCollectionPanel` | Compose toolbar, results and optional footer inside quiet paper surface; aria-live is opt-in (default off) | Fetch data, apply filters, choose list/grid, own pagination |
 | `StudentCollectionEmptyState` | Optional original SVG + existing `RegionState` with truthful empty message and recovery action | Invent a record, confuse loading/error with empty, remove needed copy |
 
 The **components accept React slots, not domain-specific props**. They compose existing `PaperSurface`, `StudentDataList`, `StudentListPagination`, `RegionState`, `StudentIllustration` and the Student scoped typography rules. No generic framework for all eight archetypes is introduced.
@@ -57,7 +57,7 @@ This snippet is **illustrative**: no `FeatureOwnedFilters` exists in the repo. N
 
 - Every screen has exactly one H1 and a real primary action or clear collection purpose.
 - Decorative image is optional; high-focus screens may omit it. Meaningful content pictures retain accessible alt.
-- On 360/390px and desktop, buttons and filters remain reachable; avoid overflow, doubled scroll, excessive live-region announcements and duplicate decoration.
+- On 360/390px and desktop, buttons and filters remain reachable; avoid overflow, doubled scroll, excessive live-region announcements and duplicate decoration. Use `ariaLive="polite"` only when feature-state changes warrant announcements. Lab sample headings use `as="h3"` to retain a single document H1.
 - Maintain existing Student state distinctions: loading vs error vs no data vs filtered-empty, including reset action when appropriate.
 - The Design Lab `/vi/student/design-lab` includes a **Page Patterns** preview (Hub / Collection / Detail) with fixed, clearly labeled fixtures; available only in Next.js development mode.
 - Regression: Student navigation, Vocabulary pagination/debounce, Activity History filters and Teacher UI; run `npm run test`, `npm run lint`, `npx tsc --noEmit`, `npm run build` locally.

@@ -6,6 +6,7 @@ import { History, RefreshCw } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { RegionState } from "@/components/feedback";
 import { PaperSurface } from "@/components/student-ui/paper-surface";
+import { StudentButton } from "@/components/student-ui/student-button";
 import { StudentPageHeading } from "@/components/student-ui/patterns/student-page-heading";
 import { StudentBackLink } from "@/components/student-ui/patterns/student-back-link";
 import { StudentCollectionPanel } from "@/components/student-ui/patterns/student-collection-panel";
@@ -66,26 +67,39 @@ export function ActivityHistoryPage({
     <div className="space-y-4 pb-8">
       <StudentBackLink href={`/student/units/${unitId}`}>{t("backToUnit")}</StudentBackLink>
 
-      <PaperSurface as="section" variant="kraft" emphasis="feature" tape tapePosition="right" className="student-units-hero">
+      <PaperSurface as="section" className="p-5 sm:p-6">
         <StudentPageHeading
           eyebrow={activity?.name ?? t("activityFallback", { id: activityId })}
           title={t("pageTitle")}
           description={t("subtitle")}
-          artwork={<History className="size-12 text-primary" aria-hidden="true" />}
+          artwork={
+            <div className="grid size-14 place-items-center rounded-xl border border-border bg-secondary/50">
+              <History className="size-6 text-primary" aria-hidden="true" />
+            </div>
+          }
           artworkClassName="hidden sm:block"
         />
       </PaperSurface>
 
-      <StudentCollectionPanel ariaLive="polite" toolbar={
-        <ActivityHistoryFilters
-          period={period}
-          mode={mode}
-          status={status}
-          onPeriodChange={(value) => changeFilter(() => setPeriod(value))}
-          onModeChange={(value) => changeFilter(() => setMode(value))}
-          onStatusChange={(value) => changeFilter(() => setStatus(value))}
-          label={t}
-        />
+      <StudentCollectionPanel toolbar={
+        <div className="space-y-3">
+          <ActivityHistoryFilters
+            period={period}
+            mode={mode}
+            status={status}
+            onPeriodChange={(value) => changeFilter(() => setPeriod(value))}
+            onModeChange={(value) => changeFilter(() => setMode(value))}
+            onStatusChange={(value) => changeFilter(() => setStatus(value))}
+            label={t}
+          />
+          {hasFilters && (
+            <div className="flex justify-end">
+              <StudentButton variant="quiet" onClick={clearFilters}>
+                {t("clearFilters")}
+              </StudentButton>
+            </div>
+          )}
+        </div>
       }>
           {historyQuery.isLoading && (
             <RegionState variant="loading" description={t("loading")} minHeight={220} />
@@ -113,7 +127,7 @@ export function ActivityHistoryPage({
           )}
           {historyQuery.isSuccess && history && (
             <div className="space-y-5">
-              <p className="student-label text-foreground">
+              <p className="student-label text-foreground" role="status">
                 {t("resultCount", { count: history.totalElements })}
               </p>
 

@@ -28,7 +28,7 @@ export function ActivityHistoryList({
           leading={<Clock3 className="size-4" aria-hidden="true" />}
           content={
             <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
-              <h3 className="text-sm font-bold text-foreground">
+              <h3 className="text-base font-bold leading-snug text-foreground">
                 {label("session", { id: session.sessionId })}
               </h3>
               <span className="student-chip">{label(`modes.${session.mode}`)}</span>
@@ -37,10 +37,10 @@ export function ActivityHistoryList({
           }
           metadata={
             <div className="space-y-1.5">
-              <p className="text-xs text-muted-foreground">
+              <p className="student-meta text-muted-foreground">
                 {dateFormatter.format(new Date(session.completedAt))}
               </p>
-              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+              <div className="student-meta flex flex-wrap items-center gap-x-3 gap-y-1 text-muted-foreground">
                 <span className="inline-flex items-center gap-1">
                   <Sparkles className="size-3.5 text-success" aria-hidden="true" />
                   {label("questions", {
@@ -61,7 +61,7 @@ export function ActivityHistoryList({
             </div>
           }
           trailing={
-            <span className="whitespace-nowrap text-sm font-bold text-foreground">
+            <span className="student-label whitespace-nowrap text-foreground">
               {session.score == null
                 ? label("noScore")
                 : label("score", { score: Math.round(session.score) })}

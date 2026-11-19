@@ -4,7 +4,8 @@ import { useQuery } from "@tanstack/react-query";
 import { ArrowRight, BookOpen, ClipboardList, RefreshCw, Star } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { RegionState } from "@/components/feedback";
-import { Button } from "@/components/ui/button";
+import { StudentButton } from "@/components/student-ui/student-button";
+import { StudentCollectionEmptyState } from "@/components/student-ui/patterns/student-collection-empty-state";
 import { Pipo } from "@/components/ui/mascot";
 import { StudentIllustration } from "@/components/student-ui/visuals/student-illustration";
 import { PaperSurface } from "@/components/student-ui/paper-surface";
@@ -26,10 +27,10 @@ export function LearningHubHome() {
   );
 
   return (
-    <div className="student-home mx-auto max-w-6xl space-y-10 pb-10">
-      <header className="student-home-hero relative grid items-center gap-7 md:grid-cols-3">
+    <div className="student-home mx-auto max-w-6xl space-y-7 pb-10 sm:space-y-9">
+      <header className="student-home-hero relative grid items-center gap-4 md:grid-cols-3 md:gap-7">
         <span className="student-washi" aria-hidden="true" />
-        <div className="relative z-10 max-w-2xl space-y-4 md:col-span-2">
+        <div className="relative z-10 max-w-2xl space-y-3 md:col-span-2 md:space-y-4">
           <p className="student-meta inline-flex items-center gap-2 text-foreground">
             <Star className="h-4 w-4 text-primary" aria-hidden="true" />
             NHẬT KÝ HỌC TẬP / LEARNUP
@@ -64,9 +65,7 @@ export function LearningHubHome() {
       <section aria-labelledby="learning-hub-units" className="space-y-4">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div className="space-y-1">
-            <p className="student-meta text-muted-foreground">
-              Chương 01
-            </p>
+            <p className="student-meta text-primary">LỘ TRÌNH HỌC TẬP</p>
             <ScrapbookHeading as="h2" id="learning-hub-units" className="student-section-title text-foreground">
               Bài học của bạn
             </ScrapbookHeading>
@@ -82,7 +81,7 @@ export function LearningHubHome() {
           </Link>
         </div>
 
-        <PaperSurface variant="lined" tape className="overflow-visible">
+        <PaperSurface variant="lined" className="overflow-hidden">
           {isLoading ? (
             <div className="space-y-3 p-5" role="status" aria-label="Đang tải danh sách bài học">
               <SkeletonList />
@@ -94,18 +93,17 @@ export function LearningHubHome() {
                 title="Chưa thể tải bài học"
                 description="Hãy thử tải lại danh sách Unit."
                 action={
-                  <Button type="button" variant="secondary" onClick={() => void refetch()}>
+                  <StudentButton variant="secondary" onClick={() => void refetch()}>
                     <RefreshCw className="h-4 w-4" aria-hidden="true" />
                     Thử lại
-                  </Button>
+                  </StudentButton>
                 }
               />
             </div>
           ) : units.length === 0 ? (
-            <div className="space-y-2 p-5">
-              <StudentIllustration id="illustration.no-lessons" decorative className="mx-auto w-32 sm:w-40" />
-              <RegionState
-                variant="empty"
+            <div className="p-5">
+              <StudentCollectionEmptyState
+                illustration="illustration.no-lessons"
                 title="Chưa có bài học nào"
                 description="Khi giáo viên công bố Unit, các bài học sẽ xuất hiện tại đây."
               />
@@ -136,9 +134,8 @@ export function LearningHubHome() {
 
       <PaperSurface
         as="section"
-        variant="kraft"
-        tape
-        className="flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:justify-between"
+        variant="plain"
+        className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6"
         aria-labelledby="learning-hub-assignments"
       >
         <div className="flex items-start gap-3">
@@ -154,7 +151,10 @@ export function LearningHubHome() {
             </p>
           </div>
         </div>
-        <Link href="/student/assignments" className="student-ink-button student-ink-button--outline shrink-0">
+        <Link
+          href="/student/assignments"
+          className="student-control student-control--secondary inline-flex w-full items-center justify-center gap-2 px-4 sm:w-auto"
+        >
           Xem bài được giao <ArrowRight className="h-4 w-4" aria-hidden="true" />
         </Link>
       </PaperSurface>

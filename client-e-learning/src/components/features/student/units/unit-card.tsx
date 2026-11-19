@@ -56,7 +56,7 @@ export function UnitCard({
 
         <Link
           href={`/student/units/${unit.id}`}
-          className="student-control student-control--action mt-auto w-full justify-between"
+          className="student-control student-control--quiet mt-auto w-full justify-between gap-2 px-4"
         >
           <span>Xem phần học</span>
           <ArrowRight className="h-4 w-4" aria-hidden="true" />

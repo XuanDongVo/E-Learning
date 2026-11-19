@@ -39,8 +39,8 @@ export function UnitsView() {
   );
 
   return (
-    <div className="student-units-page space-y-6 pb-8">
-      <PaperSurface as="section" variant="kraft" emphasis="feature" tape tapePosition="right" className="student-units-hero">
+    <div className="student-units-page mx-auto max-w-6xl space-y-5 pb-8 sm:space-y-6">
+      <PaperSurface as="section" variant="kraft" emphasis="accent" className="student-units-hero">
         <StudentPageHeading
           eyebrow="Learning"
           title="Chọn Unit để học"
@@ -106,9 +106,17 @@ export function UnitsView() {
         />
       )}
 
-      {/* ─── Lưới Unit Cards ─── */}
-      {filteredUnits.length > 0 && (
-        <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+      {/* The count comes from the same server-backed Unit list as the cards. */}
+      {!isLoading && !isError && units.length > 0 && (
+        <p className="student-meta text-muted-foreground" role="status">
+          {searchTerm.trim()
+            ? `Hiển thị ${filteredUnits.length}/${units.length} Unit phù hợp`
+            : `${units.length} Unit có thể khám phá`}
+        </p>
+      )}
+
+      {filteredUnits.length > 0 && !isLoading && !isError && (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 sm:gap-5">
           {filteredUnits.map((unit) => (
             <UnitCard key={unit.id} unit={unit} />
           ))}

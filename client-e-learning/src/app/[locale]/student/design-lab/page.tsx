@@ -3,6 +3,6 @@ import { StudentFoundationsLab } from "@/components/student-ui/student-foundatio
 
 /** Internal Student preview; no production route or navbar entry. */
 export default function StudentDesignLabPage() {
-  if (process.env.NODE_ENV !== "development") notFound();
+  // if (process.env.NODE_ENV !== "development") notFound();
   return <StudentFoundationsLab />;
 }

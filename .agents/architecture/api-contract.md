@@ -1,0 +1,264 @@
+> **Status note (2026-10-23):** This document mixes implemented endpoint inventory with accepted target contracts. Sections explicitly marked “target contract, not yet implemented” are not callable API documentation. Verify all endpoint claims against current controllers before client implementation. Formal AssessmentAttempt runtime endpoints are not implemented.
+
+# API Contract
+
+## Authentication and session lifecycle
+
+- Login creates an absolute seven-day session. Refresh rotates cookies without
+  extending the original session deadline.
+- Protected resources accept only JWTs whose `tokenType` is `ACCESS`; refresh JWTs
+  are restricted to `/v1/auth/refresh`.
+- An authenticated user whose current database status is `INACTIVE` receives `403
+  ACCOUNT_INACTIVE`; the response clears the access and refresh cookies.
+- Access authentication failures return `401 INVALID_TOKEN`. The frontend may
+  perform one refresh and replay only the request rejected at the authentication
+  layer, at most once.
+- `/v1/auth/logout` does not require a valid access token. It always attempts token
+  revocation and clears both cookies.
+- Auth cookies remain HttpOnly. Access uses path `/v1`; refresh uses path
+  `/v1/auth`.
+
+## Auth
+JWT access token. Teacher endpoints require TEACHER. Student runtime endpoints require STUDENT and own-session/attempt scope. Never accept owner ids from clients.
+
+`POST /v1/auth/login` accepts `email`, `password`, and optional `expectedRole`
+(`TEACHER` or `STUDENT`). The dedicated login portals always send the expected
+role; a mismatch returns `403 LOGIN_ROLE_MISMATCH` before any auth cookie is set.
+
+## Activity
+GET /v1/activities
+GET /v1/activities/sources
+GET /v1/activities/{id}
+POST /v1/activities
+PUT /v1/activities/{id}
+PATCH /v1/activities/{id}/status
+GET /v1/activities/{id}/readiness
+POST /v1/activities/{id}/preview
+
+Activity create/update/response additionally carries `practiceType`:
+`CLASSIC` or `GUIDED_REASONING`. Existing records are migrated as `CLASSIC`.
+`GUIDED_REASONING` is server-enforced to `mode=LEARNING` and exactly one
+selection strategy, `RANDOM`; readiness, preview and later runtime selection use
+only complete Questions with a READY, revision-matching Guided Definition.
+Guided ActivitySession runtime is an M3 source slice. It creates a separate
+immutable Guided snapshot and never falls through to the Classic projection:
+the public session payload exposes only the current Step until the Final gate
+opens. Verification remains pending.
+
+No current GameTemplate endpoint.
+
+## Assignment
+GET /v1/assignments
+POST /v1/assignments
+GET /v1/assignments/{id}
+PUT /v1/assignments/{id}
+PATCH /v1/assignments/{id}/status
+GET /v1/assignments/{id}/readiness
+GET /v1/assignments/{id}/questions
+POST /v1/assignments/{id}/questions
+PUT /v1/assignments/{id}/questions/{questionId}
+POST /v1/assignments/{id}/questions/bulk-delete
+
+GET /v1/teacher/assignments/summary
+
+The Teacher summary is scoped through the authenticated Teacher's target classes.
+It returns open Assignment count, finalized delivery count (`SUBMITTED` +
+`TIMED_OUT`), overdue incomplete delivery count, due/finalized-due denominators,
+and nullable result rate. A delivery is one distinct published
+`Assignment × active Student` pair. Drafts are excluded.
+
+Assignment exposes show_answers_after_submit. No Release Answers endpoint.
+
+## Student class membership
+- A Student has at most one ACTIVE class membership.
+- `POST /v1/classes/{classId}/members` adds only a Student with no current ACTIVE membership.
+- `POST /v1/classes/{classId}/members/{studentId}/transfer` moves the current membership to the target class and preserves the old row as INACTIVE history.
+- `DELETE /v1/classes/{classId}/members/{studentId}` marks the membership INACTIVE.
+- Class roster responses contain ACTIVE members only.
+
+## Contract rules
+
+### Student Vocabulary FSRS foundation (Phase 02, 2026-11-10)
+
+- `GET /v1/student/vocabulary/overview` (Phase 03 Library): visible published
+  Unit collections for the authenticated Student, each with `unitId,code,name,
+  coverUrl,displayOrder,totalCount,newCount,dueCount,learnedCount`. Counts include
+  ACTIVE words only; `dueCount` excludes never-reviewed NEW words. Students with no
+  visible Units receive an empty list. This is a read-only projection, not a new
+  global vocabulary/FSRS entity or a global review-session endpoint.
+- `GET /v1/student/vocabulary/units/{unitId}/cards`: Student-only, ACTIVE words
+  in a published Unit belonging to the authenticated Student's active-class Grade.
+  Returns Flashcard content plus per-word `state`, `dueAt`, `reviewCount`, `due`.
+  A word with no progress is `NEW`, `due=true`, `dueAt=null`.
+- `POST /v1/student/vocabulary/words/{wordId}/reviews`: body must include a UUID
+  `requestId` (idempotent retry token) and `rating` (AGAIN/HARD/GOOD/EASY).
+  Server computes FSRS `Card`, persists progress and immutable log in one
+  transaction, and returns `wordId,requestId,rating,state,reviewedAt,dueAt,reviewCount`.
+  A repeat of the same requestId/word/rating returns the prior result;
+  reusing its ID for another rating/word returns `409 VOCABULARY_REVIEW_REQUEST_CONFLICT`.
+  A premature review returns `409 VOCABULARY_REVIEW_NOT_DUE`.
+- Vocabulary errors use structured `AppException` with 400/404/409 status and
+  server detail in `ApiResponse.message`. Validation and invalid JSON are 400.
+  Student progress is independent of games, Activity and XP/Streak.
+  See `plans/VOCABULARY_FSRS_PHASE_2_SPEC.md`.
+
+### Teacher Vocabulary Content (Phase 01, 2026-11-10)
+
+- `GET /v1/content/vocabulary/search?unitId={id}&q={text}&limit={n}` searches
+  existing ACTIVE words in the same Grade and returns copy-only authoring
+  candidates with ID, word, meaning, part of speech and Unit context.
+- Create/update/bulk/list/get VocabularyWord payloads support `relatedTerms`:
+  `wordFamilies`, `synonyms`, `antonyms`, each a list of `{term, meaningVi?, partOfSpeech?}`.
+  Related Terms are inline JSONB values, not independent VocabularyWords.
+- When a create/bulk request omits `relatedTerms`, the server stores three empty
+  arrays. When update omits it, existing data is preserved; explicit empty lists
+  clear it. Responses always contain all three lists.
+- The pre-existing quick text bulk-create route is unchanged. CSV file import
+  remains out of scope. See `plans/VOCABULARY_CONTENT_PHASE_1_SPEC.md`.
+
+- AssignmentQuestion has no position. The canonical Assignment Builder and student runtime use Composition section/item/member position; question_id ASC is only legacy backfill/compatibility order.
+- AssignmentQuestion has no position.
+- Activity preview does not create ActivitySession state.
+- Multiple Activity strategies require student runtime choice; ActivitySession stores it.
+- Try Hard timer is per question.
+- Assignment timer is whole Attempt.
+- Post-submit Assignment answer visibility follows show_answers_after_submit.
+
+## Error vocabulary
+Common: INVALID_REQUEST, INTERNAL_ERROR, UNAUTHORIZED, FORBIDDEN, INVALID_TOKEN, ACCOUNT_INACTIVE.
+Activity: ACTIVITY_NOT_FOUND, SOURCE_NOT_FOUND, DUPLICATE_SOURCE, NO_SOURCE_SELECTED, SOURCE_NOT_PUBLISHED, SOURCE_EMPTY, DISTRIBUTION_NOT_DIVISIBLE, PERCENTAGE_INVALID, ALLOCATION_ZERO, FIXED_COUNT_INVALID, INSUFFICIENT_QUESTION_POOL, TRY_HARD_TIMER_REQUIRED, TRY_HARD_LIVES_REQUIRED, ACTIVITY_NOT_READY, INVALID_STATUS_TRANSITION, PREVIEW_NOT_READY.
+Assignment/Attempt codes must be verified against ErrorCode.java before implementation.
+
+
+## Activity Session Runtime
+POST /v1/activities/{activityId}/sessions
+GET /v1/activities/{activityId}/sessions?page={page}&size={size}&period={ALL|TODAY|LAST_7_DAYS|LAST_30_DAYS}&mode={LEARNING|TRY_HARD}&status={COMPLETED|GAME_OVER|ABANDONED}
+GET /v1/activities/{activityId}/session-options
+GET /v1/activity-sessions/{sessionId}
+POST /v1/activity-sessions/{sessionId}/questions/{sessionQuestionId}/answer
+POST /v1/activity-sessions/{sessionId}/questions/{sessionQuestionId}/hint
+POST /v1/activity-sessions/{sessionId}/questions/{sessionQuestionId}/steps/{stepKey}/answer
+POST /v1/activity-sessions/{sessionId}/questions/{sessionQuestionId}/steps/{stepKey}/hint
+POST /v1/activity-sessions/{sessionId}/finish
+GET /v1/activity-sessions/{sessionId}/result
+GET /v1/activity-sessions/{sessionId}/review
+
+The Student Activity history route returns only the authenticated Student's
+terminal sessions for the requested Activity, newest completion first, in the
+standard 1-indexed `PageResponse`. `mode` and terminal `status` are optional;
+`IN_PROGRESS` is rejected with `ACTIVITY_SESSION_HISTORY_STATUS_INVALID`.
+The server validates that the Activity exists and that the Student still has
+Grade access. Each row contains its `sessionId`, which is the only link to the
+standalone Review endpoint.
+
+The terminal Activity Result includes nullable `xpReward` and `xpQuestions`.
+`xpReward` is an immutable server receipt (`questionXp`, `completionBonus`,
+`committedXp`, `levelBefore`, `lifetimeXpAfter`, `levelAfter`, `finalizedAt`). It
+is `null` for legacy or rollout-disabled sessions; reading this endpoint never
+calculates or commits XP. `xpQuestions` contains only persisted resolved-question
+audit values and is empty when no finalized reward exists.
+
+The Student Review endpoint returns the complete ordered Session projection in
+one response with `questions[]`. It requires ownership. Persisted Step and Final
+attempts are returned in attempt order. Correct answers and explanations are
+included only for a resolved Session Question; unfinished Guided questions omit
+future Steps and pre-gate Final content. Historical questions with business
+attempts but no V62 Final-attempt rows use `LEGACY_UNAVAILABLE` and never receive
+a reconstructed submitted answer.
+
+ActivitySession start accepts optional `mode` and `selectionStrategy`; both are required only when the
+Activity exposes more than one choice. The start response includes the complete selected question set without
+correct answers, accepted answers or explanations. Activity answers are evaluated
+server-side. New Classic and Guided Final submissions include a stable UUID
+`requestId` and are persisted as immutable Activity attempt history.
+
+Classic start responses return the selected question set. Guided public responses
+contain only each Question's current Step (without correct flags, answer keys,
+explanation or pre-gate Final content). Step answer requests include a
+UUID `requestId`; replaying the same id and payload is idempotent, while a
+different payload is rejected. Final answers follow the same rule; replay can
+return its stored outcome even after that submission made the Session terminal.
+
+Ordering is supported as a Classic Question and as a Guided Final only. Before
+the Guided Final gate, its type, prompt, hint and ordered items are absent. After
+the gate, the Question projection includes `ordering: { subtype, items[] }` and
+Final submit uses `{ answer: { order: [itemKey, ...] } }`. Resolved Review returns
+the frozen public items, persisted ordered attempts and at most one typed sample
+accepted order; accepted-order sets remain server-only. Guided Steps do not
+support Ordering.
+
+## Student Gamification (Streak / Level)
+
+GET /v1/student/gamification/profile — own Lifetime XP, Level, XP-to-next, current effective Streak, longest Streak and qualification status.
+GET /v1/student/gamification/streak — own run dates, timezone, four milestone amounts/ledger-awarded indicators, plus todayDate, weekStartDate and qualifiedDates (server-local Monday–Sunday dates).
+
+Both endpoints require `ROLE_STUDENT`; student id comes only from the JWT, never a request parameter. There is no Streak claim/write API. XP and Streak are committed by the Activity completion workflow. Leaderboard remains demo-only until its own implementation phase.
+
+
+## Question contract / security boundary
+
+- Existing Question authoring/runtime contracts are implemented as they exist in code; this document does not approve a new QuestionSpec wire format or add new public endpoints.
+- Teacher authoring responses may include correctness and accepted-answer details. Never reuse a teacher authoring DTO as a student runtime DTO.
+- Student runtime payloads must not expose correctness flags, accepted answers, normalized values, or explanations before the corresponding Practice/review rule allows them. Hint content is returned through the explicit hint action so use can be recorded.
+- ActivitySession uses the session endpoints above; do not reintroduce the legacy polymorphic `/v1/attempts/{id}` API from the historical tail of the old Phase 7 draft.
+- Accepted Question Engine domain contract: see `.agents/architecture/question-engine-v1.md` and ADR 0023 (lifecycle refined by ADR 0025; Assignment scoring/display refined by ADR 0026). The discriminated QuestionSpec contract is accepted, but the new implementation/wire DTOs are not yet delivered; do not represent planned endpoints as current routes.
+
+## Guided Reasoning authoring (M1 implemented)
+
+- `POST /v1/content/questions/bulk-with-guided` — atomic Bulk Composer write.
+  Each item has `draftId`, `question` (the normal create payload), and an
+  optional `guidedDefinition` draft. On any validation failure the whole request
+  rolls back; success returns `draftId` mapped to the created Question.
+
+Teacher-only endpoints under the existing `/v1/content/**` security boundary:
+
+- `GET /v1/content/questions/{questionId}/guided`
+- `PUT /v1/content/questions/{questionId}/guided` — saves a DRAFT with required
+  `expectedVersion`; first save uses version `0`.
+- `POST /v1/content/questions/{questionId}/guided/validate` — validates the
+  current version and marks it READY only when all rules pass; otherwise returns
+  `ready=false` and path-addressable issues without changing the Draft.
+- `DELETE /v1/content/questions/{questionId}/guided`
+- `GET /v1/content/guided/capabilities`
+
+Guided authoring is only for Question Bank Questions. It supports `SINGLE_CHOICE`,
+`TRUE_FALSE` and `TYPE_ANSWER` Steps, while a READY definition requires a complete
+supported Final Question and one or more ordered Steps. The authoring DTO contains
+answer keys and must never be reused by a Student runtime projection. Activity
+selection and M3 Student session runtime are implemented as source slices;
+review remains M4. The Student Step projection is separate from this authoring
+DTO and never contains answer keys or explanations.
+
+
+## Assignment Composition and AssessmentAttempt — accepted target contract, not yet implemented
+
+Canonical model: .agents/architecture/assignment-composition-v1.md. Phase 7B responsibilities (not claims of current routes): read/write ordered composition; validate readiness/publish; start/get/save/submit/get result for AssessmentAttempt; teacher reporting by student and question/part with normalized wrong-answer distributions and CSV/Excel export. Server owns timer, eligibility, scoring and immutable snapshot. Do not ship routes before request/response schemas and security are reviewed. Student in-progress DTOs never expose correct/accepted/normalized answers; after submit, show_answers_after_submit governs reveal. Automatic grading runs on submit/timeout; no manual grading workflow exists in v1.
+
+
+## Assignment score visibility
+
+The server calculates and persists the Assignment score on submit/timeout regardless of `show_score_after_submit`. That boolean controls whether the student is shown the score immediately. `show_answers_after_submit` is a separate switch for correct answers and explanations. These are two independent response-projection policies. Scored questions default to 1 point; a teacher may customize possible points per Assignment item. Compound parts default to equal allocation with editable per-part points that must sum to the aggregate question points.
+
+## Leaderboard (implemented read-only contract)
+
+- `GET /v1/student/gamification/leaderboard?metric=XP&period=TODAY|WEEK|MONTH|ALL`: leaderboard XP aggregated from `xp_transactions` for the selected Ho Chi Minh calendar interval. For `metric=STREAK`, period is always ALL and the ranking uses effective current Streak. Sort value descending then student ID ascending; return top 50 + currentStudent rank even outside top 50. `totalStudents` includes active students, even with zero score.
+- `GET /v1/student/gamification/leaderboard/honors`: all-time lifetime XP champion and longest-ever Streak champion among active students; no influencer/ambassador badge.
+- `GET /v1/student/gamification/leaderboard/recent-activity?limit=8`: latest terminal `ActivitySession` rows (COMPLETED or GAME_OVER), status, Activity name, optional earned PRACTICE XP; no fabricated level-up or share events.
+- Authenticated student only. Student ID from JWT for self rank; no client mutation or XP claims. No new migration.
+# Vocabulary FSRS review preview (2026-11-11)
+
+- `GET /v1/student/vocabulary/words/{wordId}/review-preview` requires an authenticated Student with access to the word's published Unit; returns `{ wordId, dueAtByRating: { AGAIN, HARD, GOOD, EASY } }` in the standard `ApiResponse` envelope. It does not mutate review progress.
+- Initial HARD/GOOD/EASY ratings persist 6h/12h/1d respectively and initialize Java-FSRS Card state. Subsequent review timestamps come from the library. Learn `Học lại` stays client-only; Review `AGAIN` is a server rating that follows ADR 0037/V65 and returns the word to Learn through `needsRelearning` while preserving its review log.
+
+## Vocabulary Library and all-DUE Review (backend implemented 2026-11-18)
+
+- ADR 0037 and `plans/VOCABULARY_LIBRARY_DUE_REVIEW_SPEC.md` are authoritative.
+- Library Summary plus Learned/Due/Waiting browse reads are cross-source Student
+  reads. Browse lists are paginated; classification is server-time authoritative.
+- `GET /v1/student/vocabulary/review-queue` returns the complete, non-paginated,
+  full-detail DUE snapshot. Pagination, search and current source presentation do
+  not narrow it, and the server must not silently truncate it.
+- Vocabulary preview, Library, Queue and rating writes share a Vocabulary-owned
+  Student access policy. Its current result is the existing published-Unit and
+  current-Grade rule; the API/domain boundary does not make Unit the permanent
+  vocabulary source abstraction.

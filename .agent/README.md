@@ -13,7 +13,7 @@
 7. `plans/PHASES.md` and the active phase specification.
 8. One active task plan, if one exists.
 9. Relevant UI blueprint and Definition of Done checklist.
-10. For Student UI, always read `ui/INDIE_ILLUSTRATED_SCRAPBOOK_DESIGN_SYSTEM.md` and ADR 0032; frontend design skill cannot override these decisions.
+10. For Student UI, always read `ui/INDIE_ILLUSTRATED_SCRAPBOOK_DESIGN_SYSTEM.md`, ADR 0032 and [`ui/STUDENT_UI_GOVERNANCE.md`](./ui/STUDENT_UI_GOVERNANCE.md); frontend design skill cannot override these decisions. Copy [`Student Page Brief`](./ui/templates/STUDENT_PAGE_BRIEF_TEMPLATE.md) for a new route or material redesign.
 
 ## Authority rules
 

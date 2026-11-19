@@ -25,7 +25,7 @@ match your task before changing anything.
 | A phase or module | [`plans/PHASES.md`](./.agent/plans/PHASES.md) and that phase's spec in `plans/` |
 | Activities (Phase 4) | [`plans/E-LEARNING_PHASE_4_ACTIVITIES_SPEC.md`](./.agent/plans/E-LEARNING_PHASE_4_ACTIVITIES_SPEC.md) |
 | Any UI, layout, color, component | [`ui/UI_ARCHITECTURE_GUIDELINES.md`](./.agent/ui/UI_ARCHITECTURE_GUIDELINES.md), [`ui/screens.md`](./.agent/ui/screens.md) |
-| **Any Student UI or Student-related shared component** | **Also read** [`ui/INDIE_ILLUSTRATED_SCRAPBOOK_DESIGN_SYSTEM.md`](./.agent/ui/INDIE_ILLUSTRATED_SCRAPBOOK_DESIGN_SYSTEM.md) and [ADR 0032](./.agent/decisions/0032-student-indie-scrapbook-visual-system.md) before designing or editing |
+| **Any Student UI or Student-related shared component** | **Also read** [`ui/INDIE_ILLUSTRATED_SCRAPBOOK_DESIGN_SYSTEM.md`](./.agent/ui/INDIE_ILLUSTRATED_SCRAPBOOK_DESIGN_SYSTEM.md), [ADR 0032](./.agent/decisions/0032-student-indie-scrapbook-visual-system.md) and [`ui/STUDENT_UI_GOVERNANCE.md`](./.agent/ui/STUDENT_UI_GOVERNANCE.md) for the change/review workflow |
 | Student Profile | [`ui/STUDENT_PROFILE_BLUEPRINT.md`](./.agent/ui/STUDENT_PROFILE_BLUEPRINT.md) |
 | Frontend code | [`architecture/frontend.md`](./.agent/architecture/frontend.md) |
 | Backend code, database, migrations | [`architecture/backend.md`](./.agent/architecture/backend.md) |
@@ -54,6 +54,7 @@ exists today. **If two documents disagree, stop and ask**, then record the answe
 - **Real APIs only.** No permanent mock data for a module whose backend contract exists.
 - **Every data screen handles** loading, empty, error, disabled and success states.
 - **UI uses approved tokens and shared components only.** No raw colors, arbitrary sizes or unapproved visual styles. Student uses Indie Illustrated Scrapbook exclusively (ADR 0032); Teacher retains its existing visual direction. Student style changes must not leak into Teacher.
+- **Student UI governance:** For new Student pages or material visual redesigns, complete the Screen + Page Visual Brief, select an existing archetype, inspect shared patterns/assets and document actual review evidence (see `.agent/ui/STUDENT_UI_GOVERNANCE.md`). Small bugfixes follow the shorter path documented there.
 - **No secrets** in code, logs or commits. Do not change authentication behavior unless the task requires it.
 - **Git:** keep changes focused; never reset, delete or rewrite others' work; no force pushes.
 - **Do not claim completion without validation.** Run what applies and say what you could not run.

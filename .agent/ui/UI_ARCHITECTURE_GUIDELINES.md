@@ -36,7 +36,7 @@ States covered:  loading, empty, error, disabled, success (Section 6.10)
 
 If the brief cannot be written, the screen is not ready to be designed.
 
-**Student v2 extension (Phase 1 proposal):** Also select a Student archetype from [STUDENT_PAGE_ARCHETYPES.md](./STUDENT_PAGE_ARCHETYPES.md) and write the [Page Visual Brief](./STUDENT_VISUAL_STORYTELLING.md#8-page-visual-brief-required-for-new-student-screens): visual purpose, existing asset reuse, Pipo usage (if appropriate), mobile fallbacks, alt text, states and motion. A high-focus Assessment may intentionally omit decorative imagery. Do not apply this Student-only illustration requirement to Teacher.
+**Student v2 extension:** For new Student pages or material redesigns, select an archetype from [STUDENT_PAGE_ARCHETYPES.md](./STUDENT_PAGE_ARCHETYPES.md) and complete a [Page Visual Brief](./STUDENT_VISUAL_STORYTELLING.md#8-page-visual-brief-required-for-new-student-screens): visual purpose, existing asset reuse, Pipo usage (if appropriate), mobile fallbacks, alt text, states and motion. A high-focus Assessment may intentionally omit decorative imagery. Follow [Student UI Governance](./STUDENT_UI_GOVERNANCE.md) for when a full brief is required, the smaller bugfix path, PR evidence and review exceptions; use the [copyable template](./templates/STUDENT_PAGE_BRIEF_TEMPLATE.md). Do not apply Student-specific illustration requirements to Teacher.
 
 ---
 

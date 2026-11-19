@@ -42,7 +42,7 @@ export function UnitsView() {
     <div className="student-units-page mx-auto max-w-6xl space-y-5 pb-8 sm:space-y-6">
       <PaperSurface as="section" variant="kraft" emphasis="accent" className="student-units-hero">
         <StudentPageHeading
-          eyebrow="Learning"
+          eyebrow="BÀI HỌC"
           title="Chọn Unit để học"
           description="Khám phá phần học và hoạt động luyện tập do giáo viên công bố."
           artwork={<Pipo mood="happy" size={92} color="primary" stage={2} />}

@@ -66,7 +66,7 @@ export function StudentVocabularyLibrary() {
         className="student-vocab-library-hero space-y-3 p-5 sm:p-7"
       >
         <StudentPageHeading
-          eyebrow="MY VOCABULARY NOTEBOOK"
+          eyebrow="SỔ TAY TỪ VỰNG"
           title="Sổ tay từ vựng"
           description="Tìm bộ từ theo Unit, bắt đầu học hoặc ôn những từ đến hạn."
           artwork={<StudentIllustration id="scene.open-notebook" decorative className="w-28 lg:w-36" />}
@@ -129,7 +129,7 @@ export function StudentVocabularyLibrary() {
           description="Các Unit được công bố sẽ xuất hiện tại đây."
         />
       )}
-      {!overview.isLoading && !overview.isError && units.length > 0 && (
+      {overview.isSuccess && units.length > 0 && (
         <section className="space-y-4" aria-labelledby="vocab-library-title">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div className="space-y-1">
@@ -193,6 +193,7 @@ export function StudentVocabularyLibrary() {
               }
             />
           )}
+          {visible.length > 0 && (
           <div className="student-vocab-library-grid">
             {visible.map((unit) => (
               <PaperSurface
@@ -259,6 +260,7 @@ export function StudentVocabularyLibrary() {
               </PaperSurface>
             ))}
           </div>
+          )}
         </section>
       )}
     </main>

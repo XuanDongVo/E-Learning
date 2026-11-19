@@ -147,15 +147,14 @@ export function StudentVocabularyWordLibrary() {
         ) : null}
       </PaperSurface>
 
-      <StudentCollectionPanel separator={false} ariaLive="polite" toolbar={
+      <StudentCollectionPanel separator={false} toolbar={
         <>
-          <div role="tablist" aria-label={t("tabsLabel")} className="flex flex-wrap gap-2 border-b border-dashed border-border pb-3">
+          <div role="group" aria-label={t("tabsLabel")} className="flex flex-wrap gap-2 border-b border-dashed border-border pb-3">
           {STATUSES.map((item) => (
             <button
               key={item}
               type="button"
-              role="tab"
-              aria-selected={status === item}
+              aria-pressed={status === item}
               onClick={() => changeStatus(item)}
               className={`student-control px-4 ${status === item ? "student-filter-active" : "student-control--quiet"}`}
             >
@@ -196,7 +195,7 @@ export function StudentVocabularyWordLibrary() {
           ) : null}
           {listQuery.isSuccess && result ? (
             <div className="space-y-4">
-              <p className="student-label text-foreground">{t("resultCount", { count: result.totalElements })}</p>
+              <p className="student-label text-foreground" role="status">{t("resultCount", { count: result.totalElements })}</p>
               {result.items.length === 0 ? (
                 <StudentCollectionEmptyState
                   illustration={search ? "illustration.no-results" : null}

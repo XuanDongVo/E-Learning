@@ -5,7 +5,7 @@ import { teacherKnowledgeNoteService } from "@/services/teacher/content/knowledg
 import { KNOWLEDGE_NOTE_KEYS } from "@/services/knowledge-note-query-keys";
 import type { TeacherKnowledgeNoteListFilters } from "@/types/knowledge-note";
 
-/** Phase 03 hook shell. Queries remain disabled until server business logic is ready. */
+/** Hook shells remain disabled until backend Phase 01. */
 export function useTeacherKnowledgeNotes(filters: TeacherKnowledgeNoteListFilters = {}) {
   return useQuery({
     queryKey: KNOWLEDGE_NOTE_KEYS.teacherList(filters),
@@ -13,10 +13,10 @@ export function useTeacherKnowledgeNotes(filters: TeacherKnowledgeNoteListFilter
     enabled: false,
   });
 }
-export function useTeacherKnowledgeNoteDraft(noteId: number) {
+export function useTeacherKnowledgeNoteContent(noteId: number) {
   return useQuery({
-    queryKey: KNOWLEDGE_NOTE_KEYS.teacherDraft(noteId),
-    queryFn: async () => (await teacherKnowledgeNoteService.getDraft(noteId)).data,
+    queryKey: KNOWLEDGE_NOTE_KEYS.teacherContent(noteId),
+    queryFn: async () => (await teacherKnowledgeNoteService.getContent(noteId)).data,
     enabled: false,
   });
 }

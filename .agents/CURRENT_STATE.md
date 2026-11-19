@@ -1,3 +1,6 @@
+## Knowledge Note simplification (2026-11-19)
+Knowledge Note now targets **two effective tables** after V67: knowledge_notes (current JSON content, summary, status) and knowledge_note_topic_links. Draft/Revision entities are removed. Canonical specs: docs/knowledge-note v3.2. Existing API and UI shells still return 501 / disabled. Do not claim feature implementation. Schema migration must be tested on PostgreSQL before deployment.
+
 ## Knowledge Note scaffold — 2026-11-19 (feature/guided-reasoning-v1)
 
 V66 schema and JPA/DTO/repository/controller/service skeleton exist. Knowledge Note routes currently fail closed (HTTP 501) and UI routes only show a not-yet-implemented shell. Teacher/Student navigation and existing Unit/Topic views are intentionally not wired to the unfinished feature. See docs/knowledge-note/IMPLEMENTATION_SCAFFOLD.md for exact scope. No Knowledge Note business feature is implemented yet.

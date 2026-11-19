@@ -1,76 +1,47 @@
-# Knowledge Note — End-to-End Scaffold & Phase Implementation Plan
+# Knowledge Note — Simple MVP scaffold (v3.2)
 
-**Branch:** `feature/guided-reasoning-v1`  
-**Baseline:** SRS / FRS / UI/UX v3.1 and ADR 0038  
-**Status:** Skeleton only. No Knowledge Note business functionality implemented.
+Branch: `feature/guided-reasoning-v1`  
+Status: **Scaffold only — no business feature implemented**
 
-## Why V66 is included now
-The project configures `spring.jpa.hibernate.ddl-auto=validate`. Registering annotated entities without matching tables would break server startup. Therefore V66 is an **executable structural migration**, included with the scaffolding. It creates only the four specified tables and constraints; it does not seed notes, expose data or implement any business behavior. Flyway will run V66 automatically when this branch boots against an eligible DB. Review before deploying.
+## Approved structure
+Two effective tables:
+- `knowledge_notes`: independently Grade-scoped Note, metadata, current document JSON, optional summary JSON, schema/edit version, lifecycle status.
+- `knowledge_note_topic_links`: optional many-to-many Topic associations, unique pair and at most one Primary per Topic (not required).
 
-## Server package
+No KnowledgeNoteDraft or KnowledgeNoteRevision entity, repository, DTO or API. No category, cover/media or image block in MVP. Published saves become visible immediately; warn Teacher before editing/saving a Published Note, or use Unpublish → Edit → Publish.
+
+## Flyway migration policy
+- `V66__knowledge_note_foundation.sql`: previous scaffold migration; **do not rewrite**, since Flyway may have recorded its checksum.
+- `V67__simplify_knowledge_notes.sql`: removes initial Draft/Revision tables, published revision FK and adds direct JSON fields to `knowledge_notes`. An existing database runs V66 then V67, a fresh database also runs both.
+- V67 drops the provisional tables. Although Knowledge Note APIs have always returned HTTP 501, review database contents/backup first if any out-of-band data was inserted. PostgreSQL migration tests remain pending.
+
+## Server source
 `server/src/main/java/e_learning/server/content/knowledge/`
-- `enums/KnowledgeNoteStatus.java`
-- `entity/KnowledgeNote.java` — Grade-scoped independent metadata
-- `entity/KnowledgeNoteDraft.java` — mutable JSONB editor state
-- `entity/KnowledgeNoteRevision.java` — immutable published snapshot target
-- `entity/KnowledgeNoteTopicLink.java` — optional M:N, per-Topic Primary
-- `repository/*Repository.java` — four typed Spring Data JPA interfaces
-- `access/KnowledgeNoteAccessPolicy.java` — pending server authorization seam, fails closed
-- `validation/KnowledgeNoteDocumentValidator.java` — pending allowlisted JSON validation seam, fails closed
-- `mapper/KnowledgeNoteMapper.java` — pending Teacher DTO projection seam, fails closed
-- `dto/*.java` — Teacher/Student request/response contracts and paging
-- `service/KnowledgeNoteAuthoringService.java`
-- `service/KnowledgeNoteTopicLinkService.java`
-- `service/StudentKnowledgeNoteService.java`
-- `service/KnowledgeNotePhaseGate.java` — **explicit 501, no data returned**
-- `controller/TeacherKnowledgeNoteController.java`
-- `controller/TeacherTopicKnowledgeNoteController.java`
-- `controller/StudentKnowledgeNoteController.java`
-- `db/migration/V66__knowledge_note_foundation.sql`
+- entity: `KnowledgeNote`, `KnowledgeNoteTopicLink`.
+- repository: matching JPA repositories.
+- dto: `CreateKnowledgeNoteRequest`, `UpdateKnowledgeNoteMetadataRequest`, `SaveKnowledgeNoteContentRequest`, `KnowledgeNoteContentResponse`, `KnowledgeNoteResponse`, `StudentKnowledgeNoteResponse`, link/pagination/list contracts.
+- controller: Teacher authoring, Teacher Topic links, Student read.
+- service: Authoring, TopicLink, Student read, PhaseGate (HTTP 501).
+- access, validation and mapper seams — fail closed until implemented.
 
-The `KNOWLEDGE_NOTE_NOT_IMPLEMENTED` error code uses the existing `AppException` contract and emits HTTP **501**, not fake 200 data. Controller route wiring is present but cannot create, read, publish, attach or mutate any Note.
+Teacher: `GET/PUT /v1/content/knowledge-notes/{id}/content`. No `/draft` or `/revisions` endpoints. Student read API names unchanged.
 
-## Frontend packages
-- `src/types/knowledge-note.ts`: document JSON, Note, Draft, Revision, links, filters, Student projections.
-- `src/services/teacher/content/knowledge-note.service.ts`: typed Teacher requests and Topic-link endpoints.
-- `src/services/student/student-knowledge-note.service.ts`: typed Student read requests.
-- `src/services/knowledge-note-query-keys.ts`: React Query key factory.
-- `src/hooks/knowledge-note/`: Teacher/Student typed query hook shells with `enabled:false` until corresponding phases.
-- `src/components/features/knowledge-note/knowledge-document-renderer.tsx`: safe renderer boundary placeholder (must not render raw HTML).
-- `src/components/features/teacher/knowledge-notes/`: T01 Management, T02 Editor, T03 Preview, T04 Topic linking, shared layout.
-- `src/components/features/student/knowledge/`: S01 Library, S03 Reader, S02 Topic Quick Summary slot.
+## Client source
+- `src/types/knowledge-note.ts`: `KnowledgeNote`, `KnowledgeNoteContent`, `SaveKnowledgeNoteContentRequest`, TopicLink and Student contracts.
+- `src/services/teacher/content/knowledge-note.service.ts`: `getContent`, `saveContent`, lifecycle and Topic links.
+- `src/services/student/student-knowledge-note.service.ts`: Student Library/Reader/Topic requests.
+- `src/services/knowledge-note-query-keys.ts`; `src/hooks/knowledge-note/*` (disabled).
+- Teacher shells T01 Management, T02 Editor, T03 Preview, T04 Topic links.
+- Student shells S01 Library, S02 Topic summary, S03 Reader.
+- Routes: Teacher `/teacher/content/knowledge-notes`, `/new`, `/[noteId]/edit`; Student `/student/knowledge`, `/[noteId]` (locale prefix provided by Next routing).
+- Menu integration and Topic embedded mounts remain intentionally off until backend phases are implemented; no fake business success.
 
-### Route shells (accessible directly but not linked from navigation)
-- `/[locale]/teacher/content/knowledge-notes`
-- `/[locale]/teacher/content/knowledge-notes/new`
-- `/[locale]/teacher/content/knowledge-notes/[noteId]/edit`
-- `/[locale]/student/knowledge`
-- `/[locale]/student/knowledge/[noteId]`
+## Implementation phases
+1. **Phase 01:** apply/test V66+V67 on disposable PostgreSQL; JPA validation; implement Teacher CRUD/content save with `baseVersion` optimistic locking, publish/unpublish, linking/Primary atomic updates, security and Student authorization policy. Replace HTTP 501 per completed endpoint.
+2. **Phase 02:** Word-like editor, allowlisted JSON validation, Summary and structured learning blocks, save status and warning when editing Published Notes.
+3. **Phase 03:** Teacher Management/Preview/Linking interactions and Topic integration.
+4. **Phase 04:** Student Library/Reader/Topic summary, grade-authorized real API reads and Navbar.
+5. **Phase 05:** integration, accessibility, mobile, security and regression.
 
-**Deliberate integration gate:** Do not add menu entries or mount T04 into `TopicDetail` and S02 into `UnitDetailView` until relevant services are implemented. This preserves existing learning flows and prevents misleading calls to 501. The shells contain no fake content, fake saves or active controls.
-
-## Phase gates (not yet implemented)
-| Phase | Ownership | Required work to mark implemented |
-|---|---|---|
-| 01 — Foundation | Backend | Validate V66 against disposable DB; access-policy/authorization and grade checks; create, Draft save with optimistic locking, revisions and atomic publish/unpublish; link CRUD/Primary transaction rules; security tests and API contract tests; remove 501 per completed endpoint |
-| 02 — Editor | Frontend + server schema | Choose rich-text engine, allowlisted versioned JSON, structured learning blocks, paste sanitization, Summary editor, reliable draft save, conflict and unsaved-change flow |
-| 03 — Teacher UX | Frontend | Management list/search/filter, metadata editor, topic picker, primary/reorder/unlink, Student preview/publish, error/loading/empty states; integrate T04 into Teacher Topic Detail |
-| 04 — Student UX | Frontend + backend | Grade-restricted Student list/detail/topic queries and tests; Student Library, Reader and renderer, S02 in UnitDetailView after one Topic is selected; back-context retention and Navbar link |
-| 05 — QA | End-to-end | Auth, content safety, repeated links, concurrent Primary, published/draft isolation, accessibility, mobile responsiveness, regression and build/test results |
-
-## Database constraints and deliberately deferred behavior
-- `knowledge_notes` has **no** `topic_id`, `category`, `cover_media_id` or `media_id`.
-- `knowledge_note_topic_links` is optional M:N and indexes enforce **at most one** Primary per Topic (not required).
-- Published revision ownership is protected by composite FK; service-level revision immutability still required.
-- Summary required for a Note linked as Primary at publish time; optional otherwise (validation pending Phase 01).
-- Unlinked published Note must be visible to authorized Grade students (query pending Phase 04).
-- Cross-Grade linking prohibited (service validation pending Phase 01).
-- Image/media block, DOCX, AI, XP and Mistake Notebook are **out of scope**.
-
-## Verification and limitations
-The GitHub connector can write and inspect the committed Git tree but cannot execute a Maven build, Next.js build, test suite or apply Flyway migration in this workspace. This is **source scaffolding only**, not verified runtime functionality. Before implementing Phase 01, run:
-```bash
-cd server && ./mvnw test
-cd ../client-e-learning && npm run lint && npm run build
-```
-Also validate V66 and Spring JPA schema with a disposable PostgreSQL DB (never assume running migrations against production is safe).
+## Verification
+Committed Git-tree/source inspection only. No Maven/Next builds or Flyway tests executed from GitHub connector. Before enabling feature, run `./mvnw test` in server, `npm run lint && npm run build` in client and verify V66→V67 on a disposable PostgreSQL database.

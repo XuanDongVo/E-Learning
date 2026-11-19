@@ -9,9 +9,9 @@ export function TeacherKnowledgeNoteEditor({ noteId }: { noteId?: number }) {
       description="Editor dạng tài liệu, kèm các learning block. Không có Category hoặc Media trong MVP."
     >
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-md border bg-card p-3">
-        <span className="text-sm text-muted-foreground">Chưa lưu • Chức năng đang phát triển</span>
+        <span className="text-sm text-muted-foreground">Chưa có dữ liệu • Chức năng đang phát triển</span>
         <div className="flex gap-2">
-          <button type="button" disabled className="rounded-md border px-3 py-2 text-sm opacity-60">Lưu nháp</button>
+          <button type="button" disabled className="rounded-md border px-3 py-2 text-sm opacity-60">Lưu</button>
           <button type="button" disabled className="rounded-md border px-3 py-2 text-sm opacity-60">Xem trước</button>
           <button type="button" disabled className="rounded-md border px-3 py-2 text-sm opacity-60">Công bố</button>
         </div>

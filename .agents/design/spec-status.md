@@ -18,7 +18,7 @@ This file is a drift register, not a historical audit. Accepted ADRs define inte
 | D-08 | Answer reveal is independent from score visibility | `show_answers_after_submit` and `show_score_after_submit` exist | Configuration implemented; AssessmentAttempt runtime not implemented |
 | D-09 | Activity lifecycle is server-enforced | Activity service enforces transition rules | Implemented |
 | D-10 | Topic formula/reference sheet deferred | No active implementation requirement | Implemented as deferral |
-| D-13 | Independent Knowledge Note and optional Topic links (ADR 0038) | V66 schema, entity/DTO/repository, API 501 contracts, TS types/services and page shells exist | Scaffold only; business behavior not implemented |
+| D-13 | Independent Knowledge Note and optional Topic links (ADR 0038 amended) | V66+V67 forward migration, 2 effective entities and links, HTTP 501 API contracts, TS types/services and page shells | Scaffold only; v3.2 single-current-document policy; not implemented |
 | D-11 | Question hint is optional | Hint exists and Activity Practice hint endpoint uses it | Implemented; full authoring round-trip still requires verification |
 | D-12 | No fabricated dashboard metrics | Dashboard work uses real/future data boundary | Implemented baseline |
 

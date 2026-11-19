@@ -1,3 +1,9 @@
+## 2026-11-19 — Simplify Knowledge Note scaffold to one current document
+- Owner removed Draft/Revision from MVP. New V67 forward migration removes the two preliminary V66 tables and moves document/summary JSON into knowledge_notes; knowledge_note_topic_links remains.
+- Updated entity, DTO, Teacher content endpoints/client types/hook, and canonical SRS/FRS/UIUX v3.2. 501 feature gate remains; no functional API enabled.
+- Live editing of PUBLISHED content will be immediately visible to Student; UI must warn before save. Unpublish before edits to stage changes.
+- GitHub source-only validation performed; Maven/Next build and PostgreSQL migration not executed.
+
 ## 2026-11-19 — Knowledge Note end-to-end scaffold on feature/guided-reasoning-v1
 
 - Added V66 baseline Flyway schema (KnowledgeNote, Draft, Revision, TopicLink); JPA entities and Spring Data repositories.

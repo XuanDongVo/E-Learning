@@ -1,7 +1,5 @@
-/** Knowledge Note v3.1 contracts. No category, media or Topic ownership in MVP. */
+/** Knowledge Note simple MVP: one current document, no Draft/Revision entities. */
 export type KnowledgeNoteStatus = "DRAFT" | "PUBLISHED" | "UNPUBLISHED" | "ARCHIVED";
-
-/** Parsed/validated on the server; client may not render arbitrary HTML. */
 export interface KnowledgeDocumentNode {
   type: string;
   attrs?: Record<string, string | number | boolean | null>;
@@ -19,29 +17,18 @@ export interface KnowledgeNote {
   title: string;
   description: string | null;
   status: KnowledgeNoteStatus;
-  publishedRevisionId: number | null;
   linkedTopicCount: number;
-  hasUnpublishedChanges: boolean;
   createdAt: string;
   updatedAt: string;
   publishedAt: string | null;
 }
-export interface KnowledgeNoteDraft {
+export interface KnowledgeNoteContent {
   knowledgeNoteId: number;
-  title: string;
-  description: string | null;
-  summary: KnowledgeDocument | null;
   document: KnowledgeDocument;
+  summary: KnowledgeDocument | null;
   schemaVersion: number;
   editVersion: number;
   updatedAt: string;
-}
-export interface KnowledgeNoteRevision {
-  id: number;
-  knowledgeNoteId: number;
-  revisionNumber: number;
-  title: string;
-  publishedAt: string;
 }
 export interface KnowledgeNoteTopicLink {
   knowledgeNoteId: number;
@@ -57,13 +44,11 @@ export interface CreateKnowledgeNoteRequest {
   description?: string | null;
 }
 export type UpdateKnowledgeNoteMetadataRequest = CreateKnowledgeNoteRequest;
-export interface SaveKnowledgeNoteDraftRequest {
+export interface SaveKnowledgeNoteContentRequest {
   baseVersion: number;
   document: KnowledgeDocument;
   summary: KnowledgeDocument | null;
   schemaVersion: number;
-  title?: string;
-  description?: string | null;
 }
 export interface AttachKnowledgeNoteRequest {
   knowledgeNoteId: number;
@@ -108,7 +93,6 @@ export interface StudentKnowledgeNote {
   description: string | null;
   summary: KnowledgeDocument | null;
   document: KnowledgeDocument;
-  revisionNumber: number;
   publishedAt: string;
 }
 export interface StudentTopicKnowledgeNotes {

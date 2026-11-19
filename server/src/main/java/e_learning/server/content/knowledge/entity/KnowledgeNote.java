@@ -1,13 +1,19 @@
 package e_learning.server.content.knowledge.entity;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import e_learning.server.content.knowledge.enums.KnowledgeNoteStatus;
 import e_learning.server.grades.entity.Grade;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import java.time.LocalDateTime;
 
-/** Independent Grade-scoped content, NOT owned by Topic. */
+/**
+ * One Note = one current document. No Draft/Revision table in MVP.
+ * Editing a PUBLISHED Note changes the content that Student can read.
+ */
 @Entity
 @Table(name = "knowledge_notes")
 @Getter @Setter
@@ -25,12 +31,23 @@ public class KnowledgeNote {
     @Column(length = 1000)
     private String description;
 
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "document_json", nullable = false, columnDefinition = "jsonb")
+    private JsonNode documentJson;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "summary_json", columnDefinition = "jsonb")
+    private JsonNode summaryJson;
+
+    @Column(name = "schema_version", nullable = false)
+    private Integer schemaVersion = 1;
+
+    @Column(name = "edit_version", nullable = false)
+    private Long editVersion = 0L;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private KnowledgeNoteStatus status = KnowledgeNoteStatus.DRAFT;
-
-    @Column(name = "published_revision_id")
-    private Long publishedRevisionId;
 
     @Column(name = "created_by")
     private Long createdBy;

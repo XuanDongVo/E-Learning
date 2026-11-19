@@ -1,0 +1,29 @@
+# Domain Model
+
+## Implemented core entities (current baseline)
+User, Class, ClassMember, Grade, Unit, ClassUnit, Section, Topic, QuestionBank, Question, Activity, ActivityBank, ActivitySession, ActivitySessionQuestion, Assignment, AssignmentQuestion, AssignmentComposition, AssignmentCompositionSection and AssignmentCompositionItem.
+
+## Accepted target entities not implemented as Assignment runtime
+`AssessmentAttempt`, `AssessmentAttemptQuestion`, persisted Assignment `Answer`/part-grade records and attempt-backed XP/analytics are target model concepts, not a shipped runtime on the current baseline. Do not model them as current tables/services without checking the current migrations and source.
+
+Assignment stores one Grade relation and a concrete `class_ids` recipient snapshot; `AssignmentTarget` is not a current entity.
+GameTemplate is deferred.
+
+## Content
+Grade -> Unit -> Section -> Topic -> QuestionBank -> Question.
+
+## Question Engine
+QuestionSpec is a discriminated type-specific semantic model shared by Question Bank, Assignment, Activity and runtime projections. Types: SINGLE_CHOICE, MULTIPLE_CHOICE, TRUE_FALSE, FILL_IN_BLANK, TYPE_ANSWER, MATCHING and CLOZE. FILL_IN_BLANK keeps existing single-answer-position semantics; CLOZE is multi-blank. QuestionSpec does not own Assignment order or point allocation.
+
+## ActivitySession
+Activity -> ActivitySession -> ActivitySessionQuestion. Stores concrete mode/strategy, frozen per-question deliveryType and aggregate results. The accepted target contract requires a full immutable QuestionSnapshot per selected question; current implementation has snapshot payload fields, but full immutability and snapshot-only reads remain a verification gap. New Sessions persist Final answer attempts; Guided questions additionally own GuidedProgress, Step attempts and per-Step Hint usage. Activity edits are allowed; current sessions remain on their started snapshot and new sessions use the latest revision.
+
+## Assignment Composition
+Assignment -> ordered Composition sections -> ordered items/content blocks -> Assignment-owned Question or grouped members. Composition owns section/item/member order via persisted positions; AssignmentQuestion remains a position-free ownership association. question_id ASC is only the legacy backfill order. V1 blocks: INSTRUCTIONS, PASSAGE, image MEDIA and POOL; nested blocks/audio deferred. Assignment item configuration includes possiblePoints (default 1, teacher-editable per Assignment) and required/isExample; these are not Question Bank fields. Assignment submissions are automatically graded by Question Engine; there is no manual grading workflow or AUTO/MANUAL selector. show_score_after_submit and show_answers_after_submit independently govern display.
+
+## AssessmentAttempt
+Assignment -> AssessmentAttempt -> immutable ordered composition/question snapshot -> Answer + automatically calculated per-part result. One official attempt per student. Whole-attempt server timer; timeout auto-submits and scores. Persist normalized submitted values for analytics, never expose them in-progress. Once any attempt starts, hard-lock Assignment; clone to change it. ActivitySession and AssessmentAttempt remain separate.
+
+
+## Planned Knowledge Note (ADR 0038; not implemented)
+KnowledgeNote is independent Grade-scoped learning content with a mutable Draft, immutable Published Revisions, and optional many-to-many TopicLinks. A Topic has zero or one Primary Note and any number of Supplementary Notes. Standalone published Notes remain visible in the eligible Student Library. No category or media fields in MVP. See docs/knowledge-note/ for SRS, FRS and UI/UX.

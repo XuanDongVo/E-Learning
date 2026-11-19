@@ -1,0 +1,69 @@
+# Backend Architecture and Conventions
+
+## Authentication lifecycle
+
+ADR 0033 is authoritative for JWT-cookie sessions. Resource authentication uses an
+access-only decoder, then `AccountStatusFilter` reads the current `users.status`
+before controllers. Security-chain errors must use the same `ApiResponse` envelope
+as controller errors through the dedicated entry point/access-denied writer.
+
+Refresh rotation preserves the absolute session deadline created at login. Do not
+replace it with a sliding refresh window. Logout is permit-all and cookie clearing
+must retain the original cookie paths and attributes.
+
+Spring Boot, Java 21, Spring Data JPA, Flyway, PostgreSQL, Spring Security/JWT.
+
+## Feature layout
+Current feature areas include activity, assignment, assessmentattempt, content, question, classes, grades, user, auth, common and gamification. Gamification is split into `xp`, `streak`, `level`, `leaderboard` and `profile` packages; each owns its controllers, services, repositories, entities and DTOs where applicable.
+
+## Rules
+- Controllers use services, not another feature's repositories.
+- Requests never carry owner ids, derived readiness or runtime state.
+- Business validation lives in services.
+- Student membership changes lock the Student row; PostgreSQL enforces at most one ACTIVE membership.
+- Errors use stable ErrorCode values.
+- Every entity change requires a new Flyway migration; never edit applied migrations.
+- Deterministic product order must be explicit in repository/service queries.
+- Assignment Composition sections/items/members use persisted position. AssignmentQuestion remains position-free; question_id ASC is legacy backfill only. Assignment is intended to lock authoring changes after the first attempt starts; the runtime hard-lock remains incomplete.
+- ActivitySession runtime state is separate from Activity configuration. AssessmentAttempt runtime state is separate from Assignment configuration.
+
+## Activity
+Unit-scoped; available strategies live on Activity; concrete strategy and mode live on ActivitySession; Try Hard deadline is per question; preview is non-mutating; GameTemplate is not a current dependency. `practiceType` is `CLASSIC` or `GUIDED_REASONING`; Guided is restricted to LEARNING/RANDOM and only selects revision-matching READY Guided Definitions. Each selected Session Question freezes `deliveryType`; runtime never re-reads live Activity configuration. Guided state lives in its one-to-one progress record and separate Step-attempt/Hint tables.
+
+## Assignment
+Owns AssignmentQuestion. No position; Composition positions define official order and question_id ASC is legacy backfill only. show_score_after_submit controls score display, while show_answers_after_submit independently controls answer/explanation reveal. time_limit_minutes is the whole Attempt duration stored in minutes. The server calculates and persists deadline_at from started_at plus the configured minutes. No Release Answers timestamp/endpoint.
+
+## Question
+Question.hint is optional, max 500 characters. Formula/reference sheet is deferred.
+
+## Question Engine — implementation and boundary rules
+See .agents/architecture/question-engine-v1.md and ADR 0023 (lifecycle refined by ADR 0025; Assignment scoring refined by ADR 0026).
+- QuestionSpecMapper is the persistence-to-engine boundary. Engine code must not depend on JPA repositories/entities, Spring web DTOs, or Jackson JsonNode.
+- Preserve existing question-type semantics with characterization tests when moving behavior.
+- Keep teacher and student projections separate.
+- ActivitySession and AssessmentAttempt remain separate aggregates. Under ADR
+  0036, new Activity Sessions persist immutable Final attempts for idempotency
+  and review; this is practice history, not an AssessmentAttempt or official grade.
+- ActivitySession orchestration delegates question selection to activitysession/selection and immutable snapshot assembly to activitysession/snapshot; runtime lifecycle remains in ActivitySessionService until behavior-focused tests support further extraction.
+- Read-only Activity review projection lives in `activitysession/review` and
+  reads immutable Question/Guided snapshots plus persisted Step/Final attempts.
+  It enforces reveal policy while mapping; clients never receive keys for an
+  unresolved Session Question.
+- Student Activity history is a read-only, ownership-scoped terminal Session
+  query. It validates the requested Activity and current Grade access, excludes
+  `IN_PROGRESS`, orders by completion/id descending and returns a paged summary;
+  detailed answers remain exclusively in the Review projection.
+- Never edit applied migrations. Select the next unused migration version after inspecting the current branch.
+
+## Assignment Composition / AssessmentAttempt
+- Snapshot ordered Composition, QuestionSpecs, item points/flags and settings when an Attempt starts.
+- The start/resume slice is implemented but not verified. Snapshot question types and matching POOL resolution require integration tests.
+- Persist raw answers and per-part grade results for review; keep grading internals out of in-progress student DTOs.
+- Weighted score uses earned/possible points × 100; examples are excluded. Full automatic scoring, submit/timeout finalization and Assignment authoring hard-lock are not implemented.
+- Never merge AssessmentAttempt with ActivitySession.
+
+## Assignment score calculation and projection
+- The intended server calculates/persists results when an Attempt is submitted or timed out using immutable snapshots.
+- show_score_after_submit controls score display; show_answers_after_submit independently controls answer/explanation display.
+- In-progress student DTOs must never expose answer keys, correctness flags, normalized submitted values or hidden explanations.
+- There is no manual-review queue or AUTO/MANUAL option in v1.

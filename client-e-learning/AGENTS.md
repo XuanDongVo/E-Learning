@@ -7,11 +7,11 @@ Before changing frontend code:
 
 - Read the matching guide in `node_modules/next/dist/docs/01-app/`. For styling and
   fonts, use `01-getting-started/11-css.md` and `01-getting-started/13-fonts.md`.
-- Follow [`.agent/architecture/frontend.md`](../.agent/architecture/frontend.md)
-  and [`.agent/ui/UI_ARCHITECTURE_GUIDELINES.md`](../.agent/ui/UI_ARCHITECTURE_GUIDELINES.md).
+- Follow [`.agents/architecture/frontend.md`](../.agents/architecture/frontend.md)
+  and [`.agents/ui/UI_ARCHITECTURE_GUIDELINES.md`](../.agents/ui/UI_ARCHITECTURE_GUIDELINES.md).
 - For every Student route or shared component rendered by Student, also follow
-  [`.agent/ui/INDIE_ILLUSTRATED_SCRAPBOOK_DESIGN_SYSTEM.md`](../.agent/ui/INDIE_ILLUSTRATED_SCRAPBOOK_DESIGN_SYSTEM.md),
-  [`.agent/ui/STUDENT_UI_GOVERNANCE.md`](../.agent/ui/STUDENT_UI_GOVERNANCE.md)
+  [`.agents/ui/INDIE_ILLUSTRATED_SCRAPBOOK_DESIGN_SYSTEM.md`](../.agents/ui/INDIE_ILLUSTRATED_SCRAPBOOK_DESIGN_SYSTEM.md),
+  [`.agents/ui/STUDENT_UI_GOVERNANCE.md`](../.agents/ui/STUDENT_UI_GOVERNANCE.md)
   and ADR 0032. New Student pages/material redesigns require a Screen + Page Visual Brief; small bugfixes may use the streamlined brief. The [PR template](../.github/pull_request_template.md) records review evidence.
 
 Student feature code must use scoped semantic tokens, typography roles and

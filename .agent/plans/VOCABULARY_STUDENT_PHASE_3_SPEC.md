@@ -13,7 +13,10 @@
 - `Đã thuộc` only opens the four-choice rating panel. `Học lại` queues the word locally without calling FSRS, and advances to another word. `HARD`/`GOOD`/`EASY` alone record the backend review, then advance after success.
 - Learn's dynamic queue contains all NEW Unit words, plus up to five unique retry words. When five retries are outstanding, cycle retries; otherwise take new words first. Neither a timer nor a mandatory number of completed practice modes is involved. A lone retry word can recur; each pass resets its mode to WORD. Persist transient ordering in sessionStorage and reconcile with server progress.
 - Initial FSRS graduation policy is HARD +6h, GOOD +12h, EASY +1d. The backend applies the initial due time and persists the full library Card state; subsequent reviews use Java-FSRS. `GET /v1/student/vocabulary/words/{wordId}/review-preview` previews the four ratings without writing progress. The client never invents schedule timestamps.
-- `AGAIN` remains available in Review and continues to be persisted through backend FSRS. Its future reset policy is deferred.
+- `AGAIN` remains available only in Review and is persisted through the backend.
+  Per ADR 0037 and V65, a scheduled AGAIN preserves its immutable review log,
+  resets the active card, sets `needsRelearning = true`, and returns the word to
+  the existing Learn flow. It does not re-enter the current Review pass.
 - The retired standalone `vocabulary-flashcard.tsx` and `vocabulary-practice.tsx` were replaced by the shared hub Flashcard and inline mode components. Teacher UI, Unit Games, Activity and XP are unaffected.
 
 The original Learn/Practice behavior described below is historical context, not the active Learn contract.
@@ -108,7 +111,8 @@ layout theme and `components/student-ui`. Teacher CRUD/modal styling is unchange
 2. Fresh student: all words NEW, due, no progress until explicit rating.
 3. Flip front/back; verify US/UK listen, IPA, optional image/example/terms.
 4. Wrong MC/typing answer reveals correction but does **not** advance FSRS.
-5. Chưa nhớ → practice → AGAIN; due moves to next schedule per backend.
+5. Review → AGAIN; the immutable log remains, the active card is reset, and the
+   word returns to Learn without re-entering the current Review pass.
 6. Đã nhớ → HARD/GOOD/EASY; confirms result and card leaves due queue.
 7. Refresh/reload resumes persisted progress; early preview cannot submit.
 8. Simulate network failure after review: retry uses same requestId, not new log.

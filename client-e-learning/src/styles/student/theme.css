@@ -63,7 +63,7 @@ body:has(.student-theme):not(:has(.teacher-workspace)) {
   --learning-soft: rgba(74, 107, 130, 0.12);
   --success: #35623b;
   --success-soft: rgba(107, 142, 103, 0.16);
-  --warning: #926009;
+  --warning: #825506; /* readable on kraft as well as paper */
   --warning-soft: rgba(217, 155, 38, 0.16);
   --info: #36566f;
   --info-soft: rgba(74, 107, 130, 0.12);
@@ -100,6 +100,18 @@ body:has(.student-theme):not(:has(.teacher-workspace)) {
   --student-font-hand: "Patrick Hand", "Caveat", cursive;
   --student-font-note: "Caveat", "Patrick Hand", cursive;
   --student-font-mono: "Courier Prime", "Special Elite", monospace;
+  --student-font-heading: var(--student-font-hand);
+  /* Student-only type roles; do not change Teacher's global font size. */
+  --student-type-body-size: 0.9375rem;
+  --student-type-reading-size: 1rem;
+  --student-type-label-size: 0.875rem;
+  --student-type-meta-size: 0.8125rem;
+  --student-type-caption-size: 0.75rem;
+  /* Semantic paper importance, independent from paper material. */
+  --student-surface-outline: color-mix(in srgb, var(--student-ink) 27%, transparent);
+  --student-surface-feature-shadow: 2px 3px 0 var(--student-ink);
+  --student-surface-hover-shadow: 2px 3px 0 var(--student-kraft-dark);
+  --student-control-radius: 12px 5px 13px 5px / 5px 13px 5px 12px;
 
   /* ========================================================================
      4. BÓNG ĐỔ ĐẶC PHẲNG (Handmade Woodblock Drop Shadows)

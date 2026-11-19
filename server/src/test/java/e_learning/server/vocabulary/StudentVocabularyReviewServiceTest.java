@@ -11,12 +11,15 @@ import e_learning.server.user.repository.UserRepository;
 import e_learning.server.vocabulary.entity.VocabularyWord;
 import e_learning.server.vocabulary.enums.VocabularyStatus;
 import e_learning.server.vocabulary.repository.VocabularyWordRepository;
-import e_learning.server.vocabulary.review.dto.RecordVocabularyReviewRequest;
+import e_learning.server.vocabulary.review.dto.request.RecordVocabularyReviewRequest;
+import e_learning.server.vocabulary.review.dto.request.MarkVocabularyWordRequest;
+import e_learning.server.vocabulary.review.entity.VocabularyReviewSource;
 import e_learning.server.vocabulary.review.entity.StudentVocabularyProgress;
 import e_learning.server.vocabulary.review.entity.VocabularyReviewLog;
 import e_learning.server.vocabulary.review.repository.StudentVocabularyProgressRepository;
 import e_learning.server.vocabulary.review.repository.VocabularyReviewLogRepository;
 import e_learning.server.vocabulary.review.service.StudentVocabularyReviewService;
+import e_learning.server.vocabulary.review.service.StudentVocabularyAccessPolicy;
 import io.github.openspacedrepetition.Card;
 import io.github.openspacedrepetition.Rating;
 import org.junit.jupiter.api.Test;
@@ -43,6 +46,7 @@ class StudentVocabularyReviewServiceTest {
     @Mock private VocabularyWordRepository words;
     @Mock private StudentVocabularyProgressRepository progress;
     @Mock private VocabularyReviewLogRepository logs;
+    @Mock private StudentVocabularyAccessPolicy accessPolicy;
     @InjectMocks private StudentVocabularyReviewService service;
 
     @Test
@@ -77,7 +81,7 @@ class StudentVocabularyReviewServiceTest {
     }
 
     @Test
-    void newActiveWordIsImmediatelyDueWithoutPersistingAProgressRow() {
+    void newActiveWordIsAvailableToLearnButNotDueForFsrsReview() {
         when(progress.findAllByStudentIdAndWordUnitId(7L, 2L)).thenReturn(List.of());
         when(words.findByUnitIdAndStatusOrderByDisplayOrderAsc(2L, VocabularyStatus.ACTIVE))
                 .thenReturn(List.of(word()));
@@ -86,7 +90,8 @@ class StudentVocabularyReviewServiceTest {
 
         assertThat(cards).hasSize(1);
         assertThat(cards.getFirst().state()).isEqualTo("NEW");
-        assertThat(cards.getFirst().due()).isTrue();
+        assertThat(cards.getFirst().due()).isFalse();
+        assertThat(cards.getFirst().canUndoBrowseMark()).isFalse();
         assertThat(cards.getFirst().dueAt()).isNull();
         verify(progress, never()).save(any());
     }
@@ -138,6 +143,139 @@ class StudentVocabularyReviewServiceTest {
                         exception -> assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.VOCABULARY_REVIEW_NOT_DUE));
         verify(progress, never()).save(any());
         verify(logs, never()).save(any());
+    }
+
+    @Test
+    void browseMarkCreatesFirstHardRatingDueAfterSixHours() {
+        User student = mock(User.class);
+        when(student.getRole()).thenReturn(Role.STUDENT);
+        when(users.findByIdForVocabularyReview(7L)).thenReturn(Optional.of(student));
+        when(words.findById(10L)).thenReturn(Optional.of(word()));
+        when(progress.findByStudentIdAndWordId(7L, 10L)).thenReturn(Optional.empty());
+        when(progress.save(any(StudentVocabularyProgress.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        AtomicReference<VocabularyReviewLog> stored = new AtomicReference<>();
+        when(logs.save(any(VocabularyReviewLog.class))).thenAnswer(invocation -> {
+            stored.set(invocation.getArgument(0));
+            return invocation.getArgument(0);
+        });
+        var result = service.markKnown(7L, 10L, new MarkVocabularyWordRequest(UUID.randomUUID()));
+        assertThat(result.rating()).isEqualTo(Rating.HARD);
+        assertThat(result.dueAt()).isEqualTo(result.reviewedAt().plusSeconds(6 * 3600));
+        assertThat(result.reviewCount()).isEqualTo(1);
+        assertThat(stored.get().getSource()).isEqualTo(VocabularyReviewSource.BROWSE_MARK);
+    }
+
+    @Test
+    void browseMarkCanBeUndoneBeforeAnyFurtherReview() {
+        User student = mock(User.class);
+        when(student.getRole()).thenReturn(Role.STUDENT);
+        when(users.findByIdForVocabularyReview(7L)).thenReturn(Optional.of(student));
+        when(words.findById(10L)).thenReturn(Optional.of(word()));
+        StudentVocabularyProgress card = StudentVocabularyProgress.builder()
+                .id(11L).student(student).word(word()).reviewCount(1).build();
+        VocabularyReviewLog log = VocabularyReviewLog.builder()
+                .id(12L).student(student).word(word()).progress(card)
+                .source(VocabularyReviewSource.BROWSE_MARK).rating(Rating.HARD).build();
+        when(progress.findByStudentIdAndWordId(7L, 10L)).thenReturn(Optional.of(card));
+        when(logs.findAllByStudentIdAndWordId(7L, 10L)).thenReturn(List.of(log));
+        service.unmarkKnown(7L, 10L);
+        var inOrder = inOrder(logs, progress);
+        inOrder.verify(logs).delete(log);
+        inOrder.verify(logs).flush();
+        inOrder.verify(progress).delete(card);
+    }
+
+    @Test
+    void cannotUndoBrowseMarkAfterAnotherReview() {
+        User student = mock(User.class);
+        when(student.getRole()).thenReturn(Role.STUDENT);
+        when(users.findByIdForVocabularyReview(7L)).thenReturn(Optional.of(student));
+        when(words.findById(10L)).thenReturn(Optional.of(word()));
+        StudentVocabularyProgress card = StudentVocabularyProgress.builder()
+                .student(student).word(word()).reviewCount(2).build();
+        when(progress.findByStudentIdAndWordId(7L, 10L)).thenReturn(Optional.of(card));
+        assertThatThrownBy(() -> service.unmarkKnown(7L, 10L))
+                .isInstanceOfSatisfying(AppException.class,
+                        e -> assertThat(e.getErrorCode()).isEqualTo(ErrorCode.VOCABULARY_MARK_NOT_REVERSIBLE));
+        verify(logs, never()).delete(any());
+    }
+
+    @Test
+    void cannotUndoFirstReviewCreatedInLearnInsteadOfBrowse() {
+        User student = mock(User.class);
+        when(student.getRole()).thenReturn(Role.STUDENT);
+        when(users.findByIdForVocabularyReview(7L)).thenReturn(Optional.of(student));
+        when(words.findById(10L)).thenReturn(Optional.of(word()));
+        StudentVocabularyProgress card = StudentVocabularyProgress.builder()
+                .id(11L).student(student).word(word()).reviewCount(1).build();
+        VocabularyReviewLog log = VocabularyReviewLog.builder().progress(card)
+                .source(VocabularyReviewSource.STUDY).build();
+        when(progress.findByStudentIdAndWordId(7L, 10L)).thenReturn(Optional.of(card));
+        when(logs.findAllByStudentIdAndWordId(7L, 10L)).thenReturn(List.of(log));
+        assertThatThrownBy(() -> service.unmarkKnown(7L, 10L))
+                .isInstanceOfSatisfying(AppException.class,
+                        e -> assertThat(e.getErrorCode()).isEqualTo(ErrorCode.VOCABULARY_MARK_NOT_REVERSIBLE));
+        verify(logs, never()).delete(any());
+    }
+
+    @Test
+    void againResetsProgressButPreservesReviewHistory() {
+        User student = mock(User.class);
+        when(student.getRole()).thenReturn(Role.STUDENT);
+        when(users.findByIdForVocabularyReview(7L)).thenReturn(Optional.of(student));
+        when(words.findById(10L)).thenReturn(Optional.of(word()));
+
+        Instant lastDue = Instant.now().minusSeconds(3600);
+        Card previous = io.github.openspacedrepetition.Scheduler.builder()
+                .learningSteps(new java.time.Duration[] {}).build()
+                .reviewCard(Card.builder().due(lastDue.minusSeconds(86400)).build(),
+                        Rating.GOOD, lastDue.minusSeconds(86400)).card();
+        previous.setDue(lastDue);
+        StudentVocabularyProgress existing = StudentVocabularyProgress.builder()
+                .id(11L).student(student).word(word()).cardJson(previous.toJson())
+                .dueAt(lastDue).reviewCount(4).needsRelearning(false).build();
+        when(progress.findByStudentIdAndWordId(7L, 10L)).thenReturn(Optional.of(existing));
+        when(progress.save(any(StudentVocabularyProgress.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        AtomicReference<VocabularyReviewLog> saved = new AtomicReference<>();
+        when(logs.save(any(VocabularyReviewLog.class))).thenAnswer(invocation -> {
+            saved.set(invocation.getArgument(0));
+            return invocation.getArgument(0);
+        });
+
+        var result = service.recordReview(7L, 10L,
+                new RecordVocabularyReviewRequest(UUID.randomUUID(), Rating.AGAIN));
+
+        assertThat(existing.isNeedsRelearning()).isTrue();
+        assertThat(existing.getDueAt()).isEqualTo(result.reviewedAt());
+        assertThat(existing.getReviewCount()).isEqualTo(5);
+        assertThat(saved.get().getRating()).isEqualTo(Rating.AGAIN);
+        assertThat(saved.get().getReviewCount()).isEqualTo(5);
+        verify(logs).save(any(VocabularyReviewLog.class));
+    }
+
+    @Test
+    void newLearningAfterAgainRestartsInitialIntervalsAndKeepsLogCount() {
+        User student = mock(User.class);
+        when(student.getRole()).thenReturn(Role.STUDENT);
+        when(users.findByIdForVocabularyReview(7L)).thenReturn(Optional.of(student));
+        when(words.findById(10L)).thenReturn(Optional.of(word()));
+
+        Instant lastReview = Instant.now().minusSeconds(600);
+        StudentVocabularyProgress existing = StudentVocabularyProgress.builder()
+                .id(11L).student(student).word(word())
+                .cardJson(Card.builder().due(lastReview).build().toJson())
+                .dueAt(lastReview).reviewCount(5).needsRelearning(true).build();
+        when(progress.findByStudentIdAndWordId(7L, 10L)).thenReturn(Optional.of(existing));
+        when(progress.save(any(StudentVocabularyProgress.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(logs.save(any(VocabularyReviewLog.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        var result = service.recordReview(7L, 10L,
+                new RecordVocabularyReviewRequest(UUID.randomUUID(), Rating.GOOD));
+
+        assertThat(result.dueAt()).isEqualTo(result.reviewedAt().plusSeconds(12 * 3600));
+        assertThat(existing.isNeedsRelearning()).isFalse();
+        assertThat(existing.getReviewCount()).isEqualTo(6);
+        assertThat(Card.fromJson(existing.getCardJson()).getDue()).isEqualTo(result.dueAt());
     }
 
     private VocabularyWord word() {

@@ -7,25 +7,27 @@ export function VocabularyRatingPanel({
   onBack,
   busy,
   scheduleUnavailable = false,
+  allowAgainWithoutPreview = true,
+  againIsLocal = true,
   times,
 }: {
   onRate: (rating: VocabularyFsrsRating) => void;
-  onBack: () => void;
+  onBack?: () => void;
   busy: boolean;
   scheduleUnavailable?: boolean;
+  allowAgainWithoutPreview?: boolean;
+  /** Learn's AGAIN puts a word into its local retry queue; Review's AGAIN is an FSRS rating. */
+  againIsLocal?: boolean;
   times?: Partial<Record<VocabularyFsrsRating, string>>;
 }) {
   const options = [
-    { rating: "AGAIN", label: "Học lại", time: "1 phút" },
+    { rating: "AGAIN", label: "Học lại", time: againIsLocal ? "Trong lượt này" : "Học từ đầu" },
     { rating: "HARD", label: "Khó", time: times?.HARD ?? "Theo FSRS" },
     { rating: "GOOD", label: "Tốt", time: times?.GOOD ?? "Theo FSRS" },
     { rating: "EASY", label: "Dễ", time: times?.EASY ?? "Theo FSRS" },
   ] as const;
   return (
-    <section
-      className="student-vocab-rating-panel space-y-3"
-      aria-label="Đánh giá ghi nhớ"
-    >
+    <section className="student-vocab-rating-panel space-y-3" aria-label="Đánh giá ghi nhớ">
       <h3 className="student-card-title text-center text-foreground">
         Bạn nhớ từ này ở mức nào?
       </h3>
@@ -34,30 +36,30 @@ export function VocabularyRatingPanel({
           <button
             key={option.rating}
             type="button"
-            disabled={
-              busy || (scheduleUnavailable && option.rating !== "AGAIN")
-            }
+            disabled={busy || (scheduleUnavailable && (!allowAgainWithoutPreview || option.rating !== "AGAIN"))}
             className="student-vocab-option student-vocab-rating-option flex-col items-center justify-center gap-1"
             onClick={() => onRate(option.rating)}
           >
             <span>{option.label}</span>
-            <span className="student-caption text-muted-foreground">
-              {option.time}
-            </span>
+            <span className="student-caption text-muted-foreground">{option.time}</span>
           </button>
         ))}
       </div>
       <p className="student-caption text-center text-muted-foreground">
-        Học lại: chuyển từ khác và giữ từ này trong hàng đợi.
+        {againIsLocal
+          ? "Học lại: giữ từ trong hàng đợi học của lượt này, không ghi FSRS."
+          : "Học lại: đưa từ về Học từ mới, bắt đầu lại lịch ghi nhớ. Lịch sử ôn vẫn được giữ."}
       </p>
-      <button
-        type="button"
-        disabled={busy}
-        onClick={onBack}
-        className="student-control student-control--quiet w-full"
-      >
-        Quay lại cách học
-      </button>
+      {onBack && (
+        <button
+          type="button"
+          disabled={busy}
+          onClick={onBack}
+          className="student-control student-control--quiet w-full"
+        >
+          Quay lại cách học
+        </button>
+      )}
     </section>
   );
 }

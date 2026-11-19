@@ -7,13 +7,15 @@ import { Search, RefreshCw } from "lucide-react";
 import { getAppErrorMessage } from "@/lib/errors/app-error";
 import { studentUnitService } from "@/services/student/student-unit.service";
 import { QUERY_KEYS } from "@/services/query-keys";
-import { Button } from "@/components/ui/button";
+import { StudentButton } from "@/components/student-ui/student-button";
+import { StudentTextField } from "@/components/student-ui/student-text-field";
+import { StudentPageHeading } from "@/components/student-ui/patterns/student-page-heading";
+import { StudentCollectionEmptyState } from "@/components/student-ui/patterns/student-collection-empty-state";
 import { UnitCard } from "./unit-card";
 import { Pipo } from "@/components/ui/mascot";
 import { SkeletonGrid } from "@/components/ui/skeleton/skeleton-grid";
 import { RegionState } from "@/components/feedback";
 import { PaperSurface } from "@/components/student-ui/paper-surface";
-import { ScrapbookHeading } from "@/components/student-ui/scrapbook-heading";
 
 export function UnitsView() {
   const tErrors = useTranslations("errors");
@@ -37,37 +39,28 @@ export function UnitsView() {
   );
 
   return (
-    <div className="student-units-page space-y-6 pb-8">
-      <PaperSurface as="section" variant="kraft" tape tapePosition="right" className="student-units-hero">
-        <div className="space-y-2">
-          <p className="student-meta text-primary">Learning</p>
-          <ScrapbookHeading as="h1" className="student-page-title text-foreground">
-            Chọn Unit để học
-          </ScrapbookHeading>
-          <p className="student-body max-w-xl text-muted-foreground">
-            Khám phá phần học và hoạt động luyện tập do giáo viên công bố.
-          </p>
-        </div>
-        <div className="hidden shrink-0 sm:block" aria-hidden="true">
-          <Pipo mood="happy" size={92} color="primary" stage={2} />
-        </div>
+    <div className="student-units-page mx-auto max-w-6xl space-y-5 pb-8 sm:space-y-6">
+      <PaperSurface as="section" variant="kraft" emphasis="accent" className="student-units-hero">
+        <StudentPageHeading
+          eyebrow="BÀI HỌC"
+          title="Chọn Unit để học"
+          description="Khám phá phần học và hoạt động luyện tập do giáo viên công bố."
+          artwork={<Pipo mood="happy" size={92} color="primary" stage={2} />}
+          artworkClassName="hidden sm:block"
+        />
       </PaperSurface>
 
       {units.length > 0 && (
-        <div className="relative max-w-md">
-          <label htmlFor="student-unit-search" className="student-label mb-2 block text-foreground">
-            Tìm bài học
-          </label>
-          <Search className="absolute bottom-3 left-3.5 h-4 w-4 text-muted-foreground" aria-hidden="true" />
-          <input
-            id="student-unit-search"
-            type="text"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Nhập tên Unit..."
-            className="student-field pl-10 pr-4 placeholder:text-muted-foreground"
-          />
-        </div>
+        <StudentTextField
+          id="student-unit-search"
+          label="Tìm bài học"
+          type="search"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          placeholder="Nhập tên Unit..."
+          leading={<Search className="size-4" />}
+          containerClassName="max-w-md"
+        />
       )}
 
       {/* ─── Loading State (Skeleton) ─── */}
@@ -80,18 +73,18 @@ export function UnitsView() {
           title="Không thể tải danh sách bài học"
           description={getAppErrorMessage(error, tErrors as (key: string) => string)}
           action={
-            <Button type="button" variant="secondary" onClick={() => void refetch()}>
+            <StudentButton variant="secondary" onClick={() => void refetch()}>
               <RefreshCw className="mr-1.5 h-4 w-4" />
               Thử lại
-            </Button>
+            </StudentButton>
           }
         />
       )}
 
       {/* ─── Empty State ─── */}
       {units.length === 0 && !isLoading && !isError && (
-        <RegionState
-          variant="empty"
+        <StudentCollectionEmptyState
+          illustration="illustration.no-lessons"
           title="Chưa có bài học nào"
           description="Giáo viên của bạn chưa công bố Unit nào cho lớp học này. Hãy quay lại sau nhé!"
         />
@@ -99,8 +92,7 @@ export function UnitsView() {
 
       {/* ─── Không khớp tìm kiếm ─── */}
       {units.length > 0 && filteredUnits.length === 0 && (
-        <RegionState
-          variant="empty"
+        <StudentCollectionEmptyState
           title={`Không tìm thấy Unit phù hợp với từ khóa "${searchTerm}"`}
           action={
             <button
@@ -114,9 +106,17 @@ export function UnitsView() {
         />
       )}
 
-      {/* ─── Lưới Unit Cards ─── */}
-      {filteredUnits.length > 0 && (
-        <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+      {/* The count comes from the same server-backed Unit list as the cards. */}
+      {!isLoading && !isError && units.length > 0 && (
+        <p className="student-meta text-muted-foreground" role="status">
+          {searchTerm.trim()
+            ? `Hiển thị ${filteredUnits.length}/${units.length} Unit phù hợp`
+            : `${units.length} Unit có thể khám phá`}
+        </p>
+      )}
+
+      {filteredUnits.length > 0 && !isLoading && !isError && (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 sm:gap-5">
           {filteredUnits.map((unit) => (
             <UnitCard key={unit.id} unit={unit} />
           ))}

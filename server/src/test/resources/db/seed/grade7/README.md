@@ -113,7 +113,7 @@ In the Teacher UI, review the Grade 7 Question Banks (12 banks, 200 questions, 5
 ## Guided runtime UI fixture
 
 After this Grade 7 seed and Flyway V60 are applied in the same disposable database,
-run [`../guided-runtime/01_guided_runtime.sql`](../guided-runtime/01_guided_runtime.sql).
+run [`../guided-runtime/01_guided_runtime.sql`](08_guided_runtime.sql).
 It adds a separate, idempotent Guided Learning Activity for UI/API verification;
 its own README documents the supported Step, Hint and Retry cases.
 

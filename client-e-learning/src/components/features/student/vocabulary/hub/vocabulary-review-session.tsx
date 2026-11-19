@@ -1,96 +1,161 @@
 "use client";
 
 import { useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useTranslations } from "next-intl";
 import { PaperSurface } from "@/components/student-ui/paper-surface";
+import { getAppErrorMessage, toAppError } from "@/lib/errors/app-error";
+import { studentVocabularyQueryKeys } from "@/services/student/student-vocabulary-query-keys";
 import { studentVocabularyReviewService } from "@/services/student/student-vocabulary-review.service";
 import type {
   RecordVocabularyReviewRequest,
   StudentVocabularyStudyCard,
   VocabularyFsrsRating,
+  VocabularyReviewResult,
 } from "@/types/student-vocabulary-review";
 import { VocabularyFlashcard } from "./vocabulary-flash-card";
-import { vocabularyUnitCardsKey } from "./vocabulary-hub-types";
+import { VocabularyRatingPanel } from "./vocabulary-rating-panel";
+import { formatVocabularyReviewDelay, vocabularyUnitCardsKey } from "./vocabulary-hub-types";
 
-/** Review uses server-side AGAIN; Learn's Học lại is a local queue action. */
 export function VocabularyReviewSession({
   unitId,
   card,
+  onRecorded,
+  onSkip,
 }: {
-  unitId: number;
+  unitId?: number;
   card: StudentVocabularyStudyCard;
+  onRecorded: (result: VocabularyReviewResult) => void;
+  onSkip?: () => void;
 }) {
+  const t = useTranslations("student.vocabulary.reviewSession");
+  const tErrors = useTranslations("errors");
   const queryClient = useQueryClient();
-  const [pending, setPending] = useState<RecordVocabularyReviewRequest | null>(
-    null,
-  );
+  const [revealed, setRevealed] = useState(false);
+  const [pending, setPending] = useState<RecordVocabularyReviewRequest | null>(null);
+  const preview = useQuery({
+    queryKey: studentVocabularyQueryKeys.reviewPreview(card.wordId),
+    queryFn: () => studentVocabularyReviewService.previewReview(card.wordId),
+    enabled: revealed,
+    staleTime: 0,
+    retry: false,
+  });
   const review = useMutation({
     mutationFn: (payload: RecordVocabularyReviewRequest) =>
       studentVocabularyReviewService.recordReview(card.wordId, payload),
-    onSuccess: async () => {
-      await Promise.all([
-        queryClient.invalidateQueries({
-          queryKey: vocabularyUnitCardsKey(unitId),
-        }),
-        queryClient.invalidateQueries({
-          queryKey: ["student", "vocabulary", "overview"],
-        }),
-      ]);
+    onSuccess: (response) => {
+      if (!response.data) return;
+      onRecorded(response.data);
+      const invalidations = [
+        queryClient.invalidateQueries({ queryKey: studentVocabularyQueryKeys.overview }),
+        queryClient.invalidateQueries({ queryKey: studentVocabularyQueryKeys.libraryRoot }),
+      ];
+      if (unitId != null) {
+        invalidations.push(queryClient.invalidateQueries({ queryKey: vocabularyUnitCardsKey(unitId) }));
+      } else {
+        invalidations.push(
+          queryClient.invalidateQueries({ queryKey: studentVocabularyQueryKeys.progress }),
+        );
+      }
+      // Keep the existing Unit flow's progress invalidation disabled; the global pass refreshes it.
+      void Promise.all(invalidations);
     },
   });
+  const staleReview =
+    review.isError && toAppError(review.error).code === "VOCABULARY_REVIEW_NOT_DUE";
+
   const rate = (rating: VocabularyFsrsRating) => {
-    if (review.isPending || pending) return;
+    if (!revealed || !preview.isSuccess || review.isPending || pending) return;
     const payload = { requestId: crypto.randomUUID(), rating };
     setPending(payload);
     review.mutate(payload);
   };
+
   return (
     <div className="space-y-4">
-      <VocabularyFlashcard key={card.wordId} cards={[card]} mode="study" />
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-        {(["AGAIN", "HARD", "GOOD", "EASY"] as const).map((rating) => (
-          <button
-            key={rating}
-            type="button"
-            disabled={review.isPending || pending !== null}
-            className="student-vocab-option"
-            onClick={() => rate(rating)}
-          >
-            {{ AGAIN: "Học lại", HARD: "Khó", GOOD: "Tốt", EASY: "Dễ" }[rating]}
-          </button>
-        ))}
-      </div>
-      {review.isPending && (
-        <p role="status" className="student-body text-muted-foreground">
-          Đang lưu lịch ôn...
-        </p>
-      )}
-      {review.isError && (
-        <PaperSurface role="alert" className="space-y-3 p-4">
-          <p className="student-body text-destructive">
-            {review.error instanceof Error
-              ? review.error.message
-              : "Không thể lưu lịch ôn."}
-          </p>
-          <button
-            type="button"
-            className="student-control student-control--action px-4"
-            disabled={!pending || review.isPending}
-            onClick={() => pending && review.mutate(pending)}
-          >
-            Thử gửi lại
-          </button>
-          <button
-            type="button"
-            className="student-control student-control--quiet px-4"
-            onClick={() => {
-              setPending(null);
-              review.reset();
+      <VocabularyFlashcard
+        key={card.wordId}
+        cards={[card]}
+        mode="study"
+        onReveal={() => setRevealed(true)}
+      />
+
+      {!revealed ? (
+        <p className="student-caption text-center text-muted-foreground">{t("flipHint")}</p>
+      ) : (
+        <div className="space-y-3">
+          {preview.isPending ? (
+            <p role="status" className="student-caption text-center text-muted-foreground">
+              {t("previewLoading")}
+            </p>
+          ) : null}
+          {preview.isError ? (
+            <PaperSurface as="section" className="space-y-2 p-4" role="alert">
+              <p className="student-body text-destructive">
+                {getAppErrorMessage(preview.error, tErrors as (key: string) => string)}
+              </p>
+              <button
+                type="button"
+                className="student-control student-control--secondary px-4"
+                onClick={() => void preview.refetch()}
+              >
+                {t("reloadPreview")}
+              </button>
+            </PaperSurface>
+          ) : null}
+          <VocabularyRatingPanel
+            busy={review.isPending || pending !== null}
+            scheduleUnavailable={!preview.isSuccess}
+            allowAgainWithoutPreview={false}
+            againIsLocal={false}
+            onRate={rate}
+            times={{
+              AGAIN: formatVocabularyReviewDelay(preview.data?.data?.dueAtByRating.AGAIN),
+              HARD: formatVocabularyReviewDelay(preview.data?.data?.dueAtByRating.HARD),
+              GOOD: formatVocabularyReviewDelay(preview.data?.data?.dueAtByRating.GOOD),
+              EASY: formatVocabularyReviewDelay(preview.data?.data?.dueAtByRating.EASY),
             }}
-          >
-            Bỏ đánh giá
-          </button>
-        </PaperSurface>
+          />
+          {review.isPending ? (
+            <p role="status" className="student-body text-center text-muted-foreground">{t("saving")}</p>
+          ) : null}
+          {review.isError ? (
+            <PaperSurface as="section" role="alert" className="space-y-3 p-4">
+              <p className="student-body text-destructive">
+                {getAppErrorMessage(review.error, tErrors as (key: string) => string)}
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {!staleReview ? (
+                  <button
+                    type="button"
+                    disabled={!pending || review.isPending}
+                    className="student-control student-control--action px-4"
+                    onClick={() => pending && review.mutate(pending)}
+                  >
+                    {t("retrySave")}
+                  </button>
+                ) : null}
+                <button
+                  type="button"
+                  disabled={review.isPending}
+                  className="student-control student-control--quiet px-4"
+                  onClick={() => {
+                    setPending(null);
+                    review.reset();
+                    void preview.refetch();
+                  }}
+                >
+                  {t("discard")}
+                </button>
+                {staleReview && onSkip ? (
+                  <button type="button" className="student-control student-control--secondary px-4" onClick={onSkip}>
+                    {t("skipStale")}
+                  </button>
+                ) : null}
+              </div>
+            </PaperSurface>
+          ) : null}
+        </div>
       )}
     </div>
   );

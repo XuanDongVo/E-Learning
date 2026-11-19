@@ -1,5 +1,131 @@
 # Project Progress
 
+## 2026-11-19 Student UI Design Governance — Phase 6E only (documentation)
+
+- Added `.agent/ui/STUDENT_UI_GOVERNANCE.md` as the **single procedural** entry point for new Student pages, redesigns, shared controls and new visual assets; existing visual/spec documents remain the authorities for style, domain and approved assets.
+- Added a copyable Student Screen + Page Visual Brief template and a repository-wide GitHub PR description template with **conditional** Student UI checklist.
+- Linked the governance workflow from root/frontend AGENTS, the knowledge base index, UI Architecture Guidelines and the existing Definition of Done.
+- Specified change-size exemptions, evidence statuses (verified/pending/N/A), severity/blocking review expectations and Teacher isolation. No CSS, JSX, server code, assets, routes, GitHub CI, approval rules or branch protection altered.
+- This is a manual review process. No build, test, browser regression or CI run was performed for documentation-only changes; Phase 6A–6D/6F remain out of scope.
+
+
+## 2026-11-19 Student Design System v2 — Phase 5 reference-page migration
+
+- Polished four reference flows in Student-only source: Learning Hub, Units, Vocabulary overview/Word Library and Activity History. Reduced competing decoration, tightened hierarchy, improved responsive collection density and made active filters/results easier to understand.
+- Vocabulary overview uses 1-column mobile, 2-column from 640px and 3-column from 1180px; real total/new/due counts only after successful fetch. Per-card learn action is primary, view/review remain accessible.
+- Learning Hub removes the fake fixed chapter label and reuses shared empty/retry components. Units now displays a truthful filtered count. Activity History uses a quieter contextual header and an always-available clear-filters action when filtering.
+- Word Library status selectors now use group + aria-pressed instead of incomplete tab semantics; result-count announcements are separate from list updates.
+- Added `.agent/ui/STUDENT_PHASE_5_REFERENCE_PAGES.md` with file-level baseline/change log and an explicit mobile/desktop/Teacher/browser QA matrix.
+- Implementation is source-only; GitHub did not execute tests, lint, build, responsive screenshots or accessibility checks. **Do not mark Phase 5 visual acceptance complete until those checks run.**
+
+
+## 2026-11-19 Student Design System v2 — Phase 4 reusable page patterns
+
+- Added `components/student-ui/patterns/`: StudentPageHeading, StudentBackLink, StudentCollectionPanel, StudentCollectionEmptyState (presentation only; no feature query or filter logic).
+- Adopted patterns in Activity History, Vocabulary Word Library, Units, Assignment hero, Vocabulary Review and Unit Detail.
+- Added Page Pattern gallery (Hub, Collection, Detail) to the development-only Design Lab, with clearly labeled fixtures and functional local search/reset.
+- Updated STUDENT_PAGE_ARCHETYPES.md and added STUDENT_PAGE_PATTERNS_PHASE_4.md with usage boundaries and regression checklist.
+- No route/API/backend/Teacher/assessment behavior intended to change. Source-level tests added; build, lint, real browser/mobile and Teacher regression checks have **not** been run by this GitHub-only workflow.
+
+
+## 2026-11-19 Student Visual Storytelling — Phase 3A–E source implementation
+
+- 3A: Inventory and provenance/license register for retained assets, explicit external-license research and one original art direction.
+- 3B: Split Pipo into provider, controller and original SVG character, added book/pencil/badge props and hydration-safe stored preference under `components/student-ui/visuals/pipo/` while keeping `components/ui/mascot.tsx` re-export compatibility; removed per-instance global pointer listeners and dead poke markup, retained moods/stages and stored mascot toggle.
+- 3C: Authored nine first-party SVGs for learning scenes, vocabulary, empty states, achievement and supporting doodles. No third-party illustration pack copied to repo.
+- 3D: Typed asset registry, accessible StudentIllustration/StudentDoodle components and Development Design Lab gallery with Pipo moods; React rendering and registry tests added.
+- 3E: Reused imagery in Learning Hub empty, Units empty/filter-empty, Vocabulary Hub, Vocabulary Word Library, Activity History empty; Progress Mai tree remains the meaningful source-backed visual. Student Design Lab is development-only.
+- QA still required locally: npm test, eslint, tsc, build, browser screenshots and regression for Student/Teacher, portal, mobile/animation; source commits alone are not acceptance of rendered UX.
+
+
+## 2026-11-19 Student Design System v2 — interaction and Lab refinement
+
+- Standardized Student controls at a 44px minimum target with default horizontal
+  padding, consistent icon gap, explicit keyboard focus, pressed, disabled and
+  loading behavior. Existing button-styled links inherit the same scoped recipe.
+- Reduced Feature surface intensity while preserving one intentional focal layer;
+  Content remains flat and Accent remains contextual.
+- Extended `StudentTextField` with semantic success feedback that pairs its border
+  with linked status text and an icon instead of relying on color alone.
+- Rebuilt the development Design Lab as a component workbench: button
+  variant/state/device controls, 390px preview, annotated typography tokens and
+  usage guidance, field feedback, and a functional list-density specimen. No
+  mascot or decorative asset was added because this route is an internal tool.
+- Validation: focused ESLint passes; Student foundation tests pass 4/4; TypeScript
+  `--noEmit` passes; the running dev route returns HTTP 200. Windows Computer Use
+  visual inspection was unavailable because its native pipe could not connect;
+  production build and authenticated device/Teacher regression remain open.
+
+## 2026-11-18 Student Design System v2 — Phase 2 foundations
+
+- Introduced Student-scoped semantic paper emphasis (content/feature/accent) independent of plain/lined/kraft material, and explicitly opted representative page heroes into feature emphasis.
+- Introduced dedicated Student typography roles (body 15px, reading 16px, label 14px, metadata 13px, caption 12px) without changing Teacher's global body size.
+- Added shared Student control/field recipes and typed StudentButton/StudentTextField for loading, error, disabled, focus and responsive behavior. Migrated Unit Explorer and Vocabulary Word Library search controls.
+- Added a development-only foundation preview and focused component unit tests; no production navigation entry.
+- Refined mobile form font fallback to 16px at <=639px, suppressed loading-spinner motion with reduced-motion enabled and darkened the Student warning token to meet contrast on kraft.
+- No backend/API/database or Teacher component changes. Build, lint, tests, screenshots, portal and device QA are pending until run in a project environment; this documentation does not claim a successful browser verification.
+
+
+## 2026-11-18 Student Design System v2 — Phase 0/1 documentation
+
+- Audited the feature/guided-reasoning-v1 Student route tree, representative Student views, Student layout/theme/typography/surface layers, Pipo, UnitCover, vocabulary art and reusable list primitives against ADR 0032.
+- Added .agent/ui/STUDENT_DESIGN_SYSTEM_V2_PHASE_0_AUDIT.md with source-based P0/P1/P2 drift, route/asset inventory and explicit limits of static review.
+- Expanded the canonical Indie Illustrated Scrapbook specification with one visual identity, surface importance roles, illustration/focus exceptions and a new-page quality gate; reconciled documented body font with implemented Plus Jakarta Sans.
+- Added .agent/ui/STUDENT_VISUAL_STORYTELLING.md and STUDENT_PAGE_ARCHETYPES.md; linked Student-specific briefs from UI_ARCHITECTURE_GUIDELINES.md and corrected its Teacher/Student visual-scope wording.
+- Phase 0/1 is documentation-only: no frontend CSS/component/asset, backend, database, API or route changes. Browser/device/a11y/performance/Teacher regression and build/lint are NOT claimed. Phase 2–6 migration awaits review and implementation.
+
+
+## 2026-11-18 Vocabulary Library and Due Review — Backend and Client implemented
+
+- Recovered the Unit vocabulary dev route from a stale Turbopack
+  `MODULE_UNPARSABLE: Not a pattern` chunk. The Study tab now uses a guarded
+  progress-percent helper (also avoiding division by zero); Next regenerated a
+  valid client chunk and the authenticated route compilation returns HTTP 200.
+- Corrected the Browse mark/unmark mutation contract: discriminated variables
+  require a request ID only for `mark`, and the mutation normalizes both API
+  response shapes to `void` because success handling uses no response payload.
+- Accepted ADR 0037 and added the two-phase implementation specification for a
+  cross-source Learned/Due/Waiting Library plus complete all-DUE Review snapshot.
+- Review `AGAIN` now has a documented accepted contract matching V65/current
+  code: preserve the log, reset the active card, set `needsRelearning`, return to
+  Learn, and do not repeat in the current Review pass.
+- Browse lists remain paginated, while Review Queue is explicitly unpaginated,
+  unfiltered by search/current source and never silently truncated.
+- Defined a Vocabulary-owned Student access-policy seam. Current visibility is
+  unchanged (ACTIVE words in published Units of the current Grade); no Collection
+  entity, polymorphic owner or database change was introduced.
+- Replaced the incomplete controller/service skeleton with authenticated Summary,
+  Learned, Due and Waiting reads plus a complete non-paginated Review Queue.
+  Browse APIs use stable 1-based pagination, escaped word/meaning search and
+  `dueAt, wordId` ordering; Summary uses a repeatable-read snapshot.
+- Added a Vocabulary-owned access policy shared by Library reads and existing
+  preview/rating/mark writes. Current access remains ACTIVE words in PUBLISHED
+  Units of the Student's active-class Grade. Unit metadata is projected through
+  source-neutral `origin` display metadata; FSRS ownership remains word-based.
+- Review Queue returns every accessible DUE row with full Flashcard content in
+  one server snapshot. No Collection entity, new error code or migration was added.
+- Added the source-neutral Student word Library at `/student/vocabulary/words`
+  with Summary counts, Learned/Due/Waiting tabs, debounced search, pagination and
+  explicit skeleton/error/empty/disabled/success states. The Unit notebook now
+  links to this Library without changing its Unit-local behavior.
+- Added `/student/vocabulary/review` as a fixed all-DUE pass with read-only Browse
+  and Review views. It reuses the existing Flashcard/rating/session components,
+  advances immediately after a persisted rating, preserves request IDs on retry,
+  skips stale multi-tab conflicts and shows one completion summary.
+- Added typed Library/Queue services and query keys, bilingual feature copy and
+  every existing `VOCABULARY_*` error code to the central error catalogs. Global
+  Review invalidates Library/Summary/overview/progress caches while leaving queue
+  membership fixed; existing Unit progress invalidation remains disabled.
+- Validation: production compile passed; focused Vocabulary tests pass 17/17;
+  Spring application context and PostgreSQL/Flyway startup test pass. Full Maven
+  ran 142 tests with 136 passing and six unrelated existing failures: five null
+  Assignment publish-readiness fixtures and one Ordering unnecessary stub.
+- Client validation: locale JSON parsing passes; affected-file ESLint has 0 errors
+  and pre-existing warnings. The Browse mark/unmark TypeScript mismatch is fixed;
+  `tsc --noEmit` now reports only a stale generated `.next` route reference. Per
+  owner request, Client build, Server test rerun and authenticated responsive
+  browser QA were not run.
+
 ## 2026-11-17 Student Activity runtime — mobile responsive pass
 
 - Reworked the immersive Practice shell, header, workspace and footer for narrow

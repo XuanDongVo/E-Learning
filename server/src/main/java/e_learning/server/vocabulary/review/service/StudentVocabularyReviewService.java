@@ -9,9 +9,15 @@ import e_learning.server.user.repository.UserRepository;
 import e_learning.server.vocabulary.entity.VocabularyWord;
 import e_learning.server.vocabulary.enums.VocabularyStatus;
 import e_learning.server.vocabulary.repository.VocabularyWordRepository;
-import e_learning.server.vocabulary.review.dto.*;
+import e_learning.server.vocabulary.review.dto.request.MarkVocabularyWordRequest;
+import e_learning.server.vocabulary.review.dto.request.RecordVocabularyReviewRequest;
+import e_learning.server.vocabulary.review.dto.response.StudentVocabularyCardResponse;
+import e_learning.server.vocabulary.review.dto.response.StudentVocabularyUnitOverviewResponse;
+import e_learning.server.vocabulary.review.dto.response.VocabularyReviewPreviewResponse;
+import e_learning.server.vocabulary.review.dto.response.VocabularyReviewResultResponse;
 import e_learning.server.vocabulary.review.entity.StudentVocabularyProgress;
 import e_learning.server.vocabulary.review.entity.VocabularyReviewLog;
+import e_learning.server.vocabulary.review.entity.VocabularyReviewSource;
 import e_learning.server.vocabulary.review.repository.StudentVocabularyProgressRepository;
 import e_learning.server.vocabulary.review.repository.VocabularyReviewLogRepository;
 import e_learning.server.vocabulary.teacher.dto.VocabularyRelatedTermsDto;
@@ -25,8 +31,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.time.Duration;
 import java.util.EnumMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import io.github.openspacedrepetition.Rating;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -40,6 +48,7 @@ public class StudentVocabularyReviewService {
     private final VocabularyWordRepository wordRepository;
     private final StudentVocabularyProgressRepository progressRepository;
     private final VocabularyReviewLogRepository reviewLogRepository;
+    private final StudentVocabularyAccessPolicy accessPolicy;
 
     /** First encounter is a product learning policy; later reviews use Java-FSRS. */
     private Instant firstLearningDue(Instant reviewedAt, Rating rating) {
@@ -56,21 +65,24 @@ public class StudentVocabularyReviewService {
         VocabularyWord word = wordRepository.findById(wordId)
                 .filter(value -> value.getStatus() == VocabularyStatus.ACTIVE)
                 .orElseThrow(() -> new AppException(ErrorCode.VOCABULARY_WORD_NOT_FOUND));
-        studentUnitService.requireVisibleUnit(studentId, word.getUnit().getId());
+        accessPolicy.requireAccessible(studentId, word);
         var progress = progressRepository.findByStudentIdAndWordId(studentId, wordId).orElse(null);
         Instant now = Instant.now();
-        if (progress != null && progress.getDueAt().isAfter(now)) {
+        if (progress != null && !progress.isNeedsRelearning() && progress.getDueAt().isAfter(now)) {
             throw new AppException(ErrorCode.VOCABULARY_REVIEW_NOT_DUE,
                     "Từ này chưa đến lịch ôn. Vui lòng trở lại khi đến hạn.");
         }
-        Card previous = progress == null ? Card.builder().due(now).build()
+        boolean initial = progress == null || progress.isNeedsRelearning();
+        Card previous = initial ? Card.builder().due(now).build()
                 : Card.fromJson(progress.getCardJson());
-        var schedule = progress == null ? Scheduler.builder().learningSteps(new Duration[] {}).build()
+        var schedule = initial ? Scheduler.builder().learningSteps(new Duration[] {}).build()
                 : Scheduler.builder().build();
         Map<Rating, Instant> times = new EnumMap<>(Rating.class);
         for (Rating rating : Rating.values()) {
-            Instant firstDue = progress == null ? firstLearningDue(now, rating) : null;
-            times.put(rating, firstDue != null ? firstDue
+            Instant firstDue = initial ? firstLearningDue(now, rating) : null;
+            // Product policy: an AGAIN during scheduled Review resets to NEW immediately.
+            times.put(rating, !initial && rating == Rating.AGAIN ? now
+                    : firstDue != null ? firstDue
                     : schedule.reviewCard(new Card(previous), rating, now).card().getDue());
         }
         return new VocabularyReviewPreviewResponse(wordId, times);
@@ -102,6 +114,8 @@ public class StudentVocabularyReviewService {
     public List<StudentVocabularyCardResponse> listUnitCards(Long studentId, Long unitId) {
         studentUnitService.requireVisibleUnit(studentId, unitId);
         Instant now = Instant.now();
+        Set<Long> undoableBrowseMarks = new HashSet<>(reviewLogRepository
+                .findReversibleBrowseMarkWordIds(studentId, unitId, VocabularyReviewSource.BROWSE_MARK));
         Map<Long, StudentVocabularyProgress> progressByWord = progressRepository
                 .findAllByStudentIdAndWordUnitId(studentId, unitId).stream()
                 .collect(Collectors.toMap(progress -> progress.getWord().getId(), Function.identity()));
@@ -114,16 +128,56 @@ public class StudentVocabularyReviewService {
                             word.getPronunciationUk(), word.getPronunciationUs(), word.getPartOfSpeech(),
                             word.getImageUrl(), word.getExampleSentence(), word.getExampleMeaningVi(),
                             VocabularyRelatedTermsDto.fromValue(word.getRelatedTerms()),
-                            progress == null ? "NEW" : Card.fromJson(progress.getCardJson()).getState().name(),
-                            progress == null ? null : progress.getDueAt(),
+                            progress == null || progress.isNeedsRelearning() ? "NEW" : Card.fromJson(progress.getCardJson()).getState().name(),
+                            progress == null || progress.isNeedsRelearning() ? null : progress.getDueAt(),
                             progress == null ? 0 : progress.getReviewCount(),
-                            progress == null || !progress.getDueAt().isAfter(now));
+                            progress != null && !progress.isNeedsRelearning() && !progress.getDueAt().isAfter(now),
+                            undoableBrowseMarks.contains(word.getId()),
+                            progress != null && progress.isNeedsRelearning());
                 }).toList();
     }
 
     @Transactional
     public VocabularyReviewResultResponse recordReview(Long studentId, Long wordId, RecordVocabularyReviewRequest request) {
-        // The row lock also serializes two first reviews (when no progress row exists yet).
+        return recordReviewInternal(studentId, wordId, request, VocabularyReviewSource.STUDY);
+    }
+
+    /** Browse mark records an initial HARD rating, with a six-hour first due date. */
+    @Transactional
+    public VocabularyReviewResultResponse markKnown(Long studentId, Long wordId, MarkVocabularyWordRequest request) {
+        return recordReviewInternal(studentId, wordId,
+                new RecordVocabularyReviewRequest(request.requestId(), Rating.HARD), VocabularyReviewSource.BROWSE_MARK);
+    }
+
+    /** Undo only the original Browse mark, before another FSRS review occurs. */
+    @Transactional
+    public void unmarkKnown(Long studentId, Long wordId) {
+        User student = userRepository.findByIdForVocabularyReview(studentId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+        if (student.getRole() != Role.STUDENT) throw new AppException(ErrorCode.FORBIDDEN);
+        VocabularyWord word = wordRepository.findById(wordId)
+                .filter(value -> value.getStatus() == VocabularyStatus.ACTIVE)
+                .orElseThrow(() -> new AppException(ErrorCode.VOCABULARY_WORD_NOT_FOUND));
+        accessPolicy.requireAccessible(studentId, word);
+
+        StudentVocabularyProgress progress = progressRepository.findByStudentIdAndWordId(studentId, wordId)
+                .orElseThrow(() -> new AppException(ErrorCode.VOCABULARY_MARK_NOT_REVERSIBLE));
+        if (progress.isNeedsRelearning() || progress.getReviewCount() != 1) throw new AppException(ErrorCode.VOCABULARY_MARK_NOT_REVERSIBLE);
+
+        List<VocabularyReviewLog> history = reviewLogRepository.findAllByStudentIdAndWordId(studentId, wordId);
+        if (history.size() != 1 || history.getFirst().getSource() != VocabularyReviewSource.BROWSE_MARK
+                || !java.util.Objects.equals(history.getFirst().getProgress().getId(), progress.getId())) {
+            throw new AppException(ErrorCode.VOCABULARY_MARK_NOT_REVERSIBLE);
+        }
+
+        reviewLogRepository.delete(history.getFirst());
+        reviewLogRepository.flush(); // The review log references the progress row.
+        progressRepository.delete(progress);
+    }
+
+    private VocabularyReviewResultResponse recordReviewInternal(
+            Long studentId, Long wordId, RecordVocabularyReviewRequest request, VocabularyReviewSource source) {
+        // A student row lock serializes mark, unmark and scheduled review writes.
         User student = userRepository.findByIdForVocabularyReview(studentId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
         if (student.getRole() != Role.STUDENT) {
@@ -134,7 +188,8 @@ public class StudentVocabularyReviewService {
         var prior = reviewLogRepository.findByStudentIdAndRequestId(studentId, request.requestId());
         if (prior.isPresent()) {
             VocabularyReviewLog log = prior.get();
-            if (!log.getWord().getId().equals(wordId) || log.getRating() != request.rating()) {
+            if (!log.getWord().getId().equals(wordId) || log.getRating() != request.rating()
+                    || log.getSource() != source) {
                 throw new AppException(ErrorCode.VOCABULARY_REVIEW_REQUEST_CONFLICT);
             }
             return toResult(log);
@@ -143,25 +198,29 @@ public class StudentVocabularyReviewService {
         VocabularyWord word = wordRepository.findById(wordId)
                 .filter(value -> value.getStatus() == VocabularyStatus.ACTIVE)
                 .orElseThrow(() -> new AppException(ErrorCode.VOCABULARY_WORD_NOT_FOUND));
-        studentUnitService.requireVisibleUnit(studentId, word.getUnit().getId());
+        accessPolicy.requireAccessible(studentId, word);
 
         Instant reviewedAt = Instant.now();
         StudentVocabularyProgress progress = progressRepository.findByStudentIdAndWordId(studentId, wordId)
                 .orElse(null);
-        if (progress != null && progress.getDueAt().isAfter(reviewedAt)) {
+        if (source == VocabularyReviewSource.BROWSE_MARK && progress != null) {
+            throw new AppException(ErrorCode.VOCABULARY_MARK_ALREADY_RECORDED);
+        }
+        if (progress != null && !progress.isNeedsRelearning() && progress.getDueAt().isAfter(reviewedAt)) {
             throw new AppException(ErrorCode.VOCABULARY_REVIEW_NOT_DUE,
                     "Từ này chưa đến lịch ôn. Bạn có thể luyện thêm nhưng không ghi lịch FSRS trước hạn.");
         }
 
         // Never recalculate the FSRS algorithm ourselves; persist the complete library Card JSON.
-        Card previousCard = progress == null ? Card.builder().due(reviewedAt).build()
+        boolean initial = progress == null || progress.isNeedsRelearning();
+        Card previousCard = initial ? Card.builder().due(reviewedAt).build()
                 : Card.fromJson(progress.getCardJson());
-        Scheduler scheduler = progress == null ? Scheduler.builder().learningSteps(new Duration[] {}).build()
+        Scheduler scheduler = initial ? Scheduler.builder().learningSteps(new Duration[] {}).build()
                 : Scheduler.builder().build();
         CardAndReviewLog scheduled = scheduler
                 .reviewCard(previousCard, request.rating(), reviewedAt);
         Card nextCard = scheduled.card();
-        if (progress == null) {
+        if (initial) {
             Instant firstDue = firstLearningDue(reviewedAt, request.rating());
             if (firstDue != null) nextCard.setDue(firstDue);
         }
@@ -170,15 +229,19 @@ public class StudentVocabularyReviewService {
             progress = StudentVocabularyProgress.builder()
                     .student(student).word(word).build();
         }
-        progress.setCardJson(nextCard.toJson());
-        progress.setDueAt(nextCard.getDue());
+        // Keep the immutable AGAIN review, but reset the active FSRS card for guided learning.
+        boolean restart = !initial && source == VocabularyReviewSource.STUDY
+                && request.rating() == Rating.AGAIN;
+        progress.setCardJson(restart ? Card.builder().due(reviewedAt).build().toJson() : nextCard.toJson());
+        progress.setDueAt(restart ? reviewedAt : nextCard.getDue());
+        progress.setNeedsRelearning(restart);
         progress.setLastReviewedAt(reviewedAt);
         progress.setReviewCount(count);
         progress = progressRepository.save(progress);
 
         VocabularyReviewLog log = VocabularyReviewLog.builder()
                 .progress(progress).student(student).word(word)
-                .requestId(request.requestId()).rating(request.rating())
+                .requestId(request.requestId()).rating(request.rating()).source(source)
                 .reviewedAt(reviewedAt).dueAt(nextCard.getDue())
                 .cardState(nextCard.getState().name()).reviewCount(count)
                 .cardJson(nextCard.toJson()).reviewLogJson(scheduled.reviewLog().toJson())

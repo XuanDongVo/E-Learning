@@ -14,12 +14,16 @@
 [ ] Accessibility checked
 
 ## Student visual-design gate (for Student UI changes)
+[ ] Applicable [Student UI Governance](../ui/STUDENT_UI_GOVERNANCE.md) workflow followed: Screen Brief + archetype; Page Visual Brief for new pages/material redesigns, or explained smaller-change exemption
+[ ] Existing Student patterns/assets inspected before adding a new one; any new shared recipe has a justified reuse purpose
+[ ] PR includes actual verification/evidence or explicitly marked pending checks (manual review, not automated)
 [ ] Canonical Indie Illustrated Scrapbook design rules read and followed
 [ ] No alternative Student palette, font system or one-off design language introduced
 [ ] Visual rules implemented through approved tokens/components, not hard-coded per page
 [ ] Teacher appearance and shared components unaffected by Student styles
 [ ] Theme scope, portals/toasts, focus, contrast, mobile and reduced-motion checked when relevant
 [ ] Live data not replaced by fabricated achievements/progress
+[ ] New external assets have documented rights/attribution and approved visual role; high-focus illustration exceptions are explained when applicable
 
 ## Knowledge-base contract gate
 [ ] Accepted ADRs reflected in active specs/domain/UI

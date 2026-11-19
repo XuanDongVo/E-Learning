@@ -248,4 +248,17 @@ The server calculates and persists the Assignment score on submit/timeout regard
 # Vocabulary FSRS review preview (2026-11-11)
 
 - `GET /v1/student/vocabulary/words/{wordId}/review-preview` requires an authenticated Student with access to the word's published Unit; returns `{ wordId, dueAtByRating: { AGAIN, HARD, GOOD, EASY } }` in the standard `ApiResponse` envelope. It does not mutate review progress.
-- Initial HARD/GOOD/EASY ratings persist 6h/12h/1d respectively and initialize Java-FSRS Card state. Subsequent review timestamps come from the library. Learn `Học lại` stays client-only; Review `AGAIN` is a server rating.
+- Initial HARD/GOOD/EASY ratings persist 6h/12h/1d respectively and initialize Java-FSRS Card state. Subsequent review timestamps come from the library. Learn `Học lại` stays client-only; Review `AGAIN` is a server rating that follows ADR 0037/V65 and returns the word to Learn through `needsRelearning` while preserving its review log.
+
+## Vocabulary Library and all-DUE Review (backend implemented 2026-11-18)
+
+- ADR 0037 and `plans/VOCABULARY_LIBRARY_DUE_REVIEW_SPEC.md` are authoritative.
+- Library Summary plus Learned/Due/Waiting browse reads are cross-source Student
+  reads. Browse lists are paginated; classification is server-time authoritative.
+- `GET /v1/student/vocabulary/review-queue` returns the complete, non-paginated,
+  full-detail DUE snapshot. Pagination, search and current source presentation do
+  not narrow it, and the server must not silently truncate it.
+- Vocabulary preview, Library, Queue and rating writes share a Vocabulary-owned
+  Student access policy. Its current result is the existing published-Unit and
+  current-Grade rule; the API/domain boundary does not make Unit the permanent
+  vocabulary source abstraction.

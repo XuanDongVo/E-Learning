@@ -44,17 +44,15 @@ public class StudentUnitService {
      * Get published units visible to the current student.
      */
     public List<StudentUnitSummaryResponse> getMyUnits(Long studentId) {
-
-        Long gradeId = resolveStudentGradeId(studentId);
-
-        List<Unit> units = unitRepository
-                .findAllByGradeIdAndStatusOrderByDisplayOrderAsc(
-                        gradeId,
-                        ContentStatus.PUBLISHED
-                );
-
-        return units.stream()
+        return findVisibleUnits(studentId).stream()
                 .map(this::toUnitSummary)
+                .toList();
+    }
+
+    /** Lean visibility projection for vocabulary and other read policies. */
+    public List<Long> getVisibleUnitIds(Long studentId) {
+        return findVisibleUnits(studentId).stream()
+                .map(Unit::getId)
                 .toList();
     }
 
@@ -132,6 +130,13 @@ public class StudentUnitService {
                 .getClassEntity()
                 .getGrade()
                 .getId();
+    }
+
+    private List<Unit> findVisibleUnits(Long studentId) {
+        return unitRepository.findAllByGradeIdAndStatusOrderByDisplayOrderAsc(
+                resolveStudentGradeId(studentId),
+                ContentStatus.PUBLISHED
+        );
     }
 
     /**

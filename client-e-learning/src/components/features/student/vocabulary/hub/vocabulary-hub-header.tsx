@@ -47,7 +47,7 @@ export function VocabularyHubHeader({
               role="tab"
               aria-selected={isActive}
               onClick={() => onSelectTab(key)}
-              className={`student-vocab-hub-tab inline-flex min-w-0 items-center justify-center gap-2 rounded-xl px-4 py-2 student-control ${
+              className={`student-vocab-hub-tab inline-flex min-w-0 items-center justify-center gap-2 rounded-xl px-4 py-2 student-control hover:cursor-pointer ${
                 isActive ? "student-filter-active" : "student-control--quiet"
               }`}
             >

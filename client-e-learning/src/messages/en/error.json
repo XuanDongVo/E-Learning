@@ -89,6 +89,14 @@
     "ASSESSMENT_ATTEMPT_SAVE_FAILED": "The answer could not be saved. Please try again.",
     "ASSESSMENT_ATTEMPT_INVALID_STATE": "The assessment attempt is not in a writable state.",
     "ASSESSMENT_ATTEMPT_REQUEST_REPLAY": "This request has already been processed.",
+    "VOCABULARY_WORD_NOT_FOUND": "The vocabulary word could not be found or is no longer accessible.",
+    "VOCABULARY_WORD_ALREADY_EXISTS": "This vocabulary word already exists in its content source.",
+    "VOCABULARY_RELATED_TERMS_INVALID": "The related vocabulary information is invalid.",
+    "VOCABULARY_REVIEW_NOT_DUE": "This word is no longer due. Its schedule may have changed elsewhere.",
+    "VOCABULARY_MARK_ALREADY_RECORDED": "This word already has a learning schedule and cannot be marked again.",
+    "VOCABULARY_MARK_NOT_REVERSIBLE": "The mark cannot be undone after another review has been scheduled.",
+    "VOCABULARY_REVIEW_REQUEST_CONFLICT": "This review conflicts with a request that was already submitted.",
+    "VOCABULARY_WORD_HAS_PROGRESS": "This word has learning progress; hide it instead of deleting it.",
     "UNKNOWN_ERROR": "Something went wrong. Please try again."
   }
 }

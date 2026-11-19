@@ -38,7 +38,7 @@ export function ActivityHistoryFilters({
               type="button"
               aria-pressed={period === value}
               onClick={() => onPeriodChange(value)}
-              className={`student-control px-3 ${
+              className={`student-control min-w-0 whitespace-normal px-3 text-center leading-snug ${
                 period === value ? "student-filter-active" : "student-control--quiet"
               }`}
             >

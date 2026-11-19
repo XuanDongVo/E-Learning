@@ -31,6 +31,8 @@ public enum ErrorCode {
     VOCABULARY_WORD_ALREADY_EXISTS(HttpStatus.CONFLICT, "VOCABULARY_WORD_ALREADY_EXISTS", "Từ vựng đã tồn tại trong Unit"),
     VOCABULARY_RELATED_TERMS_INVALID(HttpStatus.BAD_REQUEST, "VOCABULARY_RELATED_TERMS_INVALID", "Thông tin từ liên quan không hợp lệ"),
     VOCABULARY_REVIEW_NOT_DUE(HttpStatus.CONFLICT, "VOCABULARY_REVIEW_NOT_DUE", "Từ này chưa đến lịch ôn tiếp theo"),
+    VOCABULARY_MARK_ALREADY_RECORDED(HttpStatus.CONFLICT, "VOCABULARY_MARK_ALREADY_RECORDED", "Từ này đã có lịch học, không thể đánh dấu lại"),
+    VOCABULARY_MARK_NOT_REVERSIBLE(HttpStatus.CONFLICT, "VOCABULARY_MARK_NOT_REVERSIBLE", "Chỉ có thể hủy đánh dấu từ Xem từ khi chưa có lần ôn tiếp theo"),
     VOCABULARY_REVIEW_REQUEST_CONFLICT(HttpStatus.CONFLICT, "VOCABULARY_REVIEW_REQUEST_CONFLICT", "Yêu cầu ôn tập đã được sử dụng với nội dung khác"),
     VOCABULARY_WORD_HAS_PROGRESS(HttpStatus.CONFLICT, "VOCABULARY_WORD_HAS_PROGRESS", "Từ đã có lịch học, vui lòng chuyển sang Tạm ẩn thay vì xóa"),
     UNIT_CODE_ALREADY_EXISTS(HttpStatus.CONFLICT, "UNIT_CODE_ALREADY_EXISTS", "A unit with this code already exists for this grade"),

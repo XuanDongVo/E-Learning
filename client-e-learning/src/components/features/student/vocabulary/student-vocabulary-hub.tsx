@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { BookOpen } from "lucide-react";
 import { FullPageState } from "@/components/feedback";
@@ -14,6 +14,8 @@ import {
   VocabularyHubHeader,
   VocabularyStudyTab,
   vocabularyUnitCardsKey,
+  isVocabularyCardDue,
+  nextVocabularyDueAt,
   type HubTab,
 } from "./hub";
 
@@ -25,6 +27,7 @@ export function StudentVocabularyHub({
   initialTab?: HubTab;
 }) {
   const [tab, setTab] = useState<HubTab>(initialTab);
+  const [nowMs, setNowMs] = useState(() => Date.now());
 
   const validUnitId = Number.isSafeInteger(unitId) && unitId > 0;
   // const unitQuery = useQuery({
@@ -42,7 +45,29 @@ export function StudentVocabularyHub({
 
   const cards = useMemo(() => cardsQuery.data?.data ?? [], [cardsQuery.data?.data]);
 
-  const dueCards = useMemo(() => cards.filter((card) => card.state !== "NEW" && card.due), [cards]);
+  const dueCards = useMemo(() => cards.filter((card) => isVocabularyCardDue(card, nowMs)), [cards, nowMs]);
+  const nextDueAt = useMemo(() => nextVocabularyDueAt(cards, nowMs), [cards, nowMs]);
+
+  useEffect(() => {
+    if (nextDueAt === null) return;
+    const timer = window.setTimeout(() => {
+      setNowMs(Date.now());
+      void cardsQuery.refetch();
+    }, Math.min(2_147_000_000, Math.max(0, nextDueAt - Date.now() + 250)));
+    return () => window.clearTimeout(timer);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [nextDueAt, unitId]);
+
+  useEffect(() => {
+    const refresh = () => {
+      if (document.visibilityState !== "visible") return;
+      setNowMs(Date.now());
+      void cardsQuery.refetch();
+    };
+    document.addEventListener("visibilitychange", refresh);
+    return () => document.removeEventListener("visibilitychange", refresh);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [unitId]);
 
   const pickTab = (next: HubTab) => {
     setTab(next);
@@ -77,7 +102,7 @@ export function StudentVocabularyHub({
   }
 
   return (
-    <main className="student-vocab student-vocab-unit mx-auto !max-w-4xl space-y-6 pb-10">
+    <main className="student-vocab student-vocab-unit mx-auto !max-w-4xl space-y-6 pb-10 p-1">
       <VocabularyHubHeader
         currentTab={tab}
         dueCount={dueCards.length}
@@ -95,6 +120,7 @@ export function StudentVocabularyHub({
       {cards.length > 0 && tab === "browse" && (
         <VocabularyBrowseTab
           cards={cards}
+          nowMs={nowMs}
           onGoLearn={() => pickTab("learn")}
         />
       )}
@@ -104,6 +130,7 @@ export function StudentVocabularyHub({
           tab={tab}
           unitId={unitId}
           cards={cards}
+          nowMs={nowMs}
         />
       )}
 

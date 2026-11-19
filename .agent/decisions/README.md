@@ -41,6 +41,7 @@ An accepted ADR overrides lower-level documents. Never delete an ADR; supersede 
 | 0034 | Teacher Assignment portfolio summary | **Accepted; operational list summary** |
 | 0035 | Unified Bulk Guided Composer | **Accepted; implemented source slice** |
 | 0036 | Activity session delivery and attempt history | **Accepted; V62/M3 runtime contract** |
+| 0037 | Vocabulary Library, all-DUE Review and relearning | **Accepted; backend implemented, Client pending** |
 
 ## Current decision chain
 
@@ -67,6 +68,11 @@ ADR 0029 also locks the Activity XP v2.2 outcome matrix, Hint precedence, Level 
 ADR 0030 locks the Activity completion-only daily Streak, calendar timezone, 3/7/14/30 milestone bonuses and per-run re-award policy. See `.agent/plans/STUDENT_STREAK_LEVEL_IMPLEMENTATION.md`.
 
 ADR 0032 replaces the Student Playful Classroom visual direction with Indie Illustrated Scrapbook. The older ADR 0031 Streak/Level and rewards requirements remain in effect; Teacher visual identity stays unchanged. The canonical aesthetic is `.agent/ui/INDIE_ILLUSTRATED_SCRAPBOOK_DESIGN_SYSTEM.md`.
+
+ADR 0037 accepts the Vocabulary Library classification, the V65 Review AGAIN
+reset-to-Learn behavior, a complete non-paginated all-DUE Review snapshot, and a
+Vocabulary-owned access-policy boundary that currently preserves published-Unit
+Grade visibility without making Unit the permanent source abstraction.
 
 ## Canonical implementation plan
 

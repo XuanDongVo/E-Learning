@@ -9,9 +9,11 @@ interface VocabularyWordRowProps {
   card: StudentVocabularyStudyCard;
   onSelectWord?: (card: StudentVocabularyStudyCard) => void;
   onToggleFavorite?: (wordId: number) => void;
-  onToggleMastered?: (wordId: number) => void;
+  onToggleMastered?: (card: StudentVocabularyStudyCard) => void;
   isFavorite?: boolean;
   isMastered?: boolean;
+  canUndoBrowseMark?: boolean;
+  markBusy?: boolean;
 }
 
 function formatPartOfSpeech(pos?: string | null): string {
@@ -35,6 +37,8 @@ export function VocabularyWordRow({
   onToggleMastered,
   isFavorite = false,
   isMastered = false,
+  canUndoBrowseMark = false,
+  markBusy = false,
 }: VocabularyWordRowProps) {
   const [imageError, setImageError] = useState(false);
   const [activeAudio, setActiveAudio] = useState<"UK" | "US" | null>(null);
@@ -170,7 +174,7 @@ export function VocabularyWordRow({
               </div>
             )}
 
-            <div className="student-vocab-word-row-actions flex items-center gap-1 text-muted-foreground">
+            <div className=" flex items-center gap-1 text-muted-foreground">
               {onToggleFavorite && (
                 <button
                   type="button"
@@ -192,12 +196,17 @@ export function VocabularyWordRow({
                   type="button"
                   onClick={(e) => {
                     e.stopPropagation();
-                    onToggleMastered(card.wordId);
+                    onToggleMastered(card);
                   }}
-                  className={`rounded-md p-1.5 transition-colors hover:bg-muted ${
+                  disabled={markBusy || card.needsRelearning || (isMastered && !canUndoBrowseMark)}
+                  aria-pressed={isMastered}
+                  aria-label={card.needsRelearning ? "Từ đã quên: hãy học lại trong tab Học" : isMastered ? (canUndoBrowseMark ? "Hủy đánh dấu đã thuộc" : "Từ đã có lịch học") : "Đánh dấu đã thuộc, ôn sau 6 giờ"}
+                  className={`rounded-md p-1.5 transition-colors hover:bg-muted disabled:cursor-default disabled:opacity-70 ${
                     isMastered ? "text-success" : "hover:text-foreground"
                   }`}
-                  title="Đánh dấu đã thuộc"
+                  title={card.needsRelearning ? "Từ đã quên: học lại trong tab Học từ mới" : isMastered
+                    ? canUndoBrowseMark ? "Hủy đánh dấu (trở lại từ mới)" : "Từ đã có lịch ôn"
+                    : "Đánh dấu đã thuộc · ôn sau 6 giờ"}
                 >
                   <CheckCircle2 className="size-4" />
                 </button>

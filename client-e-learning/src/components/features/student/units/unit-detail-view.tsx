@@ -3,7 +3,7 @@
 import { Link } from "@/i18n/navigation";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, BookOpen, BookMarked, ChevronRight, ListTree, RotateCcw, Tag, Zap } from "lucide-react";
+import { BookOpen, BookMarked, ChevronRight, ListTree, RotateCcw, Tag, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FullPageState } from "@/components/feedback";
 import { studentUnitService } from "@/services/student-unit.service";
@@ -12,6 +12,7 @@ import { ActivityCard } from "./activity-card";
 import { UnitCover, unitLabel } from "./unit-cover";
 import { PaperSurface } from "@/components/student-ui/paper-surface";
 import { ScrapbookHeading } from "@/components/student-ui/scrapbook-heading";
+import { StudentBackLink } from "@/components/student-ui/patterns/student-back-link";
 
 type Filter = number | "all";
 
@@ -99,15 +100,9 @@ export function UnitDetailView({ unitId, mascotSlot }: UnitDetailViewProps) {
 
   return (
     <div className="student-unit-detail space-y-6 pb-8">
-      <Link
-        href="/student/units"
-        className="student-label inline-flex min-h-11 items-center gap-2 text-muted-foreground hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-      >
-        <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-        <span>Tất cả bài học</span>
-      </Link>
+      <StudentBackLink href="/student/units">Tất cả bài học</StudentBackLink>
 
-      <PaperSurface as="section" variant="kraft" tape tapePosition="right" className="student-unit-detail-hero">
+      <PaperSurface as="section" variant="kraft" emphasis="feature" tape tapePosition="right" className="student-unit-detail-hero">
         <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
           <div className="student-unit-cover-frame relative shrink-0 overflow-hidden sm:w-48">
             <UnitCover

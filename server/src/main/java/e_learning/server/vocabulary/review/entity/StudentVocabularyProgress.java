@@ -40,6 +40,11 @@ public class StudentVocabularyProgress {
     @Column(name = "last_reviewed_at")
     private Instant lastReviewedAt;
 
+    /** Forgotten in Review: return to the guided Learn flow without deleting review logs. */
+    @Builder.Default
+    @Column(name = "needs_relearning", nullable = false)
+    private boolean needsRelearning = false;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 

@@ -31,7 +31,7 @@
   background: var(--secondary);
   color: var(--foreground);
   font-family: var(--student-font-body);
-  font-size: var(--app-font-body-size);
+  font-size: var(--student-type-body-size);
   font-weight: 700;
 }
 
@@ -47,7 +47,7 @@
   background: var(--student-paper);
   color: var(--foreground);
   font-family: var(--student-font-body);
-  font-size: var(--app-font-body-size);
+  font-size: var(--student-type-body-size);
   font-weight: 700;
   transition: background-color 120ms ease;
 }
@@ -121,7 +121,7 @@
 :is(.student-theme, body:has(.student-theme)) .student-vocab-library-grid {
   display: grid;
   gap: 1rem;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr);
 }
 
 :is(.student-theme, body:has(.student-theme)) .student-vocab,
@@ -192,28 +192,25 @@
   overflow-wrap: anywhere;
 }
 
+@media (min-width: 640px) {
+  :is(.student-theme, body:has(.student-theme)) .student-vocab-library-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1180px) {
+  :is(.student-theme, body:has(.student-theme)) .student-vocab-library-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
 @media (min-width: 700px) {
-  :is(.student-theme, body:has(.student-theme)) .student-vocab-collection {
-    flex-direction: row;
-  }
-
-  :is(.student-theme, body:has(.student-theme)) .student-vocab-collection-cover {
-    flex: 0 0 7rem;
-    width: 7rem;
-    height: auto;
-    min-height: 10rem;
-  }
-
   :is(.student-theme, body:has(.student-theme)) .student-vocab-answer--illustrated {
     grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
   }
 }
 
 @media (max-width: 699px) {
-  :is(.student-theme, body:has(.student-theme)) .student-vocab-library-grid {
-    grid-template-columns: 1fr;
-  }
-
   :is(.student-theme, body:has(.student-theme)) .student-vocab-word-row-cta {
     flex: 1 1 100%;
   }

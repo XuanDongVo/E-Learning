@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { StudentVocabularyStudyCard } from "@/types/student-vocabulary-review";
 
 type QueueState = {
@@ -30,6 +30,11 @@ function nextWord(queue: QueueState): QueueState {
 export function useVocabularyLearnQueue(unitId: number, cards: StudentVocabularyStudyCard[]) {
   const ids = useMemo(() => cards.filter((card) => card.state === "NEW").map((card) => card.wordId), [cards]);
   const allIds = useMemo(() => new Set(cards.map((card) => card.wordId)), [cards]);
+  const relearnIds = useMemo(
+    () => new Set(cards.filter((card) => card.needsRelearning).map((card) => card.wordId)),
+    [cards],
+  );
+  const previousRelearnIds = useRef(relearnIds);
   const storageKey = `vocabulary-learn-queue:${unitId}`;
   const [queue, setQueue] = useState<QueueState>(() => initialQueue(ids));
 
@@ -42,7 +47,7 @@ export function useVocabularyLearnQueue(unitId: number, cards: StudentVocabulary
         const parsed = JSON.parse(raw) as QueueState;
         if (Array.isArray(parsed.unseen) && Array.isArray(parsed.retry) && Array.isArray(parsed.completed)) {
           const unique = (items: number[]) => [...new Set(items.filter((id) => valid.has(id)))];
-          const completed = [...new Set(parsed.completed.filter((id) => allIds.has(id)))];
+          const completed = [...new Set(parsed.completed.filter((id) => allIds.has(id) && !relearnIds.has(id)))];
           const retry = unique(parsed.retry).filter((id) => !completed.includes(id)).slice(0, MAX_RETRY);
           const current = parsed.current != null && valid.has(parsed.current) && !completed.includes(parsed.current)
             ? parsed.current : null;
@@ -59,9 +64,13 @@ export function useVocabularyLearnQueue(unitId: number, cards: StudentVocabulary
   }, [unitId]);
 
   useEffect(() => {
+    // Only NEW transitions into relearning invalidate an earlier local completion.
+    // Do not repeatedly remove a word completed during relearning while API cache is stale.
+    const newlyForgotten = new Set([...relearnIds].filter((id) => !previousRelearnIds.current.has(id)));
+    previousRelearnIds.current = relearnIds;
     setQueue((prev) => {
       const valid = new Set(ids);
-      const completed = prev.completed.filter((id) => allIds.has(id));
+      const completed = prev.completed.filter((id) => allIds.has(id) && !newlyForgotten.has(id));
       const retry = prev.retry.filter((id) => valid.has(id));
       const current = prev.current !== null && valid.has(prev.current) ? prev.current : null;
       const used = new Set([...completed, ...retry, ...(current === null ? [] : [current])]);
@@ -69,7 +78,7 @@ export function useVocabularyLearnQueue(unitId: number, cards: StudentVocabulary
       if (current === null) return nextWord({ unseen, retry, completed, current, revision: prev.revision, currentIsRetry: false });
       return { unseen: [...new Set(unseen)], retry, completed, current, revision: prev.revision, currentIsRetry: prev.currentIsRetry };
     });
-  }, [ids, allIds]);
+  }, [ids, allIds, relearnIds]);
 
   useEffect(() => {
     try { sessionStorage.setItem(storageKey, JSON.stringify(queue)); } catch { /* Non-blocking. */ }

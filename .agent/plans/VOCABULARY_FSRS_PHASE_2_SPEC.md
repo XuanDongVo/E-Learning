@@ -39,6 +39,13 @@ Visibility exactly matches published Units of the student's ACTIVE-class Grade.
    logical answer and reused on HTTP retry; using it with another word/rating
    returns `409 VOCABULARY_REVIEW_REQUEST_CONFLICT`.
 
+### Accepted relearning amendment (2026-11-18)
+
+ADR 0037 and V65 define scheduled Review `AGAIN`: retain the append-only review
+log, reset the active FSRS card, set `needs_relearning = true`, and expose the
+word as NEW to the existing Learn flow. It is excluded from learned/due/waiting
+Library sets and is not added back to the current Review pass.
+
 ## Error contract and FE
 
 - Vocabulary validation errors use `AppException(ErrorCode, detail)` and API

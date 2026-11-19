@@ -1,7 +1,7 @@
 package e_learning.server.vocabulary.review.controller;
 
 import e_learning.server.common.response.ApiResponse;
-import e_learning.server.vocabulary.review.dto.VocabularyProgressDashboardResponse;
+import e_learning.server.vocabulary.review.dto.response.VocabularyProgressDashboardResponse;
 import e_learning.server.vocabulary.review.service.StudentVocabularyProgressService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;

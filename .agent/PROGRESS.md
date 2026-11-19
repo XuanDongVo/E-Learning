@@ -1,5 +1,15 @@
 # Project Progress
 
+## 2026-11-19 Student Design System v2 — Phase 5 reference-page migration
+
+- Polished four reference flows in Student-only source: Learning Hub, Units, Vocabulary overview/Word Library and Activity History. Reduced competing decoration, tightened hierarchy, improved responsive collection density and made active filters/results easier to understand.
+- Vocabulary overview uses 1-column mobile, 2-column from 640px and 3-column from 1180px; real total/new/due counts only after successful fetch. Per-card learn action is primary, view/review remain accessible.
+- Learning Hub removes the fake fixed chapter label and reuses shared empty/retry components. Units now displays a truthful filtered count. Activity History uses a quieter contextual header and an always-available clear-filters action when filtering.
+- Word Library status selectors now use group + aria-pressed instead of incomplete tab semantics; result-count announcements are separate from list updates.
+- Added `.agent/ui/STUDENT_PHASE_5_REFERENCE_PAGES.md` with file-level baseline/change log and an explicit mobile/desktop/Teacher/browser QA matrix.
+- Implementation is source-only; GitHub did not execute tests, lint, build, responsive screenshots or accessibility checks. **Do not mark Phase 5 visual acceptance complete until those checks run.**
+
+
 ## 2026-11-19 Student Design System v2 — Phase 4 reusable page patterns
 
 - Added `components/student-ui/patterns/`: StudentPageHeading, StudentBackLink, StudentCollectionPanel, StudentCollectionEmptyState (presentation only; no feature query or filter logic).

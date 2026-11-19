@@ -1,5 +1,14 @@
 # Project Progress
 
+## 2026-11-19 Student UI Design Governance — Phase 6E only (documentation)
+
+- Added `.agent/ui/STUDENT_UI_GOVERNANCE.md` as the **single procedural** entry point for new Student pages, redesigns, shared controls and new visual assets; existing visual/spec documents remain the authorities for style, domain and approved assets.
+- Added a copyable Student Screen + Page Visual Brief template and a repository-wide GitHub PR description template with **conditional** Student UI checklist.
+- Linked the governance workflow from root/frontend AGENTS, the knowledge base index, UI Architecture Guidelines and the existing Definition of Done.
+- Specified change-size exemptions, evidence statuses (verified/pending/N/A), severity/blocking review expectations and Teacher isolation. No CSS, JSX, server code, assets, routes, GitHub CI, approval rules or branch protection altered.
+- This is a manual review process. No build, test, browser regression or CI run was performed for documentation-only changes; Phase 6A–6D/6F remain out of scope.
+
+
 ## 2026-11-19 Student Design System v2 — Phase 5 reference-page migration
 
 - Polished four reference flows in Student-only source: Learning Hub, Units, Vocabulary overview/Word Library and Activity History. Reduced competing decoration, tightened hierarchy, improved responsive collection density and made active filters/results easier to understand.

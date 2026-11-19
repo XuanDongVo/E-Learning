@@ -10,8 +10,9 @@ Before changing frontend code:
 - Follow [`.agent/architecture/frontend.md`](../.agent/architecture/frontend.md)
   and [`.agent/ui/UI_ARCHITECTURE_GUIDELINES.md`](../.agent/ui/UI_ARCHITECTURE_GUIDELINES.md).
 - For every Student route or shared component rendered by Student, also follow
-  [`.agent/ui/INDIE_ILLUSTRATED_SCRAPBOOK_DESIGN_SYSTEM.md`](../.agent/ui/INDIE_ILLUSTRATED_SCRAPBOOK_DESIGN_SYSTEM.md)
-  and ADR 0032.
+  [`.agent/ui/INDIE_ILLUSTRATED_SCRAPBOOK_DESIGN_SYSTEM.md`](../.agent/ui/INDIE_ILLUSTRATED_SCRAPBOOK_DESIGN_SYSTEM.md),
+  [`.agent/ui/STUDENT_UI_GOVERNANCE.md`](../.agent/ui/STUDENT_UI_GOVERNANCE.md)
+  and ADR 0032. New Student pages/material redesigns require a Screen + Page Visual Brief; small bugfixes may use the streamlined brief. The [PR template](../.github/pull_request_template.md) records review evidence.
 
 Student feature code must use scoped semantic tokens, typography roles and
 `components/student-ui` recipes. Raw colors, arbitrary type sizes and page-local

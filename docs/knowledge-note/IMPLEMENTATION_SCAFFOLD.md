@@ -1,47 +1,49 @@
-# Knowledge Note — Simple MVP scaffold (v3.2)
+# Knowledge Note — Implementation status (Phase 01 approved metadata slice)
 
-Branch: `feature/guided-reasoning-v1`  
-Status: **Scaffold only — no business feature implemented**
+**Branch:** `feature/guided-reasoning-v1`  
+**Authority:** [ADR 0039](../../.agents/decisions/0039-knowledge-note-phase-01-boundary.md) and [PHASE_01_APPROVED.md](./PHASE_01_APPROVED.md).
 
-## Approved structure
-Two effective tables:
-- `knowledge_notes`: independently Grade-scoped Note, metadata, current document JSON, optional summary JSON, schema/edit version, lifecycle status.
-- `knowledge_note_topic_links`: optional many-to-many Topic associations, unique pair and at most one Primary per Topic (not required).
+## Current API implementation
+Only the following three Teacher endpoints are implemented in source:
+- `POST /v1/teacher/knowledge-notes`
+- `GET /v1/teacher/knowledge-notes`
+- `GET /v1/teacher/knowledge-notes/{id}`
 
-No KnowledgeNoteDraft or KnowledgeNoteRevision entity, repository, DTO or API. No category, cover/media or image block in MVP. Published saves become visible immediately; warn Teacher before editing/saving a Published Note, or use Unpublish → Edit → Publish.
+GET list supports page (1-indexed), size, gradeId, status, search, linked. The response uses existing `server/common/dto/PageResponse<T>`. Access is Teacher-only via existing Spring Security `/v1/teacher/**` rules. None of these APIs reads or writes learning document content.
 
-## Flyway migration policy
-- `V66__knowledge_note_foundation.sql`: previous scaffold migration; **do not rewrite**, since Flyway may have recorded its checksum.
-- `V67__simplify_knowledge_notes.sql`: removes initial Draft/Revision tables, published revision FK and adds direct JSON fields to `knowledge_notes`. An existing database runs V66 then V67, a fresh database also runs both.
-- V67 drops the provisional tables. Although Knowledge Note APIs have always returned HTTP 501, review database contents/backup first if any out-of-band data was inserted. PostgreSQL migration tests remain pending.
+## Final package layout for approved slice
+```text
+server/src/main/java/e_learning/server/knowledge/
+├── entity/
+│   ├── KnowledgeNote.java
+│   └── KnowledgeNoteTopicLink.java
+├── enums/KnowledgeNoteStatus.java
+├── repository/
+│   ├── KnowledgeNoteRepository.java
+│   └── KnowledgeNoteTopicLinkRepository.java
+└── teacher/
+    ├── controller/TeacherKnowledgeNoteController.java
+    ├── service/TeacherKnowledgeNoteService.java
+    ├── dto/
+    │   ├── request/CreateKnowledgeNoteRequest.java
+    │   └── response/KnowledgeNoteResponse.java
+    └── mapper/KnowledgeNoteMapper.java
+```
 
-## Server source
-`server/src/main/java/e_learning/server/content/knowledge/`
-- entity: `KnowledgeNote`, `KnowledgeNoteTopicLink`.
-- repository: matching JPA repositories.
-- dto: `CreateKnowledgeNoteRequest`, `UpdateKnowledgeNoteMetadataRequest`, `SaveKnowledgeNoteContentRequest`, `KnowledgeNoteContentResponse`, `KnowledgeNoteResponse`, `StudentKnowledgeNoteResponse`, link/pagination/list contracts.
-- controller: Teacher authoring, Teacher Topic links, Student read.
-- service: Authoring, TopicLink, Student read, PhaseGate (HTTP 501).
-- access, validation and mapper seams — fail closed until implemented.
+The Student `controller`, `service`, and `dto/request`, `dto/response` directories are reserved as a **future package convention**, not created as unused empty folders. Topic-link services are also deferred pending UI/design review. Keeping the entity `KnowledgeNoteTopicLink` and repository is intentional: already part of the database model and used to count associations in metadata responses.
 
-Teacher: `GET/PUT /v1/content/knowledge-notes/{id}/content`. No `/draft` or `/revisions` endpoints. Student read API names unchanged.
+## Database
+`V66__knowledge_note_foundation.sql` and `V67__simplify_knowledge_notes.sql` are unchanged. After V67, the final schema has two tables: `knowledge_notes` and `knowledge_note_topic_links`. No Draft/Revision entities. No category/media fields.
 
-## Client source
-- `src/types/knowledge-note.ts`: `KnowledgeNote`, `KnowledgeNoteContent`, `SaveKnowledgeNoteContentRequest`, TopicLink and Student contracts.
-- `src/services/teacher/content/knowledge-note.service.ts`: `getContent`, `saveContent`, lifecycle and Topic links.
-- `src/services/student/student-knowledge-note.service.ts`: Student Library/Reader/Topic requests.
-- `src/services/knowledge-note-query-keys.ts`; `src/hooks/knowledge-note/*` (disabled).
-- Teacher shells T01 Management, T02 Editor, T03 Preview, T04 Topic links.
-- Student shells S01 Library, S02 Topic summary, S03 Reader.
-- Routes: Teacher `/teacher/content/knowledge-notes`, `/new`, `/[noteId]/edit`; Student `/student/knowledge`, `/[noteId]` (locale prefix provided by Next routing).
-- Menu integration and Topic embedded mounts remain intentionally off until backend phases are implemented; no fake business success.
+## Frontend status
+- `src/types/knowledge-note.ts` defines the approved Teacher metadata contract and future document-renderer type.
+- `src/services/teacher/knowledge-note.service.ts` contains only the three approved API calls.
+- `src/hooks/knowledge-note/use-teacher-knowledge-notes.ts` contains disabled query hooks. Reuse existing `src/types/content.ts` `PageResponse<T>`.
+- The previously created Student/Teacher route and component shells remain **inactive**, not wired to backend, and not shown in navigation.
+- No student client service or student/backend controllers are active for Knowledge Note.
 
-## Implementation phases
-1. **Phase 01:** apply/test V66+V67 on disposable PostgreSQL; JPA validation; implement Teacher CRUD/content save with `baseVersion` optimistic locking, publish/unpublish, linking/Primary atomic updates, security and Student authorization policy. Replace HTTP 501 per completed endpoint.
-2. **Phase 02:** Word-like editor, allowlisted JSON validation, Summary and structured learning blocks, save status and warning when editing Published Notes.
-3. **Phase 03:** Teacher Management/Preview/Linking interactions and Topic integration.
-4. **Phase 04:** Student Library/Reader/Topic summary, grade-authorized real API reads and Navbar.
-5. **Phase 05:** integration, accessibility, mobile, security and regression.
+## Next rule
+**Client UI design first, server implementation afterward** for content editor, preview, publishing, Topic linking, Student Library and reader. Do not add/restore these API endpoints before the relevant UI and contract is explicitly approved.
 
-## Verification
-Committed Git-tree/source inspection only. No Maven/Next builds or Flyway tests executed from GitHub connector. Before enabling feature, run `./mvnw test` in server, `npm run lint && npm run build` in client and verify V66→V67 on a disposable PostgreSQL database.
+## Validation
+GitHub tree/source inspection only. The server build, DB migration, auth checks, HTTP tests and client build have **not** been executed in this change. Verify them before deploying or declaring runtime acceptance.

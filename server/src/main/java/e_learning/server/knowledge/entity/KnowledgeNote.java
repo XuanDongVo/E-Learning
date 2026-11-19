@@ -1,7 +1,7 @@
-package e_learning.server.content.knowledge.entity;
+package e_learning.server.knowledge.entity;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import e_learning.server.content.knowledge.enums.KnowledgeNoteStatus;
+import e_learning.server.knowledge.enums.KnowledgeNoteStatus;
 import e_learning.server.grades.entity.Grade;
 import jakarta.persistence.*;
 import lombok.Getter;

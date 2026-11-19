@@ -1,8 +1,8 @@
-package e_learning.server.content.knowledge.dto;
+package e_learning.server.knowledge.teacher.dto.response;
 
-import e_learning.server.content.knowledge.enums.KnowledgeNoteStatus;
+import e_learning.server.knowledge.enums.KnowledgeNoteStatus;
 import java.time.LocalDateTime;
-/** One current Note document; no published revision / draft flag. */
+
 public record KnowledgeNoteResponse(
     Long id, Long gradeId, String title, String description,
     KnowledgeNoteStatus status, long linkedTopicCount,

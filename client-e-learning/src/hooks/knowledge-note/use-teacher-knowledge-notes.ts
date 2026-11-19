@@ -1,11 +1,11 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { teacherKnowledgeNoteService } from "@/services/teacher/content/knowledge-note.service";
+import { teacherKnowledgeNoteService } from "@/services/teacher/knowledge-note.service";
 import { KNOWLEDGE_NOTE_KEYS } from "@/services/knowledge-note-query-keys";
 import type { TeacherKnowledgeNoteListFilters } from "@/types/knowledge-note";
 
-/** Hook shells remain disabled until backend Phase 01. */
+/** Client-first flow: Teacher screens are not connected during contract review. */
 export function useTeacherKnowledgeNotes(filters: TeacherKnowledgeNoteListFilters = {}) {
   return useQuery({
     queryKey: KNOWLEDGE_NOTE_KEYS.teacherList(filters),
@@ -13,10 +13,11 @@ export function useTeacherKnowledgeNotes(filters: TeacherKnowledgeNoteListFilter
     enabled: false,
   });
 }
-export function useTeacherKnowledgeNoteContent(noteId: number) {
+
+export function useTeacherKnowledgeNote(id: number) {
   return useQuery({
-    queryKey: KNOWLEDGE_NOTE_KEYS.teacherContent(noteId),
-    queryFn: async () => (await teacherKnowledgeNoteService.getContent(noteId)).data,
+    queryKey: KNOWLEDGE_NOTE_KEYS.teacherDetail(id),
+    queryFn: async () => (await teacherKnowledgeNoteService.get(id)).data,
     enabled: false,
   });
 }

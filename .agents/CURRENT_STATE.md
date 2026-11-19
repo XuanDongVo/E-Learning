@@ -1,3 +1,6 @@
+## Knowledge Note Phase 01 (2026-11-19)
+Only three Teacher metadata endpoints are implemented in source: POST/GET `/v1/teacher/knowledge-notes`, GET `/v1/teacher/knowledge-notes/{id}`. Common PageResponse<T> reused. Backend module now lives at `e_learning.server.knowledge`, with teacher-specific controller/service/dto request/response. No Student/content/publish/Topic linking endpoints are enabled. UI shells remain disconnected until UI approval. Build, migration and HTTP/security runtime verification are pending. See docs/knowledge-note/PHASE_01_APPROVED.md.
+
 ## Knowledge Note simplification (2026-11-19)
 Knowledge Note now targets **two effective tables** after V67: knowledge_notes (current JSON content, summary, status) and knowledge_note_topic_links. Draft/Revision entities are removed. Canonical specs: docs/knowledge-note v3.2. Existing API and UI shells still return 501 / disabled. Do not claim feature implementation. Schema migration must be tested on PostgreSQL before deployment.
 

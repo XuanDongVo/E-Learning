@@ -1,3 +1,9 @@
+## 2026-11-19 — Knowledge Note Phase 01 narrowed by owner
+- Moved standalone module out of `content/knowledge` into `knowledge/` with Teacher-specific controller/service/dto request/response packages.
+- Implemented only POST/GET list/GET detail under `/v1/teacher/knowledge-notes`, using existing `PageResponse<T>` and metadata-only DTOs; other unapproved backend controllers and methods removed.
+- Client service contracts aligned with the three approved Teacher endpoints; existing unfinished UI screens remain disconnected.
+- V66/V67 retained without modification. GitHub source changes only; Maven/Next/Flyway runtime verification still pending.
+
 ## 2026-11-19 — Simplify Knowledge Note scaffold to one current document
 - Owner removed Draft/Revision from MVP. New V67 forward migration removes the two preliminary V66 tables and moves document/summary JSON into knowledge_notes; knowledge_note_topic_links remains.
 - Updated entity, DTO, Teacher content endpoints/client types/hook, and canonical SRS/FRS/UIUX v3.2. 501 feature gate remains; no functional API enabled.

@@ -1,4 +1,4 @@
-package e_learning.server.content.knowledge.entity;
+package e_learning.server.knowledge.entity;
 
 import e_learning.server.content.topic.entity.Topic;
 import jakarta.persistence.*;

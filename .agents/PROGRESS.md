@@ -1,3 +1,12 @@
+## 2026-11-19 — Knowledge Note end-to-end scaffold on feature/guided-reasoning-v1
+
+- Added V66 baseline Flyway schema (KnowledgeNote, Draft, Revision, TopicLink); JPA entities and Spring Data repositories.
+- Added Teacher/Student DTOs, three REST controllers and fail-closed service contracts: every valid feature operation returns KNOWLEDGE_NOTE_NOT_IMPLEMENTED (HTTP 501). No business mutations or reads are enabled.
+- Added TS contracts, service clients, query key factory; Teacher T01/T02/T03/T04 and Student S01/S02/S03 component shells and five Next routes.
+- Deliberately did not enable navigation or embed the Topic/Unit sections until backing endpoints work; no mocks, misleading empty success or fake saves.
+- Next work: Phase 01 authorization, server validation, filtering and linking/publish rules. Phase 02 Word-like editor, Phase 03 Teacher UX, Phase 04 Student UX, Phase 05 integration.
+- Status: scaffold only, not implemented or runtime verified. Build/test/Flyway execution could not be run through the GitHub connector in this work session.
+
 ## 2026-11-19 — Knowledge Note v3.1 documentation (not implemented)
 - Accepted ADR 0038: independent Grade-scoped Knowledge Notes; optional many-to-many Topic links and optional Primary.
 - Added docs/knowledge-note SRS, FRS and UI/UX v3.1; excluded category and media fields.

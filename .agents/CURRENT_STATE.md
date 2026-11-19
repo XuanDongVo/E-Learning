@@ -1,3 +1,7 @@
+## Knowledge Note scaffold — 2026-11-19 (feature/guided-reasoning-v1)
+
+V66 schema and JPA/DTO/repository/controller/service skeleton exist. Knowledge Note routes currently fail closed (HTTP 501) and UI routes only show a not-yet-implemented shell. Teacher/Student navigation and existing Unit/Topic views are intentionally not wired to the unfinished feature. See docs/knowledge-note/IMPLEMENTATION_SCAFFOLD.md for exact scope. No Knowledge Note business feature is implemented yet.
+
 ## Knowledge Note planning — 2026-11-19
 ADR 0038 and docs/knowledge-note/{SRS,FRS,UIUX} v3.1 define the approved future feature. Independent Grade-scoped Notes, optional many-to-many Topic links, optional Primary, Word-like Editor and published snapshots are **not implemented**. This documentation update does not add runtime functionality.
 

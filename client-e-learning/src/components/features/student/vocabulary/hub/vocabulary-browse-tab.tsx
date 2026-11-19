@@ -47,9 +47,9 @@ export function VocabularyBrowseTab({
     onSuccess: async (_, variables) => {
       requestIds.current.delete(variables.wordId);
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ["student", "vocabulary", "units"] }),
+        // queryClient.invalidateQueries({ queryKey: ["student", "vocabulary", "units"] }),
         queryClient.invalidateQueries({ queryKey: ["student", "vocabulary", "overview"] }),
-        queryClient.invalidateQueries({ queryKey: ["student", "vocabulary", "progress"] }),
+        // queryClient.invalidateQueries({ queryKey: ["student", "vocabulary", "progress"] }),
       ]);
     },
   });

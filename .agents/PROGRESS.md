@@ -1,3 +1,9 @@
+## 2026-11-19 — Knowledge Note Teacher Management UI 02.1
+- Connected the approved three Teacher APIs to real Management/Create/Metadata Detail UI. Created `/[noteId]` detail route; new route is now a Grade + title + description form instead of premature Word-like Editor.
+- Reused shared DataTable, pagination, StatusBadge, Breadcrumb, feedback states and Grade service. Enabled Teacher React Query hooks only; search/filter/page controls use actual backend parameters.
+- Linked Sổ tay kiến thức in Teacher Content sidebar. Content Editor/Publish/Topic Linking and all Student flows remain excluded and disconnected.
+- Source/tree inspected; frontend lint/build, API E2E and browser/mobile QA **not run**. QA checklist: docs/knowledge-note/TEACHER_MANAGEMENT_UI_02_1.md.
+
 ## 2026-11-19 — Knowledge Note Phase 01 narrowed by owner
 - Moved standalone module out of `content/knowledge` into `knowledge/` with Teacher-specific controller/service/dto request/response packages.
 - Implemented only POST/GET list/GET detail under `/v1/teacher/knowledge-notes`, using existing `PageResponse<T>` and metadata-only DTOs; other unapproved backend controllers and methods removed.

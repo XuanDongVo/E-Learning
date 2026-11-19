@@ -78,8 +78,13 @@ function TeacherSidebar({
   const questionBanksActive = pathname.startsWith(
     "/teacher/content/question-banks",
   );
+  const knowledgeNotesActive = pathname.startsWith(
+    "/teacher/content/knowledge-notes",
+  );
   const explorerActive =
-    pathname.startsWith("/teacher/content") && !questionBanksActive;
+    pathname.startsWith("/teacher/content") &&
+    !questionBanksActive &&
+    !knowledgeNotesActive;
   const { logout } = useAuth();
 
   const handleLogout = async () => {
@@ -162,7 +167,7 @@ function TeacherSidebar({
               aria-expanded={contentExpanded}
               onClick={() => setContentExpandedOverride(!contentExpanded)}
               className={`flex h-10 w-full items-center gap-3 rounded-xl px-3 text-sm font-bold transition-all ${
-                explorerActive || questionBanksActive
+                explorerActive || questionBanksActive || knowledgeNotesActive
                   ? "border border-border bg-card text-primary shadow-pop-sm"
                   : "text-muted-foreground hover:bg-muted/70 hover:text-foreground"
               }`}
@@ -200,6 +205,18 @@ function TeacherSidebar({
                   }`}
                 >
                   {tNav("questionBanksNav")}
+                </Link>
+                <Link
+                  href="/teacher/content/knowledge-notes"
+                  onClick={onClose}
+                  aria-current={knowledgeNotesActive ? "page" : undefined}
+                  className={`flex h-8 items-center rounded-lg px-2.5 text-sm font-semibold transition-all ${
+                    knowledgeNotesActive
+                      ? "border border-border bg-card text-primary shadow-pop-sm"
+                      : "text-muted-foreground hover:bg-muted/70 hover:text-foreground"
+                  }`}
+                >
+                  Sổ tay kiến thức
                 </Link>
               </div>
             )}

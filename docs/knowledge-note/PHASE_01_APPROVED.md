@@ -44,3 +44,6 @@ The current Teacher/Student route shells and design components are placeholders.
 
 ## Migration/verification
 V66 and V67 remain intact as immutable Flyway history; they already define the simplified target tables after V67. No new migration is needed for these three metadata APIs. Build, migration, security and integration tests remain verification gates; do not claim runtime verification based on source changes alone.
+
+## Teacher Management UI follow-up
+The previously approved three metadata APIs are now wired to Teacher Management, Create and Detail screens (see [UI 02.1](./TEACHER_MANAGEMENT_UI_02_1.md)). This does not authorize extra backend endpoints. Editor authoring, Publish, Topic linking and Student flows still require separate UI/contract review.

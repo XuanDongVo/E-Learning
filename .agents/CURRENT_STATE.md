@@ -1,3 +1,6 @@
+## Knowledge Note Teacher Management UI 02.1 (2026-11-19)
+Teacher sidebar links to `/teacher/content/knowledge-notes`; list, create and metadata detail routes now consume the three approved Teacher APIs and existing Grade API. Search, filters, 1-based pagination, validation, loading/error/empty handling are in source. Client-only Editor/Student scaffolds stay disconnected. Runtime/API/browser verification pending. See docs/knowledge-note/TEACHER_MANAGEMENT_UI_02_1.md.
+
 ## Knowledge Note Phase 01 (2026-11-19)
 Only three Teacher metadata endpoints are implemented in source: POST/GET `/v1/teacher/knowledge-notes`, GET `/v1/teacher/knowledge-notes/{id}`. Common PageResponse<T> reused. Backend module now lives at `e_learning.server.knowledge`, with teacher-specific controller/service/dto request/response. No Student/content/publish/Topic linking endpoints are enabled. UI shells remain disconnected until UI approval. Build, migration and HTTP/security runtime verification are pending. See docs/knowledge-note/PHASE_01_APPROVED.md.
 

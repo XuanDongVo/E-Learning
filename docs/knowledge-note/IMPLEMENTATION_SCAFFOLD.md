@@ -38,8 +38,9 @@ The Student `controller`, `service`, and `dto/request`, `dto/response` directori
 ## Frontend status
 - `src/types/knowledge-note.ts` defines the approved Teacher metadata contract and future document-renderer type.
 - `src/services/teacher/knowledge-note.service.ts` contains only the three approved API calls.
-- `src/hooks/knowledge-note/use-teacher-knowledge-notes.ts` contains disabled query hooks. Reuse existing `src/types/content.ts` `PageResponse<T>`.
-- The previously created Student/Teacher route and component shells remain **inactive**, not wired to backend, and not shown in navigation.
+- `src/hooks/knowledge-note/use-teacher-knowledge-notes.ts` now has live list and detail queries. Reuse existing `src/types/content.ts` `PageResponse<T>`.
+- Teacher Management (`/teacher/content/knowledge-notes`), Create (`/new`) and metadata Detail (`/{noteId}`) are connected to the three approved Teacher APIs. The Teacher Content sidebar links to the management page. See [UI 02.1](./TEACHER_MANAGEMENT_UI_02_1.md).
+- Student UI and Teacher Editor/Preview/Topic Linking shells remain disconnected; no content authoring, Publish or Student API has been activated.
 - No student client service or student/backend controllers are active for Knowledge Note.
 
 ## Next rule

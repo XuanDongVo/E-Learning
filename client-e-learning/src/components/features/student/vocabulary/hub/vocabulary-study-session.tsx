@@ -66,10 +66,11 @@ export function VocabularyStudySession({
     enabled: !practiceOnly && ratingOpen,
     staleTime: 0,
   });
+  const [now] = useState(() => Date.now());
   const dueTimes = preview.data?.data?.dueAtByRating;
   const formatDue = (value?: string) => {
     if (!value) return "Theo FSRS";
-    const hours = (new Date(value).getTime() - Date.now()) / 3_600_000;
+    const hours = (new Date(value).getTime() - now) / 3_600_000;
     return hours < 24
       ? `${Math.max(1, Math.round(hours))} giờ`
       : `${Math.max(1, Math.round(hours / 24))} ngày`;

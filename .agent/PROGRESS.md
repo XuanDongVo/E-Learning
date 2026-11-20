@@ -1,5 +1,20 @@
 # Project Progress
 
+## 2026-11-20 Student Vocabulary & Game Hub — Responsive Mobile/Tablet Optimization & Visual Enrichment
+
+- **Leader Task Completion & Mobile Bug Fixes:**
+  - **Word Rain (`word-rain-game.tsx`):** Fixed critical mobile blocker where absence of a hardware keyboard prevented typing on mobile/tablet devices. Added on-screen soft keyboard typing bar at bottom (`md:hidden`), canvas tap-to-focus trigger, Backspace action button, and adaptive drop capsule sizing to ensure clean non-overlapping rendering on viewports as small as 320px–360px.
+  - **Space Shooter / Bubble Pop (`bubble-pop-game.tsx`):** Adapted precision targeting cues and bottom guidance for both touch and desktop controls (`handlePointerDown` & `handlePointerMove`).
+  - **Game Hub Header & Layout (`game-hub.tsx`):** Upgraded from raw gradient to approved Indie Illustrated Scrapbook `PaperSurface` (variant="lined"), adorned with `StudentDoodle` star stickers and underlines. Configured responsive mascot presentation (`PolaroidFrame` on desktop, inline encouraging Pipo accent on mobile). Converted empty state to `StudentCollectionEmptyState` using `illustration.no-lessons`.
+  - **Game Unit Card (`game-unit-card.tsx`):** Eliminated raw placeholder gradient and blank icons. Implemented deterministic topic mapping to approved educational SVG assets in `/assets/vocabulary/` (`gardening.svg`, `music.svg`, `recycle.svg`, `chess.svg`, `healthy.svg`, `helmet.svg`, `omelette.svg`). Added scrapbook pop shadows, student-pill badges, and touch-first action targets.
+  - **Game Select Modal (`game-select-modal.tsx`):** Restructured into responsive scrollable modal dialog (`max-h-[90vh] overflow-y-auto`) with scrapbook badges, touch-friendly accent selection (US/UK >=46px), and clear dual game modes.
+  - **Vocabulary Games Panel (`vocabulary-games-panel.tsx`):** Enriched mini-game cards with educational SVG thumbnails and star doodles, removing dense text-heaviness.
+- **Validation:**
+  - `npm run build` in `client-e-learning/`: 100% SUCCESSFUL (57 static & dynamic routes compiled cleanly).
+  - `npm run lint` in `client-e-learning/`: 0 errors.
+  - `./mvnw test-compile` in `server/`: BUILD SUCCESS.
+  - Teacher UI remains completely isolated and untouched.
+
 ## 2026-11-19 Student UI Design Governance — Phase 6E only (documentation)
 
 - Added `.agent/ui/STUDENT_UI_GOVERNANCE.md` as the **single procedural** entry point for new Student pages, redesigns, shared controls and new visual assets; existing visual/spec documents remain the authorities for style, domain and approved assets.

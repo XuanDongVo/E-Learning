@@ -124,9 +124,12 @@ export function WordRainGame({
   const [startTime] = useState<number>(() => Date.now());
   const [completedCount, setCompletedCount] = useState(0);
   const [result, setResult] = useState<FinishGameSessionResponse | null>(null);
+  const [mobileInputText, setMobileInputText] = useState("");
+  const [lockedWord, setLockedWord] = useState<string | null>(null);
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const mobileInputRef = useRef<HTMLInputElement | null>(null);
   const animationFrameId = useRef<number | null>(null);
 
   // References for 60fps delta-time game loop without React re-render hitching
@@ -236,15 +239,20 @@ export function WordRainGame({
   // Spawn a new crystal raindrop
   const trySpawnDrop = useCallback(() => {
     if (queueRef.current.length === 0) return;
-    const activeDrops = dropsRef.current.filter((d) => !d.isCompleted && !d.isLanded);
-    if (activeDrops.length >= 3) return; // Keep max 3 drops on screen for clean visibility
-
     const width = containerRef.current?.clientWidth || 960;
+    const isMobile = width < 520;
+    const maxDrops = isMobile ? 2 : 3;
+
+    const activeDrops = dropsRef.current.filter((d) => !d.isCompleted && !d.isLanded);
+    if (activeDrops.length >= maxDrops) return; // Keep max 2 drops on mobile, 3 on desktop for clean visibility
+
+    const currentLanes = isMobile ? [0.35, 0.65] : LANES;
+
     const occupiedLanes = new Set(
       activeDrops.map((d) => {
         let nearest = 0;
         let minDist = 9999;
-        LANES.forEach((l, idx) => {
+        currentLanes.forEach((l, idx) => {
           const dist = Math.abs(d.x - l * width);
           if (dist < minDist) {
             minDist = dist;
@@ -255,22 +263,27 @@ export function WordRainGame({
       })
     );
 
-    const availableLanes = [0, 1, 2].filter((i) => !occupiedLanes.has(i));
+    const availableLanes = currentLanes.map((_, i) => i).filter((i) => !occupiedLanes.has(i));
     const chosenIndex =
       availableLanes.length > 0
         ? availableLanes[Math.floor(Math.random() * availableLanes.length)]
-        : Math.floor(Math.random() * LANES.length);
+        : Math.floor(Math.random() * currentLanes.length);
 
     const nextWordObj = queueRef.current.shift();
     if (!nextWordObj) return;
 
     const clean = nextWordObj.word.toLowerCase();
     const slotCount = clean.replace(/ /g, "").length;
-    // Comfortable spacious width
-    const capsuleWidth = Math.max(200, slotCount * 38 + 56);
+    // Responsive comfortable width
+    const capsuleWidth = isMobile
+      ? Math.min(width - 32, Math.max(160, slotCount * 24 + 36))
+      : Math.max(200, slotCount * 38 + 56);
     const capsuleHeight = 90;
-    const laneCenterX = LANES[chosenIndex] * width;
-    const targetX = Math.max(capsuleWidth / 2 + 25, Math.min(width - capsuleWidth / 2 - 25, laneCenterX));
+    const laneCenterX = currentLanes[chosenIndex] * width;
+    const targetX = Math.max(
+      capsuleWidth / 2 + 16,
+      Math.min(width - capsuleWidth / 2 - 16, laneCenterX)
+    );
 
     const theme = DROP_THEMES[Math.floor(Math.random() * DROP_THEMES.length)];
 
@@ -772,9 +785,16 @@ export function WordRainGame({
         } else {
           // Normal state: draw glowing letter pearl slots
           const letters = drop.cleanWord.split("");
-          const slotW = 30;
-          const slotH = 36;
-          const gap = 5;
+          const availableW = drop.width - 24;
+          const baseW = 30;
+          const maxNeeded = letters.length * baseW + (letters.length - 1) * 4;
+          let slotW = baseW;
+          let gap = 4;
+          if (maxNeeded > availableW) {
+            slotW = Math.max(16, Math.floor((availableW - (letters.length - 1) * 3) / letters.length));
+            gap = 3;
+          }
+          const slotH = Math.min(36, Math.max(24, slotW + 6));
           const totalSlotsW = letters.length * slotW + (letters.length - 1) * gap;
           const startSlotX = drawX - totalSlotsW / 2;
 
@@ -788,7 +808,7 @@ export function WordRainGame({
               // Word gap indicator
               ctx.save();
               ctx.fillStyle = "rgba(255, 255, 255, 0.25)";
-              ctx.fillRect(slotX + 10, slotY + slotH - 4, 10, 2);
+              ctx.fillRect(slotX + slotW / 4, slotY + slotH - 4, slotW / 2, 2);
               ctx.restore();
               return;
             }
@@ -797,14 +817,14 @@ export function WordRainGame({
             if (isTyped) {
               // TYPED LETTER: Bright golden pearl
               ctx.fillStyle = "rgba(253, 224, 71, 0.35)";
-              drawRoundRect(ctx, slotX, slotY, slotW, slotH, 8);
+              drawRoundRect(ctx, slotX, slotY, slotW, slotH, 6);
               ctx.fill();
               ctx.strokeStyle = "#fde047";
               ctx.lineWidth = 2;
               ctx.stroke();
 
               ctx.fillStyle = "#ffffff";
-              ctx.font = "900 16px system-ui, sans-serif";
+              ctx.font = slotW < 22 ? "900 12px system-ui, sans-serif" : slotW < 28 ? "900 14px system-ui, sans-serif" : "900 16px system-ui, sans-serif";
               ctx.textAlign = "center";
               ctx.textBaseline = "middle";
               ctx.fillText(drop.typed[idx].toUpperCase(), slotX + slotW / 2, slotY + slotH / 2);
@@ -812,7 +832,7 @@ export function WordRainGame({
               // NEXT LETTER TO TYPE: Pulsing cyan cue
               const pulse = 0.5 + 0.5 * Math.sin(currentTime * 0.008);
               ctx.fillStyle = `rgba(56, 189, 248, ${0.15 + pulse * 0.15})`;
-              drawRoundRect(ctx, slotX, slotY, slotW, slotH, 8);
+              drawRoundRect(ctx, slotX, slotY, slotW, slotH, 6);
               ctx.fill();
               ctx.strokeStyle = "#38bdf8";
               ctx.lineWidth = 2;
@@ -820,13 +840,13 @@ export function WordRainGame({
 
               // Pulsing indicator cursor
               ctx.fillStyle = "#38bdf8";
-              ctx.fillRect(slotX + slotW / 2 - 5, slotY + slotH - 6, 10, 2);
+              ctx.fillRect(slotX + slotW / 2 - 4, slotY + slotH - 5, 8, 2);
             } else {
               // UNTYPED SLOT: Soft translucent bead
               ctx.fillStyle = drop.isLocked
                 ? "rgba(15, 23, 42, 0.6)"
                 : "rgba(255, 255, 255, 0.08)";
-              drawRoundRect(ctx, slotX, slotY, slotW, slotH, 8);
+              drawRoundRect(ctx, slotX, slotY, slotW, slotH, 6);
               ctx.fill();
               ctx.strokeStyle = drop.isLocked
                 ? "rgba(56, 189, 248, 0.35)"
@@ -837,7 +857,7 @@ export function WordRainGame({
               // Frosted center placeholder dot
               ctx.fillStyle = "rgba(255, 255, 255, 0.3)";
               ctx.beginPath();
-              ctx.arc(slotX + slotW / 2, slotY + slotH / 2, 2.5, 0, Math.PI * 2);
+              ctx.arc(slotX + slotW / 2, slotY + slotH / 2, 2, 0, Math.PI * 2);
               ctx.fill();
             }
             ctx.restore();
@@ -973,61 +993,15 @@ export function WordRainGame({
     };
   }, [baseSpeed, finishSession, trySpawnDrop]);
 
-  // Click / Tap on Raindrop to Target and Lock!
-  const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (isGameOverRef.current) return;
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const rect = canvas.getBoundingClientRect();
-    const clickX = e.clientX - rect.left;
-    const clickY = e.clientY - rect.top;
-
-    const activeDrops = dropsRef.current.filter((d) => !d.isCompleted && !d.isLanded);
-    for (const d of activeDrops) {
-      const left = d.x - d.width / 2;
-      const top = d.y;
-      if (
-        clickX >= left &&
-        clickX <= left + d.width &&
-        clickY >= top &&
-        clickY <= top + d.height
-      ) {
-        // Unlock all others, lock this drop!
-        activeDrops.forEach((item) => (item.isLocked = false));
-        d.isLocked = true;
-        if (!isMutedRef.current) {
-          soundEffects.playPop();
-          soundEffects.speakWord(d.cleanWord, accent);
-        }
-        break;
-      }
-    }
-  };
-
-  // Physical Keyboard Listener (Instant feedback, target locking, zero lag!)
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
+  // Process a single letter typed (from physical keyboard or mobile soft input)
+  const processInputLetter = useCallback(
+    (char: string) => {
       if (isGameOverRef.current) return;
 
       const activeDrops = dropsRef.current.filter((d) => !d.isCompleted && !d.isLanded);
       if (activeDrops.length === 0) return;
 
       const lockedDrop = activeDrops.find((d) => d.isLocked);
-
-      // Backspace: erase last typed letter, or unlock if empty
-      if (e.key === "Backspace") {
-        if (lockedDrop) {
-          lockedDrop.typed = lockedDrop.typed.slice(0, -1);
-          if (lockedDrop.typed.length === 0) {
-            lockedDrop.isLocked = false;
-          }
-        }
-        return;
-      }
-
-      // Only handle single-character keys
-      if (e.key.length !== 1) return;
-      const char = e.key.toLowerCase();
 
       // 1. If a drop is ALREADY LOCKED:
       if (lockedDrop) {
@@ -1055,6 +1029,7 @@ export function WordRainGame({
         // Check if word completed!
         if (lockedDrop.typed === lockedDrop.cleanWord) {
           lockedDrop.isCompleted = true;
+          setLockedWord(null);
 
           // Water celebration explosion
           const cx = lockedDrop.x;
@@ -1110,11 +1085,13 @@ export function WordRainGame({
       if (candidateDrop) {
         candidateDrop.isLocked = true;
         candidateDrop.typed = char;
+        setLockedWord(candidateDrop.cleanWord);
         if (!isMutedRef.current) soundEffects.playPop();
 
         // Edge case: single letter word
         if (candidateDrop.typed === candidateDrop.cleanWord) {
           candidateDrop.isCompleted = true;
+          setLockedWord(null);
 
           if (!isMutedRef.current) {
             soundEffects.playWaterChime();
@@ -1137,13 +1114,95 @@ export function WordRainGame({
       } else {
         if (!isMutedRef.current) soundEffects.playWrong();
       }
+    },
+    [accent]
+  );
+
+  // Process Backspace (erase last character or unlock drop)
+  const processBackspace = useCallback(() => {
+    if (isGameOverRef.current) return;
+    const activeDrops = dropsRef.current.filter((d) => !d.isCompleted && !d.isLanded);
+    const lockedDrop = activeDrops.find((d) => d.isLocked);
+    if (lockedDrop) {
+      lockedDrop.typed = lockedDrop.typed.slice(0, -1);
+      if (lockedDrop.typed.length === 0) {
+        lockedDrop.isLocked = false;
+        setLockedWord(null);
+      }
+    }
+  }, []);
+
+  // Click / Tap on Raindrop to Target and Lock!
+  const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (isGameOverRef.current) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    // Focus mobile input on tap to pop open mobile virtual keyboard
+    mobileInputRef.current?.focus();
+
+    const rect = canvas.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const clickY = e.clientY - rect.top;
+
+    const activeDrops = dropsRef.current.filter((d) => !d.isCompleted && !d.isLanded);
+    for (const d of activeDrops) {
+      const left = d.x - d.width / 2;
+      const top = d.y;
+      if (
+        clickX >= left &&
+        clickX <= left + d.width &&
+        clickY >= top &&
+        clickY <= top + d.height
+      ) {
+        // Unlock all others, lock this drop!
+        activeDrops.forEach((item) => (item.isLocked = false));
+        d.isLocked = true;
+        setLockedWord(d.cleanWord);
+        if (!isMutedRef.current) {
+          soundEffects.playPop();
+          soundEffects.speakWord(d.cleanWord, accent);
+        }
+        break;
+      }
+    }
+  };
+
+  // Mobile typing input change handler
+  const handleMobileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    if (!val) {
+      processBackspace();
+      setMobileInputText("");
+      return;
+    }
+    const lastChar = val.slice(-1).toLowerCase();
+    processInputLetter(lastChar);
+    setMobileInputText("");
+  };
+
+  // Physical Keyboard Listener (Instant feedback, target locking, zero lag!)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (isGameOverRef.current) return;
+
+      // Backspace: erase last typed letter, or unlock if empty
+      if (e.key === "Backspace") {
+        processBackspace();
+        return;
+      }
+
+      // Only handle single-character keys
+      if (e.key.length !== 1) return;
+      const char = e.key.toLowerCase();
+      processInputLetter(char);
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, []);
+  }, [processBackspace, processInputLetter]);
 
   return (
     <FullscreenGameContainer
@@ -1162,14 +1221,14 @@ export function WordRainGame({
         translate="no"
       >
         {/* Top Floating Guidance & Remaining Word Banner */}
-        <div className="pointer-events-none absolute top-3 left-0 right-0 z-20 flex items-center justify-between px-6">
-          <div className="flex items-center gap-2.5 rounded-full bg-slate-900/80 border border-cyan-400/30 px-5 py-2 text-xs font-medium text-cyan-200 backdrop-blur-md shadow-lg shadow-cyan-950/40">
-            <CloudRain className="h-4 w-4 text-cyan-400 animate-pulse" />
-            <span>Gõ chữ cái đầu tiên (hoặc bấm chọn) để khóa giọt mưa • Hoàn thành từ trước khi chạm hồ</span>
+        <div className="pointer-events-none absolute top-3 left-0 right-0 z-20 flex items-center justify-between px-3 sm:px-6 gap-2">
+          <div className="flex items-center gap-2 rounded-full bg-slate-900/80 border border-cyan-400/30 px-3 sm:px-5 py-1.5 sm:py-2 text-[11px] sm:text-xs font-medium text-cyan-200 backdrop-blur-md shadow-lg shadow-cyan-950/40 truncate">
+            <CloudRain className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-cyan-400 animate-pulse shrink-0" />
+            <span className="truncate">Gõ chữ cái đầu (hoặc chạm vào giọt mưa) để khóa từ</span>
           </div>
 
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-bold text-amber-300 bg-slate-900/80 border border-amber-400/25 px-4 py-1.5 rounded-full backdrop-blur-sm shadow-md">
+          <div className="flex items-center gap-2 shrink-0">
+            <span className="text-[11px] sm:text-xs font-bold text-amber-300 bg-slate-900/80 border border-amber-400/25 px-2.5 sm:px-4 py-1 sm:py-1.5 rounded-full backdrop-blur-sm shadow-md">
               Còn lại: {queueRef.current.length + dropsRef.current.filter((d) => !d.isCompleted && !d.isLanded).length} từ
             </span>
           </div>
@@ -1182,10 +1241,47 @@ export function WordRainGame({
           className="h-full w-full touch-none"
         />
 
-        {/* Bottom Atmospheric Tip */}
-        <div className="pointer-events-none absolute bottom-2 left-0 right-0 z-20 flex items-center justify-center gap-2 text-xs font-medium text-slate-300/80">
+        {/* Bottom Atmospheric Tip (Desktop) */}
+        <div className="hidden md:flex pointer-events-none absolute bottom-2 left-0 right-0 z-20 items-center justify-center gap-2 text-xs font-medium text-slate-300/80">
           <Sparkles className="h-3.5 w-3.5 text-cyan-400" />
           <span>Hồ sen đêm thơ mộng • Gõ trực tiếp bằng bàn phím máy tính • Phím Backspace để xóa</span>
+        </div>
+
+        {/* Mobile / Tablet Touch Input Bar (Fixes mobile lack of physical keyboard!) */}
+        <div className="md:hidden z-30 flex flex-col gap-1.5 p-2.5 sm:p-3 bg-slate-900/95 border-t border-cyan-400/30 backdrop-blur-md">
+          <div className="flex items-center gap-2">
+            <input
+              ref={mobileInputRef}
+              type="text"
+              value={mobileInputText}
+              onChange={handleMobileInputChange}
+              onKeyDown={(e) => {
+                if (e.key === "Backspace") {
+                  processBackspace();
+                }
+              }}
+              placeholder={
+                lockedWord
+                  ? `Đang gõ: ${lockedWord.toUpperCase()} (chạm để gõ)`
+                  : "Chạm giọt mưa để khóa, chạm vào đây để gõ..."
+              }
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck="false"
+              className="flex-1 bg-slate-800 border-2 border-cyan-400/50 rounded-xl px-3 py-2 text-white font-mono text-sm placeholder:text-slate-400 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400"
+            />
+            <button
+              type="button"
+              onClick={() => processBackspace()}
+              className="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 active:scale-95 text-cyan-300 font-black rounded-xl border-2 border-cyan-400/40 text-xs sm:text-sm shrink-0"
+              title="Xóa ký tự vừa gõ"
+            >
+              ⌫ Xóa
+            </button>
+          </div>
+          <p className="text-[10px] sm:text-[11px] text-cyan-200/70 text-center">
+            💡 Chạm vào bất kỳ giọt mưa nào để khóa • Bàn phím ảo sẽ tự động mở để bạn gõ
+          </p>
         </div>
       </div>
 

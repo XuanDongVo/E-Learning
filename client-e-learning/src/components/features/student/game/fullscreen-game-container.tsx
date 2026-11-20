@@ -78,40 +78,42 @@ export function FullscreenGameContainer({
       {/* Top Header */}
       <header className="relative z-20 flex h-16 shrink-0 items-center justify-between border-b border-white/10 bg-slate-950/90 px-4 sm:px-6 backdrop-blur-md">
         {/* Left: Exit & Title */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
           <button
             type="button"
             onClick={() => setShowExitConfirm(true)}
-            className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 hover:bg-red-500/20 hover:text-red-400 text-slate-300 transition-colors"
+            className="flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-xl bg-white/10 hover:bg-red-500/20 hover:text-red-400 text-slate-300 transition-colors"
             title="Thoát trò chơi"
           >
-            <LogOut className="h-5 w-5" />
+            <LogOut className="h-4 w-4 sm:h-5 sm:w-5" />
           </button>
-          <div className="flex items-center gap-2">
-            <span className="text-base font-extrabold text-white tracking-tight">{title}</span>
-            <span className="hidden sm:inline text-xs rounded-full bg-white/10 px-2.5 py-0.5 font-bold text-slate-300">
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="text-sm sm:text-base font-extrabold text-white tracking-tight truncate max-w-[130px] sm:max-w-none">
+              {title}
+            </span>
+            <span className="hidden md:inline text-xs rounded-full bg-white/10 px-2.5 py-0.5 font-bold text-slate-300 truncate max-w-[200px]">
               {unitName}
             </span>
           </div>
         </div>
 
         {/* Center: Score & Combo */}
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1.5 rounded-full bg-amber-500/10 border border-amber-500/30 px-4 py-1 text-amber-400 shadow-sm">
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+          <div className="flex items-center gap-1.5 rounded-full bg-amber-500/10 border border-amber-500/30 px-3 sm:px-4 py-1 text-amber-400 shadow-sm">
             <Award className="h-4 w-4 shrink-0" />
-            <span className="text-sm font-black">{score}</span>
+            <span className="text-xs sm:text-sm font-black">{score}</span>
           </div>
 
           {combo > 1 && (
-            <div className="flex items-center gap-1 rounded-full bg-orange-500/20 border border-orange-500/40 px-3 py-1 text-orange-400 font-black text-xs animate-pulse shadow-sm">
-              <Flame className="h-3.5 w-3.5 fill-orange-400" />
-              <span>Combo x{combo}</span>
+            <div className="flex items-center gap-1 rounded-full bg-orange-500/20 border border-orange-500/40 px-2.5 sm:px-3 py-1 text-orange-400 font-black text-xs animate-pulse shadow-sm">
+              <Flame className="h-3.5 w-3.5 fill-orange-400 shrink-0" />
+              <span>x{combo}</span>
             </div>
           )}
         </div>
 
         {/* Right: Word Progress & Controls */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           {totalWords > 0 && (
             <span className="hidden sm:inline-flex text-xs font-bold text-slate-400 bg-white/5 border border-white/10 px-3 py-1 rounded-full">
               <span>{Math.min(currentWordIndex + 1, totalWords)} / {totalWords} từ</span>
@@ -121,19 +123,19 @@ export function FullscreenGameContainer({
           <button
             type="button"
             onClick={onToggleMute}
-            className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 hover:bg-white/20 text-slate-300 transition-colors"
+            className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl bg-white/10 hover:bg-white/20 text-slate-300 transition-colors"
             title={isMuted ? "Bật âm thanh" : "Tắt âm thanh"}
           >
-            {isMuted ? <VolumeX className="h-5 w-5 text-red-400" /> : <Volume2 className="h-5 w-5 text-emerald-400" />}
+            {isMuted ? <VolumeX className="h-4 w-4 sm:h-5 sm:w-5 text-red-400" /> : <Volume2 className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-400" />}
           </button>
 
           <button
             type="button"
             onClick={toggleBrowserFullscreen}
-            className="hidden sm:flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 hover:bg-white/20 text-slate-300 transition-colors"
+            className="hidden sm:flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl bg-white/10 hover:bg-white/20 text-slate-300 transition-colors"
             title={isFullscreen ? "Thu nhỏ" : "Toàn màn hình"}
           >
-            {isFullscreen ? <Minimize2 className="h-5 w-5" /> : <Maximize2 className="h-5 w-5" />}
+            {isFullscreen ? <Minimize2 className="h-4 w-4 sm:h-5 sm:w-5" /> : <Maximize2 className="h-4 w-4 sm:h-5 sm:w-5" />}
           </button>
         </div>
       </header>

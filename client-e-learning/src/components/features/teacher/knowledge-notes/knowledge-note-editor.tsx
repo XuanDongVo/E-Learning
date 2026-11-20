@@ -368,18 +368,30 @@ export function TeacherKnowledgeNoteEditor({ noteId }: { noteId: number }) {
         : payload.document;
     const normalized = ensureKnowledgeIds(incoming, mode !== "replace");
     try {
+      // Import is a deliberate edit: capture the Tiptap document explicitly
+      // rather than depending on whether setContent/insertContent emits onUpdate.
+      let applied = true;
       if (mode === "replace") {
-        editor.commands.setContent(normalized, { emitUpdate: true });
-        return true;
+        editor.commands.setContent(normalized, { emitUpdate: false });
+      } else if (normalized.content.length) {
+        applied = mode === "append"
+          ? editor.chain().focus()
+              .insertContentAt(editor.state.doc.content.size, normalized.content).run()
+          : editor.chain().focus().insertContent(normalized.content).run();
       }
-      if (!normalized.content.length) return true;
-      return mode === "append"
-        ? editor
-            .chain()
-            .focus()
-            .insertContentAt(editor.state.doc.content.size, normalized.content)
-            .run()
-        : editor.chain().focus().insertContent(normalized.content).run();
+      if (!applied) return false;
+      const next = editor.getJSON() as KnowledgeDocument;
+      validateKnowledgeDocument(next);
+      setDocument(next);
+      autosave.updateDocument(next);
+      // Send the imported snapshot immediately so leaving before the 2s
+      // typing debounce does not silently discard the imported content.
+      void autosave.saveNow().catch((cause: unknown) => {
+        toast.error(cause instanceof Error
+          ? cause.message
+          : "Không thể lưu nội dung vừa nhập. Hãy thử Lưu ngay.");
+      });
+      return true;
     } catch (cause) {
       toast.error(
         cause instanceof Error ? cause.message : "Không thể nhập nội dung.",

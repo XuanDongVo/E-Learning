@@ -222,7 +222,7 @@ function checkNode(value: unknown, path: string, summary: boolean, depth: number
     if (node.text.length > 100000) fail(path, "Đoạn văn quá dài.");
   } else if (node.text !== undefined) fail(path, "Chỉ text node có trường text.");
   if (node.type === "heading" && ![2,3].includes(Number(node.attrs?.level))) fail(path, "Heading chỉ hỗ trợ H2/H3.");
-  if (["heading","learningBlock","table"].includes(node.type) && node.attrs?.id !== undefined &&
+  if (["heading","learningBlock","table"].includes(node.type) && node.attrs?.id != null &&
       (typeof node.attrs.id !== "string" || !/^[A-Za-z0-9_-]{1,100}$/.test(node.attrs.id))) fail(path, "ID không hợp lệ.");
   if (["learningBlock","table"].includes(node.type) && node.attrs?.isKeyPoint !== undefined &&
       typeof node.attrs.isKeyPoint !== "boolean") fail(path, "isKeyPoint phải là boolean.");

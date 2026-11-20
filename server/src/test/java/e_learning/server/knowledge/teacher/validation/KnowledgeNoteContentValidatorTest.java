@@ -16,9 +16,19 @@ class KnowledgeNoteContentValidatorTest {
         return Map.of("type","doc","content",List.of(Map.of(
                 "type","paragraph","content",List.of(Map.of("type","text","text",value)))));
     }
-    @Test void acceptsV2TextAndEmptySummary() {
+    @Test void acceptsSingleDocument() {
         assertDoesNotThrow(() -> validator.validate(textDoc("Present Simple")));
     }
+    @Test void rejectsDuplicateNavigationIds() {
+        var article = Map.of("type", "doc", "content", List.of(
+                Map.of("type","heading","attrs",Map.of("level",2,"id","same"),
+                        "content",List.of(Map.of("type","text","text","One"))),
+                Map.of("type","heading","attrs",Map.of("level",2,"id","same"),
+                        "content",List.of(Map.of("type","text","text","Two")))
+        ));
+        assertThrows(AppException.class, () -> validator.validate(article));
+    }
+
     @Test void rejectsUnknownHtmlLikeNode() {
         var invalid = Map.of("type","doc","content",List.of(Map.of("type","iframe")));
         assertThrows(AppException.class, () -> validator.validate(invalid));

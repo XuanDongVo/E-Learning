@@ -6,7 +6,7 @@ export interface KnowledgeTemplate {
   title: string;
   description: string;
   category: "Ngữ pháp" | "So sánh" | "Ví dụ" | "Lỗi thường gặp";
-  schemaVersion: 2;
+  schemaVersion: 3;
   content: KnowledgeDocumentNode[];
 }
 function withText(node: KnowledgeDocumentNode, role: string, text: string): KnowledgeDocumentNode {
@@ -48,7 +48,7 @@ export const KNOWLEDGE_TEMPLATES: KnowledgeTemplate[] = [
     title: "Công thức ngữ pháp",
     description: "Cấu trúc, giải thích và điều kiện sử dụng.",
     category: "Ngữ pháp",
-    schemaVersion: 2,
+    schemaVersion: 3,
     content: [withText(createLearningBlock("formula"), "expression", "S + V(s/es) + O")],
   },
   {
@@ -56,7 +56,7 @@ export const KNOWLEDGE_TEMPLATES: KnowledgeTemplate[] = [
     title: "So sánh các thì hiện tại",
     description: "Bảng ba cột; có thể thêm hàng và cột sau khi chèn.",
     category: "So sánh",
-    schemaVersion: 2,
+    schemaVersion: 3,
     content: [heading("So sánh hiện tại đơn và hiện tại tiếp diễn"), comparison()],
   },
   {
@@ -64,7 +64,7 @@ export const KNOWLEDGE_TEMPLATES: KnowledgeTemplate[] = [
     title: "Ví dụ có giải thích",
     description: "Ví dụ, diễn giải và bản dịch độc lập.",
     category: "Ví dụ",
-    schemaVersion: 2,
+    schemaVersion: 3,
     content: [withText(createLearningBlock("example"), "example", "She goes to school every day.")],
   },
   {
@@ -72,7 +72,7 @@ export const KNOWLEDGE_TEMPLATES: KnowledgeTemplate[] = [
     title: "Lỗi thường gặp",
     description: "Câu sai, câu đúng và giải thích.",
     category: "Lỗi thường gặp",
-    schemaVersion: 2,
+    schemaVersion: 3,
     content: [
       withText(
         withText(createLearningBlock("commonMistake"), "incorrect", "She go to school."),
@@ -85,7 +85,7 @@ export const KNOWLEDGE_TEMPLATES: KnowledgeTemplate[] = [
     title: "Khung bài lý thuyết",
     description: "Bố cục kiến thức gồm cấu trúc, ví dụ và lỗi thường gặp.",
     category: "Ngữ pháp",
-    schemaVersion: 2,
+    schemaVersion: 3,
     content: [
       heading("1. Cấu trúc"), createLearningBlock("formula"),
       heading("2. Ví dụ"), createLearningBlock("example"),

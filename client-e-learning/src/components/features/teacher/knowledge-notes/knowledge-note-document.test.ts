@@ -2,79 +2,69 @@ import { describe, expect, it } from "vitest";
 import type { KnowledgeDocument } from "@/types/knowledge-note";
 import {
   createBlockSnapshot, createEditorSnapshot, createLearningBlock, createTable,
-  isDocumentEmpty, normalizeSafeHref, parseKnowledgeImport,
-  validateKnowledgeDocument,
+  ensureKnowledgeIds, extractKnowledgeNavigation, isDocumentEmpty,
+  normalizeSafeHref, parseKnowledgeImport, validateKnowledgeDocument,
 } from "./knowledge-note-document";
 import { KNOWLEDGE_TEMPLATES } from "./knowledge-note-templates";
 
 const paragraph = (value: string) =>
   ({ type: "paragraph", content: [{ type: "text", text: value }] });
 
-describe("Knowledge Note v2 document contract", () => {
-  it("exports schema v2 and round-trips article and summary independently", () => {
+describe("Knowledge Note single-document portable contract", () => {
+  it("exports a single document (schemaVersion is portable-file metadata only)", () => {
     const doc: KnowledgeDocument = { type: "doc", content: [paragraph("Present Simple")] };
-    const summary: KnowledgeDocument = { type: "doc", content: [paragraph("Remember")] };
-    const snapshot = createEditorSnapshot(doc, summary);
-    expect(snapshot.schemaVersion).toBe(2);
-    expect(snapshot.format).toBe("e-learning-knowledge-note");
-    expect(parseKnowledgeImport(JSON.stringify(snapshot))).toEqual(snapshot);
+    const snapshot = createEditorSnapshot(doc);
+    expect(snapshot.schemaVersion).toBe(3);
+    expect(snapshot).not.toHaveProperty("summary");
+    const parsed = parseKnowledgeImport(JSON.stringify(snapshot));
+    expect(parsed.format).toBe("e-learning-knowledge-note");
+    if (parsed.format !== "e-learning-knowledge-note") throw new Error("Invalid result");
+    expect(parsed.document.content).toEqual(doc.content);
   });
-  it("accepts structured rich-text educational sections", () => {
-    const block = createLearningBlock("example");
-    const exampleSection = block.content?.[0];
-    if (!exampleSection) throw new Error("Missing section");
-    exampleSection.content = [{
-      type: "paragraph",
-      content: [{ type: "text", text: "She goes", marks: [{ type: "bold" }] }],
-    }];
-    validateKnowledgeDocument({ type: "doc", content: [block] });
-  });
-  it("creates a dynamic 4-column comparison with uniform row widths", () => {
-    const table = createTable("comparison",4,5);
-    expect(table.content).toHaveLength(5);
-    expect(table.content?.[0].content).toHaveLength(4);
-    validateKnowledgeDocument({ type: "doc", content: [table] });
-  });
-  it("accepts valid table cells with both column and row spans", () => {
-    const table = createTable("comparison",3,3);
-    const rows = table.content!;
-    // Header's first cell spans two rows. Remove the covered cell from row 2.
-    rows[0].content![0].attrs = { colspan: 1, rowspan: 2, colwidth: [180], align: null };
-    rows[1].content!.shift();
-    const doc: KnowledgeDocument = { type: "doc", content: [table] };
-    expect(() => validateKnowledgeDocument(doc)).not.toThrow();
-    expect(parseKnowledgeImport(JSON.stringify(createEditorSnapshot(doc, { type: "doc", content: [] }))))
-      .toEqual(createEditorSnapshot(doc, { type: "doc", content: [] }));
-  });
-  it("rejects overlapping or out-of-bounds merged table cells", () => {
-    const table = createTable("comparison",3,3);
-    table.content![0].content![1].attrs = { colspan: 3, rowspan: 2, colwidth: null };
-    expect(() => validateKnowledgeDocument({ type: "doc", content: [table] }))
-      .toThrow(/giới hạn|chồng lên/);
-  });
-  it("migrates legacy comparison and formula without losing text", () => {
+
+  it("preserves legacy v2 Summary as a marked callout in the same Document", () => {
     const legacy = {
-      schemaVersion: 1,
-      document: { type: "doc", content: [
-        { type: "learningBlock", attrs: {
-          kind: "comparison", title: "Các thì", leftTitle: "Đơn",
-          rightTitle: "Tiếp diễn", body: "S + V", secondary: "S + V-ing",
-        }},
-        { type: "learningBlock", attrs: {
-          kind: "formula", title: "Công thức", body: "She goes", secondary: "Ghi nhớ",
-        }},
-      ]},
-      summary: { type: "doc", content: [paragraph("Quick")] },
+      format: "e-learning-knowledge-note", schemaVersion: 2,
+      document: { type: "doc", content: [paragraph("Lesson")] },
+      summary: { type: "doc", content: [paragraph("Remember")] },
     };
-    const migrated = parseKnowledgeImport(JSON.stringify(legacy));
-    expect(migrated.format).toBe("e-learning-knowledge-note");
-    if (migrated.format !== "e-learning-knowledge-note") throw new Error("Unexpected");
-    expect(migrated.document.content.map(node => node.type)).toEqual(["heading","table","learningBlock"]);
-    expect(JSON.stringify(migrated.document)).toContain("S + V-ing");
-    expect(JSON.stringify(migrated.document)).toContain("She goes");
-    expect(JSON.stringify(migrated.document)).toContain("Ghi nhớ");
+    const result = parseKnowledgeImport(JSON.stringify(legacy));
+    if (result.format !== "e-learning-knowledge-note") throw new Error("Invalid result");
+    expect(result.document.content).toHaveLength(2);
+    expect(result.document.content[1].attrs?.isKeyPoint).toBe(true);
+    expect(JSON.stringify(result.document)).toContain("Remember");
   });
-  it("rejects unsafe links and unknown nodes instead of dropping content", () => {
+
+  it("accepts learning blocks and dynamic merged tables", () => {
+    const block = createLearningBlock("example");
+    block.content![0].content = [paragraph("She goes")];
+    const table = createTable("comparison", 3, 3);
+    table.content![0].content![0].attrs = { colspan: 1, rowspan: 2, colwidth: [180] };
+    table.content![1].content!.shift();
+    expect(() => validateKnowledgeDocument({ type: "doc", content: [block, table] })).not.toThrow();
+  });
+
+  it("extracts outline and key points without a Summary copy", () => {
+    const formula = createLearningBlock("formula");
+    formula.attrs!.isKeyPoint = true;
+    const doc = ensureKnowledgeIds({ type: "doc", content: [
+      { type: "heading", attrs: { level: 2 }, content: [{ type: "text", text: "Present Simple" }] },
+      formula,
+    ] });
+    const data = extractKnowledgeNavigation(doc);
+    expect(data.outline).toHaveLength(1);
+    expect(data.keyPoints).toHaveLength(1);
+    expect(data.keyPoints[0].sectionId).toBe(data.outline[0].id);
+  });
+
+  it("regenerates duplicated IDs before insertion", () => {
+    const formula = createLearningBlock("formula");
+    const doc: KnowledgeDocument = { type: "doc", content: [formula, structuredClone(formula)] };
+    const result = ensureKnowledgeIds(doc);
+    expect(result.content[0].attrs?.id).not.toBe(result.content[1].attrs?.id);
+  });
+
+  it("rejects unsafe links, unsupported nodes and malformed tables", () => {
     const badLink = { type: "doc", content: [{
       type: "paragraph", content: [{
         type: "text", text: "Click",
@@ -83,48 +73,41 @@ describe("Knowledge Note v2 document contract", () => {
     }]};
     expect(() => validateKnowledgeDocument(badLink)).toThrow(/Link không an toàn/);
     expect(() => validateKnowledgeDocument({ type: "doc", content: [{ type: "iframe" }] })).toThrow();
+    const table = createTable("general",3,3);
+    table.content![0].content![1].attrs = { colspan: 3, rowspan: 2 };
+    expect(() => validateKnowledgeDocument({ type: "doc", content: [table] })).toThrow();
     expect(normalizeSafeHref("example.com/grammar")).toBe("https://example.com/grammar");
   });
-  it("does not count empty educational blocks and tables as text", () => {
+
+  it("does not treat empty blocks or tables as readable content", () => {
     expect(isDocumentEmpty({ type: "doc", content: [{ type: "paragraph" }] })).toBe(true);
     expect(isDocumentEmpty({ type: "doc", content: [createLearningBlock("callout")] })).toBe(true);
     expect(isDocumentEmpty({ type: "doc", content: [createTable("general")] })).toBe(true);
   });
-  it("accepts independent block snapshots", () => {
+
+  it("supports block-file import and built-in v3 templates", () => {
     const block = createBlockSnapshot([createLearningBlock("formula")]);
-    expect(parseKnowledgeImport(JSON.stringify(block))).toEqual(block);
-  });
-  it("validates built-in templates against the same v2 schema", () => {
+    const parsed = parseKnowledgeImport(JSON.stringify(block));
+    expect(parsed.format).toBe("e-learning-knowledge-note-blocks");
     for (const template of KNOWLEDGE_TEMPLATES) {
-      expect(template.schemaVersion).toBe(2);
+      expect(template.schemaVersion).toBe(3);
       expect(() => validateKnowledgeDocument({ type: "doc", content: template.content })).not.toThrow();
     }
   });
-  it("preserves secondary text from legacy callouts", () => {
-    const v1 = {
+
+  it("refuses data loss for unmapped legacy v1 fields", () => {
+    const legacy = {
       schemaVersion: 1,
-      document: { type: "doc", content: [
-        { type: "learningBlock", attrs: {
-          kind: "callout", title: "Lưu ý", body: "Cách dùng", secondary: "Giải thích thêm",
-        }},
-      ] },
+      document: { type: "doc", content: [{
+        type: "learningBlock", attrs: { kind: "example", body: "A", customField: "Important" },
+      }] },
       summary: { type: "doc", content: [] },
     };
-    const result = parseKnowledgeImport(JSON.stringify(v1));
-    expect(JSON.stringify(result)).toContain("Giải thích thêm");
+    expect(() => parseKnowledgeImport(JSON.stringify(legacy))).toThrow(/tránh mất dữ liệu/);
   });
-  it("rejects unmapped legacy attributes to avoid silent data loss", () => {
-    const v1 = {
-      schemaVersion: 1,
-      document: { type: "doc", content: [
-        { type: "learningBlock", attrs: { kind: "example", body: "A", customField: "Important" } },
-      ] },
-      summary: { type: "doc", content: [] },
-    };
-    expect(() => parseKnowledgeImport(JSON.stringify(v1))).toThrow(/tránh mất dữ liệu/);
-  });
-  it("rejects oversized JSON and unsupported versions", () => {
+
+  it("rejects oversized JSON and unsupported portable versions", () => {
     expect(() => parseKnowledgeImport("x".repeat(524289))).toThrow(/512 KB/);
-    expect(() => parseKnowledgeImport('{"schemaVersion":3}')).toThrow(/schemaVersion/);
+    expect(() => parseKnowledgeImport('{"schemaVersion":99}')).toThrow(/Phiên bản/);
   });
 });

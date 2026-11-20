@@ -4,6 +4,7 @@ import e_learning.server.common.dto.PageResponse;
 import e_learning.server.common.exception.AppException;
 import e_learning.server.common.exception.ErrorCode;
 import e_learning.server.content.common.enums.ContentStatus;
+import e_learning.server.content.topic.repository.TopicRepository;
 import e_learning.server.content.unit.service.StudentUnitService;
 import e_learning.server.knowledge.entity.KnowledgeNote;
 import e_learning.server.knowledge.entity.KnowledgeNoteTopicLink;
@@ -30,6 +31,7 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 public class StudentKnowledgeNoteService {
     private final KnowledgeNoteRepository notes;
+    private final TopicRepository topics;
     private final KnowledgeNoteTopicLinkRepository links;
     private final StudentUnitService studentUnits;
 
@@ -38,12 +40,25 @@ public class StudentKnowledgeNoteService {
      * to a Topic. Unit filtering only matches links under visible published content.
      */
     public PageResponse<StudentKnowledgeNoteSummary> list(
-            Long studentId, String search, Long unitId, int page, int size) {
+            Long studentId, String search, Long unitId, Long topicId, int page, int size) {
         Long gradeId = studentUnits.getStudentGradeId(studentId);
         if (page < 1 || size < 1 || size > 50) {
             throw new AppException(ErrorCode.INVALID_REQUEST, "page phải >= 1, size phải từ 1 đến 50.");
         }
         if (unitId != null) studentUnits.requireVisibleUnit(studentId, unitId);
+        if (topicId != null) {
+            var topic = topics.findById(topicId)
+                    .orElseThrow(() -> new AppException(ErrorCode.TOPIC_NOT_FOUND));
+            var section = topic.getSection();
+            var unit = section.getUnit();
+            if (topic.getStatus() != ContentStatus.PUBLISHED
+                    || section.getStatus() != ContentStatus.PUBLISHED
+                    || unit.getStatus() != ContentStatus.PUBLISHED
+                    || !Objects.equals(unit.getGrade().getId(), gradeId)
+                    || (unitId != null && !Objects.equals(unit.getId(), unitId))) {
+                throw new AppException(ErrorCode.TOPIC_NOT_FOUND);
+            }
+        }
 
         Specification<KnowledgeNote> filter = (root, query, cb) -> cb.and(
                 cb.equal(root.get("grade").get("id"), gradeId),
@@ -55,18 +70,19 @@ public class StudentKnowledgeNoteService {
                     cb.like(cb.lower(root.get("title")), term),
                     cb.like(cb.lower(cb.coalesce(root.get("description"), "")), term)));
         }
-        if (unitId != null) {
+        if (unitId != null || topicId != null) {
             filter = filter.and((root, query, cb) -> {
                 var sub = query.subquery(Long.class);
                 var link = sub.from(KnowledgeNoteTopicLink.class);
                 sub.select(link.get("id"));
-                sub.where(
-                        cb.equal(link.get("note").get("id"), root.get("id")),
-                        cb.equal(link.get("topic").get("section").get("unit").get("id"), unitId),
-                        cb.equal(link.get("topic").get("status"), ContentStatus.PUBLISHED),
-                        cb.equal(link.get("topic").get("section").get("status"), ContentStatus.PUBLISHED),
-                        cb.equal(link.get("topic").get("section").get("unit").get("status"), ContentStatus.PUBLISHED)
-                );
+                var predicates = new java.util.ArrayList<jakarta.persistence.criteria.Predicate>();
+                predicates.add(cb.equal(link.get("note").get("id"), root.get("id")));
+                predicates.add(cb.equal(link.get("topic").get("status"), ContentStatus.PUBLISHED));
+                predicates.add(cb.equal(link.get("topic").get("section").get("status"), ContentStatus.PUBLISHED));
+                predicates.add(cb.equal(link.get("topic").get("section").get("unit").get("status"), ContentStatus.PUBLISHED));
+                if (unitId != null) predicates.add(cb.equal(link.get("topic").get("section").get("unit").get("id"), unitId));
+                if (topicId != null) predicates.add(cb.equal(link.get("topic").get("id"), topicId));
+                sub.where(predicates.toArray(new jakarta.persistence.criteria.Predicate[0]));
                 return cb.exists(sub);
             });
         }

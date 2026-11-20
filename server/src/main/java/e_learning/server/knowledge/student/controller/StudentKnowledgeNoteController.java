@@ -23,10 +23,11 @@ public class StudentKnowledgeNoteController {
             @AuthenticationPrincipal Jwt jwt,
             @RequestParam(required = false) String search,
             @RequestParam(required = false) Long unitId,
+            @RequestParam(required = false) Long topicId,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "12") int size) {
         Long studentId = Long.valueOf(Objects.requireNonNull(jwt.getSubject()));
-        return ApiResponse.success(service.list(studentId, search, unitId, page, size));
+        return ApiResponse.success(service.list(studentId, search, unitId, topicId, page, size));
     }
 
     @GetMapping("/{noteId}")

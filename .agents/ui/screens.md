@@ -5,6 +5,7 @@
 ## Teacher routes
 
 - `/teacher`: dashboard; metrics must not be fabricated and some areas remain mock/future work.
+- `/teacher/knowledge-notes/{id}/preview`: Teacher-only, separate-tab Student-styled preview of the unsaved Editor via a transient BroadcastChannel session (no Student API).
 - `/teacher/knowledge-notes`: standalone Knowledge Note management with an in-page create dialog; detail and edit routes live under this prefix, not under Content. `/teacher/knowledge-notes/new` redirects here for compatibility.
 - `/teacher/classes`: class management.
 - `/teacher/students`: student management.

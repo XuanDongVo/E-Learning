@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
@@ -32,6 +32,13 @@ import type {
   KnowledgeDocument,
   KnowledgeNoteEditorState,
 } from "@/types/knowledge-note";
+import {
+  KNOWLEDGE_PREVIEW_REQUEST,
+  KNOWLEDGE_PREVIEW_SNAPSHOT,
+  isKnowledgePreviewRequest,
+  previewChannelName,
+  type KnowledgePreviewPayload,
+} from "./knowledge-note-preview-channel";
 import { TeacherKnowledgeNoteLayout } from "./knowledge-note-layout";
 import {
   createEditorSnapshot,
@@ -41,7 +48,7 @@ import {
 } from "./knowledge-note-document";
 import { KnowledgeLearningBlock } from "./knowledge-note-learning-block";
 import { KnowledgeNoteToolbar } from "./knowledge-note-toolbar";
-import { TeacherKnowledgeNotePreview } from "./knowledge-note-preview";
+
 
 export function TeacherKnowledgeNoteEditor({ noteId }: { noteId: number }) {
   const router = useRouter();
@@ -54,7 +61,10 @@ export function TeacherKnowledgeNoteEditor({ noteId }: { noteId: number }) {
     EMPTY_KNOWLEDGE_SUMMARY,
   );
   const [dirty, setDirty] = useState(false);
-  const [previewOpen, setPreviewOpen] = useState(false);
+  const previewTabRef = useRef<Window | null>(null);
+  const previewChannelRef = useRef<BroadcastChannel | null>(null);
+  const previewSessionRef = useRef<string | null>(null);
+  const latestPreviewRef = useRef<KnowledgePreviewPayload | null>(null);
   const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
   const [pendingHref, setPendingHref] = useState<string | null>(null);
   const readOnly = note?.status === "ARCHIVED";
@@ -150,6 +160,79 @@ export function TeacherKnowledgeNoteEditor({ noteId }: { noteId: number }) {
     return () =>
       window.document.removeEventListener("click", interceptInternalLink, true);
   }, [dirty]);
+
+  // Keep the current draft in memory while a separate Teacher preview tab reads it.
+  // No URL payload, localStorage, sessionStorage or backend content endpoint.
+  useEffect(() => {
+    latestPreviewRef.current = note
+      ? { title: note.title, description: note.description, document, summary }
+      : null;
+    const channel = previewChannelRef.current;
+    const session = previewSessionRef.current;
+    if (channel && session && latestPreviewRef.current) {
+      channel.postMessage({
+        type: KNOWLEDGE_PREVIEW_SNAPSHOT,
+        noteId,
+        session,
+        payload: latestPreviewRef.current,
+      });
+    }
+  }, [note, noteId, document, summary]);
+
+  useEffect(() => () => {
+    previewChannelRef.current?.close();
+    previewChannelRef.current = null;
+  }, []);
+
+  const openPreview = () => {
+    if (typeof BroadcastChannel === "undefined") {
+      toast.error("Trình duyệt không hỗ trợ xem trước trên tab riêng.");
+      return;
+    }
+    const existingTab = previewTabRef.current;
+    if (existingTab && !existingTab.closed) {
+      existingTab.focus();
+      const payload = latestPreviewRef.current;
+      const session = previewSessionRef.current;
+      if (payload && session) {
+        previewChannelRef.current?.postMessage({
+          type: KNOWLEDGE_PREVIEW_SNAPSHOT, noteId, session, payload,
+        });
+      }
+      return;
+    }
+
+    const session = crypto.randomUUID();
+    const previewUrl = new URL(window.location.href);
+    const editorPath = previewUrl.pathname.replace(/\/+$/, "");
+    if (!editorPath.endsWith("/edit")) {
+      toast.error("Không xác định được đường dẫn xem trước.");
+      return;
+    }
+    previewUrl.pathname = editorPath.slice(0, -"/edit".length) + "/preview";
+    previewUrl.search = new URLSearchParams({ session }).toString();
+    previewUrl.hash = "";
+
+    const channel = new BroadcastChannel(previewChannelName(noteId, session));
+    channel.addEventListener("message", (event: MessageEvent<unknown>) => {
+      if (!isKnowledgePreviewRequest(event.data)) return;
+      if (event.data.noteId !== noteId || event.data.session !== session) return;
+      const payload = latestPreviewRef.current;
+      if (!payload) return;
+      channel.postMessage({ type: KNOWLEDGE_PREVIEW_SNAPSHOT, noteId, session, payload });
+    });
+
+    const tab = window.open(previewUrl.toString(), "_blank");
+    if (!tab) {
+      channel.close();
+      toast.error("Trình duyệt đã chặn tab xem trước. Hãy cho phép mở tab mới và thử lại.");
+      return;
+    }
+    previewChannelRef.current?.close();
+    previewTabRef.current = tab;
+    previewChannelRef.current = channel;
+    previewSessionRef.current = session;
+  };
 
   const editorState: KnowledgeNoteEditorState = readOnly
     ? "readOnly"
@@ -255,7 +338,7 @@ export function TeacherKnowledgeNoteEditor({ noteId }: { noteId: number }) {
             <Button
               type="button"
               variant="outline"
-              onClick={() => setPreviewOpen(true)}
+              onClick={openPreview}
             >
               <Eye /> Xem trước
             </Button>
@@ -347,15 +430,6 @@ export function TeacherKnowledgeNoteEditor({ noteId }: { noteId: number }) {
           </section>
         </aside>
       </div>
-
-      <TeacherKnowledgeNotePreview
-        open={previewOpen}
-        onOpenChange={setPreviewOpen}
-        title={note.title}
-        description={note.description}
-        document={document}
-        summary={summary}
-      />
 
       <AlertDialog open={leaveDialogOpen} onOpenChange={setLeaveDialogOpen}>
         <AlertDialogContent>

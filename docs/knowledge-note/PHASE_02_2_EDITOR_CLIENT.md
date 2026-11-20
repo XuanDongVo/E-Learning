@@ -42,7 +42,7 @@ Quick Summary uses paragraph, text, ordered/bullet list and basic text marks onl
 - Toolbar: paragraph, H2/H3, bold, italic, lists, safe link, divider and Learning Block insertion.
 - Slash shortcuts: `/formula`, `/example`, `/note`, `/compare`, `/mistake`, completed with Space.
 - Learning Blocks support inline attribute editing, drag handle, keyboard-operable up/down actions and delete.
-- Preview reads current client state and switches between Full Article/Quick Summary and Desktop/Mobile widths.
+- Preview opens the dedicated Teacher-only `/teacher/knowledge-notes/{id}/preview` page in a new tab, using Student-scoped paper/typography styles and the same safe JSON renderer. The open Editor transfers its current unsaved Full Article and separately authored Quick Summary over a per-session same-origin BroadcastChannel. Changes made while both tabs are open update the Preview; no browser storage, backend read or Student permission is involved. Tabs switch Full Article/Quick Summary and Desktop/Mobile widths. Direct access without an Editor session displays an explicit unavailable state.
 - `clean`: metadata loaded and no local content mutation.
 - `unsaved`: any body, Summary or Learning Block mutation occurred.
 - `readOnly`: archived Note; both editors disable mutation.
@@ -88,4 +88,4 @@ The server must authorize the Teacher, validate the full allowlist and size/dept
 
 ## Validation evidence
 
-Source validation and browser evidence are recorded in `.agents/PROGRESS.md`. Phase 02.2 is not evidence that content survives reload or that any Student renderer/API exists.
+Static source review, new protocol tests (written but not executed in this pass), and prior editor checks are documented in `.agents/PROGRESS.md`. The Teacher preview displays Student styling but is not an authorized Student Library/Reader or persistence API. Editor drafts do not survive reload or closing the original Editor tab.

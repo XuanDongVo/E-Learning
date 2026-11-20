@@ -28,7 +28,11 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useRouter } from "@/i18n/navigation";
-import { useTeacherKnowledgeNote } from "@/hooks/knowledge-note/use-teacher-knowledge-notes";
+import {
+  useTeacherKnowledgeNote,
+  useTeacherKnowledgeNoteContent,
+} from "@/hooks/knowledge-note/use-teacher-knowledge-notes";
+import { useKnowledgeNoteAutosave } from "@/hooks/knowledge-note/use-knowledge-note-autosave";
 import type {
   KnowledgeDocument,
   KnowledgeNoteEditorState,
@@ -48,6 +52,7 @@ import {
   EMPTY_KNOWLEDGE_DOCUMENT,
   EMPTY_KNOWLEDGE_SUMMARY,
   isDocumentEmpty,
+  validateKnowledgeDocument,
 } from "./knowledge-note-document";
 import {
   KnowledgeLearningBlock,
@@ -71,13 +76,17 @@ export function TeacherKnowledgeNoteEditor({ noteId }: { noteId: number }) {
   const router = useRouter();
   const noteQuery = useTeacherKnowledgeNote(noteId);
   const note = noteQuery.data;
+  const contentQuery = useTeacherKnowledgeNoteContent(noteId, Boolean(note));
+  const readOnly = !note || note.status === "ARCHIVED" || note.status === "PUBLISHED";
+  const autosave = useKnowledgeNoteAutosave(noteId, !readOnly);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const hydratedRef = useRef(false);
   const [document, setDocument] = useState<KnowledgeDocument>(
     EMPTY_KNOWLEDGE_DOCUMENT,
   );
   const [summary, setSummary] = useState<KnowledgeDocument>(
     EMPTY_KNOWLEDGE_SUMMARY,
   );
-  const [dirty, setDirty] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
   const [templatesOpen, setTemplatesOpen] = useState(false);
   const [, setSelectionVersion] = useState(0);
@@ -87,7 +96,6 @@ export function TeacherKnowledgeNoteEditor({ noteId }: { noteId: number }) {
   const latestPreviewRef = useRef<KnowledgePreviewPayload | null>(null);
   const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
   const [pendingHref, setPendingHref] = useState<string | null>(null);
-  const readOnly = note?.status === "ARCHIVED";
 
   const editor = useEditor({
     immediatelyRender: false,
@@ -119,8 +127,10 @@ export function TeacherKnowledgeNoteEditor({ noteId }: { noteId: number }) {
       },
     },
     onUpdate: ({ editor: currentEditor }) => {
-      setDocument(currentEditor.getJSON() as KnowledgeDocument);
-      setDirty(true);
+      if (!hydratedRef.current) return;
+      const next = currentEditor.getJSON() as KnowledgeDocument;
+      setDocument(next);
+      autosave.updateDocument(next);
     },
     onSelectionUpdate: () => {
       setSelectionVersion((current) => current + 1);
@@ -153,10 +163,36 @@ export function TeacherKnowledgeNoteEditor({ noteId }: { noteId: number }) {
       },
     },
     onUpdate: ({ editor: currentEditor }) => {
-      setSummary(currentEditor.getJSON() as KnowledgeDocument);
-      setDirty(true);
+      if (!hydratedRef.current) return;
+      const next = currentEditor.getJSON() as KnowledgeDocument;
+      setSummary(next);
+      autosave.updateSummary(next);
     },
   });
+
+  // Restore the persisted document without triggering a save during hydration.
+  useEffect(() => {
+    if (!editor || !summaryEditor || !contentQuery.data) return;
+    const loaded = contentQuery.data;
+    if (loaded.schemaVersion !== 2) {
+      setLoadError("Bài học đang sử dụng schema cũ, cần chuyển sang v2 trước khi soạn thảo.");
+      return;
+    }
+    try {
+      validateKnowledgeDocument(loaded.document);
+      validateKnowledgeDocument(loaded.summary, true);
+      hydratedRef.current = false;
+      editor.commands.setContent(loaded.document, { emitUpdate: false });
+      summaryEditor.commands.setContent(loaded.summary, { emitUpdate: false });
+      setDocument(loaded.document);
+      setSummary(loaded.summary);
+      autosave.reset(loaded);
+      hydratedRef.current = true;
+      setLoadError(null);
+    } catch (cause) {
+      setLoadError(cause instanceof Error ? cause.message : "Bản lưu không hợp lệ.");
+    }
+  }, [editor, summaryEditor, contentQuery.data, autosave.reset]);
 
   useEffect(() => {
     editor?.setEditable(!readOnly);
@@ -165,15 +201,15 @@ export function TeacherKnowledgeNoteEditor({ noteId }: { noteId: number }) {
 
   useEffect(() => {
     const warnOnUnload = (event: BeforeUnloadEvent) => {
-      if (!dirty) return;
+      if (!autosave.dirty) return;
       event.preventDefault();
     };
     window.addEventListener("beforeunload", warnOnUnload);
     return () => window.removeEventListener("beforeunload", warnOnUnload);
-  }, [dirty]);
+  }, [autosave.dirty]);
 
   useEffect(() => {
-    if (!dirty) return;
+    if (!autosave.dirty) return;
     const interceptInternalLink = (event: MouseEvent) => {
       const target = event.target;
       if (!(target instanceof Element)) return;
@@ -195,7 +231,7 @@ export function TeacherKnowledgeNoteEditor({ noteId }: { noteId: number }) {
     window.document.addEventListener("click", interceptInternalLink, true);
     return () =>
       window.document.removeEventListener("click", interceptInternalLink, true);
-  }, [dirty]);
+  }, [autosave.dirty]);
 
   // Keep the current draft in memory while a separate Teacher preview tab reads it.
   // No URL payload, localStorage, sessionStorage or backend content endpoint.
@@ -286,9 +322,9 @@ export function TeacherKnowledgeNoteEditor({ noteId }: { noteId: number }) {
 
   const editorState: KnowledgeNoteEditorState = readOnly
     ? "readOnly"
-    : dirty
-      ? "unsaved"
-      : "clean";
+    : autosave.status === "saving" ? "saving"
+    : autosave.status === "error" ? "saveError"
+    : autosave.dirty ? "unsaved" : "clean";
 
   const statePresentation = useMemo(() => {
     if (editorState === "readOnly")
@@ -296,6 +332,18 @@ export function TeacherKnowledgeNoteEditor({ noteId }: { noteId: number }) {
         icon: LockKeyhole,
         label: "Chỉ đọc",
         className: "text-muted-foreground",
+      };
+    if (editorState === "saving")
+      return {
+        icon: Info,
+        label: "Đang lưu…",
+        className: "text-foreground",
+      };
+    if (editorState === "saveError")
+      return {
+        icon: TriangleAlert,
+        label: "Lưu thất bại — thử lại",
+        className: "text-destructive",
       };
     if (editorState === "unsaved")
       return {
@@ -305,13 +353,13 @@ export function TeacherKnowledgeNoteEditor({ noteId }: { noteId: number }) {
       };
     return {
       icon: Check,
-      label: "Chưa có thay đổi",
+      label: autosave.status === "saved" ? "Đã lưu" : "Đã tải nội dung",
       className: "text-muted-foreground",
     };
-  }, [editorState]);
+  }, [editorState, autosave.status]);
 
   const handleBack = () => {
-    if (dirty) {
+    if (autosave.dirty) {
       setPendingHref(null);
       setLeaveDialogOpen(true);
     } else router.push("/teacher/knowledge-notes");
@@ -328,7 +376,7 @@ export function TeacherKnowledgeNoteEditor({ noteId }: { noteId: number }) {
   };
 
   const insertTemplate = (nodes: KnowledgeDocumentNode[]): boolean => {
-    if (!editor || readOnly) return false;
+    if (!editor || readOnly || !autosave.ready) return false;
     const ok = editor.chain().focus().insertContent(nodes).run();
     if (!ok)
       toast.error(
@@ -342,7 +390,7 @@ export function TeacherKnowledgeNoteEditor({ noteId }: { noteId: number }) {
     target: ImportTarget,
     mode: ImportMode,
   ): boolean => {
-    if (!editor || !summaryEditor || readOnly) return false;
+    if (!editor || !summaryEditor || readOnly || !autosave.ready) return false;
     // Both editors are updated only on an explicit, confirmed full replacement.
     const applyTo = (
       instance: NonNullable<typeof editor>,
@@ -377,14 +425,12 @@ export function TeacherKnowledgeNoteEditor({ noteId }: { noteId: number }) {
         if (!nextSummary) return false;
         const first = applyTo(editor, article, "replace");
         const second = applyTo(summaryEditor, nextSummary, "replace");
-        if (first && second) setDirty(true);
         return first && second;
       }
       const destination = target === "summary" ? summaryEditor : editor;
       const next = target === "summary" ? nextSummary : article;
       if (!next) return false;
       const result = applyTo(destination, next, mode);
-      if (result) setDirty(true);
       return result;
     } catch (cause) {
       toast.error(
@@ -421,6 +467,23 @@ export function TeacherKnowledgeNoteEditor({ noteId }: { noteId: number }) {
     );
   }
 
+  if (contentQuery.isPending || (!autosave.ready && !contentQuery.isError && !loadError)) {
+    return <EditorState title="Đang tải nội dung…" description="Đang đọc bản đã lưu từ server." />;
+  }
+  if (contentQuery.isError || loadError) {
+    return (
+      <EditorState
+        title="Không thể mở nội dung bài lý thuyết"
+        description={loadError ?? "Không tải được nội dung từ server."}
+        action={
+          <Button type="button" variant="outline" onClick={() => contentQuery.refetch()}>
+            Thử lại
+          </Button>
+        }
+      />
+    );
+  }
+
   const StateIcon = statePresentation.icon;
 
   return (
@@ -438,7 +501,7 @@ export function TeacherKnowledgeNoteEditor({ noteId }: { noteId: number }) {
             <StateIcon className="size-4" /> {statePresentation.label}
           </span>
           <span className="text-xs text-muted-foreground">
-            Schema v2 · Chỉ lưu trong phiên
+            Schema v2 · Lưu trên server
           </span>
           <div className="ml-auto flex flex-wrap gap-2">
             <Button
@@ -461,10 +524,14 @@ export function TeacherKnowledgeNoteEditor({ noteId }: { noteId: number }) {
             </Button>
             <Button
               type="button"
-              disabled
-              title="API lưu nội dung sẽ được triển khai ở Phase 02.3"
+              disabled={readOnly || !autosave.ready || !autosave.dirty || autosave.status === "saving"}
+              onClick={() => {
+                void autosave.saveNow().catch((cause: unknown) => {
+                  toast.error(cause instanceof Error ? cause.message : "Không thể lưu bài học.");
+                });
+              }}
             >
-              <Save /> Lưu
+              <Save /> {autosave.status === "error" ? "Thử lưu lại" : "Lưu ngay"}
             </Button>
           </div>
         </div>
@@ -472,9 +539,8 @@ export function TeacherKnowledgeNoteEditor({ noteId }: { noteId: number }) {
           <div className="flex gap-2 border-t border-accent bg-accent/10 px-4 py-3 text-sm text-foreground">
             <TriangleAlert className="mt-0.5 size-4 shrink-0 text-accent-foreground" />
             <p>
-              <strong>Bài đang công bố.</strong> Khi API lưu được bật, mọi thay
-              đổi đã lưu sẽ xuất hiện ngay với học sinh. Hãy gỡ công bố trước
-              nếu cần biên tập theo giai đoạn.
+              <strong>Bài đang công bố.</strong> Gỡ công bố trước khi chỉnh sửa
+              để tránh thay đổi nội dung học sinh đang đọc. Auto-save tạm dừng.
             </p>
           </div>
         ) : null}
@@ -575,8 +641,8 @@ export function TeacherKnowledgeNoteEditor({ noteId }: { noteId: number }) {
           <AlertDialogHeader>
             <AlertDialogTitle>Rời phiên soạn thảo?</AlertDialogTitle>
             <AlertDialogDescription>
-              Thay đổi hiện chỉ nằm trong bộ nhớ trình duyệt và sẽ mất khi bạn
-              rời trang.
+              Một số thay đổi chưa được server xác nhận lưu. Rời trang lúc này
+              có thể làm mất nội dung vừa chỉnh sửa.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

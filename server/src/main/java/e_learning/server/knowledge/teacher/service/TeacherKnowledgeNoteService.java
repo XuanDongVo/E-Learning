@@ -11,13 +11,15 @@ import e_learning.server.knowledge.repository.KnowledgeNoteTopicLinkRepository;
 import e_learning.server.knowledge.teacher.dto.request.CreateKnowledgeNoteRequest;
 import e_learning.server.knowledge.teacher.dto.response.KnowledgeNoteResponse;
 import e_learning.server.knowledge.teacher.mapper.KnowledgeNoteMapper;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -37,10 +39,9 @@ public class TeacherKnowledgeNoteService {
         note.setTitle(request.title().trim());
         note.setDescription(normalizeDescription(request.description()));
         note.setStatus(KnowledgeNoteStatus.DRAFT);
-        var emptyDocument = JsonNodeFactory.instance.objectNode();
-        emptyDocument.put("type", "doc");
-        emptyDocument.set("content", JsonNodeFactory.instance.arrayNode());
-        note.setDocumentJson(emptyDocument);
+        note.setDocumentJson(Map.of(
+                "type", "doc",
+                "content", List.of()));
         return mapper.toResponse(noteRepository.save(note), 0);
     }
 

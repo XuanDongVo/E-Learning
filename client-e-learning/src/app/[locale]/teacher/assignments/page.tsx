@@ -32,6 +32,7 @@ import { AssignmentWizard } from "@/components/features/teacher/assignments/main
 import { SummaryCard } from "@/components/features/teacher/assignments/main/SummaryCard";
 import { TeacherAssignmentGuide } from "@/components/features/teacher/assignments/main/TeacherAssignmentGuide";
 import { TeacherPageHeader } from "@/components/features/teacher/shared/teacher-page-header";
+import { TeacherListToolbar } from "@/components/features/teacher/shared/teacher-list-toolbar";
 import { PageBanner } from "@/components/feedback";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -230,27 +231,56 @@ export default function TeacherAssignmentsPage() {
       </section>
 
       <section className="overflow-hidden rounded-2xl border-2 border-ink bg-card shadow-pop">
-        <div className="border-b-2 border-border px-5 py-4 bg-card">
-          <div className="flex flex-col justify-between gap-3 lg:flex-row lg:items-start">
-            <div>
-              <h2 className="text-section-title font-extrabold text-foreground">
-                {t("list.title")}
-              </h2>
-              <p className="text-body-sm text-muted-foreground">
-                {t("list.matching", { count: visibleAssignments.length })}
-              </p>
-            </div>
-            <div className="flex flex-col gap-2.5 sm:flex-row sm:flex-wrap">
-              <label className="flex h-10 items-center gap-2 rounded-xl border-2 border-border bg-card px-3.5 text-body-sm text-muted-foreground shadow-pop-sm focus-within:border-primary">
+        <div className="px-5 py-4">
+          <h2 className="text-section-title font-extrabold text-foreground">
+            {t("list.title")}
+          </h2>
+          <p className="text-body-sm text-muted-foreground">
+            {t("list.matching", { count: visibleAssignments.length })}
+          </p>
+        </div>
+        <TeacherListToolbar
+          className="rounded-none border-x-0 border-b-2 border-t-2 shadow-none"
+          search={
+              <label className="flex h-10 w-full items-center gap-2 rounded-xl border-2 border-border bg-card px-3.5 text-body-sm text-muted-foreground shadow-pop-sm focus-within:border-primary">
                 <Search className="size-4" />
                 <input
                   value={search}
                   onChange={(event) => setSearch(event.target.value)}
                   placeholder={t("list.searchPlaceholder")}
                   aria-label={t("list.searchLabel")}
-                  className="w-44 bg-transparent outline-none font-medium text-foreground placeholder:text-muted-foreground"
+                  className="min-w-0 flex-1 bg-transparent font-medium text-foreground outline-none placeholder:text-muted-foreground"
                 />
               </label>
+          }
+          filters={
+            <>
+              {(["ALL", "PUBLISHED", "DRAFT", "ARCHIVED"] as const).map(
+                (status) => (
+                  <button
+                    key={status}
+                    type="button"
+                    onClick={() => setStatusFilter(status)}
+                    className={`h-10 rounded-xl border-2 px-3.5 text-body-sm font-bold shadow-pop-sm transition-all ${
+                      statusFilter === status
+                        ? "-translate-y-0.5 border-primary bg-primary text-primary-foreground"
+                        : "border-border bg-card hover:bg-muted hover:text-foreground"
+                    }`}
+                  >
+                    {status === "ALL"
+                      ? t("statuses.all")
+                      : status === "PUBLISHED"
+                        ? t("statuses.active")
+                        : status === "DRAFT"
+                          ? t("statuses.draft")
+                          : t("statuses.archived")}
+                  </button>
+                ),
+              )}
+            </>
+          }
+          actions={
+            <>
               <button
                 type="button"
                 // onClick={() => setImportOpen(true)}
@@ -273,33 +303,9 @@ export default function TeacherAssignmentsPage() {
               >
                 <Plus className="size-4" /> {t("actions.create")}
               </button>
-            </div>
-          </div>
-          <div className="mt-4 flex flex-wrap gap-2.5">
-            {(["ALL", "PUBLISHED", "DRAFT", "ARCHIVED"] as const).map(
-              (status) => (
-                <button
-                  key={status}
-                  type="button"
-                  onClick={() => setStatusFilter(status)}
-                  className={`rounded-xl border-2 px-3.5 py-1.5 text-body-sm font-bold shadow-pop-sm transition-all ${
-                    statusFilter === status
-                      ? "border-primary bg-primary text-primary-foreground -translate-y-0.5"
-                      : "border-border bg-card hover:bg-muted hover:text-foreground"
-                  }`}
-                >
-                  {status === "ALL"
-                    ? t("statuses.all")
-                    : status === "PUBLISHED"
-                      ? t("statuses.active")
-                      : status === "DRAFT"
-                        ? t("statuses.draft")
-                        : t("statuses.archived")}
-                </button>
-              ),
-            )}
-          </div>
-        </div>
+            </>
+          }
+        />
         <AssignmentList
           assignments={visibleAssignments}
           isLoading={assignments.isLoading}

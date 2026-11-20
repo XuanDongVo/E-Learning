@@ -37,7 +37,7 @@ All routes require authenticated Teacher (existing `/v1/teacher/**` security rul
 - PUT/GET content or editing, publish/unpublish/archive, metadata update.
 - Topic linking mutation or primary assignment APIs.
 - Student library/detail/topic APIs.
-- Editor data bindings, UI publication behavior, live Navbar or Topic widget.
+- Editor data bindings, UI publication behavior, Student Navbar or Topic widget. ADR 0040 separately approves the standalone Teacher route shell and its navigation entry; it does not approve additional APIs.
 - Auto-creating arbitrary knowledge data or fake success responses.
 
 The current Teacher/Student route shells and design components are placeholders. Their future paths and interactions are **not** approval for adding more backend endpoints. Design T02 Editor and Student Reader interaction first, then revise API contract and implement server behavior phase by phase.

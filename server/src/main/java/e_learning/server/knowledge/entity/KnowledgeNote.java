@@ -1,6 +1,5 @@
 package e_learning.server.knowledge.entity;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import e_learning.server.knowledge.enums.KnowledgeNoteStatus;
 import e_learning.server.grades.entity.Grade;
 import jakarta.persistence.*;
@@ -8,7 +7,9 @@ import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
+
 import java.time.LocalDateTime;
+import java.util.Map;
 
 /**
  * One Note = one current document. No Draft/Revision table in MVP.
@@ -33,11 +34,11 @@ public class KnowledgeNote {
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "document_json", nullable = false, columnDefinition = "jsonb")
-    private JsonNode documentJson;
+    private Map<String, Object> documentJson;
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "summary_json", columnDefinition = "jsonb")
-    private JsonNode summaryJson;
+    private Map<String, Object> summaryJson;
 
     @Column(name = "schema_version", nullable = false)
     private Integer schemaVersion = 1;

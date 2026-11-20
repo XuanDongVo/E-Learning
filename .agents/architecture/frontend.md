@@ -65,6 +65,8 @@ feature-local copies of backend messages.
 
 Follow `ui/UI_ARCHITECTURE_GUIDELINES.md` for shared UI architecture, accessibility and responsive behavior. ADR 0032 establishes the exclusive Student visual language in `ui/INDIE_ILLUSTRATED_SCRAPBOOK_DESIGN_SYSTEM.md`; Teacher retains its existing visual language.
 
+Teacher operational lists compose search, domain filters and actions through `components/features/teacher/shared/teacher-list-toolbar.tsx`. The shared component owns only container layout and responsive wrapping; feature components continue to own query state, URL parameters, mutations, validation and navigation. Specialized editor and analytics toolbars remain feature-local.
+
 **Implemented theme isolation contract:** `app/[locale]/student/layout.tsx` activates the scoped Student theme from `styles/student/`; Teacher/base variables remain unchanged. Student feature code uses semantic aliases, typography roles and `components/student-ui` recipes instead of page-local colors or geometry. Root-mounted dialogs and Sonner are covered through the active Student body scope. Any new portal/popover/select must still be checked for scope escape, focus, contrast and reduced motion.
 
 

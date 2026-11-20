@@ -1,8 +1,11 @@
 ## Knowledge Note Phase 01 (2026-11-19)
-Only three Teacher metadata endpoints are implemented in source: POST/GET `/v1/teacher/knowledge-notes`, GET `/v1/teacher/knowledge-notes/{id}`. Common PageResponse<T> reused. Backend module now lives at `e_learning.server.knowledge`, with teacher-specific controller/service/dto request/response. No Student/content/publish/Topic linking endpoints are enabled. UI shells remain disconnected until UI approval. Build, migration and HTTP/security runtime verification are pending. See docs/knowledge-note/PHASE_01_APPROVED.md.
+Only three Teacher metadata endpoints are implemented in source: POST/GET `/v1/teacher/knowledge-notes`, GET `/v1/teacher/knowledge-notes/{id}`. Common PageResponse<T> reused. Backend module now lives at `e_learning.server.knowledge`, with teacher-specific controller/service/dto request/response. Management/Create/Detail consume these endpoints; JSONB fields use Java collection mappings rather than Jackson-specific tree nodes. Editor content remains client-only. No Student/content-save/publish/Topic-linking endpoints are enabled. See docs/knowledge-note/PHASE_01_APPROVED.md.
+
+## Knowledge Note Teacher route (2026-11-20)
+Teacher Knowledge Notes now has the canonical standalone route `/teacher/knowledge-notes` with its own navigation item after Overview. Create opens as a dialog on Management; `/teacher/knowledge-notes/new` is only a compatibility redirect. Detail/edit follow the standalone prefix and legacy `/teacher/content/knowledge-notes/**` routes are retired. Management/Create/Detail consume the approved metadata APIs. The TipTap Editor, Learning Blocks, Quick Summary and Preview operate only in client memory; content-save, publish, Student and Topic-link APIs remain unapproved and unimplemented.
 
 ## Knowledge Note simplification (2026-11-19)
-Knowledge Note now targets **two effective tables** after V67: knowledge_notes (current JSON content, summary, status) and knowledge_note_topic_links. Draft/Revision entities are removed. Canonical specs: docs/knowledge-note v3.2. Existing API and UI shells still return 501 / disabled. Do not claim feature implementation. Schema migration must be tested on PostgreSQL before deployment.
+Knowledge Note now targets **two effective tables** after V67: knowledge_notes (current JSON content, summary, status) and knowledge_note_topic_links. Draft/Revision entities are removed. Canonical specs: docs/knowledge-note v3.2. Phase 01 metadata APIs and Phase 02.2 client Editor exist; content persistence and later operations remain unavailable. Schema migration must be tested on PostgreSQL before deployment.
 
 ## Knowledge Note scaffold — 2026-11-19 (feature/guided-reasoning-v1)
 

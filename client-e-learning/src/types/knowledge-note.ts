@@ -1,4 +1,3 @@
-/** Knowledge Note API contract: Phase 01 only (three Teacher metadata operations). */
 export type KnowledgeNoteStatus = "DRAFT" | "PUBLISHED" | "UNPUBLISHED" | "ARCHIVED";
 
 export interface KnowledgeNote {
@@ -24,19 +23,43 @@ export interface TeacherKnowledgeNoteListFilters {
   status?: KnowledgeNoteStatus;
   search?: string;
   linked?: boolean;
-  /** Existing common PageResponse is 1-indexed. */
   page?: number;
   size?: number;
 }
 
-/** Editor document shape is a future UI-only contract, not a Phase 01 endpoint. */
+export type KnowledgeLearningBlockKind =
+  | "formula"
+  | "example"
+  | "callout"
+  | "comparison"
+  | "commonMistake";
+
+export interface KnowledgeDocumentMark {
+  type: "bold" | "italic" | "link";
+  attrs?: { href?: string; target?: string; rel?: string };
+}
+
 export interface KnowledgeDocumentNode {
   type: string;
   text?: string;
+  marks?: KnowledgeDocumentMark[];
   content?: KnowledgeDocumentNode[];
   attrs?: Record<string, string | number | boolean | null>;
 }
 export interface KnowledgeDocument {
   type: "doc";
   content: KnowledgeDocumentNode[];
+}
+
+export type KnowledgeNoteEditorState =
+  | "clean"
+  | "unsaved"
+  | "saving"
+  | "saveError"
+  | "readOnly";
+
+export interface KnowledgeNoteEditorSnapshot {
+  schemaVersion: 1;
+  document: KnowledgeDocument;
+  summary: KnowledgeDocument;
 }

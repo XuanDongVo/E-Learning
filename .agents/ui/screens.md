@@ -5,6 +5,7 @@
 ## Teacher routes
 
 - `/teacher`: dashboard; metrics must not be fabricated and some areas remain mock/future work.
+- `/teacher/knowledge-notes`: standalone Knowledge Note management with an in-page create dialog; detail and edit routes live under this prefix, not under Content. `/teacher/knowledge-notes/new` redirects here for compatibility.
 - `/teacher/classes`: class management.
 - `/teacher/students`: student management.
 - `/teacher/content`: Content Explorer and hierarchy.

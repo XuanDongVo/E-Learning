@@ -38,12 +38,12 @@ The Student `controller`, `service`, and `dto/request`, `dto/response` directori
 ## Frontend status
 - `src/types/knowledge-note.ts` defines the approved Teacher metadata contract and future document-renderer type.
 - `src/services/teacher/knowledge-note.service.ts` contains only the three approved API calls.
-- `src/hooks/knowledge-note/use-teacher-knowledge-notes.ts` contains disabled query hooks. Reuse existing `src/types/content.ts` `PageResponse<T>`.
-- The previously created Student/Teacher route and component shells remain **inactive**, not wired to backend, and not shown in navigation.
+- `src/hooks/knowledge-note/use-teacher-knowledge-notes.ts` connects list/detail/create to the three approved metadata APIs. Reuse existing `src/types/content.ts` `PageResponse<T>`.
+- The Teacher workspace is available at `/teacher/knowledge-notes` as a first-class navigation item after Overview. Create is a dialog inside Management; detail/edit use `/teacher/knowledge-notes/{id}` and `/teacher/knowledge-notes/{id}/edit`, while `/teacher/knowledge-notes/new` redirects to Management for compatibility. The old Content-nested paths are retired. Management/Create/Detail use the approved metadata APIs; Editor content remains client-only and is not a content-save or publish implementation.
 - No student client service or student/backend controllers are active for Knowledge Note.
 
 ## Next rule
-**Client UI design first, server implementation afterward** for content editor, preview, publishing, Topic linking, Student Library and reader. Do not add/restore these API endpoints before the relevant UI and contract is explicitly approved.
+The client Editor and proposed JSON/API contract are documented in [PHASE_02_2_EDITOR_CLIENT.md](./PHASE_02_2_EDITOR_CLIENT.md). Review and approve that contract before implementing content persistence. Publishing, Topic linking, Student Library and reader still require their own approval; do not add/restore those APIs prematurely.
 
 ## Validation
 GitHub tree/source inspection only. The server build, DB migration, auth checks, HTTP tests and client build have **not** been executed in this change. Verify them before deploying or declaring runtime acceptance.

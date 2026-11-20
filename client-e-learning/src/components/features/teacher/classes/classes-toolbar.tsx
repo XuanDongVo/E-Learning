@@ -3,6 +3,7 @@ import { Search } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import type { Grade } from "@/types/grade";
+import { TeacherListToolbar } from "@/components/features/teacher/shared/teacher-list-toolbar";
 
 interface ClassesToolbarProps {
   query: string;
@@ -25,7 +26,8 @@ export function ClassesToolbar({
   const t = useTranslations("teacher.classes");
 
   return (
-    <div className="flex flex-col gap-3 rounded-lg border border-border-color bg-card-bg p-4 sm:flex-row sm:items-center border-2 border-ink shadow-pop">
+    <TeacherListToolbar
+      search={
       <label className="relative flex-1">
         <Search className="absolute left-3 top-3 h-4 w-4 text-neutral-subtle" />
 
@@ -37,7 +39,8 @@ export function ClassesToolbar({
           className="h-10 w-full rounded-[var(--radius-md)] border border-border-color bg-background-app pl-9 pr-3 text-body outline-none focus:border-primary"
         />
       </label>
-
+      }
+      filters={
       <label className="sm:w-48">
         <span className="sr-only">{t("filterGrade")}</span>
 
@@ -56,12 +59,8 @@ export function ClassesToolbar({
           ))}
         </select>
       </label>
-
-      {actions ? (
-        <div className="flex shrink-0 flex-wrap items-center gap-2 max-sm:w-full max-sm:[&>button]:flex-1">
-          {actions}
-        </div>
-      ) : null}
-    </div>
+      }
+      actions={actions}
+    />
   );
 }

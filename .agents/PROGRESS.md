@@ -1,3 +1,27 @@
+## 2026-11-20 — Shared Teacher list toolbar
+
+- Audited active Teacher list controls across routes and rendered feature components: 12 list toolbars found (2 standalone, 10 inline); 9 were suitable for a shared layout and 3 specialized analysis/subresource controls remain independent.
+- Added composition-based `TeacherListToolbar` with search, filters and actions slots. It owns only the Calm Classroom surface, spacing, wrapping and responsive group placement.
+- Migrated Classes, Students, Knowledge Notes, Activities, Assignments, Global Question Banks, Question Bank questions, Class Students and Unit Vocabulary without changing their query/filter/dialog/navigation behavior or backend contracts.
+- Added `.agents/ui/TEACHER_LIST_TOOLBAR_AUDIT.md` with the screen brief, inventory, counts and exclusions. `ContentToolbar`, the TipTap toolbar, editor/modal searches and unused filter components were deliberately excluded.
+- Validation: TypeScript passes; focused ESLint passes for the new shared component and eight affected files, while Unit Vocabulary retains two pre-existing `set-state-in-effect` warnings and no errors; all 29 frontend tests pass. Responsive behavior was source-reviewed for 360/768/desktop wrapping. Per owner instruction, no client build was run; no browser automation was used.
+
+## 2026-11-20 — Knowledge Note create fix and dialog flow
+
+- Fixed `POST /v1/teacher/knowledge-notes` JSONB persistence by mapping the current document and summary as Jackson-independent `Map<String, Object>` values; the empty TipTap document is now created from Java collections.
+- Moved metadata creation into a responsive dialog on `/teacher/knowledge-notes`; the former `/teacher/knowledge-notes/new` URL now redirects to the management screen.
+- Removed Base UI's invalid button-as-link composition from Knowledge Note Management and Detail by using native buttons for actions and semantic styled links for navigation.
+- Knowledge Note frontend TypeScript and focused ESLint pass. The Spring application context and 136/142 backend tests pass; the full suite remains red on six pre-existing ActivitySession/Assignment test failures unrelated to Knowledge Notes.
+
+## 2026-11-20 — Knowledge Note standalone Teacher route
+
+- Moved the canonical Teacher route family from `/teacher/content/knowledge-notes` to `/teacher/knowledge-notes` and added a first-class navigation item after Overview.
+- Retired the old Content-nested list/create/edit paths; updated breadcrumbs and active UI/spec documentation.
+- Corrected the active FRS v3.2 future Teacher endpoint namespace from historical `/v1/content/**` wording to role-first `/v1/teacher/**`; Topic-link endpoint shape remains explicitly unapproved.
+- Added the Phase 02.2 TipTap client Editor, Learning Blocks, separately authored Quick Summary, in-memory preview and JSON export. No content-save API, publish behavior, Student route, Topic-link mutation or backend schema change was introduced.
+- Added TipTap 3 dependencies and schema-v1 contract documentation. TypeScript and focused Knowledge Note ESLint pass; all 29 frontend tests pass, including four new document-contract tests.
+- Full-repo ESLint still has one pre-existing Student Vocabulary purity error (`Date.now()` during render) plus existing warnings. The dev route returns HTTP 200, but Next production build is blocked by the execution host's SWC native-cache ownership restriction; browser/device review is pending because the Windows Computer Use native pipe was unavailable after the required retry.
+
 ## 2026-11-19 — Knowledge Note Phase 01 narrowed by owner
 - Moved standalone module out of `content/knowledge` into `knowledge/` with Teacher-specific controller/service/dto request/response packages.
 - Implemented only POST/GET list/GET detail under `/v1/teacher/knowledge-notes`, using existing `PageResponse<T>` and metadata-only DTOs; other unapproved backend controllers and methods removed.

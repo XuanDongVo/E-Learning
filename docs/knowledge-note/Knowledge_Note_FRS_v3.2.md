@@ -1,7 +1,7 @@
 > **Implementation scope update — ADR 0039:** FRS v3.2 below describes the future end-state. The ONLY approved Phase 01 endpoints are POST and GET `/v1/teacher/knowledge-notes` and GET `/v1/teacher/knowledge-notes/{id}`. All other operations remain unapproved/deferred pending client UI design. See [PHASE_01_APPROVED.md](./PHASE_01_APPROVED.md). Teacher routes use `/v1/teacher`, not `/v1/content`. Use existing `common.dto.PageResponse<T>`.
 
 # Knowledge Note — FRS v3.2 (Simple MVP)
-Status: Target contract only; APIs currently 501
+Status: Target contract; Phase 01 metadata APIs implemented in source, remaining APIs unapproved
 Date: 2026-11-19
 Supersedes FRS v3.1 for Draft/Revision and publication snapshot assumptions.
 
@@ -34,14 +34,14 @@ Supersedes FRS v3.1 for Draft/Revision and publication snapshot assumptions.
 
 ## API contract (proposed; not implemented)
 Teacher:
-- GET/POST `/v1/content/knowledge-notes`
-- GET/PATCH `/v1/content/knowledge-notes/{id}`
-- GET/PUT `/v1/content/knowledge-notes/{id}/content` (replaces `/draft`)
-- POST `/v1/content/knowledge-notes/{id}/publish`
-- POST `/v1/content/knowledge-notes/{id}/unpublish`
-- PATCH `/v1/content/knowledge-notes/{id}/archive`
-- GET `/v1/content/knowledge-notes/{id}/topic-links`
-Topic: GET/POST `/v1/content/topics/{topicId}/knowledge-notes`, DELETE `/.../{noteId}`, PUT `/.../primary`, PUT `/.../order`.
+- GET/POST `/v1/teacher/knowledge-notes`
+- GET/PATCH `/v1/teacher/knowledge-notes/{id}`
+- GET/PUT `/v1/teacher/knowledge-notes/{id}/content` (replaces `/draft`)
+- POST `/v1/teacher/knowledge-notes/{id}/publish`
+- POST `/v1/teacher/knowledge-notes/{id}/unpublish`
+- PATCH `/v1/teacher/knowledge-notes/{id}/archive`
+- GET `/v1/teacher/knowledge-notes/{id}/topic-links`
+Topic: future Teacher paths remain unapproved; do not restore the historical `/v1/content/**` proposal. The UI/contract review must decide their final role-first shape before implementation.
 Student: GET `/v1/student/knowledge-notes`, GET `/.../{id}`, GET `/v1/student/topics/{topicId}/knowledge-notes`.
 
 No `/{id}/revisions` endpoint. GET/PUT content payload: `{document, summary, schemaVersion, baseVersion}`; response: `{knowledgeNoteId, document, summary, schemaVersion, editVersion, updatedAt}`.
@@ -50,4 +50,6 @@ No `/{id}/revisions` endpoint. GET/PUT content payload: `{document, summary, sch
 Direct save persists without extra tables; status gates Student access; published changes are immediately visible; editVersion conflict rejected; Primary ≤1/Topic; optional links; wrong-Grade rejected; no image/category fields.
 
 ## Implementation state
-Existing controller/service signatures reflect this contract but deliberately fail closed with HTTP 501 until phased implementation. This FRS does not claim running APIs.
+Only POST/GET `/v1/teacher/knowledge-notes` and GET `/v1/teacher/knowledge-notes/{id}` are implemented in source under ADR 0039. Content save, metadata update, lifecycle, Topic-link and Student endpoints remain unapproved and unimplemented. This FRS does not claim runtime verification.
+
+Phase 02.2 implements the client Editor and exports the actual schema-v1 JSON described in [PHASE_02_2_EDITOR_CLIENT.md](./PHASE_02_2_EDITOR_CLIENT.md). That document refines the proposed GET/PUT content payload but does not approve server implementation.

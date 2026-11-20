@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Search, UserPlus } from "lucide-react";
+import { TeacherListToolbar } from "@/components/features/teacher/shared/teacher-list-toolbar";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -62,7 +63,8 @@ export function ClassStudentsPanel({ classId }: { classId: number }) {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col gap-3 rounded-lg border border-border bg-card p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+      <TeacherListToolbar
+        search={
         <form className="relative max-w-md flex-1" onSubmit={applySearch}>
           <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
@@ -72,6 +74,8 @@ export function ClassStudentsPanel({ classId }: { classId: number }) {
             className="h-10 bg-background pl-9 text-sm"
           />
         </form>
+        }
+        actions={
         <Button
           type="button"
           onClick={() => setAddOpen(true)}
@@ -80,7 +84,8 @@ export function ClassStudentsPanel({ classId }: { classId: number }) {
           <UserPlus className="size-4" />
           {t("addStudent")}
         </Button>
-      </div>
+        }
+      />
 
       {mutationError ? (
         <PageBanner tone="error" message={t("membershipError")} />

@@ -5,11 +5,11 @@ export function TeacherKnowledgeNoteLayout({
   title, description, children,
 }: { title: string; description: string; children: ReactNode }) {
   return (
-    <main className="mx-auto w-full max-w-6xl space-y-5 px-4 py-6 sm:px-6">
+    <main className="">
       <nav aria-label="Breadcrumb" className="flex flex-wrap gap-2 text-sm text-muted-foreground">
-        <Link href="/teacher/content" className="hover:underline">Content</Link>
+        <Link href="/teacher" className="hover:underline">Tổng quan</Link>
         <span aria-hidden="true">/</span>
-        <Link href="/teacher/content/knowledge-notes" className="hover:underline">Knowledge Notes</Link>
+        <Link href="/teacher/knowledge-notes" className="hover:underline">Knowledge Notes</Link>
       </nav>
       <header className="space-y-1">
         <h1 className="text-2xl font-bold text-foreground">{title}</h1>

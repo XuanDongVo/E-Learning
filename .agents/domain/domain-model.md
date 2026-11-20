@@ -26,4 +26,4 @@ Assignment -> AssessmentAttempt -> immutable ordered composition/question snapsh
 
 
 ## Planned Knowledge Note (ADR 0038; not implemented)
-KnowledgeNote is independent Grade-scoped learning content with a mutable Draft, immutable Published Revisions, and optional many-to-many TopicLinks. A Topic has zero or one Primary Note and any number of Supplementary Notes. Standalone published Notes remain visible in the eligible Student Library. No category or media fields in MVP. See docs/knowledge-note/ for SRS, FRS and UI/UX.
+KnowledgeNote is independent Grade-scoped learning content with one current document and optional many-to-many TopicLinks. There are no Draft or Revision entities in MVP; saving a PUBLISHED Note updates Student-visible content immediately. A Topic has zero or one Primary Note and any number of Supplementary Notes. Standalone published Notes remain visible in the eligible Student Library. No category or media fields in MVP. See docs/knowledge-note/ for SRS, FRS and UI/UX v3.2.

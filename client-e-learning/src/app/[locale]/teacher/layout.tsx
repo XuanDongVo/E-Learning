@@ -18,6 +18,7 @@ import {
   GraduationCap,
   LayoutDashboard,
   Menu,
+  NotebookText,
   Search,
   Settings,
   Users,
@@ -42,6 +43,11 @@ const navigation: {
   badge?: string;
 }[] = [
   { key: "overview", href: "/teacher", icon: LayoutDashboard },
+  {
+    key: "knowledgeNotes",
+    href: "/teacher/knowledge-notes",
+    icon: NotebookText,
+  },
   { key: "classes", href: "/teacher/classes", icon: Users },
   { key: "students", href: "/teacher/students", icon: Users },
   { key: "activities", href: "/teacher/activities", icon: ClipboardList },

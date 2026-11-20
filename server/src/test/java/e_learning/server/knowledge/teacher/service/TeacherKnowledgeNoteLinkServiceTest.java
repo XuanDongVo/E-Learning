@@ -22,6 +22,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.*;
 
 class TeacherKnowledgeNoteLinkServiceTest {
@@ -94,6 +95,8 @@ class TeacherKnowledgeNoteLinkServiceTest {
     void demotesOldPrimaryBeforeSavingNewOne() {
         KnowledgeNote previousNote = new KnowledgeNote();
         previousNote.setId(9L);
+        previousNote.setGrade(note.getGrade());
+        previousNote.setTitle("Previously linked");
         KnowledgeNoteTopicLink previousLink = new KnowledgeNoteTopicLink();
         previousLink.setId(100L);
         previousLink.setNote(previousNote);

@@ -116,7 +116,7 @@ export function TeacherTopicKnowledgeNotes({
     reorder.mutate(ids);
   };
   const renderLink = (item: TopicKnowledgeNoteLink, index?: number) => (
-    <div key={item.noteId} className="rounded-lg border-2 border-ink bg-background p-3 sm:p-4">
+    <div key={item.noteId} className="rounded-lg border-2 border-ink bg-background p-3 shadow-pop sm:p-4">
       <div className="flex flex-wrap items-center gap-2 text-xs font-semibold">
         <span className="rounded-full bg-muted px-2.5 py-1 text-foreground">
           {item.primary ? "Primary · Bài chính" : "Supplementary · Bổ sung"}
@@ -269,7 +269,7 @@ export function TeacherTopicKnowledgeNotes({
               <div className="space-y-2">
                 {candidatesQuery.data.items.map(note => (
                   <div key={note.id}
-                    className="flex flex-wrap items-center justify-between gap-2 rounded-lg border-2 border-ink bg-background p-3">
+                    className="flex flex-wrap items-center justify-between gap-2 rounded-lg border-2 border-ink bg-background p-3 shadow-pop">
                     <div className="min-w-0 flex-1">
                       <p className="font-semibold">{note.title}</p>
                       {note.description && <p className="line-clamp-1 text-xs text-muted-foreground">{note.description}</p>}

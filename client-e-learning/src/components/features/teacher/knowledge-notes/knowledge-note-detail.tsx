@@ -96,7 +96,7 @@ export function TeacherKnowledgeNoteDetail({ noteId }: { noteId: number }) {
           <div className="mt-4 space-y-2">
             {topicsQuery.data.map(topic => (
               <Link key={topic.topicId} href={`/teacher/content/topics/${topic.topicId}`}
-                className="flex flex-col gap-2 rounded-lg border-2 border-ink bg-background p-3 transition-colors hover:bg-muted sm:flex-row sm:items-center sm:justify-between">
+                className="flex flex-col gap-2 rounded-lg border-2 border-ink bg-background p-3 shadow-pop transition-colors hover:bg-muted sm:flex-row sm:items-center sm:justify-between">
                 <div className="min-w-0">
                   <p className="font-bold text-foreground">{topic.topicName}</p>
                   <p className="mt-1 text-xs text-muted-foreground">

@@ -10,7 +10,6 @@ const payload = {
   title: "Hiện tại đơn và hiện tại tiếp diễn",
   description: null,
   document: { type: "doc", content: [{ type: "paragraph" }] },
-  summary: { type: "doc", content: [] },
 };
 
 describe("Teacher Knowledge Note preview protocol", () => {
@@ -27,7 +26,7 @@ describe("Teacher Knowledge Note preview protocol", () => {
     })).toBe(false);
   });
 
-  it("accepts the current document and independently authored summary", () => {
+  it("accepts a single current document for Article and Dialog previews", () => {
     expect(isKnowledgePreviewSnapshot({
       type: KNOWLEDGE_PREVIEW_SNAPSHOT,
       noteId: 42,

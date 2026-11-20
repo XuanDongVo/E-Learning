@@ -15,7 +15,6 @@ export interface KnowledgePreviewPayload {
   title: string;
   description: string | null;
   document: KnowledgeDocument;
-  summary: KnowledgeDocument;
 }
 
 export interface KnowledgePreviewRequest {
@@ -63,7 +62,6 @@ export function isKnowledgePreviewSnapshot(value: unknown): value is KnowledgePr
     typeof value.payload.title === "string" &&
     (value.payload.description === null ||
       typeof value.payload.description === "string") &&
-    isDocument(value.payload.document) &&
-    isDocument(value.payload.summary)
+    isDocument(value.payload.document)
   );
 }

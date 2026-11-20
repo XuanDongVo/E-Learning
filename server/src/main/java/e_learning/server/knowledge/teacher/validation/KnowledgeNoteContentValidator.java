@@ -70,12 +70,19 @@ public class KnowledgeNoteContentValidator {
     }
 
     public boolean hasReadableContent(Map<String, Object> document) {
-        return hasText(mapper.valueToTree(document));
+        // A title-only article is not a usable lesson.
+        JsonNode contents = mapper.valueToTree(document).path("content");
+        for (JsonNode node : contents) {
+            if (!"heading".equals(text(node, "type")) && hasText(node)) return true;
+        }
+        return false;
     }
 
     public boolean hasHeading(Map<String, Object> document) {
         JsonNode contents = mapper.valueToTree(document).path("content");
-        for (JsonNode node : contents) if ("heading".equals(text(node, "type"))) return true;
+        for (JsonNode node : contents) {
+            if ("heading".equals(text(node, "type")) && hasText(node)) return true;
+        }
         return false;
     }
 
@@ -83,7 +90,8 @@ public class KnowledgeNoteContentValidator {
         JsonNode contents = mapper.valueToTree(document).path("content");
         for (JsonNode node : contents) {
             if (("learningBlock".equals(text(node, "type")) || "table".equals(text(node, "type")))
-                    && node.path("attrs").path("isKeyPoint").asBoolean(false)) return true;
+                    && node.path("attrs").path("isKeyPoint").asBoolean(false)
+                    && hasText(node)) return true;
         }
         return false;
     }

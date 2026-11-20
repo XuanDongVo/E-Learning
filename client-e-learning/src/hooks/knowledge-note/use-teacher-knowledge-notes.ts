@@ -21,6 +21,16 @@ export function useTeacherKnowledgeNote(id: number) {
   });
 }
 
+export function useTeacherKnowledgeNoteContent(id: number, enabled = true) {
+  return useQuery({
+    queryKey: KNOWLEDGE_NOTE_KEYS.teacherContent(id),
+    queryFn: async () => (await teacherKnowledgeNoteService.getContent(id)).data,
+    enabled: enabled && Number.isInteger(id) && id > 0,
+    staleTime: Infinity,
+    refetchOnWindowFocus: false,
+  });
+}
+
 export function useCreateTeacherKnowledgeNote() {
   const queryClient = useQueryClient();
 

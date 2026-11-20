@@ -3,12 +3,14 @@ import type { PageResponse } from "@/types/content";
 import type {
   CreateKnowledgeNoteRequest,
   KnowledgeNote,
+  KnowledgeNoteContent,
+  SaveKnowledgeNoteContentRequest,
   TeacherKnowledgeNoteListFilters,
 } from "@/types/knowledge-note";
 
 const ROOT = "/v1/teacher/knowledge-notes";
 
-/** Phase 01 approved transport only. Content/Publish/Topic/Student APIs are deferred. */
+/** Metadata and Phase 02.3 persisted content transport. */
 export const teacherKnowledgeNoteService = {
   create: (payload: CreateKnowledgeNoteRequest) =>
     request<KnowledgeNote>(ROOT, {
@@ -23,4 +25,11 @@ export const teacherKnowledgeNoteService = {
     return request<PageResponse<KnowledgeNote>>(`${ROOT}${q.size ? `?${q.toString()}` : ""}`);
   },
   get: (id: number) => request<KnowledgeNote>(`${ROOT}/${id}`),
+  getContent: (id: number) =>
+    request<KnowledgeNoteContent>(`${ROOT}/${id}/content`),
+  saveContent: (id: number, payload: SaveKnowledgeNoteContentRequest) =>
+    request<KnowledgeNoteContent>(`${ROOT}/${id}/content`, {
+      method: "PUT",
+      body: JSON.stringify(payload),
+    }),
 };

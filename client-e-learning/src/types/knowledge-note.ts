@@ -65,3 +65,18 @@ export interface KnowledgeNoteBlockSnapshot {
   schemaVersion: 2;
   content: KnowledgeDocumentNode[];
 }
+
+/** Persistent content for the Teacher Editor. */
+export interface KnowledgeNoteContent {
+  knowledgeNoteId: number;
+  schemaVersion: number;
+  document: KnowledgeDocument;
+  summary: KnowledgeDocument;
+  updatedAt: string;
+}
+
+export interface SaveKnowledgeNoteContentRequest {
+  schemaVersion: 2;
+  document: KnowledgeDocument;
+  summary: KnowledgeDocument;
+}

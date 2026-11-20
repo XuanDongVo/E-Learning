@@ -36,13 +36,6 @@ public class KnowledgeNote {
     @Column(name = "document_json", nullable = false, columnDefinition = "jsonb")
     private Map<String, Object> documentJson;
 
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "summary_json", columnDefinition = "jsonb")
-    private Map<String, Object> summaryJson;
-
-    @Column(name = "schema_version", nullable = false)
-    private Integer schemaVersion = 1;
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private KnowledgeNoteStatus status = KnowledgeNoteStatus.DRAFT;

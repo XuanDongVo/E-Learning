@@ -5,8 +5,6 @@ import java.util.Map;
 
 public record KnowledgeNoteContentResponse(
         Long knowledgeNoteId,
-        Integer schemaVersion,
         Map<String, Object> document,
-        Map<String, Object> summary,
         LocalDateTime updatedAt
 ) {}

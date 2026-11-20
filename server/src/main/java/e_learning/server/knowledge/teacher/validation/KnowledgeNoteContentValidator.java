@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import java.net.URI;
 import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -19,18 +20,15 @@ public class KnowledgeNoteContentValidator {
     private static final int MAX_BYTES = 512 * 1024;
     private static final Set<String> ARTICLE_ROOT =
             Set.of("paragraph", "heading", "bulletList", "orderedList", "horizontalRule", "table", "learningBlock");
-    private static final Set<String> SUMMARY_ROOT = Set.of("paragraph", "bulletList", "orderedList");
     private static final Set<String> ARTICLE_NODES = Set.of(
             "paragraph", "heading", "bulletList", "orderedList", "listItem", "horizontalRule",
             "hardBreak", "text", "table", "tableRow", "tableCell", "tableHeader",
             "learningBlock", "learningSection");
-    private static final Set<String> SUMMARY_NODES = Set.of(
-            "paragraph", "bulletList", "orderedList", "listItem", "hardBreak", "text");
     private static final Map<String, Set<String>> ATTRIBUTES = Map.of(
-            "heading", Set.of("level"),
-            "learningBlock", Set.of("kind", "title", "variant"),
+            "heading", Set.of("level", "id"),
+            "learningBlock", Set.of("kind", "title", "variant", "id", "isKeyPoint"),
             "learningSection", Set.of("role"),
-            "table", Set.of("purpose"),
+            "table", Set.of("purpose", "id", "isKeyPoint"),
             "tableCell", Set.of("colspan", "rowspan", "colwidth", "align"),
             "tableHeader", Set.of("colspan", "rowspan", "colwidth", "align"),
             "orderedList", Set.of("start", "type"),
@@ -57,45 +55,84 @@ public class KnowledgeNoteContentValidator {
             "body", "incorrect", "correct");
     private final ObjectMapper mapper;
 
-    public void validate(Map<String, Object> document, Map<String, Object> summary) {
-        if (document == null || summary == null) fail("Document và Quick Summary là bắt buộc.");
+    public void validate(Map<String, Object> document) {
+        if (document == null) fail("Document là bắt buộc.");
         try {
-            byte[] bytes = mapper.writeValueAsBytes(Map.of("document", document, "summary", summary));
-            if (bytes.length > MAX_BYTES) fail("Nội dung vượt quá giới hạn 512 KB.");
+            if (mapper.writeValueAsBytes(document).length > MAX_BYTES) {
+                fail("Nội dung vượt quá giới hạn 512 KB.");
+            }
         } catch (JsonProcessingException e) {
             fail("Không thể đọc JSON của bài học.");
         }
         int[] count = {0};
-        validateRoot(mapper.valueToTree(document), false, count);
-        validateRoot(mapper.valueToTree(summary), true, count);
+        Set<String> ids = new HashSet<>();
+        validateRoot(mapper.valueToTree(document), count, ids);
     }
 
-    private void validateRoot(JsonNode node, boolean summary, int[] count) {
+    public boolean hasReadableContent(Map<String, Object> document) {
+        return hasText(mapper.valueToTree(document));
+    }
+
+    public boolean hasHeading(Map<String, Object> document) {
+        JsonNode contents = mapper.valueToTree(document).path("content");
+        for (JsonNode node : contents) if ("heading".equals(text(node, "type"))) return true;
+        return false;
+    }
+
+    public boolean hasKeyPoint(Map<String, Object> document) {
+        JsonNode contents = mapper.valueToTree(document).path("content");
+        for (JsonNode node : contents) {
+            if (("learningBlock".equals(text(node, "type")) || "table".equals(text(node, "type")))
+                    && node.path("attrs").path("isKeyPoint").asBoolean(false)) return true;
+        }
+        return false;
+    }
+
+    private static boolean hasText(JsonNode node) {
+        if (node == null || node.isMissingNode()) return false;
+        if (node.isObject() && "text".equals(text(node, "type"))) {
+            return !text(node, "text").isBlank();
+        }
+        JsonNode content = node.path("content");
+        if (content.isArray()) for (JsonNode child : content) if (hasText(child)) return true;
+        return false;
+    }
+
+    private void validateRoot(JsonNode node, int[] count, Set<String> ids) {
         if (node == null || !node.isObject() || !"doc".equals(text(node, "type"))
                 || !onlyFields(node, Set.of("type", "content"))
                 || !array(node.get("content"), 0, 3000)) {
             fail("Document root phải là doc với content array.");
         }
-        Set<String> allowed = summary ? SUMMARY_ROOT : ARTICLE_ROOT;
         for (JsonNode child : node.get("content")) {
-            if (!allowed.contains(text(child, "type"))) fail("Root chứa node không được hỗ trợ.");
-            validateNode(child, summary, 0, count);
+            if (!ARTICLE_ROOT.contains(text(child, "type"))) fail("Root chứa node không được hỗ trợ.");
+            validateNode(child, 0, count, ids);
         }
     }
 
-    private void validateNode(JsonNode node, boolean summary, int depth, int[] count) {
+    private void validateNode(JsonNode node, int depth, int[] count, Set<String> ids) {
         if (depth > 24 || ++count[0] > 6000) fail("Nội dung quá sâu hoặc có quá nhiều node.");
         if (!node.isObject() || !onlyFields(node, Set.of("type", "attrs", "content", "marks", "text"))) {
             fail("Node JSON không hợp lệ.");
         }
         String type = text(node, "type");
-        if (!(summary ? SUMMARY_NODES : ARTICLE_NODES).contains(type)) {
+        if (!ARTICLE_NODES.contains(type)) {
             fail("Loại node không được hỗ trợ: " + type);
         }
         JsonNode attrs = node.get("attrs");
         if (attrs != null && (!attrs.isObject()
                 || !onlyFields(attrs, ATTRIBUTES.getOrDefault(type, Set.of())))) {
             fail("Attributes của " + type + " không hợp lệ.");
+        }
+        if (Set.of("heading", "learningBlock", "table").contains(type)) {
+            JsonNode id = field(attrs, "id");
+            if (id != null && (!id.isTextual()
+                    || !id.asText().matches("[A-Za-z0-9_-]{1,100}")
+                    || !ids.add(id.asText()))) fail("ID của khối không hợp lệ hoặc bị trùng.");
+        }
+        if (Set.of("learningBlock", "table").contains(type)) {
+            JsonNode flag = field(attrs, "isKeyPoint");
+            if (flag != null && !flag.isBoolean()) fail("isKeyPoint phải là boolean.");
         }
         JsonNode children = node.get("content");
         if (children != null && !array(children, 0, 3000)) fail("Danh sách node con không hợp lệ.");
@@ -123,7 +160,7 @@ public class KnowledgeNoteContentValidator {
         if ("tableCell".equals(type) || "tableHeader".equals(type)) validateCell(attrs);
         validateMarks(node.get("marks"), type);
         if (children != null) {
-            for (JsonNode child : children) validateNode(child, summary, depth + 1, count);
+            for (JsonNode child : children) validateNode(child, depth + 1, count, ids);
         }
     }
 

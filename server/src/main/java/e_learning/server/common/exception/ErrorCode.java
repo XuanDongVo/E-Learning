@@ -7,6 +7,8 @@ public enum ErrorCode {
     KNOWLEDGE_NOTE_NOT_FOUND(HttpStatus.NOT_FOUND, "KNOWLEDGE_NOTE_NOT_FOUND", "Knowledge Note not found"),
     KNOWLEDGE_NOTE_CONTENT_INVALID(HttpStatus.BAD_REQUEST, "KNOWLEDGE_NOTE_CONTENT_INVALID", "Knowledge Note content is invalid"),
     KNOWLEDGE_NOTE_NOT_EDITABLE(HttpStatus.CONFLICT, "KNOWLEDGE_NOTE_NOT_EDITABLE", "Unpublish the Knowledge Note before editing its content"),
+    KNOWLEDGE_NOTE_NOT_READY(HttpStatus.BAD_REQUEST, "KNOWLEDGE_NOTE_NOT_READY", "Knowledge Note is not ready to publish"),
+    KNOWLEDGE_NOTE_STATUS_INVALID(HttpStatus.CONFLICT, "KNOWLEDGE_NOTE_STATUS_INVALID", "Invalid Knowledge Note status transition"),
     KNOWLEDGE_NOTE_NOT_IMPLEMENTED(HttpStatus.NOT_IMPLEMENTED, "KNOWLEDGE_NOTE_NOT_IMPLEMENTED", "Knowledge Note is scaffolded; this operation will be implemented in a later phase"),
     INTERNAL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_ERROR", "An unexpected error occurred"),
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "UNAUTHORIZED", "Authentication is required"),

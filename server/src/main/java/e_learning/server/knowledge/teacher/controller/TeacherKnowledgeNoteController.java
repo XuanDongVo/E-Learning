@@ -54,4 +54,19 @@ public class TeacherKnowledgeNoteController {
             @PathVariable Long id, @Valid @RequestBody SaveKnowledgeNoteContentRequest request) {
         return ResponseEntity.ok(ApiResponse.success(service.saveContent(id, request)));
     }
+
+    @PostMapping("/{id}/publish")
+    public ResponseEntity<ApiResponse<KnowledgeNoteResponse>> publish(@PathVariable Long id) {
+        return ResponseEntity.ok(ApiResponse.success(service.publish(id)));
+    }
+
+    @PostMapping("/{id}/unpublish")
+    public ResponseEntity<ApiResponse<KnowledgeNoteResponse>> unpublish(@PathVariable Long id) {
+        return ResponseEntity.ok(ApiResponse.success(service.unpublish(id)));
+    }
+
+    @PatchMapping("/{id}/archive")
+    public ResponseEntity<ApiResponse<KnowledgeNoteResponse>> archive(@PathVariable Long id) {
+        return ResponseEntity.ok(ApiResponse.success(service.archive(id)));
+    }
 }

@@ -17,18 +17,17 @@ class KnowledgeNoteContentValidatorTest {
                 "type","paragraph","content",List.of(Map.of("type","text","text",value)))));
     }
     @Test void acceptsV2TextAndEmptySummary() {
-        assertDoesNotThrow(() -> validator.validate(
-                textDoc("Present Simple"), Map.of("type","doc","content",List.of())));
+        assertDoesNotThrow(() -> validator.validate(textDoc("Present Simple")));
     }
     @Test void rejectsUnknownHtmlLikeNode() {
         var invalid = Map.of("type","doc","content",List.of(Map.of("type","iframe")));
-        assertThrows(AppException.class, () -> validator.validate(invalid, textDoc("Summary")));
+        assertThrows(AppException.class, () -> validator.validate(invalid));
     }
     @Test void rejectsUnsafeLink() {
         var document = Map.of("type","doc","content",List.of(Map.of("type","paragraph",
                 "content",List.of(Map.of("type","text","text","Click",
                 "marks",List.of(Map.of("type","link","attrs",Map.of("href","javascript:alert(1)"))))))));
-        assertThrows(AppException.class, () -> validator.validate(document, textDoc("Summary")));
+        assertThrows(AppException.class, () -> validator.validate(document));
     }
     @Test void acceptsValidTable() {
         Map<String,Object> cell = Map.of("type","tableCell","attrs",Map.of("colspan",1,"rowspan",1),
@@ -37,6 +36,6 @@ class KnowledgeNoteContentValidatorTest {
         var document = Map.of("type","doc","content",List.of(
                 Map.of("type","table","attrs",Map.of("purpose","general"),
                         "content",List.of(row,row))));
-        assertDoesNotThrow(() -> validator.validate(document, textDoc("Summary")));
+        assertDoesNotThrow(() -> validator.validate(document));
     }
 }

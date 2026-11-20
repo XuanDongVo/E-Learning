@@ -44,8 +44,6 @@ public class TeacherKnowledgeNoteService {
         note.setDescription(normalizeDescription(request.description()));
         note.setStatus(KnowledgeNoteStatus.DRAFT);
         note.setDocumentJson(Map.of("type", "doc", "content", List.of()));
-        note.setSummaryJson(Map.of("type", "doc", "content", List.of()));
-        note.setSchemaVersion(2);
         return mapper.toResponse(noteRepository.save(note), 0);
     }
 
@@ -108,26 +106,70 @@ public class TeacherKnowledgeNoteService {
                 && note.getStatus() != KnowledgeNoteStatus.UNPUBLISHED) {
             throw new AppException(ErrorCode.KNOWLEDGE_NOTE_NOT_EDITABLE);
         }
-        if (request.schemaVersion() == null || request.schemaVersion() != 2) {
-            throw new AppException(ErrorCode.KNOWLEDGE_NOTE_CONTENT_INVALID,
-                    "Chỉ hỗ trợ Knowledge Note schema v2.");
-        }
-        contentValidator.validate(request.document(), request.summary());
+        contentValidator.validate(request.document());
         note.setDocumentJson(request.document());
-        note.setSummaryJson(request.summary());
-        note.setSchemaVersion(2);
-        // saveAndFlush makes the @PreUpdate timestamp available in the response.
         noteRepository.saveAndFlush(note);
         return toContentResponse(note);
     }
 
+    @Transactional
+    public KnowledgeNoteResponse publish(Long id) {
+        KnowledgeNote note = noteRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.KNOWLEDGE_NOTE_NOT_FOUND));
+        if (note.getStatus() == KnowledgeNoteStatus.ARCHIVED) {
+            throw new AppException(ErrorCode.KNOWLEDGE_NOTE_STATUS_INVALID);
+        }
+        if (note.getStatus() == KnowledgeNoteStatus.PUBLISHED) {
+            return mapper.toResponse(note, linkRepository.countByNoteId(id));
+        }
+        contentValidator.validate(note.getDocumentJson());
+        if (!contentValidator.hasReadableContent(note.getDocumentJson())) {
+            throw new AppException(ErrorCode.KNOWLEDGE_NOTE_NOT_READY,
+                    "Bài lý thuyết cần có nội dung trước khi công bố.");
+        }
+        boolean primary = linkRepository.findByNoteId(id).stream()
+                .anyMatch(e_learning.server.knowledge.entity.KnowledgeNoteTopicLink::isPrimary);
+        if (primary && (!contentValidator.hasHeading(note.getDocumentJson())
+                || !contentValidator.hasKeyPoint(note.getDocumentJson()))) {
+            throw new AppException(ErrorCode.KNOWLEDGE_NOTE_NOT_READY,
+                    "Bài chính của Topic cần ít nhất một tiêu đề H2/H3 và một khối trọng tâm.");
+        }
+        note.setStatus(KnowledgeNoteStatus.PUBLISHED);
+        note.setPublishedAt(java.time.LocalDateTime.now());
+        noteRepository.saveAndFlush(note);
+        return mapper.toResponse(note, linkRepository.countByNoteId(id));
+    }
+
+    @Transactional
+    public KnowledgeNoteResponse unpublish(Long id) {
+        KnowledgeNote note = noteRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.KNOWLEDGE_NOTE_NOT_FOUND));
+        if (note.getStatus() == KnowledgeNoteStatus.UNPUBLISHED) {
+            return mapper.toResponse(note, linkRepository.countByNoteId(id));
+        }
+        if (note.getStatus() != KnowledgeNoteStatus.PUBLISHED) {
+            throw new AppException(ErrorCode.KNOWLEDGE_NOTE_STATUS_INVALID);
+        }
+        note.setStatus(KnowledgeNoteStatus.UNPUBLISHED);
+        noteRepository.saveAndFlush(note);
+        return mapper.toResponse(note, linkRepository.countByNoteId(id));
+    }
+
+    @Transactional
+    public KnowledgeNoteResponse archive(Long id) {
+        KnowledgeNote note = noteRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.KNOWLEDGE_NOTE_NOT_FOUND));
+        if (note.getStatus() == KnowledgeNoteStatus.ARCHIVED) {
+            return mapper.toResponse(note, linkRepository.countByNoteId(id));
+        }
+        note.setStatus(KnowledgeNoteStatus.ARCHIVED);
+        noteRepository.saveAndFlush(note);
+        return mapper.toResponse(note, linkRepository.countByNoteId(id));
+    }
+
     private static KnowledgeNoteContentResponse toContentResponse(KnowledgeNote note) {
-        Map<String, Object> summary = note.getSummaryJson() != null
-                ? note.getSummaryJson()
-                : Map.of("type", "doc", "content", List.of());
         return new KnowledgeNoteContentResponse(
-                note.getId(), note.getSchemaVersion(),
-                note.getDocumentJson(), summary, note.getUpdatedAt());
+                note.getId(), note.getDocumentJson(), note.getUpdatedAt());
     }
 
     private static String normalizeDescription(String value) {

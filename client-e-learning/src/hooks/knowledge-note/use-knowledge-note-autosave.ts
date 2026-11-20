@@ -22,8 +22,11 @@ export function useKnowledgeNoteAutosave(noteId: number, editable: boolean) {
   const inFlight = useRef(false);
   const activeNoteId = useRef(noteId);
   const writable = useRef(editable);
-  activeNoteId.current = noteId;
-  writable.current = editable;
+  // Sync the mutable guards after render to respect React's ref rules.
+  useEffect(() => {
+    activeNoteId.current = noteId;
+    writable.current = editable;
+  }, [noteId, editable]);
 
   const reset = useCallback((content: KnowledgeNoteContent) => {
     latest.current = { document: content.document, summary: content.summary };

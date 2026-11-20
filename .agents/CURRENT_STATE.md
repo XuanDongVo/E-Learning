@@ -1,3 +1,7 @@
+## 2026-11-20 — Knowledge Note Editor v2 (client only)
+
+The Teacher Knowledge Note Editor now uses schema v2 for in-memory rich-text Learning Blocks, dynamic comparison/general tables, built-in JSON templates, and validated JSON Import/Export (including legacy schema-v1 conversion). Teacher Preview and Import/Template Preview share a v2 JSON renderer. The API remains metadata-only: Save, Publish, Topic Linking and Student reads are **not** implemented; data is lost upon leaving/reloading the Editor. See `docs/knowledge-note/PHASE_02_2_EDITOR_V2_CLIENT.md`. Validation via TS/lint/browser remains pending.
+
 ## Knowledge Note Teacher Management UI 02.1 (2026-11-19)
 Teacher sidebar links to `/teacher/content/knowledge-notes`; list, create and metadata detail routes now consume the three approved Teacher APIs and existing Grade API. Search, filters, 1-based pagination, validation, loading/error/empty handling are in source. Client-only Editor/Student scaffolds stay disconnected. Runtime/API/browser verification pending. See docs/knowledge-note/TEACHER_MANAGEMENT_UI_02_1.md.
 

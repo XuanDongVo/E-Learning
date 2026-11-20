@@ -1,3 +1,11 @@
+## 2026-11-20 — Knowledge Note Editor v2 client-only upgrade
+
+- Upgraded portable document schema from v1 to v2. Learning Blocks now have editable nested rich-text sections and dynamic comparison/general tables with row/column operations using existing `@tiptap/pm/tables`.
+- Added structured migration from imported v1 JSON, strict allowlist validation and error reporting, JSON import/export including block snapshots, and built-in block/lesson templates. Export round-trip and migration test cases were authored.
+- Centralized the v2 renderer for Teacher live Preview, JSON Import Preview and Template Preview while keeping Student APIs and screens inactive.
+- No server endpoints, Flyway migrations, new dependencies or lifecycle/Topic functionality were changed. The Save button remains disabled. Frontend TS/lint/tests/browser were **not executed** in this connector-only implementation.
+- Details: `docs/knowledge-note/PHASE_02_2_EDITOR_V2_CLIENT.md`.
+
 ## 2026-11-20 — Knowledge Note full-page Student-view preview (client-only)
 - Added Teacher-only route `/teacher/knowledge-notes/{id}/preview` displaying live Editor content in the scoped Student Indie Illustrated Scrapbook design.
 - Replaced the former modal Preview button with a dedicated browser tab to keep the unsaved TipTap Editor mounted. A per-session same-origin BroadcastChannel handshake transfers the Full Article and independently authored Quick Summary, with live updates and desktop/mobile width modes.

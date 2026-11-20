@@ -27,24 +27,23 @@ export interface TeacherKnowledgeNoteListFilters {
   size?: number;
 }
 
-export type KnowledgeLearningBlockKind =
-  | "formula"
-  | "example"
-  | "callout"
-  | "comparison"
-  | "commonMistake";
+export type KnowledgeLearningBlockKind = "formula" | "example" | "callout" | "commonMistake";
+export type KnowledgeLearningSectionRole =
+  | "expression" | "explanation" | "condition" | "example" | "translation"
+  | "body" | "incorrect" | "correct";
 
 export interface KnowledgeDocumentMark {
   type: "bold" | "italic" | "link";
-  attrs?: { href?: string; target?: string; rel?: string };
+  attrs?: { href?: string; target?: string | null; rel?: string | null; class?: string | null };
 }
 
+/** ProseMirror/Tiptap JSON. Validate before importing or rendering untrusted input. */
 export interface KnowledgeDocumentNode {
   type: string;
   text?: string;
   marks?: KnowledgeDocumentMark[];
   content?: KnowledgeDocumentNode[];
-  attrs?: Record<string, string | number | boolean | null>;
+  attrs?: Record<string, unknown>;
 }
 export interface KnowledgeDocument {
   type: "doc";
@@ -52,14 +51,17 @@ export interface KnowledgeDocument {
 }
 
 export type KnowledgeNoteEditorState =
-  | "clean"
-  | "unsaved"
-  | "saving"
-  | "saveError"
-  | "readOnly";
+  | "clean" | "unsaved" | "saving" | "saveError" | "readOnly";
 
 export interface KnowledgeNoteEditorSnapshot {
-  schemaVersion: 1;
+  format: "e-learning-knowledge-note";
+  schemaVersion: 2;
   document: KnowledgeDocument;
   summary: KnowledgeDocument;
+}
+
+export interface KnowledgeNoteBlockSnapshot {
+  format: "e-learning-knowledge-note-blocks";
+  schemaVersion: 2;
+  content: KnowledgeDocumentNode[];
 }

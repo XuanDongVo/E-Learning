@@ -1,3 +1,5 @@
+> **Superseded for active client authoring:** This document records the original schema-v1 Editor slice. The active client Editor contract is now schema v2: [PHASE_02_2_EDITOR_V2_CLIENT.md](./PHASE_02_2_EDITOR_V2_CLIENT.md). Historical v1 examples are retained solely for migration reference. No backend content API has been approved or implemented.
+
 # Knowledge Note — Phase 02.2 Teacher Editor (Client-first)
 
 Status: Implemented client interaction; persistence contract proposed only

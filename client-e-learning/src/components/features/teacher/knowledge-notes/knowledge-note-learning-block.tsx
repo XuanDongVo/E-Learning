@@ -1,210 +1,159 @@
 "use client";
 
-import { mergeAttributes, Node, nodeInputRule } from "@tiptap/core";
+import { InputRule, mergeAttributes, Node } from "@tiptap/core";
 import {
-  NodeViewWrapper,
-  ReactNodeViewRenderer,
+  NodeViewContent, NodeViewWrapper, ReactNodeViewRenderer,
   type NodeViewProps,
 } from "@tiptap/react";
-import { ArrowDown, ArrowUp, GripVertical, Trash2 } from "lucide-react";
+import { ArrowDown, ArrowUp, Copy, GripVertical, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import type { KnowledgeLearningBlockKind } from "@/types/knowledge-note";
-import { LEARNING_BLOCK_LABELS } from "./knowledge-note-document";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
+import type { KnowledgeLearningBlockKind, KnowledgeLearningSectionRole } from "@/types/knowledge-note";
+import {
+  createLearningBlock, isLearningKind, LEARNING_BLOCK_LABELS, LEARNING_SECTION_LABELS,
+} from "./knowledge-note-document";
 
-const slashCommands: Array<[RegExp, KnowledgeLearningBlockKind]> = [
+const shortcuts: Array<[RegExp, KnowledgeLearningBlockKind]> = [
   [/\/formula\s$/, "formula"],
   [/\/example\s$/, "example"],
   [/\/note\s$/, "callout"],
-  [/\/compare\s$/, "comparison"],
   [/\/mistake\s$/, "commonMistake"],
 ];
 
 export const KnowledgeLearningBlock = Node.create({
   name: "learningBlock",
   group: "block",
-  atom: true,
+  content: "learningSection+",
+  isolating: true,
   draggable: true,
   selectable: true,
-
   addAttributes() {
     return {
       kind: { default: "callout" },
       title: { default: "" },
-      body: { default: "" },
-      secondary: { default: "" },
-      leftTitle: { default: "" },
-      rightTitle: { default: "" },
+      variant: { default: "default" },
     };
   },
-
-  parseHTML() {
-    return [{ tag: "section[data-learning-block]" }];
-  },
-
+  parseHTML() { return [{ tag: "section[data-learning-block]" }]; },
   renderHTML({ HTMLAttributes }) {
-    return [
-      "section",
-      mergeAttributes(HTMLAttributes, {
-        "data-learning-block": HTMLAttributes.kind,
-      }),
-    ];
+    return ["section", mergeAttributes(HTMLAttributes, {
+      "data-learning-block": HTMLAttributes.kind,
+    }), 0];
   },
-
-  addNodeView() {
-    return ReactNodeViewRenderer(LearningBlockNodeView);
-  },
-
+  addNodeView() { return ReactNodeViewRenderer(LearningBlockNodeView); },
   addInputRules() {
-    return slashCommands.map(([find, kind]) =>
-      nodeInputRule({
-        find,
-        type: this.type,
-        getAttributes: () => ({ kind, title: LEARNING_BLOCK_LABELS[kind] }),
-      }),
-    );
+    return shortcuts.map(([find, kind]) => new InputRule({
+      find,
+      handler: ({ chain, range }) => {
+        chain().deleteRange(range)
+          .insertContentAt(range.from, createLearningBlock(kind)).run();
+      },
+    }));
   },
 });
 
-function LearningBlockNodeView(props: NodeViewProps) {
-  const kind = props.node.attrs.kind as KnowledgeLearningBlockKind;
-  const label = LEARNING_BLOCK_LABELS[kind] ?? "Learning block";
-  const readOnly = !props.editor.isEditable;
+export const KnowledgeLearningSection = Node.create({
+  name: "learningSection",
+  content: "(paragraph|bulletList|orderedList)+",
+  defining: true,
+  isolating: true,
+  addAttributes() {
+    return { role: { default: "body" } };
+  },
+  parseHTML() { return [{ tag: "section[data-learning-section]" }]; },
+  renderHTML({ HTMLAttributes }) {
+    return ["section", mergeAttributes(HTMLAttributes, {
+      "data-learning-section": HTMLAttributes.role,
+    }), 0];
+  },
+  addNodeView() { return ReactNodeViewRenderer(LearningSectionNodeView); },
+});
 
+function LearningBlockNodeView(props: NodeViewProps) {
+  const kind = isLearningKind(props.node.attrs.kind) ? props.node.attrs.kind : "callout";
+  const disabled = !props.editor.isEditable;
+  const title = String(props.node.attrs.title || LEARNING_BLOCK_LABELS[kind]);
   const move = (direction: "up" | "down") => {
     const position = props.getPos();
     if (typeof position !== "number") return;
     const { state, view } = props.editor;
     const current = state.doc.nodeAt(position);
     if (!current) return;
-
     if (direction === "up") {
       const previous = state.doc.resolve(position).nodeBefore;
       if (!previous) return;
-      view.dispatch(
-        state.tr
-          .delete(position, position + current.nodeSize)
-          .insert(position - previous.nodeSize, current),
-      );
-      return;
+      view.dispatch(state.tr.delete(position, position + current.nodeSize)
+        .insert(position - previous.nodeSize, current));
+    } else {
+      const next = state.doc.nodeAt(position + current.nodeSize);
+      if (!next) return;
+      view.dispatch(state.tr.delete(position, position + current.nodeSize)
+        .insert(position + next.nodeSize, current));
     }
+  };
 
-    const next = state.doc.nodeAt(position + current.nodeSize);
-    if (!next) return;
-    view.dispatch(
-      state.tr
-        .delete(position, position + current.nodeSize)
-        .insert(position + next.nodeSize, current),
-    );
+  const duplicate = () => {
+    const pos = props.getPos();
+    if (typeof pos !== "number") return;
+    props.editor.commands.insertContentAt(pos + props.node.nodeSize, props.node.toJSON());
   };
 
   return (
-    <NodeViewWrapper
-      as="section"
-      data-learning-block={kind}
-      className="group/my-block my-5 border-l-4 border-primary bg-primary/5 px-3 py-3 sm:px-4"
-    >
-      <div className="mb-3 flex items-center gap-2 border-b border-border/70 pb-2">
-        <button
-          type="button"
-          data-drag-handle
-          aria-label={`Kéo để sắp xếp ${label}`}
-          className="cursor-grab text-muted-foreground active:cursor-grabbing"
-          disabled={readOnly}
-        >
+    <NodeViewWrapper as="section" data-learning-block={kind}
+      className="group/my-block my-5 rounded-lg border-l-4 border-primary bg-primary/5 p-3 sm:p-4">
+      <div className="mb-3 flex flex-wrap items-center gap-2 border-b border-border pb-2" contentEditable={false}>
+        <button type="button" data-drag-handle disabled={disabled}
+          className="cursor-grab text-muted-foreground disabled:cursor-not-allowed"
+          aria-label={`Kéo để sắp xếp ${title}`}>
           <GripVertical className="size-4" />
         </button>
-        <span className="text-sm font-extrabold text-foreground">{label}</span>
-        <div className="ml-auto flex gap-1">
-          <Button type="button" size="icon-xs" variant="ghost" aria-label={`Di chuyển ${label} lên`} disabled={readOnly} onClick={() => move("up")}>
-            <ArrowUp />
-          </Button>
-          <Button type="button" size="icon-xs" variant="ghost" aria-label={`Di chuyển ${label} xuống`} disabled={readOnly} onClick={() => move("down")}>
-            <ArrowDown />
-          </Button>
-          <Button type="button" size="icon-xs" variant="ghost" aria-label={`Xóa ${label}`} disabled={readOnly} onClick={props.deleteNode}>
-            <Trash2 />
-          </Button>
+        <Input value={String(props.node.attrs.title ?? "")} disabled={disabled}
+          aria-label="Tiêu đề Learning Block" placeholder={LEARNING_BLOCK_LABELS[kind]}
+          onChange={event => props.updateAttributes({ title: event.target.value })}
+          className="h-9 min-w-32 flex-1 border-0 bg-transparent px-1 font-extrabold shadow-none" />
+        {kind === "callout" && (
+          <Select value={String(props.node.attrs.variant ?? "note")}
+            onValueChange={variant => props.updateAttributes({ variant })}
+            disabled={disabled}>
+            <SelectTrigger aria-label="Loại ghi chú" className="h-9 w-32">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="note">Ghi chú</SelectItem>
+              <SelectItem value="tip">Mẹo</SelectItem>
+              <SelectItem value="warning">Cảnh báo</SelectItem>
+              <SelectItem value="important">Quan trọng</SelectItem>
+            </SelectContent>
+          </Select>
+        )}
+        <div className="ml-auto flex items-center gap-1">
+          <Button size="icon-xs" type="button" variant="ghost" disabled={disabled}
+            aria-label="Nhân bản khối" onClick={duplicate}><Copy /></Button>
+          <Button size="icon-xs" type="button" variant="ghost" disabled={disabled}
+            aria-label="Chuyển khối lên" onClick={() => move("up")}><ArrowUp /></Button>
+          <Button size="icon-xs" type="button" variant="ghost" disabled={disabled}
+            aria-label="Chuyển khối xuống" onClick={() => move("down")}><ArrowDown /></Button>
+          <Button size="icon-xs" type="button" variant="ghost" disabled={disabled}
+            aria-label="Xóa khối" onClick={props.deleteNode}><Trash2 /></Button>
         </div>
       </div>
-
-      {kind === "comparison" ? (
-        <div className="grid gap-3 sm:grid-cols-2">
-          <ComparisonColumn
-            title={props.node.attrs.leftTitle as string}
-            body={props.node.attrs.body as string}
-            titlePlaceholder="Tên cột A"
-            bodyPlaceholder="Nội dung so sánh A"
-            readOnly={readOnly}
-            onTitle={(leftTitle) => props.updateAttributes({ leftTitle })}
-            onBody={(body) => props.updateAttributes({ body })}
-          />
-          <ComparisonColumn
-            title={props.node.attrs.rightTitle as string}
-            body={props.node.attrs.secondary as string}
-            titlePlaceholder="Tên cột B"
-            bodyPlaceholder="Nội dung so sánh B"
-            readOnly={readOnly}
-            onTitle={(rightTitle) => props.updateAttributes({ rightTitle })}
-            onBody={(secondary) => props.updateAttributes({ secondary })}
-          />
-        </div>
-      ) : (
-        <div className="space-y-2">
-          <Input
-            value={(props.node.attrs.title as string) || ""}
-            onChange={(event) => props.updateAttributes({ title: event.target.value })}
-            aria-label={`Tiêu đề ${label}`}
-            placeholder={label}
-            disabled={readOnly}
-            className="border-0 bg-transparent px-0 text-sm font-bold shadow-none focus-visible:ring-0"
-          />
-          <Textarea
-            value={(props.node.attrs.body as string) || ""}
-            onChange={(event) => props.updateAttributes({ body: event.target.value })}
-            aria-label={`Nội dung ${label}`}
-            placeholder={kind === "formula" ? "S + V(s/es) + O" : `Nhập nội dung ${label.toLocaleLowerCase("vi")}...`}
-            disabled={readOnly}
-            className="min-h-20 resize-y bg-card"
-          />
-          {kind === "commonMistake" ? (
-            <Textarea
-              value={(props.node.attrs.secondary as string) || ""}
-              onChange={(event) => props.updateAttributes({ secondary: event.target.value })}
-              aria-label="Cách sửa lỗi"
-              placeholder="Cách sửa hoặc ghi nhớ đúng..."
-              disabled={readOnly}
-              className="min-h-16 resize-y bg-card"
-            />
-          ) : null}
-        </div>
-      )}
+      <NodeViewContent as="div" className="space-y-3" />
     </NodeViewWrapper>
   );
 }
 
-function ComparisonColumn({
-  title,
-  body,
-  titlePlaceholder,
-  bodyPlaceholder,
-  readOnly,
-  onTitle,
-  onBody,
-}: {
-  title: string;
-  body: string;
-  titlePlaceholder: string;
-  bodyPlaceholder: string;
-  readOnly: boolean;
-  onTitle: (value: string) => void;
-  onBody: (value: string) => void;
-}) {
+function LearningSectionNodeView(props: NodeViewProps) {
+  const role = props.node.attrs.role as KnowledgeLearningSectionRole;
   return (
-    <div className="space-y-2 border border-border bg-card p-3">
-      <Input value={title || ""} onChange={(event) => onTitle(event.target.value)} placeholder={titlePlaceholder} disabled={readOnly} aria-label={titlePlaceholder} className="font-bold" />
-      <Textarea value={body || ""} onChange={(event) => onBody(event.target.value)} placeholder={bodyPlaceholder} disabled={readOnly} aria-label={bodyPlaceholder} className="min-h-28 resize-y" />
-    </div>
+    <NodeViewWrapper as="section" data-learning-section={role}
+      className="rounded-md border border-border/60 bg-card/80 p-3">
+      <p contentEditable={false} className="mb-1.5 text-xs font-bold text-muted-foreground">
+        {LEARNING_SECTION_LABELS[role] ?? role}
+      </p>
+      <NodeViewContent as="div" className="min-h-9 text-sm leading-6 [&_p]:my-1.5 [&_ul]:ml-5 [&_ul]:list-disc [&_ol]:ml-5 [&_ol]:list-decimal" />
+    </NodeViewWrapper>
   );
 }

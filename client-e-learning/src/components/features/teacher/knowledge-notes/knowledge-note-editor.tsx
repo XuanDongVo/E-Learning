@@ -7,7 +7,8 @@ import Placeholder from "@tiptap/extension-placeholder";
 import {
   ArrowLeft,
   Check,
-  Clipboard,
+  FileJson2,
+  LayoutTemplate,
   Eye,
   Info,
   LockKeyhole,
@@ -31,6 +32,9 @@ import { useTeacherKnowledgeNote } from "@/hooks/knowledge-note/use-teacher-know
 import type {
   KnowledgeDocument,
   KnowledgeNoteEditorState,
+  KnowledgeDocumentNode,
+  KnowledgeNoteEditorSnapshot,
+  KnowledgeNoteBlockSnapshot,
 } from "@/types/knowledge-note";
 import {
   KNOWLEDGE_PREVIEW_REQUEST,
@@ -41,12 +45,16 @@ import {
 } from "./knowledge-note-preview-channel";
 import { TeacherKnowledgeNoteLayout } from "./knowledge-note-layout";
 import {
-  createEditorSnapshot,
   EMPTY_KNOWLEDGE_DOCUMENT,
   EMPTY_KNOWLEDGE_SUMMARY,
   isDocumentEmpty,
 } from "./knowledge-note-document";
-import { KnowledgeLearningBlock } from "./knowledge-note-learning-block";
+import { KnowledgeLearningBlock, KnowledgeLearningSection } from "./knowledge-note-learning-block";
+import { KnowledgeTableSchema, KnowledgeTable, KnowledgeTableRow, KnowledgeTableCell, KnowledgeTableHeader } from "./knowledge-note-table";
+import {
+  KnowledgeImportExportDialog, type ImportMode, type ImportTarget,
+} from "./knowledge-note-import-export";
+import { KnowledgeTemplateDialog } from "./knowledge-note-template-dialog";
 import { KnowledgeNoteToolbar } from "./knowledge-note-toolbar";
 
 
@@ -61,6 +69,9 @@ export function TeacherKnowledgeNoteEditor({ noteId }: { noteId: number }) {
     EMPTY_KNOWLEDGE_SUMMARY,
   );
   const [dirty, setDirty] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
+  const [templatesOpen, setTemplatesOpen] = useState(false);
+  const [, setSelectionVersion] = useState(0);
   const previewTabRef = useRef<Window | null>(null);
   const previewChannelRef = useRef<BroadcastChannel | null>(null);
   const previewSessionRef = useRef<string | null>(null);
@@ -72,12 +83,25 @@ export function TeacherKnowledgeNoteEditor({ noteId }: { noteId: number }) {
   const editor = useEditor({
     immediatelyRender: false,
     extensions: [
-      StarterKit.configure({ heading: { levels: [2, 3] } }),
+      StarterKit.configure({
+        heading: { levels: [2, 3] },
+        blockquote: false,
+        code: false,
+        codeBlock: false,
+        strike: false,
+        underline: false,
+      }),
       Placeholder.configure({
         placeholder:
           "Bắt đầu soạn bài… Gõ /formula, /example, /note, /compare hoặc /mistake rồi nhấn Space để chèn nhanh.",
       }),
       KnowledgeLearningBlock,
+      KnowledgeLearningSection,
+      KnowledgeTableSchema,
+      KnowledgeTable,
+      KnowledgeTableRow,
+      KnowledgeTableCell,
+      KnowledgeTableHeader,
     ],
     content: EMPTY_KNOWLEDGE_DOCUMENT,
     editable: !readOnly,
@@ -92,6 +116,9 @@ export function TeacherKnowledgeNoteEditor({ noteId }: { noteId: number }) {
       setDocument(currentEditor.getJSON() as KnowledgeDocument);
       setDirty(true);
     },
+    onSelectionUpdate: () => {
+      setSelectionVersion(current => current + 1);
+    },
   });
 
   const summaryEditor = useEditor({
@@ -102,6 +129,9 @@ export function TeacherKnowledgeNoteEditor({ noteId }: { noteId: number }) {
         blockquote: false,
         codeBlock: false,
         horizontalRule: false,
+        code: false,
+        strike: false,
+        underline: false,
       }),
       Placeholder.configure({
         placeholder: "Tóm tắt 2–4 ý quan trọng học sinh cần nhớ…",
@@ -267,10 +297,68 @@ export function TeacherKnowledgeNoteEditor({ noteId }: { noteId: number }) {
     } else router.push("/teacher/knowledge-notes");
   };
 
-  const copySnapshot = async () => {
-    const snapshot = createEditorSnapshot(document, summary);
-    await navigator.clipboard.writeText(JSON.stringify(snapshot, null, 2));
-    toast.success("Đã sao chép JSON của phiên soạn thảo");
+  const getSelectedBlock = (): KnowledgeDocumentNode[] | null => {
+    if (!editor) return null;
+    const index = editor.state.selection.$from.index(0);
+    if (index >= editor.state.doc.childCount) return null;
+    const node = editor.state.doc.child(index);
+    return ["learningBlock", "table"].includes(node.type.name)
+      ? [node.toJSON() as KnowledgeDocumentNode]
+      : null;
+  };
+
+  const insertTemplate = (nodes: KnowledgeDocumentNode[]) => {
+    if (!editor || readOnly) return;
+    const ok = editor.chain().focus().insertContent(nodes).run();
+    if (!ok) toast.error("Không thể chèn mẫu vào vị trí hiện tại.");
+  };
+
+  const applyImport = (
+    payload: KnowledgeNoteEditorSnapshot | KnowledgeNoteBlockSnapshot,
+    target: ImportTarget,
+    mode: ImportMode,
+  ): boolean => {
+    if (!editor || !summaryEditor || readOnly) return false;
+    // Both editors are updated only on an explicit, confirmed full replacement.
+    const applyTo = (
+      instance: NonNullable<typeof editor>,
+      incoming: KnowledgeDocument,
+      action: ImportMode,
+    ): boolean => {
+      if (action === "replace") {
+        instance.commands.setContent(incoming, { emitUpdate: true });
+        return true;
+      }
+      if (!incoming.content.length) return true;
+      return action === "append"
+        ? instance.chain().focus().insertContentAt(instance.state.doc.content.size, incoming.content).run()
+        : instance.chain().focus().insertContent(incoming.content).run();
+    };
+
+    const article = payload.format === "e-learning-knowledge-note-blocks"
+      ? { type: "doc" as const, content: payload.content }
+      : payload.document;
+    const nextSummary = payload.format === "e-learning-knowledge-note-blocks"
+      ? null : payload.summary;
+
+    try {
+      if (target === "both") {
+        if (!nextSummary) return false;
+        const first = applyTo(editor, article, "replace");
+        const second = applyTo(summaryEditor, nextSummary, "replace");
+        if (first && second) setDirty(true);
+        return first && second;
+      }
+      const destination = target === "summary" ? summaryEditor : editor;
+      const next = target === "summary" ? nextSummary : article;
+      if (!next) return false;
+      const result = applyTo(destination, next, mode);
+      if (result) setDirty(true);
+      return result;
+    } catch (cause) {
+      toast.error(cause instanceof Error ? cause.message : "Không thể nhập tài liệu.");
+      return false;
+    }
   };
 
   if (noteQuery.isPending) {
@@ -325,15 +413,15 @@ export function TeacherKnowledgeNoteEditor({ noteId }: { noteId: number }) {
             <StateIcon className="size-4" /> {statePresentation.label}
           </span>
           <span className="text-xs text-muted-foreground">
-            Schema v1 · Phiên client
+            Schema v2 · Chỉ lưu trong phiên
           </span>
           <div className="ml-auto flex flex-wrap gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => void copySnapshot()}
-            >
-              <Clipboard /> Sao chép JSON
+            <Button type="button" variant="outline" onClick={() => setImportOpen(true)}>
+              <FileJson2 /> Nhập / Xuất
+            </Button>
+            <Button type="button" variant="outline" disabled={readOnly}
+              onClick={() => setTemplatesOpen(true)}>
+              <LayoutTemplate /> Khối mẫu
             </Button>
             <Button
               type="button"
@@ -368,8 +456,10 @@ export function TeacherKnowledgeNoteEditor({ noteId }: { noteId: number }) {
           className="min-w-0  border-2 border-ink shadow-pop rounded-lg bg-card"
           aria-label="Document editor"
         >
-          <KnowledgeNoteToolbar editor={editor} />
-          <EditorContent editor={editor} />
+          <KnowledgeNoteToolbar editor={editor} onOpenTemplates={() => setTemplatesOpen(true)} />
+          <div className="max-w-full overflow-x-auto">
+            <EditorContent editor={editor} />
+          </div>
         </section>
 
         <aside
@@ -423,13 +513,30 @@ export function TeacherKnowledgeNoteEditor({ noteId }: { noteId: number }) {
               Chèn nhanh bằng bàn phím
             </h2>
             <p className="mt-2">
-              Gõ <code>/formula</code>, <code>/example</code>,{" "}
-              <code>/note</code>, <code>/compare</code> hoặc{" "}
-              <code>/mistake</code>, sau đó nhấn Space.
+              Dùng menu Thêm khối để chèn nội dung. Có thể gõ{" "}
+              <code>/formula</code>, <code>/example</code>,{" "}
+              <code>/note</code> hoặc <code>/mistake</code> rồi nhấn Space.
+              Bảng so sánh hỗ trợ thêm hàng và cột.
             </p>
           </section>
         </aside>
       </div>
+
+      <KnowledgeImportExportDialog
+        open={importOpen}
+        onOpenChange={setImportOpen}
+        document={document}
+        summary={summary}
+        disabled={readOnly}
+        selectedBlock={getSelectedBlock}
+        onApply={applyImport}
+      />
+      <KnowledgeTemplateDialog
+        open={templatesOpen}
+        onOpenChange={setTemplatesOpen}
+        disabled={readOnly}
+        onInsert={insertTemplate}
+      />
 
       <AlertDialog open={leaveDialogOpen} onOpenChange={setLeaveDialogOpen}>
         <AlertDialogContent>

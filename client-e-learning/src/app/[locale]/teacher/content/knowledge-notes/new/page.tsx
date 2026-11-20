@@ -1,5 +1,10 @@
-import { TeacherKnowledgeNoteCreate } from "@/components/features/teacher/knowledge-notes/knowledge-note-create";
+import { redirect } from "@/i18n/navigation";
 
-export default function NewKnowledgeNotePage() {
-  return <TeacherKnowledgeNoteCreate />;
+export default async function NewKnowledgeNotePage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  redirect({ href: "/teacher/knowledge-notes", locale });
 }

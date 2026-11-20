@@ -300,8 +300,9 @@ public class KnowledgeNoteContentValidator {
     }
     private static boolean onlyFields(JsonNode node, Set<String> allowed) {
         if (node == null || !node.isObject()) return false;
-        var names = node.fieldNames();
-        while (names.hasNext()) if (!allowed.contains(names.next())) return false;
+        for (String name : node.propertyNames()) {
+            if (!allowed.contains(name)) return false;
+        }
         return true;
     }
     private static void fail(String message) {

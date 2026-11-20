@@ -80,7 +80,8 @@ export function TeacherKnowledgeNoteEditor({ noteId }: { noteId: number }) {
   const noteQuery = useTeacherKnowledgeNote(noteId);
   const note = noteQuery.data;
   const contentQuery = useTeacherKnowledgeNoteContent(noteId, Boolean(note));
-  const readOnly = !note || note.status === "ARCHIVED" || note.status === "PUBLISHED";
+  const readOnly =
+    !note || note.status === "ARCHIVED" || note.status === "PUBLISHED";
   const autosave = useKnowledgeNoteAutosave(noteId, !readOnly);
   const [loadError, setLoadError] = useState<string | null>(null);
   const hydratedRef = useRef(false);
@@ -156,11 +157,15 @@ export function TeacherKnowledgeNoteEditor({ noteId }: { noteId: number }) {
       }
       setLoadError(null);
     } catch (cause) {
-      setLoadError(cause instanceof Error ? cause.message : "Bản lưu không hợp lệ.");
+      setLoadError(
+        cause instanceof Error ? cause.message : "Bản lưu không hợp lệ.",
+      );
     }
   }, [editor, contentQuery.data, autosave.reset, autosave.updateDocument]);
 
-  useEffect(() => { editor?.setEditable(!readOnly); }, [editor, readOnly]);
+  useEffect(() => {
+    editor?.setEditable(!readOnly);
+  }, [editor, readOnly]);
 
   useEffect(() => {
     const warnOnUnload = (event: BeforeUnloadEvent) => {
@@ -285,9 +290,13 @@ export function TeacherKnowledgeNoteEditor({ noteId }: { noteId: number }) {
 
   const editorState: KnowledgeNoteEditorState = readOnly
     ? "readOnly"
-    : autosave.status === "saving" ? "saving"
-    : autosave.status === "error" ? "saveError"
-    : autosave.dirty ? "unsaved" : "clean";
+    : autosave.status === "saving"
+      ? "saving"
+      : autosave.status === "error"
+        ? "saveError"
+        : autosave.dirty
+          ? "unsaved"
+          : "clean";
 
   const statePresentation = useMemo(() => {
     if (editorState === "readOnly")
@@ -353,8 +362,10 @@ export function TeacherKnowledgeNoteEditor({ noteId }: { noteId: number }) {
     mode: ImportMode,
   ): boolean => {
     if (!editor || readOnly || !autosave.ready) return false;
-    const incoming: KnowledgeDocument = payload.format === "e-learning-knowledge-note-blocks"
-      ? { type: "doc", content: payload.content } : payload.document;
+    const incoming: KnowledgeDocument =
+      payload.format === "e-learning-knowledge-note-blocks"
+        ? { type: "doc", content: payload.content }
+        : payload.document;
     const normalized = ensureKnowledgeIds(incoming, mode !== "replace");
     try {
       if (mode === "replace") {
@@ -363,10 +374,16 @@ export function TeacherKnowledgeNoteEditor({ noteId }: { noteId: number }) {
       }
       if (!normalized.content.length) return true;
       return mode === "append"
-        ? editor.chain().focus().insertContentAt(editor.state.doc.content.size, normalized.content).run()
+        ? editor
+            .chain()
+            .focus()
+            .insertContentAt(editor.state.doc.content.size, normalized.content)
+            .run()
         : editor.chain().focus().insertContent(normalized.content).run();
     } catch (cause) {
-      toast.error(cause instanceof Error ? cause.message : "Không thể nhập nội dung.");
+      toast.error(
+        cause instanceof Error ? cause.message : "Không thể nhập nội dung.",
+      );
       return false;
     }
   };
@@ -375,33 +392,16 @@ export function TeacherKnowledgeNoteEditor({ noteId }: { noteId: number }) {
     if (!editor) return;
     editor.state.doc.descendants((node, pos) => {
       if (node.attrs.id !== id) return;
-      editor.chain().focus().setTextSelection(Math.min(pos + 1, editor.state.doc.content.size)).run();
+      editor
+        .chain()
+        .focus()
+        .setTextSelection(Math.min(pos + 1, editor.state.doc.content.size))
+        .run();
       return false;
     });
   };
 
-  const toggleSelectedTable = () => {
-    if (!editor || readOnly) return;
-    const { $from } = editor.state.selection;
-    for (let depth = $from.depth; depth > 0; depth--) {
-      const node = $from.node(depth);
-      if (node.type.name !== "table") continue;
-      const pos = $from.before(depth);
-      editor.view.dispatch(editor.state.tr.setNodeMarkup(
-        pos, undefined, { ...node.attrs, isKeyPoint: !node.attrs.isKeyPoint }));
-      return;
-    }
-  };
-
   const navigation = extractKnowledgeNavigation(document);
-  const inTable = (() => {
-    if (!editor) return false;
-    const $from = editor.state.selection.$from;
-    for (let depth = $from.depth; depth > 0; depth--) {
-      if ($from.node(depth).type.name === "table") return true;
-    }
-    return false;
-  })();
 
   if (noteQuery.isPending) {
     return (
@@ -430,8 +430,16 @@ export function TeacherKnowledgeNoteEditor({ noteId }: { noteId: number }) {
     );
   }
 
-  if (contentQuery.isPending || (!autosave.ready && !contentQuery.isError && !loadError)) {
-    return <EditorState title="Đang tải nội dung…" description="Đang đọc bản đã lưu từ server." />;
+  if (
+    contentQuery.isPending ||
+    (!autosave.ready && !contentQuery.isError && !loadError)
+  ) {
+    return (
+      <EditorState
+        title="Đang tải nội dung…"
+        description="Đang đọc bản đã lưu từ server."
+      />
+    );
   }
   if (contentQuery.isError || loadError) {
     return (
@@ -439,7 +447,11 @@ export function TeacherKnowledgeNoteEditor({ noteId }: { noteId: number }) {
         title="Không thể mở nội dung bài lý thuyết"
         description={loadError ?? "Không tải được nội dung từ server."}
         action={
-          <Button type="button" variant="outline" onClick={() => contentQuery.refetch()}>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => contentQuery.refetch()}
+          >
             Thử lại
           </Button>
         }
@@ -485,17 +497,30 @@ export function TeacherKnowledgeNoteEditor({ noteId }: { noteId: number }) {
             <Button type="button" variant="outline" onClick={openPreview}>
               <Eye /> Xem trước
             </Button>
-            <KnowledgeNoteStatusActions note={note} disabled={autosave.dirty || autosave.status === "saving"} />
+            <KnowledgeNoteStatusActions
+              note={note}
+              disabled={autosave.dirty || autosave.status === "saving"}
+            />
             <Button
               type="button"
-              disabled={readOnly || !autosave.ready || !autosave.dirty || autosave.status === "saving"}
+              disabled={
+                readOnly ||
+                !autosave.ready ||
+                !autosave.dirty ||
+                autosave.status === "saving"
+              }
               onClick={() => {
                 void autosave.saveNow().catch((cause: unknown) => {
-                  toast.error(cause instanceof Error ? cause.message : "Không thể lưu bài học.");
+                  toast.error(
+                    cause instanceof Error
+                      ? cause.message
+                      : "Không thể lưu bài học.",
+                  );
                 });
               }}
             >
-              <Save /> {autosave.status === "error" ? "Thử lưu lại" : "Lưu ngay"}
+              <Save />{" "}
+              {autosave.status === "error" ? "Thử lưu lại" : "Lưu ngay"}
             </Button>
           </div>
         </div>
@@ -531,34 +556,52 @@ export function TeacherKnowledgeNoteEditor({ noteId }: { noteId: number }) {
           <section className="border-2 border-ink shadow-pop rounded-lg bg-card p-4">
             <h2 className="font-extrabold text-foreground">Cấu trúc bài học</h2>
             <p className="mt-1 text-xs leading-5 text-muted-foreground">
-              Mục lục lấy từ H2/H3. Trọng tâm lấy từ Learning Block và bảng được đánh dấu.
+              Mục lục lấy từ H2/H3. Trọng tâm lấy từ Learning Block và bảng được
+              đánh dấu.
             </p>
-            <h3 className="mt-4 text-xs font-bold uppercase text-muted-foreground">Mục lục ({navigation.outline.length})</h3>
+            <h3 className="mt-4 text-xs font-bold uppercase text-muted-foreground">
+              Mục lục ({navigation.outline.length})
+            </h3>
             <div className="mt-2 space-y-1">
               {navigation.outline.length === 0 ? (
-                <p className="text-xs text-muted-foreground">Thêm tiêu đề H2/H3 để tạo mục lục.</p>
-              ) : navigation.outline.map(item => (
-                <button key={item.id} type="button" onClick={() => focusNode(item.id)}
-                  className={`block w-full truncate rounded-md px-2 py-1.5 text-left text-xs hover:bg-muted ${item.level === 3 ? "pl-5" : "font-semibold"}`}>
-                  {item.title}
-                </button>
-              ))}
+                <p className="text-xs text-muted-foreground">
+                  Thêm tiêu đề H2/H3 để tạo mục lục.
+                </p>
+              ) : (
+                navigation.outline.map((item) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => focusNode(item.id)}
+                    className={`block w-full truncate rounded-md px-2 py-1.5 text-left text-xs hover:bg-muted ${item.level === 3 ? "pl-5" : "font-semibold"}`}
+                  >
+                    {item.title}
+                  </button>
+                ))
+              )}
             </div>
-            <h3 className="mt-4 text-xs font-bold uppercase text-muted-foreground">Trọng tâm ({navigation.keyPoints.length})</h3>
+            <h3 className="mt-4 text-xs font-bold uppercase text-muted-foreground">
+              Trọng tâm ({navigation.keyPoints.length})
+            </h3>
             <div className="mt-2 space-y-1">
               {navigation.keyPoints.length === 0 ? (
-                <p className="text-xs text-muted-foreground">Dùng biểu tượng Bookmark trên Learning Block hoặc đánh dấu bảng.</p>
-              ) : navigation.keyPoints.map(item => (
-                <button key={item.id} type="button" onClick={() => focusNode(item.id)}
-                  className="block w-full truncate rounded-md px-2 py-1.5 text-left text-xs hover:bg-muted">
-                  ★ {item.title}
-                </button>
-              ))}
+                <p className="text-xs text-muted-foreground">
+                  Dùng biểu tượng Bookmark trên Learning Block hoặc đánh dấu
+                  bảng.
+                </p>
+              ) : (
+                navigation.keyPoints.map((item) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => focusNode(item.id)}
+                    className="block w-full truncate rounded-md px-2 py-1.5 text-left text-xs hover:bg-muted"
+                  >
+                    ★ {item.title}
+                  </button>
+                ))
+              )}
             </div>
-            <Button type="button" size="sm" variant="outline" className="mt-4 w-full"
-              disabled={!inTable || readOnly} onClick={toggleSelectedTable}>
-              Đánh dấu / bỏ trọng tâm cho bảng đang chọn
-            </Button>
           </section>
 
           <section className=" border-2 border-ink shadow-pop rounded-lg bg-card p-4 text-sm">
@@ -587,9 +630,9 @@ export function TeacherKnowledgeNoteEditor({ noteId }: { noteId: number }) {
                 </dd>
               </div>
             </dl>
-            <p className="mt-4 border-t border-border pt-3 text-xs leading-5 text-muted-foreground">
+            {/* <p className="mt-4 border-t border-border pt-3 text-xs leading-5 text-muted-foreground">
               Metadata và liên kết Topic chỉ đọc trong phase này.
-            </p>
+            </p> */}
           </section>
 
           <section className=" border-2 border-ink shadow-pop rounded-lg bg-muted/20 p-4 text-xs leading-5 text-muted-foreground">

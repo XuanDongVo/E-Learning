@@ -176,7 +176,7 @@ export function KnowledgeImportExportDialog({
             <div className="min-h-0 space-y-3">
               <p className="text-sm font-bold">Xem trước file nhập</p>
               {preview ? (
-                <div className="max-h-[60vh] overflow-auto rounded-lg border border-border bg-card p-4">
+                <div className="overflow-auto rounded-lg border border-border bg-card p-4">
                   <KnowledgeNoteRenderer document={preview} />
                 </div>
               ) : <p className="rounded-lg border border-dashed p-5 text-sm text-muted-foreground">

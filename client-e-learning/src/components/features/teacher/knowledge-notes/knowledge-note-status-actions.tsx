@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Archive, BookOpenCheck, BookOpenX } from "lucide-react";
+import { Archive, BookOpenCheck, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -57,7 +57,7 @@ export function KnowledgeNoteStatusActions({
       )}
       {note.status === "PUBLISHED" && (
         <Button type="button" variant="outline" disabled={disabled || pending}
-          onClick={() => setAction("unpublish")}><BookOpenX /> Gỡ công bố</Button>
+          onClick={() => setAction("unpublish")}><BookOpen /> Gỡ công bố</Button>
       )}
       {note.status !== "ARCHIVED" && (
         <Button type="button" variant="outline" disabled={disabled || pending}

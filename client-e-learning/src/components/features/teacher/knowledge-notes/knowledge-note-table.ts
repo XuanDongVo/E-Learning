@@ -1,8 +1,80 @@
 "use client";
 
 import { Extension, InputRule } from "@tiptap/core";
-import { Table, TableKit } from "@tiptap/extension-table";
+import { Table, TableKit, TableView } from "@tiptap/extension-table";
+import type { Node as ProseMirrorNode } from "@tiptap/pm/model";
+import type { EditorView, ViewMutationRecord } from "@tiptap/pm/view";
 import { createTable } from "./knowledge-note-document";
+
+class KnowledgeTableView extends TableView {
+  private readonly keyPointButton: HTMLButtonElement;
+
+  constructor(
+    node: ProseMirrorNode,
+    cellMinWidth: number,
+    view: EditorView,
+    HTMLAttributes: Record<string, unknown> = {},
+  ) {
+    super(node, cellMinWidth, view, HTMLAttributes);
+
+    const toolbar = document.createElement("div");
+    toolbar.className = "knowledge-table-toolbar";
+    toolbar.setAttribute("contenteditable", "false");
+
+    this.keyPointButton = document.createElement("button");
+    this.keyPointButton.type = "button";
+    this.keyPointButton.className = "knowledge-table-key-point";
+    this.keyPointButton.addEventListener("mousedown", event => {
+      event.preventDefault();
+    });
+    this.keyPointButton.addEventListener("click", () => {
+      const { $from } = view.state.selection;
+      for (let depth = $from.depth; depth > 0; depth--) {
+        const selectedNode = $from.node(depth);
+        if (selectedNode.type.name !== "table") continue;
+        view.dispatch(view.state.tr.setNodeMarkup(
+          $from.before(depth),
+          undefined,
+          { ...selectedNode.attrs, isKeyPoint: !selectedNode.attrs.isKeyPoint },
+        ));
+        return;
+      }
+    });
+
+    toolbar.appendChild(this.keyPointButton);
+    this.dom.insertBefore(toolbar, this.table);
+    this.updateKeyPointButton(node, view.editable);
+  }
+
+  update(node: ProseMirrorNode) {
+    const updated = super.update(node);
+    if (!updated) return false;
+    this.updateKeyPointButton(node, this.keyPointButton.disabled === false);
+    return true;
+  }
+
+  ignoreMutation(mutation: ViewMutationRecord) {
+    if (mutation.target === this.keyPointButton ||
+        this.keyPointButton.contains(mutation.target)) {
+      return true;
+    }
+    return super.ignoreMutation(mutation);
+  }
+
+  private updateKeyPointButton(node: ProseMirrorNode, editable: boolean) {
+    const isKeyPoint = node.attrs.isKeyPoint === true;
+    this.keyPointButton.disabled = !editable;
+    this.keyPointButton.setAttribute("aria-pressed", String(isKeyPoint));
+    this.keyPointButton.setAttribute(
+      "aria-label",
+      isKeyPoint
+        ? "Bỏ đánh dấu bảng là kiến thức trọng tâm"
+        : "Đánh dấu bảng là kiến thức trọng tâm",
+    );
+    this.keyPointButton.textContent = isKeyPoint ? "Bỏ trọng tâm" : "Trọng tâm";
+    this.keyPointButton.dataset.active = String(isKeyPoint);
+  }
+}
 
 /**
  * Use Tiptap's maintained table implementation for node schema, cell navigation,
@@ -28,6 +100,7 @@ export const KnowledgeTable = Table.extend({
     };
   },
 }).configure({
+  View: KnowledgeTableView,
   resizable: true,
   lastColumnResizable: true,
   allowTableNodeSelection: true,

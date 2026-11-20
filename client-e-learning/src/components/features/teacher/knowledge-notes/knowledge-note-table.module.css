@@ -9,6 +9,51 @@
   scrollbar-width: thin;
 }
 
+.editor :global(.knowledge-table-toolbar) {
+  display: flex;
+  align-items: center;
+  min-height: 2.75rem;
+  padding: 0.375rem 0.5rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--muted);
+}
+
+.editor :global(.knowledge-table-key-point) {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2rem;
+  padding: 0.375rem 0.625rem;
+  border: 1px solid var(--border);
+  border-radius: 0.375rem;
+  color: var(--foreground);
+  background: var(--card);
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.editor :global(.knowledge-table-key-point:hover) {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.editor :global(.knowledge-table-key-point[data-active="true"]) {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: var(--primary-soft);
+}
+
+.editor :global(.knowledge-table-key-point:focus-visible) {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.editor :global(.knowledge-table-key-point:disabled) {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
 .editor :global(table.knowledge-table) {
   width: 100%;
   min-width: 30rem;

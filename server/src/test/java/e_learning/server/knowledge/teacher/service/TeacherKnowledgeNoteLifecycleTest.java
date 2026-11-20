@@ -1,6 +1,6 @@
 package e_learning.server.knowledge.teacher.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import e_learning.server.common.exception.AppException;
 import e_learning.server.grades.entity.Grade;
 import e_learning.server.grades.repository.GradeRepository;

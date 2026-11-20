@@ -1,8 +1,8 @@
 package e_learning.server.knowledge.teacher.controller;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.core.type.TypeReference;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.core.type.TypeReference;
 import e_learning.server.common.dto.PageResponse;
 import e_learning.server.common.exception.AppException;
 import e_learning.server.common.exception.ErrorCode;

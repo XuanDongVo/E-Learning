@@ -1,6 +1,6 @@
 package e_learning.server.knowledge.teacher.validation;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import e_learning.server.common.exception.AppException;
 import org.junit.jupiter.api.Test;
 

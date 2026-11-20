@@ -23,6 +23,7 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { FullPageState, PageBanner, RegionState } from "@/components/feedback";
 import { SkeletonList } from "@/components/ui/skeleton/skeleton-list";
 import { ContentBreadcrumb } from "./components/content-breadcrumb";
+import { TeacherTopicKnowledgeNotes } from "../knowledge-notes/topic-knowledge-notes";
 import {
   Dialog,
   DialogContent,
@@ -46,6 +47,7 @@ export function TopicDetail({
   const [bankName, setBankName] = useState("");
   const [bankDescription, setBankDescription] = useState("");
   const [includeArchived, setIncludeArchived] = useState(false);
+  const [activeTab, setActiveTab] = useState<"banks" | "knowledge">("banks");
 
   const topic = useQuery({
     queryKey: QUERY_KEYS.contentTopic(topicId),
@@ -205,7 +207,29 @@ export function TopicDetail({
         />
       )}
 
-      <section className="mt-5 border-y border-border py-4">
+      <div role="tablist" aria-label="Nội dung Topic"
+        className="mt-5 flex flex-wrap gap-2 rounded-lg border-2 border-ink bg-card p-2 shadow-pop">
+        <button type="button" role="tab" aria-selected={activeTab === "banks"}
+          onClick={() => setActiveTab("banks")}
+          className={`min-h-10 rounded-md px-4 text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${activeTab === "banks" ? "bg-primary text-primary-foreground" : "text-foreground hover:bg-muted"}`}>
+          Ngân hàng câu hỏi
+        </button>
+        <button type="button" role="tab" aria-selected={activeTab === "knowledge"}
+          onClick={() => setActiveTab("knowledge")}
+          className={`min-h-10 rounded-md px-4 text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${activeTab === "knowledge" ? "bg-primary text-primary-foreground" : "text-foreground hover:bg-muted"}`}>
+          Kiến thức / Lý thuyết
+        </button>
+      </div>
+      <div role="tabpanel" className="mt-4">
+        {activeTab === "knowledge" ? (
+          <TeacherTopicKnowledgeNotes
+            topicId={topicId}
+            gradeId={unit.data.gradeId}
+            disabled={topic.data.status === "ARCHIVED"}
+          />
+        ) : (
+          <>
+      <section className="mt-5 rounded-lg border-2 border-ink bg-card p-4 shadow-pop">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex min-w-0 items-start gap-3">
             <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-primary-soft text-primary">
@@ -252,7 +276,7 @@ export function TopicDetail({
       </section>
 
       <Dialog open={createBankOpen} onOpenChange={setCreateBankOpen}>
-        <DialogContent className="max-h-[calc(100dvh-2rem)] overflow-y-auto sm:max-w-md">
+        <DialogContent className="max-h-[calc(100dvh-2rem)] overflow-y-auto border-2 border-ink bg-card shadow-pop sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="text-card-title font-bold text-foreground">
               New Question Bank
@@ -400,6 +424,9 @@ export function TopicDetail({
           </ul>
         )}
       </section>
+          </>
+        )}
+      </div>
     </>
   );
 }

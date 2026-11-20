@@ -43,21 +43,29 @@ import {
   previewChannelName,
   type KnowledgePreviewPayload,
 } from "./knowledge-note-preview-channel";
-import { TeacherKnowledgeNoteLayout } from "./knowledge-note-layout";
+// import { TeacherKnowledgeNoteLayout } from "./knowledge-note-layout";
 import {
   EMPTY_KNOWLEDGE_DOCUMENT,
   EMPTY_KNOWLEDGE_SUMMARY,
   isDocumentEmpty,
 } from "./knowledge-note-document";
-import { KnowledgeLearningBlock, KnowledgeLearningSection } from "./knowledge-note-learning-block";
-import { KnowledgeTable, KnowledgeTableKit, KnowledgeTableShortcuts } from "./knowledge-note-table";
+import {
+  KnowledgeLearningBlock,
+  KnowledgeLearningSection,
+} from "./knowledge-note-learning-block";
+import {
+  KnowledgeTable,
+  KnowledgeTableKit,
+  KnowledgeTableShortcuts,
+} from "./knowledge-note-table";
 import tableStyles from "./knowledge-note-table.module.css";
 import {
-  KnowledgeImportExportDialog, type ImportMode, type ImportTarget,
+  KnowledgeImportExportDialog,
+  type ImportMode,
+  type ImportTarget,
 } from "./knowledge-note-import-export";
 import { KnowledgeTemplateDialog } from "./knowledge-note-template-dialog";
 import { KnowledgeNoteToolbar } from "./knowledge-note-toolbar";
-
 
 export function TeacherKnowledgeNoteEditor({ noteId }: { noteId: number }) {
   const router = useRouter();
@@ -106,8 +114,7 @@ export function TeacherKnowledgeNoteEditor({ noteId }: { noteId: number }) {
     editable: !readOnly,
     editorProps: {
       attributes: {
-        class:
-          `knowledge-note-prosemirror ${tableStyles.editor} min-h-[30rem] px-5 py-7 text-base leading-7 outline-none sm:px-9 sm:py-9 [&_h2]:mb-3 [&_h2]:mt-7 [&_h2]:text-2xl [&_h2]:font-extrabold [&_h3]:mb-2 [&_h3]:mt-5 [&_h3]:text-lg [&_h3]:font-bold [&_p]:my-3 [&_ul]:my-3 [&_ul]:ml-6 [&_ul]:list-disc [&_ol]:my-3 [&_ol]:ml-6 [&_ol]:list-decimal [&_li]:my-1 [&_a]:font-semibold [&_a]:text-primary [&_a]:underline [&_hr]:my-7 [&_hr]:border-border empty:before:pointer-events-none empty:before:text-muted-foreground empty:before:content-[attr(data-placeholder)]`,
+        class: `knowledge-note-prosemirror ${tableStyles.editor} min-h-[30rem] px-5 py-7 text-base leading-7 outline-none sm:px-9 sm:py-9 [&_h2]:mb-3 [&_h2]:mt-7 [&_h2]:text-2xl [&_h2]:font-extrabold [&_h3]:mb-2 [&_h3]:mt-5 [&_h3]:text-lg [&_h3]:font-bold [&_p]:my-3 [&_ul]:my-3 [&_ul]:ml-6 [&_ul]:list-disc [&_ol]:my-3 [&_ol]:ml-6 [&_ol]:list-decimal [&_li]:my-1 [&_a]:font-semibold [&_a]:text-primary [&_a]:underline [&_hr]:my-7 [&_hr]:border-border empty:before:pointer-events-none empty:before:text-muted-foreground empty:before:content-[attr(data-placeholder)]`,
         "aria-label": "Nội dung bài lý thuyết",
       },
     },
@@ -116,7 +123,7 @@ export function TeacherKnowledgeNoteEditor({ noteId }: { noteId: number }) {
       setDirty(true);
     },
     onSelectionUpdate: () => {
-      setSelectionVersion(current => current + 1);
+      setSelectionVersion((current) => current + 1);
     },
   });
 
@@ -208,10 +215,13 @@ export function TeacherKnowledgeNoteEditor({ noteId }: { noteId: number }) {
     }
   }, [note, noteId, document, summary]);
 
-  useEffect(() => () => {
-    previewChannelRef.current?.close();
-    previewChannelRef.current = null;
-  }, []);
+  useEffect(
+    () => () => {
+      previewChannelRef.current?.close();
+      previewChannelRef.current = null;
+    },
+    [],
+  );
 
   const openPreview = () => {
     if (typeof BroadcastChannel === "undefined") {
@@ -225,7 +235,10 @@ export function TeacherKnowledgeNoteEditor({ noteId }: { noteId: number }) {
       const session = previewSessionRef.current;
       if (payload && session) {
         previewChannelRef.current?.postMessage({
-          type: KNOWLEDGE_PREVIEW_SNAPSHOT, noteId, session, payload,
+          type: KNOWLEDGE_PREVIEW_SNAPSHOT,
+          noteId,
+          session,
+          payload,
         });
       }
       return;
@@ -245,16 +258,24 @@ export function TeacherKnowledgeNoteEditor({ noteId }: { noteId: number }) {
     const channel = new BroadcastChannel(previewChannelName(noteId, session));
     channel.addEventListener("message", (event: MessageEvent<unknown>) => {
       if (!isKnowledgePreviewRequest(event.data)) return;
-      if (event.data.noteId !== noteId || event.data.session !== session) return;
+      if (event.data.noteId !== noteId || event.data.session !== session)
+        return;
       const payload = latestPreviewRef.current;
       if (!payload) return;
-      channel.postMessage({ type: KNOWLEDGE_PREVIEW_SNAPSHOT, noteId, session, payload });
+      channel.postMessage({
+        type: KNOWLEDGE_PREVIEW_SNAPSHOT,
+        noteId,
+        session,
+        payload,
+      });
     });
 
     const tab = window.open(previewUrl.toString(), "_blank");
     if (!tab) {
       channel.close();
-      toast.error("Trình duyệt đã chặn tab xem trước. Hãy cho phép mở tab mới và thử lại.");
+      toast.error(
+        "Trình duyệt đã chặn tab xem trước. Hãy cho phép mở tab mới và thử lại.",
+      );
       return;
     }
     previewChannelRef.current?.close();
@@ -309,7 +330,10 @@ export function TeacherKnowledgeNoteEditor({ noteId }: { noteId: number }) {
   const insertTemplate = (nodes: KnowledgeDocumentNode[]): boolean => {
     if (!editor || readOnly) return false;
     const ok = editor.chain().focus().insertContent(nodes).run();
-    if (!ok) toast.error("Không thể chèn mẫu vào vị trí hiện tại. Hãy chọn một đoạn văn ngoài bảng hoặc Learning Block.");
+    if (!ok)
+      toast.error(
+        "Không thể chèn mẫu vào vị trí hiện tại. Hãy chọn một đoạn văn ngoài bảng hoặc Learning Block.",
+      );
     return ok;
   };
 
@@ -331,15 +355,22 @@ export function TeacherKnowledgeNoteEditor({ noteId }: { noteId: number }) {
       }
       if (!incoming.content.length) return true;
       return action === "append"
-        ? instance.chain().focus().insertContentAt(instance.state.doc.content.size, incoming.content).run()
+        ? instance
+            .chain()
+            .focus()
+            .insertContentAt(instance.state.doc.content.size, incoming.content)
+            .run()
         : instance.chain().focus().insertContent(incoming.content).run();
     };
 
-    const article = payload.format === "e-learning-knowledge-note-blocks"
-      ? { type: "doc" as const, content: payload.content }
-      : payload.document;
-    const nextSummary = payload.format === "e-learning-knowledge-note-blocks"
-      ? null : payload.summary;
+    const article =
+      payload.format === "e-learning-knowledge-note-blocks"
+        ? { type: "doc" as const, content: payload.content }
+        : payload.document;
+    const nextSummary =
+      payload.format === "e-learning-knowledge-note-blocks"
+        ? null
+        : payload.summary;
 
     try {
       if (target === "both") {
@@ -356,7 +387,9 @@ export function TeacherKnowledgeNoteEditor({ noteId }: { noteId: number }) {
       if (result) setDirty(true);
       return result;
     } catch (cause) {
-      toast.error(cause instanceof Error ? cause.message : "Không thể nhập tài liệu.");
+      toast.error(
+        cause instanceof Error ? cause.message : "Không thể nhập tài liệu.",
+      );
       return false;
     }
   };
@@ -391,16 +424,8 @@ export function TeacherKnowledgeNoteEditor({ noteId }: { noteId: number }) {
   const StateIcon = statePresentation.icon;
 
   return (
-    <TeacherKnowledgeNoteLayout
-      title={note.title}
-      description={
-        note.description || "Soạn nội dung bài lý thuyết và Quick Summary."
-      }
-    >
-      <section
-        className="bg-card"
-        aria-label="Trạng thái và hành động Editor"
-      >
+    <>
+      <section className="bg-card" aria-label="Trạng thái và hành động Editor">
         <div className="flex flex-wrap items-center border-2 border-ink shadow-pop rounded-lg mb-2 gap-3 px-3 py-2.5 sm:px-4">
           <Button type="button" variant="ghost" size="sm" onClick={handleBack}>
             <ArrowLeft /> Danh sách
@@ -416,18 +441,22 @@ export function TeacherKnowledgeNoteEditor({ noteId }: { noteId: number }) {
             Schema v2 · Chỉ lưu trong phiên
           </span>
           <div className="ml-auto flex flex-wrap gap-2">
-            <Button type="button" variant="outline" onClick={() => setImportOpen(true)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setImportOpen(true)}
+            >
               <FileJson2 /> Nhập / Xuất
-            </Button>
-            <Button type="button" variant="outline" disabled={readOnly}
-              onClick={() => setTemplatesOpen(true)}>
-              <LayoutTemplate /> Khối mẫu
             </Button>
             <Button
               type="button"
               variant="outline"
-              onClick={openPreview}
+              disabled={readOnly}
+              onClick={() => setTemplatesOpen(true)}
             >
+              <LayoutTemplate /> Khối mẫu
+            </Button>
+            <Button type="button" variant="outline" onClick={openPreview}>
               <Eye /> Xem trước
             </Button>
             <Button
@@ -456,7 +485,10 @@ export function TeacherKnowledgeNoteEditor({ noteId }: { noteId: number }) {
           className="min-w-0  border-2 border-ink shadow-pop rounded-lg bg-card"
           aria-label="Document editor"
         >
-          <KnowledgeNoteToolbar editor={editor} onOpenTemplates={() => setTemplatesOpen(true)} />
+          <KnowledgeNoteToolbar
+            editor={editor}
+            onOpenTemplates={() => setTemplatesOpen(true)}
+          />
           <div className="max-w-full overflow-x-auto">
             <EditorContent editor={editor} />
           </div>
@@ -514,9 +546,9 @@ export function TeacherKnowledgeNoteEditor({ noteId }: { noteId: number }) {
             </h2>
             <p className="mt-2">
               Dùng menu Thêm khối để chèn nội dung. Có thể gõ{" "}
-              <code>/formula</code>, <code>/example</code>,{" "}
-              <code>/note</code> hoặc <code>/mistake</code> rồi nhấn Space.
-              Bảng so sánh hỗ trợ thêm hàng và cột.
+              <code>/formula</code>, <code>/example</code>, <code>/note</code>{" "}
+              hoặc <code>/mistake</code> rồi nhấn Space. Bảng so sánh hỗ trợ
+              thêm hàng và cột.
             </p>
           </section>
         </aside>
@@ -567,7 +599,7 @@ export function TeacherKnowledgeNoteEditor({ noteId }: { noteId: number }) {
           ? "Bài đầy đủ đang trống."
           : "Bài đầy đủ có nội dung."}
       </span>
-    </TeacherKnowledgeNoteLayout>
+    </>
   );
 }
 
@@ -581,15 +613,12 @@ function EditorState({
   action?: React.ReactNode;
 }) {
   return (
-    <TeacherKnowledgeNoteLayout
-      title="Knowledge Notes"
-      description="Teacher Editor"
-    >
+    <>
       <div className="border border-dashed border-border bg-card p-8 text-center">
         <h2 className="font-extrabold">{title}</h2>
         <p className="mt-2 text-sm text-muted-foreground">{description}</p>
         {action ? <div className="mt-4">{action}</div> : null}
       </div>
-    </TeacherKnowledgeNoteLayout>
+    </>
   );
 }

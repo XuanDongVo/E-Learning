@@ -9,7 +9,7 @@ import {
   RotateCcw,
   Search,
 } from "lucide-react";
-
+import { TeacherPageHeader } from "@/components/features/teacher/shared/teacher-page-header";
 import { Link } from "@/i18n/navigation";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -36,7 +36,7 @@ import type {
 } from "@/types/knowledge-note";
 import { formatDateTime } from "@/utils/format";
 
-import { TeacherKnowledgeNoteLayout } from "./knowledge-note-layout";
+// import { TeacherKnowledgeNoteLayout } from "./knowledge-note-layout";
 import { TeacherKnowledgeNoteCreateDialog } from "./knowledge-note-create";
 import { TeacherListToolbar } from "@/components/features/teacher/shared/teacher-list-toolbar";
 
@@ -187,10 +187,14 @@ export function TeacherKnowledgeNoteManagement() {
   ];
 
   return (
-    <TeacherKnowledgeNoteLayout
-      title="Bài lý thuyết"
-      description="Quản lý học liệu độc lập, có thể dùng lại ở nhiều Topic."
-    >
+    <>
+
+ <TeacherPageHeader
+      title={"Bài lý thuyết"}
+      description={"Biên soạn, quản lý và chia sẻ kiến thức cho học sinh theo từng chuyên đề"}
+      pipoMood="wave"
+    />
+
       <TeacherListToolbar
         search={
         <form
@@ -462,6 +466,6 @@ export function TeacherKnowledgeNoteManagement() {
         open={createDialogOpen}
         onOpenChange={setCreateDialogOpen}
       />
-    </TeacherKnowledgeNoteLayout>
+    </>
   );
 }

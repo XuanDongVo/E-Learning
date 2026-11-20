@@ -29,8 +29,6 @@ export function KnowledgeNoteToolbar({ editor, onOpenTemplates }: {
   if (!editor) return <div className="h-12 border-b border-border bg-muted/30" />;
 
   const disabled = !editor.isEditable;
-  const inTable = editor.isActive("table");
-  const purpose = editor.getAttributes("table").purpose;
   const $from = editor.state.selection.$from;
   let selectedTable: ReturnType<typeof $from.node> | null = null;
   for (let depth = $from.depth; depth >= 1; depth--) {
@@ -39,6 +37,8 @@ export function KnowledgeNoteToolbar({ editor, onOpenTemplates }: {
       break;
     }
   }
+  const inTable = selectedTable !== null;
+  const purpose = selectedTable?.attrs.purpose;
   const rowCount = selectedTable?.childCount ?? 0;
   const columnCount = selectedTable ? TableMap.get(selectedTable).width : 0;
   const canAddRow = inTable && rowCount < 100 && editor.can().addRowAfter();
@@ -49,15 +49,36 @@ export function KnowledgeNoteToolbar({ editor, onOpenTemplates }: {
   };
   const insertBlock = (kind: KnowledgeLearningBlockKind) =>
     editor.chain().focus().insertContent(createLearningBlock(kind)).run();
-  const insertTable = (kind: "general" | "comparison") =>
-    editor.chain().focus().insertContent([createTable(kind), { type: "paragraph" }]).run();
+  const insertTable = (kind: "general" | "comparison") => {
+    if (!editor.chain().focus().insertContent([
+      createTable(kind),
+      { type: "paragraph" },
+    ]).run()) {
+      toast.error("Không thể chèn bảng.");
+      return;
+    }
+
+    let firstCellPosition: number | undefined;
+    const selectionPosition = editor.state.selection.from;
+    editor.state.doc.descendants((node, position) => {
+      if (position < selectionPosition &&
+          (node.type.name === "tableCell" || node.type.name === "tableHeader")) {
+        firstCellPosition = position + 2;
+      }
+      return true;
+    });
+    if (firstCellPosition !== undefined) {
+      editor.commands.setTextSelection(firstCellPosition);
+    }
+  };
 
   const setLink = () => {
     if (editor.isActive("link")) {
       editor.chain().focus().unsetLink().run();
       return;
     }
-    const href = window.prompt("Nhập liên kết HTTPS, HTTP hoặc email");
+    // const href = window.prompt("Nhập liên kết HTTPS, HTTP hoặc email");
+    const href = window.prompt("Chưa Triển khai");
     if (href === null) return;
     const safe = normalizeSafeHref(href);
     if (!safe) return;

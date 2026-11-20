@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ## 2026-11-20 — Shared Teacher list toolbar
 
 - Audited active Teacher list controls across routes and rendered feature components: 12 list toolbars found (2 standalone, 10 inline); 9 were suitable for a shared layout and 3 specialized analysis/subresource controls remain independent.
@@ -21,6 +22,13 @@
 - Added the Phase 02.2 TipTap client Editor, Learning Blocks, separately authored Quick Summary, in-memory preview and JSON export. No content-save API, publish behavior, Student route, Topic-link mutation or backend schema change was introduced.
 - Added TipTap 3 dependencies and schema-v1 contract documentation. TypeScript and focused Knowledge Note ESLint pass; all 29 frontend tests pass, including four new document-contract tests.
 - Full-repo ESLint still has one pre-existing Student Vocabulary purity error (`Date.now()` during render) plus existing warnings. The dev route returns HTTP 200, but Next production build is blocked by the execution host's SWC native-cache ownership restriction; browser/device review is pending because the Windows Computer Use native pipe was unavailable after the required retry.
+=======
+## 2026-11-19 — Knowledge Note Teacher Management UI 02.1
+- Connected the approved three Teacher APIs to real Management/Create/Metadata Detail UI. Created `/[noteId]` detail route; new route is now a Grade + title + description form instead of premature Word-like Editor.
+- Reused shared DataTable, pagination, StatusBadge, Breadcrumb, feedback states and Grade service. Enabled Teacher React Query hooks only; search/filter/page controls use actual backend parameters.
+- Linked Sổ tay kiến thức in Teacher Content sidebar. Content Editor/Publish/Topic Linking and all Student flows remain excluded and disconnected.
+- Source/tree inspected; frontend lint/build, API E2E and browser/mobile QA **not run**. QA checklist: docs/knowledge-note/TEACHER_MANAGEMENT_UI_02_1.md.
+>>>>>>> c6e0783e4ccd11d570c1b9692e8ab4abe2a29a9f
 
 ## 2026-11-19 — Knowledge Note Phase 01 narrowed by owner
 - Moved standalone module out of `content/knowledge` into `knowledge/` with Teacher-specific controller/service/dto request/response packages.

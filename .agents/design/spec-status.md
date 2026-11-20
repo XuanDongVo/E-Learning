@@ -18,7 +18,7 @@ This file is a drift register, not a historical audit. Accepted ADRs define inte
 | D-08 | Answer reveal is independent from score visibility | `show_answers_after_submit` and `show_score_after_submit` exist | Configuration implemented; AssessmentAttempt runtime not implemented |
 | D-09 | Activity lifecycle is server-enforced | Activity service enforces transition rules | Implemented |
 | D-10 | Topic formula/reference sheet deferred | No active implementation requirement | Implemented as deferral |
-| D-13 | Independent Knowledge Note, Phase 01 metadata API (ADR 0038/0039) | V66+V67 tables, two entity types, 3 Teacher metadata endpoints, common PageResponse, disconnected UI shells | Source implemented for 3 APIs; runtime verification pending; remaining functionality deferred |
+| D-13 | Independent Knowledge Note, Phase 01 metadata API and Teacher Management 02.1 (ADR 0038/0039) | Three Teacher endpoints and connected list/create/detail UI, shared PageResponse, Grade API, error/empty states | Source implemented; backend/frontend/browser validation pending; authoring and Student deferred |
 | D-11 | Question hint is optional | Hint exists and Activity Practice hint endpoint uses it | Implemented; full authoring round-trip still requires verification |
 | D-12 | No fabricated dashboard metrics | Dashboard work uses real/future data boundary | Implemented baseline |
 

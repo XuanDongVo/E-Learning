@@ -75,3 +75,27 @@ export interface KnowledgeNoteContent {
 export interface SaveKnowledgeNoteContentRequest {
   document: KnowledgeDocument;
 }
+
+/** Topic owns only these links; Note document remains in the shared library. */
+export interface TopicKnowledgeNoteLink {
+  noteId: number;
+  linkId: number;
+  gradeId: number;
+  title: string;
+  description: string | null;
+  status: KnowledgeNoteStatus;
+  primary: boolean;
+  displayOrder: number;
+}
+
+export interface KnowledgeNoteTopicUsage {
+  topicId: number;
+  topicName: string;
+  sectionId: number;
+  sectionName: string;
+  unitId: number;
+  unitName: string;
+  primary: boolean;
+  displayOrder: number;
+  topicStatus: "DRAFT" | "PUBLISHED" | "ARCHIVED";
+}

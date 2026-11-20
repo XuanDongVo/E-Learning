@@ -4,12 +4,9 @@ import type {
   KnowledgeLearningSectionRole,
 } from "@/types/knowledge-note";
 
-export const KNOWLEDGE_NOTE_SCHEMA_VERSION = 2 as const;
+export const KNOWLEDGE_NOTE_SCHEMA_VERSION = 3 as const;
 export const KNOWLEDGE_NOTE_FORMAT = "e-learning-knowledge-note" as const;
 export const EMPTY_KNOWLEDGE_DOCUMENT: KnowledgeDocument = {
-  type: "doc", content: [{ type: "paragraph" }],
-};
-export const EMPTY_KNOWLEDGE_SUMMARY: KnowledgeDocument = {
   type: "doc", content: [{ type: "paragraph" }],
 };
 export const LEARNING_BLOCK_LABELS: Record<KnowledgeLearningBlockKind, string> = {
@@ -44,7 +41,7 @@ export function createLearningSection(role: KnowledgeLearningSectionRole, paragr
 export function createLearningBlock(kind: KnowledgeLearningBlockKind, variant = "note"): KnowledgeDocumentNode {
   return {
     type: "learningBlock",
-    attrs: { kind, title: LEARNING_BLOCK_LABELS[kind], variant: kind === "callout" ? variant : "default" },
+    attrs: { id: crypto.randomUUID(), kind, title: LEARNING_BLOCK_LABELS[kind], variant: kind === "callout" ? variant : "default", isKeyPoint: false },
     content: blockRoles[kind].map(role => createLearningSection(role)),
   };
 }
@@ -53,7 +50,7 @@ export function createTable(purpose: "general" | "comparison", columns = 3, rows
   const count = Math.max(2, Math.min(100, Math.floor(rows)));
   return {
     type: "table",
-    attrs: { purpose },
+    attrs: { purpose, id: crypto.randomUUID(), isKeyPoint: false },
     content: Array.from({ length: count }, (_, row) => ({
       type: "tableRow",
       content: Array.from({ length: cols }, (_, col) => ({
@@ -68,12 +65,60 @@ export function createTable(purpose: "general" | "comparison", columns = 3, rows
     })),
   };
 }
-export function createEditorSnapshot(document: KnowledgeDocument, summary: KnowledgeDocument): KnowledgeNoteEditorSnapshot {
-  return { format: KNOWLEDGE_NOTE_FORMAT, schemaVersion: 2, document, summary };
+export function createEditorSnapshot(document: KnowledgeDocument): KnowledgeNoteEditorSnapshot {
+  return { format: KNOWLEDGE_NOTE_FORMAT, schemaVersion: 3, document };
 }
 export function createBlockSnapshot(content: KnowledgeDocumentNode[]): KnowledgeNoteBlockSnapshot {
-  return { format: "e-learning-knowledge-note-blocks", schemaVersion: 2, content };
+  return { format: "e-learning-knowledge-note-blocks", schemaVersion: 3, content };
 }
+
+/** Assign stable navigation IDs on load and fresh IDs on importing copied blocks. */
+export function ensureKnowledgeIds(input: KnowledgeDocument, regenerate = false): KnowledgeDocument {
+  const used = new Set<string>();
+  const visit = (node: KnowledgeDocumentNode): KnowledgeDocumentNode => {
+    const children = node.content?.map(visit);
+    const next: KnowledgeDocumentNode = { ...node, ...(children ? { content: children } : {}) };
+    if (["heading", "learningBlock", "table"].includes(node.type)) {
+      const attrs = { ...node.attrs };
+      const id = typeof attrs.id === "string" ? attrs.id : "";
+      if (regenerate || !/^[A-Za-z0-9_-]{1,100}$/.test(id) || used.has(id)) {
+        attrs.id = crypto.randomUUID();
+      }
+      used.add(String(attrs.id));
+      if (node.type === "learningBlock" || node.type === "table") attrs.isKeyPoint = attrs.isKeyPoint === true;
+      next.attrs = attrs;
+    }
+    return next;
+  };
+  return { type: "doc", content: input.content.map(visit) };
+}
+export interface KnowledgeOutlineItem { id: string; title: string; level: 2 | 3; }
+export interface KnowledgeKeyPoint { id: string; sectionId: string | null; title: string; node: KnowledgeDocumentNode; }
+
+export function extractKnowledgeNavigation(document: KnowledgeDocument) {
+  const outline: KnowledgeOutlineItem[] = [];
+  const keyPoints: KnowledgeKeyPoint[] = [];
+  let sectionId: string | null = null;
+  for (const node of document.content) {
+    const id = typeof node.attrs?.id === "string" ? node.attrs.id : "";
+    if (node.type === "heading") {
+      sectionId = id;
+      outline.push({
+        id, level: node.attrs?.level === 3 ? 3 : 2,
+        title: (node.content ?? []).map(item => item.text ?? "").join("").trim() || "Mục chưa có tên",
+      });
+    }
+    if (["learningBlock", "table"].includes(node.type) && node.attrs?.isKeyPoint === true) {
+      keyPoints.push({
+        id, sectionId, node,
+        title: typeof node.attrs?.title === "string" && node.attrs.title.trim()
+          ? node.attrs.title : node.type === "table" ? "Bảng kiến thức" : "Kiến thức trọng tâm",
+      });
+    }
+  }
+  return { outline, keyPoints };
+}
+
 export function normalizeSafeHref(value: string) {
   const trimmed = value.trim();
   if (!trimmed) return null;
@@ -163,8 +208,8 @@ function checkNode(value: unknown, path: string, summary: boolean, depth: number
   if (!allowed.has(node.type)) fail(path, `Loại node ${node.type} chưa được hỗ trợ.`);
   for (const k of Object.keys(node)) if (!["type", "text", "marks", "attrs", "content"].includes(k)) fail(path, `Trường không hỗ trợ: ${k}`);
   const allowedAttrs: Record<string, string[]> = {
-    heading: ["level"], learningBlock: ["kind","title","variant"], learningSection: ["role"],
-    table: ["purpose"], tableCell: ["colspan","rowspan","colwidth","align"], tableHeader: ["colspan","rowspan","colwidth","align"],
+    heading: ["level","id"], learningBlock: ["kind","title","variant","id","isKeyPoint"], learningSection: ["role"],
+    table: ["purpose","id","isKeyPoint"], tableCell: ["colspan","rowspan","colwidth","align"], tableHeader: ["colspan","rowspan","colwidth","align"],
     orderedList: ["start","type"], bulletList: ["type"],
   };
   if (node.attrs !== undefined) {
@@ -177,6 +222,10 @@ function checkNode(value: unknown, path: string, summary: boolean, depth: number
     if (node.text.length > 100000) fail(path, "Đoạn văn quá dài.");
   } else if (node.text !== undefined) fail(path, "Chỉ text node có trường text.");
   if (node.type === "heading" && ![2,3].includes(Number(node.attrs?.level))) fail(path, "Heading chỉ hỗ trợ H2/H3.");
+  if (["heading","learningBlock","table"].includes(node.type) && node.attrs?.id !== undefined &&
+      (typeof node.attrs.id !== "string" || !/^[A-Za-z0-9_-]{1,100}$/.test(node.attrs.id))) fail(path, "ID không hợp lệ.");
+  if (["learningBlock","table"].includes(node.type) && node.attrs?.isKeyPoint !== undefined &&
+      typeof node.attrs.isKeyPoint !== "boolean") fail(path, "isKeyPoint phải là boolean.");
   const validChildren: Record<string, string[]> = {
     paragraph: ["text","hardBreak"],
     heading: ["text","hardBreak"],
@@ -296,38 +345,53 @@ export function validateKnowledgeDocument(document: unknown, summary = false): a
     !["paragraph","bulletList","orderedList"].includes(node.type)
   )) throw new Error("Quick Summary chứa node không được hỗ trợ.");
 }
+/**
+ * Portable files keep a format version for legacy conversion.
+ * The backend content API and autosave do not use schemaVersion.
+ */
 export function parseKnowledgeImport(raw: string): KnowledgeNoteEditorSnapshot | KnowledgeNoteBlockSnapshot {
   if (new TextEncoder().encode(raw).length > 512 * 1024) throw new Error("JSON vượt quá giới hạn 512 KB.");
   let value: unknown;
   try { value = JSON.parse(raw); } catch { throw new Error("JSON không hợp lệ."); }
   if (!has(value)) throw new Error("JSON phải là object.");
-  if (value.schemaVersion === 2) {
-    const allowedEnvelope = value.format === "e-learning-knowledge-note-blocks"
-      ? ["format","schemaVersion","content"]
-      : ["format","schemaVersion","document","summary"];
-    if (Object.keys(value).some(k => !allowedEnvelope.includes(k))) {
-      throw new Error("File JSON chứa metadata hoặc trường chưa được hỗ trợ.");
-    }
-    if (value.format === "e-learning-knowledge-note-blocks") {
-      if (!Array.isArray(value.content)) throw new Error("Block content phải là danh sách.");
-      validateKnowledgeDocument({ type: "doc", content: value.content });
-      return { format: "e-learning-knowledge-note-blocks", schemaVersion: 2, content: value.content as KnowledgeDocumentNode[] };
-    }
-    if (value.format !== KNOWLEDGE_NOTE_FORMAT) throw new Error("Định dạng file v2 không được hỗ trợ.");
-    validateKnowledgeDocument(value.document);
-    validateKnowledgeDocument(value.summary,true);
-    return createEditorSnapshot(value.document, value.summary);
+  const version = Number(value.schemaVersion);
+  if (![1,2,3].includes(version)) throw new Error("Phiên bản file JSON không được hỗ trợ.");
+  if (value.format === "e-learning-knowledge-note-blocks") {
+    if (Object.keys(value).some(k => !["format","schemaVersion","content"].includes(k)) ||
+        !Array.isArray(value.content)) throw new Error("File khối không hợp lệ.");
+    const doc: KnowledgeDocument = { type:"doc", content: value.content as KnowledgeDocumentNode[] };
+    const migrated = version === 1 ? migrateV1Document(doc) : doc;
+    validateKnowledgeDocument(migrated);
+    return createBlockSnapshot(ensureKnowledgeIds(migrated, true).content);
   }
-  if (value.schemaVersion === 1) {
-    if (!has(value.document) || value.document.type !== "doc" || !Array.isArray(value.document.content) ||
-        !has(value.summary) || value.summary.type !== "doc" || !Array.isArray(value.summary.content)) {
-      throw new Error("Tài liệu v1 không có document/summary hợp lệ.");
+  if (version !== 1 && value.format !== KNOWLEDGE_NOTE_FORMAT)
+    throw new Error("Định dạng file Knowledge Note không hợp lệ.");
+  if (Object.keys(value).some(k => !["format","schemaVersion","document","summary"].includes(k)))
+    throw new Error("File JSON có trường chưa hỗ trợ.");
+  if (!has(value.document) || value.document.type !== "doc" || !Array.isArray(value.document.content))
+    throw new Error("Thiếu Document hợp lệ.");
+  let document: KnowledgeDocument = version === 1
+    ? migrateV1Document(value.document as unknown as KnowledgeDocument)
+    : value.document as unknown as KnowledgeDocument;
+  validateKnowledgeDocument(document);
+  if (version < 3) {
+    if (!has(value.summary) || value.summary.type !== "doc" || !Array.isArray(value.summary.content))
+      throw new Error("File cũ không có Quick Summary hợp lệ.");
+    const summary: KnowledgeDocument = version === 1
+      ? migrateV1Document(value.summary as unknown as KnowledgeDocument)
+      : value.summary as unknown as KnowledgeDocument;
+    validateKnowledgeDocument(summary, true);
+    if (!isDocumentEmpty(summary)) {
+      const block = createLearningBlock("callout","note");
+      block.attrs = { ...block.attrs, title: "Ghi chú từ Quick Summary cũ", isKeyPoint: true };
+      block.content = (block.content ?? []).map((section, i) =>
+        i === 0 ? { ...section, content: summary.content } : section);
+      document = { ...document, content: [...document.content, block] };
     }
-    const doc = migrateV1Document(value.document as unknown as KnowledgeDocument);
-    const summary = migrateV1Document(value.summary as unknown as KnowledgeDocument);
-    validateKnowledgeDocument(doc);
-    validateKnowledgeDocument(summary,true);
-    return createEditorSnapshot(doc,summary);
+  } else if (value.summary !== undefined) {
+    throw new Error("File mới không được có Quick Summary.");
   }
-  throw new Error("schemaVersion không được hỗ trợ. Chỉ nhận v1 hoặc v2.");
+  const normalized = ensureKnowledgeIds(document, true);
+  validateKnowledgeDocument(normalized);
+  return createEditorSnapshot(normalized);
 }

@@ -12,6 +12,7 @@ import e_learning.server.knowledge.repository.KnowledgeNoteRepository;
 import e_learning.server.knowledge.repository.KnowledgeNoteTopicLinkRepository;
 import e_learning.server.knowledge.teacher.dto.response.KnowledgeNoteTopicUsageResponse;
 import e_learning.server.knowledge.teacher.dto.response.TopicKnowledgeNoteLinkResponse;
+import e_learning.server.knowledge.teacher.validation.KnowledgeNoteContentValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,6 +28,7 @@ public class TeacherKnowledgeNoteLinkService {
     private final TopicRepository topicRepository;
     private final KnowledgeNoteRepository noteRepository;
     private final KnowledgeNoteTopicLinkRepository linkRepository;
+    private final KnowledgeNoteContentValidator contentValidator;
 
     @Transactional(readOnly = true)
     public List<TopicKnowledgeNoteLinkResponse> listForTopic(Long topicId) {
@@ -58,7 +60,7 @@ public class TeacherKnowledgeNoteLinkService {
 
     @Transactional
     public List<TopicKnowledgeNoteLinkResponse> link(Long topicId, Long noteId, boolean primary) {
-        Topic topic = findTopic(topicId);
+        Topic topic = findTopicForUpdate(topicId);
         if (topic.getStatus() == ContentStatus.ARCHIVED) {
             throw new AppException(ErrorCode.KNOWLEDGE_NOTE_LINK_INVALID,
                     "Không thể thay đổi liên kết của Topic đã lưu trữ.");
@@ -71,6 +73,11 @@ public class TeacherKnowledgeNoteLinkService {
         if (note.getStatus() != KnowledgeNoteStatus.PUBLISHED) {
             throw new AppException(ErrorCode.KNOWLEDGE_NOTE_LINK_INVALID,
                     "Chỉ có thể gắn bài lý thuyết đã công bố.");
+        }
+        if (primary && (!contentValidator.hasHeading(note.getDocumentJson())
+                || !contentValidator.hasKeyPoint(note.getDocumentJson()))) {
+            throw new AppException(ErrorCode.KNOWLEDGE_NOTE_LINK_INVALID,
+                    "Bài chính cần ít nhất một tiêu đề H2/H3 và một khối hoặc bảng trọng tâm.");
         }
         var links = linkRepository.findByTopicIdOrderByDisplayOrderAsc(topicId);
         KnowledgeNoteTopicLink target = links.stream()
@@ -104,7 +111,11 @@ public class TeacherKnowledgeNoteLinkService {
 
     @Transactional
     public List<TopicKnowledgeNoteLinkResponse> unlink(Long topicId, Long noteId) {
-        findTopic(topicId);
+        Topic topic = findTopicForUpdate(topicId);
+        if (topic.getStatus() == ContentStatus.ARCHIVED) {
+            throw new AppException(ErrorCode.KNOWLEDGE_NOTE_LINK_INVALID,
+                    "Không thể gỡ liên kết của Topic đã lưu trữ.");
+        }
         var link = linkRepository.findByTopicIdOrderByDisplayOrderAsc(topicId).stream()
                 .filter(item -> item.getNote().getId().equals(noteId)).findFirst()
                 .orElseThrow(() -> new AppException(ErrorCode.KNOWLEDGE_NOTE_LINK_NOT_FOUND));
@@ -115,7 +126,7 @@ public class TeacherKnowledgeNoteLinkService {
 
     @Transactional
     public List<TopicKnowledgeNoteLinkResponse> reorderSupplementary(Long topicId, List<Long> noteIds) {
-        Topic topic = findTopic(topicId);
+        Topic topic = findTopicForUpdate(topicId);
         if (topic.getStatus() == ContentStatus.ARCHIVED) {
             throw new AppException(ErrorCode.KNOWLEDGE_NOTE_LINK_INVALID,
                     "Không thể sắp xếp liên kết của Topic đã lưu trữ.");
@@ -139,6 +150,11 @@ public class TeacherKnowledgeNoteLinkService {
 
     private Topic findTopic(Long id) {
         return topicRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.TOPIC_NOT_FOUND));
+    }
+
+    private Topic findTopicForUpdate(Long id) {
+        return topicRepository.findByIdForUpdate(id)
                 .orElseThrow(() -> new AppException(ErrorCode.TOPIC_NOT_FOUND));
     }
 

@@ -50,7 +50,8 @@ import {
 // import { TeacherKnowledgeNoteLayout } from "./knowledge-note-layout";
 import {
   EMPTY_KNOWLEDGE_DOCUMENT,
-  EMPTY_KNOWLEDGE_SUMMARY,
+  ensureKnowledgeIds,
+  extractKnowledgeNavigation,
   isDocumentEmpty,
   validateKnowledgeDocument,
 } from "./knowledge-note-document";
@@ -67,9 +68,11 @@ import tableStyles from "./knowledge-note-table.module.css";
 import {
   KnowledgeImportExportDialog,
   type ImportMode,
-  type ImportTarget,
 } from "./knowledge-note-import-export";
 import { KnowledgeTemplateDialog } from "./knowledge-note-template-dialog";
+import { KnowledgeHeading } from "./knowledge-note-heading";
+import { KnowledgeNodeIds } from "./knowledge-note-node-ids";
+import { KnowledgeNoteStatusActions } from "./knowledge-note-status-actions";
 import { KnowledgeNoteToolbar } from "./knowledge-note-toolbar";
 
 export function TeacherKnowledgeNoteEditor({ noteId }: { noteId: number }) {
@@ -83,9 +86,6 @@ export function TeacherKnowledgeNoteEditor({ noteId }: { noteId: number }) {
   const hydratedRef = useRef(false);
   const [document, setDocument] = useState<KnowledgeDocument>(
     EMPTY_KNOWLEDGE_DOCUMENT,
-  );
-  const [summary, setSummary] = useState<KnowledgeDocument>(
-    EMPTY_KNOWLEDGE_SUMMARY,
   );
   const [importOpen, setImportOpen] = useState(false);
   const [templatesOpen, setTemplatesOpen] = useState(false);
@@ -101,7 +101,7 @@ export function TeacherKnowledgeNoteEditor({ noteId }: { noteId: number }) {
     immediatelyRender: false,
     extensions: [
       StarterKit.configure({
-        heading: { levels: [2, 3] },
+        heading: false,
         blockquote: false,
         code: false,
         codeBlock: false,
@@ -112,8 +112,10 @@ export function TeacherKnowledgeNoteEditor({ noteId }: { noteId: number }) {
         placeholder:
           "Bắt đầu soạn bài… Gõ /formula, /example, /note, /compare hoặc /mistake rồi nhấn Space để chèn nhanh.",
       }),
+      KnowledgeHeading,
       KnowledgeLearningBlock,
       KnowledgeLearningSection,
+      KnowledgeNodeIds,
       KnowledgeTableKit,
       KnowledgeTable,
       KnowledgeTableShortcuts,
@@ -137,67 +139,28 @@ export function TeacherKnowledgeNoteEditor({ noteId }: { noteId: number }) {
     },
   });
 
-  const summaryEditor = useEditor({
-    immediatelyRender: false,
-    extensions: [
-      StarterKit.configure({
-        heading: false,
-        blockquote: false,
-        codeBlock: false,
-        horizontalRule: false,
-        code: false,
-        strike: false,
-        underline: false,
-      }),
-      Placeholder.configure({
-        placeholder: "Tóm tắt 2–4 ý quan trọng học sinh cần nhớ…",
-      }),
-    ],
-    content: EMPTY_KNOWLEDGE_SUMMARY,
-    editable: !readOnly,
-    editorProps: {
-      attributes: {
-        class:
-          "min-h-36 px-3 py-3 text-sm leading-6 outline-none [&_p]:my-2 [&_ul]:ml-5 [&_ul]:list-disc [&_ol]:ml-5 [&_ol]:list-decimal empty:before:pointer-events-none empty:before:text-muted-foreground empty:before:content-[attr(data-placeholder)]",
-        "aria-label": "Quick Summary",
-      },
-    },
-    onUpdate: ({ editor: currentEditor }) => {
-      if (!hydratedRef.current) return;
-      const next = currentEditor.getJSON() as KnowledgeDocument;
-      setSummary(next);
-      autosave.updateSummary(next);
-    },
-  });
-
-  // Restore the persisted document without triggering a save during hydration.
+  // Load one persisted document; any missing stable IDs are filled without losing content.
   useEffect(() => {
-    if (!editor || !summaryEditor || !contentQuery.data) return;
-    const loaded = contentQuery.data;
-    if (loaded.schemaVersion !== 2) {
-      setLoadError("Bài học đang sử dụng schema cũ, cần chuyển sang v2 trước khi soạn thảo.");
-      return;
-    }
+    if (!editor || !contentQuery.data) return;
     try {
+      const loaded = contentQuery.data;
       validateKnowledgeDocument(loaded.document);
-      validateKnowledgeDocument(loaded.summary, true);
+      const normalized = ensureKnowledgeIds(loaded.document);
       hydratedRef.current = false;
-      editor.commands.setContent(loaded.document, { emitUpdate: false });
-      summaryEditor.commands.setContent(loaded.summary, { emitUpdate: false });
-      setDocument(loaded.document);
-      setSummary(loaded.summary);
+      editor.commands.setContent(normalized, { emitUpdate: false });
+      setDocument(normalized);
       autosave.reset(loaded);
       hydratedRef.current = true;
+      if (JSON.stringify(normalized) !== JSON.stringify(loaded.document)) {
+        autosave.updateDocument(normalized);
+      }
       setLoadError(null);
     } catch (cause) {
       setLoadError(cause instanceof Error ? cause.message : "Bản lưu không hợp lệ.");
     }
-  }, [editor, summaryEditor, contentQuery.data, autosave.reset]);
+  }, [editor, contentQuery.data, autosave.reset, autosave.updateDocument]);
 
-  useEffect(() => {
-    editor?.setEditable(!readOnly);
-    summaryEditor?.setEditable(!readOnly);
-  }, [editor, readOnly, summaryEditor]);
+  useEffect(() => { editor?.setEditable(!readOnly); }, [editor, readOnly]);
 
   useEffect(() => {
     const warnOnUnload = (event: BeforeUnloadEvent) => {
@@ -237,7 +200,7 @@ export function TeacherKnowledgeNoteEditor({ noteId }: { noteId: number }) {
   // No URL payload, localStorage, sessionStorage or backend content endpoint.
   useEffect(() => {
     latestPreviewRef.current = note
-      ? { title: note.title, description: note.description, document, summary }
+      ? { title: note.title, description: note.description, document }
       : null;
     const channel = previewChannelRef.current;
     const session = previewSessionRef.current;
@@ -249,7 +212,7 @@ export function TeacherKnowledgeNoteEditor({ noteId }: { noteId: number }) {
         payload: latestPreviewRef.current,
       });
     }
-  }, [note, noteId, document, summary]);
+  }, [note, noteId, document]);
 
   useEffect(
     () => () => {
@@ -387,58 +350,54 @@ export function TeacherKnowledgeNoteEditor({ noteId }: { noteId: number }) {
 
   const applyImport = (
     payload: KnowledgeNoteEditorSnapshot | KnowledgeNoteBlockSnapshot,
-    target: ImportTarget,
     mode: ImportMode,
   ): boolean => {
-    if (!editor || !summaryEditor || readOnly || !autosave.ready) return false;
-    // Both editors are updated only on an explicit, confirmed full replacement.
-    const applyTo = (
-      instance: NonNullable<typeof editor>,
-      incoming: KnowledgeDocument,
-      action: ImportMode,
-    ): boolean => {
-      if (action === "replace") {
-        instance.commands.setContent(incoming, { emitUpdate: true });
+    if (!editor || readOnly || !autosave.ready) return false;
+    const incoming: KnowledgeDocument = payload.format === "e-learning-knowledge-note-blocks"
+      ? { type: "doc", content: payload.content } : payload.document;
+    const normalized = ensureKnowledgeIds(incoming, mode !== "replace");
+    try {
+      if (mode === "replace") {
+        editor.commands.setContent(normalized, { emitUpdate: true });
         return true;
       }
-      if (!incoming.content.length) return true;
-      return action === "append"
-        ? instance
-            .chain()
-            .focus()
-            .insertContentAt(instance.state.doc.content.size, incoming.content)
-            .run()
-        : instance.chain().focus().insertContent(incoming.content).run();
-    };
-
-    const article =
-      payload.format === "e-learning-knowledge-note-blocks"
-        ? { type: "doc" as const, content: payload.content }
-        : payload.document;
-    const nextSummary =
-      payload.format === "e-learning-knowledge-note-blocks"
-        ? null
-        : payload.summary;
-
-    try {
-      if (target === "both") {
-        if (!nextSummary) return false;
-        const first = applyTo(editor, article, "replace");
-        const second = applyTo(summaryEditor, nextSummary, "replace");
-        return first && second;
-      }
-      const destination = target === "summary" ? summaryEditor : editor;
-      const next = target === "summary" ? nextSummary : article;
-      if (!next) return false;
-      const result = applyTo(destination, next, mode);
-      return result;
+      if (!normalized.content.length) return true;
+      return mode === "append"
+        ? editor.chain().focus().insertContentAt(editor.state.doc.content.size, normalized.content).run()
+        : editor.chain().focus().insertContent(normalized.content).run();
     } catch (cause) {
-      toast.error(
-        cause instanceof Error ? cause.message : "Không thể nhập tài liệu.",
-      );
+      toast.error(cause instanceof Error ? cause.message : "Không thể nhập nội dung.");
       return false;
     }
   };
+
+  const focusNode = (id: string) => {
+    if (!editor) return;
+    editor.state.doc.descendants((node, pos) => {
+      if (node.attrs.id !== id) return;
+      editor.chain().focus().setTextSelection(Math.min(pos + 1, editor.state.doc.content.size)).run();
+      return false;
+    });
+  };
+
+  const toggleSelectedTable = () => {
+    if (!editor || readOnly) return;
+    const { $from } = editor.state.selection;
+    for (let depth = $from.depth; depth > 0; depth--) {
+      const node = $from.node(depth);
+      if (node.type.name !== "table") continue;
+      const pos = $from.before(depth);
+      editor.view.dispatch(editor.state.tr.setNodeMarkup(
+        pos, undefined, { ...node.attrs, isKeyPoint: !node.attrs.isKeyPoint }));
+      return;
+    }
+  };
+
+  const navigation = extractKnowledgeNavigation(document);
+  const inTable = Boolean(editor?.state.selection.$from.parent
+    && editor.state.selection.$from.depth > 0
+    && Array.from({ length: editor.state.selection.$from.depth },
+      (_, i) => editor.state.selection.$from.node(i + 1).type.name).includes("table"));
 
   if (noteQuery.isPending) {
     return (
@@ -501,7 +460,7 @@ export function TeacherKnowledgeNoteEditor({ noteId }: { noteId: number }) {
             <StateIcon className="size-4" /> {statePresentation.label}
           </span>
           <span className="text-xs text-muted-foreground">
-            Schema v2 · Lưu trên server
+            Một bài lý thuyết · Lưu trên server
           </span>
           <div className="ml-auto flex flex-wrap gap-2">
             <Button
@@ -522,6 +481,7 @@ export function TeacherKnowledgeNoteEditor({ noteId }: { noteId: number }) {
             <Button type="button" variant="outline" onClick={openPreview}>
               <Eye /> Xem trước
             </Button>
+            <KnowledgeNoteStatusActions note={note} disabled={autosave.dirty || autosave.status === "saving"} />
             <Button
               type="button"
               disabled={readOnly || !autosave.ready || !autosave.dirty || autosave.status === "saving"}
@@ -564,15 +524,37 @@ export function TeacherKnowledgeNoteEditor({ noteId }: { noteId: number }) {
           className="space-y-5 xl:sticky xl:top-[5.5rem]"
           aria-label="Thiết lập bài lý thuyết"
         >
-          <section className=" border-2 border-ink shadow-pop rounded-lg bg-card p-4">
-            <h2 className="font-extrabold text-foreground">Quick Summary</h2>
+          <section className="border-2 border-ink shadow-pop rounded-lg bg-card p-4">
+            <h2 className="font-extrabold text-foreground">Cấu trúc bài học</h2>
             <p className="mt-1 text-xs leading-5 text-muted-foreground">
-              Biên soạn riêng, không tự cắt từ bài đầy đủ. Bắt buộc khi bài là
-              Primary của Topic.
+              Mục lục lấy từ H2/H3. Trọng tâm lấy từ Learning Block và bảng được đánh dấu.
             </p>
-            <div className="mt-3 border border-border bg-background">
-              <EditorContent editor={summaryEditor} />
+            <h3 className="mt-4 text-xs font-bold uppercase text-muted-foreground">Mục lục ({navigation.outline.length})</h3>
+            <div className="mt-2 space-y-1">
+              {navigation.outline.length === 0 ? (
+                <p className="text-xs text-muted-foreground">Thêm tiêu đề H2/H3 để tạo mục lục.</p>
+              ) : navigation.outline.map(item => (
+                <button key={item.id} type="button" onClick={() => focusNode(item.id)}
+                  className={`block w-full truncate rounded-md px-2 py-1.5 text-left text-xs hover:bg-muted ${item.level === 3 ? "pl-5" : "font-semibold"}`}>
+                  {item.title}
+                </button>
+              ))}
             </div>
+            <h3 className="mt-4 text-xs font-bold uppercase text-muted-foreground">Trọng tâm ({navigation.keyPoints.length})</h3>
+            <div className="mt-2 space-y-1">
+              {navigation.keyPoints.length === 0 ? (
+                <p className="text-xs text-muted-foreground">Dùng biểu tượng Bookmark trên Learning Block hoặc đánh dấu bảng.</p>
+              ) : navigation.keyPoints.map(item => (
+                <button key={item.id} type="button" onClick={() => focusNode(item.id)}
+                  className="block w-full truncate rounded-md px-2 py-1.5 text-left text-xs hover:bg-muted">
+                  ★ {item.title}
+                </button>
+              ))}
+            </div>
+            <Button type="button" size="sm" variant="outline" className="mt-4 w-full"
+              disabled={!inTable || readOnly} onClick={toggleSelectedTable}>
+              Đánh dấu / bỏ trọng tâm cho bảng đang chọn
+            </Button>
           </section>
 
           <section className=" border-2 border-ink shadow-pop rounded-lg bg-card p-4 text-sm">
@@ -624,7 +606,6 @@ export function TeacherKnowledgeNoteEditor({ noteId }: { noteId: number }) {
         open={importOpen}
         onOpenChange={setImportOpen}
         document={document}
-        summary={summary}
         disabled={readOnly}
         selectedBlock={getSelectedBlock}
         onApply={applyImport}

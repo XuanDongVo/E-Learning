@@ -29,8 +29,8 @@ function RenderNode({ node, compact }: { node: KnowledgeDocumentNode; compact: b
       return <p className="whitespace-pre-wrap">{children?.length ? children : "\u00a0"}</p>;
     case "heading":
       return Number(node.attrs?.level) === 3
-        ? <h3 className="pt-2 text-lg font-bold text-foreground">{children}</h3>
-        : <h2 className="pt-3 text-xl font-extrabold text-foreground sm:text-2xl">{children}</h2>;
+        ? <h3 id={typeof node.attrs?.id === "string" ? node.attrs.id : undefined} className="pt-2 text-lg font-bold text-foreground">{children}</h3>
+        : <h2 id={typeof node.attrs?.id === "string" ? node.attrs.id : undefined} className="pt-3 text-xl font-extrabold text-foreground sm:text-2xl">{children}</h2>;
     case "bulletList":
       return <ul className="ml-5 list-disc space-y-1">{children}</ul>;
     case "orderedList":
@@ -41,7 +41,7 @@ function RenderNode({ node, compact }: { node: KnowledgeDocumentNode; compact: b
       return <hr className="my-6 border-border" />;
     case "table":
       return (
-        <div className="max-w-full overflow-x-auto rounded-md border border-border" role="region"
+        <div id={typeof node.attrs?.id === "string" ? node.attrs.id : undefined} className="max-w-full overflow-x-auto rounded-md border border-border" role="region"
           aria-label={node.attrs?.purpose === "comparison" ? "Bảng so sánh" : "Bảng nội dung"} tabIndex={0}>
           <table className="min-w-max w-full border-collapse text-left text-sm">
             <tbody>{children}</tbody>
@@ -68,7 +68,7 @@ function RenderNode({ node, compact }: { node: KnowledgeDocumentNode; compact: b
           kind === "commonMistake" || variant === "warning"
             ? "border-destructive bg-destructive/5"
             : "border-primary bg-primary/5",
-        ].join(" ")} data-learning-kind={kind}>
+        ].join(" ")} data-learning-kind={kind} id={typeof node.attrs?.id === "string" ? node.attrs.id : undefined}>
           <p className="mb-3 text-base font-extrabold text-foreground">{title}</p>
           <div className="space-y-3">{children}</div>
         </aside>

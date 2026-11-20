@@ -7,6 +7,7 @@ import { useTeacherKnowledgeNote } from "@/hooks/knowledge-note/use-teacher-know
 import { formatDateTime } from "@/utils/format";
 // import { TeacherKnowledgeNoteLayout } from "./knowledge-note-layout";
 import { cn } from "@/lib/utils";
+import { KnowledgeNoteStatusActions } from "./knowledge-note-status-actions";
 
 export function TeacherKnowledgeNoteDetail({ noteId }: { noteId: number }) {
   const noteQuery = useTeacherKnowledgeNote(noteId);
@@ -45,6 +46,7 @@ export function TeacherKnowledgeNoteDetail({ noteId }: { noteId: number }) {
         >
           <Pencil /> Mở Editor
         </Link>
+        <KnowledgeNoteStatusActions note={note} />
       </div>
       <dl
         className="grid border border-border bg-card sm:grid-cols-2 lg:grid-cols-4"
@@ -64,7 +66,7 @@ export function TeacherKnowledgeNoteDetail({ noteId }: { noteId: number }) {
       <div className="border border-dashed border-border bg-card p-7 text-center">
         <h2 className="font-extrabold">Nội dung được lưu trên server</h2>
         <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-muted-foreground">
-          Mở Editor để biên soạn bài lý thuyết và Quick Summary.
+          Mở Editor để biên soạn bài đầy đủ và đánh dấu các khối kiến thức trọng tâm.
           Bản nháp được lưu tự động; bài đã công bố chỉ đọc cho đến khi gỡ công bố.
         </p>
         <Link

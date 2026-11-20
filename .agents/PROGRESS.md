@@ -1,3 +1,11 @@
+## 2026-11-20 — Knowledge Note Phase 02.6 (Teacher Topic linking)
+
+- Reused the existing KnowledgeNote ↔ Topic relation and partial Primary unique index (V66); no DB schema change.
+- Added Teacher GET/POST/DELETE/PUT linking endpoints, reverse Topic-usage listing, Grade/Published/Primary-content validation, archived-Topic guards and serialized Topic-row writes.
+- Integrated a Radix "Kiến thức / Lý thuyết" tab in Teacher Topic Detail with published/same-Grade picker, Primary replacement, Supplementary ordering, unlink confirmation and error handling. The former Question Bank view remains in the "Ngân hàng câu hỏi" tab.
+- Added a linked-Topic section to Teacher Knowledge Note Detail. Teacher card/dialog frames use `border-2 border-ink shadow-pop` as requested.
+- Added link-service focused tests and docs/knowledge-note/PHASE_02_6_TOPIC_LINKING.md. **No Maven/npm/TypeScript, browser, database or migration tests were run in this connector-only session.** Phase 03 Student reader and Dialog remain deferred.
+
 ## 2026-11-20 — Knowledge Note Phase 02.4 + 02.5 (single Document and publication lifecycle)
 
 - Implemented V69 with archival legacy backup, meaningful Summary-to-keypoint-callout conversion, guard against unsafe nonempty v1 data and retirement of active summary_json/schema_version columns. No V66–V68 edits.

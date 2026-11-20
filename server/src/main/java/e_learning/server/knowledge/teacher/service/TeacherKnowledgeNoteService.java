@@ -9,6 +9,9 @@ import e_learning.server.knowledge.enums.KnowledgeNoteStatus;
 import e_learning.server.knowledge.repository.KnowledgeNoteRepository;
 import e_learning.server.knowledge.repository.KnowledgeNoteTopicLinkRepository;
 import e_learning.server.knowledge.teacher.dto.request.CreateKnowledgeNoteRequest;
+import e_learning.server.knowledge.teacher.dto.request.SaveKnowledgeNoteContentRequest;
+import e_learning.server.knowledge.teacher.dto.response.KnowledgeNoteContentResponse;
+import e_learning.server.knowledge.teacher.validation.KnowledgeNoteContentValidator;
 import e_learning.server.knowledge.teacher.dto.response.KnowledgeNoteResponse;
 import e_learning.server.knowledge.teacher.mapper.KnowledgeNoteMapper;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +31,7 @@ public class TeacherKnowledgeNoteService {
     private final KnowledgeNoteTopicLinkRepository linkRepository;
     private final GradeRepository gradeRepository;
     private final KnowledgeNoteMapper mapper;
+    private final KnowledgeNoteContentValidator contentValidator;
 
     @Transactional
     public KnowledgeNoteResponse create(CreateKnowledgeNoteRequest request) {
@@ -39,9 +43,9 @@ public class TeacherKnowledgeNoteService {
         note.setTitle(request.title().trim());
         note.setDescription(normalizeDescription(request.description()));
         note.setStatus(KnowledgeNoteStatus.DRAFT);
-        note.setDocumentJson(Map.of(
-                "type", "doc",
-                "content", List.of()));
+        note.setDocumentJson(Map.of("type", "doc", "content", List.of()));
+        note.setSummaryJson(Map.of("type", "doc", "content", List.of()));
+        note.setSchemaVersion(2);
         return mapper.toResponse(noteRepository.save(note), 0);
     }
 
@@ -86,6 +90,44 @@ public class TeacherKnowledgeNoteService {
                 .map(note -> mapper.toResponse(note, linkRepository.countByNoteId(note.getId())))
                 .toList();
         return PageResponse.from(result, mapped);
+    }
+
+
+    @Transactional(readOnly = true)
+    public KnowledgeNoteContentResponse getContent(Long id) {
+        KnowledgeNote note = noteRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.KNOWLEDGE_NOTE_NOT_FOUND));
+        return toContentResponse(note);
+    }
+
+    @Transactional
+    public KnowledgeNoteContentResponse saveContent(Long id, SaveKnowledgeNoteContentRequest request) {
+        KnowledgeNote note = noteRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.KNOWLEDGE_NOTE_NOT_FOUND));
+        if (note.getStatus() != KnowledgeNoteStatus.DRAFT
+                && note.getStatus() != KnowledgeNoteStatus.UNPUBLISHED) {
+            throw new AppException(ErrorCode.KNOWLEDGE_NOTE_NOT_EDITABLE);
+        }
+        if (request.schemaVersion() == null || request.schemaVersion() != 2) {
+            throw new AppException(ErrorCode.KNOWLEDGE_NOTE_CONTENT_INVALID,
+                    "Chỉ hỗ trợ Knowledge Note schema v2.");
+        }
+        contentValidator.validate(request.document(), request.summary());
+        note.setDocumentJson(request.document());
+        note.setSummaryJson(request.summary());
+        note.setSchemaVersion(2);
+        // saveAndFlush makes the @PreUpdate timestamp available in the response.
+        noteRepository.saveAndFlush(note);
+        return toContentResponse(note);
+    }
+
+    private static KnowledgeNoteContentResponse toContentResponse(KnowledgeNote note) {
+        Map<String, Object> summary = note.getSummaryJson() != null
+                ? note.getSummaryJson()
+                : Map.of("type", "doc", "content", List.of());
+        return new KnowledgeNoteContentResponse(
+                note.getId(), note.getSchemaVersion(),
+                note.getDocumentJson(), summary, note.getUpdatedAt());
     }
 
     private static String normalizeDescription(String value) {

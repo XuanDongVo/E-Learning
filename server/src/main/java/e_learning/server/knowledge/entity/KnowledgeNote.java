@@ -13,7 +13,7 @@ import java.util.Map;
 
 /**
  * One Note = one current document. No Draft/Revision table in MVP.
- * Editing a PUBLISHED Note changes the content that Student can read.
+ * Content can be saved only while DRAFT or UNPUBLISHED.
  */
 @Entity
 @Table(name = "knowledge_notes")
@@ -43,18 +43,12 @@ public class KnowledgeNote {
     @Column(name = "schema_version", nullable = false)
     private Integer schemaVersion = 1;
 
-    @Column(name = "edit_version", nullable = false)
-    private Long editVersion = 0L;
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private KnowledgeNoteStatus status = KnowledgeNoteStatus.DRAFT;
 
     @Column(name = "created_by")
     private Long createdBy;
-
-    @Column(name = "updated_by")
-    private Long updatedBy;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;

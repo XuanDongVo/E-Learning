@@ -1,3 +1,5 @@
+> **Superseded as of 2026-11-20 by [FRS v3.3](./Knowledge_Note_FRS_v3.3.md) and ADR 0041.** Historical Summary and version clauses no longer reflect the active Content API.
+
 # Knowledge Note — SRS v3.2 (Simple MVP)
 Status: Approved simplification; scaffold only (not implemented)
 Date: 2026-11-19

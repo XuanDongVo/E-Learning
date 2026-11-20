@@ -1,3 +1,5 @@
+> **Superseded as of 2026-11-20 by [FRS v3.3](./Knowledge_Note_FRS_v3.3.md) and ADR 0041.** Summary, schema-version storage and published-direct-save provisions below are historical, not current implementation requirements.
+
 > **Implementation scope update — ADR 0039:** FRS v3.2 below describes the future end-state. The ONLY approved Phase 01 endpoints are POST and GET `/v1/teacher/knowledge-notes` and GET `/v1/teacher/knowledge-notes/{id}`. All other operations remain unapproved/deferred pending client UI design. See [PHASE_01_APPROVED.md](./PHASE_01_APPROVED.md). Teacher routes use `/v1/teacher`, not `/v1/content`. Use existing `common.dto.PageResponse<T>`.
 
 # Knowledge Note — FRS v3.2 (Simple MVP)

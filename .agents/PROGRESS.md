@@ -1,3 +1,13 @@
+## 2026-11-20 — Knowledge Note Phase 02.4 + 02.5 (single Document and publication lifecycle)
+
+- Implemented V69 with archival legacy backup, meaningful Summary-to-keypoint-callout conversion, guard against unsafe nonempty v1 data and retirement of active summary_json/schema_version columns. No V66–V68 edits.
+- Teacher Content GET/PUT now transports only Document. JSON validator supports stable IDs and isKeyPoint on H2/H3/Learning Block/Table and rejects unsafe fields/links/merged table structures.
+- Teacher Editor now uses a single Tiptap document with stable IDs, live outline/marked key-point sidebar, per-table toggle, revised Import/Export of v3 files with explicit legacy v1/v2 conversion, serialized/no-op-suppressed autosave.
+- Teacher Preview now shows full article or mock two-tab outline/key-points Dialog from the same document; Student APIs remain deferred.
+- Added Publish/Unpublish/Archive routes and confirmation actions; publishing requires nonempty content and (if Primary) Heading plus marked block. Published/Archived edits are denied on server.
+- Added/updated focused Java and Vitest tests and ADR 0041/FRS v3.3. **GitHub connector cannot execute Maven/npm or a browser; build/tests/migration not run. Verify before deployment.**
+- Phase 02.6 Topic linking and Phase 03 Student Library/Topic Dialog remain pending.
+
 ## 2026-11-20 — Knowledge Note TableKit (client-only)
 
 - Switched bespoke ProseMirror table nodes to official Tiptap 3 TableKit with extended

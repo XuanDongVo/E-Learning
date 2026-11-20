@@ -73,8 +73,8 @@ class StudentKnowledgeNoteServiceTest {
                 .thenReturn(new PageImpl<>(List.of(note)));
         when(links.findByNoteId(10L)).thenReturn(List.of());
         var page = service.list(7L, null, null, null, 1, 12);
-        assertEquals(1, page.items().size());
-        assertTrue(page.items().getFirst().units().isEmpty());
+        assertEquals(1, page.getItems().size());
+        assertTrue(page.getItems().getFirst().units().isEmpty());
     }
 
     @Test

@@ -94,7 +94,7 @@ export function StudentNavbar() {
 
           {/* Desktop nav */}
           <nav
-            className="hidden flex-1 items-center justify-center gap-0.5 lg:flex"
+            className="hidden flex-1 items-center justify-center gap-0.5 xl:flex"
             aria-label="Student navigation"
           >
             {NAV_ITEMS.map((item) => {
@@ -120,7 +120,7 @@ export function StudentNavbar() {
           </nav>
 
           {/* Desktop user */}
-          <div className="ml-auto hidden items-center gap-2 lg:flex">
+          <div className="ml-auto hidden items-center gap-2 xl:flex">
             <Link
               href="/student/profile"
               className="flex items-center gap-2.5 rounded-full py-1 pl-1 pr-3 transition-colors hover:bg-background-app"
@@ -156,7 +156,7 @@ export function StudentNavbar() {
             aria-label="Open menu"
             aria-expanded={open}
             aria-controls="student-mobile-menu"
-            className="ml-auto flex h-11 w-11 items-center justify-center rounded-xl border border-border-color text-neutral-dark transition hover:bg-background-app lg:hidden"
+            className="ml-auto flex h-11 w-11 items-center justify-center rounded-xl border border-border-color text-neutral-dark transition hover:bg-background-app xl:hidden"
           >
             <Menu className="h-5 w-5" />
           </button>

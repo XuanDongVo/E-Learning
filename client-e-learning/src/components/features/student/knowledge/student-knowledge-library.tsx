@@ -89,6 +89,8 @@ export function StudentKnowledgeLibrary() {
           <span className="student-chip bg-card"><Sparkles className="size-3.5" aria-hidden="true" /> Học theo cách của bạn</span>
           <span className="student-chip bg-card"><BookOpenText className="size-3.5" aria-hidden="true" /> Công thức · Ví dụ · Ghi chú</span>
         </div>
+        <StudentIllustration id="scene.open-notebook" decorative
+          className="mx-auto mt-3 h-28 w-auto sm:hidden" />
       </PaperSurface>
 
       <PaperSurface as="section" variant="plain" className="space-y-4 p-4 sm:p-5">

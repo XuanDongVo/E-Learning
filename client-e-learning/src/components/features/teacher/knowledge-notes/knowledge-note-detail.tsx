@@ -62,11 +62,10 @@ export function TeacherKnowledgeNoteDetail({ noteId }: { noteId: number }) {
         />
       </dl>
       <div className="border border-dashed border-border bg-card p-7 text-center">
-        <h2 className="font-extrabold">Nội dung chưa có API đọc</h2>
+        <h2 className="font-extrabold">Nội dung được lưu trên server</h2>
         <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-muted-foreground">
-          Phase 02.2 cho phép thiết kế nội dung trong phiên Editor và xem trước
-          bằng state client. Nội dung này chưa được tải hoặc lưu từ server cho
-          đến Phase 02.3.
+          Mở Editor để biên soạn bài lý thuyết và Quick Summary.
+          Bản nháp được lưu tự động; bài đã công bố chỉ đọc cho đến khi gỡ công bố.
         </p>
         <Link
           href={`/teacher/knowledge-notes/${note.id}/edit`}

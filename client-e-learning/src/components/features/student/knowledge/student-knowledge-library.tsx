@@ -20,6 +20,7 @@ export function StudentKnowledgeLibrary() {
   const [input, setInput] = useState("");
   const [search, setSearch] = useState("");
   const [unitId, setUnitId] = useState("");
+  const [topicId, setTopicId] = useState("");
   const [page, setPage] = useState(1);
 
   useEffect(() => {
@@ -34,16 +35,23 @@ export function StudentKnowledgeLibrary() {
     queryKey: ["student", "knowledge-notes", "visible-units"],
     queryFn: async () => (await studentUnitService.list()).data ?? [],
   });
+  const unitDetailQuery = useQuery({
+    queryKey: ["student", "knowledge-notes", "unit-topics", unitId],
+    queryFn: async () => (await studentUnitService.getUnitDetail(Number(unitId))).data,
+    enabled: Boolean(unitId),
+  });
+  const visibleTopics = (unitDetailQuery.data?.sections ?? []).flatMap(section => section.topics);
   const notesQuery = useQuery({
-    queryKey: ["student", "knowledge-notes", "library", search, unitId, page],
+    queryKey: ["student", "knowledge-notes", "library", search, unitId, topicId, page],
     queryFn: async () => (await studentKnowledgeNoteService.list({
       search: search || undefined, unitId: unitId ? Number(unitId) : undefined,
+      topicId: topicId ? Number(topicId) : undefined,
       page, size: PAGE_SIZE,
     })).data,
   });
 
   const notes = notesQuery.data?.items ?? [];
-  const hasFilters = Boolean(search || unitId);
+  const hasFilters = Boolean(search || unitId || topicId);
   const total = notesQuery.data?.totalElements ?? 0;
   const pages = notesQuery.data?.totalPages ?? 1;
 
@@ -51,6 +59,7 @@ export function StudentKnowledgeLibrary() {
     setInput("");
     setSearch("");
     setUnitId("");
+    setTopicId("");
     setPage(1);
   };
 
@@ -92,7 +101,7 @@ export function StudentKnowledgeLibrary() {
           </div>
           <StudentDoodle id="doodle.bookmark-note" className="pointer-events-none hidden h-16 w-auto rotate-[8deg] sm:block" />
         </div>
-        <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(180px,240px)]">
+        <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_minmax(160px,220px)_minmax(160px,220px)]">
           <label className="block space-y-1.5">
             <span className="student-label">Tìm theo tên hoặc mô tả</span>
             <span className="relative block">
@@ -105,7 +114,7 @@ export function StudentKnowledgeLibrary() {
           <label className="block space-y-1.5">
             <span className="student-label">Theo bài học (Unit)</span>
             <select aria-label="Lọc theo Unit" value={unitId}
-              onChange={event => { setUnitId(event.target.value); setPage(1); }}
+              onChange={event => { setUnitId(event.target.value); setTopicId(""); setPage(1); }}
               disabled={unitsQuery.isPending || unitsQuery.isError}
               className="student-control w-full px-3">
               <option value="">Tất cả học liệu</option>
@@ -114,7 +123,24 @@ export function StudentKnowledgeLibrary() {
               ))}
             </select>
           </label>
+          <label className="block space-y-1.5">
+            <span className="student-label">Theo chuyên đề (Topic)</span>
+            <select aria-label="Lọc theo Topic" value={topicId}
+              onChange={event => { setTopicId(event.target.value); setPage(1); }}
+              disabled={!unitId || unitDetailQuery.isPending || unitDetailQuery.isError || visibleTopics.length === 0}
+              className="student-control w-full px-3">
+              <option value="">Tất cả Topic</option>
+              {visibleTopics.map(topic => <option key={topic.id} value={topic.id}>{topic.name}</option>)}
+            </select>
+          </label>
         </div>
+        {unitDetailQuery.isError && unitId && (
+          <p role="status" className="text-sm text-destructive">
+            Không thể tải Topic của Unit này.
+            <button type="button" className="ml-2 font-bold underline"
+              onClick={() => void unitDetailQuery.refetch()}>Thử lại</button>
+          </p>
+        )}
         {unitsQuery.isError && (
           <p role="status" className="text-sm text-destructive">
             Không thể tải danh sách Unit.

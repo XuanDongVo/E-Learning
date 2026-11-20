@@ -25,6 +25,7 @@ export interface StudentKnowledgePage {
 export type StudentKnowledgeFilters = {
   search?: string;
   unitId?: number;
+  topicId?: number;
   page?: number;
   size?: number;
 };

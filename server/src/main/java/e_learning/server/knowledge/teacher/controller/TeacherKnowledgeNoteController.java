@@ -1,8 +1,8 @@
 package e_learning.server.knowledge.teacher.controller;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.core.type.TypeReference;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 import e_learning.server.common.dto.PageResponse;
 import e_learning.server.common.exception.AppException;
 import e_learning.server.common.exception.ErrorCode;
@@ -18,6 +18,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/v1/teacher/knowledge-notes")
@@ -65,7 +67,7 @@ public class TeacherKnowledgeNoteController {
                     "Yêu cầu chỉ được chứa trường document. Hãy tải lại Editor phiên bản mới.");
         }
         var document = objectMapper.convertValue(payload.get("document"),
-                new TypeReference<java.util.Map<String, Object>>() {});
+                new TypeReference<Map<String, Object>>() {});
         return ResponseEntity.ok(ApiResponse.success(
                 service.saveContent(id, new SaveKnowledgeNoteContentRequest(document))));
     }

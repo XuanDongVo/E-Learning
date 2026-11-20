@@ -1,8 +1,8 @@
 package e_learning.server.knowledge.teacher.validation;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 import e_learning.server.common.exception.AppException;
 import e_learning.server.common.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
@@ -61,7 +61,7 @@ public class KnowledgeNoteContentValidator {
             if (mapper.writeValueAsBytes(document).length > MAX_BYTES) {
                 fail("Nội dung vượt quá giới hạn 512 KB.");
             }
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             fail("Không thể đọc JSON của bài học.");
         }
         int[] count = {0};

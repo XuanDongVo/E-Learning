@@ -33,7 +33,7 @@ export function GameSelectModal({ unit, isOpen, onClose }: GameSelectModalProps)
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && close()}>
       <DialogContent
-        className="w-[95vw] sm:w-[90vw] max-w-[820px] max-h-[90vh] overflow-y-auto p-4 sm:p-6 md:p-8 rounded-3xl border-2 border-ink/25 bg-card shadow-pop notranslate"
+        className="w-[95vw] sm:w-[92vw] sm:max-w-[800px] max-h-[90vh] overflow-y-auto p-5 sm:p-7 md:p-8 rounded-3xl border-2 border-ink/25 bg-card shadow-pop notranslate"
         translate="no"
       >
         <DialogHeader className="space-y-1.5 pb-3 border-b border-ink/10">
@@ -108,11 +108,11 @@ export function GameSelectModal({ unit, isOpen, onClose }: GameSelectModalProps)
                   <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-amber-500/15 border-2 border-amber-500/30 text-amber-600 shadow-xs">
                     <Rocket className="h-6 w-6" />
                   </div>
-                  <div>
+                  <div className="min-w-0 flex-1">
                     <h3 className="text-base sm:text-lg font-black text-foreground leading-tight">
                       Chiến hạm Bắn từ
                     </h3>
-                    <span className="text-xs font-bold text-amber-600 dark:text-amber-400">
+                    <span className="block text-xs font-bold text-amber-600 dark:text-amber-400">
                       Bubble Pop • Phản xạ nhanh
                     </span>
                   </div>
@@ -151,11 +151,11 @@ export function GameSelectModal({ unit, isOpen, onClose }: GameSelectModalProps)
                   <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-sky-500/15 border-2 border-sky-500/30 text-sky-600 shadow-xs">
                     <CloudRain className="h-6 w-6" />
                   </div>
-                  <div>
+                  <div className="min-w-0 flex-1">
                     <h3 className="text-base sm:text-lg font-black text-foreground leading-tight">
                       Cơn mưa Từ vựng
                     </h3>
-                    <span className="text-xs font-bold text-sky-600 dark:text-sky-400">
+                    <span className="block text-xs font-bold text-sky-600 dark:text-sky-400">
                       Word Rain • Rèn chính tả
                     </span>
                   </div>

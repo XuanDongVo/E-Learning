@@ -1,7 +1,7 @@
-import { NotebookPen } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { PaperSurface } from "@/components/student-ui/paper-surface";
 import { ScrapbookHeading } from "@/components/student-ui/scrapbook-heading";
+import { StudentIllustration } from "@/components/student-ui/visuals/student-illustration";
 
 interface AssignmentEmptyStateProps {
   onClearFilters: () => void;
@@ -14,7 +14,11 @@ export function AssignmentEmptyState({ onClearFilters, canClear, hasSearch }: As
 
   return (
     <PaperSurface as="section" variant="lined" className="student-assignment-empty flex flex-col items-center gap-3 p-7 text-center sm:p-10">
-      <NotebookPen size={33} className="text-primary" aria-hidden="true" />
+      <StudentIllustration
+        id={hasSearch ? "illustration.no-results" : "illustration.no-lessons"}
+        decorative
+        className="mx-auto w-32 sm:w-40"
+      />
       <ScrapbookHeading as="h2" className="student-section-title text-foreground">
         {t("emptyTitle")}
       </ScrapbookHeading>

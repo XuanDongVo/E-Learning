@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowRight, BookOpen, ClipboardList, RefreshCw, Star } from "lucide-react";
 import { Link } from "@/i18n/navigation";
@@ -8,6 +9,7 @@ import { StudentButton } from "@/components/student-ui/student-button";
 import { StudentCollectionEmptyState } from "@/components/student-ui/patterns/student-collection-empty-state";
 import { Pipo } from "@/components/ui/mascot";
 import { StudentIllustration } from "@/components/student-ui/visuals/student-illustration";
+import { StudentDoodle } from "@/components/student-ui/visuals/student-doodle";
 import { PaperSurface } from "@/components/student-ui/paper-surface";
 import { PolaroidFrame } from "@/components/student-ui/polaroid-frame";
 import { ScrapbookHeading } from "@/components/student-ui/scrapbook-heading";
@@ -15,6 +17,7 @@ import { QUERY_KEYS } from "@/services/query-keys";
 import { studentUnitService } from "@/services/student/student-unit.service";
 import { StudentStreakOverview } from "@/features/student/gamification/student-streak-overview";
 import { SkeletonList } from "@/components/ui/skeleton/skeleton-list";
+import { getVocabularyTopicVisual } from "@/components/features/student/units/unit-cover";
 
 export function LearningHubHome() {
   const { data, isLoading, isError, refetch } = useQuery({
@@ -35,9 +38,15 @@ export function LearningHubHome() {
             <Star className="h-4 w-4 text-primary" aria-hidden="true" />
             NHẬT KÝ HỌC TẬP / LEARNUP
           </p>
-          <ScrapbookHeading as="h1" className="student-page-title text-foreground">
-            Hôm nay mình học gì?
-          </ScrapbookHeading>
+          <div className="relative inline-block">
+            <ScrapbookHeading as="h1" className="student-page-title text-foreground">
+              Hôm nay mình học gì?
+            </ScrapbookHeading>
+            <StudentDoodle
+              id="doodle.underline"
+              className="absolute -bottom-3 left-0 w-36 sm:w-44 text-primary opacity-80 pointer-events-none"
+            />
+          </div>
           <p className="student-body max-w-xl text-foreground">
             Một trang mới trong sổ tay tiếng Anh của bạn. Chọn một Unit và khám phá điều thú vị tiếp theo nhé!
           </p>
@@ -114,8 +123,17 @@ export function LearningHubHome() {
                 <Link
                   key={unit.id}
                   href={`/student/units/${unit.id}`}
-                  className="student-home-unit group focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
+                  className="student-home-unit group flex items-center gap-3.5 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
                 >
+                  <div className="relative h-12 w-12 sm:h-14 sm:w-14 shrink-0 overflow-hidden rounded-xl border-2 border-ink/20 bg-secondary/50 p-1 shadow-2xs">
+                    <Image
+                      src={getVocabularyTopicVisual(unit.id, unit.name)}
+                      alt=""
+                      fill
+                      unoptimized
+                      className="object-contain p-1 transition-transform group-hover:scale-110"
+                    />
+                  </div>
                   <span className="min-w-0 flex-1">
                     <span className="student-card-title block text-foreground group-hover:text-primary">
                       {unit.name}

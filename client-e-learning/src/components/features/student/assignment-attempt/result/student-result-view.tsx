@@ -10,7 +10,7 @@ import {
   Lock,
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import type { AttemptResultResponse } from "@/types/student/assignment-attempt";
 import { cn } from "@/lib/utils";
 import { formatDateTime, formatDurationRange } from "@/utils/format";
@@ -62,12 +62,13 @@ export function StudentResultView({
   return (
     <>
       <header className="flex h-14 items-center gap-3 border-b bg-card px-4 rounded-xl mb-4">
-        <Button variant="ghost" size="sm" >
-          <Link href="/student/assignments">
-            <ArrowLeft className="h-4 w-4" /> Danh sách bài
-          </Link>
-        </Button>
-        <BarChart3 className="  h-4 w-4 text-primary" />
+        <Link
+          href="/student/assignments"
+          className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "gap-1.5")}
+        >
+          <ArrowLeft className="h-4 w-4" /> Danh sách bài
+        </Link>
+        <BarChart3 className="h-4 w-4 text-primary" />
         <h1 className="min-w-0 truncate font-semibold">Kết quả · {title}</h1>
         <div className="ml-auto flex items-center gap-2"></div>
       </header>
@@ -250,12 +251,13 @@ export function StudentResultView({
                 );
               })}
             </div>
-            <Button  variant="outline" className="mt-5 w-full">
-              <Link href="/student/assignments">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                {t("backToAssignments")}
-              </Link>
-            </Button>
+            <Link
+              href="/student/assignments"
+              className={cn(buttonVariants({ variant: "outline" }), "mt-5 w-full")}
+            >
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              {t("backToAssignments")}
+            </Link>
           </aside>
         </div>
       </div>

@@ -62,8 +62,17 @@ SET document_json = jsonb_set(
 )
 WHERE summary_json IS NOT NULL
   AND jsonb_typeof(summary_json->'content') = 'array'
-  AND jsonb_array_length(summary_json->'content') > 0
+  AND CASE WHEN jsonb_typeof(summary_json->'content') = 'array'
+      THEN jsonb_array_length(summary_json->'content') > 0 ELSE FALSE END
   AND summary_json::text ~ '"text"[[:space:]]*:[[:space:]]*"[^"]';
+
+-- Prevent a conversion from producing a document too large for the current API validator.
+DO $
+BEGIN
+  IF EXISTS (SELECT 1 FROM knowledge_notes WHERE octet_length(document_json::text) > 524288) THEN
+    RAISE EXCEPTION 'Knowledge Note document exceeds 512KB after legacy Summary conversion';
+  END IF;
+END $;
 
 ALTER TABLE knowledge_notes
     DROP COLUMN summary_json,

@@ -1,6 +1,11 @@
 package e_learning.server.knowledge.teacher.controller;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.type.TypeReference;
 import e_learning.server.common.dto.PageResponse;
+import e_learning.server.common.exception.AppException;
+import e_learning.server.common.exception.ErrorCode;
 import e_learning.server.common.response.ApiResponse;
 import e_learning.server.knowledge.enums.KnowledgeNoteStatus;
 import e_learning.server.knowledge.teacher.dto.request.CreateKnowledgeNoteRequest;
@@ -19,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class TeacherKnowledgeNoteController {
     private final TeacherKnowledgeNoteService service;
+    private final ObjectMapper objectMapper;
 
     @PostMapping
     public ResponseEntity<ApiResponse<KnowledgeNoteResponse>> create(
@@ -51,8 +57,17 @@ public class TeacherKnowledgeNoteController {
 
     @PutMapping("/{id}/content")
     public ResponseEntity<ApiResponse<KnowledgeNoteContentResponse>> saveContent(
-            @PathVariable Long id, @Valid @RequestBody SaveKnowledgeNoteContentRequest request) {
-        return ResponseEntity.ok(ApiResponse.success(service.saveContent(id, request)));
+            @PathVariable Long id, @RequestBody JsonNode payload) {
+        // Reject stale v2 clients sending Summary/schemaVersion rather than silently discarding fields.
+        if (payload == null || !payload.isObject() || payload.size() != 1
+                || !payload.has("document") || !payload.get("document").isObject()) {
+            throw new AppException(ErrorCode.KNOWLEDGE_NOTE_CONTENT_INVALID,
+                    "Yêu cầu chỉ được chứa trường document. Hãy tải lại Editor phiên bản mới.");
+        }
+        var document = objectMapper.convertValue(payload.get("document"),
+                new TypeReference<java.util.Map<String, Object>>() {});
+        return ResponseEntity.ok(ApiResponse.success(
+                service.saveContent(id, new SaveKnowledgeNoteContentRequest(document))));
     }
 
     @PostMapping("/{id}/publish")

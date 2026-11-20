@@ -1,3 +1,11 @@
+## 2026-11-21 — Knowledge Note Phase 03.1 (Student Library and Reader)
+
+- Implemented real role-protected Student Knowledge Note list/detail APIs with Grade derived from active class and PUBLISHED-only reads. Added optional Unit/Topic filter with visibility checks; includes unlinked published Notes in the default Library.
+- Replaced Student Knowledge Library and Reader scaffolds with responsive Student Indie Illustrated Scrapbook pages, real API loading/search/Unit→Topic filters, pagination, full Tiptap JSON render, outline and marked key-point anchors.
+- Added Student navbar item, original bookshelf scene and doodles, scoped knowledge-specific CSS, and dedicated Student service/contracts. No extra UI package or external art licensing.
+- Added focused Student service tests and Phase 03.1 QA checklist in docs/knowledge-note/PHASE_03_1_STUDENT_LIBRARY.md.
+- **Not executed**: Maven backend tests, browser QA, npm TypeScript/lint or database-backed integration; GitHub connector only. Phase 03.2 Topic Dialog remains pending.
+
 ## 2026-11-20 — Knowledge Note Phase 02.6 (Teacher Topic linking)
 
 - Reused the existing KnowledgeNote ↔ Topic relation and partial Primary unique index (V66); no DB schema change.

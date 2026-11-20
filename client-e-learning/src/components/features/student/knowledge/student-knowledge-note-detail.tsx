@@ -58,7 +58,7 @@ export function StudentKnowledgeNoteDetail({ noteId }: { noteId: number }) {
     <main className="student-knowledge mx-auto max-w-6xl space-y-5 pb-12" data-note-id={noteId}>
       <StudentBackLink href="/student/knowledge">Về Sổ tay kiến thức</StudentBackLink>
 
-      <PaperSurface as="header" variant="kraft" tape emphasis="feature"
+      <PaperSurface as="section" variant="kraft" tape emphasis="feature"
         className="student-knowledge-article-hero relative overflow-hidden p-5 sm:p-8">
         <div className="relative z-10 max-w-2xl space-y-3">
           <p className="student-meta inline-flex items-center gap-2 text-primary">
@@ -98,7 +98,7 @@ export function StudentKnowledgeNoteDetail({ noteId }: { noteId: number }) {
         </PaperSurface>
 
         <aside aria-label="Điều hướng bài đọc" className="space-y-4 lg:sticky lg:top-24">
-          <PaperSurface as="nav" variant="lined" className="p-4 sm:p-5" aria-label="Mục lục">
+          <PaperSurface as="section" variant="lined" className="p-4 sm:p-5" aria-label="Mục lục">
             <h2 className="student-section-title flex items-center gap-2">
               <Bookmark className="size-5 text-primary" aria-hidden="true" /> Mục lục
             </h2>

@@ -107,6 +107,11 @@ public class StudentUnitService {
     /**
      * Resolve the student's current grade from the ACTIVE class.
      */
+    /** Reuse the same authenticated ACTIVE-class Grade policy for Student Knowledge Notes. */
+    public Long getStudentGradeId(Long studentId) {
+        return resolveStudentGradeId(studentId);
+    }
+
     private Long resolveStudentGradeId(Long studentId) {
 
         User student = userRepository.findById(studentId)

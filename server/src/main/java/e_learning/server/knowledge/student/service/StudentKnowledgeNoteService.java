@@ -1,0 +1,109 @@
+package e_learning.server.knowledge.student.service;
+
+import e_learning.server.common.dto.PageResponse;
+import e_learning.server.common.exception.AppException;
+import e_learning.server.common.exception.ErrorCode;
+import e_learning.server.content.common.enums.ContentStatus;
+import e_learning.server.content.unit.service.StudentUnitService;
+import e_learning.server.knowledge.entity.KnowledgeNote;
+import e_learning.server.knowledge.entity.KnowledgeNoteTopicLink;
+import e_learning.server.knowledge.enums.KnowledgeNoteStatus;
+import e_learning.server.knowledge.repository.KnowledgeNoteRepository;
+import e_learning.server.knowledge.repository.KnowledgeNoteTopicLinkRepository;
+import e_learning.server.knowledge.student.dto.StudentKnowledgeNoteDetail;
+import e_learning.server.knowledge.student.dto.StudentKnowledgeNoteSummary;
+import e_learning.server.knowledge.student.dto.StudentKnowledgeUnitTag;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
+@Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
+public class StudentKnowledgeNoteService {
+    private final KnowledgeNoteRepository notes;
+    private final KnowledgeNoteTopicLinkRepository links;
+    private final StudentUnitService studentUnits;
+
+    /**
+     * The library includes PUBLISHED, same-grade Notes even when they are not linked
+     * to a Topic. Unit filtering only matches links under visible published content.
+     */
+    public PageResponse<StudentKnowledgeNoteSummary> list(
+            Long studentId, String search, Long unitId, int page, int size) {
+        Long gradeId = studentUnits.getStudentGradeId(studentId);
+        if (page < 1 || size < 1 || size > 50) {
+            throw new AppException(ErrorCode.INVALID_REQUEST, "page phải >= 1, size phải từ 1 đến 50.");
+        }
+        if (unitId != null) studentUnits.requireVisibleUnit(studentId, unitId);
+
+        Specification<KnowledgeNote> filter = (root, query, cb) -> cb.and(
+                cb.equal(root.get("grade").get("id"), gradeId),
+                cb.equal(root.get("status"), KnowledgeNoteStatus.PUBLISHED));
+
+        if (search != null && !search.isBlank()) {
+            String term = "%" + search.trim().toLowerCase(Locale.ROOT) + "%";
+            filter = filter.and((root, query, cb) -> cb.or(
+                    cb.like(cb.lower(root.get("title")), term),
+                    cb.like(cb.lower(cb.coalesce(root.get("description"), "")), term)));
+        }
+        if (unitId != null) {
+            filter = filter.and((root, query, cb) -> {
+                var sub = query.subquery(Long.class);
+                var link = sub.from(KnowledgeNoteTopicLink.class);
+                sub.select(link.get("id"));
+                sub.where(
+                        cb.equal(link.get("note").get("id"), root.get("id")),
+                        cb.equal(link.get("topic").get("section").get("unit").get("id"), unitId),
+                        cb.equal(link.get("topic").get("status"), ContentStatus.PUBLISHED),
+                        cb.equal(link.get("topic").get("section").get("status"), ContentStatus.PUBLISHED),
+                        cb.equal(link.get("topic").get("section").get("unit").get("status"), ContentStatus.PUBLISHED)
+                );
+                return cb.exists(sub);
+            });
+        }
+        var result = notes.findAll(filter, PageRequest.of(
+                page - 1, size, Sort.by(Sort.Direction.DESC, "updatedAt")
+                        .and(Sort.by(Sort.Direction.DESC, "id"))));
+        var summaries = result.getContent().stream().map(note ->
+                new StudentKnowledgeNoteSummary(note.getId(), note.getTitle(),
+                        note.getDescription(), note.getUpdatedAt(), visibleUnits(note, gradeId)))
+                .toList();
+        return PageResponse.from(result, summaries);
+    }
+
+    /** A URL ID is never sufficient authorization; reveal neither drafts nor other grades. */
+    public StudentKnowledgeNoteDetail get(Long studentId, Long noteId) {
+        Long gradeId = studentUnits.getStudentGradeId(studentId);
+        KnowledgeNote note = notes.findById(noteId)
+                .filter(n -> n.getStatus() == KnowledgeNoteStatus.PUBLISHED
+                        && Objects.equals(n.getGrade().getId(), gradeId))
+                .orElseThrow(() -> new AppException(ErrorCode.KNOWLEDGE_NOTE_NOT_FOUND));
+        return new StudentKnowledgeNoteDetail(note.getId(), note.getTitle(),
+                note.getDescription(), note.getUpdatedAt(), note.getDocumentJson());
+    }
+
+    private List<StudentKnowledgeUnitTag> visibleUnits(KnowledgeNote note, Long gradeId) {
+        return links.findByNoteId(note.getId()).stream()
+                .map(link -> link.getTopic())
+                .filter(topic -> topic.getStatus() == ContentStatus.PUBLISHED
+                        && topic.getSection().getStatus() == ContentStatus.PUBLISHED
+                        && topic.getSection().getUnit().getStatus() == ContentStatus.PUBLISHED
+                        && Objects.equals(topic.getSection().getUnit().getGrade().getId(), gradeId))
+                .map(topic -> topic.getSection().getUnit())
+                .collect(Collectors.toMap(unit -> unit.getId(),
+                        unit -> new StudentKnowledgeUnitTag(unit.getId(), unit.getCode(), unit.getName()),
+                        (first, ignored) -> first))
+                .values().stream()
+                .sorted((a, b) -> a.code().compareToIgnoreCase(b.code()))
+                .toList();
+    }
+}

@@ -103,7 +103,7 @@ export function KnowledgeImportExportDialog({
       setError("Không thể chèn nội dung vào vị trí này. Hãy chọn thêm vào cuối.");
       return;
     }
-    toast.success("Đã nhập nội dung. Auto-save sẽ lưu bản mới khi bạn ngừng chỉnh sửa.");
+    toast.success("Đã nhập nội dung. Đang gửi bản lưu lên server…");
     onOpenChange(false);
   };
   const preview: KnowledgeDocument | null = payload

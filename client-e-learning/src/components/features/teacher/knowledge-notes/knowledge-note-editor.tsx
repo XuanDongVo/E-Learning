@@ -394,10 +394,14 @@ export function TeacherKnowledgeNoteEditor({ noteId }: { noteId: number }) {
   };
 
   const navigation = extractKnowledgeNavigation(document);
-  const inTable = Boolean(editor?.state.selection.$from.parent
-    && editor.state.selection.$from.depth > 0
-    && Array.from({ length: editor.state.selection.$from.depth },
-      (_, i) => editor.state.selection.$from.node(i + 1).type.name).includes("table"));
+  const inTable = (() => {
+    if (!editor) return false;
+    const $from = editor.state.selection.$from;
+    for (let depth = $from.depth; depth > 0; depth--) {
+      if ($from.node(depth).type.name === "table") return true;
+    }
+    return false;
+  })();
 
   if (noteQuery.isPending) {
     return (

@@ -25,6 +25,9 @@ export const teacherKnowledgeNoteService = {
     return request<PageResponse<KnowledgeNote>>(`${ROOT}${q.size ? `?${q.toString()}` : ""}`);
   },
   get: (id: number) => request<KnowledgeNote>(`${ROOT}/${id}`),
+  publish: (id: number) => request<KnowledgeNote>(`${ROOT}/${id}/publish`, { method: "POST" }),
+  unpublish: (id: number) => request<KnowledgeNote>(`${ROOT}/${id}/unpublish`, { method: "POST" }),
+  archive: (id: number) => request<KnowledgeNote>(`${ROOT}/${id}/archive`, { method: "PATCH" }),
   getContent: (id: number) =>
     request<KnowledgeNoteContent>(`${ROOT}/${id}/content`),
   saveContent: (id: number, payload: SaveKnowledgeNoteContentRequest) =>

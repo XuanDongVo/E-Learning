@@ -5,7 +5,7 @@ import {
   NodeViewContent, NodeViewWrapper, ReactNodeViewRenderer,
   type NodeViewProps,
 } from "@tiptap/react";
-import { ArrowDown, ArrowUp, Copy, GripVertical, Trash2 } from "lucide-react";
+import { ArrowDown, ArrowUp, Bookmark, BookmarkCheck, Copy, GripVertical, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -35,6 +35,8 @@ export const KnowledgeLearningBlock = Node.create({
       kind: { default: "callout" },
       title: { default: "" },
       variant: { default: "default" },
+      id: { default: null },
+      isKeyPoint: { default: false },
     };
   },
   parseHTML() { return [{ tag: "section[data-learning-block]" }]; },
@@ -98,7 +100,10 @@ function LearningBlockNodeView(props: NodeViewProps) {
   const duplicate = () => {
     const pos = props.getPos();
     if (typeof pos !== "number") return;
-    props.editor.commands.insertContentAt(pos + props.node.nodeSize, props.node.toJSON());
+    props.editor.commands.insertContentAt(pos + props.node.nodeSize, {
+      ...props.node.toJSON(),
+      attrs: { ...props.node.attrs, id: crypto.randomUUID() },
+    });
   };
 
   return (
@@ -130,6 +135,12 @@ function LearningBlockNodeView(props: NodeViewProps) {
           </Select>
         )}
         <div className="ml-auto flex items-center gap-1">
+          <Button size="icon-xs" type="button" variant="ghost" disabled={disabled}
+            aria-label={props.node.attrs.isKeyPoint ? "Bỏ đánh dấu trọng tâm" : "Đánh dấu trọng tâm"}
+            title={props.node.attrs.isKeyPoint ? "Bỏ trọng tâm" : "Đánh dấu trọng tâm"}
+            onClick={() => props.updateAttributes({ isKeyPoint: !props.node.attrs.isKeyPoint })}>
+            {props.node.attrs.isKeyPoint ? <BookmarkCheck className="text-primary" /> : <Bookmark />}
+          </Button>
           <Button size="icon-xs" type="button" variant="ghost" disabled={disabled}
             aria-label="Nhân bản khối" onClick={duplicate}><Copy /></Button>
           <Button size="icon-xs" type="button" variant="ghost" disabled={disabled}

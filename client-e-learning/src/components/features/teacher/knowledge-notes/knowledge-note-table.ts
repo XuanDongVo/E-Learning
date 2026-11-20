@@ -15,6 +15,8 @@ export const KnowledgeTable = Table.extend({
   addAttributes() {
     return {
       ...this.parent?.(),
+      id: { default: null },
+      isKeyPoint: { default: false },
       purpose: {
         default: "general",
         parseHTML: element =>

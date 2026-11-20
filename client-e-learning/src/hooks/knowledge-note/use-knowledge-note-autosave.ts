@@ -4,83 +4,83 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { teacherKnowledgeNoteService } from "@/services/teacher/knowledge-note.service";
 import type { KnowledgeDocument, KnowledgeNoteContent } from "@/types/knowledge-note";
 
-type Snapshot = { document: KnowledgeDocument; summary: KnowledgeDocument };
 export type KnowledgeAutoSaveStatus = "clean" | "unsaved" | "saving" | "saved" | "error";
 const EMPTY: KnowledgeDocument = { type: "doc", content: [] };
 
-/** Serialized PUT queue: an older request can never complete after a newer one. */
+/** Serialize writes per editor, debounce 2s, and avoid duplicate snapshots. */
 export function useKnowledgeNoteAutosave(noteId: number, editable: boolean) {
   const [status, setStatus] = useState<KnowledgeAutoSaveStatus>("clean");
   const [dirty, setDirty] = useState(false);
   const [ready, setReady] = useState(false);
   const [lastSavedAt, setLastSavedAt] = useState<string | null>(null);
   const [changeToken, setChangeToken] = useState(0);
-  const latest = useRef<Snapshot>({ document: EMPTY, summary: EMPTY });
+  const latest = useRef<KnowledgeDocument>(EMPTY);
+  const lastSent = useRef("");
   const sequence = useRef(0);
   const committed = useRef(0);
   const hydrated = useRef(false);
   const inFlight = useRef(false);
   const activeNoteId = useRef(noteId);
   const writable = useRef(editable);
-  // Sync the mutable guards after render to respect React's ref rules.
   useEffect(() => {
     activeNoteId.current = noteId;
     writable.current = editable;
   }, [noteId, editable]);
 
   const reset = useCallback((content: KnowledgeNoteContent) => {
-    latest.current = { document: content.document, summary: content.summary };
+    latest.current = content.document;
+    lastSent.current = JSON.stringify(content.document);
     sequence.current = 0;
     committed.current = 0;
     hydrated.current = true;
-    setChangeToken(0);
     setReady(true);
     setDirty(false);
     setStatus("clean");
+    setChangeToken(0);
     setLastSavedAt(content.updatedAt);
   }, []);
 
-  const update = useCallback((patch: Partial<Snapshot>) => {
+  const updateDocument = useCallback((document: KnowledgeDocument) => {
     if (!hydrated.current || !writable.current) return;
-    latest.current = { ...latest.current, ...patch };
+    if (JSON.stringify(document) === JSON.stringify(latest.current)) return;
+    latest.current = document;
     sequence.current += 1;
+    const differs = JSON.stringify(document) !== lastSent.current;
+    setDirty(differs);
     setChangeToken(sequence.current);
-    setDirty(true);
-    setStatus("unsaved");
+    setStatus(differs ? "unsaved" : "saved");
   }, []);
-
-  const updateDocument = useCallback(
-    (document: KnowledgeDocument) => update({ document }), [update]);
-  const updateSummary = useCallback(
-    (summary: KnowledgeDocument) => update({ summary }), [update]);
 
   const saveNow = useCallback(async () => {
     if (!hydrated.current || !writable.current || inFlight.current
         || committed.current >= sequence.current) return;
-    const requestNoteId = noteId;
     inFlight.current = true;
+    const targetId = noteId;
     try {
       while (committed.current < sequence.current && writable.current) {
         const current = sequence.current;
         const snapshot = latest.current;
+        const serialized = JSON.stringify(snapshot);
+        if (serialized === lastSent.current) {
+          committed.current = current;
+          continue;
+        }
         setStatus("saving");
-        const result = await teacherKnowledgeNoteService.saveContent(requestNoteId, {
-          schemaVersion: 2,
-          document: snapshot.document,
-          summary: snapshot.summary,
+        const result = await teacherKnowledgeNoteService.saveContent(targetId, {
+          document: snapshot,
         });
-        if (activeNoteId.current !== requestNoteId) return;
-        if (!result.data) throw new Error("Server không xác nhận đã lưu nội dung.");
+        if (activeNoteId.current !== targetId) return;
+        if (!result.data) throw new Error("Server không xác nhận đã lưu bài học.");
         committed.current = current;
+        lastSent.current = serialized;
         setLastSavedAt(result.data.updatedAt);
       }
-      if (activeNoteId.current !== requestNoteId) return;
-      if (committed.current >= sequence.current) {
-        setDirty(false);
-        setStatus("saved");
-      }
+      if (activeNoteId.current !== targetId) return;
+      const differs = JSON.stringify(latest.current) !== lastSent.current;
+      setDirty(differs);
+      setStatus(differs ? "unsaved" : "saved");
     } catch (cause) {
-      if (activeNoteId.current !== requestNoteId) return;
+      if (activeNoteId.current !== targetId) return;
       setDirty(true);
       setStatus("error");
       throw cause;
@@ -95,5 +95,5 @@ export function useKnowledgeNoteAutosave(noteId: number, editable: boolean) {
     return () => window.clearTimeout(timer);
   }, [changeToken, ready, editable, dirty, saveNow]);
 
-  return { status, dirty, ready, lastSavedAt, reset, updateDocument, updateSummary, saveNow };
+  return { status, dirty, ready, lastSavedAt, reset, updateDocument, saveNow };
 }

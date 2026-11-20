@@ -1,3 +1,10 @@
+## 2026-11-20 — Knowledge Note Template/Import dialogs UX repair
+
+- Root cause of screenshot's narrow dialogs: global `DialogContent` applies `sm:max-w-sm`; local `max-w-none` only applied at base breakpoint, so desktop remained narrow.
+- Added one wide responsive Editor-only dialog shell for both features; dual-pane scrollable Template preview and JSON Import/Export preview, sticky header/footer, mobile stacked layout.
+- Improved template search, selection/category filtering, status and insert failure handling; JSON paste validation is now explicit and stale previews are invalidated; export scopes/JSON preview are clearer.
+- Client-only. No shared Dialog modifications, backend API changes, schema changes or new dependencies. Runtime checks pending. See `docs/knowledge-note/PHASE_02_2_EDITOR_V2_CLIENT.md`.
+
 ## 2026-11-20 — Knowledge Note Editor v2 client-only upgrade
 
 - Upgraded portable document schema from v1 to v2. Learning Blocks now have editable nested rich-text sections and dynamic comparison/general tables with row/column operations using existing `@tiptap/pm/tables`.

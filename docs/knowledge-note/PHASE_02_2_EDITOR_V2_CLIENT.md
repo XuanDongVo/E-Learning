@@ -90,3 +90,36 @@ The backend entity still uses schemaVersion=1 for its initial placeholder and do
 - Summary remains a separate editor; a replace-both import updates both editors, whose Undo histories are independent.
 - No DOCX/PDF imports, image/video, AI generation, or global custom Template storage.
 - Reading drafts from the server is still impossible until Phase 02.3.
+
+## 2026-11-20 — Teacher authoring dialogs: responsive layout + import UX fix
+
+Following screenshot-based review, the Template Library and JSON Import/Export dialogs
+share `knowledge-note-workspace-dialog.tsx`, an explicit desktop-wide popup overriding
+the global dialog primitive's `sm:max-w-sm` constraint. The header and footer remain
+fixed inside the popup; the left controls and right preview scroll independently.
+On mobile, those two panes stack in a bounded-height dialog.
+
+**Template Library**
+- Search and category chips filter the built-in v2 templates.
+- The selected item is visibly highlighted, with a full-width scrollable preview.
+- The Insert action returns a boolean from the Editor, and the modal does not close
+  if insertion fails. Built-in content is cloned before insertion.
+
+**JSON Import/Export**
+- Import supports file selection or JSON paste; pasted input is validated on explicit
+  'Kiểm tra JSON' rather than reporting parse errors on every keystroke.
+- A changed input invalidates its previous preview; invalid or oversized file choices
+  clear stale input. v1 migration results are clearly labelled.
+- Target (article/summary/both), mode (insert/append/replace) and replacement confirmation
+  are separate. Both always requires an explicit confirmed replacement.
+- Preview occupies a separate, scrollable pane with horizontal scrolling inside tables.
+- Export lets the Teacher choose scope then preview the JSON with Copy and Download
+  actions in the persistent footer. Long previews are shortened for display, not in the
+  actual copied/downloaded JSON. Exporting only article or summary leaves the other
+  document empty in the portable envelope; importers should not blindly choose Both.
+- These changes do **not** modify the existing table editing extensions or data schema.
+
+**Verification:** Inspected the shared `DialogContent` implementation and static
+import paths. Browser/manual responsive checks, TypeScript, ESLint, Vitest and build
+have not been executed in this connector session. Validate 390px, 768px and 1440px
+viewport widths before approving release.

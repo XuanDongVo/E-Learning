@@ -307,10 +307,11 @@ export function TeacherKnowledgeNoteEditor({ noteId }: { noteId: number }) {
       : null;
   };
 
-  const insertTemplate = (nodes: KnowledgeDocumentNode[]) => {
-    if (!editor || readOnly) return;
+  const insertTemplate = (nodes: KnowledgeDocumentNode[]): boolean => {
+    if (!editor || readOnly) return false;
     const ok = editor.chain().focus().insertContent(nodes).run();
-    if (!ok) toast.error("Không thể chèn mẫu vào vị trí hiện tại.");
+    if (!ok) toast.error("Không thể chèn mẫu vào vị trí hiện tại. Hãy chọn một đoạn văn ngoài bảng hoặc Learning Block.");
+    return ok;
   };
 
   const applyImport = (

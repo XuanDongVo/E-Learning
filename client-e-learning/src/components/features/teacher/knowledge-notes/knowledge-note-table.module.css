@@ -1,0 +1,64 @@
+/* Student Preview has its own renderer; this sheet is Teacher Editor-only. */
+.editor :global(.tableWrapper) {
+  position: relative;
+  max-width: 100%;
+  overflow-x: auto;
+  margin: 1.25rem 0;
+  border: 1px solid var(--border);
+  border-radius: 0.625rem;
+  scrollbar-width: thin;
+}
+
+.editor :global(table.knowledge-table) {
+  width: 100%;
+  min-width: 30rem;
+  border-collapse: collapse;
+  table-layout: auto;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.editor :global(.knowledge-table th),
+.editor :global(.knowledge-table td) {
+  position: relative;
+  min-width: 7rem;
+  padding: 0.65rem 0.75rem;
+  vertical-align: top;
+  border: 1px solid var(--border);
+  overflow-wrap: anywhere;
+}
+
+.editor :global(.knowledge-table th) {
+  font-weight: 700;
+  text-align: left;
+  background: var(--muted);
+}
+
+.editor :global(.knowledge-table p) { margin: 0.25rem 0; }
+
+.editor :global(.knowledge-table[data-purpose="comparison"] th) {
+  background: var(--secondary);
+  color: var(--secondary-foreground);
+}
+
+.editor :global(.knowledge-table .selectedCell::after) {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: color-mix(in oklch, var(--primary) 15%, transparent);
+  content: "";
+}
+
+.editor :global(.column-resize-handle) {
+  position: absolute;
+  top: 0;
+  right: -2px;
+  bottom: 0;
+  z-index: 5;
+  width: 4px;
+  background: var(--primary);
+  pointer-events: none;
+}
+
+.editor :global(.resize-cursor) { cursor: col-resize; }

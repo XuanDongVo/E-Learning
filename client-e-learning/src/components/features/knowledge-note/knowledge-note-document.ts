@@ -164,7 +164,7 @@ function checkNode(value: unknown, path: string, summary: boolean, depth: number
   for (const k of Object.keys(node)) if (!["type", "text", "marks", "attrs", "content"].includes(k)) fail(path, `Trường không hỗ trợ: ${k}`);
   const allowedAttrs: Record<string, string[]> = {
     heading: ["level"], learningBlock: ["kind","title","variant"], learningSection: ["role"],
-    table: ["purpose"], tableCell: ["colspan","rowspan","colwidth"], tableHeader: ["colspan","rowspan","colwidth"],
+    table: ["purpose"], tableCell: ["colspan","rowspan","colwidth","align"], tableHeader: ["colspan","rowspan","colwidth","align"],
     orderedList: ["start","type"], bulletList: ["type"],
   };
   if (node.attrs !== undefined) {
@@ -194,7 +194,7 @@ function checkNode(value: unknown, path: string, summary: boolean, depth: number
   if (validChildren[node.type] && children.some(n => !validChildren[node.type].includes(n.type))) {
     fail(path, "Cấu trúc node con không hợp lệ.");
   }
-  if (["bulletList","orderedList","listItem","tableRow","tableCell","tableHeader"].includes(node.type)
+  if (["bulletList","orderedList","listItem","tableCell","tableHeader"].includes(node.type)
       && children.length === 0) fail(path, "Node này phải có nội dung con.");
   if (node.type === "learningBlock") {
     if (!isLearningKind(node.attrs?.kind)) fail(path, "Learning Block kind không hợp lệ.");
@@ -213,19 +213,48 @@ function checkNode(value: unknown, path: string, summary: boolean, depth: number
     if (!["general","comparison"].includes(String(node.attrs?.purpose))) fail(path, "Loại bảng không hợp lệ.");
     const rows = nodeTextContent(node);
     if (rows.length < 1 || rows.length > 100 || rows.some(r => r.type !== "tableRow")) fail(path, "Số hàng không hợp lệ.");
-    const width = rows[0]?.content?.reduce((n,cell)=>n+Number(cell.attrs?.colspan ?? 1),0) ?? 0;
-    if (width < 2 || width > 12) fail(path, "Bảng phải có 2–12 cột.");
-    for (const row of rows) {
-      const n = row.content?.reduce((count, cell) => count + Number(cell.attrs?.colspan ?? 1), 0) ?? 0;
-      if (n !== width) fail(path, "Bảng có hàng không đồng đều.");
+    // A merged cell can cover several columns AND future rows.
+    // Validate occupied grid positions rather than summing cells in each row.
+    const occupied: boolean[][] = rows.map(() => Array<boolean>(12).fill(false));
+    rows.forEach((row, rowIndex) => {
+      let column = 0;
+      for (const cell of row.content ?? []) {
+        while (column < 12 && occupied[rowIndex][column]) column++;
+        const colspan = Number(cell.attrs?.colspan ?? 1);
+        const rowspan = Number(cell.attrs?.rowspan ?? 1);
+        if (!Number.isInteger(colspan) || colspan < 1 || colspan > 12 ||
+            !Number.isInteger(rowspan) || rowspan < 1 ||
+            column + colspan > 12 || rowIndex + rowspan > rows.length) {
+          fail(path, "Ô bảng vượt quá giới hạn hàng hoặc cột.");
+        }
+        for (let r = rowIndex; r < rowIndex + rowspan; r++) {
+          for (let c = column; c < column + colspan; c++) {
+            if (occupied[r][c]) fail(path, "Các ô trong bảng bị chồng lên nhau.");
+            occupied[r][c] = true;
+          }
+        }
+        column += colspan;
+      }
+    });
+    const widths = occupied.map(row => row.lastIndexOf(true) + 1);
+    const width = widths[0];
+    if (width < 2 || width > 12 ||
+        widths.some((rowWidth, i) => rowWidth !== width ||
+          occupied[i].slice(0, width).some(filled => !filled))) {
+      fail(path, "Bảng có hàng/cột không đồng đều.");
     }
   }
   if (["tableCell","tableHeader"].includes(node.type)) {
     const colspan = node.attrs?.colspan ?? 1, rowspan = node.attrs?.rowspan ?? 1;
-    if (![colspan,rowspan].every(v=>Number.isInteger(v) && Number(v)>0 && Number(v)<=12)) fail(path,"Kích thước ô không hợp lệ.");
+    if (!Number.isInteger(colspan) || Number(colspan) < 1 || Number(colspan) > 12 ||
+        !Number.isInteger(rowspan) || Number(rowspan) < 1 || Number(rowspan) > 100)
+      fail(path,"Kích thước ô không hợp lệ.");
+    if (node.attrs?.align != null && !["left","center","right"].includes(String(node.attrs.align)))
+      fail(path, "Căn lề ô không hợp lệ.");
     const colwidth = node.attrs?.colwidth;
     if (colwidth !== undefined && colwidth !== null &&
-      (!Array.isArray(colwidth) || colwidth.some(v=>!Number.isInteger(v) || v <= 0))) fail(path,"Độ rộng cột không hợp lệ.");
+      (!Array.isArray(colwidth) || colwidth.length !== Number(colspan) ||
+        colwidth.some(v=>!Number.isInteger(v) || v <= 0 || v > 4000))) fail(path,"Độ rộng cột không hợp lệ.");
   }
   if (node.marks !== undefined) {
     if (node.type !== "text" || !Array.isArray(node.marks)) fail(path, "Mark chỉ áp dụng cho text.");

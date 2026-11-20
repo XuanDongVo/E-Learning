@@ -1,3 +1,15 @@
+## 2026-11-20 — Knowledge Note TableKit (client-only)
+
+- Switched bespoke ProseMirror table nodes to official Tiptap 3 TableKit with extended
+  `purpose` attribute (keeps JSON v2 table schema compatible).
+- Teacher toolbar now shows direct row/column add buttons and official chained table
+  commands; table-specific CSS supports resizing, selection and mobile scrolling.
+- JSON table validator now accounts for rowspan/colspan geometry and optional
+  alignment, preserving merged-table Import/Export. Added integration tests.
+- No backend/API work. TypeScript/build/tests/browser not executed from connector;
+  package-lock integrity should be refreshed on a network-enabled development machine.
+  See `docs/knowledge-note/PHASE_02_2_EDITOR_V2_CLIENT.md`.
+
 ## 2026-11-20 — Knowledge Note Template/Import dialogs UX repair
 
 - Root cause of screenshot's narrow dialogs: global `DialogContent` applies `sm:max-w-sm`; local `max-w-none` only applied at base breakpoint, so desktop remained narrow.

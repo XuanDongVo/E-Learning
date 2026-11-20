@@ -35,6 +35,23 @@ describe("Knowledge Note v2 document contract", () => {
     expect(table.content?.[0].content).toHaveLength(4);
     validateKnowledgeDocument({ type: "doc", content: [table] });
   });
+  it("accepts valid table cells with both column and row spans", () => {
+    const table = createTable("comparison",3,3);
+    const rows = table.content!;
+    // Header's first cell spans two rows. Remove the covered cell from row 2.
+    rows[0].content![0].attrs = { colspan: 1, rowspan: 2, colwidth: [180], align: null };
+    rows[1].content!.shift();
+    const doc: KnowledgeDocument = { type: "doc", content: [table] };
+    expect(() => validateKnowledgeDocument(doc)).not.toThrow();
+    expect(parseKnowledgeImport(JSON.stringify(createEditorSnapshot(doc, { type: "doc", content: [] }))))
+      .toEqual(createEditorSnapshot(doc, { type: "doc", content: [] }));
+  });
+  it("rejects overlapping or out-of-bounds merged table cells", () => {
+    const table = createTable("comparison",3,3);
+    table.content![0].content![1].attrs = { colspan: 3, rowspan: 2, colwidth: null };
+    expect(() => validateKnowledgeDocument({ type: "doc", content: [table] }))
+      .toThrow(/giới hạn|chồng lên/);
+  });
   it("migrates legacy comparison and formula without losing text", () => {
     const legacy = {
       schemaVersion: 1,

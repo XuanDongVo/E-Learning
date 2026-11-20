@@ -123,3 +123,43 @@ On mobile, those two panes stack in a bounded-height dialog.
 import paths. Browser/manual responsive checks, TypeScript, ESLint, Vitest and build
 have not been executed in this connector session. Validate 390px, 768px and 1440px
 viewport widths before approving release.
+
+## 2026-11-20 — Official Tiptap TableKit migration (client only)
+
+The original custom ProseMirror table nodes and tableEditing plugin have been replaced with
+the maintained `@tiptap/extension-table@^3.34.0` TableKit. The package is declared in
+`package.json` and `package-lock.json`. The Table extension is extended only for the
+Knowledge Note `purpose: comparison | general` attribute, preserving existing schema-v2
+JSON documents, templates and v1→v2 migrated comparison tables.
+
+Changes:
+- TableKit supplies official tableRow, tableCell, tableHeader schema, editing plugins,
+  selection handling, row/column commands, table navigation, merge/split and resizable
+  columns. The custom PM table schema/plugin and keyboard handler have been removed.
+- The Teacher table toolbar exposes **+ Hàng**, **+ Cột** immediately inside tables, and
+  a secondary menu for before/after, header rows/columns, merge/split, type toggle
+  and deletion. Actions use official Tiptap chain commands with editor focus.
+- Row/column growth is capped in the UI at the Knowledge Note policy
+  (100 rows / 12 columns). The width check uses ProseMirror TableMap for span awareness.
+- Editor-only CSS styles table borders, selected cells, column resize handles and
+  horizontal scrolling without applying styles to Teacher's other pages.
+- Import validator supports Tiptap's optional cell alignment/column width attrs and
+  a rowspan/colspan-aware occupancy grid. It rejects malformed merged tables;
+  existing unmerged v2 tables still validate as before.
+- Added focused unit tests for merged table validation and Tiptap Editor tests for
+  insertion, row/column editing and purpose preservation.
+
+Scope: Client only. No backend API, database, lifecycle, Student endpoint or
+knowledge-note schemaVersion change; the Save button stays disabled.
+
+**Verification status:** Static code/import reviews only from the GitHub connector.
+`npm ci`, TypeScript, ESLint, Vitest and authenticated browser QA have not been
+executed in this environment. The added lock entry uses the public npm registry
+package URL without an integrity hash (registry metadata could not be retrieved
+here); regenerate/verify integrity via `npm install --package-lock-only` on
+a networked development machine before release.
+
+Recommended manual checks: create comparison table, click cell, add row/column,
+convert table purpose, select cells and merge/split, resize columns, Export JSON,
+Import JSON into a fresh Editor, inspect Teacher Preview, test horizontal scrolling
+on mobile and confirm Teacher non-Knowledge pages are unaffected.

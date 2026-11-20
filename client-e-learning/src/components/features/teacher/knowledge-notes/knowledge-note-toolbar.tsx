@@ -1,15 +1,12 @@
 "use client";
 
 import type { Editor } from "@tiptap/react";
-import {
-  addColumnAfter, addColumnBefore, addRowAfter, addRowBefore,
-  deleteColumn, deleteRow, deleteTable, toggleHeaderColumn, toggleHeaderRow,
-} from "@tiptap/pm/tables";
-import type { Command } from "@tiptap/pm/state";
+import { TableMap } from "@tiptap/pm/tables";
+import { toast } from "sonner";
 import {
   Bold, Braces, ChevronDown, Heading2, Heading3, Italic, Lightbulb,
   Link2, List, ListOrdered, Minus, Redo2, Table2, TableColumnsSplit,
-  TriangleAlert, Undo2, BookOpen,
+  TriangleAlert, Undo2, BookOpen, Plus, Rows3, Columns3, Merge, Split,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -35,7 +32,7 @@ export function KnowledgeNoteToolbar({ editor, onOpenTemplates }: {
   const inTable = editor.isActive("table");
   const purpose = editor.getAttributes("table").purpose;
   const $from = editor.state.selection.$from;
-  let selectedTable = null as ReturnType<typeof $from.node> | null;
+  let selectedTable: ReturnType<typeof $from.node> | null = null;
   for (let depth = $from.depth; depth >= 1; depth--) {
     if ($from.node(depth).type.name === "table") {
       selectedTable = $from.node(depth);
@@ -43,11 +40,12 @@ export function KnowledgeNoteToolbar({ editor, onOpenTemplates }: {
     }
   }
   const rowCount = selectedTable?.childCount ?? 0;
-  const columnCount = selectedTable?.firstChild?.childCount ?? 0;
-  const tableCommand = (command: Command) => {
+  const columnCount = selectedTable ? TableMap.get(selectedTable).width : 0;
+  const canAddRow = inTable && rowCount < 100 && editor.can().addRowAfter();
+  const canAddColumn = inTable && columnCount < 12 && editor.can().addColumnAfter();
+  const editTable = (run: () => boolean) => {
     if (disabled || !inTable) return;
-    command(editor.state, editor.view.dispatch, editor.view);
-    editor.commands.focus();
+    if (!run()) toast.error("Không thể chỉnh bảng. Hãy đặt con trỏ vào một ô rồi thử lại.");
   };
   const insertBlock = (kind: KnowledgeLearningBlockKind) =>
     editor.chain().focus().insertContent(createLearningBlock(kind)).run();
@@ -121,26 +119,79 @@ export function KnowledgeNoteToolbar({ editor, onOpenTemplates }: {
       {inTable && (
         <>
           <Divider />
+          <span className="shrink-0 rounded-md bg-muted/60 px-2 py-1 text-xs font-semibold text-foreground">
+            {rowCount} hàng · {columnCount} cột
+          </span>
+          <Button type="button" size="sm" variant="secondary" className="shrink-0"
+            onMouseDown={event => event.preventDefault()}
+            aria-label="Thêm hàng bên dưới ô hiện tại"
+            disabled={disabled || !canAddRow}
+            onClick={() => editTable(() => editor.chain().focus().addRowAfter().run())}>
+            <Plus className="size-3.5" /> Hàng
+          </Button>
+          <Button type="button" size="sm" variant="secondary" className="shrink-0"
+            onMouseDown={event => event.preventDefault()}
+            aria-label="Thêm cột bên phải ô hiện tại"
+            disabled={disabled || !canAddColumn}
+            onClick={() => editTable(() => editor.chain().focus().addColumnAfter().run())}>
+            <Plus className="size-3.5" /> Cột
+          </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button type="button" size="sm" variant="secondary" disabled={disabled} className="shrink-0">
+              <Button type="button" size="sm" variant="outline" disabled={disabled}
+                className="shrink-0" aria-label="Các thao tác bảng khác">
                 Chỉnh bảng <ChevronDown />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="start">
-              <DropdownMenuItem disabled={rowCount >= 100} onSelect={() => tableCommand(addRowAfter)}>Thêm hàng phía dưới</DropdownMenuItem>
-              <DropdownMenuItem disabled={rowCount >= 100} onSelect={() => tableCommand(addRowBefore)}>Thêm hàng phía trên</DropdownMenuItem>
-              <DropdownMenuItem disabled={columnCount >= 12} onSelect={() => tableCommand(addColumnAfter)}>Thêm cột bên phải</DropdownMenuItem>
-              <DropdownMenuItem disabled={columnCount >= 12} onSelect={() => tableCommand(addColumnBefore)}>Thêm cột bên trái</DropdownMenuItem>
-              <DropdownMenuItem onSelect={() => tableCommand(toggleHeaderRow)}>Đổi hàng tiêu đề</DropdownMenuItem>
-              <DropdownMenuItem onSelect={() => tableCommand(toggleHeaderColumn)}>Đổi cột tiêu đề</DropdownMenuItem>
-              <DropdownMenuItem onSelect={() => editor.chain().focus().updateAttributes("table",
-                { purpose: purpose === "comparison" ? "general" : "comparison" }).run()}>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuItem disabled={rowCount >= 100 || !editor.can().addRowBefore()}
+                onSelect={() => editTable(() => editor.chain().focus().addRowBefore().run())}>
+                <Rows3 /> Thêm hàng phía trên
+              </DropdownMenuItem>
+              <DropdownMenuItem disabled={rowCount >= 100 || !editor.can().addRowAfter()}
+                onSelect={() => editTable(() => editor.chain().focus().addRowAfter().run())}>
+                <Rows3 /> Thêm hàng phía dưới
+              </DropdownMenuItem>
+              <DropdownMenuItem disabled={columnCount >= 12 || !editor.can().addColumnBefore()}
+                onSelect={() => editTable(() => editor.chain().focus().addColumnBefore().run())}>
+                <Columns3 /> Thêm cột bên trái
+              </DropdownMenuItem>
+              <DropdownMenuItem disabled={columnCount >= 12 || !editor.can().addColumnAfter()}
+                onSelect={() => editTable(() => editor.chain().focus().addColumnAfter().run())}>
+                <Columns3 /> Thêm cột bên phải
+              </DropdownMenuItem>
+              <DropdownMenuItem disabled={!editor.can().toggleHeaderRow()}
+                onSelect={() => editTable(() => editor.chain().focus().toggleHeaderRow().run())}>
+                Đổi hàng tiêu đề
+              </DropdownMenuItem>
+              <DropdownMenuItem disabled={!editor.can().toggleHeaderColumn()}
+                onSelect={() => editTable(() => editor.chain().focus().toggleHeaderColumn().run())}>
+                Đổi cột tiêu đề
+              </DropdownMenuItem>
+              <DropdownMenuItem disabled={!editor.can().mergeCells()}
+                onSelect={() => editTable(() => editor.chain().focus().mergeCells().run())}>
+                <Merge /> Gộp ô đã chọn
+              </DropdownMenuItem>
+              <DropdownMenuItem disabled={!editor.can().splitCell()}
+                onSelect={() => editTable(() => editor.chain().focus().splitCell().run())}>
+                <Split /> Tách ô
+              </DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => editTable(() =>
+                editor.chain().focus().updateAttributes("table",
+                  { purpose: purpose === "comparison" ? "general" : "comparison" }).run())}>
                 {purpose === "comparison" ? "Đổi thành bảng thường" : "Đổi thành bảng so sánh"}
               </DropdownMenuItem>
-              <DropdownMenuItem onSelect={() => tableCommand(deleteRow)}>Xóa hàng đang chọn</DropdownMenuItem>
-              <DropdownMenuItem onSelect={() => tableCommand(deleteColumn)}>Xóa cột đang chọn</DropdownMenuItem>
-              <DropdownMenuItem onSelect={() => tableCommand(deleteTable)} className="text-destructive">
+              <DropdownMenuItem disabled={!editor.can().deleteRow()}
+                onSelect={() => editTable(() => editor.chain().focus().deleteRow().run())}>
+                Xóa hàng đang chọn
+              </DropdownMenuItem>
+              <DropdownMenuItem disabled={!editor.can().deleteColumn()}
+                onSelect={() => editTable(() => editor.chain().focus().deleteColumn().run())}>
+                Xóa cột đang chọn
+              </DropdownMenuItem>
+              <DropdownMenuItem disabled={!editor.can().deleteTable()}
+                onSelect={() => editTable(() => editor.chain().focus().deleteTable().run())}
+                className="text-destructive">
                 Xóa bảng
               </DropdownMenuItem>
             </DropdownMenuContent>

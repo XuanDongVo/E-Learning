@@ -50,7 +50,8 @@ import {
   isDocumentEmpty,
 } from "./knowledge-note-document";
 import { KnowledgeLearningBlock, KnowledgeLearningSection } from "./knowledge-note-learning-block";
-import { KnowledgeTableSchema, KnowledgeTable, KnowledgeTableRow, KnowledgeTableCell, KnowledgeTableHeader } from "./knowledge-note-table";
+import { KnowledgeTable, KnowledgeTableKit, KnowledgeTableShortcuts } from "./knowledge-note-table";
+import tableStyles from "./knowledge-note-table.module.css";
 import {
   KnowledgeImportExportDialog, type ImportMode, type ImportTarget,
 } from "./knowledge-note-import-export";
@@ -97,18 +98,16 @@ export function TeacherKnowledgeNoteEditor({ noteId }: { noteId: number }) {
       }),
       KnowledgeLearningBlock,
       KnowledgeLearningSection,
-      KnowledgeTableSchema,
+      KnowledgeTableKit,
       KnowledgeTable,
-      KnowledgeTableRow,
-      KnowledgeTableCell,
-      KnowledgeTableHeader,
+      KnowledgeTableShortcuts,
     ],
     content: EMPTY_KNOWLEDGE_DOCUMENT,
     editable: !readOnly,
     editorProps: {
       attributes: {
         class:
-          "knowledge-note-prosemirror min-h-[30rem] px-5 py-7 text-base leading-7 outline-none sm:px-9 sm:py-9 [&_h2]:mb-3 [&_h2]:mt-7 [&_h2]:text-2xl [&_h2]:font-extrabold [&_h3]:mb-2 [&_h3]:mt-5 [&_h3]:text-lg [&_h3]:font-bold [&_p]:my-3 [&_ul]:my-3 [&_ul]:ml-6 [&_ul]:list-disc [&_ol]:my-3 [&_ol]:ml-6 [&_ol]:list-decimal [&_li]:my-1 [&_a]:font-semibold [&_a]:text-primary [&_a]:underline [&_hr]:my-7 [&_hr]:border-border empty:before:pointer-events-none empty:before:text-muted-foreground empty:before:content-[attr(data-placeholder)]",
+          `knowledge-note-prosemirror ${tableStyles.editor} min-h-[30rem] px-5 py-7 text-base leading-7 outline-none sm:px-9 sm:py-9 [&_h2]:mb-3 [&_h2]:mt-7 [&_h2]:text-2xl [&_h2]:font-extrabold [&_h3]:mb-2 [&_h3]:mt-5 [&_h3]:text-lg [&_h3]:font-bold [&_p]:my-3 [&_ul]:my-3 [&_ul]:ml-6 [&_ul]:list-disc [&_ol]:my-3 [&_ol]:ml-6 [&_ol]:list-decimal [&_li]:my-1 [&_a]:font-semibold [&_a]:text-primary [&_a]:underline [&_hr]:my-7 [&_hr]:border-border empty:before:pointer-events-none empty:before:text-muted-foreground empty:before:content-[attr(data-placeholder)]`,
         "aria-label": "Nội dung bài lý thuyết",
       },
     },

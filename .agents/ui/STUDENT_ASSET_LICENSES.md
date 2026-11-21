@@ -34,3 +34,15 @@ No third-party assets are bundled in this Phase 3 change. Do not ship attributio
 | `status` | proposed / approved / deprecated / existing-needs-provenance-audit |
 
 **External asset approval checklist:** check usage rights for website, commercial demo, edits, embedding, sublicensing/redistribution and attribution; store license evidence; check visual consistency and alt/reduced-motion; approve in code review before importing.
+
+## 2026-11-21 — additional original assets for Knowledge and Student headers
+
+All of these SVG paths were authored specifically for this repository without third-party art, fonts or assets. They use the existing Indie Illustrated Scrapbook palette and are marked `source: in-repo-original` and `license: project-original` in the Student visual registry:
+
+| Registry ID | File | Usage | Attribution |
+|---|---|---|---|
+| `illustration.topic-notes` | `client-e-learning/public/assets/student/illustrations/learning/topic-notes.svg` | Topic Quick Summary | Not required |
+| `illustration.unit-journey` | `client-e-learning/public/assets/student/illustrations/learning/unit-journey.svg` | Units Index and Learning Hub header | Not required |
+| `illustration.leaderboard-podium` | `client-e-learning/public/assets/student/illustrations/achievements/leaderboard-podium.svg` | Leaderboard header | Not required |
+
+These SVGs are decorative: `StudentIllustration decorative` emits empty alt and aria-hidden. No SVG animation; their intrinsic viewBox/size is stable. The original Pipo character remains in the codebase for non-header contextual feedback. Existing character provenance caveat above remains in force.

@@ -18,6 +18,7 @@ import { StudentCollectionEmptyState } from "@/components/student-ui/patterns/st
 import { StudentPageHeading } from "@/components/student-ui/patterns/student-page-heading";
 import { StudentDoodle } from "@/components/student-ui/visuals/student-doodle";
 import { StudentIllustration } from "@/components/student-ui/visuals/student-illustration";
+import { StudentMascotScene } from "@/components/student-ui/visuals/pipo/student-mascot-scene";
 import { studentKnowledgeNoteService } from "@/services/student/student-knowledge-note.service";
 import { studentUnitService } from "@/services/student/student-unit.service";
 import type { StudentKnowledgeNoteSummary } from "@/types/student-knowledge-note";
@@ -158,6 +159,10 @@ export function StudentKnowledgeLibrary() {
                 id="doodle.reading-trail"
                 className="pointer-events-none absolute -bottom-4 left-0 w-28 -rotate-12 opacity-80"
               />
+              <StudentMascotScene
+                variant="guide" mood="think" prop="book" presentation="sticker"
+                size="compact" className="pointer-events-none absolute bottom-1 -left-3 z-20"
+              />
             </div>
           }
           artworkClassName="hidden w-[40%] max-w-[340px] sm:block"
@@ -173,10 +178,10 @@ export function StudentKnowledgeLibrary() {
             Ví dụ · Ghi chú
           </span>
         </div>
-        <StudentIllustration
-          id="scene.open-notebook"
-          decorative
-          className="mx-auto mt-3 h-28 w-auto sm:hidden"
+        <StudentMascotScene
+          variant="guide" mood="think" prop="book"
+          message="Chọn một trang lý thuyết bạn muốn đọc nhé!"
+          className="mt-4 sm:hidden"
         />
       </PaperSurface>
 

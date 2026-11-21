@@ -13,6 +13,7 @@ import { UnitCover, unitLabel } from "./unit-cover";
 import { PaperSurface } from "@/components/student-ui/paper-surface";
 import { ScrapbookHeading } from "@/components/student-ui/scrapbook-heading";
 import { StudentBackLink } from "@/components/student-ui/patterns/student-back-link";
+import { StudentMascotScene } from "@/components/student-ui/visuals/pipo/student-mascot-scene";
 
 type Filter = number | "all";
 
@@ -164,6 +165,16 @@ export function UnitDetailView({ unitId, mascotSlot }: UnitDetailViewProps) {
                 Sổ từ vựng <ChevronRight className="size-4" aria-hidden="true" />
               </Link>
             </div>
+            {!mascotSlot && (
+              <StudentMascotScene
+                variant="guide"
+                mood="wave"
+                prop="book"
+                message="Mình cùng khám phá từng phần học rồi luyện tập nhé!"
+                size="compact"
+                className="pt-1"
+              />
+            )}
           </div>
         </div>
 

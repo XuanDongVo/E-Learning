@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { RegionState } from "@/components/feedback";
 import type { ActivitySession, ActivitySessionReview, ActivityXpRewardReceipt } from "@/types/activity-session";
 import { ActivityReviewDetails } from "./review/activity-review-details";
+import { StudentMascotScene } from "@/components/student-ui/visuals/pipo/student-mascot-scene";
 
 const blueBtn =
   "bg-learning text-primary-foreground shadow-pop-sm hover:bg-learning/90 hover:text-primary-foreground";
@@ -64,6 +65,18 @@ export function PracticeResult({
         ? "Bạn đã nộp bài khi chưa làm hết"
         : "Hoàn thành luyện tập!";
 
+  const levelUp = session.status === "COMPLETED" && xpReward != null &&
+    xpReward.levelAfter > xpReward.levelBefore;
+  const companionMessage = levelUp
+    ? `Bạn đã lên Level ${xpReward!.levelAfter}! Cùng giữ nhịp học tập nhé!`
+    : session.status === "GAME_OVER"
+      ? "Hết lượt thử thách rồi. Mình có thể xem lại câu hỏi và thử lần khác nhé!"
+      : session.status === "ABANDONED"
+        ? "Lượt này đã dừng. Khi sẵn sàng, mình có thể bắt đầu một lượt mới."
+        : score >= 80
+          ? "Bạn vừa hoàn thành lượt luyện tập. Cùng xem những gì mình đã học nhé!"
+          : "Bạn đã kết thúc lượt luyện tập. Xem lại câu hỏi sẽ giúp mình hiểu bài hơn!";
+
   const stats = [
     { icon: Check, label: "Câu đúng (cuối cùng)", value: `${session.finalCorrectCount}/${session.totalQuestions}` },
     { icon: Target, label: "Đúng ngay lần đầu", value: `${session.firstCorrectCount}` },
@@ -103,6 +116,15 @@ export function PracticeResult({
           </p>
         )}
       </div>
+
+      <StudentMascotScene
+        variant={levelUp ? "milestone" : "feedback"}
+        mood={levelUp ? "celebrate" : session.status === "COMPLETED" ? "cheer" : "think"}
+        prop={levelUp ? "badge" : "book"}
+        message={companionMessage}
+        className="mx-auto"
+        size="compact"
+      />
 
       <XpRewardReceipt
         reward={xpReward}

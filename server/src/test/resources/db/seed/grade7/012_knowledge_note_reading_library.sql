@@ -185,8 +185,8 @@ documents AS (
                              jsonb_build_object('type','text','text',split_part(f.table_right,' | ',1)))))),
                          jsonb_build_object('type','tableCell','content',jsonb_build_array(
                            jsonb_build_object('type','paragraph','content',jsonb_build_array(
-                             jsonb_build_object('type','text','text',split_part(f.table_right,' | ',2))))))))))
-                   ),
+                             jsonb_build_object('type','text','text',split_part(f.table_right,' | ',2))))))))
+                   )),
                    jsonb_build_object('type','learningBlock',
                      'attrs',jsonb_build_object('id',f.note_key || '-formula',
                        'kind','formula','title','Quy tắc trọng tâm','variant','important','isKeyPoint',true),

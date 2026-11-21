@@ -14,6 +14,7 @@ import { PaperSurface } from "@/components/student-ui/paper-surface";
 import { ScrapbookHeading } from "@/components/student-ui/scrapbook-heading";
 import { StudentBackLink } from "@/components/student-ui/patterns/student-back-link";
 import { StudentTopicKnowledge } from "@/components/features/student/knowledge/student-topic-knowledge";
+import { getDefaultKnowledgeTopicId } from "./unit-knowledge-topic";
 
 type Filter = number | "all";
 
@@ -24,6 +25,7 @@ export interface UnitDetailViewProps {
 export function UnitDetailView({ unitId }: UnitDetailViewProps) {
   const [sectionId, setSectionId] = useState<Filter>("all");
   const [topicId, setTopicId] = useState<Filter>("all");
+  const [knowledgeTopicId, setKnowledgeTopicId] = useState<number | null>(null);
 
   const {
     data: response,
@@ -50,6 +52,7 @@ export function UnitDetailView({ unitId }: UnitDetailViewProps) {
     if (section) {
       setSectionId(section.id);
       setTopicId(selected);
+      setKnowledgeTopicId(selected);
     }
   }, [unit]);
 
@@ -63,6 +66,11 @@ export function UnitDetailView({ unitId }: UnitDetailViewProps) {
     (unit?.activities ?? []).filter((a) => a.topicIds.some((id) => ids.includes(id)));
 
   const selectedSection = unit?.sections.find((s) => s.id === sectionId);
+  const availableKnowledgeTopics = unit?.sections.flatMap(section =>
+    section.topics.map(topic => ({ ...topic, sectionName: section.name, sectionId: section.id }))) ?? [];
+  const defaultKnowledgeTopicId = unit ? getDefaultKnowledgeTopicId(unit.sections) : null;
+  const activeKnowledgeTopicId = availableKnowledgeTopics.some(topic => topic.id === knowledgeTopicId)
+    ? knowledgeTopicId : defaultKnowledgeTopicId;
 
   const visible = useMemo(() => {
     if (!unit) return [];
@@ -79,6 +87,19 @@ export function UnitDetailView({ unitId }: UnitDetailViewProps) {
   const pickSection = (id: Filter) => {
     setSectionId(id);
     setTopicId("all");
+    if (id !== "all") {
+      const firstTopic = unit?.sections.find(section => section.id === id)?.topics[0];
+      if (firstTopic) setKnowledgeTopicId(firstTopic.id);
+    }
+  };
+
+  const pickKnowledgeTopic = (nextId: number) => {
+    setKnowledgeTopicId(nextId);
+    const match = availableKnowledgeTopics.find(item => item.id === nextId);
+    if (match) {
+      setSectionId(match.sectionId);
+      setTopicId(nextId);
+    }
   };
 
   // ─── Loading State ───
@@ -202,6 +223,52 @@ export function UnitDetailView({ unitId }: UnitDetailViewProps) {
         </Link>
       </div>
 
+      {/* Knowledge entry is always discoverable on the Unit overview.
+          Activity selection is independent: don't hide all other activities until a Topic is chosen. */}
+      <section id="unit-knowledge" aria-labelledby="unit-knowledge-heading" className="scroll-mt-24 space-y-3">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="space-y-1">
+            <p className="student-meta text-primary">ĐỌC TRƯỚC KHI LUYỆN TẬP</p>
+            <ScrapbookHeading as="h2" id="unit-knowledge-heading" className="student-section-title text-foreground">
+              Sổ tay kiến thức của Unit
+            </ScrapbookHeading>
+            <p className="student-body text-muted-foreground">
+              Chọn chủ đề để xem công thức và ghi nhớ nhanh, hoặc mở toàn bộ bài lý thuyết.
+            </p>
+          </div>
+          <Link href={`/student/knowledge?unitId=${unit.id}`}
+            className="student-control student-control--quiet inline-flex min-h-11 items-center gap-2 px-4">
+            Mở thư viện <ChevronRight className="size-4" aria-hidden="true" />
+          </Link>
+        </div>
+        {availableKnowledgeTopics.length ? (
+          <>
+            <div className="flex flex-wrap gap-2" role="group" aria-label="Chọn Topic để xem nhanh kiến thức">
+              {availableKnowledgeTopics.map(item => (
+                <button key={item.id} type="button"
+                  aria-pressed={activeKnowledgeTopicId === item.id}
+                  onClick={() => pickKnowledgeTopic(item.id)}
+                  className={`student-control min-h-11 px-3 ${activeKnowledgeTopicId === item.id ? "student-filter-active" : "student-control--quiet"}`}>
+                  {item.name}
+                </button>
+              ))}
+            </div>
+            {activeKnowledgeTopicId != null && (
+              <StudentTopicKnowledge key={activeKnowledgeTopicId} topicId={activeKnowledgeTopicId} />
+            )}
+          </>
+        ) : (
+          <PaperSurface as="section" className="space-y-2 p-4 sm:p-5">
+            <p className="student-body text-muted-foreground">
+              Unit này chưa có Topic được công bố để liên kết bài lý thuyết.
+            </p>
+            <Link href="/student/knowledge" className="student-label text-primary underline underline-offset-4">
+              Xem các bài trong Sổ tay kiến thức
+            </Link>
+          </PaperSurface>
+        )}
+      </section>
+
       <div className="space-y-3">
         <ScrapbookHeading as="h2" className="student-section-title text-foreground">
           Chọn phần học
@@ -282,7 +349,10 @@ export function UnitDetailView({ unitId }: UnitDetailViewProps) {
                 key={id}
                 type="button"
                 aria-pressed={on}
-                onClick={() => setTopicId(id)}
+                onClick={() => {
+                  setTopicId(id);
+                  if (id !== "all") setKnowledgeTopicId(id);
+                }}
                 className={`student-control px-3 ${
                   on
                     ? "student-filter-active"
@@ -294,10 +364,6 @@ export function UnitDetailView({ unitId }: UnitDetailViewProps) {
             );
           })}
         </div>
-      )}
-
-      {topicId !== "all" && (
-        <StudentTopicKnowledge key={topicId} topicId={topicId} />
       )}
 
       {/* ─── Activity Cards Grid ─── */}

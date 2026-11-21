@@ -236,7 +236,7 @@ export function StudentKnowledgeLibrary() {
               value={unitId}
               onChange={(event) => {
                 setUnitId(event.target.value);
-                setRole("ALL");
+                if (role === "UNLINKED") setRole("ALL");
                 setTopicId("");
                 setPage(1);
               }}

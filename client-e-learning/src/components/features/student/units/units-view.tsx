@@ -12,7 +12,7 @@ import { StudentTextField } from "@/components/student-ui/student-text-field";
 import { StudentPageHeading } from "@/components/student-ui/patterns/student-page-heading";
 import { StudentCollectionEmptyState } from "@/components/student-ui/patterns/student-collection-empty-state";
 import { UnitCard } from "./unit-card";
-import { Pipo } from "@/components/ui/mascot";
+import { StudentIllustration } from "@/components/student-ui/visuals/student-illustration";
 import { SkeletonGrid } from "@/components/ui/skeleton/skeleton-grid";
 import { RegionState } from "@/components/feedback";
 import { PaperSurface } from "@/components/student-ui/paper-surface";
@@ -43,9 +43,9 @@ export function UnitsView() {
       <PaperSurface as="section" variant="kraft" emphasis="accent" className="student-units-hero">
         <StudentPageHeading
           eyebrow="BÀI HỌC"
-          title="Chọn Unit để học"
+          title={<>Chọn <span className="student-highlight">Unit</span> để học</>}
           description="Khám phá phần học và hoạt động luyện tập do giáo viên công bố."
-          artwork={<Pipo mood="happy" size={92} color="primary" stage={2} />}
+          artwork={<StudentIllustration id="illustration.unit-journey" decorative className="w-32 lg:w-44" />}
           artworkClassName="hidden sm:block"
         />
       </PaperSurface>

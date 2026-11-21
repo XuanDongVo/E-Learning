@@ -13,17 +13,15 @@ import { UnitCover, unitLabel } from "./unit-cover";
 import { PaperSurface } from "@/components/student-ui/paper-surface";
 import { ScrapbookHeading } from "@/components/student-ui/scrapbook-heading";
 import { StudentBackLink } from "@/components/student-ui/patterns/student-back-link";
-import { StudentMascotScene } from "@/components/student-ui/visuals/pipo/student-mascot-scene";
 import { StudentTopicKnowledge } from "@/components/features/student/knowledge/student-topic-knowledge";
 
 type Filter = number | "all";
 
 export interface UnitDetailViewProps {
   unitId: number;
-  mascotSlot?: React.ReactNode;
 }
 
-export function UnitDetailView({ unitId, mascotSlot }: UnitDetailViewProps) {
+export function UnitDetailView({ unitId }: UnitDetailViewProps) {
   const [sectionId, setSectionId] = useState<Filter>("all");
   const [topicId, setTopicId] = useState<Filter>("all");
 
@@ -166,25 +164,8 @@ export function UnitDetailView({ unitId, mascotSlot }: UnitDetailViewProps) {
                 Sổ từ vựng <ChevronRight className="size-4" aria-hidden="true" />
               </Link>
             </div>
-            {!mascotSlot && (
-              <StudentMascotScene
-                variant="guide"
-                mood="wave"
-                prop="book"
-                message="Mình cùng khám phá từng phần học rồi luyện tập nhé!"
-                size="compact"
-                className="pt-1"
-              />
-            )}
           </div>
         </div>
-
-        {mascotSlot && (
-          <div className="student-unit-detail-hero__mascot pointer-events-none absolute bottom-3 right-4 hidden lg:flex"
-            aria-hidden="true">
-            {mascotSlot}
-          </div>
-        )}
       </PaperSurface>
 
       <div className="student-soft-panel flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">

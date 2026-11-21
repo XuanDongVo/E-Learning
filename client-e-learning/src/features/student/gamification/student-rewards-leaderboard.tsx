@@ -6,7 +6,8 @@ import { Activity, Flame, RefreshCw, Trophy, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { RegionState } from "@/components/feedback";
 import { PaperSurface } from "@/components/student-ui/paper-surface";
-import { ScrapbookHeading } from "@/components/student-ui/scrapbook-heading";
+import { StudentPageHeading } from "@/components/student-ui/patterns/student-page-heading";
+import { StudentIllustration } from "@/components/student-ui/visuals/student-illustration";
 import { StudentLeaderboardPodium } from "@/components/student-ui/student-leaderboard-podium";
 import { studentGamificationService } from "@/services/student/student-gamification.service";
 import { StudentAvatar } from "@/components/student-ui/student-avatar";
@@ -122,16 +123,14 @@ export function StudentRewardsLeaderboard() {
   return (
     <section aria-labelledby="leaderboard-page-title" className="student-rewards space-y-6 pb-8">
       <PaperSurface as="section" variant="kraft" tape tapePosition="right" className="student-rewards-hero">
-        <div className="space-y-2">
-          <p className="student-meta text-primary">Cộng đồng học tập</p>
-          <ScrapbookHeading as="h1" id="leaderboard-page-title" className="student-page-title text-foreground">
-            Bảng xếp hạng
-          </ScrapbookHeading>
-          <p className="student-body max-w-2xl text-muted-foreground">
-            Top 50 học viên từ XP và Streak được ghi nhận bởi hệ thống học tập.
-          </p>
-        </div>
-        <Trophy className="hidden h-12 w-12 shrink-0 text-accent sm:block" aria-hidden="true" />
+        <StudentPageHeading
+          eyebrow="CỘNG ĐỒNG HỌC TẬP"
+          title={<>Bảng <span className="student-highlight">xếp hạng</span></>}
+          description="Top 50 học viên theo XP và Streak được ghi nhận bởi hệ thống học tập."
+          artwork={<StudentIllustration id="illustration.leaderboard-podium" decorative className="w-36 lg:w-48" />}
+          artworkClassName="hidden sm:block"
+          className="w-full"
+        />
       </PaperSurface>
 
       <div className="student-rewards-layout">

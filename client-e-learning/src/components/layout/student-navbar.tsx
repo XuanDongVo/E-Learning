@@ -11,8 +11,6 @@ import {
   Home,
   LogOut,
   Menu,
-  Eye,
-  EyeOff,
   Trophy,
   BookMarked,
   LibraryBig,
@@ -23,7 +21,6 @@ import { useQuery } from "@tanstack/react-query";
 import { studentProfileService } from "@/services/student/student-profile.service";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/components/auth/auth-provider";
-import { usePipo } from "@/components/student-ui/visuals/pipo/pipo-provider";
 
 export const NAV_ITEMS = [
   { label: "Home", href: "/student", icon: Home },
@@ -38,7 +35,6 @@ export const NAV_ITEMS = [
 export function StudentNavbar() {
   const pathname = usePathname();
   const { user, logout } = useAuth();
-  const { enabled: pipoEnabled, toggle: togglePipo } = usePipo();
   const [open, setOpen] = useState(false);
   const ownProfile = useQuery({
     queryKey: ["student-profile"],
@@ -125,13 +121,6 @@ export function StudentNavbar() {
 
           {/* Desktop user */}
           <div className="ml-auto hidden items-center gap-2 xl:flex">
-            <button type="button" onClick={togglePipo}
-              aria-label="Hiển thị Pipo"
-              title={pipoEnabled ? "Ẩn Pipo" : "Hiện Pipo"}
-              aria-pressed={pipoEnabled}
-              className="flex h-10 w-10 items-center justify-center rounded-full text-foreground hover:bg-secondary focus-visible:outline-2 focus-visible:outline-primary">
-              {pipoEnabled ? <Eye className="size-5" aria-hidden="true" /> : <EyeOff className="size-5" aria-hidden="true" />}
-            </button>
             <Link
               href="/student/profile"
               className="flex items-center gap-2.5 rounded-full py-1 pl-1 pr-3 transition-colors hover:bg-background-app"
@@ -239,15 +228,6 @@ export function StudentNavbar() {
             })}
           </nav>
 
-          <div className="border-t border-border-color px-3 py-2">
-            <button type="button" onClick={togglePipo}
-              aria-pressed={pipoEnabled}
-              className="student-nav-item flex min-h-11 w-full items-center gap-3 rounded-lg px-4 text-sm font-semibold text-foreground hover:bg-secondary">
-              {pipoEnabled ? <Eye className="size-5" aria-hidden="true" /> : <EyeOff className="size-5" aria-hidden="true" />}
-              <span>Hiển thị Pipo</span>
-              <span className="ml-auto text-xs text-muted-foreground">{pipoEnabled ? "Bật" : "Tắt"}</span>
-            </button>
-          </div>
           <div className="flex items-center border-t border-border-color p-3">
             <Link
               href="/student/profile"

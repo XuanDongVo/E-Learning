@@ -4,6 +4,7 @@ import e_learning.server.common.dto.PageResponse;
 import e_learning.server.common.response.ApiResponse;
 import e_learning.server.knowledge.student.dto.StudentKnowledgeNoteDetail;
 import e_learning.server.knowledge.student.dto.StudentKnowledgeNoteSummary;
+import e_learning.server.knowledge.student.dto.StudentTopicKnowledgeResponse;
 import e_learning.server.knowledge.student.service.StudentKnowledgeNoteService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -28,6 +29,13 @@ public class StudentKnowledgeNoteController {
             @RequestParam(defaultValue = "12") int size) {
         Long studentId = Long.valueOf(Objects.requireNonNull(jwt.getSubject()));
         return ApiResponse.success(service.list(studentId, search, unitId, topicId, page, size));
+    }
+
+    @GetMapping("/topics/{topicId}")
+    public ApiResponse<StudentTopicKnowledgeResponse> forTopic(
+            @AuthenticationPrincipal Jwt jwt, @PathVariable Long topicId) {
+        Long studentId = Long.valueOf(Objects.requireNonNull(jwt.getSubject()));
+        return ApiResponse.success(service.forTopic(studentId, topicId));
     }
 
     @GetMapping("/{noteId}")

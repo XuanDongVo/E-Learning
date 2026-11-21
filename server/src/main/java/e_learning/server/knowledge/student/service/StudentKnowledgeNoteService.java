@@ -14,6 +14,7 @@ import e_learning.server.knowledge.repository.KnowledgeNoteTopicLinkRepository;
 import e_learning.server.knowledge.student.dto.StudentKnowledgeNoteDetail;
 import e_learning.server.knowledge.student.dto.StudentKnowledgeNoteSummary;
 import e_learning.server.knowledge.student.dto.StudentKnowledgeUnitTag;
+import e_learning.server.knowledge.student.dto.StudentTopicKnowledgeResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -22,6 +23,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.ArrayList;
+import java.util.Map;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -105,6 +108,81 @@ public class StudentKnowledgeNoteService {
                 .orElseThrow(() -> new AppException(ErrorCode.KNOWLEDGE_NOTE_NOT_FOUND));
         return new StudentKnowledgeNoteDetail(note.getId(), note.getTitle(),
                 note.getDescription(), note.getUpdatedAt(), note.getDocumentJson());
+    }
+
+
+    /**
+     * S03.2: read-only Topic knowledge. Never disclose linked drafts or hidden
+     * Topics. Grade is derived from the authenticated active Student class.
+     */
+    public StudentTopicKnowledgeResponse forTopic(Long studentId, Long topicId) {
+        Long gradeId = studentUnits.getStudentGradeId(studentId);
+        var topic = topics.findById(topicId)
+                .orElseThrow(() -> new AppException(ErrorCode.TOPIC_NOT_FOUND));
+        var section = topic.getSection();
+        var unit = section.getUnit();
+        if (topic.getStatus() != ContentStatus.PUBLISHED
+                || section.getStatus() != ContentStatus.PUBLISHED
+                || unit.getStatus() != ContentStatus.PUBLISHED
+                || !Objects.equals(unit.getGrade().getId(), gradeId)) {
+            throw new AppException(ErrorCode.TOPIC_NOT_FOUND);
+        }
+        studentUnits.requireVisibleUnit(studentId, unit.getId());
+
+        StudentTopicKnowledgeResponse.PrimaryNote primary = null;
+        var supplementary = new ArrayList<StudentTopicKnowledgeResponse.ReadingNote>();
+        for (KnowledgeNoteTopicLink link : links.findByTopicIdOrderByDisplayOrderAsc(topicId)) {
+            var note = link.getNote();
+            if (note.getStatus() != KnowledgeNoteStatus.PUBLISHED
+                    || !Objects.equals(note.getGrade().getId(), gradeId)) continue;
+            if (link.isPrimary()) {
+                var excerpt = keyPointExcerpt(note.getDocumentJson(), 3);
+                primary = new StudentTopicKnowledgeResponse.PrimaryNote(
+                        note.getId(), note.getTitle(), note.getDescription(),
+                        excerpt.document(), excerpt.total());
+            } else {
+                supplementary.add(new StudentTopicKnowledgeResponse.ReadingNote(
+                        note.getId(), note.getTitle(), note.getDescription()));
+            }
+        }
+        return new StudentTopicKnowledgeResponse(topicId, primary, supplementary);
+    }
+
+    private record Excerpt(Map<String, Object> document, int total) {}
+
+    /**
+     * Copy only marked learning blocks/tables and their nearest H2/H3 heading
+     * from stored Tiptap JSON. Retain original node semantics and safe renderer
+     * contract; never infer an example or generate a second curriculum copy.
+     */
+    private static Excerpt keyPointExcerpt(Map<String, Object> document, int limit) {
+        var output = new ArrayList<Object>();
+        Object lastHeading = null;
+        Object renderedHeading = null;
+        int total = 0;
+        Object raw = document == null ? null : document.get("content");
+        if (raw instanceof List<?> nodes) {
+            for (Object item : nodes) {
+                if (!(item instanceof Map<?, ?> node)) continue;
+                Object type = node.get("type");
+                if ("heading".equals(type)) {
+                    lastHeading = item;
+                } else if ("table".equals(type) || "learningBlock".equals(type)) {
+                    Object attrs = node.get("attrs");
+                    boolean key = attrs instanceof Map<?, ?> meta
+                            && Boolean.TRUE.equals(meta.get("isKeyPoint"));
+                    if (!key) continue;
+                    total++;
+                    if (total > limit) continue;
+                    if (lastHeading != null && lastHeading != renderedHeading) {
+                        output.add(lastHeading);
+                        renderedHeading = lastHeading;
+                    }
+                    output.add(item);
+                }
+            }
+        }
+        return new Excerpt(Map.of("type", "doc", "content", output), total);
     }
 
     private List<StudentKnowledgeUnitTag> visibleUnits(KnowledgeNote note, Long gradeId) {

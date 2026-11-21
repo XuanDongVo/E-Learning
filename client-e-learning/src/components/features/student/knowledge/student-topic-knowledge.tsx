@@ -20,6 +20,12 @@ export function StudentTopicKnowledge({ topicId }: { topicId: number }) {
     staleTime: 60_000,
   });
   const primary = query.data?.primary;
+  const detailQuery = useQuery({
+    queryKey: ["student", "knowledge-notes", "detail", primary?.id],
+    queryFn: async () => (await studentKnowledgeNoteService.get(primary!.id)).data,
+    enabled: open && Boolean(primary?.id),
+    staleTime: 60_000,
+  });
   const supplementary = query.data?.supplementary ?? [];
   const hasExcerpt = Boolean(primary?.summaryDocument.content.length);
 
@@ -69,7 +75,7 @@ export function StudentTopicKnowledge({ topicId }: { topicId: number }) {
           <>
             {hasExcerpt ? (
               <div className="student-topic-knowledge__excerpt">
-                <KnowledgeDocumentRenderer document={primary.summaryDocument} compact />
+                <KnowledgeDocumentRenderer document={primary.summaryDocument} compact idPrefix={`topic-${topicId}-excerpt-`} />
               </div>
             ) : (
               <p className="student-body text-muted-foreground">Bài chính chưa có khối trọng tâm để xem nhanh.</p>
@@ -112,14 +118,22 @@ export function StudentTopicKnowledge({ topicId }: { topicId: number }) {
           <DialogContent className="student-theme max-h-[85dvh] max-w-3xl overflow-y-auto border-2 border-ink bg-card shadow-pop">
             <DialogHeader>
               <DialogTitle className="student-section-title text-foreground">{primary.title}</DialogTitle>
-              <DialogDescription>Trích từ các khối trọng tâm do giáo viên đánh dấu trong bài chính.</DialogDescription>
+              <DialogDescription>Đọc nội dung đầy đủ do giáo viên công bố, không cần rời trang Unit.</DialogDescription>
             </DialogHeader>
-            {hasExcerpt ? (
+            {detailQuery.isPending ? (
+              <p className="student-body" role="status">Đang tải toàn bộ bài lý thuyết…</p>
+            ) : detailQuery.isError ? (
+              <div className="space-y-2">
+                <p className="student-body">Không thể tải nội dung đã công bố của bài này.</p>
+                <button type="button" className="student-control student-control--secondary px-4"
+                  onClick={() => void detailQuery.refetch()}>Thử lại</button>
+              </div>
+            ) : detailQuery.data?.document ? (
               <div className="student-knowledge-reading">
-                <KnowledgeDocumentRenderer document={primary.summaryDocument} compact />
+                <KnowledgeDocumentRenderer document={detailQuery.data.document} idPrefix={`topic-${topicId}-dialog-`} />
               </div>
             ) : (
-              <p className="student-body">Không có phần tóm tắt. Hãy đọc bài lý thuyết đầy đủ.</p>
+              <p className="student-body">Nội dung bài lý thuyết hiện chưa sẵn sàng.</p>
             )}
             <Link href={`/student/knowledge/${primary.id}`}
               className="student-control student-control--action inline-flex w-fit items-center gap-2 px-4">

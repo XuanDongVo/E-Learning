@@ -55,6 +55,44 @@ class StudentKnowledgeNoteServiceTest {
         var response = service.get(7L, 10L);
         assertEquals("Present Simple", response.title());
         assertEquals(10L, response.id());
+        assertTrue(response.linkedTopics().isEmpty());
+    }
+
+    @Test
+    void detailIncludesOnlyVisibleLinkedTopicsAsReadingReturnPaths() {
+        var visible = mock(Topic.class);
+        var hidden = mock(Topic.class);
+        var visibleSection = mock(Section.class);
+        var hiddenSection = mock(Section.class);
+        var unit = mock(Unit.class);
+        var grade = mock(Grade.class);
+        when(grade.getId()).thenReturn(2L);
+        when(unit.getGrade()).thenReturn(grade);
+        when(unit.getStatus()).thenReturn(ContentStatus.PUBLISHED);
+        when(unit.getId()).thenReturn(88L);
+        when(unit.getCode()).thenReturn("U03");
+        when(unit.getName()).thenReturn("Lesson 3");
+        when(visible.getId()).thenReturn(3L);
+        when(visible.getName()).thenReturn("Present Simple");
+        when(visible.getStatus()).thenReturn(ContentStatus.PUBLISHED);
+        when(visible.getSection()).thenReturn(visibleSection);
+        when(visibleSection.getStatus()).thenReturn(ContentStatus.PUBLISHED);
+        when(visibleSection.getUnit()).thenReturn(unit);
+        when(hidden.getSection()).thenReturn(hiddenSection);
+        when(hidden.getStatus()).thenReturn(ContentStatus.DRAFT);
+        when(hiddenSection.getUnit()).thenReturn(unit);
+        var first = mock(KnowledgeNoteTopicLink.class);
+        var second = mock(KnowledgeNoteTopicLink.class);
+        when(first.getTopic()).thenReturn(visible);
+        when(first.isPrimary()).thenReturn(true);
+        when(second.getTopic()).thenReturn(hidden);
+        when(links.findByNoteId(10L)).thenReturn(List.of(second, first));
+
+        var result = service.get(7L, 10L);
+        assertEquals(1, result.linkedTopics().size());
+        assertEquals(3L, result.linkedTopics().getFirst().topicId());
+        assertEquals(88L, result.linkedTopics().getFirst().unitId());
+        assertTrue(result.linkedTopics().getFirst().primary());
     }
 
     @Test

@@ -14,6 +14,7 @@ import e_learning.server.knowledge.repository.KnowledgeNoteTopicLinkRepository;
 import e_learning.server.knowledge.student.dto.StudentKnowledgeNoteDetail;
 import e_learning.server.knowledge.student.dto.StudentKnowledgeNoteSummary;
 import e_learning.server.knowledge.student.dto.StudentKnowledgeUnitTag;
+import e_learning.server.knowledge.student.dto.StudentKnowledgeTopicTag;
 import e_learning.server.knowledge.student.dto.StudentTopicKnowledgeResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -107,7 +108,13 @@ public class StudentKnowledgeNoteService {
                         && Objects.equals(n.getGrade().getId(), gradeId))
                 .orElseThrow(() -> new AppException(ErrorCode.KNOWLEDGE_NOTE_NOT_FOUND));
         return new StudentKnowledgeNoteDetail(note.getId(), note.getTitle(),
-                note.getDescription(), note.getUpdatedAt(), note.getDocumentJson());
+                note.getDescription(), note.getUpdatedAt(), note.getDocumentJson(),
+                visibleTopicLinks(note, gradeId).stream().map(link -> {
+                    var topic = link.getTopic();
+                    var unit = topic.getSection().getUnit();
+                    return new StudentKnowledgeTopicTag(topic.getId(), topic.getName(),
+                            unit.getId(), unit.getCode(), unit.getName(), link.isPrimary());
+                }).toList());
     }
 
 
@@ -183,6 +190,28 @@ public class StudentKnowledgeNoteService {
             }
         }
         return new Excerpt(Map.of("type", "doc", "content", output), total);
+    }
+
+    /** Public Student backlink projection: no hidden Topic, Unit or cross-grade metadata. */
+    private List<KnowledgeNoteTopicLink> visibleTopicLinks(KnowledgeNote note, Long gradeId) {
+        return links.findByNoteId(note.getId()).stream()
+                .filter(link -> {
+                    var topic = link.getTopic();
+                    var section = topic.getSection();
+                    var unit = section.getUnit();
+                    return topic.getStatus() == ContentStatus.PUBLISHED
+                            && section.getStatus() == ContentStatus.PUBLISHED
+                            && unit.getStatus() == ContentStatus.PUBLISHED
+                            && Objects.equals(unit.getGrade().getId(), gradeId);
+                })
+                .sorted((a, b) -> {
+                    int primaryOrder = Boolean.compare(b.isPrimary(), a.isPrimary());
+                    if (primaryOrder != 0) return primaryOrder;
+                    int unitOrder = a.getTopic().getSection().getUnit().getCode()
+                            .compareToIgnoreCase(b.getTopic().getSection().getUnit().getCode());
+                    return unitOrder != 0 ? unitOrder : Long.compare(a.getTopic().getId(), b.getTopic().getId());
+                })
+                .toList();
     }
 
     private List<StudentKnowledgeUnitTag> visibleUnits(KnowledgeNote note, Long gradeId) {

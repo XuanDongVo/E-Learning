@@ -65,10 +65,11 @@ export function PracticeResult({
         ? "Bạn đã nộp bài khi chưa làm hết"
         : "Hoàn thành luyện tập!";
 
-  const levelUp = session.status === "COMPLETED" && xpReward != null &&
-    xpReward.levelAfter > xpReward.levelBefore;
-  const companionMessage = levelUp
-    ? `Bạn đã lên Level ${xpReward!.levelAfter}! Cùng giữ nhịp học tập nhé!`
+  const confirmedNewLevel = session.status === "COMPLETED" && xpReward != null &&
+    xpReward.levelAfter > xpReward.levelBefore ? xpReward.levelAfter : null;
+  const levelUp = confirmedNewLevel !== null;
+  const companionMessage = confirmedNewLevel !== null
+    ? `Bạn đã lên Level ${confirmedNewLevel}! Cùng giữ nhịp học tập nhé!`
     : session.status === "GAME_OVER"
       ? "Hết lượt thử thách rồi. Mình có thể xem lại câu hỏi và thử lần khác nhé!"
       : session.status === "ABANDONED"

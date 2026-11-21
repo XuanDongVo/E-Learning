@@ -126,7 +126,7 @@ export function StudentNavbar() {
           {/* Desktop user */}
           <div className="ml-auto hidden items-center gap-2 xl:flex">
             <button type="button" onClick={togglePipo}
-              aria-label={pipoEnabled ? "Ẩn Pipo" : "Hiện Pipo"}
+              aria-label="Hiển thị Pipo"
               title={pipoEnabled ? "Ẩn Pipo" : "Hiện Pipo"}
               aria-pressed={pipoEnabled}
               className="flex h-10 w-10 items-center justify-center rounded-full text-foreground hover:bg-secondary focus-visible:outline-2 focus-visible:outline-primary">
@@ -244,7 +244,8 @@ export function StudentNavbar() {
               aria-pressed={pipoEnabled}
               className="student-nav-item flex min-h-11 w-full items-center gap-3 rounded-lg px-4 text-sm font-semibold text-foreground hover:bg-secondary">
               {pipoEnabled ? <Eye className="size-5" aria-hidden="true" /> : <EyeOff className="size-5" aria-hidden="true" />}
-              {pipoEnabled ? "Ẩn Pipo" : "Hiện Pipo"}
+              <span>Hiển thị Pipo</span>
+              <span className="ml-auto text-xs text-muted-foreground">{pipoEnabled ? "Bật" : "Tắt"}</span>
             </button>
           </div>
           <div className="flex items-center border-t border-border-color p-3">

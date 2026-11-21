@@ -11,7 +11,6 @@ import {
 } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { PaperSurface } from "@/components/student-ui/paper-surface";
-import { StudentBackLink } from "@/components/student-ui/patterns/student-back-link";
 import { StudentCollectionEmptyState } from "@/components/student-ui/patterns/student-collection-empty-state";
 import { StudentListPagination } from "@/components/student-ui/data-list/student-list-pagination";
 import { StudentPageHeading } from "@/components/student-ui/patterns/student-page-heading";
@@ -20,15 +19,9 @@ import { StudentIllustration } from "@/components/student-ui/visuals/student-ill
 import { studentKnowledgeNoteService } from "@/services/student/student-knowledge-note.service";
 import { studentUnitService } from "@/services/student/student-unit.service";
 import type { StudentKnowledgeNoteSummary, StudentKnowledgeRoleFilter } from "@/types/student-knowledge-note";
+import { chooseKnowledgeLibraryRole, KNOWLEDGE_LIBRARY_ROLES, KNOWLEDGE_ROLE_LABELS } from "./knowledge-library-roles";
 
 const PAGE_SIZE = 12;
-
-const ROLE_FILTERS: Array<{ value: StudentKnowledgeRoleFilter; label: string }> = [
-  { value: "ALL", label: "Tất cả" },
-  { value: "PRIMARY", label: "Bài chính" },
-  { value: "SUPPLEMENTARY", label: "Bổ sung" },
-  { value: "UNLINKED", label: "Đọc tự do" },
-];
 
 export function StudentKnowledgeLibrary() {
   const [input, setInput] = useState("");
@@ -137,7 +130,7 @@ export function StudentKnowledgeLibrary() {
         variant="kraft"
         tape
         emphasis="feature"
-        className="student-knowledge-hero relative overflow-hidden p-5 sm:p-3"
+        className="student-knowledge-hero relative overflow-hidden p-5 sm:p-6"
       >
         <StudentDoodle
           id="doodle.star-sticker"
@@ -203,15 +196,14 @@ export function StudentKnowledgeLibrary() {
           />
         </div>
         <div role="group" aria-label="Loại bài lý thuyết" className="student-knowledge-role-filters flex flex-wrap gap-2">
-          {ROLE_FILTERS.map(item => (
+          {KNOWLEDGE_LIBRARY_ROLES.map(item => (
             <button key={item.value} type="button" aria-pressed={role === item.value}
               className={`student-control min-h-11 px-4 ${role === item.value ? "student-filter-active" : "student-control--quiet"}`}
               onClick={() => {
-                setRole(item.value);
-                if (item.value === "UNLINKED") {
-                  setUnitId("");
-                  setTopicId("");
-                }
+                const next = chooseKnowledgeLibraryRole(item.value, unitId, topicId);
+                setRole(next.role);
+                setUnitId(next.unitId);
+                setTopicId(next.topicId);
                 setPage(1);
               }}>
               {item.label}
@@ -455,10 +447,10 @@ export function KnowledgeNoteCard({
         {tag ? `${tag.code} · ${tag.name}` : "GÓC ĐỌC TỰ DO"}
         {note.units.length > 1 ? ` · +${note.units.length - 1} Unit` : ""}
       </p>
-      <div className="mb-2 flex flex-wrap gap-1.5" aria-label="Vai trò học liệu">
-        {note.roles.map(item => (
+      <div role="group" className="mb-2 flex flex-wrap gap-1.5" aria-label="Vai trò học liệu">
+        {(note.roles ?? []).map(item => (
           <span key={item} data-knowledge-role={item} className="student-knowledge-role-tag student-caption">
-            {item === "PRIMARY" ? "Bài chính" : item === "SUPPLEMENTARY" ? "Bổ sung" : "Đọc tự do"}
+            {KNOWLEDGE_ROLE_LABELS[item]}
           </span>
         ))}
       </div>

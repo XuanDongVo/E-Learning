@@ -61,6 +61,10 @@ public class StudentKnowledgeNoteService {
         if (!List.of("ALL", "PRIMARY", "SUPPLEMENTARY", "UNLINKED").contains(resolvedRole)) {
             throw new AppException(ErrorCode.INVALID_REQUEST, "Vai trò học liệu không hợp lệ.");
         }
+        if ("UNLINKED".equals(resolvedRole) && (unitId != null || topicId != null)) {
+            throw new AppException(ErrorCode.INVALID_REQUEST,
+                    "Đọc tự do không thể kết hợp bộ lọc Unit hoặc Topic.");
+        }
         if (page < 1 || size < 1 || size > 50) {
             throw new AppException(ErrorCode.INVALID_REQUEST, "page phải >= 1, size phải từ 1 đến 50.");
         }

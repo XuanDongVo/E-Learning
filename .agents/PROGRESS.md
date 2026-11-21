@@ -1,3 +1,12 @@
+## 2026-11-21 — Knowledge Note 03.2.1 stabilization + 03.3 reader + 03.4 library
+
+- Security regression coverage for Student Topic/Note visibility; renderer type fix and existing ID-isolation checks.
+- Student Note Detail now supplies only visible linked Topic backlinks, with Unit deep link, and supports active Table of Contents, mobile disclosure and session-only reading progress.
+- Student Knowledge Library now filters server-side by all/primary/supplementary/unlinked before pagination, exposes true role badges and uses shared Student pagination.
+- Explicitly disallow contradictory UNLINKED + Unit/Topic filters; preserve Primary/Supplementary role on Unit filter change.
+- Added focused tests for reading percentage, role transitions and backend Note role/permission projections. No migration required.
+- CI/runtime status: no local JVM/Node checkout available through connector; compilation, Vitest, browser and integration checks pending. See phase docs for commands and acceptance checklist.
+
 ## 2026-11-21 — Knowledge Phase 02.7 + 03.2 and SVG headers
 
 - Teacher Topic linking UX: Primary/Supplementary explanations, state-aware picker, promotion of already linked Supplementary, inline error and published-note empty guidance.

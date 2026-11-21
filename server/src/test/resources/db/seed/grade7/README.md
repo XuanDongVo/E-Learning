@@ -5,6 +5,7 @@ This seed is **Grade 7 only**. Grade records `GRADE_6`, `GRADE_7`, `GRADE_8`, `G
 ## Knowledge Note curriculum seed
 
 Run `011_knowledge_note.sql` after `01_foundation.sql` and after Flyway V69.
+Then run `012_knowledge_note_reading_library.sql` to add role-filter, reader and supplementary-link QA fixtures.
 It adds the Grade 7 Global Success Knowledge Note fixture and is safe to rerun:
 
 - The six legacy `G7-SEED-U01..U06` units are not renamed or deleted.
@@ -15,6 +16,14 @@ It adds the Grade 7 Global Success Knowledge Note fixture and is safe to rerun:
   identity. Existing teacher-authored notes are not updated or overwritten.
 - Primary Topic links are created only when the Topic has no existing Primary.
 - The seed is a fixture, not a Flyway migration; do not run it against production.
+
+### Knowledge Note Phase 03.2.1 / 03.3 / 03.4 demo data
+
+`012_knowledge_note_reading_library.sql` is a separate, additive, rerunnable seed file. Run it **only after `011` and Flyway V69** on a disposable development/test database. It creates eight new Knowledge Notes, including six supplementary teaching notes, a published free-reading note, and one UNPUBLISHED negative visibility fixture. A new Topic `Present Simple vs Present Continuous` in U01 uses a note as Primary while that same note is Supplementary in U01 and U10; this exercises simultaneous role badges. Other Notes have multiple Supplementary links, marked Tiptap comparison tables, H2/H3 headings, and formula/example blocks.
+
+The script does not replace existing Primary Note links, alter existing teacher-authored Note content, or link the unpublished/free-reading fixtures. An existing teacher Primary on the new Topic is preserved. IDs are looked up by stable Grade, Unit, Topic and fixture description markers (never hardcoded). It wraps inserts and assertions in a transaction and provides a read-only summary. The `roles` filter and reader are application features; the SQL does not add any new schema tables.
+
+To add only the Knowledge Note fixtures to an already-seeded dev database, run `011_knowledge_note.sql` (if not previously run), followed by `012_knowledge_note_reading_library.sql`; **do not rerun `00_reset_legacy_demo.sql`**. Both files are fixtures, never Flyway migrations.
 
 The current implementation provides one substantive core note for each official
 unit plus six independent revision notes, with formula, worked example, common
@@ -75,6 +84,7 @@ $files = @(
   "06_streak_history.sql",
   "07_vocabulary.sql",
   "011_knowledge_note.sql",
+  "012_knowledge_note_reading_library.sql",
   "99_assertions.sql"
 )
 foreach ($name in $files) {

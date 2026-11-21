@@ -49,3 +49,29 @@ The fixture provides one substantive core note per official unit and six
 independent revision notes. Further vocabulary expansion and separate
 supplementary notes can be added in a later content pass without changing the
 stable seed identities.
+
+
+## Phase 03.2.1 / 03.3 / 03.4 reading and library QA additions
+
+Run \`012_knowledge_note_reading_library.sql\` **after** \`011_knowledge_note.sql\` to test student reader/Library behavior beyond the original core curriculum:
+
+| Note key | Student Library role | Topic associations |
+|---|---|---|
+| \`g7-extra-tenses-contrast\` | PRIMARY + SUPPLEMENTARY | Primary: new U01 "Present Simple vs Present Continuous"; Supplementary: U01 Hobbies, U10 Energy |
+| \`g7-extra-hobbies-examples\` | SUPPLEMENTARY | U01 Hobbies; U03 Community Service |
+| \`g7-extra-quantity-table\` | SUPPLEMENTARY | U05 Food and Drink |
+| \`g7-extra-road-safety\` | SUPPLEMENTARY | U07 Traffic; U09 Festivals |
+| \`g7-extra-error-review\` | SUPPLEMENTARY | U03 Community Service; U10 Energy |
+| \`g7-extra-articles-table\` | SUPPLEMENTARY | U05 Food and Drink; U12 Countries |
+| \`g7-extra-free-reading\` | UNLINKED | No Topic; independent published reading |
+| \`g7-extra-hidden-draft\` | Not visible to Student | UNPUBLISHED; no Topic |
+
+New supplementary documents include a Tiptap \`table\` with \`purpose="comparison"\` and \`isKeyPoint=true\` plus a marked formula block. Their H2/H3 headings support the reading TOC, while the two key-point nodes demonstrate the Topic Quick Summary and full-reader rendering. No child content, exact Topic/Unit association or Student progress is fabricated beyond the declared fixture.
+
+**Manual API checks:**
+
+- \`GET /v1/student/knowledge-notes?role=PRIMARY\` includes the contrast Note; \`role=SUPPLEMENTARY\` also includes it.
+- \`GET /v1/student/knowledge-notes?role=UNLINKED\` includes the published free-reading Note, not the hidden UNPUBLISHED Note.
+- \`GET /v1/student/knowledge-notes?role=UNLINKED&unitId=1\` must reject the incompatible filter (use the actual Unit ID when testing; the number here is illustrative).
+- Open the new contrast Topic and inspect Quick Summary table + formula block, then use full reader and linked Topic navigation.
+- For student read by ID, UNPUBLISHED Note must return a not-found style response.

@@ -64,7 +64,7 @@ export function StudentPageHeading({
           as={Heading}
           className="student-page-heading__title student-page-title text-foreground"
         >
-          {title}
+          <span className="student-page-heading__highlight">{title}</span>
         </ScrapbookHeading>
         {description != null && (
           <p className="student-page-heading__description student-body max-w-prose text-muted-foreground">

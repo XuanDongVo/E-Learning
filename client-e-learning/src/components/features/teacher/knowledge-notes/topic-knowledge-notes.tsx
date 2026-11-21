@@ -102,6 +102,7 @@ export function TeacherTopicKnowledgeNotes({
   const pending = link.isPending || unlink.isPending || reorder.isPending;
 
   const openPicker = (nextRole: Role) => {
+    link.reset();
     setRole(nextRole);
     setSearch("");
     setDebouncedSearch("");
@@ -266,6 +267,11 @@ export function TeacherTopicKnowledgeNotes({
               <Input aria-label="Tìm Knowledge Note" placeholder="Tìm tiêu đề hoặc mô tả…"
                 className="pl-9" value={search} onChange={e => setSearch(e.target.value)} />
             </div>
+            {link.isError && (
+              <p role="alert" className="rounded-lg border border-destructive/40 bg-destructive/5 px-3 py-2 text-sm text-destructive">
+                {link.error instanceof Error ? link.error.message : "Không thể gắn Knowledge Note. Hãy kiểm tra Grade, trạng thái công bố và khối Trọng tâm."}
+              </p>
+            )}
             {candidatesQuery.isPending ? (
               <RegionState variant="loading" description="Đang tìm bài lý thuyết…" />
             ) : candidatesQuery.isError ? (

@@ -40,7 +40,7 @@
   text-wrap: balance;
   overflow-wrap: break-word;
 }
- .student-theme .student-page-heading[data-highlight="underline"] .student-page-heading__title::after {
+.student-theme .student-page-heading[data-highlight="underline"] .student-page-heading__title::after {
   content: "";
   display: block;
   width: clamp(42px, 8vw, 60px);
@@ -96,10 +96,8 @@
 }
 
 /* v3: accent should read like translucent marker on paper, not a heavy banner. */
-.student-theme .student-page-heading[data-highlight="marker"] .student-page-heading__title {
-  display: inline;
+.student-theme .student-page-heading[data-highlight="marker"] .student-page-heading__highlight {
   padding: 0 .08em .03em;
-  margin-inline: -.08em;
   background-image: linear-gradient(transparent 66%, rgba(217,155,38,.46) 66%, rgba(217,155,38,.46) 91%, transparent 91%);
   box-decoration-break: clone;
   -webkit-box-decoration-break: clone;

@@ -2,13 +2,7 @@
 
 import { Link } from "@/i18n/navigation";
 import { useMemo, useState } from "react";
-import {
-  ArrowLeft,
-  BarChart3,
-  CheckCircle2,
-  Clock,
-  Lock,
-} from "lucide-react";
+import { ArrowLeft, BarChart3, CheckCircle2, Clock, Lock } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import type { AttemptResultResponse } from "@/types/student/assignment-attempt";
@@ -62,11 +56,11 @@ export function StudentResultView({
   return (
     <>
       <header className="flex h-14 items-center gap-3 border-b bg-card px-4 rounded-xl mb-4">
-        <Button variant="ghost" size="sm" >
-          <Link href="/student/assignments">
+        <Link href="/student/assignments" className="flex items-center gap-2">
+          <Button variant="ghost" size="sm">
             <ArrowLeft className="h-4 w-4" /> Danh sách bài
-          </Link>
-        </Button>
+          </Button>
+        </Link>
         <BarChart3 className="  h-4 w-4 text-primary" />
         <h1 className="min-w-0 truncate font-semibold">Kết quả · {title}</h1>
         <div className="ml-auto flex items-center gap-2"></div>
@@ -250,7 +244,7 @@ export function StudentResultView({
                 );
               })}
             </div>
-            <Button  variant="outline" className="mt-5 w-full">
+            <Button variant="outline" className="mt-5 w-full">
               <Link href="/student/assignments">
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 {t("backToAssignments")}

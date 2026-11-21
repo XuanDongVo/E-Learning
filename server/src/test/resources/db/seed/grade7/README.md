@@ -2,6 +2,25 @@
 
 This seed is **Grade 7 only**. Grade records `GRADE_6`, `GRADE_7`, `GRADE_8`, `GRADE_9` remain available, but **only Grade 7 has curriculum/demo content** after reset.
 
+## Knowledge Note curriculum seed
+
+Run `011_knowledge_note.sql` after `01_foundation.sql` and after Flyway V69.
+It adds the Grade 7 Global Success Knowledge Note fixture and is safe to rerun:
+
+- The six legacy `G7-SEED-U01..U06` units are not renamed or deleted.
+- The legacy `G7-SEED-U06` ("Traffic and Transport") mismatch is preserved because
+  existing Questions, Activities and Assignments refer to it.
+- Official curriculum Units 6–12 are additive `G7-CURR-U06..U12` units.
+- Seed notes use `[G7-KN-SEED:<key>]` in `description` as a disposable fixture
+  identity. Existing teacher-authored notes are not updated or overwritten.
+- Primary Topic links are created only when the Topic has no existing Primary.
+- The seed is a fixture, not a Flyway migration; do not run it against production.
+
+The current implementation provides one substantive core note for each official
+unit plus six independent revision notes, with formula, worked example, common
+mistake and self-check blocks. The coverage and mapping decisions are recorded in
+[`KNOWLEDGE_COVERAGE.md`](./KNOWLEDGE_COVERAGE.md).
+
 ## Scope
 
 | Content | Expected |
@@ -55,6 +74,7 @@ $files = @(
   "05_gamification_xp.sql",
   "06_streak_history.sql",
   "07_vocabulary.sql",
+  "011_knowledge_note.sql",
   "99_assertions.sql"
 )
 foreach ($name in $files) {

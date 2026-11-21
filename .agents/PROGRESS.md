@@ -1,3 +1,9 @@
+## 2026-11-21 — Student Knowledge Library pagination focus
+
+- Updated [student-knowledge-library.tsx](../../client-e-learning/src/components/features/student/knowledge/student-knowledge-library.tsx) so Previous/Next waits for the selected page query to finish, focuses `#knowledge-note-card-list`, and scrolls that list into view.
+- Uses `tabIndex={-1}` and `preventScroll` for the focus handoff, with reduced-motion-aware smooth scrolling.
+- Targeted ESLint was not executed because tool execution permission was denied.
+
 ## 2026-11-21 — Knowledge Note Phase 03.1 (Student Library and Reader)
 
 - Implemented real role-protected Student Knowledge Note list/detail APIs with Grade derived from active class and PUBLISHED-only reads. Added optional Unit/Topic filter with visibility checks; includes unlinked published Notes in the default Library.
@@ -1128,3 +1134,11 @@ States covered: loading, source error/empty, invalid configuration, insufficient
 - Replaced mock Honors with 2 server-backed honors (lifetime XP, longest Streak), and recent activity with terminal ActivitySessions.
 - No ranking table migration. Runtime PostgreSQL verification, backend Maven, frontend lint/build, and authenticated E2E not yet run.
 - **2026-11-11 Vocabulary Learn refactor:** NEW-word dynamic queue (five unique retry words), continuous selectable Word/Choice/Typing/Pronunciation modes, Chưa nhớ next-mode loop, Đã thuộc rating panel, local Học lại (no FSRS write), HARD/GOOD/EASY backend FSRS write and initial 6h/12h/1d policy with non-mutating review preview endpoint. Student Browse/Teacher/Game are intentionally outside refactor. Verification is limited by unavailable frontend dependencies and inaccessible Maven Central in this execution environment.
+## 2026-11-21 — Grade 7 Knowledge Note seed
+
+- Added the V69-compatible Grade 7 Knowledge Note fixture at `server/src/test/resources/db/seed/grade7/011_knowledge_note.sql`.
+- Preserved legacy `G7-SEED-U01..U06` identifiers and added additive `G7-CURR-U06..U12` units for the Global Success Unit 6/7 mismatch.
+- Added 12 unit-linked published core notes and six independent revision notes with validator-supported formula, example, common-mistake and self-check blocks.
+- Added the mapping/coverage document and rerun/fixture-identity instructions to the Grade 7 seed README.
+- Per owner request, tests and runtime verification were not run.
+

@@ -7,6 +7,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import type { AttemptResultResponse } from "@/types/student/assignment-attempt";
 import { cn } from "@/lib/utils";
+import { StudentMascotScene } from "@/components/student-ui/visuals/pipo/student-mascot-scene";
 import { formatDateTime, formatDurationRange } from "@/utils/format";
 import { ResultQuestionCard } from "./result-question-card";
 import {
@@ -169,6 +170,16 @@ export function StudentResultView({
             <span>{t("result.lockedHint")}</span>
           </div>
         </div>
+
+        <StudentMascotScene
+          variant="feedback"
+          mood={timedOut ? "think" : "happy"}
+          prop="book"
+          message={timedOut
+            ? "Thời gian làm bài đã kết thúc. Xem lại phần thông tin được phép hiển thị nhé!"
+            : "Bạn đã nộp bài. Cùng xem lại kết quả và rút kinh nghiệm cho lần sau nhé!"}
+          className="max-w-lg"
+        />
 
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_17rem]">
           <section className="space-y-4">

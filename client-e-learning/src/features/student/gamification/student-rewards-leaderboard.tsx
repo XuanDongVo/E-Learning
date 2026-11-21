@@ -125,6 +125,7 @@ export function StudentRewardsLeaderboard() {
       <PaperSurface as="section" variant="kraft" tape tapePosition="right" className="student-rewards-hero">
         <StudentPageHeading
           eyebrow="CỘNG ĐỒNG HỌC TẬP"
+          titleId="leaderboard-page-title"
           title={<>Bảng <span className="student-highlight">xếp hạng</span></>}
           description="Top 50 học viên theo XP và Streak được ghi nhận bởi hệ thống học tập."
           artwork={<StudentIllustration id="illustration.leaderboard-podium" decorative className="w-36 lg:w-48" />}

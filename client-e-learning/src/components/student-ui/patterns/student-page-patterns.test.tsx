@@ -29,6 +29,7 @@ describe("Student page patterns", () => {
     expect(html).toContain("student-page-heading__title");
     expect(html).toContain("student-page-heading__description");
     expect(html).toContain('data-heading-level="h1"');
+    expect(html).toContain('data-highlight="marker"');
     expect(html).not.toContain("student-page-heading__artwork");
     expect(html).not.toContain("student-page-heading__actions");
     expect(html).not.toContain("student-paper");
@@ -38,6 +39,8 @@ describe("Student page patterns", () => {
     const html = renderToStaticMarkup(
       <StudentPageHeading
         as="h3"
+        titleId="nested-heading"
+        highlight="none"
         title="Các chuyên đề"
         eyebrow={<span><strong>UNIT 03</strong> · GRAMMAR</span>}
         actions={<a href="#practice">Luyện tập</a>}
@@ -49,6 +52,8 @@ describe("Student page patterns", () => {
     );
     expect(html).toContain('<h3 class="student-handwriting');
     expect(html).toContain('data-heading-level="h3"');
+    expect(html).toContain('data-highlight="none"');
+    expect(html).toContain('id="nested-heading"');
     expect(html).toContain('data-has-artwork="true"');
     expect(html).toContain("student-page-heading__eyebrow");
     expect(html).toContain("student-page-heading__actions");

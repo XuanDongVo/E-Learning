@@ -4,6 +4,9 @@ import { ScrapbookHeading } from "@/components/student-ui/scrapbook-heading";
 
 export interface StudentPageHeadingProps {
   eyebrow?: ReactNode;
+  titleId?: string;
+  /** h1 uses a marker highlight by default; nested headings use no accent. */
+  highlight?: "marker" | "underline" | "none";
   title: ReactNode;
   description?: ReactNode;
   artwork?: ReactNode;
@@ -24,6 +27,8 @@ export interface StudentPageHeadingProps {
  */
 export function StudentPageHeading({
   eyebrow,
+  titleId,
+  highlight,
   title,
   description,
   artwork,
@@ -36,6 +41,7 @@ export function StudentPageHeading({
   return (
     <div
       data-heading-level={Heading}
+      data-highlight={highlight ?? (Heading === "h1" ? "marker" : "none")}
       data-has-artwork={artwork != null || undefined}
       className={cn(
         "student-page-heading flex w-full min-w-0 flex-col items-start justify-between gap-4 sm:flex-row sm:items-center sm:gap-6",
@@ -54,6 +60,7 @@ export function StudentPageHeading({
           </p>
         )}
         <ScrapbookHeading
+          id={titleId}
           as={Heading}
           className="student-page-heading__title student-page-title text-foreground"
         >

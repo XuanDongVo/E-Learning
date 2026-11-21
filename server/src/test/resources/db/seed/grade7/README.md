@@ -60,7 +60,7 @@ MIXED is an **Activity question_difficulty setting**, not a Question difficulty.
 
 **Never run the reset against production, a shared database or a database with meaningful student data.** Make a backup and use a dedicated disposable database.
 
-Apply Flyway migrations up to **V54** first. **If Flyway V54 has already run, do not create or replay any new migration**: the three new SQL files below are manually executed dev/test fixtures under `src/test/resources`, not Flyway migrations. The `V39_1__bootstrap_legacy_assignment_classes.sql` migration exists to allow fresh database initialization with historical Grade 6–8 Assignment demo migrations, which would otherwise fail when V40 tries to resolve class recipients.
+Apply the Flyway migrations required by the seed scripts. **Knowledge Note files `011` and `012` specifically require V69** (`knowledge_notes.document_json`, single-document schema); earlier Grade 7 fixture files may have lower version requirements. **If Flyway V54 has already run, do not create or replay any new migration**: the three new SQL files below are manually executed dev/test fixtures under `src/test/resources`, not Flyway migrations. The `V39_1__bootstrap_legacy_assignment_classes.sql` migration exists to allow fresh database initialization with historical Grade 6–8 Assignment demo migrations, which would otherwise fail when V40 tries to resolve class recipients.
 
 Important: This intermediate-version migration is designed for a **fresh database**. Existing databases that have already migrated beyond V39 may require a separate migration plan. Do not enable Flyway `outOfOrder` in production to force it through.
 

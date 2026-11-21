@@ -212,18 +212,6 @@ function TeacherSidebar({
                 >
                   {tNav("questionBanksNav")}
                 </Link>
-                <Link
-                  href="/teacher/content/knowledge-notes"
-                  onClick={onClose}
-                  aria-current={knowledgeNotesActive ? "page" : undefined}
-                  className={`flex h-8 items-center rounded-lg px-2.5 text-sm font-semibold transition-all ${
-                    knowledgeNotesActive
-                      ? "border border-border bg-card text-primary shadow-pop-sm"
-                      : "text-muted-foreground hover:bg-muted/70 hover:text-foreground"
-                  }`}
-                >
-                  Sổ tay kiến thức
-                </Link>
               </div>
             )}
           </div>

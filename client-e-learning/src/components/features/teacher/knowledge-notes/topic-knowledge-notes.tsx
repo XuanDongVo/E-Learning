@@ -65,7 +65,7 @@ export function TeacherTopicKnowledgeNotes({
     })).data,
     enabled: pickerOpen && gradeId > 0,
   });
-
+  
   const links = linksQuery.data ?? [];
   const primary = links.find(link => link.primary) ?? null;
   const supplementary = links.filter(link => !link.primary);

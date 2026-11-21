@@ -90,7 +90,7 @@ export function StudentTopicKnowledge({ topicId }: { topicId: number }) {
                 onClick={() => setOpen(true)}>
                 <BookOpenText className="size-4" aria-hidden="true" /> Xem nhanh lý thuyết
               </button>
-              <Link href={`/student/knowledge/${primary.id}`}
+              <Link href={`/student/knowledge/${primary.id}?topicId=${topicId}`}
                 className="student-control student-control--action inline-flex items-center gap-2 px-4">
                 Đọc lý thuyết đầy đủ <ArrowRight className="size-4" aria-hidden="true" />
               </Link>
@@ -103,7 +103,7 @@ export function StudentTopicKnowledge({ topicId }: { topicId: number }) {
           <div className="space-y-2 border-t border-border pt-3">
             <h4 className="student-label text-foreground">Đọc thêm ({supplementary.length})</h4>
             {supplementary.map(note => (
-              <Link key={note.id} href={`/student/knowledge/${note.id}`}
+              <Link key={note.id} href={`/student/knowledge/${note.id}?topicId=${topicId}`}
                 className="student-topic-knowledge__related flex min-h-11 items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-sm font-semibold text-foreground hover:bg-muted">
                 <LibraryBig className="size-4 shrink-0 text-primary" aria-hidden="true" />
                 <span className="min-w-0 flex-1">{note.title}</span>

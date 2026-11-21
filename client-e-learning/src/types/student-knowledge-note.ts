@@ -14,6 +14,15 @@ export interface StudentKnowledgeNoteDetail {
   description: string | null;
   updatedAt: string;
   document: KnowledgeDocument;
+  linkedTopics: StudentKnowledgeTopicTag[];
+}
+export interface StudentKnowledgeTopicTag {
+  topicId: number;
+  topicName: string;
+  unitId: number;
+  unitCode: string;
+  unitName: string;
+  primary: boolean;
 }
 export interface StudentKnowledgePage {
   items: StudentKnowledgeNoteSummary[];

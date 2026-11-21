@@ -1,7 +1,7 @@
 "use client";
 
 import { Link } from "@/i18n/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowDownRight, BookOpen, BookMarked, ChevronRight, ListTree, RotateCcw, Sparkles, Tag, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -36,6 +36,22 @@ export function UnitDetailView({ unitId }: UnitDetailViewProps) {
     queryFn: () => studentUnitService.getUnitDetail(unitId),
   });
   const unit = response?.data;
+
+  // Deep links from the Knowledge Note reader land on the right Topic.
+  // Validate against published Unit data; never trust an arbitrary URL id.
+  useEffect(() => {
+    if (!unit) return;
+    const raw = new URLSearchParams(window.location.search).get("topicId");
+    if (!raw || !/^[1-9]\d*$/.test(raw)) return;
+    const selected = Number(raw);
+    if (!Number.isSafeInteger(selected)) return;
+    const section = unit.sections.find(entry =>
+      entry.topics.some(item => item.id === selected));
+    if (section) {
+      setSectionId(section.id);
+      setTopicId(selected);
+    }
+  }, [unit]);
 
   const topicName = useMemo(() => {
     const map = new Map<number, string>();

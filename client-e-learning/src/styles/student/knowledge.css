@@ -126,3 +126,37 @@
     padding: .7rem;
   }
 }
+
+/* Phase 03.3 — session-only reading progress, accessible TOC and return links. */
+.student-theme .student-knowledge-reading-progress {
+  box-shadow: 2px 3px 0 var(--student-kraft-dark);
+}
+.student-theme .student-knowledge-toc-link {
+  color: var(--student-ink);
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+.student-theme .student-knowledge-toc-link:hover,
+.student-theme .student-knowledge-toc-link[aria-current="location"] {
+  background: var(--student-kraft);
+  color: var(--student-clay-dark);
+}
+.student-theme .student-knowledge-toc-link[aria-current="location"] {
+  box-shadow: inset 3px 0 0 var(--student-clay-dark);
+}
+.student-theme .student-reading-topic-links a {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+.student-theme .student-knowledge-toc-mobile summary:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
+}
+.student-theme .student-knowledge-reader :is(table, th, td) {
+  overflow-wrap: anywhere;
+}
+@media (prefers-reduced-motion: reduce) {
+  .student-theme .student-knowledge-reading-progress > div > div {
+    transition: none;
+  }
+}

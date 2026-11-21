@@ -160,3 +160,35 @@
     transition: none;
   }
 }
+
+/* Phase 03.4: honest backend-backed roles; visually quiet collection filters. */
+.student-theme .student-knowledge-role-filters {
+  border-bottom: 1px dashed var(--student-surface-outline);
+  padding-bottom: .9rem;
+}
+.student-theme .student-knowledge-role-tag {
+  display: inline-flex;
+  min-height: 24px;
+  align-items: center;
+  padding: .15rem .55rem;
+  border: 1px solid var(--student-surface-outline);
+  border-radius: 8px 3px 8px 3px;
+  background: var(--student-kraft);
+  color: var(--student-ink);
+  font-size: .7rem;
+  font-weight: 700;
+}
+.student-theme .student-knowledge-role-tag[data-knowledge-role="PRIMARY"] {
+  background: color-mix(in srgb, var(--student-mustard) 26%, var(--student-paper));
+  border-color: var(--student-mustard);
+}
+.student-theme .student-knowledge-role-tag[data-knowledge-role="SUPPLEMENTARY"] {
+  background: color-mix(in srgb, var(--student-denim) 14%, var(--student-paper));
+  border-color: var(--student-denim);
+}
+.student-theme .student-knowledge-role-tag[data-knowledge-role="UNLINKED"] {
+  background: var(--student-paper);
+}
+@media (max-width: 639px) {
+  .student-theme .student-knowledge-role-filters > button { flex: 1 1 40%; }
+}

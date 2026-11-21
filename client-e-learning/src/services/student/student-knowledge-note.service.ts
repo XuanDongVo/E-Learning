@@ -11,6 +11,7 @@ export const studentKnowledgeNoteService = {
     if (filters.search?.trim()) params.set("search", filters.search.trim());
     if (filters.unitId != null) params.set("unitId", String(filters.unitId));
     if (filters.topicId != null) params.set("topicId", String(filters.topicId));
+    if (filters.role && filters.role !== "ALL") params.set("role", filters.role);
     params.set("page", String(filters.page ?? 1));
     params.set("size", String(filters.size ?? 12));
     return request<StudentKnowledgePage>(`${ROOT}?${params.toString()}`);

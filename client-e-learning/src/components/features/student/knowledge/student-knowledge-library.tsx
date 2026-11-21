@@ -6,8 +6,6 @@ import {
   ArrowRight,
   BookMarked,
   BookOpenText,
-  ChevronLeft,
-  ChevronRight,
   Search,
   Sparkles,
 } from "lucide-react";
@@ -15,20 +13,29 @@ import { Link } from "@/i18n/navigation";
 import { PaperSurface } from "@/components/student-ui/paper-surface";
 import { StudentBackLink } from "@/components/student-ui/patterns/student-back-link";
 import { StudentCollectionEmptyState } from "@/components/student-ui/patterns/student-collection-empty-state";
+import { StudentListPagination } from "@/components/student-ui/data-list/student-list-pagination";
 import { StudentPageHeading } from "@/components/student-ui/patterns/student-page-heading";
 import { StudentDoodle } from "@/components/student-ui/visuals/student-doodle";
 import { StudentIllustration } from "@/components/student-ui/visuals/student-illustration";
 import { studentKnowledgeNoteService } from "@/services/student/student-knowledge-note.service";
 import { studentUnitService } from "@/services/student/student-unit.service";
-import type { StudentKnowledgeNoteSummary } from "@/types/student-knowledge-note";
+import type { StudentKnowledgeNoteSummary, StudentKnowledgeRoleFilter } from "@/types/student-knowledge-note";
 
 const PAGE_SIZE = 12;
+
+const ROLE_FILTERS: Array<{ value: StudentKnowledgeRoleFilter; label: string }> = [
+  { value: "ALL", label: "Tất cả" },
+  { value: "PRIMARY", label: "Bài chính" },
+  { value: "SUPPLEMENTARY", label: "Bổ sung" },
+  { value: "UNLINKED", label: "Đọc tự do" },
+];
 
 export function StudentKnowledgeLibrary() {
   const [input, setInput] = useState("");
   const [search, setSearch] = useState("");
   const [unitId, setUnitId] = useState("");
   const [topicId, setTopicId] = useState("");
+  const [role, setRole] = useState<StudentKnowledgeRoleFilter>("ALL");
   const [page, setPage] = useState(1);
   const listRef = useRef<HTMLElement | null>(null);
   const shouldFocusListRef = useRef(false);
@@ -62,6 +69,7 @@ export function StudentKnowledgeLibrary() {
       search,
       unitId,
       topicId,
+      role,
       page,
     ],
     queryFn: async () =>
@@ -70,6 +78,7 @@ export function StudentKnowledgeLibrary() {
           search: search || undefined,
           unitId: unitId ? Number(unitId) : undefined,
           topicId: topicId ? Number(topicId) : undefined,
+          role,
           page,
           size: PAGE_SIZE,
         })
@@ -77,7 +86,7 @@ export function StudentKnowledgeLibrary() {
   });
 
   const notes = notesQuery.data?.items ?? [];
-  const hasFilters = Boolean(search || unitId || topicId);
+  const hasFilters = Boolean(search || unitId || topicId || role !== "ALL");
   const total = notesQuery.data?.totalElements ?? 0;
   const pages = notesQuery.data?.totalPages ?? 1;
 
@@ -116,6 +125,7 @@ export function StudentKnowledgeLibrary() {
     setSearch("");
     setUnitId("");
     setTopicId("");
+    setRole("ALL");
     setPage(1);
   };
 
@@ -192,7 +202,24 @@ export function StudentKnowledgeLibrary() {
             className="pointer-events-none hidden h-16 w-auto rotate-[8deg] sm:block"
           />
         </div>
-        <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_minmax(160px,220px)_minmax(160px,220px)]">
+        <div role="group" aria-label="Loại bài lý thuyết" className="student-knowledge-role-filters flex flex-wrap gap-2">
+          {ROLE_FILTERS.map(item => (
+            <button key={item.value} type="button" aria-pressed={role === item.value}
+              className={`student-control min-h-11 px-4 ${role === item.value ? "student-filter-active" : "student-control--quiet"}`}
+              onClick={() => {
+                setRole(item.value);
+                if (item.value === "UNLINKED") {
+                  setUnitId("");
+                  setTopicId("");
+                }
+                setPage(1);
+              }}>
+              {item.label}
+            </button>
+          ))}
+        </div>
+        <div role="search" aria-label="Tìm và lọc trang kiến thức"
+          className="grid gap-3 md:grid-cols-[minmax(0,1fr)_minmax(160px,220px)_minmax(160px,220px)]">
           <label className="block space-y-1.5">
             <span className="student-label">Tìm theo tên hoặc mô tả</span>
             <span className="relative block">
@@ -217,6 +244,7 @@ export function StudentKnowledgeLibrary() {
               value={unitId}
               onChange={(event) => {
                 setUnitId(event.target.value);
+                setRole("ALL");
                 setTopicId("");
                 setPage(1);
               }}
@@ -337,12 +365,12 @@ export function StudentKnowledgeLibrary() {
           <StudentCollectionEmptyState
             title={
               hasFilters
-                ? "Chưa tìm thấy trang phù hợp"
+                ? role === "UNLINKED" ? "Chưa có trang đọc tự do" : "Chưa tìm thấy trang phù hợp"
                 : "Sổ tay đang chờ trang đầu tiên"
             }
             description={
               hasFilters
-                ? "Bạn có thể tìm bằng từ khóa khác hoặc trở về tất cả học liệu."
+                ? "Bạn có thể chọn loại tài liệu khác, thay đổi Unit/Topic hoặc xóa bộ lọc."
                 : "Các bài lý thuyết sẽ xuất hiện khi thầy cô công bố. Bạn vẫn có thể luyện tập ở Learning Hub."
             }
             illustration={
@@ -385,42 +413,23 @@ export function StudentKnowledgeLibrary() {
               />
             ))}
           </section>
-          {pages > 1 && (
-            <nav
-              aria-label="Trang sổ tay"
-              className="flex flex-wrap items-center justify-center gap-4"
-            >
-              <button
-                type="button"
-                className="student-control student-control--secondary flex items-center gap-1 px-3"
-                disabled={page <= 1}
-                onClick={() => changePage(Math.max(1, page - 1))}
-              >
-                <ChevronLeft className="size-4" /> Trước
-              </button>
-              <span
-                className="student-meta text-muted-foreground"
-                aria-live="polite"
-              >
-                Trang {page} / {pages}
-              </span>
-              <button
-                type="button"
-                className="student-control student-control--secondary flex items-center gap-1 px-3"
-                disabled={page >= pages}
-                onClick={() => changePage(Math.min(pages, page + 1))}
-              >
-                Sau <ChevronRight className="size-4" />
-              </button>
-            </nav>
-          )}
+          <StudentListPagination
+            page={page}
+            totalPages={pages}
+            pageLabel={`Trang ${page} / ${pages}`}
+            previousLabel="Trang trước"
+            nextLabel="Trang sau"
+            onPageChange={changePage}
+            disabled={notesQuery.isFetching}
+            className="mx-auto max-w-md"
+          />
         </>
       )}
     </main>
   );
 }
 
-function KnowledgeNoteCard({
+export function KnowledgeNoteCard({
   note,
   index,
 }: {
@@ -442,9 +451,17 @@ function KnowledgeNoteCard({
           aria-hidden="true"
         />
       </div>
-      <p className="student-meta mb-2 text-primary">  
+      <p className="student-meta mb-2 text-primary">
         {tag ? `${tag.code} · ${tag.name}` : "GÓC ĐỌC TỰ DO"}
+        {note.units.length > 1 ? ` · +${note.units.length - 1} Unit` : ""}
       </p>
+      <div className="mb-2 flex flex-wrap gap-1.5" aria-label="Vai trò học liệu">
+        {note.roles.map(item => (
+          <span key={item} data-knowledge-role={item} className="student-knowledge-role-tag student-caption">
+            {item === "PRIMARY" ? "Bài chính" : item === "SUPPLEMENTARY" ? "Bổ sung" : "Đọc tự do"}
+          </span>
+        ))}
+      </div>
       <h3 className="student-card-title mb-2 line-clamp-3 text-foreground group-hover:text-primary">
         {note.title}
       </h3>

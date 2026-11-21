@@ -1,7 +1,11 @@
 import type { KnowledgeDocument } from "@/types/knowledge-note";
 
 export type StudentKnowledgeUnitTag = { id: number; code: string; name: string };
+export type StudentKnowledgeRole = "PRIMARY" | "SUPPLEMENTARY" | "UNLINKED";
+export type StudentKnowledgeRoleFilter = "ALL" | StudentKnowledgeRole;
+
 export interface StudentKnowledgeNoteSummary {
+  roles: StudentKnowledgeRole[];
   id: number;
   title: string;
   description: string | null;
@@ -35,6 +39,7 @@ export type StudentKnowledgeFilters = {
   search?: string;
   unitId?: number;
   topicId?: number;
+  role?: StudentKnowledgeRoleFilter;
   page?: number;
   size?: number;
 };

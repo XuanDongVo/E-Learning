@@ -137,6 +137,61 @@ class StudentKnowledgeNoteServiceTest {
     }
 
     @Test
+    void excludesUnpublishedLinkedPrimaryAndKeepsVisibleSupplementary() {
+        var topic = mock(Topic.class);
+        var section = mock(Section.class);
+        var unit = mock(Unit.class);
+        var grade = mock(Grade.class);
+        when(grade.getId()).thenReturn(2L);
+        when(topic.getSection()).thenReturn(section);
+        when(section.getUnit()).thenReturn(unit);
+        when(unit.getId()).thenReturn(99L);
+        when(unit.getGrade()).thenReturn(grade);
+        when(topic.getStatus()).thenReturn(ContentStatus.PUBLISHED);
+        when(section.getStatus()).thenReturn(ContentStatus.PUBLISHED);
+        when(unit.getStatus()).thenReturn(ContentStatus.PUBLISHED);
+        when(topics.findById(3L)).thenReturn(Optional.of(topic));
+        when(studentUnits.requireVisibleUnit(7L, 99L)).thenReturn(unit);
+
+        var primary = mock(KnowledgeNoteTopicLink.class);
+        var supplement = mock(KnowledgeNoteTopicLink.class);
+        var supplementalNote = new KnowledgeNote();
+        supplementalNote.setId(20L);
+        supplementalNote.setTitle("More practice");
+        supplementalNote.setGrade(grade);
+        supplementalNote.setStatus(KnowledgeNoteStatus.PUBLISHED);
+        when(primary.isPrimary()).thenReturn(true);
+        when(primary.getNote()).thenReturn(note);
+        when(supplement.isPrimary()).thenReturn(false);
+        when(supplement.getNote()).thenReturn(supplementalNote);
+        note.setStatus(KnowledgeNoteStatus.UNPUBLISHED);
+        when(links.findByTopicIdOrderByDisplayOrderAsc(3L)).thenReturn(List.of(primary, supplement));
+
+        var response = service.forTopic(7L, 3L);
+        assertNull(response.primary());
+        assertEquals(1, response.supplementary().size());
+        assertEquals(20L, response.supplementary().getFirst().id());
+    }
+
+    @Test
+    void deniesTopicOfDifferentGradeEvenWhenPublished() {
+        var topic = mock(Topic.class);
+        var section = mock(Section.class);
+        var unit = mock(Unit.class);
+        var grade = mock(Grade.class);
+        when(grade.getId()).thenReturn(99L);
+        when(topic.getSection()).thenReturn(section);
+        when(section.getUnit()).thenReturn(unit);
+        when(unit.getGrade()).thenReturn(grade);
+        when(topic.getStatus()).thenReturn(ContentStatus.PUBLISHED);
+        when(section.getStatus()).thenReturn(ContentStatus.PUBLISHED);
+        when(unit.getStatus()).thenReturn(ContentStatus.PUBLISHED);
+        when(topics.findById(3L)).thenReturn(Optional.of(topic));
+        assertThrows(AppException.class, () -> service.forTopic(7L, 3L));
+        verify(links, never()).findByTopicIdOrderByDisplayOrderAsc(any());
+    }
+
+    @Test
     void refusesInvalidPagination() {
         assertThrows(AppException.class, () -> service.list(7L, null, null, null, 0, 12));
         assertThrows(AppException.class, () -> service.list(7L, null, null, null, 1, 51));

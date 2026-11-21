@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import type {
   KnowledgeDocument, KnowledgeDocumentMark, KnowledgeDocumentNode,
   KnowledgeLearningSectionRole,
@@ -94,7 +95,7 @@ function validNumber(value: unknown, fallback: number) {
   return typeof value === "number" && Number.isInteger(value) && value > 0 && value < 20 ? value : fallback;
 }
 function renderMarks(text: string, marks: KnowledgeDocumentMark[]) {
-  return marks.reduce<React.ReactNode>((content, mark, i) => {
+  return marks.reduce<ReactNode>((content, mark, i) => {
     if (mark.type === "bold") return <strong key={i}>{content}</strong>;
     if (mark.type === "italic") return <em key={i}>{content}</em>;
     if (mark.type === "link") {

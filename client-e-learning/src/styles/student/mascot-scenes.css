@@ -1,0 +1,63 @@
+/* Pipo: editorial companion, never an always-on chat widget. Student scope only. */
+.student-theme .student-mascot-scene {
+  --mascot-accent: var(--student-mustard);
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  min-width: 0;
+  max-width: 32rem;
+}
+.student-theme .student-mascot-scene[data-mascot-variant="feedback"] {
+  --mascot-accent: var(--student-sage);
+}
+.student-theme .student-mascot-scene[data-mascot-variant="milestone"] {
+  --mascot-accent: var(--student-clay);
+}
+.student-theme .student-mascot-scene--note .student-mascot-scene__pipo {
+  display: inline-flex;
+  flex: 0 0 auto;
+}
+.student-theme .student-mascot-scene__message {
+  position: relative;
+  min-width: 0;
+  border: 2px solid var(--student-ink);
+  border-radius: 13px 5px 12px 6px / 5px 12px 6px 13px;
+  background: var(--student-paper);
+  box-shadow: 3px 3px 0 var(--student-ink);
+  padding: .6rem .85rem;
+  font-size: .84rem;
+  font-weight: 650;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.student-theme .student-mascot-scene__message::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: -7px;
+  width: 10px;
+  height: 10px;
+  border-left: 2px solid var(--student-ink);
+  border-bottom: 2px solid var(--student-ink);
+  background: var(--student-paper);
+  transform: translateY(-50%) rotate(45deg);
+}
+.student-theme .student-mascot-scene--sticker {
+  display: inline-flex;
+  width: fit-content;
+}
+.student-theme .student-mascot-scene--sticker .student-mascot-scene__pipo {
+  display: inline-flex;
+}
+.student-theme .student-mascot-scene[data-mascot-variant="milestone"] .student-mascot-scene__message {
+  background: color-mix(in srgb, var(--student-paper) 85%, var(--mascot-accent));
+}
+@media (max-width: 480px) {
+  .student-theme .student-mascot-scene__message {
+    padding: .5rem .7rem;
+    font-size: .8rem;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .student-theme .student-mascot-scene { animation: none; }
+}

@@ -112,6 +112,25 @@ class TeacherKnowledgeNoteLinkServiceTest {
     }
 
     @Test
+    void promotesExistingSupplementaryWithoutCreatingDuplicateLink() {
+        KnowledgeNoteTopicLink existing = new KnowledgeNoteTopicLink();
+        existing.setId(30L);
+        existing.setNote(note);
+        existing.setTopic(topic);
+        existing.setPrimary(false);
+        existing.setDisplayOrder(2);
+        when(links.findByTopicIdOrderByDisplayOrderAsc(3L)).thenReturn(List.of(existing));
+
+        var result = service.link(3L, 11L, true);
+
+        assertTrue(existing.isPrimary());
+        assertEquals(2, existing.getDisplayOrder());
+        assertEquals(1, result.size());
+        assertTrue(result.getFirst().primary());
+        verify(links).saveAndFlush(existing);
+    }
+
+    @Test
     void cannotModifyArchivedTopic() {
         topic.setStatus(ContentStatus.ARCHIVED);
         assertThrows(AppException.class, () -> service.link(3L, 11L, true));

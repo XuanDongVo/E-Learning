@@ -3,7 +3,7 @@
 import { Link } from "@/i18n/navigation";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { BookOpen, BookMarked, ChevronRight, ListTree, RotateCcw, Tag, Zap } from "lucide-react";
+import { ArrowDownRight, BookOpen, BookMarked, ChevronRight, ListTree, RotateCcw, Sparkles, Tag, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FullPageState } from "@/components/feedback";
 import { studentUnitService } from "@/services/student-unit.service";
@@ -102,58 +102,77 @@ export function UnitDetailView({ unitId, mascotSlot }: UnitDetailViewProps) {
     <div className="student-unit-detail space-y-6 pb-8">
       <StudentBackLink href="/student/units">Tất cả bài học</StudentBackLink>
 
-      <PaperSurface as="section" variant="kraft" emphasis="feature" tape tapePosition="right" className="student-unit-detail-hero">
-        <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
-          <div className="student-unit-cover-frame relative shrink-0 overflow-hidden sm:w-48">
-            <UnitCover
-              label={label}
-              name={unit.name}
-              coverUrl={unit.coverUrl}
-              className="h-32 w-full object-cover sm:h-36"
-            />
-            <span className="student-chip absolute left-2.5 top-2.5">
-              Unit {label}
+      <PaperSurface as="section" variant="kraft" emphasis="feature" tape tapePosition="right"
+        className="student-unit-detail-hero student-unit-detail-hero--editorial relative overflow-hidden">
+        <div className="student-unit-detail-hero__content relative z-10 grid w-full min-w-0 gap-6 sm:grid-cols-[minmax(0,13rem)_minmax(0,1fr)] sm:items-center lg:gap-9">
+          <div className="student-unit-detail-hero__cover relative w-full max-w-[28rem] sm:max-w-none">
+            <div className="student-unit-cover-frame relative overflow-hidden">
+              <UnitCover
+                label={label}
+                name={unit.name}
+                coverUrl={unit.coverUrl}
+                variant="hero"
+                className="h-44 w-full sm:h-52 lg:h-56"
+              />
+              <span className="student-chip absolute left-3 top-3 border-2 border-ink bg-card text-foreground">
+                UNIT {label}
+              </span>
+            </div>
+            <span aria-hidden="true" className="student-unit-detail-hero__stamp">
+              <Sparkles className="size-4" />
+              LET'S LEARN
             </span>
           </div>
 
-          <div className="flex flex-1 flex-col gap-2.5">
-            <ScrapbookHeading as="h1" className="student-page-title text-foreground">
-              {unit.name}
-            </ScrapbookHeading>
+          <div className="min-w-0 space-y-4">
+            <p className="student-meta flex items-center gap-2 font-extrabold tracking-wide text-primary">
+              <span aria-hidden="true" className="student-unit-detail-hero__eyebrow-dot" />
+              KHÁM PHÁ BÀI HỌC · UNIT {label}
+            </p>
 
-            {unit.description ? (
-              <p className="student-body max-w-prose text-muted-foreground">
-                {unit.description}
+            <div className="space-y-2.5">
+              <ScrapbookHeading as="h1" className="student-page-title max-w-2xl text-foreground">
+                {unit.name}
+              </ScrapbookHeading>
+              <p className="student-body max-w-2xl text-muted-foreground">
+                {unit.description?.trim() || "Từng phần học nhỏ sẽ giúp bạn làm quen kiến thức và luyện tập theo nhịp của mình."}
               </p>
-            ) : (
-              <p className="student-body text-muted-foreground">
-                Chọn phần học bên dưới để xem hoạt động luyện tập.
-              </p>
-            )}
+            </div>
 
-            <div className="student-meta mt-1 flex flex-wrap gap-x-4 gap-y-2 text-muted-foreground">
-              <span className="inline-flex items-center gap-1.5">
-                <ListTree className="h-4 w-4" aria-hidden="true" />
-                <span>{unit.sections.length} phần học</span>
+            <div className="student-unit-detail-hero__facts flex flex-wrap gap-2" aria-label="Nội dung Unit">
+              <span className="student-unit-detail-hero__fact">
+                <ListTree className="size-4" aria-hidden="true" />
+                <strong>{unit.sections.length}</strong> phần học
               </span>
-              <span className="inline-flex items-center gap-1.5">
-                <Tag className="h-4 w-4" aria-hidden="true" />
-                <span>{topicCount} chủ đề</span>
+              <span className="student-unit-detail-hero__fact">
+                <Tag className="size-4" aria-hidden="true" />
+                <strong>{topicCount}</strong> chủ đề
               </span>
-              <span className="inline-flex items-center gap-1.5">
-                <BookOpen className="h-4 w-4" aria-hidden="true" />
-                <span>{unit.activities.length} hoạt động</span>
+              <span className="student-unit-detail-hero__fact">
+                <BookOpen className="size-4" aria-hidden="true" />
+                <strong>{unit.activities.length}</strong> hoạt động
               </span>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3 pt-1">
+              <a href="#unit-activities"
+                className="student-control student-control--action inline-flex items-center gap-2 px-4 no-underline">
+                Xem hoạt động <ArrowDownRight className="size-4" aria-hidden="true" />
+              </a>
+              <Link href={`/student/vocabulary/units/${unit.id}`}
+                className="student-control student-control--quiet inline-flex items-center gap-2 px-4 no-underline">
+                Sổ từ vựng <ChevronRight className="size-4" aria-hidden="true" />
+              </Link>
             </div>
           </div>
-
-          {/* Mascot Slot */}
-          {mascotSlot && (
-            <div className="hidden shrink-0 items-center justify-center lg:flex lg:h-28 lg:w-28">
-              {mascotSlot}
-            </div>
-          )}
         </div>
+
+        {mascotSlot && (
+          <div className="student-unit-detail-hero__mascot pointer-events-none absolute bottom-3 right-4 hidden lg:flex"
+            aria-hidden="true">
+            {mascotSlot}
+          </div>
+        )}
       </PaperSurface>
 
       <div className="student-soft-panel flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
@@ -269,7 +288,7 @@ export function UnitDetailView({ unitId, mascotSlot }: UnitDetailViewProps) {
       )}
 
       {/* ─── Activity Cards Grid ─── */}
-      <section aria-live="polite" className="space-y-4">
+      <section id="unit-activities" aria-live="polite" className="scroll-mt-24 space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Zap className="h-5 w-5 text-warning" />

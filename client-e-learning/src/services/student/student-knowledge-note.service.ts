@@ -1,6 +1,6 @@
 import { request } from "@/services/api.service";
 import type {
-  StudentKnowledgeFilters, StudentKnowledgeNoteDetail, StudentKnowledgePage,
+  StudentKnowledgeFilters, StudentKnowledgeNoteDetail, StudentKnowledgePage, StudentTopicKnowledgeResponse,
 } from "@/types/student-knowledge-note";
 
 const ROOT = "/v1/student/knowledge-notes";
@@ -15,5 +15,7 @@ export const studentKnowledgeNoteService = {
     params.set("size", String(filters.size ?? 12));
     return request<StudentKnowledgePage>(`${ROOT}?${params.toString()}`);
   },
+  forTopic: (topicId: number) =>
+    request<StudentTopicKnowledgeResponse>(`${ROOT}/topics/${topicId}`),
   get: (noteId: number) => request<StudentKnowledgeNoteDetail>(`${ROOT}/${noteId}`),
 };

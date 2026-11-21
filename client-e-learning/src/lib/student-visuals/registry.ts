@@ -15,6 +15,7 @@ export type StudentVisualAsset = {
 };
 
 export const studentVisualRegistry = {
+  "illustration.topic-notes": { src: "/assets/student/illustrations/learning/topic-notes.svg", role: "learning", width: 180, height: 150, source: "in-repo-original", license: "project-original", status: "approved" },
   "scene.knowledge-shelf": { src: "/assets/student/scenes/knowledge-shelf.svg", role: "scene", width: 520, height: 340, source: "in-repo-original", license: "project-original", status: "approved" },
   "doodle.reading-trail": { src: "/assets/student/doodles/annotations/reading-trail.svg", role: "doodle", width: 220, height: 96, source: "in-repo-original", license: "project-original", status: "approved" },
   "doodle.bookmark-note": { src: "/assets/student/doodles/stickers/bookmark-note.svg", role: "doodle", width: 132, height: 156, source: "in-repo-original", license: "project-original", status: "approved" },

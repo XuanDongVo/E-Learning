@@ -29,3 +29,20 @@ export type StudentKnowledgeFilters = {
   page?: number;
   size?: number;
 };
+
+/** S03.2 Topic read response: private draft/unpublished Notes never appear. */
+export interface StudentTopicKnowledgeResponse {
+  topicId: number;
+  primary: {
+    id: number;
+    title: string;
+    description: string | null;
+    summaryDocument: KnowledgeDocument;
+    totalKeyPoints: number;
+  } | null;
+  supplementary: Array<{
+    id: number;
+    title: string;
+    description: string | null;
+  }>;
+}

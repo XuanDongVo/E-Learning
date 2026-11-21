@@ -7,6 +7,7 @@ import "@/styles/student/vocabulary.css";
 import "@/styles/student/vocabulary-progress.css";
 import "@/styles/student/foundations-v2.css";
 import "@/styles/student/knowledge.css";
+import "@/styles/student/unit-detail-hero.css";
 
 export default function StudentDashboardLayout({
   children,

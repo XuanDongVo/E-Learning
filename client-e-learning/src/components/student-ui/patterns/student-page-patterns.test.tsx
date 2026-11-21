@@ -25,7 +25,7 @@ describe("Student page patterns", () => {
     const html = renderToStaticMarkup(
       <StudentPageHeading title="Bài học của bạn" description="Xem kiến thức trước khi luyện tập." />,
     );
-    expect(html.match(/<h1\\b/g)).toHaveLength(1);
+    expect(html.match(/<h1\b/g)).toHaveLength(1);
     expect(html).toContain("student-page-heading__title");
     expect(html).toContain("student-page-heading__description");
     expect(html).toContain('data-heading-level="h1"');

@@ -236,7 +236,7 @@ export function UnitDetailView({ unitId }: UnitDetailViewProps) {
               Chọn chủ đề để xem công thức và ghi nhớ nhanh, hoặc mở toàn bộ bài lý thuyết.
             </p>
           </div>
-          <Link href={`/student/knowledge?unitId=${unit.id}`}
+          <Link href="/student/knowledge"
             className="student-control student-control--quiet inline-flex min-h-11 items-center gap-2 px-4">
             Mở thư viện <ChevronRight className="size-4" aria-hidden="true" />
           </Link>

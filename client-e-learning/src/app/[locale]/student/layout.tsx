@@ -3,6 +3,7 @@ import { StudentShell } from "@/components/layout/student-shell";
 import "@/styles/student/theme.css";
 import "@/styles/student/surfaces.css";
 import "@/styles/student/typography.css";
+import "@/styles/student/page-heading.css";
 import "@/styles/student/vocabulary.css";
 import "@/styles/student/vocabulary-progress.css";
 import "@/styles/student/foundations-v2.css";

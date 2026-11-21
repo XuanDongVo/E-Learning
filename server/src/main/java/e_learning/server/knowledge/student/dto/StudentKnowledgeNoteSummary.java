@@ -5,5 +5,5 @@ import java.util.List;
 
 public record StudentKnowledgeNoteSummary(
         Long id, String title, String description, LocalDateTime updatedAt,
-        List<StudentKnowledgeUnitTag> units
+        List<StudentKnowledgeUnitTag> units, List<String> roles
 ) {}

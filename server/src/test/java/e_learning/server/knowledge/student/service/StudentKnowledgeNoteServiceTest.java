@@ -118,6 +118,7 @@ class StudentKnowledgeNoteServiceTest {
         var page = service.list(7L, null, null, null, 1, 12);
         assertEquals(1, page.getItems().size());
         assertTrue(page.getItems().getFirst().units().isEmpty());
+        assertEquals(List.of("UNLINKED"), page.getItems().getFirst().roles());
     }
 
     @Test
@@ -227,6 +228,45 @@ class StudentKnowledgeNoteServiceTest {
         when(topics.findById(3L)).thenReturn(Optional.of(topic));
         assertThrows(AppException.class, () -> service.forTopic(7L, 3L));
         verify(links, never()).findByTopicIdOrderByDisplayOrderAsc(any());
+    }
+
+    @Test
+    void refusesInvalidRoleFilterBeforeQueryingDatabase() {
+        assertThrows(AppException.class,
+                () -> service.list(7L, null, null, null, "HIDDEN", 1, 12));
+        verify(notes, never()).findAll(any(Specification.class), any(Pageable.class));
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void librarySummaryCanCarryBothPrimaryAndSupplementaryRoles() {
+        var topic = mock(Topic.class);
+        var section = mock(Section.class);
+        var unit = mock(Unit.class);
+        var grade = mock(Grade.class);
+        when(grade.getId()).thenReturn(2L);
+        when(unit.getId()).thenReturn(99L);
+        when(unit.getCode()).thenReturn("U03");
+        when(unit.getName()).thenReturn("Unit 3");
+        when(unit.getGrade()).thenReturn(grade);
+        when(unit.getStatus()).thenReturn(ContentStatus.PUBLISHED);
+        when(section.getUnit()).thenReturn(unit);
+        when(section.getStatus()).thenReturn(ContentStatus.PUBLISHED);
+        when(topic.getSection()).thenReturn(section);
+        when(topic.getStatus()).thenReturn(ContentStatus.PUBLISHED);
+        var primary = mock(KnowledgeNoteTopicLink.class);
+        var supplementary = mock(KnowledgeNoteTopicLink.class);
+        when(primary.getTopic()).thenReturn(topic);
+        when(primary.isPrimary()).thenReturn(true);
+        when(supplementary.getTopic()).thenReturn(topic);
+        when(supplementary.isPrimary()).thenReturn(false);
+        when(links.findByNoteId(10L)).thenReturn(List.of(primary, supplementary));
+        when(notes.findAll(any(Specification.class), any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(note)));
+
+        var page = service.list(7L, null, null, null, "PRIMARY", 1, 12);
+        assertEquals(List.of("PRIMARY", "SUPPLEMENTARY"), page.getItems().getFirst().roles());
+        assertEquals(1, page.getItems().getFirst().units().size());
     }
 
     @Test

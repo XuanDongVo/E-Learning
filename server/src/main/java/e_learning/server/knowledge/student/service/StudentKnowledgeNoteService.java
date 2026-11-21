@@ -45,7 +45,22 @@ public class StudentKnowledgeNoteService {
      */
     public PageResponse<StudentKnowledgeNoteSummary> list(
             Long studentId, String search, Long unitId, Long topicId, int page, int size) {
+        return list(studentId, search, unitId, topicId, null, page, size);
+    }
+
+    /**
+     * Role filters apply to the full DB query BEFORE pagination. A note may be
+     * PRIMARY for one visible Topic and SUPPLEMENTARY for another.
+     */
+    public PageResponse<StudentKnowledgeNoteSummary> list(
+            Long studentId, String search, Long unitId, Long topicId,
+            String role, int page, int size) {
         Long gradeId = studentUnits.getStudentGradeId(studentId);
+        String resolvedRole = role == null || role.isBlank()
+                ? "ALL" : role.trim().toUpperCase(Locale.ROOT);
+        if (!List.of("ALL", "PRIMARY", "SUPPLEMENTARY", "UNLINKED").contains(resolvedRole)) {
+            throw new AppException(ErrorCode.INVALID_REQUEST, "Vai trò học liệu không hợp lệ.");
+        }
         if (page < 1 || size < 1 || size > 50) {
             throw new AppException(ErrorCode.INVALID_REQUEST, "page phải >= 1, size phải từ 1 đến 50.");
         }
@@ -74,29 +89,44 @@ public class StudentKnowledgeNoteService {
                     cb.like(cb.lower(root.get("title")), term),
                     cb.like(cb.lower(cb.coalesce(root.get("description"), "")), term)));
         }
-        if (unitId != null || topicId != null) {
+        if (unitId != null || topicId != null || !"ALL".equals(resolvedRole)) {
             filter = filter.and((root, query, cb) -> {
                 var sub = query.subquery(Long.class);
                 var link = sub.from(KnowledgeNoteTopicLink.class);
                 sub.select(link.get("id"));
-                var predicates = new java.util.ArrayList<jakarta.persistence.criteria.Predicate>();
+                var predicates = new ArrayList<jakarta.persistence.criteria.Predicate>();
                 predicates.add(cb.equal(link.get("note").get("id"), root.get("id")));
                 predicates.add(cb.equal(link.get("topic").get("status"), ContentStatus.PUBLISHED));
                 predicates.add(cb.equal(link.get("topic").get("section").get("status"), ContentStatus.PUBLISHED));
                 predicates.add(cb.equal(link.get("topic").get("section").get("unit").get("status"), ContentStatus.PUBLISHED));
+                predicates.add(cb.equal(link.get("topic").get("section").get("unit").get("grade").get("id"), gradeId));
                 if (unitId != null) predicates.add(cb.equal(link.get("topic").get("section").get("unit").get("id"), unitId));
                 if (topicId != null) predicates.add(cb.equal(link.get("topic").get("id"), topicId));
+                if ("PRIMARY".equals(resolvedRole)) predicates.add(cb.isTrue(link.get("primary")));
+                if ("SUPPLEMENTARY".equals(resolvedRole)) predicates.add(cb.isFalse(link.get("primary")));
                 sub.where(predicates.toArray(new jakarta.persistence.criteria.Predicate[0]));
-                return cb.exists(sub);
+                return "UNLINKED".equals(resolvedRole) ? cb.not(cb.exists(sub)) : cb.exists(sub);
             });
         }
         var result = notes.findAll(filter, PageRequest.of(
                 page - 1, size, Sort.by(Sort.Direction.DESC, "updatedAt")
                         .and(Sort.by(Sort.Direction.DESC, "id"))));
-        var summaries = result.getContent().stream().map(note ->
-                new StudentKnowledgeNoteSummary(note.getId(), note.getTitle(),
-                        note.getDescription(), note.getUpdatedAt(), visibleUnits(note, gradeId)))
-                .toList();
+        var summaries = result.getContent().stream().map(note -> {
+            var visible = visibleTopicLinks(note, gradeId);
+            var units = visible.stream().map(link -> link.getTopic().getSection().getUnit())
+                    .collect(Collectors.toMap(unit -> unit.getId(),
+                            unit -> new StudentKnowledgeUnitTag(unit.getId(), unit.getCode(), unit.getName()),
+                            (first, ignored) -> first))
+                    .values().stream()
+                    .sorted((a, b) -> a.code().compareToIgnoreCase(b.code()))
+                    .toList();
+            var roles = new ArrayList<String>();
+            if (visible.stream().anyMatch(KnowledgeNoteTopicLink::isPrimary)) roles.add("PRIMARY");
+            if (visible.stream().anyMatch(link -> !link.isPrimary())) roles.add("SUPPLEMENTARY");
+            if (roles.isEmpty()) roles.add("UNLINKED");
+            return new StudentKnowledgeNoteSummary(note.getId(), note.getTitle(),
+                    note.getDescription(), note.getUpdatedAt(), units, roles);
+        }).toList();
         return PageResponse.from(result, summaries);
     }
 
@@ -214,19 +244,5 @@ public class StudentKnowledgeNoteService {
                 .toList();
     }
 
-    private List<StudentKnowledgeUnitTag> visibleUnits(KnowledgeNote note, Long gradeId) {
-        return links.findByNoteId(note.getId()).stream()
-                .map(link -> link.getTopic())
-                .filter(topic -> topic.getStatus() == ContentStatus.PUBLISHED
-                        && topic.getSection().getStatus() == ContentStatus.PUBLISHED
-                        && topic.getSection().getUnit().getStatus() == ContentStatus.PUBLISHED
-                        && Objects.equals(topic.getSection().getUnit().getGrade().getId(), gradeId))
-                .map(topic -> topic.getSection().getUnit())
-                .collect(Collectors.toMap(unit -> unit.getId(),
-                        unit -> new StudentKnowledgeUnitTag(unit.getId(), unit.getCode(), unit.getName()),
-                        (first, ignored) -> first))
-                .values().stream()
-                .sorted((a, b) -> a.code().compareToIgnoreCase(b.code()))
-                .toList();
-    }
+
 }

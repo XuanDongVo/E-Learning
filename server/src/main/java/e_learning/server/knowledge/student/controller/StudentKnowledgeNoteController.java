@@ -25,10 +25,11 @@ public class StudentKnowledgeNoteController {
             @RequestParam(required = false) String search,
             @RequestParam(required = false) Long unitId,
             @RequestParam(required = false) Long topicId,
+            @RequestParam(required = false) String role,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "12") int size) {
         Long studentId = Long.valueOf(Objects.requireNonNull(jwt.getSubject()));
-        return ApiResponse.success(service.list(studentId, search, unitId, topicId, page, size));
+        return ApiResponse.success(service.list(studentId, search, unitId, topicId, role, page, size));
     }
 
     @GetMapping("/topics/{topicId}")

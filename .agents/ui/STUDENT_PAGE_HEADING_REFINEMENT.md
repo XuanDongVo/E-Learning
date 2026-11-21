@@ -25,7 +25,7 @@ The shared heading uses `ScrapbookHeading` and inherits the existing Student Ind
 ## Visual changes
 
 1. **Eyebrow:** accessible real text with small ink-bordered mustard dot, no badge/pill clutter.
-2. **H1:** retain current typography scale and add a restrained hand-drawn underline accent; headings remain text (not a picture).
+2. **H1:** retain current typography scale and add a restrained translucent marker highlight (underline remains opt-in); headings remain text (not a picture).
 3. **H2/H3:** smaller, distinct heading roles in nested Design Lab/section cases, avoiding the default page H1 scale.
 4. **Description:** 64ch max, readable line-height, normal text wrapping (no line clamp or hidden content).
 5. **Actions:** wrap naturally and remain keyboard focusable; no button behaviors changed.
@@ -37,7 +37,7 @@ Styles are `.student-theme` scoped; Teacher pages and portal overlays are unaffe
 
 - Inspect 360px / 390px / 768px / desktop widths in light/dark settings as applicable.
 - Check H1 semantics on index pages, and H3 previews inside Design Lab; one H1 per document page.
-- Toggle Pipo off; Unit Index should not lose title, description or navigation.
+- Unit Index has an original SVG in place of Pipo; header/title/actions must remain stable regardless of mascot state.
 - Confirm Knowledge Library shelf art and Student Vocabulary illustration do not overflow at 640px/768px.
 - Confirm Unit search, History filtering, Vocabulary pagination, Assignment metrics and link navigation remain unchanged.
 - Check long unit names, localized Vietnamese text, wrapping, focus rings and buttons on mobile.

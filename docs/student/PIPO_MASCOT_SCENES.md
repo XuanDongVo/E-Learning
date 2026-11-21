@@ -28,26 +28,23 @@ Accepted variants:
 
 Available sizes: `compact` / `medium`. Existing Pipo moods, colors and props remain supported. The mascot illustration is `aria-hidden`; the optional, visible text is ordinary accessible document content.
 
-## Current placements
+## Current placements (revised after the original rollout)
 
-| UI | Placement | Condition |
-|---|---|---|
-| Unit Detail | Short guide in hero | No custom `mascotSlot` supplied |
-| Knowledge Library | Reading Pipo in desktop artwork, compact guide on mobile | Library hero |
-| Vocabulary Study | After last item of new-word queue | At least one learned word |
-| Vocabulary Review | After a review queue has finished | Nonzero completed review session |
-| Activity Result | Feedback below result overview | Terminal session result |
-| Activity Result | Badge-bearing milestone | Only if server-confirmed `levelAfter > levelBefore` on completed session |
-| Assignment Intro | Guide under assignment status | Intro only (never overlays the timed attempt) |
-| Assignment Result | Neutral contextual feedback | Submitted/timed out, without disclosing hidden grades |
+Pipo remains only where feedback is helpful, not as the main artwork of an editorial header:
 
-The existing Learning Hub and Units List Pipo artwork is retained.
+| UI | Role |
+|---|---|
+| Vocabulary Study / Review completion | Feedback after completing a learning/review queue |
+| Activity Result | Honest status feedback; milestone only on confirmed level-up |
+| Assignment Intro / Result | Contextual instructions and neutral result feedback |
 
-## User preference
+Student Learning Hub, Units Index, Unit Detail and Knowledge Library **no longer render Pipo in page headers**. They use first-party original SVG scenes or authentic Unit cover artwork. Leaderboard also uses its own original podium SVG.
 
-`PipoProvider` is mounted in the **Student layout only**, preserving the existing `learnup-mascot` localStorage preference. The Student Navbar exposes an accessible toggle on desktop and in the mobile drawer. Turning it off removes all new scenes without leaving unused layout gaps; the toggle remains accessible to turn it back on.
+## Preference and layout stability
 
-The design intentionally does **not** add mascot overlays on question cards, flashcards, assessment attempt timers, the editor or Teacher pages.
+The Navbar toggle (desktop and mobile) was removed by request. `PipoProvider` no longer restores a localStorage `off` value which could strand the mascot in a disabled state with no visible way to re-enable it. The internal `toggle()` API remains for source compatibility, not for Navbar UI.
+
+The `Pipo` outer wrapper now reserves the exact intrinsic width/aspect ratio of the character before mood/blink updates. `PipoCharacter` fills that reserved box, so changes in facial expression do not shift surrounding text. This is distinct from optional small, motion-safe celebration animation.
 
 ## Visual rules
 
@@ -60,9 +57,9 @@ The design intentionally does **not** add mascot overlays on question cards, fla
 
 ## Manual regression checks
 
-1. Open Student `/student`, `/student/units`, `/student/units/3`, `/student/knowledge`; verify Pipo in the intended positions on desktop and 360px mobile.
-2. Disable Pipo from desktop Student Navbar; navigate through Student pages and reload. Confirm scenes remain hidden while text actions, progress and page layout remain intact.
-3. Re-enable Pipo in the mobile menu and verify new scenes return.
+1. Verify header artwork is SVG (not Pipo) on `/student`, `/student/units`, `/student/units/3`, `/student/knowledge` and `/student/leaderboard`, desktop and mobile.
+2. Confirm no Pipo display toggle exists in Student Navbar (desktop/mobile).
+3. Confirm Pipo layout is stable in Vocabulary and Activity/Assignment result pages during blinking/mood updates.
 4. Finish Vocabulary learning and a due Review queue. Check no completion claim is made while working through a card.
 5. Complete, Game-Over and Abandon Activity sessions. Confirm the three feedback messages are distinct and nonmisleading.
 6. Level-up: only confirmed Activity receipt `levelAfter > levelBefore` is a milestone; XP pending/error shows ordinary feedback.

@@ -208,12 +208,6 @@
   font-weight: 800;
   font-variant-numeric: tabular-nums;
 }
-.student-theme .student-unit-detail-hero__mascot {
-  z-index: 0;
-  width: 88px;
-  height: 88px;
-  opacity: .3;
-}
 @media (max-width: 639px) {
   .student-theme .student-unit-detail-hero--editorial { padding: 20px; }
   .student-theme .student-unit-detail-hero__cover { max-width: 100%; }

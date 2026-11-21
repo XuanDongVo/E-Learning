@@ -1,3 +1,12 @@
+## 2026-11-21 — Knowledge Phase 02.7 + 03.2 and SVG headers
+
+- Teacher Topic linking UX: Primary/Supplementary explanations, state-aware picker, promotion of already linked Supplementary, inline error and published-note empty guidance.
+- Student Topic API: authenticated `GET /v1/student/knowledge-notes/topics/{topicId}`, Grade/published-content access guard, read-time H2/H3 + marked-keypoint excerpt, published Supplementary links.
+- Student Unit Detail: when a Topic is selected, shows summary/reading links before Activity grid; full Note Dialog fetches the existing student Note detail endpoint.
+- Student headers: original project SVGs for Units/Learning Hub/Leaderboard; removed Pipo from editorial headers, preserved contextual feedback elsewhere; removed Navbar mascot toggle and stabilized SVG dimensions.
+- `StudentPageHeading`: configurable marker/underline highlight and semantic titleId; scoped CSS. No Teacher visual changes.
+- Added backend and SSR regression tests, docs and original-SVG provenance records. **No local JVM/Node build or browser verification was executed via connector.**
+
 ## 2026-11-21 — Student Pipo contextual scenes
 
 - Added a reusable Student-only `StudentMascotScene` (guide, feedback, milestone and decorative sticker), with ink/paper visuals. Used original Pipo SVG, no new library.

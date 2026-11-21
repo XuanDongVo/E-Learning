@@ -69,7 +69,7 @@ export function TeacherTopicKnowledgeNotes({
   const links = linksQuery.data ?? [];
   const primary = links.find(link => link.primary) ?? null;
   const supplementary = links.filter(link => !link.primary);
-  const linkedIds = useMemo(() => new Set(links.map(link => link.noteId)), [links]);
+  const linkedByNote = useMemo(() => new Map(links.map(link => [link.noteId, link])), [links]);
 
   const refreshLinks = (items: TopicKnowledgeNoteLink[] | null) => {
     if (items) client.setQueryData(KNOWLEDGE_NOTE_KEYS.topicLinks(topicId), items);
@@ -81,7 +81,7 @@ export function TeacherTopicKnowledgeNotes({
     onSuccess: result => {
       refreshLinks(result.data);
       setPickerOpen(false);
-      toast.success("Đã cập nhật liên kết bài lý thuyết.");
+      toast.success("Đã cập nhật liên kết bài lý thuyết của Topic.");
     },
     onError: cause => toast.error(cause instanceof Error ? cause.message : "Không thể liên kết bài lý thuyết."),
   });
@@ -183,7 +183,7 @@ export function TeacherTopicKnowledgeNotes({
             <h2 className="text-lg font-extrabold text-foreground">Bài lý thuyết của Topic</h2>
           </div>
           <p className="mt-1 text-sm text-muted-foreground">
-            Gắn học liệu dùng chung theo đúng Grade. Gỡ liên kết không xóa bài gốc.
+            Gắn học liệu đã công bố cùng Grade. Mỗi Topic có tối đa một bài chính và nhiều tài liệu bổ sung. Gỡ liên kết không xóa bài gốc.
           </p>
         </div>
         <Link href="/teacher/knowledge-notes"
@@ -204,7 +204,7 @@ export function TeacherTopicKnowledgeNotes({
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div>
                 <h3 className="font-bold">Bài lý thuyết chính</h3>
-                <p className="text-xs text-muted-foreground">Tối đa một bài Primary cho Topic</p>
+                <p className="text-xs text-muted-foreground">Bài chính cần heading H2/H3 và ít nhất một khối hoặc bảng được đánh dấu Trọng tâm</p>
               </div>
               {!disabled && (
                 <Button size="sm" variant="outline" disabled={pending}
@@ -215,7 +215,7 @@ export function TeacherTopicKnowledgeNotes({
             </div>
             {primary ? renderLink(primary) : (
               <p className="rounded-lg border-2 border-dashed border-ink/50 p-4 text-sm text-muted-foreground">
-                Chưa có bài lý thuyết chính. Chọn một bài đã công bố để học sinh đọc trước khi luyện tập.
+                Chưa có bài chính. Nhấn “Gắn bài chính” để chọn Knowledge Note đã công bố.
               </p>
             )}
           </div>
@@ -223,7 +223,7 @@ export function TeacherTopicKnowledgeNotes({
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div>
                 <h3 className="font-bold">Tài liệu bổ sung ({supplementary.length})</h3>
-                <p className="text-xs text-muted-foreground">Có thể dùng chung một bài với nhiều Topic</p>
+                <p className="text-xs text-muted-foreground">Bài đọc thêm, ví dụ mở rộng, bảng so sánh; một Note có thể dùng cho nhiều Topic</p>
               </div>
               {!disabled && (
                 <Button size="sm" variant="outline" disabled={pending}
@@ -246,11 +246,21 @@ export function TeacherTopicKnowledgeNotes({
           <DialogHeader>
             <DialogTitle>Chọn Knowledge Note</DialogTitle>
             <DialogDescription>
-              {role === "primary" ? "Chọn bài lý thuyết chính" : "Thêm tài liệu bổ sung"} ·
+              {role === "primary" ? "Đặt làm bài lý thuyết chính" : "Thêm tài liệu bổ sung"} ·
               chỉ hiển thị bài đã công bố thuộc cùng Grade.
             </DialogDescription>
           </DialogHeader>
           <div className="min-h-0 space-y-3 overflow-y-auto py-1">
+            {role === "primary" ? (
+              <p className="rounded-lg border border-primary/30 bg-primary/5 p-3 text-sm text-foreground">
+                Bài chính dùng để đọc trước Activity. Cần H2/H3 và Learning Block hoặc Table đã đánh dấu Trọng tâm.
+                {primary && <span className="mt-1 block">Bài chính cũ sẽ chuyển sang tài liệu bổ sung.</span>}
+              </p>
+            ) : (
+              <p className="rounded-lg bg-muted p-3 text-sm text-foreground">
+                Tài liệu bổ sung không thay thế bài chính và có thể được dùng lại ở nhiều Topic.
+              </p>
+            )}
             <div className="relative">
               <Search className="absolute top-2.5 left-3 size-4 text-muted-foreground" />
               <Input aria-label="Tìm Knowledge Note" placeholder="Tìm tiêu đề hoặc mô tả…"
@@ -263,24 +273,35 @@ export function TeacherTopicKnowledgeNotes({
                 action={<Button variant="outline" onClick={() => void candidatesQuery.refetch()}>Thử lại</Button>} />
             ) : !candidatesQuery.data?.items.length ? (
               <div className="rounded-lg border-2 border-dashed border-ink/50 p-5 text-sm text-muted-foreground">
-                Không tìm thấy bài đã công bố phù hợp. Hãy công bố bài trong thư viện trước.
+                <p>Không tìm thấy Note đã công bố cùng Grade phù hợp với tìm kiếm.</p>
+                <Link href="/teacher/knowledge-notes" className="mt-2 inline-flex min-h-10 items-center text-primary font-semibold underline underline-offset-4">
+                  Mở thư viện để tạo hoặc công bố bài lý thuyết
+                </Link>
               </div>
             ) : (
               <div className="space-y-2">
-                {candidatesQuery.data.items.map(note => (
+                {candidatesQuery.data.items.map(note => {
+                  const existing = linkedByNote.get(note.id);
+                  const alreadySelected = Boolean(existing && existing.primary === (role === "primary"));
+                  const canSelect = !alreadySelected && (role === "primary" || !existing);
+                  return (
                   <div key={note.id}
                     className="flex flex-wrap items-center justify-between gap-2 rounded-lg border-2 border-ink bg-background p-3 shadow-pop">
                     <div className="min-w-0 flex-1">
                       <p className="font-semibold">{note.title}</p>
                       {note.description && <p className="line-clamp-1 text-xs text-muted-foreground">{note.description}</p>}
-                      {linkedIds.has(note.id) && <p className="mt-1 text-xs font-medium text-primary">Đã liên kết với Topic</p>}
+                      {existing && <p className="mt-1 text-xs font-medium text-primary">
+                        {existing.primary ? "Đang là bài chính" : "Đã gắn làm tài liệu bổ sung"}
+                      </p>}
                     </div>
-                    <Button type="button" size="sm" disabled={pending || linkedIds.has(note.id)}
+                    <Button type="button" size="sm" disabled={pending || !canSelect}
                       onClick={() => link.mutate({ noteId: note.id, primary: role === "primary" })}>
-                      {linkedIds.has(note.id) ? "Đã gắn" : "Chọn"}
+                      {alreadySelected ? "Đang sử dụng"
+                        : existing && role === "primary" ? "Đặt làm chính"
+                        : existing ? "Đã liên kết" : role === "primary" ? "Gắn bài chính" : "Thêm"}
                     </Button>
                   </div>
-                ))}
+                ); })}
               </div>
             )}
             {candidatesQuery.data && candidatesQuery.data.totalPages > 1 && (

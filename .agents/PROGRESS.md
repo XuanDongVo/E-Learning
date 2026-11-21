@@ -1,3 +1,10 @@
+## 2026-11-21 — Student Pipo contextual scenes
+
+- Added a reusable Student-only `StudentMascotScene` (guide, feedback, milestone and decorative sticker), with ink/paper visuals. Used original Pipo SVG, no new library.
+- Mounted `PipoProvider` under Student AuthGuard. Added accessible preference toggle to desktop/mobile Student navbar using existing localStorage key.
+- Integrated Pipo into Unit Detail, Knowledge Library, Vocabulary learn/review completion, Activity Result (with server-confirmed level-up gating), Assignment Intro and Assignment Result. No timed-attempt or question-stage overlays.
+- Added SSR component tests and docs/student/PIPO_MASCOT_SCENES.md with regression checklist. **No local npm/TypeScript/Vitest/browser tests executed through connector.**
+
 ## 2026-11-21 — Student Knowledge Library pagination focus
 
 - Updated [student-knowledge-library.tsx](../../client-e-learning/src/components/features/student/knowledge/student-knowledge-library.tsx) so Previous/Next waits for the selected page query to finish, focuses `#knowledge-note-card-list`, and scrolls that list into view.

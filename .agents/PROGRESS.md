@@ -1,5 +1,6 @@
 ## 2026-11-21 — Knowledge Note 03.2.1 stabilization + 03.3 reader + 03.4 library
 
+- Fixed the Grade 7 `012_knowledge_note_reading_library.sql` seed for semicolon-delimited SQL clients by removing dollar-quoted `DO` blocks and using direct count guards. Executed and rerun successfully against local disposable PostgreSQL; eight extra fixtures and eleven supplemental/primary links were verified.
 - Security regression coverage for Student Topic/Note visibility; renderer type fix and existing ID-isolation checks.
 - Student Note Detail now supplies only visible linked Topic backlinks, with Unit deep link, and supports active Table of Contents, mobile disclosure and session-only reading progress.
 - Student Knowledge Library now filters server-side by all/primary/supplementary/unlinked before pagination, exposes true role badges and uses shared Student pagination.

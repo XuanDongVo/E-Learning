@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="520" height="340" viewBox="0 0 520 340" fill="none" role="img">
+<title>Bookshelf, notebooks and a small desk lamp</title>
+<g stroke="#2D2B2A" stroke-width="3" stroke-linejoin="round" stroke-linecap="round">
+<path d="M76 271Q244 263 447 273" stroke="#6E6863" stroke-width="4"/>
+<path d="M119 95L424 89L429 282L126 281Z" fill="#E8DEC8"/>
+<path d="M136 112L412 107M138 196L413 192M138 253L414 251" stroke-width="7"/>
+<path d="M155 145L181 143L185 192L156 192Z" fill="#C85A32"/>
+<path d="M186 130L214 133L218 194L186 193Z" fill="#FFFDF9"/>
+<path d="M220 156L248 150L257 195L225 194Z" fill="#6B8E67"/>
+<path d="M263 117L289 119L290 194L265 193Z" fill="#4A6B82"/>
+<path d="M297 135L327 136L324 192L298 192Z" fill="#D99B26"/>
+<path d="M334 122L363 122L364 191L334 193Z" fill="#FFFDF9"/>
+<path d="M372 144L398 137L402 193L373 194Z" fill="#C85A32"/>
+<path d="M157 161L180 161M190 147L213 147M267 136L286 136M337 148L361 148M375 155L396 150" stroke-width="2" opacity=".65"/>
+<path d="M149 210L192 206L202 252L160 253Z" fill="#FFFDF9"/>
+<path d="M204 216L245 218L242 251L206 251Z" fill="#6B8E67"/>
+<path d="M251 209L280 210L281 254L251 253Z" fill="#D99B26"/>
+<path d="M291 229L338 223L344 251L291 252Z" fill="#4A6B82"/>
+<path d="M350 209L388 212L386 252L347 252Z" fill="#FFFDF9"/>
+<path d="M169 224L194 220M252 222L275 223M355 225L379 226" stroke-width="2" opacity=".55"/>
+<path d="M94 202Q83 166 100 140Q124 116 141 144L125 177L119 213Z" fill="#D99B26"/>
+<path d="M99 206L85 255L141 253L119 204Z" fill="#FFFDF9"/>
+<path d="M82 257L142 256" stroke-width="5"/>
+<path d="M102 142L96 127L112 129" fill="#FFFDF9"/>
+<path d="M444 137L451 154L468 158L453 168L451 187L442 170L426 164L442 157Z" fill="#D99B26"/>
+<path d="M86 89L93 102L105 106L92 110L86 124L80 110L68 106L79 101Z" fill="#FFFDF9"/>
+<path d="M399 62L402 52M421 70L432 63M396 78L383 79" stroke="#C85A32" stroke-width="3"/>
+</g></svg>

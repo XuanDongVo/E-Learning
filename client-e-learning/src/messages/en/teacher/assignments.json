@@ -28,7 +28,7 @@
   "statuses": { "all": "All", "active": "Active", "draft": "Draft", "archived": "Archived" },
   "list": {
     "title": "All assignments",
-    "matching": "{count} matching assignments",
+    "matching": "{count} matching",
     "searchPlaceholder": "Search assignments...",
     "searchLabel": "Search assignments",
     "questionCount": "{count, plural, one {# question} other {# questions}}",

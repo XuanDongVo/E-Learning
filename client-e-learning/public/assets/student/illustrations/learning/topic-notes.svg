@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="180" height="150" viewBox="0 0 180 150" fill="none">
+<title>Notebook with marked knowledge</title>
+<path d="M23 23q15-8 57 0v108q-33-8-57 1z" fill="#FFFDF9" stroke="#2D2B2A" stroke-width="3" stroke-linejoin="round"/>
+<path d="M80 23q30-11 70-4v109q-39-7-70 3z" fill="#E8DEC8" stroke="#2D2B2A" stroke-width="3" stroke-linejoin="round"/>
+<path d="M80 23v108" stroke="#2D2B2A" stroke-width="3"/>
+<path d="M34 42h36M34 53h32M34 64h36M92 48h43M92 60h38M92 72h31M34 89h36M34 101h31" stroke="#6E6863" stroke-width="2.5" stroke-linecap="round"/>
+<path d="m110 83 7 11 15-21" stroke="#35623B" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="m145 7 4 12 12 3-12 4-4 12-4-12-12-4 12-3z" fill="#D99B26" stroke="#2D2B2A" stroke-width="2"/>
+<path d="m17 113 5 6 7-2-2 8 5 5-8 1-4 7-4-8-8-2 6-6z" fill="#C85A32" stroke="#2D2B2A" stroke-width="2"/>
+</svg>

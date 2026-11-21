@@ -28,7 +28,7 @@ export function PipoCharacter({
       viewBox="0 0 180 180"
       fill="none"
       style={style}
-      className="h-auto max-w-full"
+      className="block h-auto w-full shrink-0"
     >
       <g className={cn(mood === "think" && "origin-[90px_38px] rotate-[8deg]")}>
         <path d="M90 40V20" stroke="var(--foreground)" strokeWidth="2" />

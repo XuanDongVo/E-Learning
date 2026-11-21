@@ -18,6 +18,7 @@ import { RegionState } from "@/components/feedback";
 import { SkeletonList } from "@/components/ui/skeleton/skeleton-list";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { TeacherPageHeader } from "@/components/features/teacher/shared/teacher-page-header";
+import { TeacherListToolbar } from "@/components/features/teacher/shared/teacher-list-toolbar";
 
 function numericParam(value: string | null): number | undefined {
   if (!value) return undefined;
@@ -119,8 +120,9 @@ export function GlobalQuestionBankList() {
         pipoMood="wave"
       />
 
-      <section className="rounded-xl border-2 border-ink bg-card p-4 sm:p-5">
-        <form onSubmit={onSearch} className="mb-4 flex flex-col gap-2 sm:flex-row">
+      <TeacherListToolbar
+        search={
+        <form onSubmit={onSearch} className="flex min-w-0 gap-2">
           <label className="relative min-w-0 flex-1">
             <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
             <input
@@ -132,42 +134,39 @@ export function GlobalQuestionBankList() {
             />
           </label>
           <button type="submit" className="h-10 rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground">{t("search")}</button>
-          <button type="button" onClick={resetFilters} className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border-2 border-ink px-3 text-sm font-medium hover:bg-muted">
-            <RotateCcw className="size-4" /> {t("reset")}
-          </button>
         </form>
-
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          <label className="space-y-1.5 text-xs font-semibold text-muted-foreground">
+        }
+        filters={
+        <>
+          <label className="w-full space-y-1.5 text-xs font-semibold text-muted-foreground lg:w-44">
             {t("grade")}
             <select value={gradeId ?? ""} onChange={(e) => updateUrl({ gradeId: e.target.value || undefined, unitId: undefined, sectionId: undefined, topicId: undefined })} className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm font-normal text-foreground">
               <option value="">{t("allGrades")}</option>
               {grades.map((grade) => <option key={grade.id} value={grade.id}>{grade.name}</option>)}
             </select>
           </label>
-          <label className="space-y-1.5 text-xs font-semibold text-muted-foreground">
+          <label className="w-full space-y-1.5 text-xs font-semibold text-muted-foreground lg:w-44">
             {t("unit")}
             <select value={unitId ?? ""} disabled={!gradeId} onChange={(e) => updateUrl({ unitId: e.target.value || undefined, sectionId: undefined, topicId: undefined })} className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm font-normal text-foreground disabled:opacity-50">
               <option value="">{t("allUnits")}</option>
               {units.map((unit) => <option key={unit.id} value={unit.id}>{unit.code} · {unit.name}</option>)}
             </select>
           </label>
-          <label className="space-y-1.5 text-xs font-semibold text-muted-foreground">
+          <label className="w-full space-y-1.5 text-xs font-semibold text-muted-foreground lg:w-44">
             {t("section")}
             <select value={sectionId ?? ""} disabled={!unitId} onChange={(e) => updateUrl({ sectionId: e.target.value || undefined, topicId: undefined })} className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm font-normal text-foreground disabled:opacity-50">
               <option value="">{t("allSections")}</option>
               {sections.map((section) => <option key={section.id} value={section.id}>{section.name}</option>)}
             </select>
           </label>
-          <label className="space-y-1.5 text-xs font-semibold text-muted-foreground">
+          <label className="w-full space-y-1.5 text-xs font-semibold text-muted-foreground lg:w-44">
             {t("topic")}
             <select value={topicId ?? ""} disabled={!sectionId} onChange={(e) => updateUrl({ topicId: e.target.value || undefined })} className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm font-normal text-foreground disabled:opacity-50">
               <option value="">{t("allTopics")}</option>
               {topics.map((topic) => <option key={topic.id} value={topic.id}>{topic.name}</option>)}
             </select>
           </label>
-        </div>
-        <label className="mt-4 inline-flex items-center gap-2 text-sm text-muted-foreground">
+        <label className="inline-flex h-10 items-center gap-2 self-end text-sm text-muted-foreground">
           <input
             type="checkbox"
             checked={includeArchived}
@@ -176,7 +175,14 @@ export function GlobalQuestionBankList() {
           />
           {t("includeArchived")}
         </label>
-      </section>
+        </>
+        }
+        actions={
+          <button type="button" onClick={resetFilters} className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border-2 border-ink px-3 text-sm font-medium hover:bg-muted">
+            <RotateCcw className="size-4" /> {t("reset")}
+          </button>
+        }
+      />
 
       {banksQuery.isLoading ? (
         <SkeletonList count={6} />

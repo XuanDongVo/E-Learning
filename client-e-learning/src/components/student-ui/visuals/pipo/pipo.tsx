@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import type { CSSProperties } from "react";
 import { cn } from "@/lib/utils";
 import { usePipo } from "./pipo-provider";
 import { PipoCharacter } from "./pipo-character";
@@ -54,8 +55,9 @@ export function Pipo({ mood, size = 280, stage = 2, color = "primary", prop, cla
   return (
     <span
       aria-hidden="true"
+      style={{ width: size, maxWidth: "100%", aspectRatio: "1 / 1" } as CSSProperties}
       className={cn(
-        "inline-block leading-none",
+        "inline-flex shrink-0 items-center justify-center align-middle leading-none",
         (actualMood === "cheer" || actualMood === "celebrate") &&
           "motion-safe:animate-[pipo-bounce_0.4s_ease-in-out_3]",
         className,

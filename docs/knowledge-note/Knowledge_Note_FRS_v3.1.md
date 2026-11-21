@@ -1,3 +1,5 @@
+> **Superseded by v3.2 (2026-11-19).** Draft/Revision architecture described below is historical and must not be implemented. Refer to the corresponding v3.2 specification and V67 migration for the current single-document MVP.
+
 # Knowledge Note — Functional Requirements Specification (FRS) v3.1
 Status: Target contract, not implemented
 Date: 2026-11-19

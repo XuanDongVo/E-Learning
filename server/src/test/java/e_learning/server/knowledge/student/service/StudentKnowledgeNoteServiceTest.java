@@ -1,0 +1,278 @@
+package e_learning.server.knowledge.student.service;
+
+import e_learning.server.common.exception.AppException;
+import e_learning.server.content.topic.repository.TopicRepository;
+import e_learning.server.content.unit.service.StudentUnitService;
+import e_learning.server.grades.entity.Grade;
+import e_learning.server.knowledge.entity.KnowledgeNote;
+import e_learning.server.knowledge.entity.KnowledgeNoteTopicLink;
+import e_learning.server.content.topic.entity.Topic;
+import e_learning.server.content.section.entity.Section;
+import e_learning.server.content.unit.entity.Unit;
+import e_learning.server.content.common.enums.ContentStatus;
+import e_learning.server.knowledge.enums.KnowledgeNoteStatus;
+import e_learning.server.knowledge.repository.KnowledgeNoteRepository;
+import e_learning.server.knowledge.repository.KnowledgeNoteTopicLinkRepository;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
+class StudentKnowledgeNoteServiceTest {
+    private final KnowledgeNoteRepository notes = mock(KnowledgeNoteRepository.class);
+    private final TopicRepository topics = mock(TopicRepository.class);
+    private final KnowledgeNoteTopicLinkRepository links = mock(KnowledgeNoteTopicLinkRepository.class);
+    private final StudentUnitService studentUnits = mock(StudentUnitService.class);
+    private final StudentKnowledgeNoteService service =
+            new StudentKnowledgeNoteService(notes, topics, links, studentUnits);
+    private KnowledgeNote note;
+
+    @BeforeEach
+    void setUp() {
+        when(studentUnits.getStudentGradeId(7L)).thenReturn(2L);
+        Grade grade = mock(Grade.class);
+        when(grade.getId()).thenReturn(2L);
+        note = new KnowledgeNote();
+        note.setId(10L);
+        note.setTitle("Present Simple");
+        note.setGrade(grade);
+        note.setStatus(KnowledgeNoteStatus.PUBLISHED);
+        note.setDocumentJson(Map.of("type", "doc", "content", List.of()));
+        when(notes.findById(10L)).thenReturn(Optional.of(note));
+    }
+
+    @Test
+    void readsPublishedNoteWithinCurrentGrade() {
+        var response = service.get(7L, 10L);
+        assertEquals("Present Simple", response.title());
+        assertEquals(10L, response.id());
+        assertTrue(response.linkedTopics().isEmpty());
+    }
+
+    @Test
+    void detailIncludesOnlyVisibleLinkedTopicsAsReadingReturnPaths() {
+        var visible = mock(Topic.class);
+        var hidden = mock(Topic.class);
+        var visibleSection = mock(Section.class);
+        var hiddenSection = mock(Section.class);
+        var unit = mock(Unit.class);
+        var grade = mock(Grade.class);
+        when(grade.getId()).thenReturn(2L);
+        when(unit.getGrade()).thenReturn(grade);
+        when(unit.getStatus()).thenReturn(ContentStatus.PUBLISHED);
+        when(unit.getId()).thenReturn(88L);
+        when(unit.getCode()).thenReturn("U03");
+        when(unit.getName()).thenReturn("Lesson 3");
+        when(visible.getId()).thenReturn(3L);
+        when(visible.getName()).thenReturn("Present Simple");
+        when(visible.getStatus()).thenReturn(ContentStatus.PUBLISHED);
+        when(visible.getSection()).thenReturn(visibleSection);
+        when(visibleSection.getStatus()).thenReturn(ContentStatus.PUBLISHED);
+        when(visibleSection.getUnit()).thenReturn(unit);
+        when(hidden.getSection()).thenReturn(hiddenSection);
+        when(hidden.getStatus()).thenReturn(ContentStatus.DRAFT);
+        when(hiddenSection.getUnit()).thenReturn(unit);
+        var first = mock(KnowledgeNoteTopicLink.class);
+        var second = mock(KnowledgeNoteTopicLink.class);
+        when(first.getTopic()).thenReturn(visible);
+        when(first.isPrimary()).thenReturn(true);
+        when(second.getTopic()).thenReturn(hidden);
+        when(links.findByNoteId(10L)).thenReturn(List.of(second, first));
+
+        var result = service.get(7L, 10L);
+        assertEquals(1, result.linkedTopics().size());
+        assertEquals(3L, result.linkedTopics().getFirst().topicId());
+        assertEquals(88L, result.linkedTopics().getFirst().unitId());
+        assertTrue(result.linkedTopics().getFirst().primary());
+    }
+
+    @Test
+    void hidesUnpublishedNoteEvenWithKnownId() {
+        note.setStatus(KnowledgeNoteStatus.UNPUBLISHED);
+        assertThrows(AppException.class, () -> service.get(7L, 10L));
+    }
+
+    @Test
+    void hidesPublishedNoteFromOtherGrade() {
+        Grade other = mock(Grade.class);
+        when(other.getId()).thenReturn(3L);
+        note.setGrade(other);
+        assertThrows(AppException.class, () -> service.get(7L, 10L));
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void includesPublishedUnlinkedNotesInLibrary() {
+        when(notes.findAll(any(Specification.class), any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(note)));
+        when(links.findByNoteId(10L)).thenReturn(List.of());
+        var page = service.list(7L, null, null, null, 1, 12);
+        assertEquals(1, page.getItems().size());
+        assertTrue(page.getItems().getFirst().units().isEmpty());
+        assertEquals(List.of("UNLINKED"), page.getItems().getFirst().roles());
+    }
+
+    @Test
+    void extractsOnlyMarkedPrimaryKnowledgeForPublishedVisibleTopic() {
+        var topic = mock(Topic.class);
+        var section = mock(Section.class);
+        var unit = mock(Unit.class);
+        var grade = mock(Grade.class);
+        when(grade.getId()).thenReturn(2L);
+        when(topic.getSection()).thenReturn(section);
+        when(section.getUnit()).thenReturn(unit);
+        when(unit.getGrade()).thenReturn(grade);
+        when(unit.getId()).thenReturn(99L);
+        when(topic.getStatus()).thenReturn(ContentStatus.PUBLISHED);
+        when(section.getStatus()).thenReturn(ContentStatus.PUBLISHED);
+        when(unit.getStatus()).thenReturn(ContentStatus.PUBLISHED);
+        when(topics.findById(3L)).thenReturn(Optional.of(topic));
+        when(studentUnits.requireVisibleUnit(7L, 99L)).thenReturn(unit);
+
+        var block = Map.<String, Object>of(
+                "type", "learningBlock", "attrs", Map.of("isKeyPoint", true),
+                "content", List.of(Map.of("type", "text", "text", "Ví dụ")));
+        note.setDocumentJson(Map.of("type", "doc", "content", List.of(
+                Map.of("type", "heading", "attrs", Map.of("level", 2),
+                        "content", List.of(Map.of("type", "text", "text", "Công thức"))),
+                Map.of("type", "paragraph", "content", List.of(
+                        Map.of("type", "text", "text", "Not marked"))),
+                block)));
+        var link = mock(KnowledgeNoteTopicLink.class);
+        when(link.getNote()).thenReturn(note);
+        when(link.isPrimary()).thenReturn(true);
+        when(links.findByTopicIdOrderByDisplayOrderAsc(3L)).thenReturn(List.of(link));
+        var result = service.forTopic(7L, 3L);
+        assertNotNull(result.primary());
+        assertEquals(1, result.primary().totalKeyPoints());
+        var excerpt = (List<?>) result.primary().summaryDocument().get("content");
+        assertEquals(2, excerpt.size());
+        assertFalse(excerpt.toString().contains("Not marked"));
+    }
+
+    @Test
+    void rejectsUnpublishedTopicWithoutReadingLinks() {
+        var topic = mock(Topic.class);
+        when(topic.getSection()).thenReturn(mock(Section.class));
+        var section = topic.getSection();
+        var unit = mock(Unit.class);
+        var grade = mock(Grade.class);
+        when(section.getUnit()).thenReturn(unit);
+        when(unit.getGrade()).thenReturn(grade);
+        when(grade.getId()).thenReturn(2L);
+        when(topic.getStatus()).thenReturn(ContentStatus.DRAFT);
+        when(topics.findById(3L)).thenReturn(Optional.of(topic));
+        assertThrows(AppException.class, () -> service.forTopic(7L, 3L));
+        verify(links, never()).findByTopicIdOrderByDisplayOrderAsc(any());
+    }
+
+    @Test
+    void excludesUnpublishedLinkedPrimaryAndKeepsVisibleSupplementary() {
+        var topic = mock(Topic.class);
+        var section = mock(Section.class);
+        var unit = mock(Unit.class);
+        var grade = mock(Grade.class);
+        when(grade.getId()).thenReturn(2L);
+        when(topic.getSection()).thenReturn(section);
+        when(section.getUnit()).thenReturn(unit);
+        when(unit.getId()).thenReturn(99L);
+        when(unit.getGrade()).thenReturn(grade);
+        when(topic.getStatus()).thenReturn(ContentStatus.PUBLISHED);
+        when(section.getStatus()).thenReturn(ContentStatus.PUBLISHED);
+        when(unit.getStatus()).thenReturn(ContentStatus.PUBLISHED);
+        when(topics.findById(3L)).thenReturn(Optional.of(topic));
+        when(studentUnits.requireVisibleUnit(7L, 99L)).thenReturn(unit);
+
+        var primary = mock(KnowledgeNoteTopicLink.class);
+        var supplement = mock(KnowledgeNoteTopicLink.class);
+        var supplementalNote = new KnowledgeNote();
+        supplementalNote.setId(20L);
+        supplementalNote.setTitle("More practice");
+        supplementalNote.setGrade(grade);
+        supplementalNote.setStatus(KnowledgeNoteStatus.PUBLISHED);
+        when(primary.isPrimary()).thenReturn(true);
+        when(primary.getNote()).thenReturn(note);
+        when(supplement.isPrimary()).thenReturn(false);
+        when(supplement.getNote()).thenReturn(supplementalNote);
+        note.setStatus(KnowledgeNoteStatus.UNPUBLISHED);
+        when(links.findByTopicIdOrderByDisplayOrderAsc(3L)).thenReturn(List.of(primary, supplement));
+
+        var response = service.forTopic(7L, 3L);
+        assertNull(response.primary());
+        assertEquals(1, response.supplementary().size());
+        assertEquals(20L, response.supplementary().getFirst().id());
+    }
+
+    @Test
+    void deniesTopicOfDifferentGradeEvenWhenPublished() {
+        var topic = mock(Topic.class);
+        var section = mock(Section.class);
+        var unit = mock(Unit.class);
+        var grade = mock(Grade.class);
+        when(grade.getId()).thenReturn(99L);
+        when(topic.getSection()).thenReturn(section);
+        when(section.getUnit()).thenReturn(unit);
+        when(unit.getGrade()).thenReturn(grade);
+        when(topic.getStatus()).thenReturn(ContentStatus.PUBLISHED);
+        when(section.getStatus()).thenReturn(ContentStatus.PUBLISHED);
+        when(unit.getStatus()).thenReturn(ContentStatus.PUBLISHED);
+        when(topics.findById(3L)).thenReturn(Optional.of(topic));
+        assertThrows(AppException.class, () -> service.forTopic(7L, 3L));
+        verify(links, never()).findByTopicIdOrderByDisplayOrderAsc(any());
+    }
+
+    @Test
+    void refusesInvalidRoleFilterBeforeQueryingDatabase() {
+        assertThrows(AppException.class,
+                () -> service.list(7L, null, null, null, "HIDDEN", 1, 12));
+        verify(notes, never()).findAll(any(Specification.class), any(Pageable.class));
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void librarySummaryCanCarryBothPrimaryAndSupplementaryRoles() {
+        var topic = mock(Topic.class);
+        var section = mock(Section.class);
+        var unit = mock(Unit.class);
+        var grade = mock(Grade.class);
+        when(grade.getId()).thenReturn(2L);
+        when(unit.getId()).thenReturn(99L);
+        when(unit.getCode()).thenReturn("U03");
+        when(unit.getName()).thenReturn("Unit 3");
+        when(unit.getGrade()).thenReturn(grade);
+        when(unit.getStatus()).thenReturn(ContentStatus.PUBLISHED);
+        when(section.getUnit()).thenReturn(unit);
+        when(section.getStatus()).thenReturn(ContentStatus.PUBLISHED);
+        when(topic.getSection()).thenReturn(section);
+        when(topic.getStatus()).thenReturn(ContentStatus.PUBLISHED);
+        var primary = mock(KnowledgeNoteTopicLink.class);
+        var supplementary = mock(KnowledgeNoteTopicLink.class);
+        when(primary.getTopic()).thenReturn(topic);
+        when(primary.isPrimary()).thenReturn(true);
+        when(supplementary.getTopic()).thenReturn(topic);
+        when(supplementary.isPrimary()).thenReturn(false);
+        when(links.findByNoteId(10L)).thenReturn(List.of(primary, supplementary));
+        when(notes.findAll(any(Specification.class), any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(note)));
+
+        var page = service.list(7L, null, null, null, "PRIMARY", 1, 12);
+        assertEquals(List.of("PRIMARY", "SUPPLEMENTARY"), page.getItems().getFirst().roles());
+        assertEquals(1, page.getItems().getFirst().units().size());
+    }
+
+    @Test
+    void refusesInvalidPagination() {
+        assertThrows(AppException.class, () -> service.list(7L, null, null, null, 0, 12));
+        assertThrows(AppException.class, () -> service.list(7L, null, null, null, 1, 51));
+        verify(notes, never()).findAll(any(Specification.class), any(Pageable.class));
+    }
+}

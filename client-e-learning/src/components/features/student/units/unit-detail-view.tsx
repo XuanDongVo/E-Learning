@@ -1,9 +1,9 @@
 "use client";
 
 import { Link } from "@/i18n/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { BookOpen, BookMarked, ChevronRight, ListTree, RotateCcw, Tag, Zap } from "lucide-react";
+import { ArrowDownRight, BookOpen, BookMarked, ChevronRight, ListTree, RotateCcw, Sparkles, Tag, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FullPageState } from "@/components/feedback";
 import { studentUnitService } from "@/services/student-unit.service";
@@ -13,17 +13,19 @@ import { UnitCover, unitLabel } from "./unit-cover";
 import { PaperSurface } from "@/components/student-ui/paper-surface";
 import { ScrapbookHeading } from "@/components/student-ui/scrapbook-heading";
 import { StudentBackLink } from "@/components/student-ui/patterns/student-back-link";
+import { StudentTopicKnowledge } from "@/components/features/student/knowledge/student-topic-knowledge";
+import { getDefaultKnowledgeTopicId } from "./unit-knowledge-topic";
 
 type Filter = number | "all";
 
 export interface UnitDetailViewProps {
   unitId: number;
-  mascotSlot?: React.ReactNode;
 }
 
-export function UnitDetailView({ unitId, mascotSlot }: UnitDetailViewProps) {
+export function UnitDetailView({ unitId }: UnitDetailViewProps) {
   const [sectionId, setSectionId] = useState<Filter>("all");
   const [topicId, setTopicId] = useState<Filter>("all");
+  const [knowledgeTopicId, setKnowledgeTopicId] = useState<number | null>(null);
 
   const {
     data: response,
@@ -37,6 +39,23 @@ export function UnitDetailView({ unitId, mascotSlot }: UnitDetailViewProps) {
   });
   const unit = response?.data;
 
+  // Deep links from the Knowledge Note reader land on the right Topic.
+  // Validate against published Unit data; never trust an arbitrary URL id.
+  useEffect(() => {
+    if (!unit) return;
+    const raw = new URLSearchParams(window.location.search).get("topicId");
+    if (!raw || !/^[1-9]\d*$/.test(raw)) return;
+    const selected = Number(raw);
+    if (!Number.isSafeInteger(selected)) return;
+    const section = unit.sections.find(entry =>
+      entry.topics.some(item => item.id === selected));
+    if (section) {
+      setSectionId(section.id);
+      setTopicId(selected);
+      setKnowledgeTopicId(selected);
+    }
+  }, [unit]);
+
   const topicName = useMemo(() => {
     const map = new Map<number, string>();
     unit?.sections.forEach((s) => s.topics.forEach((t) => map.set(t.id, t.name)));
@@ -47,6 +66,11 @@ export function UnitDetailView({ unitId, mascotSlot }: UnitDetailViewProps) {
     (unit?.activities ?? []).filter((a) => a.topicIds.some((id) => ids.includes(id)));
 
   const selectedSection = unit?.sections.find((s) => s.id === sectionId);
+  const availableKnowledgeTopics = unit?.sections.flatMap(section =>
+    section.topics.map(topic => ({ ...topic, sectionName: section.name, sectionId: section.id }))) ?? [];
+  const defaultKnowledgeTopicId = unit ? getDefaultKnowledgeTopicId(unit.sections) : null;
+  const activeKnowledgeTopicId = availableKnowledgeTopics.some(topic => topic.id === knowledgeTopicId)
+    ? knowledgeTopicId : defaultKnowledgeTopicId;
 
   const visible = useMemo(() => {
     if (!unit) return [];
@@ -63,6 +87,19 @@ export function UnitDetailView({ unitId, mascotSlot }: UnitDetailViewProps) {
   const pickSection = (id: Filter) => {
     setSectionId(id);
     setTopicId("all");
+    if (id !== "all") {
+      const firstTopic = unit?.sections.find(section => section.id === id)?.topics[0];
+      if (firstTopic) setKnowledgeTopicId(firstTopic.id);
+    }
+  };
+
+  const pickKnowledgeTopic = (nextId: number) => {
+    setKnowledgeTopicId(nextId);
+    const match = availableKnowledgeTopics.find(item => item.id === nextId);
+    if (match) {
+      setSectionId(match.sectionId);
+      setTopicId(nextId);
+    }
   };
 
   // ─── Loading State ───
@@ -102,57 +139,69 @@ export function UnitDetailView({ unitId, mascotSlot }: UnitDetailViewProps) {
     <div className="student-unit-detail space-y-6 pb-8">
       <StudentBackLink href="/student/units">Tất cả bài học</StudentBackLink>
 
-      <PaperSurface as="section" variant="kraft" emphasis="feature" tape tapePosition="right" className="student-unit-detail-hero">
-        <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
-          <div className="student-unit-cover-frame relative shrink-0 overflow-hidden sm:w-48">
-            <UnitCover
-              label={label}
-              name={unit.name}
-              coverUrl={unit.coverUrl}
-              className="h-32 w-full object-cover sm:h-36"
-            />
-            <span className="student-chip absolute left-2.5 top-2.5">
-              Unit {label}
+      <PaperSurface as="section" variant="kraft" emphasis="feature" tape tapePosition="right"
+        className="student-unit-detail-hero student-unit-detail-hero--editorial relative overflow-hidden">
+        <div className="student-unit-detail-hero__content relative z-10 grid w-full min-w-0 gap-6 sm:grid-cols-[minmax(0,13rem)_minmax(0,1fr)] sm:items-center lg:gap-9">
+          <div className="student-unit-detail-hero__cover relative w-full max-w-[28rem] sm:max-w-none">
+            <div className="student-unit-cover-frame relative overflow-hidden">
+              <UnitCover
+                label={label}
+                name={unit.name}
+                coverUrl={unit.coverUrl}
+                variant="hero"
+                className="h-44 w-full sm:h-52 lg:h-56"
+              />
+              <span className="student-chip absolute left-3 top-3 border-2 border-ink bg-card text-foreground">
+                UNIT {label}
+              </span>
+            </div>
+            <span aria-hidden="true" className="student-unit-detail-hero__stamp">
+              <Sparkles className="size-4" />
+              LET'S LEARN
             </span>
           </div>
 
-          <div className="flex flex-1 flex-col gap-2.5">
-            <ScrapbookHeading as="h1" className="student-page-title text-foreground">
-              {unit.name}
-            </ScrapbookHeading>
+          <div className="min-w-0 space-y-4">
+            <p className="student-meta flex items-center gap-2 font-extrabold tracking-wide text-primary">
+              <span aria-hidden="true" className="student-unit-detail-hero__eyebrow-dot" />
+              KHÁM PHÁ BÀI HỌC · UNIT {label}
+            </p>
 
-            {unit.description ? (
-              <p className="student-body max-w-prose text-muted-foreground">
-                {unit.description}
+            <div className="space-y-2.5">
+              <ScrapbookHeading as="h1" className="student-page-title max-w-2xl text-foreground">
+                {unit.name}
+              </ScrapbookHeading>
+              <p className="student-body max-w-2xl text-muted-foreground">
+                {unit.description?.trim() || "Từng phần học nhỏ sẽ giúp bạn làm quen kiến thức và luyện tập theo nhịp của mình."}
               </p>
-            ) : (
-              <p className="student-body text-muted-foreground">
-                Chọn phần học bên dưới để xem hoạt động luyện tập.
-              </p>
-            )}
+            </div>
 
-            <div className="student-meta mt-1 flex flex-wrap gap-x-4 gap-y-2 text-muted-foreground">
-              <span className="inline-flex items-center gap-1.5">
-                <ListTree className="h-4 w-4" aria-hidden="true" />
-                <span>{unit.sections.length} phần học</span>
+            <div className="student-unit-detail-hero__facts flex flex-wrap gap-2" aria-label="Nội dung Unit">
+              <span className="student-unit-detail-hero__fact">
+                <ListTree className="size-4" aria-hidden="true" />
+                <strong>{unit.sections.length}</strong> phần học
               </span>
-              <span className="inline-flex items-center gap-1.5">
-                <Tag className="h-4 w-4" aria-hidden="true" />
-                <span>{topicCount} chủ đề</span>
+              <span className="student-unit-detail-hero__fact">
+                <Tag className="size-4" aria-hidden="true" />
+                <strong>{topicCount}</strong> chủ đề
               </span>
-              <span className="inline-flex items-center gap-1.5">
-                <BookOpen className="h-4 w-4" aria-hidden="true" />
-                <span>{unit.activities.length} hoạt động</span>
+              <span className="student-unit-detail-hero__fact">
+                <BookOpen className="size-4" aria-hidden="true" />
+                <strong>{unit.activities.length}</strong> hoạt động
               </span>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3 pt-1">
+              <a href="#unit-activities"
+                className="student-control student-control--action inline-flex items-center gap-2 px-4 no-underline">
+                Xem hoạt động <ArrowDownRight className="size-4" aria-hidden="true" />
+              </a>
+              <Link href={`/student/vocabulary/units/${unit.id}`}
+                className="student-control student-control--quiet inline-flex items-center gap-2 px-4 no-underline">
+                Sổ từ vựng <ChevronRight className="size-4" aria-hidden="true" />
+              </Link>
             </div>
           </div>
-
-          {/* Mascot Slot */}
-          {mascotSlot && (
-            <div className="hidden shrink-0 items-center justify-center lg:flex lg:h-28 lg:w-28">
-              {mascotSlot}
-            </div>
-          )}
         </div>
       </PaperSurface>
 
@@ -173,6 +222,52 @@ export function UnitDetailView({ unitId, mascotSlot }: UnitDetailViewProps) {
           Mở bộ từ <ChevronRight className="size-4" aria-hidden="true" />
         </Link>
       </div>
+
+      {/* Knowledge entry is always discoverable on the Unit overview.
+          Activity selection is independent: don't hide all other activities until a Topic is chosen. */}
+      <section id="unit-knowledge" aria-labelledby="unit-knowledge-heading" className="scroll-mt-24 space-y-3">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="space-y-1">
+            <p className="student-meta text-primary">ĐỌC TRƯỚC KHI LUYỆN TẬP</p>
+            <ScrapbookHeading as="h2" id="unit-knowledge-heading" className="student-section-title text-foreground">
+              Sổ tay kiến thức của Unit
+            </ScrapbookHeading>
+            <p className="student-body text-muted-foreground">
+              Chọn chủ đề để xem công thức và ghi nhớ nhanh, hoặc mở toàn bộ bài lý thuyết.
+            </p>
+          </div>
+          <Link href="/student/knowledge"
+            className="student-control student-control--quiet inline-flex min-h-11 items-center gap-2 px-4">
+            Mở thư viện <ChevronRight className="size-4" aria-hidden="true" />
+          </Link>
+        </div>
+        {availableKnowledgeTopics.length ? (
+          <>
+            <div className="flex flex-wrap gap-2" role="group" aria-label="Chọn Topic để xem nhanh kiến thức">
+              {availableKnowledgeTopics.map(item => (
+                <button key={item.id} type="button"
+                  aria-pressed={activeKnowledgeTopicId === item.id}
+                  onClick={() => pickKnowledgeTopic(item.id)}
+                  className={`student-control min-h-11 px-3 ${activeKnowledgeTopicId === item.id ? "student-filter-active" : "student-control--quiet"}`}>
+                  {item.name}
+                </button>
+              ))}
+            </div>
+            {activeKnowledgeTopicId != null && (
+              <StudentTopicKnowledge key={activeKnowledgeTopicId} topicId={activeKnowledgeTopicId} />
+            )}
+          </>
+        ) : (
+          <PaperSurface as="section" className="space-y-2 p-4 sm:p-5">
+            <p className="student-body text-muted-foreground">
+              Unit này chưa có Topic được công bố để liên kết bài lý thuyết.
+            </p>
+            <Link href="/student/knowledge" className="student-label text-primary underline underline-offset-4">
+              Xem các bài trong Sổ tay kiến thức
+            </Link>
+          </PaperSurface>
+        )}
+      </section>
 
       <div className="space-y-3">
         <ScrapbookHeading as="h2" className="student-section-title text-foreground">
@@ -254,7 +349,10 @@ export function UnitDetailView({ unitId, mascotSlot }: UnitDetailViewProps) {
                 key={id}
                 type="button"
                 aria-pressed={on}
-                onClick={() => setTopicId(id)}
+                onClick={() => {
+                  setTopicId(id);
+                  if (id !== "all") setKnowledgeTopicId(id);
+                }}
                 className={`student-control px-3 ${
                   on
                     ? "student-filter-active"
@@ -269,7 +367,7 @@ export function UnitDetailView({ unitId, mascotSlot }: UnitDetailViewProps) {
       )}
 
       {/* ─── Activity Cards Grid ─── */}
-      <section aria-live="polite" className="space-y-4">
+      <section id="unit-activities" aria-live="polite" className="scroll-mt-24 space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Zap className="h-5 w-5 text-warning" />

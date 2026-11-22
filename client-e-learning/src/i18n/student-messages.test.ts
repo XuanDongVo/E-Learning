@@ -41,4 +41,23 @@ describe("Student core i18n", () => {
   it.each(namespaces)("%s has matching VI/EN message keys", (_name, vi, en) => {
     expect(messageKeys(vi)).toEqual(messageKeys(en));
   });
+
+  it.each(namespaces)("%s has matching VI/EN ICU parameter names", (_name, vi, en) => {
+    const getMessage = (messages: Record<string, unknown>, path: string): string =>
+      path.split(".").reduce<unknown>((value, segment) =>
+        value && typeof value === "object"
+          ? (value as Record<string, unknown>)[segment]
+          : undefined, messages) as string;
+
+    const variables = (message: string): string[] =>
+      [...message.matchAll(/\{\s*([a-zA-Z]\w*)\s*(?:,|\})/g)]
+        .map((match) => match[1])
+        .sort();
+
+    for (const key of messageKeys(vi)) {
+      expect(variables(getMessage(vi, key)), key).toEqual(
+        variables(getMessage(en, key)),
+      );
+    }
+  });
 });

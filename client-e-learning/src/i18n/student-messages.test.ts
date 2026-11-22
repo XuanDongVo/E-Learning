@@ -50,7 +50,7 @@ describe("Student core i18n", () => {
           : undefined, messages) as string;
 
     const variables = (message: string): string[] =>
-      [...message.matchAll(/\{\s*([a-zA-Z]\w*)\s*(?:,|\})/g)]
+      [...message.replace(/(?:=\d+|zero|one|two|few|many|other)\s+\{/g, "").matchAll(/\{\s*([a-zA-Z]\w*)\s*(?:,|\})/g)]
         .map((match) => match[1])
         .sort();
 

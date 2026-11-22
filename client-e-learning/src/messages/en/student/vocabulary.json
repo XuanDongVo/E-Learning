@@ -278,5 +278,94 @@
     "reviewNow": "Review now",
     "browse": "Browse words",
     "emptyUnit": "No active vocabulary words yet."
+  },
+  "progressPage": {
+    "stages": {
+      "0": "Seed",
+      "3": "Sprout",
+      "7": "Young tree",
+      "14": "Budding",
+      "30": "Mature tree"
+    },
+    "today": {
+      "eyebrow": "01 / TODAY",
+      "title": "A little every day",
+      "description": "Learn or review {count} different words to nurture your tree.",
+      "wordCount": "{count, plural, one {# word} other {# words}}",
+      "aria": "Words completed today",
+      "qualified": "You nurtured your knowledge tree today.",
+      "remaining": "{count, plural, one {# word} other {# words}} left to meet today's goal.",
+      "due": "{count, plural, one {# word is} other {# words are}} due for review",
+      "review": "Go to word library"
+    },
+    "tree": {
+      "eyebrow": "02 / KNOWLEDGE TREE",
+      "title": "Your knowledge tree",
+      "milestone": "Milestone: {count} days",
+      "current": "Current streak",
+      "longest": "Longest streak",
+      "days": "{count, plural, one {# day} other {# days}}",
+      "track": "Tree growth milestones",
+      "journeyButton": "View growth journey",
+      "journeyTitle": "Tree growth journey",
+      "journeyDesc": "Choose a milestone to preview its tree stage. Locked stages are not counted as your current progress.",
+      "stagesAria": "Preview tree milestones",
+      "unlocked": "Unlocked",
+      "replay": "Replay animation"
+    },
+    "content": {
+      "eyebrow": "03 / PROGRESS",
+      "title": "Learning progress",
+      "hint": "A quick overview, not a replacement for the vocabulary library.",
+      "byUnit": "By Unit",
+      "unitSubtitle": "{due} due · {newWords} not yet learned",
+      "learnedTotal": "/ {count} words started",
+      "progressAria": "Words started",
+      "newWordHint": "{count} not yet learned · “Learned” means an FSRS schedule exists, not that the word is mastered.",
+      "wordSets": "Word sets in progress",
+      "visibleUnits": "Showing {count} Units",
+      "empty": "No word sets yet.",
+      "viewAll": "View all in library"
+    },
+    "activity": {
+      "eyebrow": "04 / LEARNING RHYTHM",
+      "title": "Reviews & activity",
+      "weekTitle": "7-day review schedule",
+      "fsrs": "FSRS estimate",
+      "chooseDay": "Select a review date",
+      "reviewSelected": "{date}: {count, plural, one {# word} other {# words}} expected due.",
+      "reviewEmpty": "No reviews scheduled.",
+      "scheduleNote": "The schedule may change after reviewing.",
+      "weeksTitle": "12-week activity",
+      "qualifiedDays": "{count} days reached the target (sample data)",
+      "heatmapHint": "Each cell represents a day · At least five different words rated HARD / GOOD / EASY make a qualified day.",
+      "heatmapAria": "12-week activity calendar",
+      "noData": "no data",
+      "qualified": "goal met",
+      "notQualified": "goal not met",
+      "heatmapDay": "{date}: {count} words, {status}",
+      "heatmapTitle": "{date}: {count} words",
+      "selectedActivity": "{date}: {count} words · {status}",
+      "selectDay": "Choose a day to see details.",
+      "low": "Less",
+      "high": "More"
+    },
+    "attention": {
+      "eyebrow": "05 / REINFORCEMENT",
+      "title": "Words needing attention",
+      "hint": "Sample words often rated AGAIN or HARD.",
+      "toLibrary": "Go to library",
+      "sample": "These ratings are sample data; no difficult-word ranking algorithm is applied yet."
+    },
+    "page": {
+      "loading": "Loading vocabulary progress...",
+      "error": "Could not load progress",
+      "connectionError": "Connection error. Please try again.",
+      "retry": "Try again",
+      "eyebrow": "VOCABULARY NOTEBOOK / PROGRESS",
+      "title": "Vocabulary journey",
+      "subtitle": "Learn a little every day and grow your knowledge tree.",
+      "library": "Word library"
+    }
   }
 }

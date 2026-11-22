@@ -278,5 +278,94 @@
     "reviewNow": "Ôn ngay",
     "browse": "Xem từ",
     "emptyUnit": "Chưa có từ vựng đang dùng."
+  },
+  "progressPage": {
+    "stages": {
+      "0": "Hạt giống",
+      "3": "Mầm mai",
+      "7": "Mai non",
+      "14": "Ra nụ",
+      "30": "Mai cổ thụ"
+    },
+    "today": {
+      "eyebrow": "01 / HÔM NAY",
+      "title": "Một chút mỗi ngày",
+      "description": "Học hoặc ôn {count} từ khác nhau để chăm cây.",
+      "wordCount": "{count} từ",
+      "aria": "Từ đủ điều kiện hôm nay",
+      "qualified": "Hôm nay bạn đã chăm sóc cây tri thức.",
+      "remaining": "Còn {count} từ để ghi nhận ngày học hợp lệ.",
+      "due": "{count} từ đang đến hạn ôn tập",
+      "review": "Đến thư viện để ôn"
+    },
+    "tree": {
+      "eyebrow": "02 / CÂY TRI THỨC",
+      "title": "Cây tri thức của bạn",
+      "milestone": "Mốc {count} ngày",
+      "current": "Chuỗi hiện tại",
+      "longest": "Chuỗi dài nhất",
+      "days": "{count} ngày",
+      "track": "Các mốc phát triển của cây",
+      "journeyButton": "Xem hành trình phát triển",
+      "journeyTitle": "Hành trình của cây mai",
+      "journeyDesc": "Chọn mốc để xem trước dạng cây mai tương ứng. Mốc chưa đạt chưa được ghi nhận là tiến trình hiện tại.",
+      "stagesAria": "Xem các mốc cây mai",
+      "unlocked": "Đã mở khóa",
+      "replay": "Phát lại hiệu ứng"
+    },
+    "content": {
+      "eyebrow": "03 / TIẾN ĐỘ",
+      "title": "Nội dung đang học",
+      "hint": "Tổng quan nhanh, không thay thế thư viện từ vựng.",
+      "byUnit": "Theo Unit",
+      "unitSubtitle": "{due} từ đến hạn · {newWords} từ chưa học",
+      "learnedTotal": "/ {count} từ đã học",
+      "progressAria": "Từ đã bắt đầu học",
+      "newWordHint": "{count} từ chưa học · “Đã học” là từ đã có lịch FSRS, chưa đồng nghĩa đã thuộc vững.",
+      "wordSets": "Bộ từ đang học",
+      "visibleUnits": "Đã hiển thị {count} Unit",
+      "empty": "Chưa có bộ từ nào.",
+      "viewAll": "Xem tất cả trong thư viện"
+    },
+    "activity": {
+      "eyebrow": "04 / NHỊP HỌC TẬP",
+      "title": "Lịch ôn & hoạt động",
+      "weekTitle": "7 ngày ôn tập",
+      "fsrs": "Dự kiến theo FSRS",
+      "chooseDay": "Chọn ngày xem lịch ôn",
+      "reviewSelected": "{date}: dự kiến {count} từ đến hạn.",
+      "reviewEmpty": "Chưa có lịch ôn tập.",
+      "scheduleNote": "Lịch có thể thay đổi sau khi ôn.",
+      "weeksTitle": "12 tuần hoạt động",
+      "qualifiedDays": "{count} ngày đạt mục tiêu (mẫu)",
+      "heatmapHint": "Mỗi ô là một ngày · Đủ 5 từ khác nhau được đánh giá HARD / GOOD / EASY là ngày hợp lệ.",
+      "heatmapAria": "Lịch hoạt động 12 tuần",
+      "noData": "chưa có dữ liệu",
+      "qualified": "đạt mục tiêu",
+      "notQualified": "chưa đạt mục tiêu",
+      "heatmapDay": "{date}: {count} từ, {status}",
+      "heatmapTitle": "{date}: {count} từ",
+      "selectedActivity": "{date}: {count} từ · {status}",
+      "selectDay": "Chọn một ngày để xem chi tiết.",
+      "low": "Ít",
+      "high": "Nhiều"
+    },
+    "attention": {
+      "eyebrow": "05 / CỦNG CỐ",
+      "title": "Những từ cần chú ý",
+      "hint": "Gợi ý các từ thường được đánh giá AGAIN hoặc HARD trong dữ liệu mẫu.",
+      "toLibrary": "Đến thư viện",
+      "sample": "Các lượt đánh giá này chỉ là dữ liệu minh họa, chưa có thuật toán xếp hạng từ khó."
+    },
+    "page": {
+      "loading": "Đang tải tiến độ từ vựng...",
+      "error": "Chưa thể tải tiến độ",
+      "connectionError": "Có lỗi kết nối, hãy thử lại.",
+      "retry": "Thử lại",
+      "eyebrow": "SỔ TAY TỪ VỰNG / TIẾN ĐỘ",
+      "title": "Hành trình từ vựng",
+      "subtitle": "Mỗi ngày học một chút, cây tri thức lớn thêm một phần.",
+      "library": "Thư viện từ"
+    }
   }
 }

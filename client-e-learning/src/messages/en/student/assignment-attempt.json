@@ -200,6 +200,14 @@
         "continue": "Continue attempt"
       },
       "types": {
+        "SINGLE_CHOICE": "Single choice",
+        "MULTIPLE_CHOICE": "Multiple choice",
+        "TRUE_FALSE": "True / false",
+        "FILL_IN_BLANK": "Fill in the blank",
+        "TYPE_ANSWER": "Type answer",
+        "MATCHING": "Matching",
+        "CLOZE": "Cloze",
+        "UNKNOWN": "Question",
         "TEXT_INPUT": "Text input",
         "MULTI_TEXT_INPUT": "Multiple blanks"
       },

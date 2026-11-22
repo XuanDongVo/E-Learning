@@ -12,6 +12,10 @@ import viProgress from "../messages/vi/student/progress.json";
 import enProgress from "../messages/en/student/progress.json";
 import viVocabulary from "../messages/vi/student/vocabulary.json";
 import enVocabulary from "../messages/en/student/vocabulary.json";
+import viActivities from "../messages/vi/student/activities.json";
+import enActivities from "../messages/en/student/activities.json";
+import viAssignmentAttempt from "../messages/vi/student/assignment-attempt.json";
+import enAssignmentAttempt from "../messages/en/student/assignment-attempt.json";
 import viLeaderboard from "../messages/vi/student/leaderboard.json";
 import enLeaderboard from "../messages/en/student/leaderboard.json";
 
@@ -31,10 +35,24 @@ const namespaces = [
   ["profile", viProfile, enProfile],
   ["progress", viProgress, enProgress],
   ["vocabulary", viVocabulary, enVocabulary],
+  ["activities", viActivities, enActivities],
+  ["assignmentAttempt", viAssignmentAttempt.assignmentAttempt, enAssignmentAttempt.assignmentAttempt],
   ["leaderboard", viLeaderboard, enLeaderboard],
 ] as const;
 
 describe("Student core i18n", () => {
+  it("keeps every supported assignment question type in both locales", () => {
+    const supported = [
+      "SINGLE_CHOICE", "MULTIPLE_CHOICE", "TRUE_FALSE", "FILL_IN_BLANK",
+      "TYPE_ANSWER", "TEXT_INPUT", "CLOZE", "MULTI_TEXT_INPUT",
+      "MATCHING", "UNKNOWN",
+    ] as const;
+    for (const key of supported) {
+      expect(viAssignmentAttempt.assignmentAttempt.paper.types).toHaveProperty(key);
+      expect(enAssignmentAttempt.assignmentAttempt.paper.types).toHaveProperty(key);
+    }
+  });
+
   it("uses explicit locale prefixes for Vietnamese and English", () => {
     expect(routing.locales).toEqual(["vi", "en"]);
     expect(routing.defaultLocale).toBe("vi");

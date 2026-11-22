@@ -200,6 +200,14 @@
         "continue": "Tiếp tục làm bài"
       },
       "types": {
+        "SINGLE_CHOICE": "Trắc nghiệm một đáp án",
+        "MULTIPLE_CHOICE": "Trắc nghiệm nhiều đáp án",
+        "TRUE_FALSE": "Đúng / Sai",
+        "FILL_IN_BLANK": "Điền vào chỗ trống",
+        "TYPE_ANSWER": "Nhập câu trả lời",
+        "MATCHING": "Nối",
+        "CLOZE": "Cloze",
+        "UNKNOWN": "Câu hỏi",
         "TEXT_INPUT": "Viết câu trả lời",
         "MULTI_TEXT_INPUT": "Điền nhiều chỗ trống"
       },

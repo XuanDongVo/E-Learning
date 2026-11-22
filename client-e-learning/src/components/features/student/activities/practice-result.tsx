@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+
 import { Link } from "@/i18n/navigation";
 import {
   ArrowRight,
@@ -49,6 +51,7 @@ export function PracticeResult({
   onRetryReview: () => void;
   onRetry: () => void;
 }) {
+  const t = useTranslations("student.activities.result");
   const provisional = session.score == null;
   const score = Math.round(
     provisional ? (session.finalCorrectCount / Math.max(1, session.totalQuestions)) * 100 : Number(session.score),
@@ -60,31 +63,31 @@ export function PracticeResult({
       : undefined;
   const title =
     session.status === "GAME_OVER"
-      ? "Hết mạng rồi!"
+      ? t("title.gameOver")
       : session.status === "ABANDONED"
-        ? "Bạn đã nộp bài khi chưa làm hết"
-        : "Hoàn thành luyện tập!";
+        ? t("title.abandoned")
+        : t("title.completed");
 
   const confirmedNewLevel = session.status === "COMPLETED" && xpReward != null &&
     xpReward.levelAfter > xpReward.levelBefore ? xpReward.levelAfter : null;
   const levelUp = confirmedNewLevel !== null;
   const companionMessage = confirmedNewLevel !== null
-    ? `Bạn đã lên Level ${confirmedNewLevel}! Cùng giữ nhịp học tập nhé!`
+    ? t("levelUp", { level: confirmedNewLevel })
     : session.status === "GAME_OVER"
-      ? "Hết lượt thử thách rồi. Mình có thể xem lại câu hỏi và thử lần khác nhé!"
+      ? t("companion.gameOver")
       : session.status === "ABANDONED"
-        ? "Lượt này đã dừng. Khi sẵn sàng, mình có thể bắt đầu một lượt mới."
+        ? t("companion.abandoned")
         : score >= 80
-          ? "Bạn vừa hoàn thành lượt luyện tập. Cùng xem những gì mình đã học nhé!"
-          : "Bạn đã kết thúc lượt luyện tập. Xem lại câu hỏi sẽ giúp mình hiểu bài hơn!";
+          ? t("companion.great")
+          : t("companion.tryAgain");
 
   const stats = [
-    { icon: Check, label: "Câu đúng (cuối cùng)", value: `${session.finalCorrectCount}/${session.totalQuestions}` },
-    { icon: Target, label: "Đúng ngay lần đầu", value: `${session.firstCorrectCount}` },
-    { icon: Lightbulb, label: "Gợi ý đã dùng", value: `${session.hintUsedCount}` },
+    { icon: Check, label: t("stats.correct"), value: `${session.finalCorrectCount}/${session.totalQuestions}` },
+    { icon: Target, label: t("stats.firstTry"), value: `${session.firstCorrectCount}` },
+    { icon: Lightbulb, label: t("stats.hints"), value: `${session.hintUsedCount}` },
     ...(seconds === undefined
       ? []
-      : [{ icon: Timer, label: "Thời gian", value: `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}` }]),
+      : [{ icon: Timer, label: t("stats.time"), value: `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}` }]),
   ];
 
   return (
@@ -95,7 +98,7 @@ export function PracticeResult({
         </span>
         <h1 className="text-2xl font-extrabold">{title}</h1>
         <p className="mt-1 text-sm">
-          Chế độ {session.mode === "LEARNING" ? "Luyện tập" : "Thử thách"} · {session.totalQuestions} câu hỏi
+          {t("modeSummary", { mode: t(`modes.${session.mode}`), count: session.totalQuestions })}
         </p>
         <div className="mt-3 flex justify-center gap-1">
           {[0, 1, 2].map((s) => (
@@ -113,7 +116,7 @@ export function PracticeResult({
         </p>
         {provisional && (
           <p className="mt-1 text-xs font-semibold text-muted-foreground">
-            Điểm tạm tính · lượt chưa hoàn thành không được lưu vào thống kê
+            {t("provisional")}
           </p>
         )}
       </div>
@@ -145,16 +148,16 @@ export function PracticeResult({
       </div>
 
       <section>
-        <h2 className="mb-2 font-extrabold">Chi tiết câu hỏi &amp; đáp án</h2>
+        <h2 className="mb-2 font-extrabold">{t("reviewTitle")}</h2>
         {reviewPending ? (
-          <RegionState variant="loading" description="Đang tải lịch sử trả lời…" />
+          <RegionState variant="loading" description={t("reviewLoading")} />
         ) : reviewError ? (
           <RegionState
             variant="error"
             description={reviewError}
             action={
               <Button variant="outline" size="sm" onClick={onRetryReview}>
-                <RefreshCw size={15} /> Thử lại
+                <RefreshCw size={15} /> {t("retry")}
               </Button>
             }
           />
@@ -166,7 +169,7 @@ export function PracticeResult({
       <div className="flex flex-wrap justify-center gap-2">
         <Button className={blueBtn} onClick={onRetry}>
           <RotateCcw size={16} />
-          Luyện tập lại
+          {t("restart")}
         </Button>
         <Button
           nativeButton={false}
@@ -174,7 +177,7 @@ export function PracticeResult({
           variant="outline"
           className={paperBtn}
         >
-          Xem lại sau
+          {t("reviewLater")}
         </Button>
         <Button
           nativeButton={false}
@@ -182,7 +185,7 @@ export function PracticeResult({
           variant="outline"
           className={paperBtn}
         >
-          Về Unit
+          {t("backToUnit")}
         </Button>
       </div>
     </div>
@@ -200,10 +203,12 @@ function XpRewardReceipt({
   error?: string;
   onRetry: () => void;
 }) {
+  const t = useTranslations("student.activities.result.xp");
+  const tResult = useTranslations("student.activities.result");
   if (pending) {
     return (
       <section
-        aria-label="Đang tải XP"
+        aria-label={t("loading")}
         className="animate-pulse rounded-2xl border border-accent/30 bg-accent-soft p-4"
       >
         <div className="h-4 w-28 rounded-full bg-accent/20" />
@@ -216,10 +221,10 @@ function XpRewardReceipt({
   if (error) {
     return (
       <section className="rounded-2xl border border-destructive/40 bg-destructive-soft p-4 text-sm">
-        <p className="font-bold text-destructive">Chưa tải được kết quả XP</p>
+        <p className="font-bold text-destructive">{t("loadFailed")}</p>
         <p className="mt-1 text-foreground">{error}</p>
         <Button variant="outline" size="sm" className="mt-3" onClick={onRetry}>
-          <RefreshCw size={15} /> Thử lại
+          <RefreshCw size={15} /> {tResult("retry")}
         </Button>
       </section>
     );
@@ -228,7 +233,7 @@ function XpRewardReceipt({
   if (!reward) {
     return (
       <section className="rounded-2xl border border-border bg-background p-4 text-center text-sm text-muted-foreground">
-        Lượt học này không thuộc chương trình Activity XP nên không có XP để hiển thị.
+        {t("notEligible")}
       </section>
     );
   }
@@ -243,7 +248,7 @@ function XpRewardReceipt({
           </span>
           <div>
             <p className="text-xs font-extrabold uppercase tracking-wider text-accent-foreground">
-              {forfeited ? "Lượt học kết thúc sớm" : "Activity XP đã chốt"}
+              {forfeited ? t("abandoned") : t("confirmed")}
             </p>
             <p className="text-4xl font-extrabold tabular-nums text-foreground">
               {forfeited ? "0" : `+${reward.committedXp}`}
@@ -252,19 +257,19 @@ function XpRewardReceipt({
           </div>
         </div>
         <div className="flex items-center justify-center gap-2 rounded-xl bg-card/70 px-4 py-3 text-sm font-extrabold text-foreground">
-          Level {reward.levelBefore}
+          {t("level", { level: reward.levelBefore })}
           <ArrowRight size={16} aria-hidden="true" />
-          Level {reward.levelAfter}
+          {t("level", { level: reward.levelAfter })}
         </div>
       </div>
       <div className="grid gap-px border-t border-accent/30 bg-accent/20 sm:grid-cols-3">
-        <RewardDetail label="Từ câu hỏi" value={`${reward.questionXp} XP`} />
-        <RewardDetail label="Thưởng hoàn thành" value={`${reward.completionBonus} XP`} />
-        <RewardDetail label="Tổng XP tích lũy" value={`${reward.lifetimeXpAfter} XP`} />
+        <RewardDetail label={t("questions")} value={`${reward.questionXp} XP`} />
+        <RewardDetail label={t("bonus")} value={`${reward.completionBonus} XP`} />
+        <RewardDetail label={t("lifetime")} value={`${reward.lifetimeXpAfter} XP`} />
       </div>
       {forfeited && (
         <p className="border-t border-accent/30 px-4 py-3 text-center text-xs font-semibold text-muted-foreground">
-          Lượt bỏ dở không chuyển XP tạm tính vào tài khoản.
+          {t("abandonedHint")}
         </p>
       )}
     </section>

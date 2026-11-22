@@ -134,5 +134,49 @@
         "description": "Prioritize questions needing more practice."
       }
     }
+  },
+  "result": {
+    "title": {
+      "gameOver": "Out of lives!",
+      "abandoned": "Practice ended early",
+      "completed": "Practice complete!"
+    },
+    "levelUp": "You reached Level {level}! Keep learning!",
+    "companion": {
+      "gameOver": "Your challenge ended. Review the questions and try again!",
+      "abandoned": "This attempt has ended. Start another one whenever you are ready.",
+      "great": "Great practice! Review what you learned today.",
+      "tryAgain": "You finished the practice. Reviewing the questions can help you improve!"
+    },
+    "stats": {
+      "correct": "Correct answers (final)",
+      "firstTry": "Correct on first try",
+      "hints": "Hints used",
+      "time": "Time"
+    },
+    "modeSummary": "{mode} · {count, plural, one {# question} other {# questions}}",
+    "modes": {
+      "LEARNING": "Practice",
+      "TRY_HARD": "Challenge"
+    },
+    "provisional": "Estimated score · unfinished sessions are not included in statistics",
+    "reviewTitle": "Question & answer details",
+    "reviewLoading": "Loading answer history…",
+    "retry": "Try again",
+    "restart": "Practice again",
+    "reviewLater": "Review later",
+    "backToUnit": "Back to Unit",
+    "xp": {
+      "loading": "Loading XP",
+      "loadFailed": "Could not load XP results",
+      "notEligible": "This session is not eligible for Activity XP.",
+      "abandoned": "Session ended early",
+      "confirmed": "Activity XP confirmed",
+      "level": "Level {level}",
+      "questions": "Question XP",
+      "bonus": "Completion bonus",
+      "lifetime": "Lifetime XP",
+      "abandonedHint": "Unfinished sessions do not add provisional XP to your account."
+    }
   }
 }

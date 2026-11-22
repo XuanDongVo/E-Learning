@@ -134,5 +134,49 @@
         "description": "Ưu tiên những câu bạn cần luyện thêm."
       }
     }
+  },
+  "result": {
+    "title": {
+      "gameOver": "Hết mạng rồi!",
+      "abandoned": "Bạn đã nộp bài khi chưa làm hết",
+      "completed": "Hoàn thành luyện tập!"
+    },
+    "levelUp": "Bạn đã lên Level {level}! Cùng giữ nhịp học tập nhé!",
+    "companion": {
+      "gameOver": "Hết lượt thử thách rồi. Mình có thể xem lại câu hỏi và thử lần khác nhé!",
+      "abandoned": "Lượt này đã dừng. Khi sẵn sàng, mình có thể bắt đầu một lượt mới.",
+      "great": "Bạn vừa hoàn thành lượt luyện tập. Cùng xem những gì mình đã học nhé!",
+      "tryAgain": "Bạn đã kết thúc lượt luyện tập. Xem lại câu hỏi sẽ giúp mình hiểu bài hơn!"
+    },
+    "stats": {
+      "correct": "Câu đúng (cuối cùng)",
+      "firstTry": "Đúng ngay lần đầu",
+      "hints": "Gợi ý đã dùng",
+      "time": "Thời gian"
+    },
+    "modeSummary": "Chế độ {mode} · {count} câu hỏi",
+    "modes": {
+      "LEARNING": "Luyện tập",
+      "TRY_HARD": "Thử thách"
+    },
+    "provisional": "Điểm tạm tính · lượt chưa hoàn thành không được lưu vào thống kê",
+    "reviewTitle": "Chi tiết câu hỏi & đáp án",
+    "reviewLoading": "Đang tải lịch sử trả lời…",
+    "retry": "Thử lại",
+    "restart": "Luyện tập lại",
+    "reviewLater": "Xem lại sau",
+    "backToUnit": "Về Unit",
+    "xp": {
+      "loading": "Đang tải XP",
+      "loadFailed": "Chưa tải được kết quả XP",
+      "notEligible": "Lượt học này không thuộc chương trình Activity XP nên không có XP để hiển thị.",
+      "abandoned": "Lượt học kết thúc sớm",
+      "confirmed": "Activity XP đã chốt",
+      "level": "Level {level}",
+      "questions": "Từ câu hỏi",
+      "bonus": "Thưởng hoàn thành",
+      "lifetime": "Tổng XP tích lũy",
+      "abandonedHint": "Lượt bỏ dở không chuyển XP tạm tính vào tài khoản."
+    }
   }
 }

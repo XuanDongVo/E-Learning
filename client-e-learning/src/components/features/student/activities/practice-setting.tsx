@@ -169,8 +169,8 @@ export function PracticeSettings({
                       />
                       <span className="absolute bottom-2 left-2 rounded-md bg-card-bg px-2 py-1 text-xs text-foreground">
                         {item === "garden"
-                          ? "Vườn mộng mơ"
-                          : "Bầu trời yên bình"}
+                          ? t("garden")
+                          : t("calm")}
                       </span>
                       {background === item && (
                         <Check

@@ -10,6 +10,8 @@ import viProfile from "../messages/vi/student/profile.json";
 import enProfile from "../messages/en/student/profile.json";
 import viProgress from "../messages/vi/student/progress.json";
 import enProgress from "../messages/en/student/progress.json";
+import viVocabulary from "../messages/vi/student/vocabulary.json";
+import enVocabulary from "../messages/en/student/vocabulary.json";
 
 function messageKeys(value: Record<string, unknown>, prefix = ""): string[] {
   return Object.entries(value).flatMap(([key, child]) => {
@@ -26,6 +28,7 @@ const namespaces = [
   ["knowledge", viKnowledge, enKnowledge],
   ["profile", viProfile, enProfile],
   ["progress", viProgress, enProgress],
+  ["vocabulary", viVocabulary, enVocabulary],
 ] as const;
 
 describe("Student core i18n", () => {

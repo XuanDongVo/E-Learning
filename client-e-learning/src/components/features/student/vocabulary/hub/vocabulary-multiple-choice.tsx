@@ -1,9 +1,12 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+
 import { useMemo, useState } from "react";
 import type { StudentVocabularyStudyCard } from "@/types/student-vocabulary-review";
 
 export function VocabularyMultipleChoice({ card, cards, onComplete }: { card: StudentVocabularyStudyCard; cards: StudentVocabularyStudyCard[]; onComplete: () => void }) {
+  const t = useTranslations("student.vocabulary.multipleChoice");
   const [selected, setSelected] = useState<string | null>(null);
   const choices = useMemo(() => {
     const options = [card.meaningVi];
@@ -18,9 +21,9 @@ export function VocabularyMultipleChoice({ card, cards, onComplete }: { card: St
 
   return (
     <section className="space-y-4">
-      <h3 className="student-card-title text-center text-foreground">“{card.word}” có nghĩa là gì?</h3>
+      <h3 className="student-card-title text-center text-foreground">{t("question", { word: card.word })}</h3>
       {choices.length < 2 ? (
-        <p className="student-body text-center text-muted-foreground">Không đủ đáp án khác nhau để tạo trắc nghiệm. Bạn có thể chuyển sang Gõ từ hoặc Phát âm.</p>
+        <p className="student-body text-center text-muted-foreground">{t("insufficient")}</p>
       ) : (
         <div className="grid gap-3 sm:grid-cols-2">
           {choices.map((choice) => (
@@ -31,7 +34,7 @@ export function VocabularyMultipleChoice({ card, cards, onComplete }: { card: St
       )}
       {selected !== null && (
         <p role="status" className="student-body text-center text-foreground">
-          {selected === card.meaningVi ? "Chính xác!" : `Chưa chính xác. Đáp án là: ${card.meaningVi}`}
+          {selected === card.meaningVi ? t("correct") : t("incorrect", { answer: card.meaningVi })}
         </p>
       )}
     </section>

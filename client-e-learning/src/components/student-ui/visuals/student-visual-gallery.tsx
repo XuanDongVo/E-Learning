@@ -7,6 +7,9 @@ import { STUDENT_VISUAL_IDS, studentVisualRegistry } from "@/lib/student-visuals
 import type { StudentVisualId } from "@/lib/student-visuals/registry";
 
 const LABELS: Record<StudentVisualId, { name: string; purpose: string }> = {
+  "illustration.unit-journey": { name: "Unit journey", purpose: "Visual anchor for the Student Unit journey." },
+  "illustration.leaderboard-podium": { name: "Leaderboard podium", purpose: "Visual anchor for the Student leaderboard." },
+  "illustration.topic-notes": { name: "Topic notes", purpose: "Visual anchor for Student topic knowledge notes." },
   "scene.knowledge-shelf": { name: "Giá sách kiến thức", purpose: "Hero của Student Knowledge Library." },
   "doodle.reading-trail": { name: "Đường dẫn đọc", purpose: "Chỉ dẫn nhẹ giữa hành trình khám phá học liệu." },
   "doodle.bookmark-note": { name: "Dấu trang giấy", purpose: "Dấu trang trong thẻ sách và trình đọc." },

@@ -315,5 +315,31 @@
       "finishedComplete": "You've finished. Select “Finish” to see the results.",
       "timeoutNotice": "The previous question timed out. You did not lose a life."
     }
+  },
+  "settings": {
+    "title": "Activity settings",
+    "description": "Sound, background, and shortcuts.",
+    "closeSettings": "Close settings",
+    "tablist": "Activity settings",
+    "tabs": {
+      "keys": "Shortcuts",
+      "background": "Change background"
+    },
+    "sound": "Correct / incorrect sounds",
+    "shortcutTitle": "Keyboard shortcuts",
+    "shortcutHint": "On a laptop, Ctrl + H works even when typing an answer.",
+    "mobile": "On mobile, use the buttons in the top and bottom bars.",
+    "environment": "Practice environment",
+    "garden": "Dreamy garden",
+    "calm": "Calm sky",
+    "close": "Close",
+    "done": "Done",
+    "shortcuts": {
+      "hint": "Next hint",
+      "check": "Check / continue / retry",
+      "choice": "Choose option 1–4",
+      "navigate": "Previous / next question",
+      "reset": "Reset current question"
+    }
   }
 }

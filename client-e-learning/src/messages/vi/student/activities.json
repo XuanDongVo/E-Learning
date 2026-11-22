@@ -315,5 +315,31 @@
       "finishedComplete": "Bạn đã hoàn thành bài luyện tập! Bấm “Hoàn thành” để xem kết quả.",
       "timeoutNotice": "Câu vừa rồi hết giờ. Bạn không bị trừ mạng."
     }
+  },
+  "settings": {
+    "title": "Cài đặt hoạt động",
+    "description": "Âm thanh, ảnh nền và phím tắt.",
+    "closeSettings": "Đóng cài đặt",
+    "tablist": "Cài đặt hoạt động",
+    "tabs": {
+      "keys": "Phím tắt",
+      "background": "Đổi ảnh nền"
+    },
+    "sound": "Âm thanh đúng / sai",
+    "shortcutTitle": "Phím tắt khi luyện tập",
+    "shortcutHint": "Dùng trên laptop; Ctrl + H vẫn hoạt động khi đang nhập đáp án.",
+    "mobile": "Trên mobile, dùng trực tiếp các nút ở thanh trên và thanh dưới.",
+    "environment": "Không gian luyện tập",
+    "garden": "Vườn mộng mơ",
+    "calm": "Bầu trời yên bình",
+    "close": "Đóng",
+    "done": "Xong",
+    "shortcuts": {
+      "hint": "Gợi ý tiếp theo",
+      "check": "Kiểm tra / tiếp tục / thử lại",
+      "choice": "Chọn phương án 1–4",
+      "navigate": "Chuyển câu trước / sau",
+      "reset": "Làm lại câu hiện tại"
+    }
   }
 }

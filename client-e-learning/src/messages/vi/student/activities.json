@@ -279,6 +279,41 @@
     "answerControls": {
       "TRUE": "Đúng",
       "FALSE": "Sai"
+    },
+    "workspace": {
+      "mascot": {
+        "gameOver": "Bạn hết mạng rồi, nhưng đừng buồn! Cùng xem kết quả nhé!",
+        "completed": "Tuyệt vời! Bạn đã hoàn thành tất cả câu hỏi!",
+        "correct": "Giỏi quá! Việt Cường tự hào về bạn!",
+        "retry": "Chưa đúng, bạn còn một lần thử nữa nhé!",
+        "wrong": "Không sao đâu, mình cùng xem đáp án nhé!",
+        "hint": "Việt Cường vừa gợi ý rồi, xem trong khung câu hỏi nhé!",
+        "thinking": "Thấy bạn suy nghĩ lâu Việt Cường cũng hồi hộp lây nè!"
+      },
+      "timeoutError": "Không thể đồng bộ hết giờ với máy chủ. Hãy thử lại.",
+      "timeoutPending": "Hết giờ! Đang xác nhận kết quả với máy chủ…",
+      "retry": "Thử lại",
+      "mascotAlt": "Việt Cường đang cổ vũ bạn",
+      "question": "Câu {current}/{total}",
+      "types": {
+        "SINGLE_CHOICE": "Chọn một đáp án",
+        "MULTIPLE_CHOICE": "Chọn nhiều đáp án",
+        "TRUE_FALSE": "Đúng / Sai",
+        "FILL_IN_BLANK": "Điền vào chỗ trống",
+        "TYPE_ANSWER": "Nhập đáp án",
+        "ORDERING": "Sắp xếp thứ tự"
+      },
+      "truth": {
+        "TRUE": "Đúng",
+        "FALSE": "Sai"
+      },
+      "inputLabel": "Đáp án của bạn",
+      "inputPlaceholder": "Nhập đáp án",
+      "answerSlow": "Máy chủ phản hồi chậm, đáp án của bạn đang được kiểm tra…",
+      "answerRetry": "Đáp án của bạn vẫn được giữ, hãy bấm Kiểm tra để thử lại.",
+      "finishedGameOver": "Bạn đã hết mạng. Bấm “Xem kết quả” để xem bài làm của mình.",
+      "finishedComplete": "Bạn đã hoàn thành bài luyện tập! Bấm “Hoàn thành” để xem kết quả.",
+      "timeoutNotice": "Câu vừa rồi hết giờ. Bạn không bị trừ mạng."
     }
   }
 }

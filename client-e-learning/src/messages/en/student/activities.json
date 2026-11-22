@@ -279,6 +279,41 @@
     "answerControls": {
       "TRUE": "True",
       "FALSE": "False"
+    },
+    "workspace": {
+      "mascot": {
+        "gameOver": "Out of lives! Let's review your results.",
+        "completed": "You finished every question!",
+        "correct": "Well done! Việt Cường is proud of you!",
+        "retry": "Not quite! You have one more try.",
+        "wrong": "That's okay! Let's review the correct answer.",
+        "hint": "Việt Cường gave you a hint. Check the question!",
+        "thinking": "Take your time. Việt Cường is cheering you on!"
+      },
+      "timeoutError": "Could not synchronize the timeout. Please try again.",
+      "timeoutPending": "Time is up! Confirming your results…",
+      "retry": "Try again",
+      "mascotAlt": "Việt Cường is cheering you on",
+      "question": "Question {current}/{total}",
+      "types": {
+        "SINGLE_CHOICE": "Single choice",
+        "MULTIPLE_CHOICE": "Multiple choice",
+        "TRUE_FALSE": "True / False",
+        "FILL_IN_BLANK": "Fill in the blank",
+        "TYPE_ANSWER": "Type answer",
+        "ORDERING": "Order items"
+      },
+      "truth": {
+        "TRUE": "True",
+        "FALSE": "False"
+      },
+      "inputLabel": "Your answer",
+      "inputPlaceholder": "Enter your answer",
+      "answerSlow": "The server is responding slowly. Your answer is being checked…",
+      "answerRetry": "Your answer is preserved. Select Check to retry.",
+      "finishedGameOver": "Out of lives. Select “View results” to review your work.",
+      "finishedComplete": "You've finished. Select “Finish” to see the results.",
+      "timeoutNotice": "The previous question timed out. You did not lose a life."
     }
   }
 }

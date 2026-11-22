@@ -33,6 +33,54 @@ function coverTone(label: string, name: string): typeof tones[number] {
   return tones[(Math.max(1, number) - 1) % tones.length];
 }
 
+const TOPIC_ASSETS = [
+  "/assets/vocabulary/gardening.svg",
+  "/assets/vocabulary/music.svg",
+  "/assets/vocabulary/recycle.svg",
+  "/assets/vocabulary/chess.svg",
+  "/assets/vocabulary/healthy.svg",
+  "/assets/vocabulary/helmet.svg",
+  "/assets/vocabulary/omelette.svg",
+];
+
+export function getVocabularyTopicVisual(code: string | number, name: string): string {
+  const text = `${code} ${name}`.toLowerCase();
+  if (text.includes("garden") || text.includes("plant") || text.includes("flower") || text.includes("vườn")) {
+    return "/assets/vocabulary/gardening.svg";
+  }
+  if (text.includes("music") || text.includes("art") || text.includes("âm nhạc") || text.includes("song")) {
+    return "/assets/vocabulary/music.svg";
+  }
+  if (text.includes("recycle") || text.includes("green") || text.includes("môi trường") || text.includes("rác") || text.includes("community")) {
+    return "/assets/vocabulary/recycle.svg";
+  }
+  if (text.includes("chess") || text.includes("game") || text.includes("cờ") || text.includes("play") || text.includes("hobbies") || text.includes("hobby")) {
+    return "/assets/vocabulary/chess.svg";
+  }
+  if (text.includes("health") || text.includes("fit") || text.includes("sức khỏe") || text.includes("sport") || text.includes("living")) {
+    return "/assets/vocabulary/healthy.svg";
+  }
+  if (text.includes("helmet") || text.includes("traffic") || text.includes("giao thông") || text.includes("mũ") || text.includes("school") || text.includes("visit")) {
+    return "/assets/vocabulary/helmet.svg";
+  }
+  if (text.includes("food") || text.includes("egg") || text.includes("omelette") || text.includes("nấu") || text.includes("món") || text.includes("drink")) {
+    return "/assets/vocabulary/omelette.svg";
+  }
+
+  const num = parseInt(String(code).replace(/\D/g, ""), 10);
+  if (!isNaN(num) && num > 0) {
+    return TOPIC_ASSETS[(num - 1) % TOPIC_ASSETS.length];
+  }
+
+  let hash = 0;
+  for (let i = 0; i < text.length; i++) {
+    hash = (hash << 5) - hash + text.charCodeAt(i);
+    hash |= 0;
+  }
+  const index = Math.abs(hash) % TOPIC_ASSETS.length;
+  return TOPIC_ASSETS[index];
+}
+
 /**
  * Shared Student Unit cover:
  * - valid media: real image

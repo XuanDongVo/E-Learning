@@ -225,7 +225,7 @@ function TreePanel({ tree }: { tree: VocabularyProgressTree }) {
       </div>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="vprogress-journey-dialog w-[calc(100%-1.25rem)] max-w-[700px] border-2 border-border bg-background p-4 sm:p-6">
+        <DialogContent className="vprogress-journey-dialog w-[calc(100%-1.25rem)] sm:max-w-[700px] border-2 border-border bg-background p-4 sm:p-6">
           <DialogHeader>
             <DialogTitle className="student-section-title">
               Hành trình của cây mai

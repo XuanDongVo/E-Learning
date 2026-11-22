@@ -6,8 +6,10 @@ import {
   useContext,
   useMemo,
   useRef,
+  useState,
   type ReactNode,
 } from "react";
+import { ClipboardList, X } from "lucide-react";
 import type {
   AttemptAnswerPayload,
   JsonRecord,
@@ -813,19 +815,58 @@ export function StudentPaper({
     hasMeaningfulAnswer(answers[String(q.attemptQuestionId)]),
   ).length;
   const progress = total > 0 ? Math.round((answeredCount / total) * 100) : 0;
+  const [mobilePaletteOpen, setMobilePaletteOpen] = useState(false);
 
   const goToQuestion = (attemptQuestionId: string) => {
-    const el = paperRef.current?.querySelector(
+    const el = paperRef.current?.querySelector<HTMLElement>(
       `[data-question-id="${attemptQuestionId}"]`,
     );
-    el?.scrollIntoView({ behavior: "smooth" });
+    if (!el) return;
+
+    // Highlight the question briefly
+    el.classList.add(
+      "ring-2",
+      "ring-primary",
+      "ring-offset-2",
+      "transition-all",
+      "duration-300",
+    );
+    setTimeout(() => {
+      el.classList.remove("ring-2", "ring-primary", "ring-offset-2");
+    }, 1500);
+
+    // Find the enclosing scroll container without displacing the outer window/body
+    let scrollContainer: HTMLElement | null = el.parentElement;
+    while (scrollContainer && scrollContainer !== document.body) {
+      const style = window.getComputedStyle(scrollContainer);
+      if (
+        (style.overflowY === "auto" || style.overflowY === "scroll") &&
+        scrollContainer.scrollHeight > scrollContainer.clientHeight
+      ) {
+        break;
+      }
+      scrollContainer = scrollContainer.parentElement;
+    }
+
+    if (scrollContainer && scrollContainer !== document.body) {
+      const containerRect = scrollContainer.getBoundingClientRect();
+      const elRect = el.getBoundingClientRect();
+      const targetScrollTop =
+        scrollContainer.scrollTop + (elRect.top - containerRect.top) - 24;
+      scrollContainer.scrollTo({
+        top: Math.max(0, targetScrollTop),
+        behavior: "smooth",
+      });
+    } else {
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
   };
 
   return (
     <QuestionTotalContext.Provider value={total}>
       <div className="mx-auto grid w-full max-w-7xl gap-6 px-4 py-6 sm:px-6 lg:grid-cols-[minmax(0,1fr)_300px]">
         {/* VÙNG CHÍNH: NỘI DUNG ĐỀ THI */}
-        <div ref={paperRef} className="min-w-0 space-y-6">
+        <div ref={paperRef} className="min-w-0 space-y-6 pb-96">
           {sections.length > 0 ? (
             sections.map((section, sIndex) => {
               const displayTitleEn =
@@ -968,6 +1009,103 @@ export function StudentPaper({
             </ul>
           </div>
         </aside>
+
+        {/* NÚT TIẾN ĐỘ BÀI LÀM TRÊN MOBILE / TABLET */}
+        <div className="fixed bottom-5 right-5 z-30 lg:hidden">
+          <button
+            type="button"
+            onClick={() => setMobilePaletteOpen(true)}
+            className="flex items-center gap-2 rounded-full border-2 border-border bg-card px-4 py-2.5 text-xs font-bold text-foreground shadow-pop transition active:scale-95 hover:bg-muted"
+          >
+            <ClipboardList className="h-4 w-4 text-primary" />
+            <span>Tiến độ:</span>
+            <span className="rounded-full bg-primary/10 px-2 py-0.5 font-extrabold text-primary">
+              {answeredCount}/{total}
+            </span>
+          </button>
+        </div>
+
+        {/* MODAL TIẾN ĐỘ CHO MOBILE / TABLET */}
+        {mobilePaletteOpen && (
+          <div className="fixed inset-0 z-50 flex flex-col justify-end bg-foreground/40 backdrop-blur-xs lg:hidden">
+            <div
+              className="absolute inset-0"
+              onClick={() => setMobilePaletteOpen(false)}
+            />
+            <div className="relative z-10 max-h-[75vh] w-full rounded-t-3xl border-t-2 border-border bg-card p-5 shadow-2xl flex flex-col">
+              <div className="flex items-center justify-between pb-3 border-b border-border">
+                <div>
+                  <h2 className="text-sm font-extrabold uppercase tracking-wider text-foreground">
+                    Tiến độ làm bài
+                  </h2>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Đã làm {answeredCount} / {total} câu
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setMobilePaletteOpen(false)}
+                  className="flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
+                  aria-label="Đóng tiến độ làm bài"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+
+              <div
+                className="mt-3 h-2 overflow-hidden rounded-full bg-muted"
+                aria-hidden="true"
+              >
+                <div
+                  className="h-full rounded-full bg-primary transition-all duration-300"
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
+
+              <nav
+                aria-label="Danh sách câu hỏi di động"
+                className="mt-4 flex-1 overflow-y-auto pr-1"
+              >
+                <ul className="grid grid-cols-5 gap-2 sm:grid-cols-6">
+                  {orderedQuestions.map((q) => {
+                    const qId = String(q.attemptQuestionId);
+                    const answered = hasMeaningfulAnswer(answers[qId]);
+
+                    return (
+                      <li key={qId}>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            goToQuestion(qId);
+                            setMobilePaletteOpen(false);
+                          }}
+                          className={`flex h-11 w-full items-center justify-center rounded-xl text-xs font-bold transition active:scale-95 ${
+                            answered
+                              ? "bg-primary text-primary-foreground shadow-2xs"
+                              : "bg-muted text-foreground hover:bg-border"
+                          }`}
+                        >
+                          {q.position + 1}
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </nav>
+
+              <ul className="mt-4 flex items-center justify-center gap-5 border-t border-border pt-3 text-xs text-muted-foreground">
+                <li className="flex items-center gap-2">
+                  <span className="h-3 w-3 rounded border border-border bg-muted" />
+                  <span>Chưa hoàn thành</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="h-3 w-3 rounded bg-primary" />
+                  <span>Đã có câu trả lời</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        )}
       </div>
     </QuestionTotalContext.Provider>
   );

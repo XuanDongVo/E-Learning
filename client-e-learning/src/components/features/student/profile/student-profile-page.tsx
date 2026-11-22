@@ -447,12 +447,12 @@ function Calendar({
           </button>
         </div>
       </div>
-      <div className="mt-4 grid grid-cols-7 gap-2 text-center student-meta font-bold text-muted-foreground">
+      <div className="mt-4 grid grid-cols-7 gap-1 sm:gap-2 text-center student-meta font-bold text-muted-foreground">
         {["T2", "T3", "T4", "T5", "T6", "T7", "CN"].map((d) => (
           <span key={d}>{d}</span>
         ))}
       </div>
-      <div className="mt-2 grid grid-cols-7 gap-2">
+      <div className="mt-2 grid grid-cols-7 gap-1 sm:gap-2">
         {cells.map((day, i) => {
           const isQualified = day !== null && qualifiedDates.has(key(day));
           const isToday = day !== null && key(day) === todayDate;

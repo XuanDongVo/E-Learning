@@ -7,7 +7,6 @@ import {
   FilePlus2,
   Pencil,
   RotateCcw,
-  Search,
 } from "lucide-react";
 import { TeacherPageHeader } from "@/components/features/teacher/shared/teacher-page-header";
 import { Link } from "@/i18n/navigation";
@@ -239,7 +238,7 @@ export function TeacherKnowledgeNoteManagement() {
             }
           >
             <SelectTrigger
-              className="h-10 min-w-40"
+              className="h-10 w-full sm:w-40"
               aria-label="Lọc theo khối"
             >
               <SelectValue placeholder="Tất cả khối" />
@@ -273,7 +272,7 @@ export function TeacherKnowledgeNoteManagement() {
             }
           >
             <SelectTrigger
-              className="h-10 min-w-40"
+              className="h-10 w-full sm:w-40"
               aria-label="Lọc trạng thái"
             >
               <SelectValue placeholder="Tất cả trạng thái" />
@@ -310,7 +309,7 @@ export function TeacherKnowledgeNoteManagement() {
             }
           >
             <SelectTrigger
-              className="h-10 min-w-40"
+              className="h-10 w-full sm:w-40"
               aria-label="Lọc liên kết Topic"
             >
               <SelectValue placeholder="Liên kết Topic" />

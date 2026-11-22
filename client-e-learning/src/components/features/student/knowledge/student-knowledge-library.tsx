@@ -1,11 +1,13 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   ArrowRight,
   BookMarked,
+  BookOpen,
   BookOpenText,
+  ChevronsUpDown,
   Search,
   Sparkles,
 } from "lucide-react";
@@ -18,10 +20,166 @@ import { StudentDoodle } from "@/components/student-ui/visuals/student-doodle";
 import { StudentIllustration } from "@/components/student-ui/visuals/student-illustration";
 import { studentKnowledgeNoteService } from "@/services/student/student-knowledge-note.service";
 import { studentUnitService } from "@/services/student/student-unit.service";
-import type { StudentKnowledgeNoteSummary, StudentKnowledgeRoleFilter } from "@/types/student-knowledge-note";
-import { chooseKnowledgeLibraryRole, KNOWLEDGE_LIBRARY_ROLES, KNOWLEDGE_ROLE_LABELS } from "./knowledge-library-roles";
+import type {
+  StudentKnowledgeNoteSummary,
+  StudentKnowledgeRoleFilter,
+} from "@/types/student-knowledge-note";
+import {
+  chooseKnowledgeLibraryRole,
+  KNOWLEDGE_LIBRARY_ROLES,
+  KNOWLEDGE_ROLE_LABELS,
+} from "./knowledge-library-roles";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
 
 const PAGE_SIZE = 12;
+
+type FilterOption = {
+  value: string;
+  label: string;
+  description?: string;
+};
+
+function normalizeSearchText(value: string): string {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/đ/g, "d")
+    .replace(/Đ/g, "D")
+    .toLowerCase()
+    .trim();
+}
+
+/** Searchable shadcn/cmdk selector shared by the Unit and Topic filters. */
+function KnowledgeFilterCombobox({
+  label,
+  ariaLabel,
+  value,
+  options,
+  allLabel,
+  placeholder,
+  disabled = false,
+  onChange,
+}: {
+  label: string;
+  ariaLabel: string;
+  value: string;
+  options: FilterOption[];
+  allLabel: string;
+  placeholder: string;
+  disabled?: boolean;
+  onChange: (value: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const labelId = useId();
+  const selected = options.find((option) => option.value === value);
+  const normalizedQuery = normalizeSearchText(query);
+  const filtered = options.filter((option) =>
+    normalizeSearchText(`${option.label} ${option.description ?? ""}`).includes(normalizedQuery),
+  );
+
+  const choose = (nextValue: string) => {
+    onChange(nextValue);
+    setOpen(false);
+    setQuery("");
+  };
+
+  return (
+    <div className="min-w-0 space-y-1.5">
+      <span id={labelId} className="student-label">{label}</span>
+      <Popover
+        open={open && !disabled}
+        onOpenChange={(nextOpen) => {
+          setOpen(nextOpen);
+          if (!nextOpen) setQuery("");
+        }}
+      >
+        <PopoverTrigger asChild>
+          <button
+            type="button"
+            role="combobox"
+            aria-label={ariaLabel}
+            aria-labelledby={labelId}
+            aria-expanded={open && !disabled}
+            aria-haspopup="listbox"
+            disabled={disabled}
+            className="student-control student-control--quiet flex min-h-11 w-full min-w-0 items-center justify-between gap-2 px-3 text-left"
+          >
+            <span className="flex min-w-0 items-center gap-2">
+              <BookOpen className="size-4 shrink-0 text-primary" aria-hidden="true" />
+              <span className="min-w-0 truncate font-semibold">
+                {selected ? selected.label : allLabel}
+              </span>
+            </span>
+            <ChevronsUpDown className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+          </button>
+        </PopoverTrigger>
+        <PopoverContent
+          align="start"
+          sideOffset={6}
+          className="student-theme w-[var(--radix-popover-trigger-width)] max-w-[calc(100vw-2rem)] border-2 border-ink bg-card p-1 shadow-pop"
+        >
+          <Command shouldFilter={false} className="bg-transparent">
+            <CommandInput className="focus-visible:!outline-none focus-visible:!ring-0"
+              autoFocus
+              value={query}
+              onValueChange={setQuery}
+              placeholder={placeholder}
+              aria-label={placeholder}
+            />
+            <CommandList className="max-h-64">
+              <CommandEmpty>Không tìm thấy nội dung phù hợp.</CommandEmpty>
+              <CommandGroup>
+                {normalizeSearchText(allLabel).includes(normalizedQuery) && (
+                  <CommandItem
+                    value="__all__"
+                    data-checked={value === ""}
+                    onSelect={() => choose("")}
+                    className="min-h-11 cursor-pointer"
+                  >
+                    <BookOpen className="size-4 shrink-0 text-primary" aria-hidden="true" />
+                    <span>{allLabel}</span>
+                  </CommandItem>
+                )}
+                {filtered.map((option) => (
+                  <CommandItem
+                    key={option.value}
+                    value={option.value}
+                    data-checked={value === option.value}
+                    onSelect={() => choose(option.value)}
+                    className="min-h-11 cursor-pointer py-2"
+                  >
+                    <BookOpen className="size-4 shrink-0 text-primary" aria-hidden="true" />
+                    <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+                      <span className="truncate font-semibold">{option.label}</span>
+                      {option.description && (
+                        <span className="truncate text-xs text-muted-foreground">
+                          {option.description}
+                        </span>
+                      )}
+                    </span>
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            </CommandList>
+          </Command>
+        </PopoverContent>
+      </Popover>
+    </div>
+  );
+}
 
 export function StudentKnowledgeLibrary() {
   const [input, setInput] = useState("");
@@ -122,9 +280,30 @@ export function StudentKnowledgeLibrary() {
     setPage(1);
   };
 
+
+  const handleUnitChange = (value: string) => {
+    setUnitId(value);
+
+    if (role === "UNLINKED") {
+      setRole("ALL");
+    }
+
+    setTopicId("");
+    setPage(1);
+  };
+
+  const unitOptions: FilterOption[] = (unitsQuery.data ?? []).map((unit) => ({
+    value: String(unit.id),
+    label: unit.name,
+    description: unit.code,
+  }));
+  const topicOptions: FilterOption[] = visibleTopics.map((topic) => ({
+    value: String(topic.id),
+    label: topic.name,
+  }));
+
   return (
     <main className="student-knowledge mx-auto max-w-6xl space-y-6 pb-12">
-      {/* <StudentBackLink href="/student">Về Learning Hub</StudentBackLink> */}
       <PaperSurface
         as="section"
         variant="kraft"
@@ -195,23 +374,38 @@ export function StudentKnowledgeLibrary() {
             className="pointer-events-none hidden h-16 w-auto rotate-[8deg] sm:block"
           />
         </div>
-        <div role="group" aria-label="Loại bài lý thuyết" className="student-knowledge-role-filters flex flex-wrap gap-2">
-          {KNOWLEDGE_LIBRARY_ROLES.map(item => (
-            <button key={item.value} type="button" aria-pressed={role === item.value}
+        <div
+          role="group"
+          aria-label="Loại bài lý thuyết"
+          className="student-knowledge-role-filters flex flex-wrap gap-2"
+        >
+          {KNOWLEDGE_LIBRARY_ROLES.map((item) => (
+            <button
+              key={item.value}
+              type="button"
+              aria-pressed={role === item.value}
               className={`student-control min-h-11 px-4 ${role === item.value ? "student-filter-active" : "student-control--quiet"}`}
               onClick={() => {
-                const next = chooseKnowledgeLibraryRole(item.value, unitId, topicId);
+                const next = chooseKnowledgeLibraryRole(
+                  item.value,
+                  unitId,
+                  topicId,
+                );
                 setRole(next.role);
                 setUnitId(next.unitId);
                 setTopicId(next.topicId);
                 setPage(1);
-              }}>
+              }}
+            >
               {item.label}
             </button>
           ))}
         </div>
-        <div role="search" aria-label="Tìm và lọc trang kiến thức"
-          className="grid gap-3 md:grid-cols-[minmax(0,1fr)_minmax(160px,220px)_minmax(160px,220px)]">
+        <div
+          role="search"
+          aria-label="Tìm và lọc trang kiến thức"
+          className="grid gap-3 md:grid-cols-[minmax(0,1fr)_minmax(160px,220px)_minmax(160px,220px)]"
+        >
           <label className="block space-y-1.5">
             <span className="student-label">Tìm theo tên hoặc mô tả</span>
             <span className="relative block">
@@ -229,53 +423,35 @@ export function StudentKnowledgeLibrary() {
               />
             </span>
           </label>
-          <label className="block space-y-1.5">
-            <span className="student-label">Theo bài học (Unit)</span>
-            <select
-              aria-label="Lọc theo Unit"
-              value={unitId}
-              onChange={(event) => {
-                setUnitId(event.target.value);
-                if (role === "UNLINKED") setRole("ALL");
-                setTopicId("");
-                setPage(1);
-              }}
-              disabled={unitsQuery.isPending || unitsQuery.isError}
-              className="student-control w-full px-3"
-            >
-              <option value="">Tất cả học liệu</option>
-              {(unitsQuery.data ?? []).map((unit) => (
-                <option key={unit.id} value={unit.id}>
-                  {unit.code} · {unit.name}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="block space-y-1.5">
-            <span className="student-label">Theo chuyên đề (Topic)</span>
-            <select
-              aria-label="Lọc theo Topic"
-              value={topicId}
-              onChange={(event) => {
-                setTopicId(event.target.value);
-                setPage(1);
-              }}
-              disabled={
-                !unitId ||
-                unitDetailQuery.isPending ||
-                unitDetailQuery.isError ||
-                visibleTopics.length === 0
-              }
-              className="student-control w-full px-3"
-            >
-              <option value="">Tất cả Topic</option>
-              {visibleTopics.map((topic) => (
-                <option key={topic.id} value={topic.id}>
-                  {topic.name}
-                </option>
-              ))}
-            </select>
-          </label>
+
+          <KnowledgeFilterCombobox
+            label="Theo bài học (Unit)"
+            ariaLabel="Lọc theo Unit"
+            value={unitId}
+            options={unitOptions}
+            allLabel="Tất cả"
+            placeholder="Tìm tên hoặc mã Unit..."
+            disabled={unitsQuery.isPending || unitsQuery.isError}
+            onChange={handleUnitChange}
+          />
+          <KnowledgeFilterCombobox
+            label="Theo chuyên đề (Topic)"
+            ariaLabel="Lọc theo Topic"
+            value={topicId}
+            options={topicOptions}
+            allLabel="Tất cả Topic"
+            placeholder="Tìm tên Topic..."
+            disabled={
+              !unitId ||
+              unitDetailQuery.isPending ||
+              unitDetailQuery.isError ||
+              visibleTopics.length === 0
+            }
+            onChange={(nextTopicId) => {
+              setTopicId(nextTopicId);
+              setPage(1);
+            }}
+          />
         </div>
         {unitDetailQuery.isError && unitId && (
           <p role="status" className="text-sm text-destructive">
@@ -357,7 +533,9 @@ export function StudentKnowledgeLibrary() {
           <StudentCollectionEmptyState
             title={
               hasFilters
-                ? role === "UNLINKED" ? "Chưa có trang đọc tự do" : "Chưa tìm thấy trang phù hợp"
+                ? role === "UNLINKED"
+                  ? "Chưa có trang đọc tự do"
+                  : "Chưa tìm thấy trang phù hợp"
                 : "Sổ tay đang chờ trang đầu tiên"
             }
             description={
@@ -447,9 +625,17 @@ export function KnowledgeNoteCard({
         {tag ? `${tag.code} · ${tag.name}` : "GÓC ĐỌC TỰ DO"}
         {note.units.length > 1 ? ` · +${note.units.length - 1} Unit` : ""}
       </p>
-      <div role="group" className="mb-2 flex flex-wrap gap-1.5" aria-label="Vai trò học liệu">
-        {(note.roles ?? []).map(item => (
-          <span key={item} data-knowledge-role={item} className="student-knowledge-role-tag student-caption">
+      <div
+        role="group"
+        className="mb-2 flex flex-wrap gap-1.5"
+        aria-label="Vai trò học liệu"
+      >
+        {(note.roles ?? []).map((item) => (
+          <span
+            key={item}
+            data-knowledge-role={item}
+            className="student-knowledge-role-tag student-caption"
+          >
             {KNOWLEDGE_ROLE_LABELS[item]}
           </span>
         ))}

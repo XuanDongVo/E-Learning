@@ -1,7 +1,13 @@
 "use client";
 
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
-import { useMemo, useState, type FormEvent } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  type FormEvent,
+} from "react";
 import { useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
@@ -37,18 +43,33 @@ export function GlobalQuestionBankList() {
   const sectionId = numericParam(searchParams.get("sectionId"));
   const topicId = numericParam(searchParams.get("topicId"));
   const search = searchParams.get("search") ?? "";
-  const includeArchived = searchParams.get("includeArchived") === "true";
   const page = Math.max(1, numericParam(searchParams.get("page")) ?? 1);
   const size = 20;
-  const [searchDraftState, setSearchDraftState] = useState({ source: search, value: search });
-  const searchDraft = searchDraftState.source === search ? searchDraftState.value : search;
+  const [searchDraftState, setSearchDraftState] = useState({
+    source: search,
+    value: search,
+  });
+  const searchDraft =
+    searchDraftState.source === search ? searchDraftState.value : search;
 
   const filters: GlobalQuestionBankFilters = useMemo(
-    () => ({ gradeId, unitId, sectionId, topicId, search, includeArchived, page, size }),
-    [gradeId, unitId, sectionId, topicId, search, includeArchived, page, size],
+    () => ({
+      gradeId,
+      unitId,
+      sectionId,
+      topicId,
+      search,
+      includeArchived: false,
+      page,
+      size,
+    }),
+    [gradeId, unitId, sectionId, topicId, search, page, size],
   );
 
-  const gradesQuery = useQuery({ queryKey: ["grades"], queryFn: () => gradeService.list() });
+  const gradesQuery = useQuery({
+    queryKey: ["grades"],
+    queryFn: () => gradeService.list(),
+  });
   const unitsQuery = useQuery({
     queryKey: QUERY_KEYS.contentUnits(gradeId ?? 0),
     queryFn: () => unitService.list(gradeId!),
@@ -65,13 +86,26 @@ export function GlobalQuestionBankList() {
     enabled: Boolean(sectionId),
   });
   const banksQuery = useQuery({
-    queryKey: QUERY_KEYS.globalQuestionBanks({ gradeId, unitId, sectionId, topicId, search, includeArchived, page, size }),
+    queryKey: QUERY_KEYS.globalQuestionBanks({
+      gradeId,
+      unitId,
+      sectionId,
+      topicId,
+      search,
+      includeArchived: false,
+      page,
+      size,
+    }),
     queryFn: () => questionBankService.browse(filters),
     placeholderData: (previous) => previous,
   });
 
-  const updateUrl = (updates: Record<string, string | undefined>, resetPage = true) => {
+  const updateUrl = (
+    updates: Record<string, string | undefined>,
+    resetPage = true,
+  ) => {
     const params = new URLSearchParams(searchParams.toString());
+    params.delete("includeArchived");
     for (const [key, value] of Object.entries(updates)) {
       if (value === undefined || value === "") params.delete(key);
       else params.set(key, value);
@@ -81,10 +115,30 @@ export function GlobalQuestionBankList() {
     router.push(query ? `${pathname}?${query}` : pathname);
   };
 
-  const onSearch = (event: FormEvent<HTMLFormElement>) => {
+  const applySearch = useCallback(
+    (value: string) => {
+      const params = new URLSearchParams(searchParams.toString());
+      const normalized = value.trim();
+      params.delete("includeArchived");
+      params.delete("page");
+      if (normalized) params.set("search", normalized);
+      else params.delete("search");
+      const query = params.toString();
+      router.replace(query ? `${pathname}?${query}` : pathname);
+    },
+    [pathname, router, searchParams],
+  );
+
+  const onSearchSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    updateUrl({ search: searchDraft.trim() || undefined });
+    applySearch(searchDraft);
   };
+
+  useEffect(() => {
+    if (searchDraft.trim() === search) return;
+    const timeout = window.setTimeout(() => applySearch(searchDraft), 350);
+    return () => window.clearTimeout(timeout);
+  }, [applySearch, search, searchDraft]);
 
   const resetFilters = () => {
     router.push(pathname);
@@ -98,12 +152,21 @@ export function GlobalQuestionBankList() {
   const banks = pageData?.items ?? [];
 
   const statusLabel = (status: string) =>
-    status === "PUBLISHED" ? t("status.published") : status === "ARCHIVED" ? t("status.archived") : t("status.draft");
+    status === "PUBLISHED"
+      ? t("status.published")
+      : status === "ARCHIVED"
+        ? t("status.archived")
+        : t("status.draft");
 
   return (
     <div className="space-y-6">
-      <nav aria-label="Breadcrumb" className="mb-3 flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
-        <Link href="/teacher/content" className="hover:text-foreground">{t("breadcrumbExplorer")}</Link>
+      <nav
+        aria-label="Breadcrumb"
+        className="mb-3 flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground"
+      >
+        <Link href="/teacher/content" className="hover:text-foreground">
+          {t("breadcrumbExplorer")}
+        </Link>
         <span>/</span>
         <span className="text-foreground">{t("breadcrumbBanks")}</span>
       </nav>
@@ -122,63 +185,117 @@ export function GlobalQuestionBankList() {
 
       <TeacherListToolbar
         search={
-        <form onSubmit={onSearch} className="flex min-w-0 gap-2">
-          <label className="relative min-w-0 flex-1">
-            <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-            <input
-              value={searchDraft}
-              onChange={(event) => setSearchDraftState({ source: search, value: event.target.value })}
-              placeholder={t("searchPlaceholder")}
-              aria-label={t("searchPlaceholder")}
-              className="h-10 w-full rounded-lg border border-input bg-background pl-9 pr-3 text-sm outline-none focus:ring-2 focus:ring-ring/30"
-            />
-          </label>
-          <button type="submit" className="h-10 rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground">{t("search")}</button>
-        </form>
+          <form onSubmit={onSearchSubmit} className="min-w-0">
+            <label className="relative block min-w-0">
+              <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+              <input
+                value={searchDraft}
+                onChange={(event) =>
+                  setSearchDraftState({
+                    source: search,
+                    value: event.target.value,
+                  })
+                }
+                placeholder={t("searchPlaceholder")}
+                aria-label={t("searchPlaceholder")}
+                className="h-10 w-full rounded-lg border border-input bg-background pl-9 pr-9 text-sm outline-none transition-colors placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/20"
+              />
+            </label>
+          </form>
         }
         filters={
-        <>
-          <label className="w-full space-y-1.5 text-xs font-semibold text-muted-foreground lg:w-44">
-            {t("grade")}
-            <select value={gradeId ?? ""} onChange={(e) => updateUrl({ gradeId: e.target.value || undefined, unitId: undefined, sectionId: undefined, topicId: undefined })} className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm font-normal text-foreground">
-              <option value="">{t("allGrades")}</option>
-              {grades.map((grade) => <option key={grade.id} value={grade.id}>{grade.name}</option>)}
-            </select>
-          </label>
-          <label className="w-full space-y-1.5 text-xs font-semibold text-muted-foreground lg:w-44">
-            {t("unit")}
-            <select value={unitId ?? ""} disabled={!gradeId} onChange={(e) => updateUrl({ unitId: e.target.value || undefined, sectionId: undefined, topicId: undefined })} className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm font-normal text-foreground disabled:opacity-50">
-              <option value="">{t("allUnits")}</option>
-              {units.map((unit) => <option key={unit.id} value={unit.id}>{unit.code} · {unit.name}</option>)}
-            </select>
-          </label>
-          <label className="w-full space-y-1.5 text-xs font-semibold text-muted-foreground lg:w-44">
-            {t("section")}
-            <select value={sectionId ?? ""} disabled={!unitId} onChange={(e) => updateUrl({ sectionId: e.target.value || undefined, topicId: undefined })} className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm font-normal text-foreground disabled:opacity-50">
-              <option value="">{t("allSections")}</option>
-              {sections.map((section) => <option key={section.id} value={section.id}>{section.name}</option>)}
-            </select>
-          </label>
-          <label className="w-full space-y-1.5 text-xs font-semibold text-muted-foreground lg:w-44">
-            {t("topic")}
-            <select value={topicId ?? ""} disabled={!sectionId} onChange={(e) => updateUrl({ topicId: e.target.value || undefined })} className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm font-normal text-foreground disabled:opacity-50">
-              <option value="">{t("allTopics")}</option>
-              {topics.map((topic) => <option key={topic.id} value={topic.id}>{topic.name}</option>)}
-            </select>
-          </label>
-        <label className="inline-flex h-10 items-center gap-2 self-end text-sm text-muted-foreground">
-          <input
-            type="checkbox"
-            checked={includeArchived}
-            onChange={(e) => updateUrl({ includeArchived: e.target.checked ? "true" : undefined })}
-            className="size-4 rounded border-input accent-primary"
-          />
-          {t("includeArchived")}
-        </label>
-        </>
+          <>
+            <label className="w-full space-y-1.5 text-xs font-semibold text-muted-foreground lg:w-40">
+              {t("grade")}
+              <select
+                value={gradeId ?? ""}
+                onChange={(e) =>
+                  updateUrl({
+                    gradeId: e.target.value || undefined,
+                    unitId: undefined,
+                    sectionId: undefined,
+                    topicId: undefined,
+                  })
+                }
+                className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm font-normal text-foreground"
+              >
+                <option value="">{t("allGrades")}</option>
+                {grades.map((grade) => (
+                  <option key={grade.id} value={grade.id}>
+                    {grade.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="w-full space-y-1.5 text-xs font-semibold text-muted-foreground lg:w-40">
+              {t("unit")}
+              <select
+                value={unitId ?? ""}
+                disabled={!gradeId}
+                onChange={(e) =>
+                  updateUrl({
+                    unitId: e.target.value || undefined,
+                    sectionId: undefined,
+                    topicId: undefined,
+                  })
+                }
+                className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm font-normal text-foreground disabled:opacity-50"
+              >
+                <option value="">{t("allUnits")}</option>
+                {units.map((unit) => (
+                  <option key={unit.id} value={unit.id}>
+                    {unit.code} · {unit.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="w-full space-y-1.5 text-xs font-semibold text-muted-foreground lg:w-40">
+              {t("section")}
+              <select
+                value={sectionId ?? ""}
+                disabled={!unitId}
+                onChange={(e) =>
+                  updateUrl({
+                    sectionId: e.target.value || undefined,
+                    topicId: undefined,
+                  })
+                }
+                className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm font-normal text-foreground disabled:opacity-50"
+              >
+                <option value="">{t("allSections")}</option>
+                {sections.map((section) => (
+                  <option key={section.id} value={section.id}>
+                    {section.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="w-full space-y-1.5 text-xs font-semibold text-muted-foreground lg:w-40">
+              {t("topic")}
+              <select
+                value={topicId ?? ""}
+                disabled={!sectionId}
+                onChange={(e) =>
+                  updateUrl({ topicId: e.target.value || undefined })
+                }
+                className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm font-normal text-foreground disabled:opacity-50"
+              >
+                <option value="">{t("allTopics")}</option>
+                {topics.map((topic) => (
+                  <option key={topic.id} value={topic.id}>
+                    {topic.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </>
         }
         actions={
-          <button type="button" onClick={resetFilters} className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border-2 border-ink px-3 text-sm font-medium hover:bg-muted">
+          <button
+            type="button"
+            onClick={resetFilters}
+            className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border-2 border-ink px-3 text-sm font-medium hover:bg-muted"
+          >
             <RotateCcw className="size-4" /> {t("reset")}
           </button>
         }
@@ -190,7 +307,11 @@ export function GlobalQuestionBankList() {
         <RegionState
           variant="error"
           action={
-            <button type="button" onClick={() => void banksQuery.refetch()} className="rounded-lg border px-4 py-2 text-sm font-semibold">
+            <button
+              type="button"
+              onClick={() => void banksQuery.refetch()}
+              className="rounded-lg border px-4 py-2 text-sm font-semibold"
+            >
               {tCommon("retry")}
             </button>
           }
@@ -201,29 +322,73 @@ export function GlobalQuestionBankList() {
         <div className="overflow-hidden rounded-xl border-2 border-ink bg-card">
           <div className="divide-y divide-border">
             {banks.map((bank) => (
-              <Link key={bank.id} href={`/teacher/content/question-banks/${bank.id}`} className="block p-4 transition-colors hover:bg-muted/40 sm:p-5">
+              <Link
+                key={bank.id}
+                href={`/teacher/content/question-banks/${bank.id}`}
+                className="block p-4 transition-colors hover:bg-muted/40 sm:p-5"
+              >
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
                       <h2 className="font-semibold">{bank.name}</h2>
-                      <StatusBadge status={bank.status} label={statusLabel(bank.status)} />
+                      <StatusBadge
+                        status={bank.status}
+                        label={statusLabel(bank.status)}
+                      />
                     </div>
-                    {bank.description && <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{bank.description}</p>}
-                    <p className="mt-2 text-xs text-muted-foreground">Grade {bank.gradeName} <span className="px-1">/</span> {bank.unitCode} · {bank.unitName} <span className="px-1">/</span> {bank.sectionName} <span className="px-1">/</span> {bank.topicName}</p>
+                    {bank.description && (
+                      <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
+                        {bank.description}
+                      </p>
+                    )}
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      Grade {bank.gradeName} <span className="px-1">/</span>{" "}
+                      {bank.unitCode} · {bank.unitName}{" "}
+                      <span className="px-1">/</span> {bank.sectionName}{" "}
+                      <span className="px-1">/</span> {bank.topicName}
+                    </p>
                   </div>
                   <div className="flex shrink-0 gap-5 text-sm">
-                    <div><p className="font-semibold tabular-nums">{bank.totalQuestions}</p><p className="text-xs text-muted-foreground">Questions</p></div>
-                    <div><p className="font-semibold tabular-nums">{bank.readyQuestions}</p><p className="text-xs text-muted-foreground">Ready</p></div>
+                    <div>
+                      <p className="font-semibold tabular-nums">
+                        {bank.totalQuestions}
+                      </p>
+                      <p className="text-xs text-muted-foreground">Questions</p>
+                    </div>
+                    <div>
+                      <p className="font-semibold tabular-nums">
+                        {bank.readyQuestions}
+                      </p>
+                      <p className="text-xs text-muted-foreground">Ready</p>
+                    </div>
                   </div>
                 </div>
               </Link>
             ))}
           </div>
           <div className="flex items-center justify-between border-t border-ink px-4 py-3 text-sm">
-            <span className="text-muted-foreground">{t("page", { page: pageData?.page ?? page, totalPages: Math.max(1, pageData?.totalPages ?? 1) })} · {t("totalBanks", { count: pageData?.totalElements ?? 0 })}</span>
+            <span className="text-muted-foreground">
+              {t("page", {
+                page: pageData?.page ?? page,
+                totalPages: Math.max(1, pageData?.totalPages ?? 1),
+              })}{" "}
+              · {t("totalBanks", { count: pageData?.totalElements ?? 0 })}
+            </span>
             <div className="flex gap-2">
-              <button disabled={page <= 1} onClick={() => updateUrl({ page: String(page - 1) }, false)} className="inline-flex h-9 items-center gap-1 rounded-lg border border-ink px-3 disabled:opacity-40"><ChevronLeft className="size-4" /> {t("previous")}</button>
-              <button disabled={!pageData || page >= pageData.totalPages} onClick={() => updateUrl({ page: String(page + 1) }, false)} className="inline-flex h-9 items-center gap-1 rounded-lg border border-ink px-3 disabled:opacity-40">{t("next")} <ChevronRight className="size-4" /></button>
+              <button
+                disabled={page <= 1}
+                onClick={() => updateUrl({ page: String(page - 1) }, false)}
+                className="inline-flex h-9 items-center gap-1 rounded-lg border border-ink px-3 disabled:opacity-40"
+              >
+                <ChevronLeft className="size-4" /> {t("previous")}
+              </button>
+              <button
+                disabled={!pageData || page >= pageData.totalPages}
+                onClick={() => updateUrl({ page: String(page + 1) }, false)}
+                className="inline-flex h-9 items-center gap-1 rounded-lg border border-ink px-3 disabled:opacity-40"
+              >
+                {t("next")} <ChevronRight className="size-4" />
+              </button>
             </div>
           </div>
         </div>

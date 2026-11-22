@@ -9,7 +9,7 @@ Page type: operational list / management workspace.
 - User: Teacher managing reusable learning content, classes, students and delivery records.
 - Job: search, narrow and act on a list without losing the current feature context.
 - Hierarchy: search first, filters second, primary action at the trailing edge.
-- Responsive rule: one column at narrow widths, two-column filter grid when space permits, then one wrapping desktop row. The page itself must never scroll horizontally.
+- Responsive rule: controls stack at narrow widths; filters may wrap from `sm`; search/actions share the first row and filters use a full-width second row from `lg`; only at `2xl`, after accounting for the Teacher sidebar, does the toolbar become an 18rem search / flexible filters / trailing actions row. The page itself must never scroll horizontally.
 - Visual rule: retain Calm Classroom tokens and existing controls. The shared layer owns only the containing surface, alignment and gaps.
 
 ## Inventory

@@ -2,9 +2,21 @@
 
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowRight, BookOpenText, ChevronRight, LibraryBig, Sparkles } from "lucide-react";
+import {
+  ArrowRight,
+  BookOpenText,
+  ChevronRight,
+  LibraryBig,
+  Sparkles,
+} from "lucide-react";
 import { Link } from "@/i18n/navigation";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { PaperSurface } from "@/components/student-ui/paper-surface";
 import { StudentIllustration } from "@/components/student-ui/visuals/student-illustration";
 import { KnowledgeDocumentRenderer } from "@/components/features/knowledge-note/knowledge-document-renderer";
@@ -15,14 +27,16 @@ export function StudentTopicKnowledge({ topicId }: { topicId: number }) {
   const [open, setOpen] = useState(false);
   const query = useQuery({
     queryKey: ["student", "knowledge-notes", "topic", topicId],
-    queryFn: async () => (await studentKnowledgeNoteService.forTopic(topicId)).data,
+    queryFn: async () =>
+      (await studentKnowledgeNoteService.forTopic(topicId)).data,
     enabled: Number.isSafeInteger(topicId) && topicId > 0,
     staleTime: 60_000,
   });
   const primary = query.data?.primary;
   const detailQuery = useQuery({
     queryKey: ["student", "knowledge-notes", "detail", primary?.id],
-    queryFn: async () => (await studentKnowledgeNoteService.get(primary!.id)).data,
+    queryFn: async () =>
+      (await studentKnowledgeNoteService.get(primary!.id)).data,
     enabled: open && Boolean(primary?.id),
     staleTime: 60_000,
   });
@@ -31,7 +45,11 @@ export function StudentTopicKnowledge({ topicId }: { topicId: number }) {
 
   if (query.isPending) {
     return (
-      <PaperSurface as="section" className="student-topic-knowledge space-y-3 p-4 sm:p-5" role="status">
+      <PaperSurface
+        as="section"
+        className="student-topic-knowledge space-y-3 p-4 sm:p-5"
+        role="status"
+      >
         <p className="student-label">Đang tải lý thuyết của chủ đề…</p>
         <div className="h-12 animate-pulse rounded bg-muted/60" />
       </PaperSurface>
@@ -39,73 +57,131 @@ export function StudentTopicKnowledge({ topicId }: { topicId: number }) {
   }
   if (query.isError) {
     return (
-      <PaperSurface as="section" className="student-topic-knowledge space-y-2 p-4 sm:p-5">
-        <h3 className="student-card-title">Chưa tải được kiến thức của chủ đề</h3>
-        <p className="student-body text-muted-foreground">Bạn vẫn có thể xem hoạt động luyện tập bên dưới.</p>
-        <button type="button" className="student-control student-control--secondary w-fit px-4"
-          onClick={() => void query.refetch()}>Thử lại</button>
+      <PaperSurface
+        as="section"
+        className="student-topic-knowledge space-y-2 p-4 sm:p-5"
+      >
+        <h3 className="student-card-title">
+          Chưa tải được kiến thức của chủ đề
+        </h3>
+        <p className="student-body text-muted-foreground">
+          Bạn vẫn có thể xem hoạt động luyện tập bên dưới.
+        </p>
+        <button
+          type="button"
+          className="student-control student-control--secondary w-fit px-4"
+          onClick={() => void query.refetch()}
+        >
+          Thử lại
+        </button>
       </PaperSurface>
     );
   }
   if (!primary && !supplementary.length) {
     return (
       <PaperSurface as="section" className="student-topic-knowledge p-4 sm:p-5">
-        <p className="student-label text-foreground">Chủ đề này chưa có bài lý thuyết được công bố.</p>
-        <Link href="/student/knowledge" className="student-label mt-2 inline-flex items-center gap-1 text-primary underline underline-offset-4">
-          Khám phá thư viện kiến thức <ArrowRight className="size-4" aria-hidden="true" />
+        <p className="student-label text-foreground">
+          Chủ đề này chưa có bài lý thuyết được công bố.
+        </p>
+        <Link
+          href="/student/knowledge"
+          className="student-label mt-2 inline-flex items-center gap-1 text-primary underline underline-offset-4"
+        >
+          Khám phá thư viện kiến thức{" "}
+          <ArrowRight className="size-4" aria-hidden="true" />
         </Link>
       </PaperSurface>
     );
   }
   return (
     <>
-      <PaperSurface as="section" variant="lined" emphasis="feature"
-        className="student-topic-knowledge space-y-4 p-4 sm:p-6" aria-label="Kiến thức của chủ đề">
+      <PaperSurface
+        as="section"
+        variant="lined"
+        emphasis="feature"
+        className="student-topic-knowledge space-y-4 p-4 sm:p-6"
+        aria-label="Kiến thức của chủ đề"
+      >
         <div className="flex min-w-0 items-start justify-between gap-3">
           <div className="space-y-1">
             <p className="student-meta flex items-center gap-2 text-primary">
-              <Sparkles className="size-4" aria-hidden="true" /> TRƯỚC KHI LUYỆN TẬP
+              <Sparkles className="size-4" aria-hidden="true" /> TRƯỚC KHI LUYỆN
+              TẬP
             </p>
-            <h3 className="student-section-title text-foreground">Kiến thức cần nhớ</h3>
-            {primary && <p className="student-label text-muted-foreground">{primary.title}</p>}
+            <h3 className="student-section-title text-foreground">
+              Kiến thức cần nhớ
+            </h3>
+            {primary && (
+              <p className="student-label text-muted-foreground">
+                {primary.title}
+              </p>
+            )}
           </div>
-          <StudentIllustration id="illustration.topic-notes" decorative className="hidden w-20 shrink-0 sm:block" />
+          <StudentIllustration
+            id="illustration.topic-notes"
+            decorative
+            className="hidden w-20 shrink-0 sm:block"
+          />
         </div>
         {primary ? (
           <>
             {hasExcerpt ? (
               <div className="student-topic-knowledge__excerpt">
-                <KnowledgeDocumentRenderer document={primary.summaryDocument} compact idPrefix={`topic-${topicId}-excerpt-`} />
+                <KnowledgeDocumentRenderer
+                  document={primary.summaryDocument}
+                  compact
+                  idPrefix={`topic-${topicId}-excerpt-`}
+                />
               </div>
             ) : (
-              <p className="student-body text-muted-foreground">Bài chính chưa có khối trọng tâm để xem nhanh.</p>
+              <p className="student-body text-muted-foreground">
+                Bài chính chưa có khối trọng tâm để xem nhanh.
+              </p>
             )}
             {primary.totalKeyPoints > 3 && (
               <p className="student-caption text-muted-foreground">
-                Đang xem 3/{primary.totalKeyPoints} nội dung trọng tâm · Xem đầy đủ để đọc tiếp
+                Đang xem 3/{primary.totalKeyPoints} nội dung trọng tâm · Xem đầy
+                đủ để đọc tiếp
               </p>
             )}
             <div className="flex flex-wrap gap-2">
-              <button type="button" className="student-control student-control--secondary inline-flex items-center gap-2 px-4"
-                onClick={() => setOpen(true)}>
-                <BookOpenText className="size-4" aria-hidden="true" /> Xem nhanh lý thuyết
+              <button
+                type="button"
+                className="student-control student-control--secondary inline-flex items-center gap-2 px-4"
+                onClick={() => setOpen(true)}
+              >
+                <BookOpenText className="size-4" aria-hidden="true" /> Xem nhanh
+                lý thuyết
               </button>
-              <Link href={`/student/knowledge/${primary.id}?topicId=${topicId}`}
-                className="student-control student-control--action inline-flex items-center gap-2 px-4">
-                Đọc lý thuyết đầy đủ <ArrowRight className="size-4" aria-hidden="true" />
+              <Link
+                href={`/student/knowledge/${primary.id}?topicId=${topicId}`}
+                className="student-control student-control--action inline-flex items-center gap-2 px-4"
+              >
+                Đọc lý thuyết đầy đủ{" "}
+                <ArrowRight className="size-4" aria-hidden="true" />
               </Link>
             </div>
           </>
         ) : (
-          <p className="student-body text-muted-foreground">Chưa có bài chính; bạn có thể đọc tài liệu bổ sung bên dưới.</p>
+          <p className="student-body text-muted-foreground">
+            Chưa có bài chính; bạn có thể đọc tài liệu bổ sung bên dưới.
+          </p>
         )}
         {supplementary.length > 0 && (
           <div className="space-y-2 border-t border-border pt-3">
-            <h4 className="student-label text-foreground">Đọc thêm ({supplementary.length})</h4>
-            {supplementary.map(note => (
-              <Link key={note.id} href={`/student/knowledge/${note.id}?topicId=${topicId}`}
-                className="student-topic-knowledge__related flex min-h-11 items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-sm font-semibold text-foreground hover:bg-muted">
-                <LibraryBig className="size-4 shrink-0 text-primary" aria-hidden="true" />
+            <h4 className="student-label text-foreground">
+              Đọc thêm ({supplementary.length})
+            </h4>
+            {supplementary.map((note) => (
+              <Link
+                key={note.id}
+                href={`/student/knowledge/${note.id}?topicId=${topicId}`}
+                className="student-topic-knowledge__related flex min-h-11 items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-sm font-semibold text-foreground hover:bg-muted"
+              >
+                <LibraryBig
+                  className="size-4 shrink-0 text-primary"
+                  aria-hidden="true"
+                />
                 <span className="min-w-0 flex-1">{note.title}</span>
                 <ChevronRight className="size-4 shrink-0" aria-hidden="true" />
               </Link>
@@ -115,28 +191,49 @@ export function StudentTopicKnowledge({ topicId }: { topicId: number }) {
       </PaperSurface>
       {primary && (
         <Dialog open={open} onOpenChange={setOpen}>
-          <DialogContent className="student-theme max-h-[85dvh] max-w-3xl overflow-y-auto border-2 border-ink bg-card shadow-pop">
+          <DialogContent className="student-theme w-[calc(100vw-1.5rem)] sm:max-w-[90vw] lg:max-w-5xl xl:max-w-6xl max-h-[90dvh] overflow-y-auto border-2 border-ink bg-card shadow-pop p-4 sm:p-6 lg:p-8">
             <DialogHeader>
-              <DialogTitle className="student-section-title text-foreground">{primary.title}</DialogTitle>
-              <DialogDescription>Đọc nội dung đầy đủ do giáo viên công bố, không cần rời trang Unit.</DialogDescription>
+              <DialogTitle className="student-section-title text-foreground">
+                {primary.title}
+              </DialogTitle>
+              <DialogDescription>
+                Đọc nội dung đầy đủ do giáo viên công bố, không cần rời trang
+                Unit.
+              </DialogDescription>
             </DialogHeader>
             {detailQuery.isPending ? (
-              <p className="student-body" role="status">Đang tải toàn bộ bài lý thuyết…</p>
+              <p className="student-body" role="status">
+                Đang tải toàn bộ bài lý thuyết…
+              </p>
             ) : detailQuery.isError ? (
               <div className="space-y-2">
-                <p className="student-body">Không thể tải nội dung đã công bố của bài này.</p>
-                <button type="button" className="student-control student-control--secondary px-4"
-                  onClick={() => void detailQuery.refetch()}>Thử lại</button>
+                <p className="student-body">
+                  Không thể tải nội dung đã công bố của bài này.
+                </p>
+                <button
+                  type="button"
+                  className="student-control student-control--secondary px-4"
+                  onClick={() => void detailQuery.refetch()}
+                >
+                  Thử lại
+                </button>
               </div>
             ) : detailQuery.data?.document ? (
               <div className="student-knowledge-reading">
-                <KnowledgeDocumentRenderer document={detailQuery.data.document} idPrefix={`topic-${topicId}-dialog-`} />
+                <KnowledgeDocumentRenderer
+                  document={detailQuery.data.document}
+                  idPrefix={`topic-${topicId}-dialog-`}
+                />
               </div>
             ) : (
-              <p className="student-body">Nội dung bài lý thuyết hiện chưa sẵn sàng.</p>
+              <p className="student-body">
+                Nội dung bài lý thuyết hiện chưa sẵn sàng.
+              </p>
             )}
-            <Link href={`/student/knowledge/${primary.id}`}
-              className="student-control student-control--action inline-flex w-fit items-center gap-2 px-4">
+            <Link
+              href={`/student/knowledge/${primary.id}`}
+              className="student-control student-control--action inline-flex w-fit items-center gap-2 px-4"
+            >
               Đọc toàn bộ bài <ArrowRight className="size-4" />
             </Link>
           </DialogContent>

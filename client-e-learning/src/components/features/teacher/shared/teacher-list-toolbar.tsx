@@ -25,14 +25,14 @@ export function TeacherListToolbar({
     <div
       data-slot="teacher-list-toolbar"
       className={cn(
-        "flex flex-col gap-3 p-5 xl:flex-row xl:items-center bg-card rounded-lg shadow-sm border-2 border-ink shadow-pop",
+        "grid min-w-0 grid-cols-1 gap-3 rounded-lg border-2 border-ink bg-card p-4 shadow-pop lg:grid-cols-[18rem_minmax(0,1fr)] 2xl:grid-cols-[18rem_minmax(0,1fr)_auto] 2xl:items-end",
         className,
       )}
     >
       {search ? (
         <div
           data-slot="teacher-list-toolbar-search"
-          className="relative w-full xl:w-72 xl:shrink-0"
+          className="relative min-w-0 w-full lg:col-start-1 lg:row-start-1 2xl:col-start-1 2xl:row-start-1"
         >
           {search}
         </div>
@@ -41,7 +41,7 @@ export function TeacherListToolbar({
       {filters ? (
         <div
           data-slot="teacher-list-toolbar-filters"
-          className="flex flex-wrap sm:flex-wrap-initial items-center gap-2"
+          className="flex min-w-0 flex-col items-stretch gap-2 sm:flex-row sm:flex-wrap sm:items-center lg:col-span-2 lg:row-start-2 2xl:col-span-1 2xl:col-start-2 2xl:row-start-1"
         >
           {filters}
         </div>
@@ -50,7 +50,7 @@ export function TeacherListToolbar({
       {actions ? (
         <div
           data-slot="teacher-list-toolbar-actions"
-          className="flex w-full shrink-0 flex-wrap items-center gap-2 sm:w-auto sm:[&>*]:flex-none max-sm:[&>*]:flex-1 xl:ml-auto xl:justify-end"
+          className="flex min-w-0 w-full flex-col items-stretch gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center sm:justify-end sm:self-end lg:col-start-2 lg:row-start-1 2xl:col-start-3 2xl:row-start-1"
         >
           {actions}
         </div>

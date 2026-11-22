@@ -1168,3 +1168,9 @@ States covered: loading, source error/empty, invalid configuration, insufficient
 - Added the mapping/coverage document and rerun/fixture-identity instructions to the Grade 7 seed README.
 - Per owner request, tests and runtime verification were not run.
 
+# 2026-11-22 — Teacher shared list toolbar responsive fix
+
+- Replaced the shared Teacher list toolbar's ambiguous display utilities with an explicit responsive grid and flex-slot contract: stacked controls on mobile, wrapping filters, search/actions plus a full-width filter row from `lg`, and search/filter/actions in one row only from `2xl` after accounting for the Teacher sidebar.
+- Added `min-w-0` boundaries and stable slot placement so 9 migrated Teacher list surfaces share one overflow-safe layout instead of inheriting inconsistent feature-level widths. Mobile actions stack at full available width instead of shrinking several actions into one cramped row.
+- Authenticated Chrome runtime inspection covers Classes, Students, Knowledge Notes, Global Question Banks and Assignments at 390px, 1440px and 1920px. The first pass exposed premature `xl` three-column wrapping plus full-width Knowledge Note selects; the corrected breakpoint is `2xl`, responsive select widths are explicit, and no tested page has horizontal body overflow. Focused ESLint passes with zero warnings/errors; production build was not run.
+- Refined Global Question Banks: search now updates the URL/query after a 350ms debounce (Enter remains supported) without a separate Search button; archived banks are fixed off and the obsolete checkbox/URL parameter is removed. Four hierarchical filters and Reset use a compact responsive layout, with shared wide-toolbar slots bottom-aligned. Authenticated checks at 390/1440/1920 confirm one Reset button, four selects, no checkbox, no horizontal overflow, and `search=toolbar` applied automatically. Focused ESLint passes.

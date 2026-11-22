@@ -64,6 +64,11 @@
         "inProgress": "Your unfinished attempt is saved. Continue your existing attempt.",
         "submitted": "This assignment has been submitted. View the result when available.",
         "timedOut": "The attempt has timed out. You can view its result status."
+      },
+      "mascot": {
+        "notStarted": "Read the instructions and rules before starting!",
+        "inProgress": "Your attempt is still in progress. Review it before continuing.",
+        "finished": "Your attempt has finished. Open the results to review."
       }
     },
     "header": {
@@ -143,7 +148,10 @@
           "incorrect": "Incorrect",
           "unanswered": "Unanswered"
         }
-      }
+      },
+      "headerTitle": "Result · {title}",
+      "mascotTimedOut": "Time is up. Review the information available to you.",
+      "mascotSubmitted": "Your assignment was submitted. Review the results and learn from your answers."
     },
     "backToAssignments": "Back to assignments",
     "backToDashboard": "Back to dashboard",

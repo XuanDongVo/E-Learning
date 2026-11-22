@@ -64,6 +64,11 @@
         "inProgress": "Bài làm dở vẫn được lưu. Tiếp tục đúng lần làm bài hiện tại.",
         "submitted": "Bài đã được nộp. Bạn có thể xem kết quả khi hệ thống cho phép.",
         "timedOut": "Thời gian làm bài đã kết thúc. Bạn có thể xem trạng thái kết quả."
+      },
+      "mascot": {
+        "notStarted": "Đọc kỹ hướng dẫn và quy định trước khi bắt đầu bài nhé!",
+        "inProgress": "Lượt làm bài còn đang tiến hành. Hãy kiểm tra trước khi tiếp tục.",
+        "finished": "Bài làm đã kết thúc. Bạn có thể mở phần kết quả để xem lại."
       }
     },
     "header": {
@@ -143,7 +148,10 @@
           "incorrect": "Sai",
           "unanswered": "Chưa trả lời"
         }
-      }
+      },
+      "headerTitle": "Kết quả · {title}",
+      "mascotTimedOut": "Thời gian làm bài đã kết thúc. Xem lại phần thông tin được phép hiển thị nhé!",
+      "mascotSubmitted": "Bạn đã nộp bài. Cùng xem lại kết quả và rút kinh nghiệm cho lần sau nhé!"
     },
     "backToAssignments": "Về danh sách bài tập",
     "backToDashboard": "Về trang chính",

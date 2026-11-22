@@ -1036,7 +1036,7 @@ export function StudentPaper({
                     {t("progressTitle")}
                   </h2>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    Đã làm {t("progressCount", { answered: answeredCount, total })}
+                    {t("completedCount", { answered: answeredCount, total })}
                   </p>
                 </div>
                 <button

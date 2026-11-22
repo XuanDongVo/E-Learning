@@ -115,10 +115,10 @@ export function StudentAssignmentIntro({
             mood={isTimedOut ? "think" : isSubmitted ? "happy" : "wave"}
             prop="pencil"
             message={isNotStarted
-              ? "Đọc kỹ hướng dẫn và quy định trước khi bắt đầu bài nhé!"
+              ? t("mascot.notStarted")
               : isInProgress
-                ? "Lượt làm bài còn đang tiến hành. Hãy kiểm tra trước khi tiếp tục."
-                : "Bài làm đã kết thúc. Bạn có thể mở phần kết quả để xem lại."}
+                ? t("mascot.inProgress")
+                : t("mascot.finished")}
             className="pt-2"
           />
         </div>

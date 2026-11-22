@@ -70,5 +70,69 @@
     "snapshotUnavailable": "Nội dung câu hỏi cũ không còn bản snapshot để hiển thị.",
     "promptHidden": "Câu hỏi chính chưa được mở trong lượt làm này.",
     "noStepHistory": "Chưa có bước hướng dẫn nào được thực hiện."
+  },
+  "hub": {
+    "back": "Quay lại Unit",
+    "eyebrow": "Hoạt động",
+    "title": "Luyện tập tiếng Anh",
+    "description": "Chọn một hoạt động đã được giáo viên công bố để luyện từ vựng, ngữ pháp và phản xạ.",
+    "available": "Hoạt động có thể học",
+    "selectUnit": "Hãy chọn một Unit trước",
+    "selectUnitDesc": "Đường dẫn hiện tại chưa xác định Unit cần học.",
+    "viewUnits": "Xem danh sách Unit",
+    "loadError": "Không thể tải hoạt động",
+    "empty": "Chưa có hoạt động được công bố",
+    "emptyDesc": "Giáo viên chưa công bố hoạt động nào cho Unit này.",
+    "questions": "{count} câu hỏi",
+    "practice": "Luyện tập",
+    "challenge": "Thử thách",
+    "secondsPerQuestion": "{count}s / câu",
+    "begin": "Bắt đầu hoạt động",
+    "difficulty": {
+      "EASY": "Dễ",
+      "MEDIUM": "Trung bình",
+      "HARD": "Khó",
+      "MIXED": "Hỗn hợp"
+    }
+  },
+  "start": {
+    "aria": "Bắt đầu luyện tập",
+    "back": "Quay lại",
+    "title": "Chọn cách luyện tập",
+    "retry": "Thử lại",
+    "difficultyLabel": "Độ khó câu hỏi",
+    "difficultyHint": "Độ khó do giáo viên thiết lập cho hoạt động này.",
+    "questionFocus": "Trọng tâm câu hỏi",
+    "slow": "Máy chủ phản hồi chậm, vui lòng chờ thêm chút…",
+    "starting": "Đang bắt đầu…",
+    "startButton": "Bắt đầu luyện tập",
+    "perQuestion": "{count}s/câu",
+    "lives": "{count} mạng",
+    "difficulty": {
+      "EASY": "Dễ",
+      "MEDIUM": "Trung bình",
+      "HARD": "Khó",
+      "MIXED": "Hỗn hợp"
+    },
+    "modes": {
+      "LEARNING": {
+        "title": "Luyện tập",
+        "description": "Không bấm giờ · được thử lại 1 lần · có gợi ý"
+      },
+      "TRY_HARD": {
+        "title": "Thử thách",
+        "description": "Bấm giờ từng câu · có số mạng · không thử lại"
+      }
+    },
+    "strategies": {
+      "RANDOM": {
+        "title": "Ngẫu nhiên",
+        "description": "Trộn đều các câu hỏi hiện có."
+      },
+      "WEAKNESS_PRIORITY": {
+        "title": "Ưu tiên phần còn yếu",
+        "description": "Ưu tiên những câu bạn cần luyện thêm."
+      }
+    }
   }
 }

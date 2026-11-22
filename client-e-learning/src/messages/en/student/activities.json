@@ -70,5 +70,69 @@
     "snapshotUnavailable": "The saved question content is not available for this older session.",
     "promptHidden": "The main question was not unlocked in this session.",
     "noStepHistory": "No guided steps were completed."
+  },
+  "hub": {
+    "back": "Back to Unit",
+    "eyebrow": "Activities",
+    "title": "English practice",
+    "description": "Choose a published activity to practice English vocabulary and grammar.",
+    "available": "Available activities",
+    "selectUnit": "Select a Unit first",
+    "selectUnitDesc": "This link does not specify a Unit.",
+    "viewUnits": "Browse Units",
+    "loadError": "Could not load activities",
+    "empty": "No published activities",
+    "emptyDesc": "No activities have been published for this Unit.",
+    "questions": "{count, plural, one {# question} other {# questions}}",
+    "practice": "Practice",
+    "challenge": "Challenge",
+    "secondsPerQuestion": "{count}s per question",
+    "begin": "Start activity",
+    "difficulty": {
+      "EASY": "Easy",
+      "MEDIUM": "Medium",
+      "HARD": "Hard",
+      "MIXED": "Mixed"
+    }
+  },
+  "start": {
+    "aria": "Start practice",
+    "back": "Back",
+    "title": "Choose how to practice",
+    "retry": "Try again",
+    "difficultyLabel": "Question difficulty",
+    "difficultyHint": "Your teacher sets the difficulty for this activity.",
+    "questionFocus": "Question focus",
+    "slow": "The server is responding slowly…",
+    "starting": "Starting…",
+    "startButton": "Start practice",
+    "perQuestion": "{count}s/question",
+    "lives": "{count, plural, one {# life} other {# lives}}",
+    "difficulty": {
+      "EASY": "Easy",
+      "MEDIUM": "Medium",
+      "HARD": "Hard",
+      "MIXED": "Mixed"
+    },
+    "modes": {
+      "LEARNING": {
+        "title": "Practice",
+        "description": "No timer · one retry · hints available"
+      },
+      "TRY_HARD": {
+        "title": "Challenge",
+        "description": "Timer per question · limited lives · no retries"
+      }
+    },
+    "strategies": {
+      "RANDOM": {
+        "title": "Random",
+        "description": "Mix available questions."
+      },
+      "WEAKNESS_PRIORITY": {
+        "title": "Focus on weak areas",
+        "description": "Prioritize questions needing more practice."
+      }
+    }
   }
 }

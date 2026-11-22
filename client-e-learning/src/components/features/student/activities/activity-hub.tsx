@@ -7,13 +7,13 @@ import { useTranslations } from "next-intl";
 import { getAppErrorMessage } from "@/lib/errors/app-error";
 import { studentActivityService } from "@/services/student/student-activity.service";
 import type { Activity } from "@/types/student/activity";
-import { ACTIVITY_DIFFICULTY_LABELS } from "@/types/activity";
 import { RegionState } from "@/components/feedback";
 import { SkeletonGrid } from "@/components/ui/skeleton/skeleton-grid";
 import { PaperSurface } from "@/components/student-ui/paper-surface";
 import { ScrapbookHeading } from "@/components/student-ui/scrapbook-heading";
 
 export function ActivityHub({ unitId }: { unitId?: number }) {
+  const t = useTranslations("student.activities.hub");
   const tErrors = useTranslations("errors");
   const activities = useQuery({
     queryKey: ["student-activities", unitId],
@@ -30,17 +30,17 @@ export function ActivityHub({ unitId }: { unitId?: number }) {
         className="student-label inline-flex min-h-11 items-center gap-2 text-muted-foreground hover:text-primary"
       >
         <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-        Quay lại Unit
+        {t("back")}
       </Link>
 
       <PaperSurface as="section" variant="kraft" tape tapePosition="right" className="student-units-hero">
         <div className="max-w-2xl space-y-2">
-          <p className="student-meta text-primary">Activities</p>
+          <p className="student-meta text-primary">{t("eyebrow")}</p>
           <ScrapbookHeading as="h1" className="student-page-title text-foreground">
-            Luyện tập tiếng Anh
+            {t("title")}
           </ScrapbookHeading>
           <p className="student-body text-muted-foreground">
-            Chọn một hoạt động đã được giáo viên công bố để luyện từ vựng, ngữ pháp và phản xạ.
+            {t("description")}
           </p>
         </div>
         <Gamepad2 className="hidden h-12 w-12 shrink-0 text-primary sm:block" aria-hidden="true" />
@@ -52,17 +52,17 @@ export function ActivityHub({ unitId }: { unitId?: number }) {
           id="available-activities-title"
           className="student-section-title text-foreground"
         >
-          Hoạt động có thể học
+          {t("available")}
         </ScrapbookHeading>
 
         {!unitId && (
           <RegionState
             variant="empty"
-            title="Hãy chọn một Unit trước"
-            description="Đường dẫn hiện tại chưa xác định Unit cần học."
+            title={t("selectUnit")}
+            description={t("selectUnitDesc")}
             action={
               <Link href="/student/units" className="student-control student-control--action">
-                Xem danh sách Unit <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                {t("viewUnits")} <ArrowRight className="h-4 w-4" aria-hidden="true" />
               </Link>
             }
           />
@@ -71,7 +71,7 @@ export function ActivityHub({ unitId }: { unitId?: number }) {
         {activities.isError && (
           <RegionState
             variant="error"
-            title="Không thể tải hoạt động"
+            title={t("loadError")}
             description={getAppErrorMessage(
               activities.error,
               tErrors as (key: string) => string,
@@ -81,8 +81,8 @@ export function ActivityHub({ unitId }: { unitId?: number }) {
         {unitId && activities.isSuccess && published.length === 0 && (
           <RegionState
             variant="empty"
-            title="Chưa có hoạt động được công bố"
-            description="Giáo viên chưa công bố hoạt động nào cho Unit này."
+            title={t("empty")}
+            description={t("emptyDesc")}
           />
         )}
         {published.length > 0 && (
@@ -98,7 +98,8 @@ export function ActivityHub({ unitId }: { unitId?: number }) {
 }
 
 function HubActivityCard({ unitId, activity }: { unitId: number; activity: Activity }) {
-  const t = useTranslations("student.activities.history");
+  const t = useTranslations("student.activities.hub");
+  const tHistory = useTranslations("student.activities.history");
   const supportsPractice = activity.mode === "LEARNING" || activity.mode === "BOTH";
   const supportsTryHard = activity.mode === "TRY_HARD" || activity.mode === "BOTH";
 
@@ -109,7 +110,7 @@ function HubActivityCard({ unitId, activity }: { unitId: number; activity: Activ
           <Sparkles className="h-5 w-5" aria-hidden="true" />
         </span>
         <span className="student-meta text-muted-foreground">
-          {activity.totalQuestions} câu hỏi
+          {t("questions", { count: activity.totalQuestions })}
         </span>
       </div>
       <div>
@@ -122,15 +123,15 @@ function HubActivityCard({ unitId, activity }: { unitId: number; activity: Activ
       </div>
       <div className="student-meta flex flex-wrap items-center gap-x-4 gap-y-2 text-muted-foreground">
         <span className="font-bold text-foreground">
-          {ACTIVITY_DIFFICULTY_LABELS[activity.questionDifficulty]}
+          {t(`difficulty.${activity.questionDifficulty}`)}
         </span>
         <span>{activity.unitName}</span>
-        {supportsPractice && <span className="student-chip">Luyện tập</span>}
-        {supportsTryHard && <span className="student-chip">Thử thách</span>}
+        {supportsPractice && <span className="student-chip">{t("practice")}</span>}
+        {supportsTryHard && <span className="student-chip">{t("challenge")}</span>}
         {supportsTryHard && activity.timeLimitSeconds && (
           <span className="inline-flex items-center gap-1">
             <Clock3 className="h-4 w-4" aria-hidden="true" />
-            {activity.timeLimitSeconds}s / câu
+            {t("secondsPerQuestion", { count: activity.timeLimitSeconds })}
           </span>
         )}
       </div>
@@ -139,15 +140,15 @@ function HubActivityCard({ unitId, activity }: { unitId: number; activity: Activ
           href={`/student/units/${unitId}/activities/${activity.id}`}
           className="student-control student-control--action w-full"
         >
-          Bắt đầu hoạt động <ArrowRight className="h-4 w-4" aria-hidden="true" />
+          {t("begin")} <ArrowRight className="h-4 w-4" aria-hidden="true" />
         </Link>
         <Link
           href={`/student/units/${unitId}/activities/${activity.id}/history`}
-          aria-label={`${t("openHistory")}: ${activity.name}`}
+          aria-label={`${tHistory("openHistory")}: ${activity.name}`}
           className="student-control student-control--quiet inline-flex items-center justify-center gap-2 px-4"
         >
           <History className="h-4 w-4" aria-hidden="true" />
-          <span className="hidden sm:inline">{t("openHistory")}</span>
+          <span className="hidden sm:inline">{tHistory("openHistory")}</span>
         </Link>
       </div>
     </PaperSurface>

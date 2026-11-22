@@ -244,6 +244,41 @@
       "slow": "The server is responding slowly. Your answer is still preserved.",
       "loading": "Getting hint…",
       "retry": "Retry"
+    },
+    "feedback": {
+      "correct": "Correct!",
+      "retry": "Try again!",
+      "incorrect": "Not correct",
+      "guidedCorrect": "You answered this step correctly!",
+      "correctPraise": "Great job! Keep going!",
+      "retryHint": "You have one retry remaining.",
+      "correctAnswer": "Correct answer: {answer}",
+      "reviewHint": "Review and remember the correct answer.",
+      "explanation": "Explanation"
+    },
+    "navigator": {
+      "statuses": {
+        "correct": "correct",
+        "wrong": "incorrect",
+        "picked": "selected",
+        "todo": "not answered"
+      },
+      "questionAria": "Question {number}, {status}{lock}",
+      "lockedSuffix": ", locked",
+      "current": "Current",
+      "correct": "Correct",
+      "wrong": "Incorrect",
+      "todo": "Not answered",
+      "select": "Select question",
+      "done": "Completed {done}/{total}",
+      "sequential": "Complete questions in order, without going back or skipping ahead.",
+      "list": "Question list",
+      "close": "Close",
+      "counter": "Question {current}/{total}"
+    },
+    "answerControls": {
+      "TRUE": "True",
+      "FALSE": "False"
     }
   }
 }

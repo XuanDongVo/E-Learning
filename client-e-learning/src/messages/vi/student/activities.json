@@ -244,6 +244,41 @@
       "slow": "Máy chủ phản hồi chậm, bạn vui lòng chờ thêm chút… Đáp án của bạn vẫn được giữ nguyên.",
       "loading": "Đang lấy gợi ý…",
       "retry": "Thử lại"
+    },
+    "feedback": {
+      "correct": "Chính xác!",
+      "retry": "Thử lại nhé!",
+      "incorrect": "Chưa chính xác",
+      "guidedCorrect": "Bạn đã trả lời đúng bước này!",
+      "correctPraise": "Bạn làm tốt lắm. Tiếp tục phát huy nhé!",
+      "retryHint": "Bạn còn một lần thử lại.",
+      "correctAnswer": "Đáp án đúng: {answer}",
+      "reviewHint": "Hãy xem lại đáp án và ghi nhớ nhé.",
+      "explanation": "Giải thích"
+    },
+    "navigator": {
+      "statuses": {
+        "correct": "đúng",
+        "wrong": "sai",
+        "picked": "đã chọn",
+        "todo": "chưa làm"
+      },
+      "questionAria": "Câu {number}, {status}{lock}",
+      "lockedSuffix": ", đang khoá",
+      "current": "Hiện tại",
+      "correct": "Đúng",
+      "wrong": "Sai",
+      "todo": "Chưa làm",
+      "select": "Chọn câu hỏi",
+      "done": "Đã làm {done}/{total}",
+      "sequential": "Làm lần lượt, không quay lại hay nhảy câu",
+      "list": "Danh sách câu hỏi",
+      "close": "Đóng",
+      "counter": "Câu {current}/{total}"
+    },
+    "answerControls": {
+      "TRUE": "Đúng",
+      "FALSE": "Sai"
     }
   }
 }

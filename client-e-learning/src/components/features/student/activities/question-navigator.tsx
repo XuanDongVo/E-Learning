@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+
 import { List, Lock, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -24,15 +26,10 @@ const stateCurrent =
   "border-learning bg-learning-soft shadow-pop-sm";
 const statePicked = "border-learning bg-learning-soft";
 
-const STATUS_LABEL: Record<NavStatus, string> = {
-  correct: "đúng",
-  wrong: "sai",
-  picked: "đã chọn",
-  todo: "chưa làm",
-};
 
 /* Lưới số câu: cuộn dọc nên 20, 50 hay 200 câu đều ổn */
 function Grid(p: NavigatorProps & { onPick?: () => void }) {
+  const t = useTranslations("student.activities.runtime.navigator");
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
     ref.current
@@ -64,7 +61,7 @@ function Grid(p: NavigatorProps & { onPick?: () => void }) {
             size="icon"
             disabled={locked}
             aria-current={i === p.index ? "step" : undefined}
-            aria-label={`Câu ${i + 1}, ${STATUS_LABEL[status]}${locked ? ", đang khoá" : ""}`}
+            aria-label={t("questionAria", { number: i + 1, status: t(`statuses.${status}`), lock: locked ? t("lockedSuffix") : "" })}
             className={`relative h-11 w-full rounded-xl font-extrabold ${cls} ${i === p.index ? "outline-2 outline-offset-2 outline-learning" : ""}`}
             onClick={() => {
               p.onSelect(i);
@@ -80,40 +77,42 @@ function Grid(p: NavigatorProps & { onPick?: () => void }) {
 }
 
 function Legend() {
+  const t = useTranslations("student.activities.runtime.navigator");
   const dot = "inline-block size-3 rounded-[4px] border-2";
   return (
     <ul className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1.5 text-xs font-semibold">
       <li className="flex items-center gap-1.5">
         <span className={`${dot} border-learning bg-learning-soft`} />
-        Hiện tại
+        {t("current")}
       </li>
       <li className="flex items-center gap-1.5">
         <span className={`${dot} border-success bg-success-soft`} />
-        Đúng
+        {t("correct")}
       </li>
       <li className="flex items-center gap-1.5">
         <span className={`${dot} border-destructive bg-destructive-soft`} />
-        Sai
+        {t("wrong")}
       </li>
       <li className="flex items-center gap-1.5">
         <span className={`${dot} border-border bg-background`} />
-        Chưa làm
+        {t("todo")}
       </li>
     </ul>
   );
 }
 
 function Panel(p: NavigatorProps & { onPick?: () => void }) {
+  const t = useTranslations("student.activities.runtime.navigator");
   const total = p.statuses.length;
   const done = p.statuses.filter((s) => s === "correct" || s === "wrong").length;
   return (
     <>
       <div className="mb-3 flex items-baseline justify-between">
         <span className="text-sm font-extrabold">
-          {p.tryHard ? "Try Hard" : "Chọn câu hỏi"}
+          {p.tryHard ? "Try Hard" : t("select")}
         </span>
         <span className="text-xs font-semibold" aria-live="polite">
-          Đã làm {done}/{total}
+          {t("done", { done, total })}
         </span>
       </div>
       <Grid {...p} />
@@ -121,7 +120,7 @@ function Panel(p: NavigatorProps & { onPick?: () => void }) {
       {p.tryHard && (
         <p className="mt-3 flex items-center gap-1.5 text-xs font-semibold">
           <Lock size={12} />
-          Làm lần lượt, không quay lại hay nhảy câu
+          {t("sequential")}
         </p>
       )}
     </>
@@ -130,10 +129,11 @@ function Panel(p: NavigatorProps & { onPick?: () => void }) {
 
 /* Desktop (lg+): cột bên phải, dính khi cuộn */
 export function QuestionNavigator(p: NavigatorProps) {
+  const t = useTranslations("student.activities.runtime.navigator");
   return (
     <aside
       className={`${card} hidden rounded-[20px] p-4 lg:sticky lg:top-6 lg:block`}
-      aria-label="Danh sách câu hỏi"
+      aria-label={t("list")}
     >
       <Panel {...p} />
     </aside>
@@ -144,6 +144,7 @@ export function QuestionNavigator(p: NavigatorProps) {
 export function QuestionNavigatorSheet(
   p: NavigatorProps & { onOpenChange?: (open: boolean) => void },
 ) {
+  const t = useTranslations("student.activities.runtime.navigator");
   const [open, setOpen] = useState(false);
   const set = (v: boolean) => {
     setOpen(v);
@@ -166,18 +167,18 @@ export function QuestionNavigatorSheet(
         onClick={() => set(true)}
       >
         <List size={16} />
-        Câu {p.index + 1}/{p.statuses.length}
+        {t("counter", { current: p.index + 1, total: p.statuses.length })}
       </Button>
       {open && (
         <div
           className="fixed inset-0 z-[60] flex items-end"
           role="dialog"
           aria-modal="true"
-          aria-label="Danh sách câu hỏi"
+          aria-label={t("list")}
         >
           <button
             className="absolute inset-0 bg-foreground/50"
-            aria-label="Đóng"
+            aria-label={t("close")}
             onClick={() => set(false)}
           />
           <div className={`${card} relative w-full rounded-t-[24px] p-4 pb-6`}>
@@ -185,7 +186,7 @@ export function QuestionNavigatorSheet(
               variant="ghost"
               size="icon"
               className="absolute right-2 top-2 size-9"
-              aria-label="Đóng"
+              aria-label={t("close")}
               onClick={() => set(false)}
             >
               <X size={18} />

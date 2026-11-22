@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+
 import { Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { OrderingAnswer } from "../ordering/OrderingAnswer";
@@ -19,10 +21,6 @@ export type AnswerOptionState =
   | "selected"
   | undefined;
 
-const truthOptions = [
-  { key: "TRUE", content: "Đúng" },
-  { key: "FALSE", content: "Sai" },
-];
 
 export function AnswerControls({
   type,
@@ -45,6 +43,7 @@ export function AnswerControls({
   onDraftChange: (next: string[]) => void;
   optionState?: (key: string) => AnswerOptionState;
 }) {
+  const t = useTranslations("student.activities.runtime.answerControls");
   if (type === "ORDERING") {
     return ordering ? (
       <OrderingAnswer
@@ -60,7 +59,9 @@ export function AnswerControls({
     type === "SINGLE_CHOICE" ||
     type === "MULTIPLE_CHOICE" ||
     type === "TRUE_FALSE";
-  const visibleOptions = type === "TRUE_FALSE" ? truthOptions : options;
+  const visibleOptions = type === "TRUE_FALSE"
+    ? [{ key: "TRUE", content: t("TRUE") }, { key: "FALSE", content: t("FALSE") }]
+    : options;
   const toggle = (key: string) => {
     onDraftChange(
       type === "MULTIPLE_CHOICE"

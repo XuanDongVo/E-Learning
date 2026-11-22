@@ -12,6 +12,7 @@ import {
   LogOut,
   Menu,
   Trophy,
+  BookMarked,
   LibraryBig,
   X,
 } from "lucide-react";
@@ -25,6 +26,7 @@ export const NAV_ITEMS = [
   { label: "Home", href: "/student", icon: Home },
   { label: "Learning", href: "/student/units", icon: BookOpen },
   { label: "Vocabulary", href: "/student/vocabulary", icon: LibraryBig },
+  { label: "Kiến thức", href: "/student/knowledge", icon: BookMarked },
   { label: "Assignments", href: "/student/assignments", icon: ClipboardList },
   { label: "Game", href: "/student/game", icon: Gamepad2 },
   { label: "Leaderboard", href: "/student/leaderboard", icon: Trophy },
@@ -92,7 +94,7 @@ export function StudentNavbar() {
 
           {/* Desktop nav */}
           <nav
-            className="hidden flex-1 items-center justify-center gap-1 lg:flex"
+            className="hidden flex-1 items-center justify-center gap-0.5 xl:flex"
             aria-label="Student navigation"
           >
             {NAV_ITEMS.map((item) => {
@@ -104,7 +106,7 @@ export function StudentNavbar() {
                   href={item.href}
                   aria-current={active ? "page" : undefined}
                   className={cn(
-                    "student-nav-item flex min-h-11 items-center gap-2 rounded-full px-4 text-sm font-semibold transition-colors",
+                    "student-nav-item flex min-h-11 items-center gap-2 rounded-full px-3 text-sm font-semibold transition-colors",
                     active
                       ? "bg-primary-light text-primary"
                       : "text-neutral-muted hover:bg-background-app hover:text-neutral-dark",
@@ -118,7 +120,7 @@ export function StudentNavbar() {
           </nav>
 
           {/* Desktop user */}
-          <div className="ml-auto hidden items-center gap-2 lg:flex">
+          <div className="ml-auto hidden items-center gap-2 xl:flex">
             <Link
               href="/student/profile"
               className="flex items-center gap-2.5 rounded-full py-1 pl-1 pr-3 transition-colors hover:bg-background-app"
@@ -154,7 +156,7 @@ export function StudentNavbar() {
             aria-label="Open menu"
             aria-expanded={open}
             aria-controls="student-mobile-menu"
-            className="ml-auto flex h-11 w-11 items-center justify-center rounded-xl border border-border-color text-neutral-dark transition hover:bg-background-app lg:hidden"
+            className="ml-auto flex h-11 w-11 items-center justify-center rounded-xl border border-border-color text-neutral-dark transition hover:bg-background-app xl:hidden"
           >
             <Menu className="h-5 w-5" />
           </button>

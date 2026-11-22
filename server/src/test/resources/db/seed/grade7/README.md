@@ -2,6 +2,34 @@
 
 This seed is **Grade 7 only**. Grade records `GRADE_6`, `GRADE_7`, `GRADE_8`, `GRADE_9` remain available, but **only Grade 7 has curriculum/demo content** after reset.
 
+## Knowledge Note curriculum seed
+
+Run `011_knowledge_note.sql` after `01_foundation.sql` and after Flyway V69.
+Then run `012_knowledge_note_reading_library.sql` to add role-filter, reader and supplementary-link QA fixtures.
+It adds the Grade 7 Global Success Knowledge Note fixture and is safe to rerun:
+
+- The six legacy `G7-SEED-U01..U06` units are not renamed or deleted.
+- The legacy `G7-SEED-U06` ("Traffic and Transport") mismatch is preserved because
+  existing Questions, Activities and Assignments refer to it.
+- Official curriculum Units 6–12 are additive `G7-CURR-U06..U12` units.
+- Seed notes use `[G7-KN-SEED:<key>]` in `description` as a disposable fixture
+  identity. Existing teacher-authored notes are not updated or overwritten.
+- Primary Topic links are created only when the Topic has no existing Primary.
+- The seed is a fixture, not a Flyway migration; do not run it against production.
+
+### Knowledge Note Phase 03.2.1 / 03.3 / 03.4 demo data
+
+`012_knowledge_note_reading_library.sql` is a separate, additive, rerunnable seed file. Run it **only after `011` and Flyway V69** on a disposable development/test database. It creates eight new Knowledge Notes, including six supplementary teaching notes, a published free-reading note, and one UNPUBLISHED negative visibility fixture. A new Topic `Present Simple vs Present Continuous` in U01 uses a note as Primary while that same note is Supplementary in U01 and U10; this exercises simultaneous role badges. Other Notes have multiple Supplementary links, marked Tiptap comparison tables, H2/H3 headings, and formula/example blocks.
+
+The script does not replace existing Primary Note links, alter existing teacher-authored Note content, or link the unpublished/free-reading fixtures. An existing teacher Primary on the new Topic is preserved. IDs are looked up by stable Grade, Unit, Topic and fixture description markers (never hardcoded). It wraps inserts and assertions in a transaction and provides a read-only summary. The `roles` filter and reader are application features; the SQL does not add any new schema tables.
+
+To add only the Knowledge Note fixtures to an already-seeded dev database, run `011_knowledge_note.sql` (if not previously run), followed by `012_knowledge_note_reading_library.sql`; **do not rerun `00_reset_legacy_demo.sql`**. Both files are fixtures, never Flyway migrations.
+
+The current implementation provides one substantive core note for each official
+unit plus six independent revision notes, with formula, worked example, common
+mistake and self-check blocks. The coverage and mapping decisions are recorded in
+[`KNOWLEDGE_COVERAGE.md`](./KNOWLEDGE_COVERAGE.md).
+
 ## Scope
 
 | Content | Expected |
@@ -32,7 +60,7 @@ MIXED is an **Activity question_difficulty setting**, not a Question difficulty.
 
 **Never run the reset against production, a shared database or a database with meaningful student data.** Make a backup and use a dedicated disposable database.
 
-Apply Flyway migrations up to **V54** first. **If Flyway V54 has already run, do not create or replay any new migration**: the three new SQL files below are manually executed dev/test fixtures under `src/test/resources`, not Flyway migrations. The `V39_1__bootstrap_legacy_assignment_classes.sql` migration exists to allow fresh database initialization with historical Grade 6–8 Assignment demo migrations, which would otherwise fail when V40 tries to resolve class recipients.
+Apply the Flyway migrations required by the seed scripts. **Knowledge Note files `011` and `012` specifically require V69** (`knowledge_notes.document_json`, single-document schema); earlier Grade 7 fixture files may have lower version requirements. **If Flyway V54 has already run, do not create or replay any new migration**: the three new SQL files below are manually executed dev/test fixtures under `src/test/resources`, not Flyway migrations. The `V39_1__bootstrap_legacy_assignment_classes.sql` migration exists to allow fresh database initialization with historical Grade 6–8 Assignment demo migrations, which would otherwise fail when V40 tries to resolve class recipients.
 
 Important: This intermediate-version migration is designed for a **fresh database**. Existing databases that have already migrated beyond V39 may require a separate migration plan. Do not enable Flyway `outOfOrder` in production to force it through.
 
@@ -55,6 +83,8 @@ $files = @(
   "05_gamification_xp.sql",
   "06_streak_history.sql",
   "07_vocabulary.sql",
+  "011_knowledge_note.sql",
+  "012_knowledge_note_reading_library.sql",
   "99_assertions.sql"
 )
 foreach ($name in $files) {

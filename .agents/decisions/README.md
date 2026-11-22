@@ -45,6 +45,10 @@ An accepted ADR overrides lower-level documents. Never delete an ADR; supersede 
 
 ADR 0038 introduces Knowledge Note as an independent reusable learning document, superseding ADR 0016's deferral for this **new feature only**. It is not yet implemented; see docs/knowledge-note.
 
+| 0039 | Knowledge Note Phase 01: only three Teacher metadata endpoints; role-first packages and common PageResponse | **Accepted; implementation source under verification** |
+| 0040 | Knowledge Note uses a standalone Teacher route and navigation item after Overview | **Accepted; route shell implemented** |
+| 0041 | Knowledge Note single-document authoring, key points and publication lifecycle | **Accepted; Phase 02.4/02.5 source implementation** |
+
 ## Current decision chain
 
 ADR 0001 separates repeatable Activity practice from formal Assignment work.

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { BookOpen } from "lucide-react";
 import { PaperSurface } from "@/components/student-ui/paper-surface";
+import { StudentMascotScene } from "@/components/student-ui/visuals/pipo/student-mascot-scene";
 import type { StudentVocabularyStudyCard } from "@/types/student-vocabulary-review";
 import { VocabularyStudySession } from "./vocabulary-study-session";
 import { VocabularyReviewSession } from "./vocabulary-review-session";
@@ -111,6 +112,13 @@ export function VocabularyStudyTab({
           </div>
         ) : (
           <PaperSurface as="section" className="space-y-3 p-8 text-center">
+            {reviewQueue.totalCount > 0 && (
+              <StudentMascotScene
+                variant="feedback" mood="cheer" prop="book" size="compact"
+                message="Bạn đã xử lý hết lượt ôn này. Những từ chưa nhớ vẫn có thể luyện lại nhé!"
+                className="mx-auto"
+              />
+            )}
             <h3 className="student-card-title text-foreground">
               {reviewQueue.totalCount > 0
                 ? "Hoàn thành lượt ôn!"
@@ -156,6 +164,13 @@ export function VocabularyStudyTab({
             />
           ) : (
             <PaperSurface as="section" className="space-y-3 p-7 text-center">
+              {learnedCount > 0 && (
+                <StudentMascotScene
+                  variant="feedback" mood="happy" prop="book"
+                  message="Bạn đã đi hết các từ mới trong lượt này. Có thể luyện lại bất cứ lúc nào!"
+                  className="mx-auto"
+                />
+              )}
               <BookOpen
                 className="mx-auto size-7 text-primary"
                 aria-hidden="true"

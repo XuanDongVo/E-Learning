@@ -19,3 +19,6 @@ ADR 0016 deferred a Topic-owned formula/reference sheet. The owner has now appro
 ## Consequences
 Canonical target documents: docs/knowledge-note/Knowledge_Note_SRS_v3.1.md, Knowledge_Note_FRS_v3.1.md, Knowledge_Note_UIUX_v3.1.md.
 Existing Topic and Activity behavior stays unchanged without Notes. The older Topic-owned reference-sheet field remains out of scope.
+
+## Amendment — Simple MVP (2026-11-19)
+The owner explicitly simplified Knowledge Note to **one current document per Note**, removing the Draft and Revision entities and historical publication snapshots from the MVP. `knowledge_notes` now owns `document_json`, `summary_json` and `edit_version` directly, alongside the separate optional many-to-many `knowledge_note_topic_links`. Saving an already PUBLISHED Note immediately changes the Student-visible document. To stage edits, unpublish, edit, then republish. This amendment supersedes the earlier immutable-revision policy above. Canonical specs: docs/knowledge-note/*v3.2.md. Schema transition: V67 (after V66).

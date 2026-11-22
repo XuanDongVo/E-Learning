@@ -2,17 +2,12 @@
 
 import { Link } from "@/i18n/navigation";
 import { useMemo, useState } from "react";
-import {
-  ArrowLeft,
-  BarChart3,
-  CheckCircle2,
-  Clock,
-  Lock,
-} from "lucide-react";
+import { ArrowLeft, BarChart3, CheckCircle2, Clock, Lock } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import type { AttemptResultResponse } from "@/types/student/assignment-attempt";
 import { cn } from "@/lib/utils";
+import { StudentMascotScene } from "@/components/student-ui/visuals/pipo/student-mascot-scene";
 import { formatDateTime, formatDurationRange } from "@/utils/format";
 import { ResultQuestionCard } from "./result-question-card";
 import {
@@ -62,11 +57,11 @@ export function StudentResultView({
   return (
     <>
       <header className="flex h-14 items-center gap-3 border-b bg-card px-4 rounded-xl mb-4">
-        <Button variant="ghost" size="sm" >
-          <Link href="/student/assignments">
+        <Link href="/student/assignments" className="flex items-center gap-2">
+          <Button variant="ghost" size="sm">
             <ArrowLeft className="h-4 w-4" /> Danh sách bài
-          </Link>
-        </Button>
+          </Button>
+        </Link>
         <BarChart3 className="  h-4 w-4 text-primary" />
         <h1 className="min-w-0 truncate font-semibold">Kết quả · {title}</h1>
         <div className="ml-auto flex items-center gap-2"></div>
@@ -176,6 +171,16 @@ export function StudentResultView({
           </div>
         </div>
 
+        <StudentMascotScene
+          variant="feedback"
+          mood={timedOut ? "think" : "happy"}
+          prop="book"
+          message={timedOut
+            ? "Thời gian làm bài đã kết thúc. Xem lại phần thông tin được phép hiển thị nhé!"
+            : "Bạn đã nộp bài. Cùng xem lại kết quả và rút kinh nghiệm cho lần sau nhé!"}
+          className="max-w-lg"
+        />
+
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_17rem]">
           <section className="space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-2">
@@ -250,7 +255,7 @@ export function StudentResultView({
                 );
               })}
             </div>
-            <Button  variant="outline" className="mt-5 w-full">
+            <Button variant="outline" className="mt-5 w-full">
               <Link href="/student/assignments">
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 {t("backToAssignments")}

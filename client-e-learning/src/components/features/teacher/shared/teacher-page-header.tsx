@@ -7,23 +7,16 @@ import { cn } from "@/lib/utils";
 export interface TeacherPageHeaderProps {
   title: string;
   description?: ReactNode;
-  /** Pipo mood — default wave */
   pipoMood?: PipoMood;
-  /** Pipo size in px — default 100 */
   pipoSize?: number;
   className?: string;
 }
 
-/**
- * Shared teacher list-page hero.
- * Identity only: title + description + Pipo.
- * Primary actions belong in the toolbar below — do not pass buttons here.
- */
 export function TeacherPageHeader({
   title,
   description,
   pipoMood = "wave",
-  pipoSize = 280,
+  pipoSize = 80,
   className,
 }: TeacherPageHeaderProps) {
   return (
@@ -45,9 +38,9 @@ export function TeacherPageHeader({
         ) : null}
       </div>
 
-      {/* <div className="shrink-0 self-end sm:self-center">
+      <div className="shrink-0 self-end sm:self-center">
         <Pipo mood={pipoMood} size={pipoSize} stage={2} />
-      </div> */}
+      </div>
     </div>
   );
 }

@@ -146,8 +146,6 @@ export default function TeacherClassesPage() {
     }
   };
 
-  console.log("classes", classes);
-
   return (
     <div className="space-y-6">
       <ClassesHeader />

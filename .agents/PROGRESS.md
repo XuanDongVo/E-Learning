@@ -1,3 +1,147 @@
+## 2026-11-21 — Knowledge Note 03.2.1 stabilization + 03.3 reader + 03.4 library
+
+- Fixed the Grade 7 `012_knowledge_note_reading_library.sql` seed for semicolon-delimited SQL clients by removing dollar-quoted `DO` blocks and using direct count guards. Executed and rerun successfully against local disposable PostgreSQL; eight extra fixtures and eleven supplemental/primary links were verified.
+- Security regression coverage for Student Topic/Note visibility; renderer type fix and existing ID-isolation checks.
+- Student Note Detail now supplies only visible linked Topic backlinks, with Unit deep link, and supports active Table of Contents, mobile disclosure and session-only reading progress.
+- Student Knowledge Library now filters server-side by all/primary/supplementary/unlinked before pagination, exposes true role badges and uses shared Student pagination.
+- Explicitly disallow contradictory UNLINKED + Unit/Topic filters; preserve Primary/Supplementary role on Unit filter change.
+- Added focused tests for reading percentage, role transitions and backend Note role/permission projections. No migration required.
+- CI/runtime status: no local JVM/Node checkout available through connector; compilation, Vitest, browser and integration checks pending. See phase docs for commands and acceptance checklist.
+
+## 2026-11-21 — Knowledge Phase 02.7 + 03.2 and SVG headers
+
+- Teacher Topic linking UX: Primary/Supplementary explanations, state-aware picker, promotion of already linked Supplementary, inline error and published-note empty guidance.
+- Student Topic API: authenticated `GET /v1/student/knowledge-notes/topics/{topicId}`, Grade/published-content access guard, read-time H2/H3 + marked-keypoint excerpt, published Supplementary links.
+- Student Unit Detail: when a Topic is selected, shows summary/reading links before Activity grid; full Note Dialog fetches the existing student Note detail endpoint.
+- Student headers: original project SVGs for Units/Learning Hub/Leaderboard; removed Pipo from editorial headers, preserved contextual feedback elsewhere; removed Navbar mascot toggle and stabilized SVG dimensions.
+- `StudentPageHeading`: configurable marker/underline highlight and semantic titleId; scoped CSS. No Teacher visual changes.
+- Added backend and SSR regression tests, docs and original-SVG provenance records. **No local JVM/Node build or browser verification was executed via connector.**
+
+## 2026-11-21 — Student Pipo contextual scenes
+
+- Added a reusable Student-only `StudentMascotScene` (guide, feedback, milestone and decorative sticker), with ink/paper visuals. Used original Pipo SVG, no new library.
+- Mounted `PipoProvider` under Student AuthGuard. Added accessible preference toggle to desktop/mobile Student navbar using existing localStorage key.
+- Integrated Pipo into Unit Detail, Knowledge Library, Vocabulary learn/review completion, Activity Result (with server-confirmed level-up gating), Assignment Intro and Assignment Result. No timed-attempt or question-stage overlays.
+- Added SSR component tests and docs/student/PIPO_MASCOT_SCENES.md with regression checklist. **No local npm/TypeScript/Vitest/browser tests executed through connector.**
+
+## 2026-11-21 — Student Knowledge Library pagination focus
+
+- Updated [student-knowledge-library.tsx](../../client-e-learning/src/components/features/student/knowledge/student-knowledge-library.tsx) so Previous/Next waits for the selected page query to finish, focuses `#knowledge-note-card-list`, and scrolls that list into view.
+- Uses `tabIndex={-1}` and `preventScroll` for the focus handoff, with reduced-motion-aware smooth scrolling.
+- Targeted ESLint was not executed because tool execution permission was denied.
+
+## 2026-11-21 — Knowledge Note Phase 03.1 (Student Library and Reader)
+
+- Implemented real role-protected Student Knowledge Note list/detail APIs with Grade derived from active class and PUBLISHED-only reads. Added optional Unit/Topic filter with visibility checks; includes unlinked published Notes in the default Library.
+- Replaced Student Knowledge Library and Reader scaffolds with responsive Student Indie Illustrated Scrapbook pages, real API loading/search/Unit→Topic filters, pagination, full Tiptap JSON render, outline and marked key-point anchors.
+- Added Student navbar item, original bookshelf scene and doodles, scoped knowledge-specific CSS, and dedicated Student service/contracts. No extra UI package or external art licensing.
+- Added focused Student service tests and Phase 03.1 QA checklist in docs/knowledge-note/PHASE_03_1_STUDENT_LIBRARY.md.
+- **Not executed**: Maven backend tests, browser QA, npm TypeScript/lint or database-backed integration; GitHub connector only. Phase 03.2 Topic Dialog remains pending.
+
+## 2026-11-20 — Knowledge Note Phase 02.6 (Teacher Topic linking)
+
+- Reused the existing KnowledgeNote ↔ Topic relation and partial Primary unique index (V66); no DB schema change.
+- Added Teacher GET/POST/DELETE/PUT linking endpoints, reverse Topic-usage listing, Grade/Published/Primary-content validation, archived-Topic guards and serialized Topic-row writes.
+- Integrated a Radix "Kiến thức / Lý thuyết" tab in Teacher Topic Detail with published/same-Grade picker, Primary replacement, Supplementary ordering, unlink confirmation and error handling. The former Question Bank view remains in the "Ngân hàng câu hỏi" tab.
+- Added a linked-Topic section to Teacher Knowledge Note Detail. Teacher card/dialog frames use `border-2 border-ink shadow-pop` as requested.
+- Added link-service focused tests and docs/knowledge-note/PHASE_02_6_TOPIC_LINKING.md. **No Maven/npm/TypeScript, browser, database or migration tests were run in this connector-only session.** Phase 03 Student reader and Dialog remain deferred.
+
+## 2026-11-20 — Knowledge Note Phase 02.4 + 02.5 (single Document and publication lifecycle)
+
+- Implemented V69 with archival legacy backup, meaningful Summary-to-keypoint-callout conversion, guard against unsafe nonempty v1 data and retirement of active summary_json/schema_version columns. No V66–V68 edits.
+- Teacher Content GET/PUT now transports only Document. JSON validator supports stable IDs and isKeyPoint on H2/H3/Learning Block/Table and rejects unsafe fields/links/merged table structures.
+- Teacher Editor now uses a single Tiptap document with stable IDs, live outline/marked key-point sidebar, per-table toggle, revised Import/Export of v3 files with explicit legacy v1/v2 conversion, serialized/no-op-suppressed autosave.
+- Teacher Preview now shows full article or mock two-tab outline/key-points Dialog from the same document; Student APIs remain deferred.
+- Added Publish/Unpublish/Archive routes and confirmation actions; publishing requires nonempty content and (if Primary) Heading plus marked block. Published/Archived edits are denied on server.
+- Added/updated focused Java and Vitest tests and ADR 0041/FRS v3.3. **GitHub connector cannot execute Maven/npm or a browser; build/tests/migration not run. Verify before deployment.**
+- Phase 02.6 Topic linking and Phase 03 Student Library/Topic Dialog remain pending.
+
+## 2026-11-20 — Knowledge Note TableKit (client-only)
+
+- Switched bespoke ProseMirror table nodes to official Tiptap 3 TableKit with extended
+  `purpose` attribute (keeps JSON v2 table schema compatible).
+- Teacher toolbar now shows direct row/column add buttons and official chained table
+  commands; table-specific CSS supports resizing, selection and mobile scrolling.
+- JSON table validator now accounts for rowspan/colspan geometry and optional
+  alignment, preserving merged-table Import/Export. Added integration tests.
+- No backend/API work. TypeScript/build/tests/browser not executed from connector;
+  package-lock integrity should be refreshed on a network-enabled development machine.
+  See `docs/knowledge-note/PHASE_02_2_EDITOR_V2_CLIENT.md`.
+
+## 2026-11-20 — Knowledge Note Template/Import dialogs UX repair
+
+- Root cause of screenshot's narrow dialogs: global `DialogContent` applies `sm:max-w-sm`; local `max-w-none` only applied at base breakpoint, so desktop remained narrow.
+- Added one wide responsive Editor-only dialog shell for both features; dual-pane scrollable Template preview and JSON Import/Export preview, sticky header/footer, mobile stacked layout.
+- Improved template search, selection/category filtering, status and insert failure handling; JSON paste validation is now explicit and stale previews are invalidated; export scopes/JSON preview are clearer.
+- Client-only. No shared Dialog modifications, backend API changes, schema changes or new dependencies. Runtime checks pending. See `docs/knowledge-note/PHASE_02_2_EDITOR_V2_CLIENT.md`.
+
+## 2026-11-20 — Knowledge Note Editor v2 client-only upgrade
+
+- Upgraded portable document schema from v1 to v2. Learning Blocks now have editable nested rich-text sections and dynamic comparison/general tables with row/column operations using existing `@tiptap/pm/tables`.
+- Added structured migration from imported v1 JSON, strict allowlist validation and error reporting, JSON import/export including block snapshots, and built-in block/lesson templates. Export round-trip and migration test cases were authored.
+- Centralized the v2 renderer for Teacher live Preview, JSON Import Preview and Template Preview while keeping Student APIs and screens inactive.
+- No server endpoints, Flyway migrations, new dependencies or lifecycle/Topic functionality were changed. The Save button remains disabled. Frontend TS/lint/tests/browser were **not executed** in this connector-only implementation.
+- Details: `docs/knowledge-note/PHASE_02_2_EDITOR_V2_CLIENT.md`.
+
+## 2026-11-20 — Knowledge Note full-page Student-view preview (client-only)
+- Added Teacher-only route `/teacher/knowledge-notes/{id}/preview` displaying live Editor content in the scoped Student Indie Illustrated Scrapbook design.
+- Replaced the former modal Preview button with a dedicated browser tab to keep the unsaved TipTap Editor mounted. A per-session same-origin BroadcastChannel handshake transfers the Full Article and independently authored Quick Summary, with live updates and desktop/mobile width modes.
+- Direct access without a session shows an honest empty/unavailable state; no Student API, content-save endpoint, browser storage, or fake published data was added. Closing Preview returns to the original Editor tab where possible.
+- Added pure protocol shape tests and checked all new relative/alias import paths against the GitHub tree. **No local TypeScript build, browser E2E, or runtime integration checks were executed from this connector environment.**
+- Documented the preview flow in `docs/knowledge-note/PHASE_02_2_EDITOR_CLIENT.md`.
+
+## 2026-11-20 — Shared Teacher list toolbar
+
+- Audited active Teacher list controls across routes and rendered feature components: 12 list toolbars found (2 standalone, 10 inline); 9 were suitable for a shared layout and 3 specialized analysis/subresource controls remain independent.
+- Added composition-based `TeacherListToolbar` with search, filters and actions slots. It owns only the Calm Classroom surface, spacing, wrapping and responsive group placement.
+- Migrated Classes, Students, Knowledge Notes, Activities, Assignments, Global Question Banks, Question Bank questions, Class Students and Unit Vocabulary without changing their query/filter/dialog/navigation behavior or backend contracts.
+- Added `.agents/ui/TEACHER_LIST_TOOLBAR_AUDIT.md` with the screen brief, inventory, counts and exclusions. `ContentToolbar`, the TipTap toolbar, editor/modal searches and unused filter components were deliberately excluded.
+- Validation: TypeScript passes; focused ESLint passes for the new shared component and eight affected files, while Unit Vocabulary retains two pre-existing `set-state-in-effect` warnings and no errors; all 29 frontend tests pass. Responsive behavior was source-reviewed for 360/768/desktop wrapping. Per owner instruction, no client build was run; no browser automation was used.
+
+## 2026-11-20 — Knowledge Note create fix and dialog flow
+
+- Fixed `POST /v1/teacher/knowledge-notes` JSONB persistence by mapping the current document and summary as Jackson-independent `Map<String, Object>` values; the empty TipTap document is now created from Java collections.
+- Moved metadata creation into a responsive dialog on `/teacher/knowledge-notes`; the former `/teacher/knowledge-notes/new` URL now redirects to the management screen.
+- Removed Base UI's invalid button-as-link composition from Knowledge Note Management and Detail by using native buttons for actions and semantic styled links for navigation.
+- Knowledge Note frontend TypeScript and focused ESLint pass. The Spring application context and 136/142 backend tests pass; the full suite remains red on six pre-existing ActivitySession/Assignment test failures unrelated to Knowledge Notes.
+
+## 2026-11-20 — Knowledge Note standalone Teacher route
+
+- Moved the canonical Teacher route family from `/teacher/content/knowledge-notes` to `/teacher/knowledge-notes` and added a first-class navigation item after Overview.
+- Retired the old Content-nested list/create/edit paths; updated breadcrumbs and active UI/spec documentation.
+- Corrected the active FRS v3.2 future Teacher endpoint namespace from historical `/v1/content/**` wording to role-first `/v1/teacher/**`; Topic-link endpoint shape remains explicitly unapproved.
+- Added the Phase 02.2 TipTap client Editor, Learning Blocks, separately authored Quick Summary, in-memory preview and JSON export. No content-save API, publish behavior, Student route, Topic-link mutation or backend schema change was introduced.
+- Added TipTap 3 dependencies and schema-v1 contract documentation. TypeScript and focused Knowledge Note ESLint pass; all 29 frontend tests pass, including four new document-contract tests.
+- Full-repo ESLint still has one pre-existing Student Vocabulary purity error (`Date.now()` during render) plus existing warnings. The dev route returns HTTP 200, but Next production build is blocked by the execution host's SWC native-cache ownership restriction; browser/device review is pending because the Windows Computer Use native pipe was unavailable after the required retry.
+
+## 2026-11-19 — Knowledge Note Teacher Management UI 02.1
+- Connected the approved three Teacher APIs to real Management/Create/Metadata Detail UI. Created `/[noteId]` detail route; new route is now a Grade + title + description form instead of premature Word-like Editor.
+- Reused shared DataTable, pagination, StatusBadge, Breadcrumb, feedback states and Grade service. Enabled Teacher React Query hooks only; search/filter/page controls use actual backend parameters.
+- Linked Sổ tay kiến thức in Teacher Content sidebar. Content Editor/Publish/Topic Linking and all Student flows remain excluded and disconnected.
+- Source/tree inspected; frontend lint/build, API E2E and browser/mobile QA **not run**. QA checklist: docs/knowledge-note/TEACHER_MANAGEMENT_UI_02_1.md.
+
+
+## 2026-11-19 — Knowledge Note Phase 01 narrowed by owner
+- Moved standalone module out of `content/knowledge` into `knowledge/` with Teacher-specific controller/service/dto request/response packages.
+- Implemented only POST/GET list/GET detail under `/v1/teacher/knowledge-notes`, using existing `PageResponse<T>` and metadata-only DTOs; other unapproved backend controllers and methods removed.
+- Client service contracts aligned with the three approved Teacher endpoints; existing unfinished UI screens remain disconnected.
+- V66/V67 retained without modification. GitHub source changes only; Maven/Next/Flyway runtime verification still pending.
+
+## 2026-11-19 — Simplify Knowledge Note scaffold to one current document
+- Owner removed Draft/Revision from MVP. New V67 forward migration removes the two preliminary V66 tables and moves document/summary JSON into knowledge_notes; knowledge_note_topic_links remains.
+- Updated entity, DTO, Teacher content endpoints/client types/hook, and canonical SRS/FRS/UIUX v3.2. 501 feature gate remains; no functional API enabled.
+- Live editing of PUBLISHED content will be immediately visible to Student; UI must warn before save. Unpublish before edits to stage changes.
+- GitHub source-only validation performed; Maven/Next build and PostgreSQL migration not executed.
+
+## 2026-11-19 — Knowledge Note end-to-end scaffold on feature/guided-reasoning-v1
+
+- Added V66 baseline Flyway schema (KnowledgeNote, Draft, Revision, TopicLink); JPA entities and Spring Data repositories.
+- Added Teacher/Student DTOs, three REST controllers and fail-closed service contracts: every valid feature operation returns KNOWLEDGE_NOTE_NOT_IMPLEMENTED (HTTP 501). No business mutations or reads are enabled.
+- Added TS contracts, service clients, query key factory; Teacher T01/T02/T03/T04 and Student S01/S02/S03 component shells and five Next routes.
+- Deliberately did not enable navigation or embed the Topic/Unit sections until backing endpoints work; no mocks, misleading empty success or fake saves.
+- Next work: Phase 01 authorization, server validation, filtering and linking/publish rules. Phase 02 Word-like editor, Phase 03 Teacher UX, Phase 04 Student UX, Phase 05 integration.
+- Status: scaffold only, not implemented or runtime verified. Build/test/Flyway execution could not be run through the GitHub connector in this work session.
+
 ## 2026-11-19 — Knowledge Note v3.1 documentation (not implemented)
 - Accepted ADR 0038: independent Grade-scoped Knowledge Notes; optional many-to-many Topic links and optional Primary.
 - Added docs/knowledge-note SRS, FRS and UI/UX v3.1; excluded category and media fields.
@@ -1016,3 +1160,17 @@ States covered: loading, source error/empty, invalid configuration, insufficient
 - Replaced mock Honors with 2 server-backed honors (lifetime XP, longest Streak), and recent activity with terminal ActivitySessions.
 - No ranking table migration. Runtime PostgreSQL verification, backend Maven, frontend lint/build, and authenticated E2E not yet run.
 - **2026-11-11 Vocabulary Learn refactor:** NEW-word dynamic queue (five unique retry words), continuous selectable Word/Choice/Typing/Pronunciation modes, Chưa nhớ next-mode loop, Đã thuộc rating panel, local Học lại (no FSRS write), HARD/GOOD/EASY backend FSRS write and initial 6h/12h/1d policy with non-mutating review preview endpoint. Student Browse/Teacher/Game are intentionally outside refactor. Verification is limited by unavailable frontend dependencies and inaccessible Maven Central in this execution environment.
+## 2026-11-21 — Grade 7 Knowledge Note seed
+
+- Added the V69-compatible Grade 7 Knowledge Note fixture at `server/src/test/resources/db/seed/grade7/011_knowledge_note.sql`.
+- Preserved legacy `G7-SEED-U01..U06` identifiers and added additive `G7-CURR-U06..U12` units for the Global Success Unit 6/7 mismatch.
+- Added 12 unit-linked published core notes and six independent revision notes with validator-supported formula, example, common-mistake and self-check blocks.
+- Added the mapping/coverage document and rerun/fixture-identity instructions to the Grade 7 seed README.
+- Per owner request, tests and runtime verification were not run.
+
+# 2026-11-22 — Teacher shared list toolbar responsive fix
+
+- Replaced the shared Teacher list toolbar's ambiguous display utilities with an explicit responsive grid and flex-slot contract: stacked controls on mobile, wrapping filters, search/actions plus a full-width filter row from `lg`, and search/filter/actions in one row only from `2xl` after accounting for the Teacher sidebar.
+- Added `min-w-0` boundaries and stable slot placement so 9 migrated Teacher list surfaces share one overflow-safe layout instead of inheriting inconsistent feature-level widths. Mobile actions stack at full available width instead of shrinking several actions into one cramped row.
+- Authenticated Chrome runtime inspection covers Classes, Students, Knowledge Notes, Global Question Banks and Assignments at 390px, 1440px and 1920px. The first pass exposed premature `xl` three-column wrapping plus full-width Knowledge Note selects; the corrected breakpoint is `2xl`, responsive select widths are explicit, and no tested page has horizontal body overflow. Focused ESLint passes with zero warnings/errors; production build was not run.
+- Refined Global Question Banks: search now updates the URL/query after a 350ms debounce (Enter remains supported) without a separate Search button; archived banks are fixed off and the obsolete checkbox/URL parameter is removed. Four hierarchical filters and Reset use a compact responsive layout, with shared wide-toolbar slots bottom-aligned. Authenticated checks at 390/1440/1920 confirm one Reset button, four selects, no checkbox, no horizontal overflow, and `search=toolbar` applied automatically. Focused ESLint passes.

@@ -33,7 +33,7 @@
 
 ## Knowledge Note (planned)
 
-ADR 0038 approves a reusable, Grade-scoped Knowledge Note independent of Topic, with optional many-to-many links and optional Primary. See [SRS](../docs/knowledge-note/Knowledge_Note_SRS_v3.1.md), [FRS](../docs/knowledge-note/Knowledge_Note_FRS_v3.1.md) and [UI/UX](../docs/knowledge-note/Knowledge_Note_UIUX_v3.1.md). No implementation exists yet.
+ADR 0038 approves a reusable, Grade-scoped Knowledge Note independent of Topic, with optional many-to-many links and optional Primary. See [SRS](../docs/knowledge-note/Knowledge_Note_SRS_v3.2.md), [FRS](../docs/knowledge-note/Knowledge_Note_FRS_v3.2.md) and [UI/UX](../docs/knowledge-note/Knowledge_Note_UIUX_v3.2.md). No implementation exists yet.
 
 ## Current canonical decisions
 

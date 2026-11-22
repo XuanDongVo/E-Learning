@@ -31,6 +31,7 @@ import { SkeletonTable } from "@/components/ui/skeleton/skeleton-table";
 import { RegionState } from "@/components/feedback";
 import { VocabularyWordModal } from "./vocabulary-word-modal";
 import { BulkImportVocabularyModal } from "./bulk-import-vocabulary-modal";
+import { TeacherListToolbar } from "@/components/features/teacher/shared/teacher-list-toolbar";
 
 interface UnitVocabularySectionProps {
   unitId: number;
@@ -382,9 +383,21 @@ export function UnitVocabularySection({ unitId }: UnitVocabularySectionProps) {
           </div>
         )}
 
-        {/* Filter & Search Bar */}
-        <div className="mt-4 flex flex-col sm:flex-row items-center justify-between gap-3 pt-3 border-t border-border">
-          {/* Status filter tabs */}
+        <TeacherListToolbar
+          className="mt-4 rounded-none border-x-0 border-b-0 border-t border-border bg-transparent p-0 pt-3 shadow-none"
+          search={
+          <div className="relative w-full">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-muted" />
+            <input
+              type="text"
+              placeholder="Tìm từ tiếng Anh, tiếng Việt..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="h-10 w-full rounded-xl border border-border bg-background pl-9 pr-3 text-xs text-foreground shadow-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+            />
+          </div>
+          }
+          filters={
           <div className="flex items-center rounded-xl border border-border bg-background p-1 text-xs font-semibold text-neutral-muted shadow-sm w-full sm:w-auto">
             {(["ALL", "ACTIVE", "INACTIVE"] as const).map((s) => (
               <button
@@ -404,19 +417,8 @@ export function UnitVocabularySection({ unitId }: UnitVocabularySectionProps) {
               </button>
             ))}
           </div>
-
-          {/* Search Input */}
-          <div className="relative w-full sm:w-72">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-muted" />
-            <input
-              type="text"
-              placeholder="Tìm từ tiếng Anh, tiếng Việt..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full rounded-xl border border-border bg-background pl-9 pr-3 py-2 text-xs text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20 shadow-sm"
-            />
-          </div>
-        </div>
+          }
+        />
       </div>
 
       {/* Table Content with Pagination using DataTable */}

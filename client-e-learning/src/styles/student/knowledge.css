@@ -1,0 +1,194 @@
+/* Student Knowledge Library & Reader — Indie Illustrated Scrapbook.
+   Uses only student-scoped visual tokens; no Teacher or global overrides. */
+.student-theme .student-knowledge-hero,
+.student-theme .student-knowledge-article-hero {
+  isolation: isolate;
+  border-radius: 25px 7px 23px 8px / 8px 24px 7px 23px;
+}
+.student-theme .student-knowledge-hero {
+  background-image:
+    radial-gradient(circle at 9% 14%, rgba(255, 253, 249, .56) 0 3px, transparent 4px),
+    repeating-linear-gradient(to bottom, transparent 0 36px, rgba(45, 43, 42, .065) 37px);
+  background-size: 34px 34px, 100% 37px;
+}
+.student-theme .student-knowledge-hero-art { transform: rotate(-2deg); }
+.student-theme .student-knowledge-card {
+  border: 2px solid var(--student-ink);
+  border-radius: 18px 5px 16px 5px / 5px 16px 4px 18px;
+  background: var(--student-paper);
+  background-image:
+    linear-gradient(to bottom, transparent 0 97%, rgba(74, 107, 130, .12) 97% 100%);
+  box-shadow: 4px 5px 0 var(--student-ink);
+  transition: transform 160ms steps(3), box-shadow 160ms steps(3), background-color 160ms ease;
+}
+.student-theme .student-knowledge-card:nth-child(4n + 2) {
+  background-color: color-mix(in srgb, var(--student-paper) 87%, var(--student-kraft) 13%);
+  border-radius: 5px 17px 5px 16px / 16px 5px 17px 5px;
+}
+.student-theme .student-knowledge-card:nth-child(4n + 3) {
+  border-radius: 17px 5px 14px 6px / 5px 17px 6px 14px;
+}
+.student-theme .student-knowledge-card:hover {
+  transform: translate(-2px, -2px) rotate(-.35deg);
+  box-shadow: 6px 7px 0 var(--student-ink);
+}
+.student-theme .student-knowledge-card:active {
+  transform: translate(1px, 1px);
+  box-shadow: 2px 2px 0 var(--student-ink);
+}
+.student-theme .student-knowledge-card-number {
+  display: inline-grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border: 2px solid var(--student-ink);
+  border-radius: 11px 3px 9px 4px;
+  background: var(--student-kraft);
+  color: var(--student-ink);
+  font-family: var(--student-font-mono);
+  font-size: 1rem;
+  font-weight: 800;
+  transform: rotate(-4deg);
+}
+.student-theme .student-knowledge-reader {
+  overflow-wrap: anywhere;
+}
+.student-theme .student-knowledge-reader :is(h2,h3) {
+  scroll-margin-top: 7rem;
+  font-family: var(--student-font-body);
+  letter-spacing: -.018em;
+}
+.student-theme .student-knowledge-reader h2 {
+  padding-bottom: .5rem;
+  border-bottom: 2px dashed color-mix(in srgb, var(--student-ink) 30%, transparent);
+}
+.student-theme .student-knowledge-reader h3 {
+  color: var(--student-clay-dark);
+}
+.student-theme .student-knowledge-reader p { line-height: 1.8; }
+.student-theme .student-knowledge-reader :is(ul,ol) { line-height: 1.8; }
+.student-theme .student-knowledge-reader aside[data-learning-kind] {
+  border: 2px solid var(--student-ink);
+  border-left: 6px solid var(--student-clay-dark);
+  border-radius: 14px 4px 13px 5px;
+  background: var(--student-canvas);
+  box-shadow: 3px 3px 0 var(--student-kraft-dark);
+  scroll-margin-top: 7rem;
+}
+.student-theme .student-knowledge-reader :is(aside[data-learning-kind],div[role="region"]) {
+  max-width: 100%;
+}
+.student-theme .student-knowledge-reader div[role="region"] {
+  border: 2px solid var(--student-ink);
+  border-radius: 10px 3px 9px 4px;
+  scroll-margin-top: 7rem;
+}
+.student-theme .student-knowledge-reader table { background: var(--student-paper); }
+.student-theme .student-knowledge-reader :is(td,th) { border-color: var(--student-ink); }
+.student-theme .student-knowledge-reader th { background: var(--student-kraft); }
+@media (max-width: 640px) {
+  .student-theme .student-knowledge-reader { font-size: .92rem; }
+  .student-theme .student-knowledge-card { box-shadow: 3px 4px 0 var(--student-ink); }
+  .student-theme .student-knowledge-hero-art { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .student-theme .student-knowledge-card,
+  .student-theme .student-knowledge-card:hover,
+  .student-theme .student-knowledge-card:active {
+    transform: none;
+    transition: none;
+  }
+  .student-theme .student-knowledge-skeleton { animation: none; }
+}
+
+/* Phase 03.2 — Topic reading checkpoint before Activity grid. */
+.student-theme .student-topic-knowledge {
+  border-radius: 16px 5px 18px 5px / 5px 18px 5px 16px;
+}
+.student-theme .student-topic-knowledge__excerpt {
+  max-height: 25rem;
+  overflow: auto;
+  border-left: 3px solid var(--student-clay-dark);
+  border-radius: 0 10px 10px 0;
+  background: color-mix(in srgb, var(--student-paper) 86%, var(--student-kraft));
+  padding: .9rem 1rem;
+  color: var(--student-ink);
+}
+.student-theme .student-topic-knowledge__excerpt > div {
+  min-width: 0;
+}
+.student-theme .student-topic-knowledge__related {
+  transition: background-color 160ms ease;
+}
+@media (max-width: 640px) {
+  .student-theme .student-topic-knowledge__excerpt {
+    max-height: 18rem;
+    padding: .7rem;
+  }
+}
+
+/* Phase 03.3 — session-only reading progress, accessible TOC and return links. */
+.student-theme .student-knowledge-reading-progress {
+  box-shadow: 2px 3px 0 var(--student-kraft-dark);
+}
+.student-theme .student-knowledge-toc-link {
+  color: var(--student-ink);
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+.student-theme .student-knowledge-toc-link:hover,
+.student-theme .student-knowledge-toc-link[aria-current="location"] {
+  background: var(--student-kraft);
+  color: var(--student-clay-dark);
+}
+.student-theme .student-knowledge-toc-link[aria-current="location"] {
+  box-shadow: inset 3px 0 0 var(--student-clay-dark);
+}
+.student-theme .student-reading-topic-links a {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+.student-theme .student-knowledge-toc-mobile summary:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
+}
+.student-theme .student-knowledge-reader :is(table, th, td) {
+  overflow-wrap: anywhere;
+}
+@media (prefers-reduced-motion: reduce) {
+  .student-theme .student-knowledge-reading-progress > div > div {
+    transition: none;
+  }
+}
+
+/* Phase 03.4: honest backend-backed roles; visually quiet collection filters. */
+.student-theme .student-knowledge-role-filters {
+  border-bottom: 1px dashed var(--student-surface-outline);
+  padding-bottom: .9rem;
+}
+.student-theme .student-knowledge-role-tag {
+  display: inline-flex;
+  min-height: 24px;
+  align-items: center;
+  padding: .15rem .55rem;
+  border: 1px solid var(--student-surface-outline);
+  border-radius: 8px 3px 8px 3px;
+  background: var(--student-kraft);
+  color: var(--student-ink);
+  font-size: .7rem;
+  font-weight: 700;
+}
+.student-theme .student-knowledge-role-tag[data-knowledge-role="PRIMARY"] {
+  background: color-mix(in srgb, var(--student-mustard) 26%, var(--student-paper));
+  border-color: var(--student-mustard);
+}
+.student-theme .student-knowledge-role-tag[data-knowledge-role="SUPPLEMENTARY"] {
+  background: color-mix(in srgb, var(--student-denim) 14%, var(--student-paper));
+  border-color: var(--student-denim);
+}
+.student-theme .student-knowledge-role-tag[data-knowledge-role="UNLINKED"] {
+  background: var(--student-paper);
+}
+@media (max-width: 639px) {
+  .student-theme .student-knowledge-role-filters > button { flex: 1 1 40%; }
+}

@@ -6,7 +6,6 @@ import { Link } from "@/i18n/navigation";
 import { RegionState } from "@/components/feedback";
 import { StudentButton } from "@/components/student-ui/student-button";
 import { StudentCollectionEmptyState } from "@/components/student-ui/patterns/student-collection-empty-state";
-import { Pipo } from "@/components/ui/mascot";
 import { StudentIllustration } from "@/components/student-ui/visuals/student-illustration";
 import { PaperSurface } from "@/components/student-ui/paper-surface";
 import { PolaroidFrame } from "@/components/student-ui/polaroid-frame";
@@ -49,13 +48,13 @@ export function LearningHubHome() {
             </Link>
           </div>
         </div>
-        {/* One visual anchor per breakpoint: study desk on mobile, Pipo Polaroid on desktop. */}
+        {/* One visual anchor per breakpoint: original SVG scenes, no live mascot in hero. */}
         <div className="flex justify-center md:hidden" aria-hidden="true">
           <StudentIllustration id="scene.study-desk" decorative className="w-36" />
         </div>
         <div className="relative hidden md:block" aria-hidden="true">
           <PolaroidFrame caption="Keep learning, little by little">
-            <Pipo mood="wave" color="primary" size={150} stage={2} />
+            <StudentIllustration id="illustration.unit-journey" decorative className="mx-auto w-40" />
           </PolaroidFrame>
         </div>
       </header>

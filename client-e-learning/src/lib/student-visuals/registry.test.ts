@@ -6,7 +6,8 @@ import { STUDENT_VISUAL_IDS, studentVisualRegistry } from "./registry";
 
 describe("approved Student visual registry", () => {
   it("contains unique local assets with explicit size and provenance", () => {
-    expect(STUDENT_VISUAL_IDS).toHaveLength(9);
+    // Phase 03, Knowledge Notes and editorial headers extend this additive registry.
+    expect(STUDENT_VISUAL_IDS.length).toBeGreaterThanOrEqual(9);
     const sources = STUDENT_VISUAL_IDS.map((id) => studentVisualRegistry[id].src);
     expect(new Set(sources).size).toBe(sources.length);
     for (const id of STUDENT_VISUAL_IDS) {

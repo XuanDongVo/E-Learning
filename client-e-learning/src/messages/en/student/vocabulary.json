@@ -69,7 +69,13 @@
     "saveError": "The review could not be saved.",
     "retrySave": "Try sending again",
     "discard": "Discard rating",
-    "skipStale": "Skip and continue"
+    "skipStale": "Skip and continue",
+    "delayFsrs": "Based on FSRS",
+    "delayNow": "Now",
+    "delayUnderMinute": "Under 1 minute",
+    "delayMinutes": "{count, plural, one {# minute} other {# minutes}}",
+    "delayHours": "{count, plural, one {# hour} other {# hours}}",
+    "delayDays": "{count, plural, one {# day} other {# days}}"
   },
   "rating": {
     "label": "Memory rating",

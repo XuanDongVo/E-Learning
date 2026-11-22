@@ -69,7 +69,13 @@
     "saveError": "Không lưu được lượt ôn.",
     "retrySave": "Thử gửi lại",
     "discard": "Bỏ đánh giá",
-    "skipStale": "Bỏ qua và tiếp tục"
+    "skipStale": "Bỏ qua và tiếp tục",
+    "delayFsrs": "Theo FSRS",
+    "delayNow": "Ngay",
+    "delayUnderMinute": "Dưới 1 phút",
+    "delayMinutes": "{count} phút",
+    "delayHours": "{count} giờ",
+    "delayDays": "{count} ngày"
   },
   "rating": {
     "label": "Đánh giá ghi nhớ",

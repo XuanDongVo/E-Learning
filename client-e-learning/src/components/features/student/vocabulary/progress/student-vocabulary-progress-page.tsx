@@ -1,6 +1,6 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -46,16 +46,16 @@ import type {
 } from "@/types/student-vocabulary-progress";
 
 
-function dateLabel(value: string) {
-  return new Intl.DateTimeFormat("vi-VN", {
+function dateLabel(value: string, locale: string) {
+  return new Intl.DateTimeFormat(locale === "en" ? "en-US" : "vi-VN", {
     timeZone: "UTC",
     day: "2-digit",
     month: "2-digit",
   }).format(new Date(value + "T12:00:00Z"));
 }
 
-function weekdayLabel(value: string) {
-  return new Intl.DateTimeFormat("vi-VN", {
+function weekdayLabel(value: string, locale: string) {
+  return new Intl.DateTimeFormat(locale === "en" ? "en-US" : "vi-VN", {
     timeZone: "UTC",
     weekday: "short",
   }).format(new Date(value + "T12:00:00Z"));
@@ -383,6 +383,8 @@ function ContentProgress({ data }: { data: VocabularyProgressDashboard }) {
 }
 
 function LearningActivity({ data }: { data: VocabularyProgressDashboard }) {
+  const t = useTranslations("student.vocabulary.progressPage.activity");
+  const locale = useLocale();
   const [selectedReviewDate, setSelectedReviewDate] = useState(
     data.upcomingReviews[0]?.date ?? "",
   );
@@ -407,8 +409,8 @@ function LearningActivity({ data }: { data: VocabularyProgressDashboard }) {
     <PaperSurface as="section" className="vprogress-activity-panel">
       <div className="flex items-center justify-between gap-2">
         <SectionHeading
-          eyebrow="04 / NHỊP HỌC TẬP"
-          title="Lịch ôn & hoạt động"
+          eyebrow={t("eyebrow")}
+          title={t("title")}
         />
         <CalendarDays
           className="size-5 shrink-0 text-primary"
@@ -417,15 +419,15 @@ function LearningActivity({ data }: { data: VocabularyProgressDashboard }) {
       </div>
       <div className="vprogress-activity-section">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h3 className="vprogress-subheading">7 ngày ôn tập</h3>
+          <h3 className="vprogress-subheading">{t("weekTitle")}</h3>
           <span className="text-xs text-muted-foreground">
-            Dự kiến theo FSRS
+            {t("fsrs")}
           </span>
         </div>
         <div
           className="vprogress-schedule"
           role="group"
-          aria-label="Chọn ngày xem lịch ôn"
+          aria-label={t("chooseDay")}
         >
           {data.upcomingReviews.map((day) => (
             <button
@@ -439,10 +441,10 @@ function LearningActivity({ data }: { data: VocabularyProgressDashboard }) {
               }
             >
               <span className="text-xs font-bold">
-                {weekdayLabel(day.date)}
+                {weekdayLabel(day.date, locale)}
               </span>
               <span className="text-[10px] text-muted-foreground">
-                {dateLabel(day.date)}
+                {dateLabel(day.date, locale)}
               </span>
               <span className="vprogress-bar-holder">
                 <span
@@ -464,30 +466,26 @@ function LearningActivity({ data }: { data: VocabularyProgressDashboard }) {
             aria-hidden="true"
           />
           {selectedReview
-            ? dateLabel(selectedReview.date) +
-              ": dự kiến " +
-              selectedReview.dueCount +
-              " từ đến hạn."
-            : "Chưa có lịch ôn tập."}
+            ? t("reviewSelected", { date: dateLabel(selectedReview.date, locale), count: selectedReview.dueCount })
+            : t("reviewEmpty")}
           <span className="ml-1 text-muted-foreground">
-            Lịch có thể thay đổi sau khi ôn.
+            {t("scheduleNote")}
           </span>
         </p>
       </div>
       <div className="vprogress-activity-section vprogress-activity-section--heatmap">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h3 className="vprogress-subheading">12 tuần hoạt động</h3>
+          <h3 className="vprogress-subheading">{t("weeksTitle")}</h3>
           <span className="text-xs font-semibold text-muted-foreground">
-            {qualifiedDays} ngày đạt mục tiêu (mẫu)
+            {t("qualifiedDays", { count: qualifiedDays })}
           </span>
         </div>
         <p className="text-xs text-muted-foreground">
-          Mỗi ô là một ngày · Đủ 5 từ khác nhau được đánh giá HARD / GOOD / EASY
-          là ngày hợp lệ.
+          {t("heatmapHint")}
         </p>
         <div
           className="vprogress-heatmap-wrap"
-          aria-label="Lịch hoạt động 12 tuần"
+          aria-label={t("heatmapAria")}
         >
           <div className="vprogress-heatmap">
             {data.activityDays.map((day) => {
@@ -513,14 +511,8 @@ function LearningActivity({ data }: { data: VocabularyProgressDashboard }) {
                     level +
                     (selectedActivityDate === day.date ? " is-selected" : "")
                   }
-                  aria-label={
-                    dateLabel(day.date) +
-                    ": " +
-                    (count ?? "chưa có dữ liệu") +
-                    " từ, " +
-                    (day.qualifiedDay ? "đạt mục tiêu" : "chưa đạt mục tiêu")
-                  }
-                  title={dateLabel(day.date) + ": " + (count ?? "-") + " từ"}
+                  aria-label={t("heatmapDay", { date: dateLabel(day.date, locale), count: count ?? t("noData"), status: day.qualifiedDay ? t("qualified") : t("notQualified") })}
+                  title={t("heatmapTitle", { date: dateLabel(day.date, locale), count: count ?? "-" })}
                 />
               );
             })}
@@ -529,22 +521,16 @@ function LearningActivity({ data }: { data: VocabularyProgressDashboard }) {
         <div className="vprogress-heatmap-footer">
           <p className="text-xs text-muted-foreground">
             {selectedActivity
-              ? dateLabel(selectedActivity.date) +
-                ": " +
-                (selectedActivity.qualifiedWordCount ?? 0) +
-                " từ · " +
-                (selectedActivity.qualifiedDay
-                  ? "Đạt mục tiêu"
-                  : "Chưa đạt mục tiêu")
-              : "Chọn một ngày để xem chi tiết."}
+              ? t("selectedActivity", { date: dateLabel(selectedActivity.date, locale), count: selectedActivity.qualifiedWordCount ?? 0, status: selectedActivity.qualifiedDay ? t("qualified") : t("notQualified") })
+              : t("selectDay")}
           </p>
           <div className="vprogress-heat-legend">
-            <span>Ít</span>
+            <span>{t("low")}</span>
             <i className="vprogress-heat-key vprogress-heat-cell--empty" />
             <i className="vprogress-heat-key vprogress-heat-cell--low" />
             <i className="vprogress-heat-key vprogress-heat-cell--medium" />
             <i className="vprogress-heat-key vprogress-heat-cell--high" />
-            <span>Nhiều</span>
+            <span>{t("high")}</span>
           </div>
         </div>
       </div>
@@ -553,17 +539,18 @@ function LearningActivity({ data }: { data: VocabularyProgressDashboard }) {
 }
 
 function AttentionWords({ data }: { data: VocabularyProgressDashboard }) {
+  const t = useTranslations("student.vocabulary.progressPage.attention");
   const [expandedWord, setExpandedWord] = useState<number | null>(null);
   return (
     <PaperSurface as="section" className="vprogress-attention">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <SectionHeading
-          eyebrow="05 / CỦNG CỐ"
-          title="Những từ cần chú ý"
-          hint="Gợi ý các từ thường được đánh giá AGAIN hoặc HARD trong dữ liệu mẫu."
+          eyebrow={t("eyebrow")}
+          title={t("title")}
+          hint={t("hint")}
         />
         <Link href="/student/vocabulary" className="vprogress-text-link">
-          Đến thư viện <ArrowRight className="size-4" aria-hidden="true" />
+          {t("toLibrary")} <ArrowRight className="size-4" aria-hidden="true" />
         </Link>
       </div>
       <div className="vprogress-word-grid">
@@ -602,8 +589,7 @@ function AttentionWords({ data }: { data: VocabularyProgressDashboard }) {
             </div>
             {expandedWord === word.wordId && (
               <p className="vprogress-word-detail">
-                Các lượt đánh giá này chỉ là dữ liệu minh họa, chưa có thuật
-                toán xếp hạng từ khó.
+                {t("sample")}
               </p>
             )}
           </div>

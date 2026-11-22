@@ -192,15 +192,33 @@
         "continue": "Continue attempt"
       },
       "types": {
-        "SINGLE_CHOICE": "Single choice",
-        "MULTIPLE_CHOICE": "Multiple choice",
-        "TRUE_FALSE": "True / false",
-        "FILL_IN_BLANK": "Fill in the blank",
-        "TYPE_ANSWER": "Type answer",
-        "MATCHING": "Matching",
-        "CLOZE": "Cloze",
-        "UNKNOWN": "Question"
-      }
+        "TEXT_INPUT": "Text input",
+        "MULTI_TEXT_INPUT": "Multiple blanks"
+      },
+      "instructions": "Instructions:",
+      "referenceTranslation": "Reference translation:",
+      "answerPool": "Answer pool",
+      "questionCount": "Question {current}/{total}",
+      "points": "{count} points",
+      "promptFallback": "Choose the best answer:",
+      "mediaAlt": "Question media",
+      "inputPlaceholder": "Type your answer here...",
+      "matchingLabel": "Select matching answer",
+      "matchingPlaceholder": "— Select answer —",
+      "matchingPoolUnavailable": "Answer Pool not found (check the poolId and POOL block).",
+      "blankLabel": "Blank ({index}):",
+      "blankPlaceholder": "Type word...",
+      "unsupportedFormat": "Question format ({type}) is not supported in this view.",
+      "sectionRoman": "SECTION {index}",
+      "progressTitle": "Assignment progress",
+      "progressShort": "Progress:",
+      "progressCount": "{answered} / {total} questions",
+      "completedCount": "Completed {answered} / {total} questions",
+      "questionList": "Question list",
+      "questionListMobile": "Mobile question list",
+      "notCompleted": "Not completed",
+      "answered": "Answered",
+      "closeProgress": "Close assignment progress"
     }
   }
 }

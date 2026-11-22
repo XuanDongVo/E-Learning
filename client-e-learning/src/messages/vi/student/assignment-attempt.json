@@ -192,15 +192,33 @@
         "continue": "Tiếp tục làm bài"
       },
       "types": {
-        "SINGLE_CHOICE": "Trắc nghiệm một đáp án",
-        "MULTIPLE_CHOICE": "Trắc nghiệm nhiều đáp án",
-        "TRUE_FALSE": "Đúng / Sai",
-        "FILL_IN_BLANK": "Điền vào chỗ trống",
-        "TYPE_ANSWER": "Nhập câu trả lời",
-        "MATCHING": "Nối",
-        "CLOZE": "Cloze",
-        "UNKNOWN": "Câu hỏi"
-      }
+        "TEXT_INPUT": "Viết câu trả lời",
+        "MULTI_TEXT_INPUT": "Điền nhiều chỗ trống"
+      },
+      "instructions": "Hướng dẫn:",
+      "referenceTranslation": "Bản dịch tham khảo:",
+      "answerPool": "Ngân hàng đáp án",
+      "questionCount": "Câu {current}/{total}",
+      "points": "{count} điểm",
+      "promptFallback": "Chọn câu trả lời phù hợp:",
+      "mediaAlt": "Hình ảnh câu hỏi",
+      "inputPlaceholder": "Nhập câu trả lời...",
+      "matchingLabel": "Chọn đáp án ghép nối",
+      "matchingPlaceholder": "— Chọn đáp án —",
+      "matchingPoolUnavailable": "Không tìm thấy Answer Pool (kiểm tra poolId / block POOL trong đề).",
+      "blankLabel": "Ô trống ({index}):",
+      "blankPlaceholder": "Nhập từ...",
+      "unsupportedFormat": "Giao diện chưa hỗ trợ loại câu hỏi ({type}).",
+      "sectionRoman": "PHẦN {index}",
+      "progressTitle": "Tiến độ làm bài",
+      "progressShort": "Tiến độ:",
+      "progressCount": "{answered} / {total} câu",
+      "completedCount": "Đã làm {answered} / {total} câu",
+      "questionList": "Danh sách câu hỏi",
+      "questionListMobile": "Danh sách câu hỏi di động",
+      "notCompleted": "Chưa hoàn thành",
+      "answered": "Đã có câu trả lời",
+      "closeProgress": "Đóng tiến độ làm bài"
     }
   }
 }

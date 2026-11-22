@@ -6,6 +6,7 @@ import { Activity, Flame, RefreshCw, Trophy, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { RegionState } from "@/components/feedback";
 import { PaperSurface } from "@/components/student-ui/paper-surface";
+import { ScrapbookHeading } from "@/components/student-ui/scrapbook-heading";
 import { StudentPageHeading } from "@/components/student-ui/patterns/student-page-heading";
 import { StudentIllustration } from "@/components/student-ui/visuals/student-illustration";
 import { StudentLeaderboardPodium } from "@/components/student-ui/student-leaderboard-podium";

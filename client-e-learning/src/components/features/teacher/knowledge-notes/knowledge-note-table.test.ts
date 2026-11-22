@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from "vitest";
-import { Editor } from "@tiptap/core";
+import { Editor, type JSONContent } from "@tiptap/core";
 import StarterKit from "@tiptap/starter-kit";
 import { createTable, validateKnowledgeDocument } from "./knowledge-note-document";
 import { KnowledgeTable, KnowledgeTableKit, KnowledgeTableShortcuts } from "./knowledge-note-table";
@@ -39,7 +39,7 @@ function makeEditor() {
 describe("Knowledge Note official Tiptap TableKit", () => {
   it("preserves the v2 comparison purpose and table JSON structure", () => {
     const editor = makeEditor();
-    const table = editor.getJSON().content?.find(node => node.type === "table");
+    const table = editor.getJSON().content?.find(node => node.type === "table") as JSONContent | undefined;
     expect(table?.attrs?.purpose).toBe("comparison");
     expect(table?.content?.[0].content?.length).toBe(3);
   });
@@ -50,7 +50,7 @@ describe("Knowledge Note official Tiptap TableKit", () => {
     expect(editor.chain().focus().addColumnAfter().run()).toBe(true);
     expect(editor.chain().focus().addRowAfter().run()).toBe(true);
     const json = editor.getJSON();
-    const table = json.content?.find(node => node.type === "table");
+    const table = json.content?.find(node => node.type === "table") as JSONContent | undefined;
     expect(table?.content?.length).toBe(4);
     expect(table?.content?.[0].content?.length).toBe(4);
     expect(() => validateKnowledgeDocument(json)).not.toThrow();
@@ -58,9 +58,9 @@ describe("Knowledge Note official Tiptap TableKit", () => {
 
   it("can change table purpose without changing the rows", () => {
     const editor = makeEditor();
-    const before = editor.getJSON().content?.find(node => node.type === "table");
+    const before = editor.getJSON().content?.find(node => node.type === "table") as JSONContent | undefined;
     expect(editor.chain().focus().updateAttributes("table", { purpose: "general" }).run()).toBe(true);
-    const after = editor.getJSON().content?.find(node => node.type === "table");
+    const after = editor.getJSON().content?.find(node => node.type === "table") as JSONContent | undefined;
     expect(after?.attrs?.purpose).toBe("general");
     expect(after?.content?.length).toBe(before?.content?.length);
   });

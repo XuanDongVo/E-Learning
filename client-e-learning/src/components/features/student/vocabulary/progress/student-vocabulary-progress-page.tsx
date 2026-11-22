@@ -231,8 +231,8 @@ function TreePanel({ tree }: { tree: VocabularyProgressTree }) {
               Hành trình của cây mai
             </DialogTitle>
             <DialogDescription>
-              Chọn mốc để xem cây phát triển. Mốc chưa đạt chỉ được xem thử
-              trong bản mock.
+              Chọn mốc để xem trước dạng cây mai tương ứng. Mốc chưa đạt chưa
+              được ghi nhận là tiến trình hiện tại.
             </DialogDescription>
           </DialogHeader>
           <div className="mx-auto w-full max-w-[350px]">

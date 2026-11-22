@@ -3,10 +3,9 @@
 import { useEffect, useState } from "react";
 import { Link, usePathname } from "@/i18n/navigation";
 import {
-  BarChart2,
+  Gamepad2,
   BookOpen,
   ClipboardList,
-  Gamepad2,
   GraduationCap,
   Home,
   LogOut,
@@ -21,19 +20,22 @@ import { useQuery } from "@tanstack/react-query";
 import { studentProfileService } from "@/services/student/student-profile.service";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/components/auth/auth-provider";
+import { useTranslations } from "next-intl";
+import { LocaleToggle } from "@/components/layout/locale-toggle";
 
 export const NAV_ITEMS = [
-  { label: "Home", href: "/student", icon: Home },
-  { label: "Learning", href: "/student/units", icon: BookOpen },
-  { label: "Vocabulary", href: "/student/vocabulary", icon: LibraryBig },
-  { label: "Kiến thức", href: "/student/knowledge", icon: BookMarked },
-  { label: "Assignments", href: "/student/assignments", icon: ClipboardList },
-  { label: "Game", href: "/student/game", icon: Gamepad2 },
-  { label: "Leaderboard", href: "/student/leaderboard", icon: Trophy },
+  { key: "studentHome", href: "/student", icon: Home },
+  { key: "studentLearning", href: "/student/units", icon: BookOpen },
+  { key: "studentVocabulary", href: "/student/vocabulary", icon: LibraryBig },
+  { key: "studentKnowledge", href: "/student/knowledge", icon: BookMarked },
+  { key: "studentAssignments", href: "/student/assignments", icon: ClipboardList },
+  { key: "studentGame", href: "/student/game", icon: Gamepad2 },
+  { key: "studentLeaderboard", href: "/student/leaderboard", icon: Trophy },
 ];
 
 export function StudentNavbar() {
   const pathname = usePathname();
+  const t = useTranslations("navigation");
   const { user, logout } = useAuth();
   const [open, setOpen] = useState(false);
   const ownProfile = useQuery({
@@ -48,9 +50,6 @@ export function StudentNavbar() {
   const avatarUrl = avatarMatch
     ? `https://api.dicebear.com/9.x/${avatarMatch[1]}/svg?seed=${encodeURIComponent(avatarMatch[2])}`
     : undefined;
-
-  // Đóng menu khi đổi trang
-  useEffect(() => setOpen(false), [pathname]);
 
   // Khoá cuộn trang + phím Esc khi menu mobile mở
   useEffect(() => {
@@ -113,7 +112,7 @@ export function StudentNavbar() {
                   )}
                 >
                   <Icon className="h-4 w-4 shrink-0" />
-                  <span>{item.label}</span>
+                  <span>{t(item.key)}</span>
                 </Link>
               );
             })}
@@ -121,6 +120,7 @@ export function StudentNavbar() {
 
           {/* Desktop user */}
           <div className="ml-auto hidden items-center gap-2 xl:flex">
+            <LocaleToggle />
             <Link
               href="/student/profile"
               className="flex items-center gap-2.5 rounded-full py-1 pl-1 pr-3 transition-colors hover:bg-background-app"
@@ -160,6 +160,9 @@ export function StudentNavbar() {
           >
             <Menu className="h-5 w-5" />
           </button>
+          <div className="xl:hidden">
+            <LocaleToggle />
+          </div>
         </div>
       </header>
 
@@ -213,6 +216,7 @@ export function StudentNavbar() {
                 <Link
                   key={item.href}
                   href={item.href}
+                  onClick={() => setOpen(false)}
                   aria-current={active ? "page" : undefined}
                   className={cn(
                     "student-nav-item flex min-h-12 items-center gap-3 rounded-lg px-4 text-sm font-semibold transition-colors",
@@ -222,7 +226,7 @@ export function StudentNavbar() {
                   )}
                 >
                   <Icon className="h-5 w-5 shrink-0" />
-                  <span>{item.label}</span>
+                  <span>{t(item.key)}</span>
                 </Link>
               );
             })}
@@ -231,6 +235,7 @@ export function StudentNavbar() {
           <div className="flex items-center border-t border-border-color p-3">
             <Link
               href="/student/profile"
+              onClick={() => setOpen(false)}
               className="flex min-w-0 flex-1 items-center gap-3 rounded-lg p-2 hover:bg-background-app"
             >
               <Avatar className="h-10 w-10 shrink-0">

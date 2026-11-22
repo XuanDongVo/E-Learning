@@ -72,6 +72,7 @@ From the repository root, after Spring Boot has successfully migrated a **dispos
 
 ```powershell
 $env:PGURL = "postgresql://postgres:123456@localhost:5432/e_learning"
+$env:PGCLIENTENCODING = "UTF8"
 
 $root = "server/src/test/resources/db/seed/grade7"
 $files = @(
@@ -103,6 +104,7 @@ Use **only a dedicated dev/test database** where the original 55 fixture account
 
 ```powershell
 $env:PGURL = "postgresql://postgres:YOUR_DEV_PASSWORD@localhost:5432/e_learning_dev"
+$env:PGCLIENTENCODING = "UTF8"
 $root = "server/src/test/resources/db/seed/grade7"
 $files = @(
   "05_gamification_xp.sql",

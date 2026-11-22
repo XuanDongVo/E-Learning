@@ -4,7 +4,7 @@ import { Link } from "@/i18n/navigation";
 import { useMemo, useState } from "react";
 import { ArrowLeft, BarChart3, CheckCircle2, Clock, Lock } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import type { AttemptResultResponse } from "@/types/student/assignment-attempt";
 import { cn } from "@/lib/utils";
 import { StudentMascotScene } from "@/components/student-ui/visuals/pipo/student-mascot-scene";
@@ -44,8 +44,8 @@ export function StudentResultView({
     activeFilter === "all"
       ? questions
       : questions.filter(
-          (question) => mapStatus(question.status) === activeFilter,
-        );
+        (question) => mapStatus(question.status) === activeFilter,
+      );
   const answeredCount = questions.length - counts.UNANSWERED;
   const title = result?.assignmentTitle ?? assignmentTitle ?? t("result.title");
   const timedOut = result?.status === "TIMED_OUT";

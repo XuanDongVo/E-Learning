@@ -1055,9 +1055,9 @@ export function BubblePopGame({
         />
 
         {/* Bottom Tip Guidance */}
-        <div className="pointer-events-none absolute bottom-2 left-0 right-0 z-20 flex items-center justify-center gap-2 text-xs font-semibold text-slate-400/90">
-          <Sparkles className="h-3.5 w-3.5 text-cyan-400" />
-          <span>Trỏ chuột vào bóng để khóa mục tiêu chính xác • Bắn sai sẽ hiện đáp án đúng để học</span>
+        <div className="pointer-events-none absolute bottom-2 left-0 right-0 z-20 flex items-center justify-center gap-2 px-3 text-center text-[11px] sm:text-xs font-semibold text-slate-300/80">
+          <Sparkles className="h-3.5 w-3.5 text-cyan-400 shrink-0" />
+          <span>Chạm vào bóng (hoặc di chuột &amp; phím Space) để bắn • Tự động hiện đáp án chuẩn nếu bắn sai</span>
         </div>
       </div>
 

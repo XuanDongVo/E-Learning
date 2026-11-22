@@ -49,8 +49,8 @@ export function StudentResultView({
     activeFilter === "all"
       ? questions
       : questions.filter(
-          (question) => mapStatus(question.status) === activeFilter,
-        );
+        (question) => mapStatus(question.status) === activeFilter,
+      );
   const answeredCount = questions.length - counts.UNANSWERED;
   const title = result?.assignmentTitle ?? assignmentTitle ?? t("result.title");
   const timedOut = result?.status === "TIMED_OUT";

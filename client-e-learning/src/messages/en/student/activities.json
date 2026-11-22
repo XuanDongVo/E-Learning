@@ -178,5 +178,72 @@
       "lifetime": "Lifetime XP",
       "abandonedHint": "Unfinished sessions do not add provisional XP to your account."
     }
+  },
+  "runtime": {
+    "dialogs": {
+      "leaveTitle": "Leave this activity?",
+      "leaveDescription": "Your current practice session will not be saved or resumed. Are you sure you want to leave?",
+      "continue": "Keep practicing",
+      "leaving": "Leaving...",
+      "confirmLeave": "Leave activity"
+    },
+    "header": {
+      "leaving": "Leaving…",
+      "leavingAria": "Leaving",
+      "back": "Back",
+      "progress": "Practice progress",
+      "hinting": "Opening hint…",
+      "hint": "Hint",
+      "lives": "{count, plural, one {# life left} other {# lives left}}",
+      "correctCount": "Correct answers",
+      "help": "View help",
+      "settings": "Activity settings"
+    },
+    "footer": {
+      "retry": "Retry",
+      "check": "Check",
+      "previous": "Previous",
+      "reset": "Reset",
+      "submitting": "Submitting…",
+      "submit": "Submit",
+      "timeoutPending": "Resolving timeout…",
+      "checking": "Checking…",
+      "results": "View results",
+      "complete": "Finish",
+      "next": "Next"
+    },
+    "guided": {
+      "stepInput": "Your answer",
+      "stepPlaceholder": "Enter your answer",
+      "finalInput": "Final answer",
+      "finalPlaceholder": "Enter your answer",
+      "stepHint": "Hint: {hint}",
+      "finalHint": "Final hint: {hint}",
+      "hint": "Hint",
+      "finalHintButton": "Final hint",
+      "retry": "Try again",
+      "continue": "Continue",
+      "submitStep": "Submit answer",
+      "submitFinal": "Submit final answer"
+    },
+    "submitDialog": {
+      "close": "Close",
+      "title": "Submit now?",
+      "unanswered": "You have {count} unanswered questions. These will be skipped upon submission.",
+      "allAnswered": "You've answered every question. Submit to see your results.",
+      "unchecked": " The current unverified answer will not count.",
+      "answered": "Answered",
+      "notAnswered": "Unanswered",
+      "continue": "Continue practicing",
+      "pending": "Submitting…",
+      "confirm": "Confirm submission"
+    },
+    "hint": {
+      "title": "Hint from Việt Cường",
+      "close": "Close hint",
+      "slow": "The server is responding slowly. Your answer is still preserved.",
+      "loading": "Getting hint…",
+      "retry": "Retry"
+    }
   }
 }

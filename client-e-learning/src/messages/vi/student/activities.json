@@ -178,5 +178,72 @@
       "lifetime": "Tổng XP tích lũy",
       "abandonedHint": "Lượt bỏ dở không chuyển XP tạm tính vào tài khoản."
     }
+  },
+  "runtime": {
+    "dialogs": {
+      "leaveTitle": "Rời khỏi hoạt động?",
+      "leaveDescription": "Lượt luyện tập hiện tại sẽ không được lưu hoặc tiếp tục. Bạn có chắc chắn muốn rời khỏi hoạt động?",
+      "continue": "Tiếp tục làm bài",
+      "leaving": "Đang thoát...",
+      "confirmLeave": "Xác nhận rời"
+    },
+    "header": {
+      "leaving": "Đang thoát…",
+      "leavingAria": "Đang thoát",
+      "back": "Quay lại",
+      "progress": "Tiến độ luyện tập",
+      "hinting": "Đang mở gợi ý…",
+      "hint": "Gợi ý",
+      "lives": "Còn {count} mạng",
+      "correctCount": "Số câu trả lời đúng",
+      "help": "Xem trợ giúp",
+      "settings": "Cài đặt hoạt động"
+    },
+    "footer": {
+      "retry": "Thử lại",
+      "check": "Kiểm tra",
+      "previous": "Câu trước",
+      "reset": "Làm lại",
+      "submitting": "Đang nộp…",
+      "submit": "Nộp bài",
+      "timeoutPending": "Đang xử lý hết giờ…",
+      "checking": "Đang kiểm tra…",
+      "results": "Xem kết quả",
+      "complete": "Hoàn thành",
+      "next": "Câu tiếp"
+    },
+    "guided": {
+      "stepInput": "Câu trả lời của bạn",
+      "stepPlaceholder": "Nhập câu trả lời",
+      "finalInput": "Đáp án cuối cùng",
+      "finalPlaceholder": "Nhập đáp án",
+      "stepHint": "Gợi ý: {hint}",
+      "finalHint": "Gợi ý Final: {hint}",
+      "hint": "Gợi ý",
+      "finalHintButton": "Gợi ý Final",
+      "retry": "Thử lại ngay",
+      "continue": "Tiếp tục ngay",
+      "submitStep": "Gửi câu trả lời",
+      "submitFinal": "Gửi đáp án"
+    },
+    "submitDialog": {
+      "close": "Đóng",
+      "title": "Nộp bài ngay?",
+      "unanswered": "Em còn {count} câu chưa trả lời. Các câu này sẽ được tính là bỏ qua khi nộp bài.",
+      "allAnswered": "Em đã trả lời tất cả các câu. Nộp bài để xem kết quả nhé!",
+      "unchecked": " Câu đang chọn chưa được kiểm tra sẽ không được tính.",
+      "answered": "Đã trả lời",
+      "notAnswered": "Chưa trả lời",
+      "continue": "Tiếp tục làm bài",
+      "pending": "Đang nộp…",
+      "confirm": "Xác nhận nộp bài"
+    },
+    "hint": {
+      "title": "Gợi ý từ Việt Cường",
+      "close": "Đóng gợi ý",
+      "slow": "Máy chủ phản hồi chậm, bạn vui lòng chờ thêm chút… Đáp án của bạn vẫn được giữ nguyên.",
+      "loading": "Đang lấy gợi ý…",
+      "retry": "Thử lại"
+    }
   }
 }

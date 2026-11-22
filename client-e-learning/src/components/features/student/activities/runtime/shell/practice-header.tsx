@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+
 import {
   ArrowLeft,
   CircleHelp,
@@ -18,6 +20,7 @@ export function PracticeHeader({
 }: {
   controller: PracticeController;
 }) {
+  const t = useTranslations("student.activities.runtime.header");
   const {
     complete,
     finish,
@@ -40,19 +43,19 @@ export function PracticeHeader({
       <Button
         variant="outline"
         className={`${quietButton} size-11 shrink-0 px-0 sm:w-auto sm:px-3`}
-        aria-label={finish.isPending ? "Đang thoát" : "Quay lại"}
+        aria-label={finish.isPending ? t("leavingAria") : t("back")}
         onClick={leave}
         disabled={finish.isPending}
       >
         <ArrowLeft size={16} />
         <span className="hidden sm:inline">
-          {finish.isPending ? "Đang thoát…" : "Quay lại"}
+          {finish.isPending ? t("leaving") : t("back")}
         </span>
       </Button>
       <div
         className="h-2.5 min-w-14 flex-1 overflow-hidden rounded-full bg-primary-foreground/25"
         role="progressbar"
-        aria-label="Tiến độ luyện tập"
+        aria-label={t("progress")}
         aria-valuenow={index + 1}
         aria-valuemin={0}
         aria-valuemax={questions.length}
@@ -73,7 +76,7 @@ export function PracticeHeader({
         >
           <Lightbulb size={16} />
           <span className={hinting ? "" : "hidden sm:inline"}>
-            {hinting ? "Đang mở gợi ý…" : "Gợi ý"}
+            {hinting ? t("hinting") : t("hint")}
           </span>
         </Button>
       ) : null}
@@ -88,7 +91,7 @@ export function PracticeHeader({
           ) : null}
           <span
             className="flex items-center gap-1"
-            aria-label={`Còn ${session.lives ?? 0} mạng`}
+            aria-label={t("lives", { count: session.lives ?? 0 })}
           >
             <Heart size={14} className="fill-current" /> {session.lives ?? 0}
           </span>
@@ -96,7 +99,7 @@ export function PracticeHeader({
       ) : null}
       <span
         className="grid size-10 shrink-0 place-items-center rounded-full border-2 border-accent bg-foreground/25 text-lg font-extrabold text-primary-foreground ring-3 ring-foreground/40 sm:size-11"
-        title="Số câu trả lời đúng"
+        title={t("correctCount")}
       >
         {session.finalCorrectCount}
       </span>
@@ -104,7 +107,7 @@ export function PracticeHeader({
         variant="outline"
         size="icon"
         className={`${quietButton} hidden size-8 sm:inline-flex`}
-        aria-label="Xem trợ giúp"
+        aria-label={t("help")}
         onClick={() => setSettings(true)}
       >
         <CircleHelp size={16} />
@@ -113,7 +116,7 @@ export function PracticeHeader({
         variant="outline"
         size="icon"
         className={`${quietButton} size-11 shrink-0 outline-2 outline-offset-[3px] outline-primary-foreground/65`}
-        aria-label="Cài đặt trò chơi"
+        aria-label={t("settings")}
         onClick={() => setSettings(true)}
       >
         <SlidersHorizontal size={19} />

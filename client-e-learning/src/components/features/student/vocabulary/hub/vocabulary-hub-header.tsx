@@ -40,7 +40,7 @@ export function VocabularyHubHeader({
         aria-label={t("tablist")}
         className="student-vocab-hub-tabs inline-flex min-w-0 items-center justify-center gap-1 p-1"
       >
-        {TAB_ITEMS.map(({ key, label, icon: Icon }) => {
+        {TAB_ITEMS.map(({ key, icon: Icon }) => {
           const isActive = currentTab === key;
 
           return (

@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+
 import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { BookOpen } from "lucide-react";
@@ -26,6 +28,7 @@ export function StudentVocabularyHub({
   unitId: number;
   initialTab?: HubTab;
 }) {
+  const t = useTranslations("student.vocabulary.hub");
   const [tab, setTab] = useState<HubTab>(initialTab);
   const [nowMs, setNowMs] = useState(() => Date.now());
 
@@ -75,17 +78,17 @@ export function StudentVocabularyHub({
 
 
 
-  if (!validUnitId) return <FullPageState variant="error" title="Unit không hợp lệ" />;
+  if (!validUnitId) return <FullPageState variant="error" title={t("invalidUnit")} />;
   if (cardsQuery.isLoading )
-    return <FullPageState variant="loading" title="Đang mở sổ từ vựng" />;
+    return <FullPageState variant="loading" title={t("loadingUnit")} />;
 
   if (cardsQuery.isError ) {
     const error = cardsQuery.error ;
     return (
       <PaperSurface as="section" className="space-y-3 p-6">
-        <h1 className="student-card-title text-foreground">Không mở được sổ từ vựng</h1>
+        <h1 className="student-card-title text-foreground">{t("loadError")}</h1>
         <p role="alert" className="student-body text-destructive">
-          {error instanceof Error ? error.message : "Vui lòng thử lại sau."}
+          {error instanceof Error ? error.message : t("genericError")}
         </p>
         <button
           type="button"
@@ -95,7 +98,7 @@ export function StudentVocabularyHub({
             // void unitQuery.refetch();
           }}
         >
-          Thử lại
+          {t("retry")}
         </button>
       </PaperSurface>
     );
@@ -112,8 +115,8 @@ export function StudentVocabularyHub({
       {cards.length === 0 && tab !== "games" && (
         <PaperSurface className="space-y-2 p-8 text-center">
           <BookOpen className="mx-auto size-8 text-primary" aria-hidden="true" />
-          <h2 className="student-card-title text-foreground">Unit này chưa có từ vựng đang dùng</h2>
-          <p className="student-body text-muted-foreground">Hãy quay lại khi giáo viên cập nhật bộ từ nhé.</p>
+          <h2 className="student-card-title text-foreground">{t("emptyTitle")}</h2>
+          <p className="student-body text-muted-foreground">{t("emptyText")}</p>
         </PaperSurface>
       )}
 

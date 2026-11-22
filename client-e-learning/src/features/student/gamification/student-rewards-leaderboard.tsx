@@ -1,5 +1,7 @@
 "use client";
 
+import { useLocale, useTranslations } from "next-intl";
+
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Activity, Flame, RefreshCw, Trophy, Zap } from "lucide-react";
@@ -20,26 +22,24 @@ import type {
 
 const INITIAL_VISIBLE_RANKINGS = 10;
 
-const PERIODS: { key: LeaderboardPeriod; text: string }[] = [
-  { key: "TODAY", text: "Hôm nay" },
-  { key: "WEEK", text: "Tuần này" },
-  { key: "MONTH", text: "Tháng này" },
-  { key: "ALL", text: "Tất cả" },
-];
+const PERIODS: LeaderboardPeriod[] = ["TODAY", "WEEK", "MONTH", "ALL"];
 
 function RankingValue({ entry, metric }: { entry: LeaderboardRanking; metric: LeaderboardMetric }) {
+  const t = useTranslations("student.leaderboard");
+  const locale = useLocale();
   return (
     <span className="student-label tabular-nums text-foreground">
-      {entry.value.toLocaleString("vi-VN")} {metric === "XP" ? "XP" : "ngày"}
+      {metric === "XP" ? `${entry.value.toLocaleString(locale)} XP` : t("days", { count: entry.value })}
     </span>
   );
 }
 
 function RankRow({ entry, metric }: { entry: LeaderboardRanking; metric: LeaderboardMetric }) {
+  const t = useTranslations("student.leaderboard");
   return (
     <div
       role="row"
-      aria-label={entry.currentStudent ? `Vị trí ${entry.rank} của bạn` : undefined}
+      aria-label={entry.currentStudent ? t("yourRankAria", { rank: entry.rank }) : undefined}
       className={cn("student-ranking-row", entry.currentStudent && "student-ranking-row--current")}
     >
       <span role="cell" className="student-meta tabular-nums text-muted-foreground">
@@ -49,11 +49,11 @@ function RankRow({ entry, metric }: { entry: LeaderboardRanking; metric: Leaderb
         <StudentAvatar className="student-ranking-avatar" fullName={entry.fullName} avatarKey={entry.avatarKey} />
         <span className="min-w-0">
           <span className="student-label block truncate text-foreground">{entry.fullName}</span>
-          {entry.currentStudent && <span className="student-meta text-primary">Bạn</span>}
+          {entry.currentStudent && <span className="student-meta text-primary">{t("you")}</span>}
         </span>
       </span>
       <span role="cell" className="student-meta hidden text-muted-foreground sm:block">
-        Level {entry.level}
+        {t("level", { level: entry.level })}
       </span>
       <span role="cell" className="text-right">
         <RankingValue entry={entry} metric={metric} />
@@ -70,9 +70,11 @@ function HonorCard({
 }: {
   title: string;
   entry: LeaderboardRanking;
-  unit: string;
+  unit: "XP" | "days";
   icon: typeof Trophy;
 }) {
+  const t = useTranslations("student.leaderboard");
+  const locale = useLocale();
   return (
     <PaperSurface className="student-honor-card flex items-center justify-between gap-4 p-4">
       <div className="flex min-w-0 items-center gap-3">
@@ -81,7 +83,7 @@ function HonorCard({
           <p className="student-meta text-primary">{title}</p>
           <p className="student-label truncate text-foreground">{entry.fullName}</p>
           <p className="student-meta text-muted-foreground">
-            {entry.value.toLocaleString("vi-VN")} {unit}
+            {unit === "XP" ? `${entry.value.toLocaleString(locale)} XP` : t("days", { count: entry.value })}
           </p>
         </div>
       </div>
@@ -93,6 +95,7 @@ function HonorCard({
 }
 
 export function StudentRewardsLeaderboard() {
+  const t = useTranslations("student.leaderboard");
   const [metric, setMetric] = useState<LeaderboardMetric>("XP");
   const [period, setPeriod] = useState<LeaderboardPeriod>("TODAY");
   const [showAllRankings, setShowAllRankings] = useState(false);
@@ -125,10 +128,10 @@ export function StudentRewardsLeaderboard() {
     <section aria-labelledby="leaderboard-page-title" className="student-rewards space-y-6 pb-8">
       <PaperSurface as="section" variant="kraft" tape tapePosition="right" className="student-rewards-hero">
         <StudentPageHeading
-          eyebrow="CỘNG ĐỒNG HỌC TẬP"
+          eyebrow={t("hero.eyebrow")}
           titleId="leaderboard-page-title"
-          title={<>Bảng <span className="student-highlight">xếp hạng</span></>}
-          description="Top 50 học viên theo XP và Streak được ghi nhận bởi hệ thống học tập."
+          title={<>{t("hero.prefix")} <span className="student-highlight">{t("hero.highlight")}</span></>}
+          description={t("hero.description")}
           artwork={<StudentIllustration id="illustration.leaderboard-podium" decorative className="w-36 lg:w-48" />}
           artworkClassName="hidden sm:block"
           className="w-full"
@@ -138,7 +141,7 @@ export function StudentRewardsLeaderboard() {
       <div className="student-rewards-layout">
         <div className="min-w-0 space-y-4">
           <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
-            <div role="group" aria-label="Loại xếp hạng" className="student-filter-group">
+            <div role="group" aria-label={t("metricLabel")} className="student-filter-group">
               {(["XP", "STREAK"] as const).map((value) => (
                 <button
                   key={value}
@@ -150,13 +153,13 @@ export function StudentRewardsLeaderboard() {
                   }}
                   className={cn("student-control px-5", metric === value ? "student-filter-active" : "student-control--quiet")}
                 >
-                  {value === "XP" ? "XP" : "Streak"}
+                  {value === "XP" ? "XP" : t("streak")}
                 </button>
               ))}
             </div>
             {metric === "XP" && (
-              <div role="group" aria-label="Khoảng thời gian XP" className="student-period-group">
-                {PERIODS.map(({ key, text }) => (
+              <div role="group" aria-label={t("periodLabel")} className="student-period-group">
+                {PERIODS.map((key) => (
                   <button
                     key={key}
                     type="button"
@@ -167,7 +170,7 @@ export function StudentRewardsLeaderboard() {
                     }}
                     className={cn("student-control px-3", period === key ? "student-filter-active" : "student-control--quiet")}
                   >
-                    {text}
+                    {t(`periods.${key}`)}
                   </button>
                 ))}
               </div>
@@ -175,20 +178,20 @@ export function StudentRewardsLeaderboard() {
           </div>
 
           {ranking.isPending ? (
-            <RegionState variant="loading" title="Đang tải bảng xếp hạng" />
+            <RegionState variant="loading" title={t("loading")} />
           ) : ranking.isError || !data ? (
             <RegionState
               variant="error"
-              title="Chưa thể tải bảng xếp hạng"
-              description="Hãy thử lại."
+              title={t("loadError")}
+              description={t("tryAgain")}
               action={
                 <button type="button" onClick={() => void ranking.refetch()} className="student-control student-control--action">
-                  <RefreshCw className="h-4 w-4" aria-hidden="true" /> Thử lại
+                  <RefreshCw className="h-4 w-4" aria-hidden="true" /> {t("retry")}
                 </button>
               }
             />
           ) : data.top.length === 0 ? (
-            <RegionState variant="empty" title="Chưa có học viên nào được xếp hạng" />
+            <RegionState variant="empty" title={t("empty")} />
           ) : (
             <>
               <PaperSurface as="section" variant="lined" className="overflow-hidden">
@@ -196,14 +199,14 @@ export function StudentRewardsLeaderboard() {
                   <StudentLeaderboardPodium entries={data.top.slice(0, 3)} metric={metric} />
                 </div>
                 <h2 className="student-card-title border-t-2 border-ink px-4 py-3 text-foreground">
-                  Danh sách Top {showAllRankings ? totalRankings : visibleRankings.length}
+                  {t("topList", { count: showAllRankings ? totalRankings : visibleRankings.length })}
                 </h2>
-                <div role="table" aria-label="Bảng xếp hạng học viên">
+                <div role="table" aria-label={t("tableLabel")}>
                   <div role="row" className="student-ranking-row student-ranking-header">
-                    <span role="columnheader">Hạng</span>
-                    <span role="columnheader">Học viên</span>
-                    <span role="columnheader" className="hidden sm:block">Level</span>
-                    <span role="columnheader" className="text-right">{metric === "XP" ? "XP" : "Streak"}</span>
+                    <span role="columnheader">{t("rank")}</span>
+                    <span role="columnheader">{t("student")}</span>
+                    <span role="columnheader" className="hidden sm:block">{t("levelHeader")}</span>
+                    <span role="columnheader" className="text-right">{metric === "XP" ? "XP" : t("streak")}</span>
                   </div>
                   {visibleRankings.map((entry) => (
                     <RankRow key={entry.studentId} entry={entry} metric={metric} />
@@ -217,19 +220,19 @@ export function StudentRewardsLeaderboard() {
                     className="student-control student-control--quiet flex min-h-11 w-full items-center justify-center border-t-2 border-ink px-4 py-3 text-center"
                   >
                     {showAllRankings
-                      ? "Thu gọn về Top 10"
-                      : `Hiển thị thêm ${hiddenRankingsCount} người`}
+                      ? t("collapse")
+                      : t("expand", { count: hiddenRankingsCount })}
                   </button>
                 )}
               </PaperSurface>
 
               {selfOutside && (
-                <PaperSurface as="section" tape className="p-4" aria-label="Vị trí riêng của bạn">
-                  <p className="student-meta mb-2 text-primary">Vị trí của bạn · Ngoài Top 50</p>
+                <PaperSurface as="section" tape className="p-4" aria-label={t("outsideLabel")}>
+                  <p className="student-meta mb-2 text-primary">{t("outside")}</p>
                   <div className="flex items-center justify-between gap-3">
                     <div className="min-w-0">
                       <p className="student-label text-foreground">#{selfOutside.rank} · {selfOutside.fullName}</p>
-                      <p className="student-meta text-muted-foreground">Level {selfOutside.level}</p>
+                      <p className="student-meta text-muted-foreground">{t("level", { level: selfOutside.level })}</p>
                     </div>
                     <RankingValue entry={selfOutside} metric={metric} />
                   </div>
@@ -242,40 +245,40 @@ export function StudentRewardsLeaderboard() {
         <aside className="min-w-0 space-y-5">
           <section aria-labelledby="hall-of-fame-heading" className="space-y-3">
             <ScrapbookHeading as="h2" id="hall-of-fame-heading" className="student-section-title flex items-center gap-2 text-foreground">
-              <Trophy className="h-6 w-6 text-accent" aria-hidden="true" /> Đại sảnh danh vọng
+              <Trophy className="h-6 w-6 text-accent" aria-hidden="true" /> {t("honorsTitle")}
             </ScrapbookHeading>
             {honors.isPending ? (
-              <RegionState variant="loading" title="Đang tải danh hiệu" />
+              <RegionState variant="loading" title={t("honorsLoading")} />
             ) : honors.isError ? (
               <RegionState
                 variant="error"
-                title="Chưa thể tải danh hiệu"
-                action={<button type="button" onClick={() => void honors.refetch()} className="student-control student-control--quiet">Thử lại</button>}
+                title={t("honorsError")}
+                action={<button type="button" onClick={() => void honors.refetch()} className="student-control student-control--quiet">{t("retry")}</button>}
               />
             ) : !honorData?.xpChampion && !honorData?.streakChampion ? (
-              <RegionState variant="empty" title="Chưa có danh hiệu" />
+              <RegionState variant="empty" title={t("honorsEmpty")} />
             ) : (
               <>
-                {honorData.xpChampion && <HonorCard title="Bậc thầy tri thức" entry={honorData.xpChampion} unit="XP" icon={Trophy} />}
-                {honorData.streakChampion && <HonorCard title="Huyền thoại không nghỉ" entry={honorData.streakChampion} unit="ngày" icon={Flame} />}
+                {honorData.xpChampion && <HonorCard title={t("xpChampion")} entry={honorData.xpChampion} unit="XP" icon={Trophy} />}
+                {honorData.streakChampion && <HonorCard title={t("streakChampion")} entry={honorData.streakChampion} unit="days" icon={Flame} />}
               </>
             )}
           </section>
 
           <PaperSurface as="section" aria-labelledby="recent-activity-heading" className="p-4">
             <h2 id="recent-activity-heading" className="student-card-title mb-3 flex items-center gap-2 text-foreground">
-              <Activity className="h-5 w-5 text-learning" aria-hidden="true" /> Hoạt động học tập gần đây
+              <Activity className="h-5 w-5 text-learning" aria-hidden="true" /> {t("recentTitle")}
             </h2>
             {recent.isPending ? (
-              <RegionState variant="loading" title="Đang tải hoạt động" />
+              <RegionState variant="loading" title={t("recentLoading")} />
             ) : recent.isError ? (
               <RegionState
                 variant="error"
-                title="Chưa thể tải hoạt động"
-                action={<button type="button" onClick={() => void recent.refetch()} className="student-control student-control--quiet">Thử lại</button>}
+                title={t("recentError")}
+                action={<button type="button" onClick={() => void recent.refetch()} className="student-control student-control--quiet">{t("retry")}</button>}
               />
             ) : activities.length === 0 ? (
-              <p className="student-body text-muted-foreground">Chưa có hoạt động bài tập nào hoàn thành.</p>
+              <p className="student-body text-muted-foreground">{t("recentEmpty")}</p>
             ) : (
               <ul className="divide-y divide-border">
                 {activities.map((item) => (
@@ -283,7 +286,7 @@ export function StudentRewardsLeaderboard() {
                     <Zap className="mt-1 h-4 w-4 shrink-0 text-accent" aria-hidden="true" />
                     <p className="student-body min-w-0 flex-1 text-foreground">
                       <span className="font-bold">{item.fullName}</span>{" "}
-                      {item.status === "COMPLETED" ? "vừa hoàn thành" : "vừa kết thúc thử thách"}{" "}
+                      {item.status === "COMPLETED" ? t("recentCompleted") : t("recentEnded")}{" "}
                       <span className="font-semibold">{item.activityName}</span>.
                     </p>
                     {item.earnedXp != null && <span className="student-meta whitespace-nowrap text-primary">+{item.earnedXp} XP</span>}

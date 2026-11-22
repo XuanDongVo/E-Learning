@@ -1,6 +1,7 @@
 "use client";
 
 import { Link } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowDownRight, BookOpen, BookMarked, ChevronRight, ListTree, RotateCcw, Sparkles, Tag, Zap } from "lucide-react";
@@ -23,6 +24,7 @@ export interface UnitDetailViewProps {
 }
 
 export function UnitDetailView({ unitId }: UnitDetailViewProps) {
+  const tDetail = useTranslations("student.learning.detail");
   const [sectionId, setSectionId] = useState<Filter>("all");
   const [topicId, setTopicId] = useState<Filter>("all");
   const [knowledgeTopicId, setKnowledgeTopicId] = useState<number | null>(null);
@@ -43,7 +45,7 @@ export function UnitDetailView({ unitId }: UnitDetailViewProps) {
   // Validate against published Unit data; never trust an arbitrary URL id.
   useEffect(() => {
     if (!unit) return;
-    const raw = new URLSearchParams(window.location.search).get("topicId");
+    const raw = new URLSearchParams(window.location.search).getDetail("topicId");
     if (!raw || !/^[1-9]\d*$/.test(raw)) return;
     const selected = Number(raw);
     if (!Number.isSafeInteger(selected)) return;
@@ -104,7 +106,7 @@ export function UnitDetailView({ unitId }: UnitDetailViewProps) {
 
   // ─── Loading State ───
   if (isLoading) {
-    return <FullPageState variant="loading" title="Đang tải dữ liệu bài học" />;
+    return <FullPageState variant="loading" title={tDetail("loading")} />;
   }
 
   // ─── Error State ───
@@ -112,19 +114,19 @@ export function UnitDetailView({ unitId }: UnitDetailViewProps) {
     return (
       <FullPageState
         variant="error"
-        title="Không thể tải nội dung Unit này"
-        description={error?.message || "Đã xảy ra lỗi trong quá trình kết nối."}
+        title={tDetail("loadError")}
+        description={error?.message || tDetail("connectionError")}
         action={
           <div className="flex flex-wrap justify-center gap-3">
             <Button onClick={() => void refetch()}>
               <RotateCcw className="mr-1.5 h-4 w-4" />
-              Thử lại
+              {tDetail("retry")}
             </Button>
             <Link
               href="/student/units"
               className="student-control student-control--quiet inline-flex items-center px-4"
             >
-              Quay về danh sách
+              {tDetail("backToList")}
             </Link>
           </div>
         }
@@ -137,7 +139,7 @@ export function UnitDetailView({ unitId }: UnitDetailViewProps) {
 
   return (
     <div className="student-unit-detail space-y-6 pb-8">
-      <StudentBackLink href="/student/units">Tất cả bài học</StudentBackLink>
+      <StudentBackLink href="/student/units">{tDetail("allLessons")}</StudentBackLink>
 
       <PaperSurface as="section" variant="kraft" emphasis="feature" tape tapePosition="right"
         className="student-unit-detail-hero student-unit-detail-hero--editorial relative overflow-hidden">
@@ -157,14 +159,14 @@ export function UnitDetailView({ unitId }: UnitDetailViewProps) {
             </div>
             <span aria-hidden="true" className="student-unit-detail-hero__stamp">
               <Sparkles className="size-4" />
-              LET'S LEARN
+              {tDetail("stamp")}
             </span>
           </div>
 
           <div className="min-w-0 space-y-4">
             <p className="student-meta flex items-center gap-2 font-extrabold tracking-wide text-primary">
               <span aria-hidden="true" className="student-unit-detail-hero__eyebrow-dot" />
-              KHÁM PHÁ BÀI HỌC · UNIT {label}
+              {tDetail("eyebrow", { label })}
             </p>
 
             <div className="space-y-2.5">
@@ -172,33 +174,33 @@ export function UnitDetailView({ unitId }: UnitDetailViewProps) {
                 {unit.name}
               </ScrapbookHeading>
               <p className="student-body max-w-2xl text-muted-foreground">
-                {unit.description?.trim() || "Từng phần học nhỏ sẽ giúp bạn làm quen kiến thức và luyện tập theo nhịp của mình."}
+                {unit.description?.trim() || tDetail("intro")}
               </p>
             </div>
 
-            <div className="student-unit-detail-hero__facts flex flex-wrap gap-2" aria-label="Nội dung Unit">
+            <div className="student-unit-detail-hero__facts flex flex-wrap gap-2" aria-label={tDetail("facts")}>
               <span className="student-unit-detail-hero__fact">
                 <ListTree className="size-4" aria-hidden="true" />
-                <strong>{unit.sections.length}</strong> phần học
+                <strong>{unit.sections.length}</strong> {tDetail("sections")}
               </span>
               <span className="student-unit-detail-hero__fact">
                 <Tag className="size-4" aria-hidden="true" />
-                <strong>{topicCount}</strong> chủ đề
+                <strong>{topicCount}</strong> {tDetail("topics")}
               </span>
               <span className="student-unit-detail-hero__fact">
                 <BookOpen className="size-4" aria-hidden="true" />
-                <strong>{unit.activities.length}</strong> hoạt động
+                <strong>{unit.activities.length}</strong> {tDetail("activities")}
               </span>
             </div>
 
             <div className="flex flex-wrap items-center gap-3 pt-1">
               <a href="#unit-activities"
                 className="student-control student-control--action inline-flex items-center gap-2 px-4 no-underline">
-                Xem hoạt động <ArrowDownRight className="size-4" aria-hidden="true" />
+                {tDetail("viewActivities")} <ArrowDownRight className="size-4" aria-hidden="true" />
               </a>
               <Link href={`/student/vocabulary/units/${unit.id}`}
                 className="student-control student-control--quiet inline-flex items-center gap-2 px-4 no-underline">
-                Sổ từ vựng <ChevronRight className="size-4" aria-hidden="true" />
+                {tDetail("vocabulary")} <ChevronRight className="size-4" aria-hidden="true" />
               </Link>
             </div>
           </div>
@@ -210,16 +212,16 @@ export function UnitDetailView({ unitId }: UnitDetailViewProps) {
           <div className="space-y-1">
             <h2 className="student-card-title flex items-center gap-2 text-foreground">
               <BookMarked className="h-5 w-5 text-primary" aria-hidden="true" />
-              Bộ từ vựng Unit {label}
+              {tDetail("vocabularyTitle", { label })}
             </h2>
             <p className="student-body text-muted-foreground">
-              Xem và luyện bộ từ này trong Sổ tay từ vựng riêng.
+              {tDetail("vocabularyIntro")}
             </p>
           </div>
         </div>
         <Link href={`/student/vocabulary/units/${unit.id}`}
           className="student-control student-control--secondary inline-flex shrink-0 items-center justify-center gap-2 px-5">
-          Mở bộ từ <ChevronRight className="size-4" aria-hidden="true" />
+          {tDetail("openVocabulary")} <ChevronRight className="size-4" aria-hidden="true" />
         </Link>
       </div>
 
@@ -228,22 +230,22 @@ export function UnitDetailView({ unitId }: UnitDetailViewProps) {
       <section id="unit-knowledge" aria-labelledby="unit-knowledge-heading" className="scroll-mt-24 space-y-3">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="space-y-1">
-            <p className="student-meta text-primary">ĐỌC TRƯỚC KHI LUYỆN TẬP</p>
+            <p className="student-meta text-primary">{tDetail("knowledgeEyebrow")}</p>
             <ScrapbookHeading as="h2" id="unit-knowledge-heading" className="student-section-title text-foreground">
-              Sổ tay kiến thức của Unit
+              {tDetail("knowledgeTitle")}
             </ScrapbookHeading>
             <p className="student-body text-muted-foreground">
-              Chọn chủ đề để xem công thức và ghi nhớ nhanh, hoặc mở toàn bộ bài lý thuyết.
+              {tDetail("knowledgeIntro")}
             </p>
           </div>
           <Link href="/student/knowledge"
             className="student-control student-control--quiet inline-flex min-h-11 items-center gap-2 px-4">
-            Mở thư viện <ChevronRight className="size-4" aria-hidden="true" />
+            {tDetail("openLibrary")} <ChevronRight className="size-4" aria-hidden="true" />
           </Link>
         </div>
         {availableKnowledgeTopics.length ? (
           <>
-            <div className="flex flex-wrap gap-2" role="group" aria-label="Chọn Topic để xem nhanh kiến thức">
+            <div className="flex flex-wrap gap-2" role="group" aria-label={tDetail("selectKnowledgeTopic")}>
               {availableKnowledgeTopics.map(item => (
                 <button key={item.id} type="button"
                   aria-pressed={activeKnowledgeTopicId === item.id}
@@ -260,10 +262,10 @@ export function UnitDetailView({ unitId }: UnitDetailViewProps) {
         ) : (
           <PaperSurface as="section" className="space-y-2 p-4 sm:p-5">
             <p className="student-body text-muted-foreground">
-              Unit này chưa có Topic được công bố để liên kết bài lý thuyết.
+              {tDetail("noPublishedTopics")}
             </p>
             <Link href="/student/knowledge" className="student-label text-primary underline underline-offset-4">
-              Xem các bài trong Sổ tay kiến thức
+              {tDetail("seeKnowledge")}
             </Link>
           </PaperSurface>
         )}
@@ -271,10 +273,10 @@ export function UnitDetailView({ unitId }: UnitDetailViewProps) {
 
       <div className="space-y-3">
         <ScrapbookHeading as="h2" className="student-section-title text-foreground">
-          Chọn phần học
+          {tDetail("chooseSection")}
         </ScrapbookHeading>
 
-        <div className="flex flex-wrap gap-2.5" role="group" aria-label="Sections">
+        <div className="flex flex-wrap gap-2.5" role="group" aria-label={tDetail("sectionsGroup")}>
           {/* Nút Overview */}
           <button
             type="button"
@@ -286,7 +288,7 @@ export function UnitDetailView({ unitId }: UnitDetailViewProps) {
                 : "student-control--quiet"
             }`}
           >
-            <span>Tất cả</span>
+            <span>{tDetail("all")}</span>
             <span
               className={`student-filter-count ${
                 sectionId === "all"
@@ -334,11 +336,11 @@ export function UnitDetailView({ unitId }: UnitDetailViewProps) {
         <div
           className="student-soft-panel flex flex-wrap items-center gap-2 p-3"
           role="group"
-          aria-label="Topics"
+          aria-label={tDetail("topicsGroup")}
         >
           <span className="student-label inline-flex items-center gap-1 text-muted-foreground">
             <Tag className="h-4 w-4" />
-            Chủ đề:
+            {tDetail("topic")}
           </span>
 
           {(["all", ...selectedSection.topics] as const).map((t) => {
@@ -359,7 +361,7 @@ export function UnitDetailView({ unitId }: UnitDetailViewProps) {
                     : "student-control--quiet"
                 }`}
               >
-                {t === "all" ? "Tất cả chủ đề" : t.name}
+                {t === "all" ? tDetail("allTopics") : t.name}
               </button>
             );
           })}
@@ -372,10 +374,10 @@ export function UnitDetailView({ unitId }: UnitDetailViewProps) {
           <div className="flex items-center gap-2">
             <Zap className="h-5 w-5 text-warning" />
             <h2 className="student-card-title text-foreground">
-              {selectedSection ? `${selectedSection.name}` : "Tất cả hoạt động"}
+              {selectedSection ? `${selectedSection.name}` : tDetail("allActivities")}
             </h2>
             <span className="student-chip text-muted-foreground">
-              {visible.length} bài
+              {tDetail("activityCount", { count: visible.length })}
             </span>
           </div>
         </div>
@@ -384,10 +386,10 @@ export function UnitDetailView({ unitId }: UnitDetailViewProps) {
           <PaperSurface className="flex flex-col items-center justify-center gap-2 p-8 text-center">
             <BookOpen className="h-8 w-8 text-learning" aria-hidden="true" />
             <p className="student-card-title text-foreground">
-              Chưa có hoạt động nào trong phần này
+              {tDetail("noActivities")}
             </p>
             <p className="student-body max-w-md text-muted-foreground">
-              Giáo viên chưa cập nhật hoạt động cho chủ đề đã chọn. Bạn hãy thử chọn chủ đề khác nhé!
+              {tDetail("noActivitiesIntro")}
             </p>
           </PaperSurface>
         ) : (

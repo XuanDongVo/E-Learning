@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowRight, BookOpen, ClipboardList, RefreshCw, Star } from "lucide-react";
 import { Link } from "@/i18n/navigation";
@@ -19,6 +20,7 @@ import { SkeletonList } from "@/components/ui/skeleton/skeleton-list";
 import { getVocabularyTopicVisual } from "@/components/features/student/units/unit-cover";
 
 export function LearningHubHome() {
+  const t = useTranslations("student.dashboard");
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: QUERY_KEYS.units,
     queryFn: studentUnitService.list,
@@ -35,11 +37,11 @@ export function LearningHubHome() {
         <div className="relative z-10 max-w-2xl space-y-3 md:col-span-2 md:space-y-4">
           <p className="student-meta inline-flex items-center gap-2 text-foreground">
             <Star className="h-4 w-4 text-primary" aria-hidden="true" />
-            NHẬT KÝ HỌC TẬP / LEARNUP
+            {t("eyebrow")}
           </p>
           <div className="relative inline-block">
             <ScrapbookHeading as="h1" className="student-page-title text-foreground">
-              Hôm nay mình học gì?
+              {t("title")}
             </ScrapbookHeading>
             <StudentDoodle
               id="doodle.underline"
@@ -47,12 +49,12 @@ export function LearningHubHome() {
             />
           </div>
           <p className="student-body max-w-xl text-foreground">
-            Một trang mới trong sổ tay tiếng Anh của bạn. Chọn một Unit và khám phá điều thú vị tiếp theo nhé!
+            {t("intro")}
           </p>
           <div className="pt-1">
             <Link href="/student/units" className="student-ink-button">
               <BookOpen className="h-5 w-5" aria-hidden="true" />
-              Khám phá bài học
+              {t("explore")}
               <ArrowRight className="h-5 w-5" aria-hidden="true" />
             </Link>
           </div>
@@ -62,7 +64,7 @@ export function LearningHubHome() {
           <StudentIllustration id="scene.study-desk" decorative className="w-36" />
         </div>
         <div className="relative hidden md:block" aria-hidden="true">
-          <PolaroidFrame caption="Keep learning, little by little">
+          <PolaroidFrame caption={t("polaroid")}>
             <StudentIllustration id="illustration.unit-journey" decorative className="mx-auto w-40" />
           </PolaroidFrame>
         </div>
@@ -73,37 +75,37 @@ export function LearningHubHome() {
       <section aria-labelledby="learning-hub-units" className="space-y-4">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div className="space-y-1">
-            <p className="student-meta text-primary">LỘ TRÌNH HỌC TẬP</p>
+            <p className="student-meta text-primary">{t("routeEyebrow")}</p>
             <ScrapbookHeading as="h2" id="learning-hub-units" className="student-section-title text-foreground">
-              Bài học của bạn
+              {t("unitsTitle")}
             </ScrapbookHeading>
             <p className="student-body text-muted-foreground">
-              Những Unit đang có sẵn để bạn khám phá.
+              {t("unitsIntro")}
             </p>
           </div>
           <Link
             href="/student/units"
             className="student-label inline-flex min-h-11 items-center gap-2 text-primary underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring"
           >
-            Xem tất cả Unit <ArrowRight className="h-4 w-4" aria-hidden="true" />
+            {t("seeAllUnits")} <ArrowRight className="h-4 w-4" aria-hidden="true" />
           </Link>
         </div>
 
         <PaperSurface variant="lined" className="overflow-hidden">
           {isLoading ? (
-            <div className="space-y-3 p-5" role="status" aria-label="Đang tải danh sách bài học">
+            <div className="space-y-3 p-5" role="status" aria-label={t("loading")}>
               <SkeletonList />
             </div>
           ) : isError ? (
             <div className="p-5">
               <RegionState
                 variant="error"
-                title="Chưa thể tải bài học"
-                description="Hãy thử tải lại danh sách Unit."
+                title={t("loadError")}
+                description={t("loadErrorDescription")}
                 action={
                   <StudentButton variant="secondary" onClick={() => void refetch()}>
                     <RefreshCw className="h-4 w-4" aria-hidden="true" />
-                    Thử lại
+                    {t("retry")}
                   </StudentButton>
                 }
               />
@@ -112,8 +114,8 @@ export function LearningHubHome() {
             <div className="p-5">
               <StudentCollectionEmptyState
                 illustration="illustration.no-lessons"
-                title="Chưa có bài học nào"
-                description="Khi giáo viên công bố Unit, các bài học sẽ xuất hiện tại đây."
+                title={t("empty")}
+                description={t("emptyDescription")}
               />
             </div>
           ) : (
@@ -138,7 +140,7 @@ export function LearningHubHome() {
                       {unit.name}
                     </span>
                     <span className="student-body mt-1 block text-muted-foreground">
-                      {unit.activityCount} hoạt động luyện tập
+                      {t("activityCount", { count: unit.activityCount })}
                     </span>
                   </span>
                   <ArrowRight className="h-5 w-5 shrink-0 text-primary" aria-hidden="true" />
@@ -161,10 +163,10 @@ export function LearningHubHome() {
           </span>
           <div className="space-y-1">
             <ScrapbookHeading as="h2" id="learning-hub-assignments" className="student-section-title text-foreground">
-              Bài giáo viên giao
+              {t("assignedTitle")}
             </ScrapbookHeading>
             <p className="student-body text-muted-foreground">
-              Xem hạn nộp và làm bài trong khu vực riêng.
+              {t("assignedIntro")}
             </p>
           </div>
         </div>
@@ -172,7 +174,7 @@ export function LearningHubHome() {
           href="/student/assignments"
           className="student-control student-control--secondary inline-flex w-full items-center justify-center gap-2 px-4 sm:w-auto"
         >
-          Xem bài được giao <ArrowRight className="h-4 w-4" aria-hidden="true" />
+          {t("seeAssignments")} <ArrowRight className="h-4 w-4" aria-hidden="true" />
         </Link>
       </PaperSurface>
     </div>

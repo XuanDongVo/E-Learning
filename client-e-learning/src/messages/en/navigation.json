@@ -28,5 +28,11 @@
   "studentAssignments": "Assignments",
   "studentProgress": "Progress",
   "studentLeaderboard": "Leaderboard",
-  "studentGame": "Game"
+  "studentGame": "Game",
+  "studentNavigation": "Student navigation",
+  "studentMenu": "Student menu",
+  "signOut": "Sign out",
+  "openStudentMenu": "Open student menu",
+  "closeStudentMenu": "Close student menu",
+  "languageSelector": "Choose language"
 }

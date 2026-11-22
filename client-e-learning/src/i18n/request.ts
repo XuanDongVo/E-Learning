@@ -38,6 +38,8 @@ async function loadMessages(locale: Locale) {
     studentProgress,
     studentAssignmentAttempt,
     studentVocabulary,
+    studentKnowledge,
+    studentProfile,
   ] = await Promise.all([
     loadJson(locale, "common"),
     loadJson(locale, "navigation"),
@@ -59,6 +61,8 @@ async function loadMessages(locale: Locale) {
     loadJson(locale, "student/progress"),
     loadJson(locale, "student/assignment-attempt"),
     loadJson(locale, "student/vocabulary"),
+    loadJson(locale, "student/knowledge"),
+    loadJson(locale, "student/profile"),
   ]);
 
   const teacher = {
@@ -80,6 +84,8 @@ async function loadMessages(locale: Locale) {
     progress: studentProgress,
     assignmentAttempt: studentAssignmentAttempt.assignmentAttempt,
     vocabulary: studentVocabulary,
+    knowledge: studentKnowledge,
+    profile: studentProfile,
   };
 
   return {

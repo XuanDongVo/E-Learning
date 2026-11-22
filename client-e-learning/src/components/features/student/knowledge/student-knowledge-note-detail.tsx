@@ -2,6 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useRef } from "react";
+import { useLocale, useTranslations } from "next-intl";
 import {
   BookMarked,
   BookOpenText,
@@ -23,6 +24,8 @@ import type { KnowledgeDocument } from "@/types/knowledge-note";
 import { useKnowledgeReadingProgress } from "./use-knowledge-reading-progress";
 
 export function StudentKnowledgeNoteDetail({ noteId }: { noteId: number }) {
+  const t = useTranslations("student.knowledge.reader");
+  const locale = useLocale();
   const validId = Number.isSafeInteger(noteId) && noteId > 0;
   const readerRef = useRef<HTMLDivElement>(null);
   const noteQuery = useQuery({
@@ -42,8 +45,8 @@ export function StudentKnowledgeNoteDetail({ noteId }: { noteId: number }) {
   if (!validId) {
     return (
       <StudentReadingState
-        title="Đường dẫn bài học không hợp lệ"
-        description="Hãy quay về thư viện để chọn một trang kiến thức khác."
+        title={t("invalidTitle")}
+        description={t("invalidDescription")}
       />
     );
   }
@@ -51,10 +54,10 @@ export function StudentKnowledgeNoteDetail({ noteId }: { noteId: number }) {
     return (
       <main className="student-knowledge mx-auto max-w-6xl space-y-5 pb-12">
         <StudentBackLink href="/student/knowledge">
-          Sổ tay kiến thức
+          {t("library")}
         </StudentBackLink>
         <PaperSurface as="section" className="space-y-3 p-6" role="status">
-          <p className="student-card-title">Đang mở trang kiến thức…</p>
+          <p className="student-card-title">{t("loading")}</p>
           <div className="h-6 w-1/2 animate-pulse rounded bg-muted" />
           <div className="h-52 animate-pulse rounded bg-muted/70" />
         </PaperSurface>
@@ -64,8 +67,8 @@ export function StudentKnowledgeNoteDetail({ noteId }: { noteId: number }) {
   if (noteQuery.isError || !noteQuery.data) {
     return (
       <StudentReadingState
-        title="Không thể mở trang kiến thức"
-        description="Bài học có thể đã được gỡ công bố, không thuộc khối lớp của bạn hoặc tạm thời không truy cập được."
+        title={t("loadError")}
+        description={t("loadErrorDescription")}
         retry={() => void noteQuery.refetch()}
       />
     );
@@ -76,8 +79,8 @@ export function StudentKnowledgeNoteDetail({ noteId }: { noteId: number }) {
   if (document?.type !== "doc" || !Array.isArray(document.content)) {
     return (
       <StudentReadingState
-        title="Bản nội dung chưa thể hiển thị"
-        description="Vui lòng báo giáo viên kiểm tra bài lý thuyết này."
+        title={t("invalidDocument")}
+        description={t("invalidDocumentDescription")}
       />
     );
   }
@@ -86,7 +89,7 @@ export function StudentKnowledgeNoteDetail({ noteId }: { noteId: number }) {
   const updated = new Date(note.updatedAt);
   const updatedLabel = Number.isNaN(updated.getTime())
     ? null
-    : updated.toLocaleDateString("vi-VN");
+    : updated.toLocaleDateString(locale === "en" ? "en-US" : "vi-VN");
 
   return (
     <main
@@ -94,7 +97,7 @@ export function StudentKnowledgeNoteDetail({ noteId }: { noteId: number }) {
       data-note-id={noteId}
     >
       <StudentBackLink href="/student/knowledge">
-        Về Sổ tay kiến thức
+        {t("back")}
       </StudentBackLink>
 
       <PaperSurface
@@ -106,7 +109,7 @@ export function StudentKnowledgeNoteDetail({ noteId }: { noteId: number }) {
       >
         <div className="relative z-10 max-w-2xl space-y-3">
           <p className="student-meta inline-flex items-center gap-2 text-primary">
-            <BookMarked className="size-4" aria-hidden="true" /> TRANG KIẾN THỨC
+            <BookMarked className="size-4" aria-hidden="true" /> {t("eyebrow")}
           </p>
           <h1 className="student-page-title text-foreground">{note.title}</h1>
           {note.description && (
@@ -116,13 +119,11 @@ export function StudentKnowledgeNoteDetail({ noteId }: { noteId: number }) {
           )}
           <div className="flex flex-wrap items-center gap-4 pt-2 text-xs font-semibold text-muted-foreground">
             <span className="inline-flex items-center gap-1.5">
-              <BookOpenText className="size-4" aria-hidden="true" /> Bài lý
-              thuyết đã công bố
+              <BookOpenText className="size-4" aria-hidden="true" /> {t("published")}
             </span>
             {updatedLabel && (
               <span className="inline-flex items-center gap-1.5">
-                <CalendarDays className="size-4" aria-hidden="true" /> Cập nhật{" "}
-                {updatedLabel}
+                <CalendarDays className="size-4" aria-hidden="true" /> {t("updated", { date: updatedLabel })}
               </span>
             )}
           </div>
@@ -136,10 +137,10 @@ export function StudentKnowledgeNoteDetail({ noteId }: { noteId: number }) {
 
       <div className="student-knowledge-reading-progress sticky top-16 z-20 rounded-lg border border-border bg-card/95 px-4 py-2 shadow-sm backdrop-blur">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <span className="student-meta text-foreground">Tiến độ đọc trong phiên này</span>
+          <span className="student-meta text-foreground">{t("progress")}</span>
           <span className="student-meta tabular-nums text-primary">{progress}%</span>
         </div>
-        <div role="progressbar" aria-label="Tiến độ đọc" aria-valuemin={0} aria-valuemax={100}
+        <div role="progressbar" aria-label={t("progressAria")} aria-valuemin={0} aria-valuemax={100}
           aria-valuenow={progress} className="mt-2 h-1.5 overflow-hidden rounded-full bg-secondary">
           <div className="h-full rounded-full bg-primary" style={{ width: `${progress}%` }} />
         </div>
@@ -155,14 +156,14 @@ export function StudentKnowledgeNoteDetail({ noteId }: { noteId: number }) {
           {outline.length > 0 && (
             <details className="student-knowledge-toc-mobile mb-5 rounded-lg border border-border bg-secondary/40 p-3 lg:hidden">
               <summary className="student-label cursor-pointer py-1 text-foreground">
-                Mục lục bài đọc · {outline.length} đề mục
+                {t("tocCount", { count: outline.length })}
               </summary>
               <ReadingOutline outline={outline} activeHeadingId={activeHeadingId} />
             </details>
           )}
           <div className="mb-5 flex items-center justify-between gap-3 border-b border-dashed border-border pb-4">
             <p className="student-note text-lg text-muted-foreground">
-              Chậm một chút, hiểu sâu hơn một chút.
+              {t("quote")}
             </p>
             <StudentDoodle
               id="doodle.bookmark-note"
@@ -174,17 +175,17 @@ export function StudentKnowledgeNoteDetail({ noteId }: { noteId: number }) {
               <KnowledgeDocumentRenderer document={document} />
             ) : (
               <p className="text-muted-foreground">
-                Bài lý thuyết hiện chưa có nội dung để đọc.
+                {t("noContent")}
               </p>
             )}
           </div>
           {note.linkedTopics?.length > 0 && (
             <section className="student-reading-topic-links mt-9 space-y-3 border-t border-dashed border-border pt-5" aria-labelledby="reading-topic-heading">
               <h2 id="reading-topic-heading" className="student-card-title flex items-center gap-2 text-foreground">
-                <ListTree className="size-5 text-primary" aria-hidden="true" /> Tiếp tục luyện tập theo Topic
+                <ListTree className="size-5 text-primary" aria-hidden="true" /> {t("linkedTopics")}
               </h2>
               <p className="student-body text-muted-foreground">
-                Các chủ đề đang công bố có sử dụng trang kiến thức này.
+                {t("linkedTopicsDescription")}
               </p>
               <div className="flex flex-wrap gap-2">
                 {note.linkedTopics.map(topic => (
@@ -204,31 +205,31 @@ export function StudentKnowledgeNoteDetail({ noteId }: { noteId: number }) {
               className="student-label inline-flex min-h-11 items-center gap-2 text-primary hover:underline"
             >
               <BookOpenText className="size-4" aria-hidden="true" />
-              Khám phá những trang kiến thức khác{" "}
+              {t("browseMore")}{" "}
               <ChevronRight className="size-4" aria-hidden="true" />
             </Link>
           </div>
         </PaperSurface>
 
         <aside
-          aria-label="Điều hướng bài đọc"
+          aria-label={t("readingNavigation")}
           className="space-y-4 lg:sticky lg:top-24"
         >
           <PaperSurface
             as="section"
             variant="lined"
             className="hidden p-4 sm:p-5 lg:block"
-            aria-label="Mục lục"
+            aria-label={t("tableOfContents")}
           >
             <h2 className="student-section-title flex items-center gap-2">
               <Bookmark className="size-5 text-primary" aria-hidden="true" />{" "}
-              Mục lục
+              {t("tableOfContents")}
             </h2>
             {navigation.outline.length ? (
               <ReadingOutline outline={outline} activeHeadingId={activeHeadingId} />
             ) : (
               <p className="student-body mt-3 text-muted-foreground">
-                Bài này chưa có các đề mục H2/H3.
+                {t("noHeadings")}
               </p>
             )}
           </PaperSurface>
@@ -243,11 +244,10 @@ export function StudentKnowledgeNoteDetail({ noteId }: { noteId: number }) {
                   className="size-5 text-primary"
                   aria-hidden="true"
                 />{" "}
-                Đáng ghi nhớ
+                {t("keyPoints")}
               </h2>
               <p className="student-caption text-muted-foreground">
-                {navigation.keyPoints.length} khối hoặc bảng được thầy cô đánh
-                dấu.
+                {t("keyPointCount", { count: navigation.keyPoints.length })}
               </p>
               <ul className="space-y-1">
                 {navigation.keyPoints
@@ -276,8 +276,9 @@ function ReadingOutline({ outline, activeHeadingId }: {
   outline: Array<{ id: string; title: string; level: 2 | 3 }>;
   activeHeadingId: string | null;
 }) {
+  const t = useTranslations("student.knowledge.reader");
   return (
-    <nav aria-label="Các phần trong bài" className="mt-3">
+    <nav aria-label={t("sections")} className="mt-3">
       <ol className="space-y-1.5">
         {outline.map(item => (
           <li key={item.id}>
@@ -302,10 +303,11 @@ function StudentReadingState({
   description: string;
   retry?: () => void;
 }) {
+  const t = useTranslations("student.knowledge.reader");
   return (
     <main className="student-knowledge mx-auto max-w-3xl space-y-5 pb-12">
       <StudentBackLink href="/student/knowledge">
-        Về Sổ tay kiến thức
+        {t("back")}
       </StudentBackLink>
       <PaperSurface as="section" className="space-y-3 p-6 sm:p-8">
         <StudentIllustration
@@ -323,7 +325,7 @@ function StudentReadingState({
             className="student-control student-control--action mx-auto"
             onClick={retry}
           >
-            Thử lại
+            {t("retry")}
           </button>
         )}
       </PaperSurface>

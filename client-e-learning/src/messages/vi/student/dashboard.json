@@ -1,1 +1,21 @@
-{}
+{
+  "eyebrow": "NHẬT KÝ HỌC TẬP / LEARNUP",
+  "title": "Hôm nay mình học gì?",
+  "intro": "Một trang mới trong sổ tay tiếng Anh của bạn. Chọn một Unit và khám phá điều thú vị tiếp theo nhé!",
+  "explore": "Khám phá bài học",
+  "polaroid": "Mỗi ngày học một chút",
+  "routeEyebrow": "LỘ TRÌNH HỌC TẬP",
+  "unitsTitle": "Bài học của bạn",
+  "unitsIntro": "Những Unit đang có sẵn để bạn khám phá.",
+  "seeAllUnits": "Xem tất cả Unit",
+  "loading": "Đang tải danh sách bài học",
+  "loadError": "Chưa thể tải bài học",
+  "loadErrorDescription": "Hãy thử tải lại danh sách Unit.",
+  "retry": "Thử lại",
+  "empty": "Chưa có bài học nào",
+  "emptyDescription": "Khi giáo viên công bố Unit, các bài học sẽ xuất hiện tại đây.",
+  "activityCount": "{count, plural, =0 {Chưa có hoạt động luyện tập} other {# hoạt động luyện tập}}",
+  "assignedTitle": "Bài giáo viên giao",
+  "assignedIntro": "Xem hạn nộp và làm bài trong khu vực riêng.",
+  "seeAssignments": "Xem bài được giao"
+}

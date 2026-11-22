@@ -1,10 +1,11 @@
 "use client";
 
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { usePathname, useRouter } from "@/i18n/navigation";
 
 export function LocaleToggle() {
   const locale = useLocale();
+  const t = useTranslations("navigation");
   const pathname = usePathname();
   const router = useRouter();
 
@@ -19,7 +20,7 @@ export function LocaleToggle() {
 return (
   <div
     role="group"
-    aria-label="Language selector"
+    aria-label={t("languageSelector")}
     className="inline-flex h-8 items-center rounded-lg border border-border/80 bg-muted/60 p-0.5 text-xs select-none"
   >
     <button

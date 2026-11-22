@@ -94,7 +94,7 @@ export function StudentNavbar() {
           {/* Desktop nav */}
           <nav
             className="hidden flex-1 items-center justify-center gap-0.5 xl:flex"
-            aria-label="Student navigation"
+            aria-label={t("studentNavigation")}
           >
             {NAV_ITEMS.map((item) => {
               const active = isItemActive(item.href);
@@ -141,8 +141,8 @@ export function StudentNavbar() {
             <button
               type="button"
               onClick={() => void logout()}
-              aria-label="Sign out"
-              title="Sign out"
+              aria-label={t("signOut")}
+              title={t("signOut")}
               className="flex h-10 w-10 items-center justify-center rounded-full text-neutral-muted transition hover:bg-background-app hover:text-neutral-dark"
             >
               <LogOut className="h-4 w-4" />
@@ -153,7 +153,7 @@ export function StudentNavbar() {
           <button
             type="button"
             onClick={() => setOpen(true)}
-            aria-label="Open menu"
+            aria-label={t("openStudentMenu")}
             aria-expanded={open}
             aria-controls="student-mobile-menu"
             className="ml-auto flex h-11 w-11 items-center justify-center rounded-xl border border-border-color text-neutral-dark transition hover:bg-background-app xl:hidden"
@@ -185,7 +185,7 @@ export function StudentNavbar() {
           id="student-mobile-menu"
           role="dialog"
           aria-modal="true"
-          aria-label="Student menu"
+          aria-label={t("studentMenu")}
           className={cn(
             "student-nav-drawer absolute right-0 top-0 flex h-full w-[82%] max-w-80 flex-col border-l border-border-color bg-card-bg shadow-xl transition-transform duration-300 ease-out",
             open ? "translate-x-0" : "translate-x-full",
@@ -198,7 +198,7 @@ export function StudentNavbar() {
             <button
               type="button"
               onClick={() => setOpen(false)}
-              aria-label="Close menu"
+              aria-label={t("closeStudentMenu")}
               className="flex h-10 w-10 items-center justify-center rounded-lg text-neutral-muted hover:bg-background-app hover:text-neutral-dark"
             >
               <X className="h-5 w-5" />
@@ -207,7 +207,7 @@ export function StudentNavbar() {
 
           <nav
             className="flex-1 space-y-1 overflow-y-auto p-3"
-            aria-label="Student navigation"
+            aria-label={t("studentNavigation")}
           >
             {NAV_ITEMS.map((item) => {
               const active = isItemActive(item.href);
@@ -254,7 +254,7 @@ export function StudentNavbar() {
             <button
               type="button"
               onClick={() => void logout()}
-              aria-label="Sign out"
+              aria-label={t("signOut")}
               className="flex h-10 w-10 items-center justify-center rounded-lg text-neutral-muted hover:bg-background-app hover:text-neutral-dark"
             >
               <LogOut className="h-4 w-4" />

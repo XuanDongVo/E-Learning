@@ -1,4 +1,5 @@
 import { Link } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 import { ArrowRight, BookOpen, ListTree } from "lucide-react";
 import type { StudentUnitSummary } from "@/types/student-unit";
 import { UnitCover, unitLabel } from "./unit-cover";
@@ -9,6 +10,7 @@ export function UnitCard({
 }: {
   unit: StudentUnitSummary;
 }) {
+  const t = useTranslations("student.learning.units");
   const label = unitLabel(unit.code);
 
   return (
@@ -38,7 +40,7 @@ export function UnitCard({
             </p>
           ) : (
             <p className="student-body mt-2 text-muted-foreground">
-              Mở Unit để xem phần học và hoạt động luyện tập.
+              {t("openHint")}
             </p>
           )}
         </div>
@@ -46,11 +48,11 @@ export function UnitCard({
         <div className="student-meta flex flex-wrap gap-x-4 gap-y-2 text-muted-foreground">
           <span className="inline-flex items-center gap-1.5">
             <ListTree className="h-4 w-4" aria-hidden="true" />
-            <span>{unit.sectionCount} phần học</span>
+            <span>{t("sections", { count: unit.sectionCount })}</span>
           </span>
           <span className="inline-flex items-center gap-1.5">
             <BookOpen className="h-4 w-4" aria-hidden="true" />
-            <span>{unit.activityCount} hoạt động</span>
+            <span>{t("activities", { count: unit.activityCount })}</span>
           </span>
         </div>
 
@@ -58,7 +60,7 @@ export function UnitCard({
           href={`/student/units/${unit.id}`}
           className="student-control student-control--quiet mt-auto w-full justify-between gap-2 px-4"
         >
-          <span>Xem phần học</span>
+          <span>{t("viewSections")}</span>
           <ArrowRight className="h-4 w-4" aria-hidden="true" />
         </Link>
       </div>

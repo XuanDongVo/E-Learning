@@ -4,6 +4,7 @@ import org.springframework.http.HttpStatus;
 
 public enum ErrorCode {
     INVALID_REQUEST(HttpStatus.BAD_REQUEST, "INVALID_REQUEST", "The request is invalid"),
+    STUDY_TASK_NOT_FOUND(HttpStatus.NOT_FOUND, "STUDY_TASK_NOT_FOUND", "Study task not found"),
     KNOWLEDGE_NOTE_NOT_FOUND(HttpStatus.NOT_FOUND, "KNOWLEDGE_NOTE_NOT_FOUND", "Knowledge Note not found"),
     KNOWLEDGE_NOTE_CONTENT_INVALID(HttpStatus.BAD_REQUEST, "KNOWLEDGE_NOTE_CONTENT_INVALID", "Knowledge Note content is invalid"),
     KNOWLEDGE_NOTE_NOT_EDITABLE(HttpStatus.CONFLICT, "KNOWLEDGE_NOTE_NOT_EDITABLE", "Unpublish the Knowledge Note before editing its content"),

@@ -171,7 +171,7 @@ export function StudentNavbar() {
       {/* Mobile drawer (right) */}
       <div
         className={cn(
-          "fixed inset-0 z-50 lg:hidden",
+          "fixed inset-0 z-50 xl:hidden",
           open ? "pointer-events-auto" : "pointer-events-none",
         )}
         aria-hidden={!open}

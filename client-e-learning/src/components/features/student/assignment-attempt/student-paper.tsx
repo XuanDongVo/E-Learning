@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+
 import {
   Fragment,
   createContext,
@@ -208,6 +210,7 @@ function snapshotSections(
 // ============================================================================
 
 function BlockView({ item }: { item: CompositionItemSnapshot }) {
+  const t = useTranslations("student.assignmentAttempt.paper");
   const payload = item.blockPayload ?? {};
   const type = (item.itemType ?? "").toUpperCase();
 
@@ -219,7 +222,7 @@ function BlockView({ item }: { item: CompositionItemSnapshot }) {
     if (!textEn && !textVi) return null;
     return (
       <div className="space-y-1 rounded-xl border border-primary/20 bg-primary/5 p-4 text-sm leading-relaxed text-foreground">
-        <p className="font-semibold text-primary">Instructions / Hướng dẫn:</p>
+        <p className="font-semibold text-primary">{t("instructions")}</p>
         {textEn && (
           <div className="whitespace-pre-wrap">{renderRichText(textEn)}</div>
         )}
@@ -257,7 +260,7 @@ function BlockView({ item }: { item: CompositionItemSnapshot }) {
         {textVi && (
           <div className="mt-3 rounded-lg bg-muted/40 p-3 text-xs italic leading-6 text-muted-foreground border-l-2 border-primary/30">
             <span className="font-semibold not-italic text-foreground">
-              Bản dịch tham khảo:{" "}
+              {t("referenceTranslation")}{" "}
             </span>
             {renderRichText(textVi)}
           </div>
@@ -322,7 +325,7 @@ function BlockView({ item }: { item: CompositionItemSnapshot }) {
       <aside className="rounded-xl border border-accent bg-accent/30 p-4">
         <div className="mb-2.5 flex items-baseline gap-2">
           <h4 className="text-xs font-bold uppercase tracking-wider text-primary">
-            {titleEn || "Answer Pool"}
+            {titleEn || t("answerPool")}
           </h4>
           {titleVi && (
             <span className="text-xs italic text-muted-foreground">
@@ -352,18 +355,6 @@ function BlockView({ item }: { item: CompositionItemSnapshot }) {
 // 4. QUESTION CARD COMPONENT
 // ============================================================================
 
-const QUESTION_TYPE_LABELS: Record<string, { en: string; vi: string }> = {
-  SINGLE_CHOICE: { en: "Single Choice", vi: "Trắc nghiệm 1 đáp án" },
-  TRUE_FALSE: { en: "True / False", vi: "Đúng / Sai" },
-  MULTIPLE_CHOICE: { en: "Multiple Choice", vi: "Trọn nhiều đáp án" },
-  FILL_IN_BLANK: { en: "Fill in the blank", vi: "Điền vào chỗ trống" },
-  TYPE_ANSWER: { en: "Short Answer", vi: "Trả lời ngắn" },
-  TEXT_INPUT: { en: "Text Input", vi: "Viết câu trả lời" },
-  CLOZE: { en: "Cloze Test", vi: "Điền từ vào đoạn văn" },
-  MULTI_TEXT_INPUT: { en: "Multi Blanks", vi: "Điền nhiều chỗ trống" },
-  MATCHING: { en: "Matching", vi: "Nối đáp án" },
-};
-
 function QuestionCard({
   question,
   answer,
@@ -375,15 +366,23 @@ function QuestionCard({
   poolOptions: PoolOption[];
   onAnswerChange: (answer: AttemptAnswerPayload) => void;
 }) {
+  const t = useTranslations("student.assignmentAttempt.paper");
   const total = useContext(QuestionTotalContext);
   const snapshot = useMemo(() => safeQuestionSnapshot(question), [question]);
   const type = snapshot.type;
 
-  // Nhãn loại câu hỏi song ngữ
-  const typeBadge = QUESTION_TYPE_LABELS[type] ?? {
-    en: type.replace(/_/g, " "),
-    vi: "Câu hỏi",
+  const typeLabels: Record<string, string> = {
+    SINGLE_CHOICE: t("types.SINGLE_CHOICE"),
+    TRUE_FALSE: t("types.TRUE_FALSE"),
+    MULTIPLE_CHOICE: t("types.MULTIPLE_CHOICE"),
+    FILL_IN_BLANK: t("types.FILL_IN_BLANK"),
+    TYPE_ANSWER: t("types.TYPE_ANSWER"),
+    TEXT_INPUT: t("types.TEXT_INPUT"),
+    CLOZE: t("types.CLOZE"),
+    MULTI_TEXT_INPUT: t("types.MULTI_TEXT_INPUT"),
+    MATCHING: t("types.MATCHING"),
   };
+  const typeBadge = typeLabels[type] ?? t("types.UNKNOWN");
 
   const matchingPool =
     snapshot.answerPool.length > 0 ? snapshot.answerPool : poolOptions;
@@ -408,14 +407,12 @@ function QuestionCard({
           <div className="flex flex-wrap items-center gap-2">
             {/* Huy hiệu số thứ tự câu */}
             <span className="inline-flex rounded-md bg-primary/10 px-2.5 py-1 text-xs font-bold text-primary">
-              Câu {question.position + 1} / {total}
+              {t("questionCount", { current: question.position + 1, total })}
             </span>
 
             {/* Huy hiệu loại câu hỏi (Question Type) hiển thị song ngữ */}
             <span className="inline-flex items-center gap-1 rounded-md border border-border bg-muted/60 px-2 py-1 text-xs font-medium text-foreground">
-              <span>{typeBadge.en}</span>
-              <span className="text-muted-foreground">·</span>
-              <span className="text-muted-foreground">{typeBadge.vi}</span>
+              <span>{typeBadge}</span>
             </span>
           </div>
 
@@ -423,7 +420,7 @@ function QuestionCard({
           {question.possiblePoints !== undefined &&
             question.possiblePoints > 0 && (
               <span className="text-xs font-semibold text-muted-foreground">
-                {question.possiblePoints} pt
+                {t("points", { count: question.possiblePoints })}
               </span>
             )}
         </div>
@@ -433,7 +430,7 @@ function QuestionCard({
           id={`question-${question.attemptQuestionId}`}
           className="text-[15px] font-semibold leading-relaxed text-foreground"
         >
-          {renderRichText(snapshot.prompt || "Choose the best answer:")}
+          {renderRichText(snapshot.prompt || t("promptFallback"))}
         </h3>
       </header>
 
@@ -445,7 +442,7 @@ function QuestionCard({
           ) : (
             <img
               src={media.url}
-              alt={media.alt || "Question media"}
+              alt={media.alt || t("mediaAlt")}
               className="max-h-64 max-w-full rounded-lg object-contain"
             />
           )}
@@ -459,8 +456,8 @@ function QuestionCard({
           {(snapshot.choices.length
             ? snapshot.choices
             : [
-                { key: "TRUE", text: "True" },
-                { key: "FALSE", text: "False" },
+                { key: "TRUE", text: t("true") },
+                { key: "FALSE", text: t("false") },
               ]
           ).map((choice, index) => {
             const isPicked = selectedKey === choice.key;
@@ -539,9 +536,9 @@ function QuestionCard({
           <input
             value={value}
             onChange={(e) => onAnswerChange({ value: e.target.value })}
-            placeholder="Type your answer here..."
+            placeholder={t("inputPlaceholder")}
             className="h-11 w-full rounded-xl border border-border bg-card px-3 text-sm text-foreground outline-hidden transition focus:border-primary focus:ring-2 focus:ring-primary/20"
-            aria-label={snapshot.prompt || "Answer"}
+            aria-label={snapshot.prompt || t("answer")}
           />
         </div>
       )}
@@ -553,9 +550,9 @@ function QuestionCard({
             value={selectedKey}
             onChange={(e) => onAnswerChange({ selectedKey: e.target.value })}
             className="h-10 w-full max-w-xs rounded-lg border border-border bg-card px-2.5 text-sm text-foreground focus:border-primary focus:outline-hidden"
-            aria-label={snapshot.prompt || "Select matching answer"}
+            aria-label={snapshot.prompt || t("matchingLabel")}
           >
-            <option value="">— Select answer —</option>
+            <option value="">{t("matchingPlaceholder")}</option>
             {matchingPool.map((opt) => (
               <option key={opt.key} value={opt.key}>
                 {opt.text}
@@ -564,8 +561,7 @@ function QuestionCard({
           </select>
           {matchingPool.length === 0 && (
             <p className="text-xs text-muted-foreground">
-              Không tìm thấy Answer Pool (kiểm tra poolId / block POOL trong
-              đề).
+              {t("matchingPoolUnavailable")}
             </p>
           )}
         </div>
@@ -597,7 +593,7 @@ function QuestionCard({
                             }
                             className="mx-1.5 inline-block h-8 w-32 rounded-md border border-border bg-card px-2 font-sans text-sm text-foreground align-baseline focus:border-primary focus:outline-hidden focus:ring-2 focus:ring-primary/20"
                             placeholder={`(${snapshot.blankKeys.indexOf(key) + 1})`}
-                            aria-label={`Blank ${snapshot.blankKeys.indexOf(key) + 1}`}
+                            aria-label={t("blank", { index: snapshot.blankKeys.indexOf(key) + 1 })}
                           />
                         );
                       })()}
@@ -614,7 +610,7 @@ function QuestionCard({
                     className="grid gap-2 sm:grid-cols-[140px_1fr] sm:items-center"
                   >
                     <span className="text-sm font-semibold text-muted-foreground">
-                      Blank ({index + 1}):
+                      {t("blankLabel", { index: index + 1 })}
                     </span>
                     <input
                       value={cur}
@@ -624,7 +620,7 @@ function QuestionCard({
                         })
                       }
                       className="h-10 rounded-lg border border-border bg-card px-3 text-sm text-foreground focus:border-primary focus:outline-hidden"
-                      placeholder="Type word..."
+                      placeholder={t("blankPlaceholder")}
                     />
                   </label>
                 );
@@ -645,7 +641,7 @@ function QuestionCard({
         "MULTI_TEXT_INPUT",
       ].includes(type) && (
         <p className="rounded-lg border border-warning/30 bg-warning/10 p-3 text-xs text-warning-foreground">
-          Question format ({type}) is not supported on this view.
+          {t("unsupportedFormat", { type })}
         </p>
       )}
     </article>
@@ -777,6 +773,7 @@ export function StudentPaper({
   answers,
   onAnswerChange,
 }: StudentPaperProps) {
+  const t = useTranslations("student.assignmentAttempt.paper");
   const paperRef = useRef<HTMLDivElement>(null);
 
   const documentsnapshot = asRecord(runtime.document) ?? {};
@@ -880,7 +877,7 @@ export function StudentPaper({
                 >
                   <header className="space-y-1.5 border-b border-border pb-4">
                     <span className="inline-flex rounded-md bg-primary/10 px-2.5 py-1 text-xs font-bold uppercase tracking-wider text-primary">
-                      PHẦN {toRoman(sIndex + 1)}
+                      {t("sectionRoman", { index: toRoman(sIndex + 1) })}
                     </span>
 
                     {/* Tiêu đề tiếng Anh */}
@@ -952,10 +949,10 @@ export function StudentPaper({
           <div className="sticky top-6 flex max-h-[calc(100vh-3rem)] flex-col rounded-3xl border border-border bg-card p-5 shadow-xs">
             <div className="flex items-center justify-between gap-2">
               <h2 className="text-xs font-extrabold uppercase tracking-wider text-foreground">
-                Tiến độ làm bài
+                {t("progressTitle")}
               </h2>
               <span className="text-xs font-bold text-primary">
-                {answeredCount} / {total} câu
+                {t("progressCount", { answered: answeredCount, total })}
               </span>
             </div>
 
@@ -970,7 +967,7 @@ export function StudentPaper({
             </div>
 
             <nav
-              aria-label="Danh sách câu hỏi"
+              aria-label={t("questionList")}
               className="mt-4 min-h-0 flex-1 overflow-y-auto pr-1"
             >
               <ul className="grid grid-cols-5 gap-2">
@@ -1000,11 +997,11 @@ export function StudentPaper({
             <ul className="mt-4 space-y-1.5 border-t border-border pt-3 text-xs text-muted-foreground">
               <li className="flex items-center gap-2">
                 <span className="h-3 w-3 rounded border border-border bg-muted" />
-                <span>Chưa hoàn thành</span>
+                <span>{t("notCompleted")}</span>
               </li>
               <li className="flex items-center gap-2">
                 <span className="h-3 w-3 rounded bg-primary" />
-                <span>Đã có câu trả lời</span>
+                <span>{t("answered")}</span>
               </li>
             </ul>
           </div>
@@ -1018,7 +1015,7 @@ export function StudentPaper({
             className="flex items-center gap-2 rounded-full border-2 border-border bg-card px-4 py-2.5 text-xs font-bold text-foreground shadow-pop transition active:scale-95 hover:bg-muted"
           >
             <ClipboardList className="h-4 w-4 text-primary" />
-            <span>Tiến độ:</span>
+            <span>{t("progressShort")}</span>
             <span className="rounded-full bg-primary/10 px-2 py-0.5 font-extrabold text-primary">
               {answeredCount}/{total}
             </span>
@@ -1036,17 +1033,17 @@ export function StudentPaper({
               <div className="flex items-center justify-between pb-3 border-b border-border">
                 <div>
                   <h2 className="text-sm font-extrabold uppercase tracking-wider text-foreground">
-                    Tiến độ làm bài
+                    {t("progressTitle")}
                   </h2>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    Đã làm {answeredCount} / {total} câu
+                    {t("completedCount", { answered: answeredCount, total })}
                   </p>
                 </div>
                 <button
                   type="button"
                   onClick={() => setMobilePaletteOpen(false)}
                   className="flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
-                  aria-label="Đóng tiến độ làm bài"
+                  aria-label={t("closeProgress")}
                 >
                   <X className="h-5 w-5" />
                 </button>
@@ -1063,7 +1060,7 @@ export function StudentPaper({
               </div>
 
               <nav
-                aria-label="Danh sách câu hỏi di động"
+                aria-label={t("questionListMobile")}
                 className="mt-4 flex-1 overflow-y-auto pr-1"
               >
                 <ul className="grid grid-cols-5 gap-2 sm:grid-cols-6">
@@ -1096,11 +1093,11 @@ export function StudentPaper({
               <ul className="mt-4 flex items-center justify-center gap-5 border-t border-border pt-3 text-xs text-muted-foreground">
                 <li className="flex items-center gap-2">
                   <span className="h-3 w-3 rounded border border-border bg-muted" />
-                  <span>Chưa hoàn thành</span>
+                  <span>{t("notCompleted")}</span>
                 </li>
                 <li className="flex items-center gap-2">
                   <span className="h-3 w-3 rounded bg-primary" />
-                  <span>Đã có câu trả lời</span>
+                  <span>{t("answered")}</span>
                 </li>
               </ul>
             </div>

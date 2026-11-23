@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { useQuery } from "@tanstack/react-query";
 import {
   ArrowRight,
@@ -24,6 +25,7 @@ import { studentKnowledgeNoteService } from "@/services/student/student-knowledg
 
 /** S03.2 — Topic-aware reading uses server-validated, published links. */
 export function StudentTopicKnowledge({ topicId }: { topicId: number }) {
+  const t = useTranslations("student.knowledge.topic");
   const [open, setOpen] = useState(false);
   const query = useQuery({
     queryKey: ["student", "knowledge-notes", "topic", topicId],
@@ -50,7 +52,7 @@ export function StudentTopicKnowledge({ topicId }: { topicId: number }) {
         className="student-topic-knowledge space-y-3 p-4 sm:p-5"
         role="status"
       >
-        <p className="student-label">Đang tải lý thuyết của chủ đề…</p>
+        <p className="student-label">{t("loading")}</p>
         <div className="h-12 animate-pulse rounded bg-muted/60" />
       </PaperSurface>
     );
@@ -62,17 +64,17 @@ export function StudentTopicKnowledge({ topicId }: { topicId: number }) {
         className="student-topic-knowledge space-y-2 p-4 sm:p-5"
       >
         <h3 className="student-card-title">
-          Chưa tải được kiến thức của chủ đề
+          {t("loadError")}
         </h3>
         <p className="student-body text-muted-foreground">
-          Bạn vẫn có thể xem hoạt động luyện tập bên dưới.
+          {t("loadErrorDescription")}
         </p>
         <button
           type="button"
           className="student-control student-control--secondary w-fit px-4"
           onClick={() => void query.refetch()}
         >
-          Thử lại
+          {t("retry")}
         </button>
       </PaperSurface>
     );
@@ -81,13 +83,13 @@ export function StudentTopicKnowledge({ topicId }: { topicId: number }) {
     return (
       <PaperSurface as="section" className="student-topic-knowledge p-4 sm:p-5">
         <p className="student-label text-foreground">
-          Chủ đề này chưa có bài lý thuyết được công bố.
+          {t("empty")}
         </p>
         <Link
           href="/student/knowledge"
           className="student-label mt-2 inline-flex items-center gap-1 text-primary underline underline-offset-4"
         >
-          Khám phá thư viện kiến thức{" "}
+          {t("explore")}{" "}
           <ArrowRight className="size-4" aria-hidden="true" />
         </Link>
       </PaperSurface>
@@ -100,16 +102,15 @@ export function StudentTopicKnowledge({ topicId }: { topicId: number }) {
         variant="lined"
         emphasis="feature"
         className="student-topic-knowledge space-y-4 p-4 sm:p-6"
-        aria-label="Kiến thức của chủ đề"
+        aria-label={t("aria")}
       >
         <div className="flex min-w-0 items-start justify-between gap-3">
           <div className="space-y-1">
             <p className="student-meta flex items-center gap-2 text-primary">
-              <Sparkles className="size-4" aria-hidden="true" /> TRƯỚC KHI LUYỆN
-              TẬP
+              <Sparkles className="size-4" aria-hidden="true" /> {t("eyebrow")}
             </p>
             <h3 className="student-section-title text-foreground">
-              Kiến thức cần nhớ
+              {t("heading")}
             </h3>
             {primary && (
               <p className="student-label text-muted-foreground">
@@ -135,13 +136,12 @@ export function StudentTopicKnowledge({ topicId }: { topicId: number }) {
               </div>
             ) : (
               <p className="student-body text-muted-foreground">
-                Bài chính chưa có khối trọng tâm để xem nhanh.
+                {t("noSummary")}
               </p>
             )}
             {primary.totalKeyPoints > 3 && (
               <p className="student-caption text-muted-foreground">
-                Đang xem 3/{primary.totalKeyPoints} nội dung trọng tâm · Xem đầy
-                đủ để đọc tiếp
+                {t("summaryCount", { total: primary.totalKeyPoints })}
               </p>
             )}
             <div className="flex flex-wrap gap-2">
@@ -150,27 +150,26 @@ export function StudentTopicKnowledge({ topicId }: { topicId: number }) {
                 className="student-control student-control--secondary inline-flex items-center gap-2 px-4"
                 onClick={() => setOpen(true)}
               >
-                <BookOpenText className="size-4" aria-hidden="true" /> Xem nhanh
-                lý thuyết
+                <BookOpenText className="size-4" aria-hidden="true" /> {t("quickRead")}
               </button>
               <Link
                 href={`/student/knowledge/${primary.id}?topicId=${topicId}`}
                 className="student-control student-control--action inline-flex items-center gap-2 px-4"
               >
-                Đọc lý thuyết đầy đủ{" "}
+                {t("fullRead")}{" "}
                 <ArrowRight className="size-4" aria-hidden="true" />
               </Link>
             </div>
           </>
         ) : (
           <p className="student-body text-muted-foreground">
-            Chưa có bài chính; bạn có thể đọc tài liệu bổ sung bên dưới.
+            {t("noPrimary")}
           </p>
         )}
         {supplementary.length > 0 && (
           <div className="space-y-2 border-t border-border pt-3">
             <h4 className="student-label text-foreground">
-              Đọc thêm ({supplementary.length})
+              {t("readMore", { count: supplementary.length })}
             </h4>
             {supplementary.map((note) => (
               <Link
@@ -197,25 +196,24 @@ export function StudentTopicKnowledge({ topicId }: { topicId: number }) {
                 {primary.title}
               </DialogTitle>
               <DialogDescription>
-                Đọc nội dung đầy đủ do giáo viên công bố, không cần rời trang
-                Unit.
+                {t("dialogDescription")}
               </DialogDescription>
             </DialogHeader>
             {detailQuery.isPending ? (
               <p className="student-body" role="status">
-                Đang tải toàn bộ bài lý thuyết…
+                {t("dialogLoading")}
               </p>
             ) : detailQuery.isError ? (
               <div className="space-y-2">
                 <p className="student-body">
-                  Không thể tải nội dung đã công bố của bài này.
+                  {t("dialogError")}
                 </p>
                 <button
                   type="button"
                   className="student-control student-control--secondary px-4"
                   onClick={() => void detailQuery.refetch()}
                 >
-                  Thử lại
+                  {t("retry")}
                 </button>
               </div>
             ) : detailQuery.data?.document ? (
@@ -227,14 +225,14 @@ export function StudentTopicKnowledge({ topicId }: { topicId: number }) {
               </div>
             ) : (
               <p className="student-body">
-                Nội dung bài lý thuyết hiện chưa sẵn sàng.
+                {t("dialogEmpty")}
               </p>
             )}
             <Link
               href={`/student/knowledge/${primary.id}`}
               className="student-control student-control--action inline-flex w-fit items-center gap-2 px-4"
             >
-              Đọc toàn bộ bài <ArrowRight className="size-4" />
+              {t("dialogReadAll")} <ArrowRight className="size-4" />
             </Link>
           </DialogContent>
         </Dialog>

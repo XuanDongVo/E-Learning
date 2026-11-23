@@ -8,17 +8,31 @@
   "activities": "Activities",
   "assignments": "Assignments",
   "analytics": "Analytics",
-  "searchGlobal": "Search classes, units, students..."
-  ,"closeMenu": "Close menu"
-  ,"openMenu": "Open menu"
-  ,"teacherNavigation": "Teacher navigation"
-  ,"teacherWorkspace": "Teacher workspace"
-  ,"studioTagline": "English learning studio"
-  ,"settings": "Settings"
-  ,"settingsComingSoon": "Settings will be available in a later phase"
-  ,"englishTeacher": "English teacher"
-  ,"search": "Search"
-  ,"help": "Help"
-  ,"notifications": "Notifications"
-  ,"noNotifications": "You have no new notifications"
+  "searchGlobal": "Search classes, units, students...",
+  "closeMenu": "Close menu",
+  "openMenu": "Open menu",
+  "teacherNavigation": "Teacher navigation",
+  "teacherWorkspace": "Teacher workspace",
+  "studioTagline": "English learning studio",
+  "settings": "Settings",
+  "settingsComingSoon": "Settings will be available in a later phase",
+  "englishTeacher": "English teacher",
+  "search": "Search",
+  "help": "Help",
+  "notifications": "Notifications",
+  "noNotifications": "You have no new notifications",
+  "studentHome": "Home",
+  "studentLearning": "Learning",
+  "studentVocabulary": "Vocabulary",
+  "studentKnowledge": "Knowledge",
+  "studentAssignments": "Assignments",
+  "studentProgress": "Progress",
+  "studentLeaderboard": "Leaderboard",
+  "studentGame": "Game",
+  "studentNavigation": "Student navigation",
+  "studentMenu": "Student menu",
+  "signOut": "Sign out",
+  "openStudentMenu": "Open student menu",
+  "closeStudentMenu": "Close student menu",
+  "languageSelector": "Choose language"
 }

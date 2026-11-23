@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+
 import NextImage from "next/image";
 import * as Dialog from "@radix-ui/react-dialog";
 import {
@@ -38,13 +40,14 @@ export function PracticeSettings({
   soundEnabled: boolean;
   onSoundEnabledChange: (enabled: boolean) => void;
 }) {
+  const t = useTranslations("student.activities.settings");
   const [tab, setTab] = useState("keys");
   const shortcuts = [
-    { label: "Gợi ý tiếp theo", keys: ["Ctrl", "H"], hint: true },
-    { label: "Kiểm tra / tiếp tục / thử lại", keys: ["Enter"] },
-    { label: "Chọn phương án 1–4", keys: ["1", "2", "3", "4"] },
-    { label: "Chuyển câu trước / sau", keys: ["←", "→"] },
-    { label: "Làm lại câu hiện tại", keys: ["Esc"] },
+    { label: t("shortcuts.hint"), keys: ["Ctrl", "H"], hint: true },
+    { label: t("shortcuts.check"), keys: ["Enter"] },
+    { label: t("shortcuts.choice"), keys: ["1", "2", "3", "4"] },
+    { label: t("shortcuts.navigate"), keys: ["←", "→"] },
+    { label: t("shortcuts.reset"), keys: ["Esc"] },
   ];
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
@@ -59,10 +62,10 @@ export function PracticeSettings({
             </span>
             <div>
               <Dialog.Title className="text-lg font-extrabold">
-                Cài đặt trò chơi
+                {t("title")}
               </Dialog.Title>
               <Dialog.Description className="mt-1 text-xs text-muted-foreground">
-                Loại game, ảnh nền và phím tắt.
+                {t("description")}
               </Dialog.Description>
             </div>
           </div>
@@ -71,7 +74,7 @@ export function PracticeSettings({
               variant="outline"
               size="icon"
               className={`${paperBtn} absolute right-5 top-5 size-7 rounded-full`}
-              aria-label="Đóng cài đặt"
+              aria-label={t("closeSettings")}
             >
               <X size={14} />
             </Button>
@@ -79,11 +82,11 @@ export function PracticeSettings({
           <div
             className={`${keyRow} mt-4 flex rounded-xl border p-1`}
             role="tablist"
-            aria-label="Cài đặt trò chơi"
+            aria-label={t("tablist")}
           >
             {[
-              { id: "keys", label: "Phím tắt", icon: Keyboard },
-              { id: "background", label: "Đổi ảnh nền", icon: LucideImage },
+              { id: "keys", label: t("tabs.keys"), icon: Keyboard },
+              { id: "background", label: t("tabs.background"), icon: LucideImage },
             ].map(({ id, label, icon: Icon }) => (
               <Button
                 key={id}
@@ -102,7 +105,7 @@ export function PracticeSettings({
             {tab === "keys" && (
               <>
                 <label className="mb-4 flex items-center justify-between gap-3 rounded-xl border border-border bg-background p-3 text-sm font-bold">
-                  <span className="flex items-center gap-2"><Volume2 size={17} /> Âm thanh đúng / sai</span>
+                  <span className="flex items-center gap-2"><Volume2 size={17} /> {t("sound")}</span>
                   <input
                     type="checkbox"
                     checked={soundEnabled}
@@ -110,9 +113,9 @@ export function PracticeSettings({
                     className="size-5 accent-learning"
                   />
                 </label>
-                <h3 className="text-sm font-extrabold">Phím tắt khi chơi</h3>
+                <h3 className="text-sm font-extrabold">{t("shortcutTitle")}</h3>
                 <p className="mt-1 text-[11px] text-muted-foreground">
-                  Dùng trên laptop; Ctrl + H vẫn hoạt động khi đang nhập đáp án.
+                  {t("shortcutHint")}
                 </p>
                 <div className="mt-3 space-y-2">
                   {shortcuts.map((row) => (
@@ -138,14 +141,13 @@ export function PracticeSettings({
                   ))}
                 </div>
                 <p className="mt-3 text-center text-[10px] text-muted-foreground">
-                  Trên mobile, dùng trực tiếp các nút ở thanh trên và thanh
-                  dưới.
+                  {t("mobile")}
                 </p>
               </>
             )}
             {tab === "background" && (
               <>
-                <h3 className="text-sm font-extrabold">Không gian luyện tập</h3>
+                <h3 className="text-sm font-extrabold">{t("environment")}</h3>
                 <div className="mt-4 grid grid-cols-2 gap-3">
                   {["garden", "calm"].map((item) => (
                     <Button
@@ -158,8 +160,8 @@ export function PracticeSettings({
                         src={garden}
                         alt={
                           item === "garden"
-                            ? "Vườn mộng mơ"
-                            : "Bầu trời yên bình"
+                            ? t("garden")
+                            : t("calm")
                         }
                         className={`absolute inset-0 h-full w-full object-cover ${item === "calm" ? "hue-rotate-[25deg] saturate-[0.65]" : ""}`}
                         width={1920}
@@ -167,8 +169,8 @@ export function PracticeSettings({
                       />
                       <span className="absolute bottom-2 left-2 rounded-md bg-card-bg px-2 py-1 text-xs text-foreground">
                         {item === "garden"
-                          ? "Vườn mộng mơ"
-                          : "Bầu trời yên bình"}
+                          ? t("garden")
+                          : t("calm")}
                       </span>
                       {background === item && (
                         <Check
@@ -188,10 +190,10 @@ export function PracticeSettings({
               className={paperBtn}
               onClick={() => onOpenChange(false)}
             >
-              Đóng
+              {t("close")}
             </Button>
             <Button className={blueBtn} onClick={() => onOpenChange(false)}>
-              Xong
+              {t("done")}
             </Button>
           </div>
         </Dialog.Content>

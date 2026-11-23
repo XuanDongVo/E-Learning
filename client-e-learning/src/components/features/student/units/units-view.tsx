@@ -19,6 +19,7 @@ import { PaperSurface } from "@/components/student-ui/paper-surface";
 
 export function UnitsView() {
   const tErrors = useTranslations("errors");
+  const t = useTranslations("student.learning.units");
   const [searchTerm, setSearchTerm] = useState("");
 
   const {
@@ -42,9 +43,9 @@ export function UnitsView() {
     <div className="student-units-page mx-auto max-w-6xl space-y-5 pb-8 sm:space-y-6">
       <PaperSurface as="section" variant="kraft" emphasis="accent" className="student-units-hero">
         <StudentPageHeading
-          eyebrow="BÀI HỌC"
-          title={<>Chọn <span className="student-highlight">Unit</span> để học</>}
-          description="Khám phá phần học và hoạt động luyện tập do giáo viên công bố."
+          eyebrow={t("eyebrow")}
+          title={<>{t("titlePrefix")} <span className="student-highlight">Unit</span> {t("titleSuffix")}</>}
+          description={t("intro")}
           artwork={<StudentIllustration id="illustration.unit-journey" decorative className="w-32 lg:w-44" />}
           artworkClassName="hidden sm:block"
         />
@@ -53,11 +54,11 @@ export function UnitsView() {
       {units.length > 0 && (
         <StudentTextField
           id="student-unit-search"
-          label="Tìm bài học"
+          label={t("searchLabel")}
           type="search"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          placeholder="Nhập tên Unit..."
+          placeholder={t("searchPlaceholder")}
           leading={<Search className="size-4" />}
           containerClassName="max-w-md"
         />
@@ -70,12 +71,12 @@ export function UnitsView() {
       {isError && (
         <RegionState
           variant="error"
-          title="Không thể tải danh sách bài học"
+          title={t("loadError")}
           description={getAppErrorMessage(error, tErrors as (key: string) => string)}
           action={
             <StudentButton variant="secondary" onClick={() => void refetch()}>
               <RefreshCw className="mr-1.5 h-4 w-4" />
-              Thử lại
+              {t("retry")}
             </StudentButton>
           }
         />
@@ -85,22 +86,22 @@ export function UnitsView() {
       {units.length === 0 && !isLoading && !isError && (
         <StudentCollectionEmptyState
           illustration="illustration.no-lessons"
-          title="Chưa có bài học nào"
-          description="Giáo viên của bạn chưa công bố Unit nào cho lớp học này. Hãy quay lại sau nhé!"
+          title={t("empty")}
+          description={t("emptyDescription")}
         />
       )}
 
       {/* ─── Không khớp tìm kiếm ─── */}
       {units.length > 0 && filteredUnits.length === 0 && (
         <StudentCollectionEmptyState
-          title={`Không tìm thấy Unit phù hợp với từ khóa "${searchTerm}"`}
+          title={t("searchEmpty", { search: searchTerm })}
           action={
             <button
               type="button"
               onClick={() => setSearchTerm("")}
               className="student-label min-h-11 text-primary hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
             >
-              Xóa tìm kiếm
+              {t("clearSearch")}
             </button>
           }
         />
@@ -110,8 +111,8 @@ export function UnitsView() {
       {!isLoading && !isError && units.length > 0 && (
         <p className="student-meta text-muted-foreground" role="status">
           {searchTerm.trim()
-            ? `Hiển thị ${filteredUnits.length}/${units.length} Unit phù hợp`
-            : `${units.length} Unit có thể khám phá`}
+            ? t("results", { shown: filteredUnits.length, total: units.length })
+            : t("available", { count: units.length })}
         </p>
       )}
 

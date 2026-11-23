@@ -8,17 +8,31 @@
   "activities": "Hoạt động",
   "assignments": "Bài tập",
   "analytics": "Phân tích",
-  "searchGlobal": "Tìm lớp học, unit, học sinh..."
-  ,"closeMenu": "Đóng menu"
-  ,"openMenu": "Mở menu"
-  ,"teacherNavigation": "Điều hướng giáo viên"
-  ,"teacherWorkspace": "Không gian giáo viên"
-  ,"studioTagline": "Không gian học tiếng Anh"
-  ,"settings": "Cài đặt"
-  ,"settingsComingSoon": "Cài đặt sẽ có ở giai đoạn sau"
-  ,"englishTeacher": "Giáo viên tiếng Anh"
-  ,"search": "Tìm kiếm"
-  ,"help": "Trợ giúp"
-  ,"notifications": "Thông báo"
-  ,"noNotifications": "Bạn không có thông báo mới"
+  "searchGlobal": "Tìm lớp học, unit, học sinh...",
+  "closeMenu": "Đóng menu",
+  "openMenu": "Mở menu",
+  "teacherNavigation": "Điều hướng giáo viên",
+  "teacherWorkspace": "Không gian giáo viên",
+  "studioTagline": "Không gian học tiếng Anh",
+  "settings": "Cài đặt",
+  "settingsComingSoon": "Cài đặt sẽ có ở giai đoạn sau",
+  "englishTeacher": "Giáo viên tiếng Anh",
+  "search": "Tìm kiếm",
+  "help": "Trợ giúp",
+  "notifications": "Thông báo",
+  "noNotifications": "Bạn không có thông báo mới",
+  "studentHome": "Trang chủ",
+  "studentLearning": "Bài học",
+  "studentVocabulary": "Từ vựng",
+  "studentKnowledge": "Kiến thức",
+  "studentAssignments": "Bài tập",
+  "studentProgress": "Tiến trình",
+  "studentLeaderboard": "Xếp hạng",
+  "studentGame": "Trò chơi",
+  "studentNavigation": "Điều hướng học sinh",
+  "studentMenu": "Menu học sinh",
+  "signOut": "Đăng xuất",
+  "openStudentMenu": "Mở menu học sinh",
+  "closeStudentMenu": "Đóng menu học sinh",
+  "languageSelector": "Chọn ngôn ngữ"
 }

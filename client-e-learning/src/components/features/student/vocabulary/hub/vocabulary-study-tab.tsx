@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+
 import { useState } from "react";
 import { BookOpen } from "lucide-react";
 import { PaperSurface } from "@/components/student-ui/paper-surface";
@@ -28,6 +30,7 @@ export function VocabularyStudyTab({
   cards: StudentVocabularyStudyCard[];
   nowMs: number;
 }) {
+  const t = useTranslations("student.vocabulary.studyTab");
   const [learnMode, setLearnMode] = useState<LearnMode>("new");
   const isReview = tab === "review";
   const learn = useVocabularyLearnQueue(unitId, cards);
@@ -38,13 +41,13 @@ export function VocabularyStudyTab({
     <section className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="student-section-title text-foreground">
-          {isReview ? "Ôn tập đến hạn" : "Học và ghi nhớ"}
+          {isReview ? t("reviewTitle") : t("learnTitle")}
         </h2>
         {!isReview && (
           <div
             className="flex flex-wrap gap-2"
             role="group"
-            aria-label="Chọn cách học từ vựng"
+            aria-label={t("modeLabel")}
           >
             <button
               type="button"
@@ -52,7 +55,7 @@ export function VocabularyStudyTab({
               onClick={() => setLearnMode("new")}
               className={`student-control px-4 ${learnMode === "new" ? "student-filter-active" : "student-control--quiet"}`}
             >
-              Học từ mới
+              {t("new")}
             </button>
             <button
               type="button"
@@ -60,7 +63,7 @@ export function VocabularyStudyTab({
               onClick={() => setLearnMode("practice")}
               className={`student-control px-4 ${learnMode === "practice" ? "student-filter-active" : "student-control--quiet"}`}
             >
-              Luyện tự do ({learnedCount})
+              {t("practice", { count: learnedCount })}
             </button>
           </div>
         )}
@@ -70,7 +73,7 @@ export function VocabularyStudyTab({
         !reviewQueue.ready ? (
           <PaperSurface as="section" className="p-8 text-center" role="status">
             <p className="student-body text-muted-foreground">
-              Đang chuẩn bị lượt ôn...
+              {t("preparing")}
             </p>
           </PaperSurface>
         ) : reviewQueue.currentCard ? (
@@ -78,15 +81,15 @@ export function VocabularyStudyTab({
             <div className="space-y-2">
               <div className="flex items-center justify-between gap-2">
                 <p className="student-caption text-muted-foreground">
-                  Các từ đến hạn trong lượt này
+                  {t("dueWords")}
                 </p>
                 <span className="student-typewriter text-sm font-bold">
-                  Từ {reviewQueue.completedCount + 1}/{reviewQueue.totalCount}
+                  {t("progress", { current: reviewQueue.completedCount + 1, total: reviewQueue.totalCount })}
                 </span>
               </div>
               <div
                 role="progressbar"
-                aria-label="Tiến độ lượt ôn từ vựng"
+                aria-label={t("progressLabel")}
                 aria-valuemin={0}
                 aria-valuemax={reviewQueue.totalCount}
                 aria-valuenow={reviewQueue.completedCount}
@@ -115,19 +118,19 @@ export function VocabularyStudyTab({
             {reviewQueue.totalCount > 0 && (
               <StudentMascotScene
                 variant="feedback" mood="cheer" prop="book" size="compact"
-                message="Bạn đã xử lý hết lượt ôn này. Những từ chưa nhớ vẫn có thể luyện lại nhé!"
+                message={t("reviewMascot")}
                 className="mx-auto"
               />
             )}
             <h3 className="student-card-title text-foreground">
               {reviewQueue.totalCount > 0
-                ? "Hoàn thành lượt ôn!"
-                : "Không có từ đến hạn ôn"}
+                ? t("reviewComplete")
+                : t("noDue")}
             </h3>
             <p className="student-body text-muted-foreground">
               {reviewQueue.totalCount > 0
-                ? `Bạn đã xử lý ${reviewQueue.completedCount}/${reviewQueue.totalCount} từ đến hạn. Các từ quên sẽ quay về tab Học từ mới.`
-                : "Các từ đã học sẽ xuất hiện khi đến lịch ôn tiếp theo."}
+                ? t("reviewCompleteDesc", { completed: reviewQueue.completedCount, total: reviewQueue.totalCount })
+                : t("noDueDesc")}
             </p>
             {reviewQueue.totalCount > 0 && (
               <button
@@ -135,7 +138,7 @@ export function VocabularyStudyTab({
                 className="student-control student-control--secondary px-4"
                 onClick={reviewQueue.restart}
               >
-                Kiểm tra lượt ôn mới
+                {t("restartReview")}
               </button>
             )}
           </PaperSurface>
@@ -149,8 +152,7 @@ export function VocabularyStudyTab({
       ) : (
         <>
           <p className="student-caption text-muted-foreground !text-sm">
-            Hoàn thành: {learn.completedCount} · Chờ học lại:{" "}
-            {learn.pendingRetryCount}/5 · Từ mới còn: {learn.remainingCount}
+            {t("learnStats", { completed: learn.completedCount, retry: learn.pendingRetryCount, remaining: learn.remainingCount })}
           </p>
           {learn.currentCard ? (
             <VocabularyStudySession
@@ -167,7 +169,7 @@ export function VocabularyStudyTab({
               {learnedCount > 0 && (
                 <StudentMascotScene
                   variant="feedback" mood="happy" prop="book"
-                  message="Bạn đã đi hết các từ mới trong lượt này. Có thể luyện lại bất cứ lúc nào!"
+                  message={t("learnMascot")}
                   className="mx-auto"
                 />
               )}
@@ -177,12 +179,11 @@ export function VocabularyStudyTab({
               />
               <h3 className="student-card-title text-foreground">
                 {learnedCount > 0
-                  ? "Bạn đã học hết từ mới!"
-                  : "Chưa có từ mới để học"}
+                  ? t("allLearned")
+                  : t("noNew")}
               </h3>
               <p className="student-body text-muted-foreground">
-                Bạn vẫn có thể luyện lại những từ đã học bất cứ lúc nào. Luyện
-                tự do không thay đổi lịch ôn FSRS.
+                {t("learnEmptyDesc")}
               </p>
               {learnedCount > 0 && (
                 <button
@@ -190,7 +191,7 @@ export function VocabularyStudyTab({
                   className="student-control student-control--action px-5"
                   onClick={() => setLearnMode("practice")}
                 >
-                  Luyện lại từ đã học
+                  {t("practiceLearned")}
                 </button>
               )}
             </PaperSurface>

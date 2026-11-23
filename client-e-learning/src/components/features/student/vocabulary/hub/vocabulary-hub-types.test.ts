@@ -54,6 +54,21 @@ describe("Vocabulary due time helpers", () => {
       .toBe(Date.parse("2026-11-18T11:00:00Z"));
   });
 
+  it("formats review delay labels in the active language", () => {
+    const labels = {
+      fsrs: "Based on FSRS",
+      now: "Now",
+      underMinute: "Under 1 minute",
+      minutes: (count: number) => count + " minutes",
+      hours: (count: number) => count + " hours",
+      days: (count: number) => count + " days",
+    };
+    expect(formatVocabularyReviewDelay(undefined, now, labels)).toBe("Based on FSRS");
+    expect(formatVocabularyReviewDelay("2026-11-18T10:00:30Z", now, labels)).toBe("Under 1 minute");
+    expect(formatVocabularyReviewDelay("2026-11-18T10:06:00Z", now, labels)).toBe("6 minutes");
+    expect(formatVocabularyReviewDelay("2026-11-18T10:00:00Z", now, labels)).toBe("Now");
+  });
+
   it("formats AGAIN's short FSRS delay without hardcoding one minute", () => {
     expect(formatVocabularyReviewDelay("2026-11-18T10:00:30Z", now)).toBe("Dưới 1 phút");
     expect(formatVocabularyReviewDelay("2026-11-18T10:06:00Z", now)).toBe("6 phút");

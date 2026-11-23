@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { PaperSurface } from "@/components/student-ui/paper-surface";
@@ -18,10 +20,10 @@ import { vocabularyUnitCardsKey } from "./vocabulary-hub-types";
 
 type StudyMode = "WORD" | "MULTIPLE_CHOICE" | "TYPING" | "PRONUNCIATION";
 const MODES = [
-  { key: "WORD", label: "Từ" },
-  { key: "MULTIPLE_CHOICE", label: "Trắc nghiệm" },
-  { key: "TYPING", label: "Gõ từ" },
-  { key: "PRONUNCIATION", label: "Phát âm" },
+  { key: "WORD", label: "word" },
+  { key: "MULTIPLE_CHOICE", label: "multiple" },
+  { key: "TYPING", label: "typing" },
+  { key: "PRONUNCIATION", label: "pronunciation" },
 ] as const;
 
 type StudySessionProps = {
@@ -52,6 +54,7 @@ export function VocabularyStudySession({
   onPracticeDone,
   sessionMode = "INITIAL_LEARN",
 }: StudySessionProps) {
+  const t = useTranslations("student.vocabulary.studySession");
   const practiceOnly = sessionMode === "FREE_PRACTICE";
   const [mode, setMode] = useState<StudyMode>("WORD");
   const [modeReady, setModeReady] = useState(false);
@@ -69,11 +72,11 @@ export function VocabularyStudySession({
   const [now] = useState(() => Date.now());
   const dueTimes = preview.data?.data?.dueAtByRating;
   const formatDue = (value?: string) => {
-    if (!value) return "Theo FSRS";
+    if (!value) return t("fsrs");
     const hours = (new Date(value).getTime() - now) / 3_600_000;
     return hours < 24
-      ? `${Math.max(1, Math.round(hours))} giờ`
-      : `${Math.max(1, Math.round(hours / 24))} ngày`;
+      ? t("hours", { count: Math.max(1, Math.round(hours)) })
+      : t("days", { count: Math.max(1, Math.round(hours / 24)) });
   };
   const review = useMutation({
     mutationFn: (payload: RecordVocabularyReviewRequest) =>
@@ -113,13 +116,13 @@ export function VocabularyStudySession({
     <div className="student-vocab-study space-y-4">
       {practiceOnly && (
         <p className="student-caption text-muted-foreground">
-          Luyện tự do: kết quả chỉ phục vụ luyện tập, không thay đổi lịch ôn FSRS của từ này.
+          {t("practiceNotice")}
         </p>
       )}
       <div
         className="student-vocab-study-modes"
         role="tablist"
-        aria-label="Cách học từ vựng"
+        aria-label={t("modesLabel")}
       >
         {MODES.map((item) => (
           <button
@@ -131,7 +134,7 @@ export function VocabularyStudySession({
             onClick={() => selectMode(item.key)}
             className={`student-control student-vocab-study-mode ${mode === item.key ? "student-filter-active" : "student-control--quiet"}`}
           >
-            {item.label}
+            {t(item.label)}
           </button>
         ))}
       </div>
@@ -187,7 +190,7 @@ export function VocabularyStudySession({
                 selectMode(MODES[(index + 1) % MODES.length].key);
               }}
             >
-              {practiceOnly ? "Luyện bước tiếp" : "Chưa nhớ · Luyện tiếp"}
+              {practiceOnly ? t("nextPractice") : t("nextLearn")}
             </button>
             {practiceOnly ? (
               <button
@@ -195,7 +198,7 @@ export function VocabularyStudySession({
                 className="student-control student-control--action student-vocab-study-action"
                 onClick={onPracticeDone}
               >
-                Xong từ này · Chọn từ khác
+                {t("donePractice")}
               </button>
             ) : (
               <button
@@ -203,7 +206,7 @@ export function VocabularyStudySession({
                 className="student-control student-control--action student-vocab-study-action"
                 onClick={() => setRatingOpen(true)}
               >
-                Đã thuộc · Đánh giá
+                {t("rateLearned")}
               </button>
             )}
           </div>
@@ -215,14 +218,14 @@ export function VocabularyStudySession({
                 role="status"
                 className="student-caption text-muted-foreground"
               >
-                Đang tính lịch ôn dự kiến...
+                {t("previewLoading")}
               </p>
             )}
             {preview.isError && (
               <p role="alert" className="student-body text-destructive">
                 {preview.error instanceof Error
                   ? preview.error.message
-                  : "Không tải được lịch ôn."}
+                  : t("previewError")}
               </p>
             )}
             <VocabularyRatingPanel
@@ -244,7 +247,7 @@ export function VocabularyStudySession({
           role="status"
           className="student-body text-center text-muted-foreground"
         >
-          Đang lưu lịch ôn...
+          {t("saving")}
         </p>
       )}
       {!practiceOnly && review.isError && (
@@ -252,7 +255,7 @@ export function VocabularyStudySession({
           <p className="student-body text-destructive">
             {review.error instanceof Error
               ? review.error.message
-              : "Không lưu được lần học."}
+              : t("saveError")}
           </p>
           <div className="flex gap-2">
             <button
@@ -261,7 +264,7 @@ export function VocabularyStudySession({
               className="student-control student-control--action px-4"
               onClick={() => pendingAttempt && review.mutate(pendingAttempt)}
             >
-              Thử gửi lại
+              {t("retrySave")}
             </button>
             <button
               type="button"
@@ -271,7 +274,7 @@ export function VocabularyStudySession({
                 review.reset();
               }}
             >
-              Bỏ đánh giá
+              {t("discard")}
             </button>
           </div>
         </PaperSurface>

@@ -1,1 +1,48 @@
-{}
+{
+  "page": {
+    "eyebrow": "LEARNING PROGRESS",
+    "title": "Your progress",
+    "description": "Track your level, XP, learning streak, and milestones recorded by the system.",
+    "live": "Live data"
+  },
+  "streak": {
+    "weekdays": {
+      "mon": "Mon",
+      "tue": "Tue",
+      "wed": "Wed",
+      "thu": "Thu",
+      "fri": "Fri",
+      "sat": "Sat",
+      "sun": "Sun"
+    },
+    "loading": "Loading your learning streak and level",
+    "error": "Couldn't load achievements",
+    "errorDescription": "You can keep learning as usual. Try reloading your achievements.",
+    "retry": "Try again",
+    "aria": "Your learning achievements",
+    "title": "Learning streak",
+    "qualifiedToday": "Learned today",
+    "notQualifiedToday": "Not yet today",
+    "days": "{count, plural, one {# day} other {# days}}",
+    "longest": "Longest: {count, plural, one {# day} other {# days}}",
+    "calendarAria": "Study calendar from Monday to Sunday",
+    "dayDone": "Activity completed",
+    "dayNotDone": "No completed Activity",
+    "dayLearned": "learned",
+    "dayNotLearned": "not learned",
+    "todaySuffix": ", today",
+    "dayTooltip": "{date}: {status}",
+    "week": "This week: {count}/7 days",
+    "seeTomorrow": "See you tomorrow!",
+    "completeToday": "Complete 1 Activity to log today",
+    "weekProgress": "Study days this week",
+    "howToStreak": "Complete at least one Activity every day to keep your streak.",
+    "nextMilestone": " Next milestone: {days} days (+{xp} XP).",
+    "levelTitle": "Learning level",
+    "level": "Level {level}",
+    "lifetimeXp": "{xp} lifetime XP",
+    "nextLevel": "Reach the next XP threshold for Level {level}.",
+    "xpProgress": "XP progress to next level",
+    "xpRemaining": "{xp} XP to go"
+  }
+}

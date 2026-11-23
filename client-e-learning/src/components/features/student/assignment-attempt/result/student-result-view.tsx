@@ -59,11 +59,11 @@ export function StudentResultView({
       <header className="flex h-14 items-center gap-3 border-b bg-card px-4 rounded-xl mb-4">
         <Link href="/student/assignments" className="flex items-center gap-2">
           <Button variant="ghost" size="sm">
-            <ArrowLeft className="h-4 w-4" /> Danh sách bài
+            <ArrowLeft className="h-4 w-4" /> {t("backToAssignments")}
           </Button>
         </Link>
         <BarChart3 className="  h-4 w-4 text-primary" />
-        <h1 className="min-w-0 truncate font-semibold">Kết quả · {title}</h1>
+        <h1 className="min-w-0 truncate font-semibold">{t("result.headerTitle", { title })}</h1>
         <div className="ml-auto flex items-center gap-2"></div>
       </header>
 
@@ -176,8 +176,8 @@ export function StudentResultView({
           mood={timedOut ? "think" : "happy"}
           prop="book"
           message={timedOut
-            ? "Thời gian làm bài đã kết thúc. Xem lại phần thông tin được phép hiển thị nhé!"
-            : "Bạn đã nộp bài. Cùng xem lại kết quả và rút kinh nghiệm cho lần sau nhé!"}
+            ? t("result.mascotTimedOut")
+            : t("result.mascotSubmitted")}
           className="max-w-lg"
         />
 

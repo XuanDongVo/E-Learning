@@ -64,6 +64,7 @@ export function usePracticeController({
   unitId: number;
   activityId: number;
 }) {  const tErrors = useTranslations("errors");
+  const tWorkspace = useTranslations("student.activities.runtime.workspace");
   const router = useRouter();
   const unitHref = `/student/units/${unitId}`;
   const [mode, setMode] = useState<ActivitySessionMode>();
@@ -313,7 +314,7 @@ export function usePracticeController({
           (q) => q.id === v.questionId && q.resolutionReason === "TIMEOUT",
         )
       ) {
-        setTimeoutNotice("Câu vừa rồi hết giờ. Bạn không bị trừ mạng.");
+        setTimeoutNotice(tWorkspace("timeoutNotice"));
         setDrafts((drafts) => ({ ...drafts, [v.questionId]: [] }));
         if (data.status === "IN_PROGRESS") {
           setCurrentId((currentId) =>

@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+
 import type { ReactNode } from "react";
 import { Check, Lightbulb, RefreshCw, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -39,6 +41,7 @@ export function GuidedFinalStage({
   onDismissReview: () => void;
   onSubmit: () => void;
 }) {
+  const t = useTranslations("student.activities.runtime.guided");
   const guided = question.guided;
   if (!guided) return null;
 
@@ -52,8 +55,8 @@ export function GuidedFinalStage({
         ordering={question.ordering}
         draft={review?.answer ?? draft}
         disabled={pending || Boolean(review)}
-        inputLabel="Đáp án cuối cùng"
-        inputPlaceholder="Nhập đáp án"
+        inputLabel={t("finalInput")}
+        inputPlaceholder={t("finalPlaceholder")}
         onDraftChange={onDraftChange}
         guidedProgress={<GuidedProgress intro={guided.introContent} />}
         feedback={
@@ -61,7 +64,7 @@ export function GuidedFinalStage({
             {resultFeedback}
             {hint && (
               <p className="student-body rounded-xl border border-learning/30 bg-learning-soft px-3 py-2">
-                Gợi ý Final: {hint}
+                {t("finalHint", { hint })}
               </p>
             )}
             {error && (
@@ -80,7 +83,7 @@ export function GuidedFinalStage({
                 onClick={onUseHint}
                 disabled={hintPending}
               >
-                <Lightbulb size={16} /> Gợi ý Final
+                <Lightbulb size={16} /> {t("finalHintButton")}
               </Button>
             )}
             {review ? (
@@ -90,7 +93,7 @@ export function GuidedFinalStage({
                 ) : (
                   <Check size={16} />
                 )}
-                {review.feedback.retryAvailable ? "Thử lại ngay" : "Tiếp tục ngay"}
+                {review.feedback.retryAvailable ? t("retry") : t("continue")}
               </Button>
             ) : (
               <Button
@@ -98,7 +101,7 @@ export function GuidedFinalStage({
                 onClick={onSubmit}
                 disabled={!isGuidedFinalDraftComplete(question, draft) || pending}
               >
-                <Send size={16} /> Gửi đáp án
+                <Send size={16} /> {t("submitFinal")}
               </Button>
             )}
           </QuestionActions>

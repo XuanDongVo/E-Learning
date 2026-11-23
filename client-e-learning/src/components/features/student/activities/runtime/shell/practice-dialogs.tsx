@@ -1,6 +1,8 @@
 
 "use client";
 
+import { useTranslations } from "next-intl";
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -45,6 +47,7 @@ export function PracticeDialogs({
 }: {
   controller: PracticeController;
 }) {
+  const t = useTranslations("student.activities.runtime.dialogs");
   const {
     answeredCount,
     background,
@@ -80,15 +83,13 @@ export function PracticeDialogs({
             <AlertDialogTitle
               className="student-card-title text-foreground"
             >
-              Rời khỏi hoạt động?
+              {t("leaveTitle")}
             </AlertDialogTitle>
 
             <AlertDialogDescription
               className="student-body text-muted-foreground"
             >
-              Lượt luyện tập hiện tại sẽ không được lưu hoặc
-              tiếp tục. Bạn có chắc chắn muốn rời khỏi
-              hoạt động?
+              {t("leaveDescription")}
             </AlertDialogDescription>
           </AlertDialogHeader>
 
@@ -99,7 +100,7 @@ export function PracticeDialogs({
               disabled={finish.isPending}
               className={quietButton}
             >
-              Tiếp tục làm bài
+              {t("continue")}
             </AlertDialogCancel>
 
             <AlertDialogAction
@@ -111,8 +112,8 @@ export function PracticeDialogs({
               className={dangerButton}
             >
               {finish.isPending
-                ? "Đang thoát..."
-                : "Xác nhận rời"}
+                ? t("leaving")
+                : t("confirmLeave")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

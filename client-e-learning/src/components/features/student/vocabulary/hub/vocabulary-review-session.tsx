@@ -30,6 +30,15 @@ export function VocabularyReviewSession({
 }) {
   const t = useTranslations("student.vocabulary.reviewSession");
   const tErrors = useTranslations("errors");
+  const formatDue = (value?: string) =>
+    formatVocabularyReviewDelay(value, Date.now(), {
+      fsrs: t("delayFsrs"),
+      now: t("delayNow"),
+      underMinute: t("delayUnderMinute"),
+      minutes: (count) => t("delayMinutes", { count }),
+      hours: (count) => t("delayHours", { count }),
+      days: (count) => t("delayDays", { count }),
+    });
   const queryClient = useQueryClient();
   const [revealed, setRevealed] = useState(false);
   const [pending, setPending] = useState<RecordVocabularyReviewRequest | null>(null);
@@ -110,10 +119,10 @@ export function VocabularyReviewSession({
             againIsLocal={false}
             onRate={rate}
             times={{
-              AGAIN: formatVocabularyReviewDelay(preview.data?.data?.dueAtByRating.AGAIN),
-              HARD: formatVocabularyReviewDelay(preview.data?.data?.dueAtByRating.HARD),
-              GOOD: formatVocabularyReviewDelay(preview.data?.data?.dueAtByRating.GOOD),
-              EASY: formatVocabularyReviewDelay(preview.data?.data?.dueAtByRating.EASY),
+              AGAIN: formatDue(preview.data?.data?.dueAtByRating.AGAIN),
+              HARD: formatDue(preview.data?.data?.dueAtByRating.HARD),
+              GOOD: formatDue(preview.data?.data?.dueAtByRating.GOOD),
+              EASY: formatDue(preview.data?.data?.dueAtByRating.EASY),
             }}
           />
           {review.isPending ? (

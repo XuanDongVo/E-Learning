@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -27,6 +29,7 @@ import { studentVocabularyReviewService } from "@/services/student/student-vocab
 const overviewKey = ["student", "vocabulary", "overview"] as const;
 
 export function StudentVocabularyLibrary() {
+  const t = useTranslations("student.vocabulary.unitIndex");
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<"all" | "due">("all");
   const overview = useQuery({
@@ -66,9 +69,9 @@ export function StudentVocabularyLibrary() {
         className="student-vocab-library-hero space-y-3 p-5 sm:p-7"
       >
         <StudentPageHeading
-          eyebrow="SỔ TAY TỪ VỰNG"
-          title="Sổ tay từ vựng"
-          description="Tìm bộ từ theo Unit, bắt đầu học hoặc ôn những từ đến hạn."
+          eyebrow={t("eyebrow")}
+          title={t("title")}
+          description={t("description")}
           artwork={<StudentIllustration id="scene.open-notebook" decorative className="w-28 lg:w-36" />}
           artworkClassName="hidden sm:block"
           actions={
@@ -78,7 +81,7 @@ export function StudentVocabularyLibrary() {
                 className="student-control student-control--action inline-flex w-full items-center justify-center gap-2 px-4 sm:w-auto"
               >
                 <BookOpen className="size-4 shrink-0" aria-hidden="true" />
-                Mở kho từ
+                {t("openWordLibrary")}
                 <ArrowRight className="size-4 shrink-0" aria-hidden="true" />
               </Link>
               <Link
@@ -86,47 +89,47 @@ export function StudentVocabularyLibrary() {
                 className="student-control student-control--secondary inline-flex w-full items-center justify-center gap-2 px-4 sm:w-auto"
               >
                 <TrendingUp className="size-4 shrink-0" aria-hidden="true" />
-                Xem hành trình từ vựng
+                {t("viewProgress")}
               </Link>
             </>
           }
         />
         {overview.isSuccess && units.length > 0 && (
           <p className="student-meta border-t border-dashed border-border pt-3 text-muted-foreground">
-            {totalWords} từ trong thư viện · {totalNew} từ mới · {totalDue} từ đến hạn ôn
+            {t("totals", { words: totalWords, newWords: totalNew, due: totalDue })}
           </p>
         )}
       </PaperSurface>
 
       {overview.isLoading && (
         <PaperSurface className="p-6 student-body" role="status">
-          Đang tải các bộ từ vựng...
+          {t("loading")}
         </PaperSurface>
       )}
       {overview.isError && (
         <PaperSurface as="section" className="space-y-3 p-6" role="alert">
           <h2 className="student-card-title">
-            Không tải được thư viện từ vựng
+            {t("loadError")}
           </h2>
           <p className="student-body text-destructive">
             {overview.error instanceof Error
               ? overview.error.message
-              : "Có lỗi kết nối, hãy thử lại."}
+              : t("connectionError")}
           </p>
           <button
             type="button"
             onClick={() => void overview.refetch()}
             className="student-control student-control--action inline-flex items-center gap-2 px-4"
           >
-            <RefreshCw className="size-4" /> Thử lại
+            <RefreshCw className="size-4" /> {t("retry")}
           </button>
         </PaperSurface>
       )}
       {overview.isSuccess && units.length === 0 && (
         <StudentCollectionEmptyState
           illustration="illustration.no-lessons"
-          title="Chưa có bộ từ vựng nào"
-          description="Các Unit được công bố sẽ xuất hiện tại đây."
+          title={t("emptyTitle")}
+          description={t("emptyDescription")}
         />
       )}
       {overview.isSuccess && units.length > 0 && (
@@ -138,15 +141,15 @@ export function StudentVocabularyLibrary() {
                 id="vocab-library-title"
                 className="student-section-title"
               >
-                Bộ từ của bạn
+                {t("sectionTitle")}
               </ScrapbookHeading>
               <p className="student-body text-muted-foreground">
-                Chọn một bộ từ để xem, học, ôn hoặc chơi.
+                {t("sectionDescription")}
               </p>
             </div>
             <div
               role="group"
-              aria-label="Lọc bộ từ"
+              aria-label={t("filtersLabel")}
               className="flex flex-wrap gap-2"
             >
               <button
@@ -155,7 +158,7 @@ export function StudentVocabularyLibrary() {
                 onClick={() => setFilter("all")}
                 className={`student-control px-4 ${filter === "all" ? "student-filter-active" : "student-control--quiet"}`}
               >
-                Tất cả
+                {t("all")}
               </button>
               <button
                 type="button"
@@ -163,32 +166,32 @@ export function StudentVocabularyLibrary() {
                 onClick={() => setFilter("due")}
                 className={`student-control px-4 ${filter === "due" ? "student-filter-active" : "student-control--quiet"}`}
               >
-                Cần ôn ({totalDue})
+                {t("dueFilter", { count: totalDue })}
               </button>
             </div>
           </div>
           <StudentTextField
             id="student-vocab-search"
             type="search"
-            label="Tìm bộ từ"
+            label={t("searchLabel")}
             value={search}
             onChange={(event) => setSearch(event.target.value)}
             leading={<Search className="size-4" />}
-            placeholder="Nhập tên hoặc mã Unit..."
+            placeholder={t("searchPlaceholder")}
             containerClassName="max-w-lg"
           />
           <p className="student-meta text-muted-foreground" role="status">
             {hasActiveFilters
-              ? `Hiển thị ${visible.length}/${units.length} bộ từ phù hợp`
-              : `${units.length} bộ từ hiện có`}
+              ? t("filteredCount", { visible: visible.length, total: units.length })
+              : t("totalCount", { count: units.length })}
           </p>
           {visible.length === 0 && (
             <StudentCollectionEmptyState
-              title="Không tìm thấy bộ từ phù hợp"
-              description="Thử một từ khóa khác hoặc quay lại tất cả các bộ từ."
+              title={t("noMatches")}
+              description={t("noMatchesDescription")}
               action={
                 <button type="button" className="student-control student-control--secondary px-4" onClick={clearFilters}>
-                  Xóa bộ lọc
+                  {t("clearFilters")}
                 </button>
               }
             />
@@ -217,15 +220,15 @@ export function StudentVocabularyLibrary() {
                   <div className="student-meta flex flex-wrap gap-x-4 gap-y-2 text-muted-foreground">
                     <span className="inline-flex items-center gap-1.5">
                       <Layers3 className="size-4 shrink-0" aria-hidden="true" />
-                      {unit.totalCount} từ
+                      {t("totalWords", { count: unit.totalCount })}
                     </span>
                     <span className="inline-flex items-center gap-1.5">
                       <BookOpen className="size-4 shrink-0" aria-hidden="true" />
-                      {unit.newCount} mới
+                      {t("newWords", { count: unit.newCount })}
                     </span>
                     <span className={`inline-flex items-center gap-1.5 ${unit.dueCount > 0 ? "font-semibold text-primary" : ""}`}>
                       <CalendarClock className="size-4 shrink-0" aria-hidden="true" />
-                      {unit.dueCount} đến hạn
+                      {t("dueWords", { count: unit.dueCount })}
                     </span>
                   </div>
                   {unit.totalCount > 0 ? (
@@ -234,26 +237,26 @@ export function StudentVocabularyLibrary() {
                         href={`/student/vocabulary/units/${unit.unitId}?mode=learn`}
                         className="student-control student-control--action inline-flex items-center gap-1.5 px-4"
                       >
-                        Học <ArrowRight className="size-4" aria-hidden="true" />
+                        {t("learn")} <ArrowRight className="size-4" aria-hidden="true" />
                       </Link>
                       {unit.dueCount > 0 && (
                         <Link
                           href={`/student/vocabulary/units/${unit.unitId}?mode=review`}
                           className="student-control student-control--secondary inline-flex items-center gap-1.5 px-4"
                         >
-                          Ôn ngay
+                          {t("reviewNow")}
                         </Link>
                       )}
                       <Link
                         href={`/student/vocabulary/units/${unit.unitId}`}
                         className="student-control student-control--quiet inline-flex items-center gap-1.5 px-4"
                       >
-                        Xem từ
+                        {t("browse")}
                       </Link>
                     </div>
                   ) : (
                     <p className="student-caption text-muted-foreground">
-                      Chưa có từ vựng đang dùng.
+                      {t("emptyUnit")}
                     </p>
                   )}
                 </div>

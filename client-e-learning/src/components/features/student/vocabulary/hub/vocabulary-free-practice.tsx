@@ -1,6 +1,8 @@
 
 "use client";
 
+import { useTranslations } from "next-intl";
+
 import { useMemo, useState } from "react";
 import { BookOpen, CheckCircle2, RotateCcw } from "lucide-react";
 import { PaperSurface } from "@/components/student-ui/paper-surface";
@@ -18,6 +20,7 @@ export function VocabularyFreePractice({
   cards,
   onGoLearn,
 }: VocabularyFreePracticeProps) {
+  const t = useTranslations("student.vocabulary.freePractice");
   // Chỉ lấy các từ đã có tiến độ FSRS.
   const learnedCards = useMemo(
     () => cards.filter((card) => card.state !== "NEW"),
@@ -82,13 +85,11 @@ export function VocabularyFreePractice({
         />
 
         <h3 className="student-card-title text-foreground">
-          Chưa có từ đã học
+          {t("noLearned")}
         </h3>
 
         <p className="student-body text-muted-foreground">
-          Hãy hoàn thành một từ trong chế độ Học từ mới
-          hoặc đánh dấu từ đã biết ở tab Xem từ
-          để bắt đầu luyện tự do.
+          {t("noLearnedDesc")}
         </p>
 
         <button
@@ -96,7 +97,7 @@ export function VocabularyFreePractice({
           className="student-control student-control--action px-5"
           onClick={onGoLearn}
         >
-          Học từ mới
+          {t("startLearning")}
         </button>
       </PaperSurface>
     );
@@ -115,16 +116,15 @@ export function VocabularyFreePractice({
         />
 
         <h3 className="student-card-title text-foreground">
-          Hoàn thành lượt luyện!
+          {t("complete")}
         </h3>
 
         <p className="student-body text-muted-foreground">
-          Bạn đã luyện qua {totalCount} từ trong Unit này.
+          {t("completeDesc", { count: totalCount })}
         </p>
 
         <p className="student-caption text-muted-foreground">
-          Đây là lượt luyện tự do.
-          Lịch ôn FSRS của các từ không thay đổi.
+          {t("unchangedFsrs")}
         </p>
 
         <button
@@ -136,7 +136,7 @@ export function VocabularyFreePractice({
             className="size-4"
             aria-hidden="true"
           />
-          Luyện lại từ đầu
+          {t("restart")}
         </button>
       </PaperSurface>
     );
@@ -151,23 +151,23 @@ export function VocabularyFreePractice({
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="space-y-1">
             <h3 className="student-card-title text-foreground">
-              Luyện tập tự do
+              {t("title")}
             </h3>
 
             <p className="student-caption text-muted-foreground">
-              Luyện lại các từ đã học mà không thay đổi lịch ôn.
+              {t("subtitle")}
             </p>
           </div>
 
           <span className="student-typewriter text-sm font-bold text-foreground">
-            Từ {completedCount + 1}/{totalCount}
+            {t("progress", { current: completedCount + 1, total: totalCount })}
           </span>
         </div>
 
         <div
           className="h-2.5 w-full overflow-hidden rounded-full bg-muted"
           role="progressbar"
-          aria-label="Tiến độ luyện từ vựng"
+          aria-label={t("progressLabel")}
           aria-valuemin={0}
           aria-valuemax={totalCount}
           aria-valuenow={completedCount}

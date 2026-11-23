@@ -1,7 +1,32 @@
-import { Link } from "@/i18n/navigation";
-import { BarChart2, ArrowLeft } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { BarChart2 } from "lucide-react";
+import { getTranslations } from "next-intl/server";
+import { StudentStreakOverview } from "@/features/student/gamification/student-streak-overview";
+import { StudentPageHeading } from "@/components/student-ui/patterns/student-page-heading";
+import { StudentIllustration } from "@/components/student-ui/visuals/student-illustration";
 
-export default function ProgressPlaceholderPage() {
-  return <div className="space-y-6"><div className="flex items-center gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent text-accent-foreground"><BarChart2 className="h-5 w-5" /></div><div><h1 className="text-ui-2xl font-extrabold text-neutral-dark">Progress & Leaderboard</h1><p className="text-body text-neutral-muted">Learning Analytics & XP Breakdown</p></div></div><div className="space-y-3 rounded-2xl border border-border-color bg-card-bg p-8 text-center"><p className="text-neutral-muted">Module Progress đang sẵn sàng để triển khai tiếp theo.</p><Link href="/student"><Button variant="secondary" className="gap-2"><ArrowLeft className="h-4 w-4" /> Quay lại Dashboard</Button></Link></div></div>;
+export default async function StudentProgressPage() {
+  const t = await getTranslations("student.progress.page");
+  return (
+    <section aria-labelledby="student-progress-title" className="space-y-6 pb-8">
+      <StudentPageHeading
+        eyebrow={t("eyebrow")}
+        titleId="student-progress-title"
+        title={t("title")}
+        description={t("description")}
+        artwork={
+          <StudentIllustration
+            id="illustration.unit-journey"
+            decorative
+            className="w-36 lg:w-44"
+          />
+        }
+        artworkClassName="hidden sm:block"
+      />
+      <div className="flex items-center gap-2 text-primary">
+        <BarChart2 className="h-5 w-5" aria-hidden="true" />
+        <span className="student-meta">{t("live")}</span>
+      </div>
+      <StudentStreakOverview />
+    </section>
+  );
 }

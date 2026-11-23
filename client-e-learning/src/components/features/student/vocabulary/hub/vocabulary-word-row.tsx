@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+
 import { useState } from "react";
 import { Volume2, Star, CheckCircle2 } from "lucide-react";
 import { speakVocabulary } from "@/lib/vocabulary-pronunciation";
@@ -40,6 +42,7 @@ export function VocabularyWordRow({
   canUndoBrowseMark = false,
   markBusy = false,
 }: VocabularyWordRowProps) {
+  const t = useTranslations("student.vocabulary.wordRow");
   const [imageError, setImageError] = useState(false);
   const [activeAudio, setActiveAudio] = useState<"UK" | "US" | null>(null);
 
@@ -87,7 +90,7 @@ export function VocabularyWordRow({
                     handleSpeak("UK");
                   }}
                   className="flex max-w-full flex-wrap items-center gap-1.5 rounded-md px-1.5 py-0.5 -ml-1.5 text-left transition-colors hover:bg-muted hover:text-foreground"
-                  title="Nghe phát âm UK"
+                  title={t("listenUk")}
                 >
                   <span className="text-xs font-semibold text-muted-foreground">UK:</span>
                   <span className="break-all">{uk}</span>
@@ -104,7 +107,7 @@ export function VocabularyWordRow({
                     handleSpeak("US");
                   }}
                   className="flex max-w-full flex-wrap items-center gap-1.5 rounded-md px-1.5 py-0.5 -ml-1.5 text-left transition-colors hover:bg-muted hover:text-foreground"
-                  title="Nghe phát âm US"
+                  title={t("listenUs")}
                 >
                   <span className="text-xs font-semibold text-muted-foreground">US:</span>
                   <span className="break-all">{us}</span>
@@ -123,12 +126,12 @@ export function VocabularyWordRow({
                   handleSpeak("US");
                 }}
                 className="inline-flex max-w-full flex-wrap items-center gap-1.5 rounded-md px-1.5 py-0.5 -ml-1.5 text-left transition-colors hover:bg-muted hover:text-foreground"
-                title="Nghe phát âm (US)"
+                title={t("listenUs")}
               >
                 {defaultUsPhonetic ? (
                   <span className="break-all">{defaultUsPhonetic}</span>
                 ) : (
-                  <span className="text-xs text-muted-foreground">Phát âm US</span>
+                  <span className="text-xs text-muted-foreground">{t("pronounceUs")}</span>
                 )}
                 <Volume2
                   className={`size-3.5 shrink-0 ${
@@ -166,7 +169,7 @@ export function VocabularyWordRow({
               <div className="student-vocab-word-row-image h-20 w-24 overflow-hidden rounded-xl bg-background border border-border shadow-2xs">
                 <img
                   src={card.imageUrl!}
-                  alt={`Minh họa từ: ${card.word}`}
+                  alt={t("imageAlt", { word: card.word })}
                   loading="lazy"
                   onError={() => setImageError(true)}
                   className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
@@ -185,7 +188,7 @@ export function VocabularyWordRow({
                   className={`rounded-md p-1.5 transition-colors hover:bg-muted ${
                     isFavorite ? "text-accent fill-accent" : "hover:text-foreground"
                   }`}
-                  title="Đánh dấu từ yêu thích"
+                  title={t("favorite")}
                 >
                   <Star className="size-4" />
                 </button>
@@ -200,13 +203,13 @@ export function VocabularyWordRow({
                   }}
                   disabled={markBusy || card.needsRelearning || (isMastered && !canUndoBrowseMark)}
                   aria-pressed={isMastered}
-                  aria-label={card.needsRelearning ? "Từ đã quên: hãy học lại trong tab Học" : isMastered ? (canUndoBrowseMark ? "Hủy đánh dấu đã thuộc" : "Từ đã có lịch học") : "Đánh dấu đã thuộc, ôn sau 6 giờ"}
+                  aria-label={card.needsRelearning ? t("relearnLabel") : isMastered ? (canUndoBrowseMark ? t("undoLabel") : t("scheduledLabel")) : t("markLabel")}
                   className={`rounded-md p-1.5 transition-colors hover:bg-muted disabled:cursor-default disabled:opacity-70 ${
                     isMastered ? "text-success" : "hover:text-foreground"
                   }`}
-                  title={card.needsRelearning ? "Từ đã quên: học lại trong tab Học từ mới" : isMastered
-                    ? canUndoBrowseMark ? "Hủy đánh dấu (trở lại từ mới)" : "Từ đã có lịch ôn"
-                    : "Đánh dấu đã thuộc · ôn sau 6 giờ"}
+                  title={card.needsRelearning ? t("relearnTitle") : isMastered
+                    ? canUndoBrowseMark ? t("undoTitle") : t("scheduledTitle")
+                    : t("markTitle")}
                 >
                   <CheckCircle2 className="size-4" />
                 </button>

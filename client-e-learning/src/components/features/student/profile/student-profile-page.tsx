@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useLocale, useTranslations } from "next-intl";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type {
   StudentProfile,
@@ -106,10 +107,10 @@ function toViewProfile(raw: StudentProfile): Profile {
   };
 }
 const RELATIONSHIPS: Record<GuardianRelationship, string> = {
-  FATHER: "Bố",
-  MOTHER: "Mẹ",
-  GUARDIAN: "Người giám hộ",
-  OTHER: "Khác",
+  FATHER: "FATHER",
+  MOTHER: "MOTHER",
+  GUARDIAN: "GUARDIAN",
+  OTHER: "OTHER",
 };
 function guardianPayload(
   g: Profile["guardians"][number],
@@ -150,10 +151,6 @@ const parseAvatar = (key: string) => {
     : { style: "adventurer", seed: "alice" };
 };
 
-const genderLabel = (gender: string) =>
-  ({ MALE: "Nam", FEMALE: "Nữ", OTHER: "Khác" })[gender] || gender;
-
-const number = (n: number) => n.toLocaleString("vi-VN");
 
 /** Thẻ Scrapbook viền méo vẽ tay hữu cơ */
 function PaperCard({
@@ -243,11 +240,12 @@ function Kpi({
 }
 
 function Info({ label, value }: { label: string; value?: string | null }) {
+  const t = useTranslations("student.profile");
   return (
     <div className="min-w-0 border-b border-dashed border-secondary py-3 last:border-0">
       <dt className=" student-meta font-bold text-muted-foreground">{label}</dt>
       <dd className="mt-1 break-words student-body font-bold text-foreground">
-        {value || "Chưa cập nhật"}
+        {value || t("notUpdated")}
       </dd>
     </div>
   );
@@ -263,6 +261,7 @@ function AvatarDialog({
   onClose: () => void;
   onSave: (avatarKey: string) => void;
 }) {
+  const t = useTranslations("student.profile.avatar");
   const initial = parseAvatar(current);
   const [draftSeed, setDraftSeed] = useState(initial.seed);
   const [seed, setSeed] = useState(initial.seed);
@@ -284,19 +283,19 @@ function AvatarDialog({
           <div className="flex items-start justify-between gap-3">
             <div>
               <p className="student-meta text-primary">
-                Xưởng phác thảo chân dung
+                {t("workshop")}
               </p>
               <DialogTitle className="student-section-title mt-1 text-foreground">
-                Chọn avatar của bạn{" "}
+                {t("choose")}{" "}
                 <Sparkles className="inline text-accent" size={22} />
               </DialogTitle>
               <DialogDescription className="student-body mt-1 text-muted-foreground">
-                Gõ từ khóa để xem avatar thay đổi qua 10 phong cách.
+                {t("description")}
               </DialogDescription>
             </div>
             <DialogClose
               className="student-control student-control--quiet grid size-11 shrink-0 place-items-center rounded-full shadow-pop-sm"
-              aria-label="Đóng"
+              aria-label={t("close")}
             >
               <X size={16} />
             </DialogClose>
@@ -310,11 +309,11 @@ function AvatarDialog({
               className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
             />
             <input
-              aria-label="Từ khóa avatar"
+              aria-label={t("keyword")}
               className="student-field !px-[30px]"
               value={draftSeed}
               maxLength={40}
-              placeholder="Thử gõ: alice, luna, robot..."
+              placeholder={t("placeholder")}
               onChange={(e) => setDraftSeed(e.target.value)}
             />
           </label>
@@ -325,7 +324,7 @@ function AvatarDialog({
             }
             className="student-control student-control--secondary px-4 inline-flex flex-row items-center justify-center gap-1.5 sm:w-auto"
           >
-            <RefreshCw size={16} /> Xúc xắc hạt giống
+            <RefreshCw size={16} /> {t("random")}
           </button>
         </div>
 
@@ -369,13 +368,13 @@ function AvatarDialog({
             <div className="h-14 w-14 overflow-hidden rounded-xl border-2 border-ink bg-card p-1 shadow-pop-sm">
               <img
                 src={avatarSrc(style, seed)}
-                alt="Avatar đã chọn"
+                alt={t("selected")}
                 className="h-full w-full object-contain"
               />
             </div>
             <div>
               <div className=" student-meta text-muted-foreground">
-                Lựa chọn hiện tại
+                {t("selection")}
               </div>
               <div className="student-handwriting student-body font-black text-foreground">
                 {AVATAR_STYLES.find((s) => s.id === style)?.name}
@@ -390,7 +389,7 @@ function AvatarDialog({
             onClick={() => onSave(`dicebear:${style}:${seed}`)}
             className="student-control student-control--action w-full px-5 sm:w-auto"
           >
-            <Check size={16} /> Dán vào hồ sơ
+            <Check size={16} /> {t("save")}
           </button>
         </div>
       </DialogContent>
@@ -410,6 +409,8 @@ function Calendar({
   qualifiedDates: ReadonlySet<string>;
   todayDate: string;
 }) {
+  const t = useTranslations("student.profile.calendar");
+  const locale = useLocale();
   const first = new Date(month.getFullYear(), month.getMonth(), 1);
   const days = new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate();
   const start = (first.getDay() + 6) % 7;
@@ -419,7 +420,7 @@ function Calendar({
   ];
   const key = (day: number) =>
     `${month.getFullYear()}-${String(month.getMonth() + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-  const label = new Intl.DateTimeFormat("vi-VN", {
+  const label = new Intl.DateTimeFormat(locale === "en" ? "en-US" : "vi-VN", {
     month: "long",
     year: "numeric",
   }).format(month);
@@ -432,14 +433,14 @@ function Calendar({
         </h3>
         <div className="flex gap-2">
           <button
-            aria-label="Tháng trước"
+            aria-label={t("previous")}
             onClick={() => move(-1)}
             className="student-control student-control--quiet grid size-11 place-items-center shadow-pop-sm"
           >
             <ChevronLeft size={16} />
           </button>
           <button
-            aria-label="Tháng sau"
+            aria-label={t("next")}
             onClick={() => move(1)}
             className="student-control student-control--quiet grid size-11 place-items-center shadow-pop-sm"
           >
@@ -448,7 +449,7 @@ function Calendar({
         </div>
       </div>
       <div className="mt-4 grid grid-cols-7 gap-1 sm:gap-2 text-center student-meta font-bold text-muted-foreground">
-        {["T2", "T3", "T4", "T5", "T6", "T7", "CN"].map((d) => (
+        {(locale === "en" ? ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] : ["T2", "T3", "T4", "T5", "T6", "T7", "CN"]).map((d) => (
           <span key={d}>{d}</span>
         ))}
       </div>
@@ -469,7 +470,7 @@ function Calendar({
                     : "border-border bg-muted text-muted-foreground",
                 isToday && "ring-2 ring-primary ring-offset-1 font-black",
               )}
-              title={isQualified ? "Ngày học đạt chuẩn streak" : undefined}
+              title={isQualified ? t("qualifiedTitle") : undefined}
             >
               {day ?? ""}
             </div>
@@ -479,11 +480,11 @@ function Calendar({
       <div className="mt-4 flex flex-wrap items-center gap-4 student-meta font-semibold text-muted-foreground">
         <span className="flex items-center gap-2">
           <span className="h-3 w-3 rounded border border-ink bg-success-soft shadow-pop-sm" />
-          Đã đạt chuẩn streak
+          {t("qualified")}
         </span>
         <span className="flex items-center gap-2">
           <span className="h-3 w-3 rounded border border-border bg-muted" />
-          Chưa có bài học
+          {t("noLearning")}
         </span>
       </div>
     </div>
@@ -501,6 +502,15 @@ function StudentProfileContent({
   streak: StudentStreakOverview;
   learn: LearningData;
 }) {
+  const t = useTranslations("student.profile");
+  const locale = useLocale();
+  const number = (n: number) => n.toLocaleString(locale === "en" ? "en-US" : "vi-VN");
+  const displayDate = (value?: string | null) => {
+    if (!value) return "—";
+    const iso = /^(\d{4})-(\d{2})-(\d{2})/.exec(value);
+    if (iso && locale === "en") return `${iso[2]}/${iso[3]}/${iso[1]}`;
+    return formatDate(value, locale === "en" ? "en-US" : "vi-VN");
+  };
   const queryClient = useQueryClient();
   const [profile, setProfile] = useState<Profile>(() =>
     toViewProfile(initialProfile),
@@ -558,10 +568,10 @@ function StudentProfileContent({
     label: string;
     icon: React.ComponentType<{ size?: number }>;
   }[] = [
-    { id: "overview", label: "Tổng quan", icon: Sparkles },
-    { id: "learning", label: "Học tập", icon: BookOpen },
-    { id: "streak", label: "Chuỗi ngày", icon: Flame },
-    { id: "personal", label: "Thông tin cá nhân", icon: UserRound },
+    { id: "overview", label: t("tabOverview"), icon: Sparkles },
+    { id: "learning", label: t("tabLearning"), icon: BookOpen },
+    { id: "streak", label: t("tabStreak"), icon: Flame },
+    { id: "personal", label: t("tabPersonal"), icon: UserRound },
   ];
 
   const saveDraft = async () => {
@@ -574,12 +584,12 @@ function StudentProfileContent({
         gender: draft.gender,
         phone: draft.phone.trim(),
       });
-      if (!response.data) throw new Error("Không thể lấy hồ sơ vừa lưu.");
+      if (!response.data) throw new Error(t("savedProfileError"));
       const updated = toViewProfile(response.data);
       setProfile(updated);
       setDraft(updated);
       setEditMode(false);
-      setNotice("Đã cập nhật hồ sơ cá nhân.");
+      setNotice(t("saveSuccess"));
       void queryClient.invalidateQueries({ queryKey: ["student-profile"] });
     } catch (error) {
       setNotice(toAppError(error).message);
@@ -593,11 +603,11 @@ function StudentProfileContent({
     const fullName = guardianDraft.fullName.trim();
     const phone = guardianDraft.phone.trim();
     if (!fullName || !phone) {
-      setNotice("Vui lòng nhập họ tên và số điện thoại người bảo hộ.");
+      setNotice(t("guardianRequired"));
       return;
     }
     if (!isEmailValid) {
-      setNotice("Vui lòng nhập email hợp lệ.");
+      setNotice(t("invalidEmail"));
       return;
     }
     // Existing backend PUT replaces guardians; preserve every non-selected record.
@@ -623,13 +633,13 @@ function StudentProfileContent({
         phone: profile.phone,
         guardians,
       });
-      if (!response.data) throw new Error("Không thể lấy thông tin vừa lưu.");
+      if (!response.data) throw new Error(t("savedGuardianError"));
       const updated = toViewProfile(response.data);
       setProfile(updated);
       setDraft(updated);
       setGuardianEditing(false);
       setGuardianVisible(false);
-      setNotice("Đã lưu thông tin người bảo hộ.");
+      setNotice(t("guardianSaved"));
       void queryClient.invalidateQueries({ queryKey: ["student-profile"] });
     } catch (error) {
       setNotice(toAppError(error).message);
@@ -643,17 +653,17 @@ function StudentProfileContent({
     setSaving(true);
     try {
       const response = await studentProfileService.updateAvatar(avatarKey);
-      if (!response.data) throw new Error("Không thể lấy avatar vừa lưu.");
+      if (!response.data) throw new Error(t("savedAvatarError"));
       const updated = toViewProfile(response.data);
       setProfile(updated);
       setDraft(updated);
       setAvatarOpen(false);
-      setNotice("Đã cập nhật ảnh đại diện.");
+      setNotice(t("avatarUpdated"));
       void queryClient.invalidateQueries({ queryKey: ["student-profile"] });
-      toast.success("Ảnh đại diện đã được lưu.");
+      toast.success(t("avatarSaved"));
     } catch (error) {
       setNotice(toAppError(error).message);
-      toast.error("Không thể lưu ảnh đại diện.");
+      toast.error(t("avatarFailed"));
     } finally {
       setSaving(false);
     }
@@ -666,23 +676,23 @@ function StudentProfileContent({
           <div>
             <div className="mb-2 inline-flex items-center gap-2 -rotate-1 rounded-sm border-2 border-ink bg-secondary px-3 py-1 student-meta font-bold shadow-pop-sm">
               <Star size={16} fill="currentColor" className="text-accent" />
-              <span>Góc học tập</span>
+              <span>{t("corner")}</span>
               <span className="text-primary">✦</span>
-              <span>Hồ sơ học sinh</span>
+              <span>{t("profileLabel")}</span>
             </div>
             <h1 className="student-page-title">
-              Nhật ký của{" "}
+              {t("journal")}{" "}
               <span className="relative inline-block text-primary">
                 {profile.fullName}
                 <span className="absolute -bottom-1 left-0 -z-10 h-3 w-full -rotate-1 rounded-sm bg-marker/80" />
               </span>
             </h1>
             <p className="mt-1 student-meta text-muted-foreground">
-              ~ Nơi lưu lại từng trang hành trình rèn luyện mỗi ngày ~
+              {t("subtitle")}
             </p>
           </div>
           <span className="-rotate-1 rounded-xl border-2 border-ink bg-warning-soft px-4 py-2 student-meta font-bold text-primary shadow-pop-sm">
-            ✦ Sổ tay của bạn
+            {t("journalBook")}
           </span>
         </header>
 
@@ -694,7 +704,7 @@ function StudentProfileContent({
             <span>{notice}</span>
             <button
               className="grid size-11 place-items-center"
-              aria-label="Đóng thông báo"
+              aria-label={t("dismiss")}
               onClick={() => setNotice("")}
             >
               <X size={16} />
@@ -718,7 +728,7 @@ function StudentProfileContent({
                  {profile.avatarKey && (
                     <img
                       src={avatarSrc(avatar.style, avatar.seed)}
-                      alt="Ảnh đại diện học sinh"
+                      alt={t("studentAvatar")}
                       className="h-full w-full object-contain"
                     />
                   )}
@@ -727,8 +737,8 @@ function StudentProfileContent({
 
               <button
                 onClick={() => setAvatarOpen(true)}
-                aria-label="Đổi ảnh đại diện"
-                title="Đổi avatar"
+                aria-label={t("changeAvatar")}
+                title={t("avatarTitle")}
                 className="student-control student-control--accent absolute -bottom-2 -right-2 grid size-11 place-items-center rounded-full shadow-pop-sm"
               >
                 <Pencil size={16} />
@@ -742,7 +752,7 @@ function StudentProfileContent({
                   ✓ {profile.accountStatus}
                 </span>
                 <span className="rounded-sm border border-ink bg-secondary px-3 py-1 student-caption font-bold text-foreground">
-                  Học sinh
+                  {t("student")}
                 </span>
               </div>
 
@@ -752,26 +762,26 @@ function StudentProfileContent({
 
               <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 student-meta text-muted-foreground">
                 <span className="flex items-center gap-2">
-                  <GraduationCap size={16} /> Lớp {profile.currentClass.name} ·{" "}
+                  <GraduationCap size={16} /> {t("class")} {profile.currentClass.name} ·{" "}
                   {profile.currentClass.gradeName}
                 </span>
                 <span className="flex items-center gap-2">
-                  <CalendarDays size={16} /> Năm học{" "}
+                  <CalendarDays size={16} /> {t("academicYear")}{" "}
                   {profile.currentClass.academicYear}
                 </span>
               </div>
 
               <div className="mt-4 flex flex-wrap gap-3">
                 <span className="inline-flex items-center gap-2 rounded-xl border-2 border-ink bg-warning-soft px-3 py-1 student-meta font-bold shadow-pop-sm">
-                  <Star size={16} className="text-accent" /> Cấp độ{" "}
+                  <Star size={16} className="text-accent" /> {t("level")}{" "}
                   {game.currentLevel}
                 </span>
                 <span className="inline-flex items-center gap-2 rounded-xl border-2 border-ink bg-primary-soft px-3 py-1 student-meta font-bold text-primary shadow-pop-sm">
                   <Zap size={16} /> {number(game.lifetimeXp)} XP
                 </span>
                 <span className="inline-flex items-center gap-2 rounded-xl border-2 border-ink bg-secondary px-3 py-1 student-meta font-bold shadow-pop-sm">
-                  <Flame size={16} className="text-primary" /> Chuỗi{" "}
-                  {game.currentStreak} ngày
+                  <Flame size={16} className="text-primary" /> {t("streak")}{" "}
+                  {t("days", { count: game.currentStreak })}
                 </span>
               </div>
             </div>
@@ -795,7 +805,7 @@ function StudentProfileContent({
               className="student-control student-control--secondary self-start px-4 inline-flex flex-row items-center justify-center gap-1.5"
             >
               <Pencil size={16} className="shrink-0" />
-              <span>Chỉnh sửa</span>
+              <span>{t("edit")}</span>
             </button>
           </div>
 
@@ -804,7 +814,7 @@ function StudentProfileContent({
             <div className="flex flex-wrap items-center justify-between gap-2 ">
               <span className="flex items-center gap-2 student-meta font-black text-foreground">
                 <TrendingUp size={16} className="text-primary" />
-                Tiến trình lên Cấp {game.currentLevel + 1}
+                {t("nextLevelProgress", { level: game.currentLevel + 1 })}
               </span>
               <span className="student-meta font-bold text-muted-foreground">
                 {number(game.xpIntoCurrentLevel)} / {number(levelRange)} XP
@@ -814,11 +824,10 @@ function StudentProfileContent({
               className="mt-3"
               value={game.xpIntoCurrentLevel}
               max={levelRange}
-              label={`Tiến trình lên Cấp ${game.currentLevel + 1}`}
+              label={t("nextLevelProgress", { level: game.currentLevel + 1 })}
             />
             <p className="mt-2 student-meta text-muted-foreground">
-              Cần thêm <strong>{number(game.xpToNextLevel)} XP</strong> để thăng
-              cấp · Mốc kế tiếp: {number(game.nextLevelRequiredXp)} XP tích lũy
+              {t.rich("nextLevelHint", { remaining: number(game.xpToNextLevel), threshold: number(game.nextLevelRequiredXp), strong: (chunks) => <strong>{chunks}</strong> })}
             </p>
           </div>
         </PaperCard>
@@ -827,37 +836,37 @@ function StudentProfileContent({
         <div className="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
           <Kpi
             icon={Zap}
-            label="Tổng tích lũy"
+            label={t("lifetime")}
             value={`${number(game.lifetimeXp)} XP`}
-            hint="Điểm rèn luyện trọn đời"
+            hint={t("lifetimeDesc")}
             color="bg-warning-soft"
             rotation="-rotate-1"
           />
           <Kpi
             icon={Flame}
-            label="Chuỗi liên tục"
-            value={`${game.currentStreak} ngày`}
+            label={t("streakKpi")}
+            value={t("days", { count: game.currentStreak })}
             hint={
               game.qualifiedToday
-                ? "✓ Hôm nay đã đạt"
-                : "Chưa hoàn thành hôm nay"
+                ? t("qualifiedToday")
+                : t("notQualifiedToday")
             }
             color="bg-primary-soft"
             rotation="rotate-1"
           />
           <Kpi
             icon={Activity}
-            label="Phiên luyện tập"
+            label={t("sessions")}
             value={number(learn.sessionTotal)}
-            hint="Bài tập đã thực hiện"
+            hint={t("sessionsDesc")}
             color="bg-success-soft"
             rotation="-rotate-1"
           />
           <Kpi
             icon={ClipboardCheck}
-            label="Nhiệm vụ nộp"
+            label={t("submittedAssignments")}
             value={`${learn.assignments.submitted}/${learn.assignments.assigned}`}
-            hint="Tiến độ bài tập giao"
+            hint={t("assignmentDesc")}
             color="bg-secondary"
             rotation="rotate-1"
           />
@@ -866,7 +875,7 @@ function StudentProfileContent({
         {/* NAVIGATION TABS (Notebook Bookmarks) */}
         <nav
           ref={tabsRef}
-          aria-label="Phần hồ sơ"
+          aria-label={t("sections")}
           className="mt-8 flex scroll-mt-6 gap-2 overflow-x-auto border-b-2 border-dashed border-ink pb-3"
         >
           {tabList.map(({ id, label, icon: Icon }) => (
@@ -894,8 +903,8 @@ function StudentProfileContent({
               <PaperCard className="p-6">
                 <SectionHeading
                   icon={BookOpen}
-                  title="Tóm tắt học tập"
-                  note="Tổng quan nhiệm vụ"
+                  title={t("studyOverview")}
+                  note={t("studyOverviewDesc")}
                 />
                 <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3">
                   <div className="rounded-xl border border-border bg-muted p-4">
@@ -903,7 +912,7 @@ function StudentProfileContent({
                       {learn.sessionTotal}
                     </div>
                     <div className="mt-1 student-meta font-bold text-muted-foreground">
-                      Tổng số bài
+                      {t("totalActivities")}
                     </div>
                   </div>
                   <div className="rounded-xl border border-border bg-muted p-4">
@@ -911,7 +920,7 @@ function StudentProfileContent({
                       {learn.sessionsCompleted}
                     </div>
                     <div className="mt-1 student-meta font-bold text-muted-foreground">
-                      Đã hoàn thành
+                      {t("completed")}
                     </div>
                   </div>
                   <div className="col-span-2 rounded-xl border border-border bg-muted p-4 sm:col-span-1">
@@ -919,7 +928,7 @@ function StudentProfileContent({
                       {learn.assignments.assigned}
                     </div>
                     <div className="mt-1 student-meta font-bold text-muted-foreground">
-                      Bài tập giao
+                      {t("assignments")}
                     </div>
                   </div>
                 </div>
@@ -927,22 +936,22 @@ function StudentProfileContent({
                 <div className="mt-6 space-y-3 ">
                   {[
                     {
-                      label: "Đã nộp",
+                      label: t("submitted"),
                       count: learn.assignments.submitted,
                       color: "bg-success",
                     },
                     {
-                      label: "Chưa bắt đầu",
+                      label: t("notStarted"),
                       count: learn.assignments.notStarted,
                       color: "bg-accent",
                     },
                     {
-                      label: "Đang làm",
+                      label: t("inProgress"),
                       count: learn.assignments.inProgress,
                       color: "bg-learning",
                     },
                     {
-                      label: "Nộp muộn / Quá hạn",
+                      label: t("lateOverdue"),
                       count: learn.assignments.late,
                       color: "bg-primary",
                     },
@@ -972,7 +981,7 @@ function StudentProfileContent({
                   onClick={() => setTab("learning")}
                   className="mt-5 inline-flex min-h-11 items-center gap-1 student-label text-primary hover:underline"
                 >
-                  Xem chi tiết học tập <ArrowRight size={16} />
+                  {t("viewLearning")} <ArrowRight size={16} />
                 </button>
               </PaperCard>
 
@@ -980,13 +989,13 @@ function StudentProfileContent({
               <PaperCard className="p-6">
                 <SectionHeading
                   icon={Clock3}
-                  title="Nhật ký gần đây"
-                  note="Phiên rèn luyện"
+                  title={t("recentJournal")}
+                  note={t("recentPractice")}
                 />
                 <div className="mt-4 divide-y border-dashed border-secondary">
                   {learn.activities.length === 0 && (
                     <p className="student-body text-muted-foreground">
-                      Chưa có phiên luyện tập nào.
+                      {t("noSessions")}
                     </p>
                   )}
                   {learn.activities.slice(0, 3).map((item) => (
@@ -999,15 +1008,15 @@ function StudentProfileContent({
                           {item.name}
                         </div>
                         <div className="truncate student-meta text-muted-foreground">
-                          {item.unit} · {formatDate(item.date)}
+                          {item.unit} · {displayDate(item.date)}
                         </div>
                       </div>
                       <div className="text-right ">
                         <div className="student-meta font-black text-foreground">
-                          {item.correct}/{item.total} đúng
+                          {t("correctScore", { correct: item.correct, total: item.total })}
                         </div>
                         <div className="student-meta font-bold text-primary">
-                          {item.xp ? `+${item.xp} XP` : "Đang làm..."}
+                          {item.xp ? `+${item.xp} XP` : t("inProgressEllipsis")}
                         </div>
                       </div>
                     </div>
@@ -1019,44 +1028,44 @@ function StudentProfileContent({
             {/* RIGHT COLUMN: STREAK WIDGET & CLASS INFO */}
             <div className="space-y-6 lg:col-span-2">
               <PaperCard className="p-6" hasTape={true} tapePosition="right">
-                <SectionHeading icon={Flame} title="Độ chăm chỉ" />
+                <SectionHeading icon={Flame} title={t("consistency")} />
                 <div className="mt-4 flex items-end gap-3 student-handwriting">
                   <span className="student-stat font-black text-primary">
                     {game.currentStreak}
                   </span>
                   <div className="pb-1 student-meta font-bold text-muted-foreground">
-                    ngày liên tiếp{" "}
+                    {t("consecutiveLabel")}{" "}
                     <Flame size={16} className="inline text-primary" />
                   </div>
                 </div>
                 <p className="mt-2 student-meta text-muted-foreground">
-                  Kỷ lục dài nhất:{" "}
+                  {t("longestLabel")}{" "}
                   <strong className="text-foreground">
-                    {game.longestStreak} ngày
+                    {t("days", { count: game.longestStreak })}
                   </strong>
                 </p>
                 <div className="mt-4 flex items-center gap-2 rounded-xl border border-ink bg-success-soft p-3 student-meta font-bold text-success">
-                  <CheckCircle2 size={16} /> Hôm nay đã hoàn thành mục tiêu
+                  <CheckCircle2 size={16} /> {t("todayGoal")}
                 </div>
                 <button
                   onClick={() => setTab("streak")}
                   className="mt-4 inline-flex min-h-11 items-center gap-1 student-label text-primary hover:underline"
                 >
-                  Mở lịch chuỗi ngày học <ArrowRight size={16} />
+                  {t("openCalendar")} <ArrowRight size={16} />
                 </button>
               </PaperCard>
 
               <PaperCard className="p-6">
-                <SectionHeading icon={GraduationCap} title="Lớp & Trường" />
+                <SectionHeading icon={GraduationCap} title={t("classSchool")} />
                 <dl className="mt-2">
-                  <Info label="Lớp học" value={profile.currentClass.name} />
-                  <Info label="Khối" value={profile.currentClass.gradeName} />
+                  <Info label={t("class")} value={profile.currentClass.name} />
+                  <Info label={t("grade")} value={profile.currentClass.gradeName} />
                   <Info
-                    label="Năm học"
+                    label={t("academicYear")}
                     value={profile.currentClass.academicYear}
                   />
                   <Info
-                    label="Trạng thái"
+                    label={t("status")}
                     value={profile.currentClass.status}
                   />
                 </dl>
@@ -1064,7 +1073,7 @@ function StudentProfileContent({
                   onClick={() => setTab("personal")}
                   className="mt-3 inline-flex min-h-11 items-center gap-1 student-label text-primary hover:underline"
                 >
-                  Xem thông tin chi tiết <ArrowRight size={16} />
+                  {t("viewDetails")} <ArrowRight size={16} />
                 </button>
               </PaperCard>
             </div>
@@ -1077,16 +1086,16 @@ function StudentProfileContent({
             <PaperCard className="p-6">
               <SectionHeading
                 icon={Target}
-                title="Tổng quan bài tập"
-                note="Nhiệm vụ rèn luyện"
+                title={t("assignmentOverview")}
+                note={t("assignmentOverviewNote")}
               />
               <div className="mt-5 grid grid-cols-2 gap-3 md:grid-cols-3">
                 {[
-                  { label: "Được giao", val: learn.assignments.assigned },
-                  { label: "Đã nộp", val: learn.assignments.submitted },
-                  { label: "Đang làm", val: learn.assignments.inProgress },
-                  { label: "Chưa bắt đầu", val: learn.assignments.notStarted },
-                  { label: "Nộp muộn", val: learn.assignments.late },
+                  { label: t("assigned"), val: learn.assignments.assigned },
+                  { label: t("submitted"), val: learn.assignments.submitted },
+                  { label: t("inProgress"), val: learn.assignments.inProgress },
+                  { label: t("notStarted"), val: learn.assignments.notStarted },
+                  { label: t("late"), val: learn.assignments.late },
                 ].map((item, idx) => (
                   <div
                     key={item.label}
@@ -1106,15 +1115,15 @@ function StudentProfileContent({
               </div>
               <p className="mt-4 flex items-start gap-2 student-meta text-muted-foreground">
                 <CircleHelp size={16} className="shrink-0 text-accent" />
-                Thống kê bài được giao của học sinh.
+                {t("assignmentsInfo")}
               </p>
             </PaperCard>
 
             <PaperCard className="p-6">
               <SectionHeading
                 icon={Activity}
-                title="Chi tiết bài luyện tập gần đây"
-                note="Nhật ký phiên học"
+                title={t("sessionDetails")}
+                note={t("sessionHistory")}
               />
               <div className="mt-4 space-y-3">
                 {learn.activities.map((item) => (
@@ -1133,7 +1142,7 @@ function StudentProfileContent({
                         {item.unit}
                       </div>
                       <div className=" student-meta text-muted-foreground">
-                        {formatDate(item.date)} · {item.mode}
+                        {displayDate(item.date)} · {item.mode}
                       </div>
                     </div>
                     <div className="flex flex-col items-end gap-1 ">
@@ -1145,10 +1154,10 @@ function StudentProfileContent({
                             : "bg-warning-soft text-warning",
                         )}
                       >
-                        {item.status === "COMPLETED" ? "Đã xong" : "Đang làm"}
+                        {item.status === "COMPLETED" ? t("done") : t("inProgress")}
                       </span>
                       <span className="student-meta font-black">
-                        {item.correct}/{item.total} câu đúng
+                        {t("correctScore", { correct: item.correct, total: item.total })}
                       </span>
                       <span className="student-meta font-bold text-primary">
                         {item.xp != null ? `+${item.xp} XP` : "—"}
@@ -1167,8 +1176,8 @@ function StudentProfileContent({
             <PaperCard className="p-6 lg:col-span-3" hasTape={true}>
               <SectionHeading
                 icon={CalendarDays}
-                title="Lịch rèn luyện"
-                note="Con dấu ngày học đạt chuẩn"
+                title={t("calendarTitle")}
+                note={t("calendarNote")}
               />
               <div className="mt-5">
                 <Calendar
@@ -1183,34 +1192,33 @@ function StudentProfileContent({
                 />
               </div>
               <p className="mt-4 student-meta text-muted-foreground">
-                * Các ô đóng dấu xanh thể hiện ngày bạn có bài tập hợp lệ được
-                tính vào chuỗi liên tục.
+                {t("calendarExplanation")}
               </p>
             </PaperCard>
 
             <div className="space-y-6 lg:col-span-2">
               <PaperCard className="p-6">
-                <SectionHeading icon={Flame} title="Thống kê chuỗi ngày" />
+                <SectionHeading icon={Flame} title={t("streakStats")} />
                 <dl className="mt-2">
                   <Info
-                    label="Chuỗi hiện tại"
-                    value={`${game.currentStreak} ngày liên tiếp`}
+                    label={t("currentStreak")}
+                    value={t("consecutive", { count: game.currentStreak })}
                   />
                   <Info
-                    label="Kỷ lục dài nhất"
-                    value={`${game.longestStreak} ngày`}
+                    label={t("longestStreak")}
+                    value={t("days", { count: game.longestStreak })}
                   />
                   <Info
-                    label="Hôm nay đạt chuẩn?"
+                    label={t("todayQualified")}
                     value={
                       game.qualifiedToday
-                        ? "Đã hoàn thành ✓"
-                        : "Chưa hoàn thành"
+                        ? t("qualified")
+                        : t("unqualified")
                     }
                   />
                   <Info
-                    label="Ngày hoàn thành gần nhất"
-                    value={formatDate(game.lastQualifiedDate)}
+                    label={t("lastQualified")}
+                    value={displayDate(game.lastQualifiedDate)}
                   />
                 </dl>
               </PaperCard>
@@ -1219,8 +1227,8 @@ function StudentProfileContent({
               <PaperCard className="p-6">
                 <SectionHeading
                   icon={Award}
-                  title="Mốc huy hiệu chuỗi"
-                  note="Tem kỷ niệm"
+                  title={t("milestones")}
+                  note={t("milestoneDesc")}
                 />
                 <div className="mt-4 space-y-3 ">
                   {milestones.map((m) => (
@@ -1241,20 +1249,20 @@ function StudentProfileContent({
                         </span>
                         <div>
                           <div className="student-meta font-black text-foreground">
-                            Mốc {m.days} ngày
+                            {t("milestoneDays", { days: m.days })}
                           </div>
                           <div className="student-meta font-bold text-primary">
-                            +{m.xp} XP thưởng
+                            {t("milestoneXp", { xp: m.xp })}
                           </div>
                         </div>
                       </div>
                       {m.awarded ? (
                         <span className="rounded-sm border border-ink bg-success-soft px-2 py-1 student-caption font-bold text-success">
-                          Đã mở khóa
+                          {t("unlocked")}
                         </span>
                       ) : (
                         <span className=" student-caption font-bold text-muted-foreground">
-                          Chưa mở
+                          {t("locked")}
                         </span>
                       )}
                     </div>
@@ -1270,7 +1278,7 @@ function StudentProfileContent({
           <div className="mt-6 grid gap-6 lg:grid-cols-2">
             <PaperCard className="p-6" hasTape={true} tapePosition="left">
               <div className="flex flex-wrap items-center justify-between gap-2 border-b-2 border-dashed border-secondary pb-3">
-                <SectionHeading icon={UserRound} title="Thông tin cá nhân" />
+                <SectionHeading icon={UserRound} title={t("tabPersonal")} />
                 <button
                   onClick={() => {
                     setDraft(profile);
@@ -1279,14 +1287,14 @@ function StudentProfileContent({
                   className="student-control student-control--secondary px-3 inline-flex flex-row items-center justify-center gap-1.5"
                 >
                   <Pencil size={16} />
-                  {editMode ? "Hủy" : "Sửa"}
+                  {editMode ? t("cancel") : t("editShort")}
                 </button>
               </div>
 
               {editMode ? (
                 <div className="mt-4 space-y-4">
                   <label className="student-label block">
-                    Họ và tên
+                    {t("name")}
                     <input
                       className="student-field mt-1"
                       value={draft.fullName}
@@ -1296,7 +1304,7 @@ function StudentProfileContent({
                     />
                   </label>
                   <label className="student-label block">
-                    Số điện thoại
+                    {t("phone")}
                     <input
                       className="student-field mt-1"
                       value={draft.phone}
@@ -1306,7 +1314,7 @@ function StudentProfileContent({
                     />
                   </label>
                   <label className="student-label block">
-                    Ngày sinh
+                    {t("birthDate")}
                     <input
                       type="date"
                       className="student-field mt-1"
@@ -1317,7 +1325,7 @@ function StudentProfileContent({
                     />
                   </label>
                   <label className="student-label block">
-                    Giới tính
+                    {t("genderLabel")}
                     <select
                       className="student-field mt-1"
                       value={draft.gender}
@@ -1328,9 +1336,9 @@ function StudentProfileContent({
                         })
                       }
                     >
-                      <option value="MALE">Nam</option>
-                      <option value="FEMALE">Nữ</option>
-                      <option value="OTHER">Khác</option>
+                      <option value="MALE">{t("male")}</option>
+                      <option value="FEMALE">{t("female")}</option>
+                      <option value="OTHER">{t("other")}</option>
                     </select>
                   </label>
                   <button
@@ -1338,21 +1346,21 @@ function StudentProfileContent({
                     disabled={!draft.fullName.trim() || saving}
                     className="student-control student-control--action px-4"
                   >
-                    <Save size={16} /> Lưu thay đổi
+                    <Save size={16} /> {t("saveChanges")}
                   </button>
                 </div>
               ) : (
                 <dl className="mt-3 grid grid-cols-1 gap-x-5 sm:grid-cols-2">
-                  <Info label="Họ và tên" value={profile.fullName} />
+                  <Info label={t("name")} value={profile.fullName} />
                   <Info label="Email" value={profile.email} />
                   <Info
-                    label="Ngày sinh"
-                    value={formatDate(profile.dateOfBirth)}
+                    label={t("birthDate")}
+                    value={displayDate(profile.dateOfBirth)}
                   />
-                  <Info label="Giới tính" value={genderLabel(profile.gender)} />
-                  <Info label="Số điện thoại" value={profile.phone} />
+                  <Info label={t("genderLabel")} value={t(`gender.${profile.gender}`)} />
+                  <Info label={t("phone")} value={profile.phone} />
                   <Info
-                    label="Trạng thái tài khoản"
+                    label={t("accountStatus")}
                     value={profile.accountStatus}
                   />
                 </dl>
@@ -1363,17 +1371,17 @@ function StudentProfileContent({
               <PaperCard className="p-6">
                 <SectionHeading
                   icon={GraduationCap}
-                  title="Thông tin trường học"
+                  title={t("schoolInfo")}
                 />
                 <dl className="mt-3 grid grid-cols-1 gap-x-4 sm:grid-cols-2">
-                  <Info label="Lớp học" value={profile.currentClass.name} />
-                  <Info label="Khối" value={profile.currentClass.gradeName} />
+                  <Info label={t("class")} value={profile.currentClass.name} />
+                  <Info label={t("grade")} value={profile.currentClass.gradeName} />
                   <Info
-                    label="Năm học"
+                    label={t("academicYear")}
                     value={profile.currentClass.academicYear}
                   />
                   <Info
-                    label="Tình trạng"
+                    label={t("condition")}
                     value={profile.currentClass.status}
                   />
                 </dl>
@@ -1384,16 +1392,16 @@ function StudentProfileContent({
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <SectionHeading
                     icon={Users}
-                    title="Người bảo hộ"
-                    note="Riêng tư"
+                    title={t("guardian")}
+                    note={t("private")}
                   />
                   <button
                     type="button"
                     aria-pressed={guardianVisible}
                     aria-label={
                       guardianVisible
-                        ? "Ẩn thông tin người bảo hộ"
-                        : "Hiện thông tin người bảo hộ"
+                        ? t("hideGuardian")
+                        : t("showGuardian")
                     }
                     onClick={() => {
                       setGuardianVisible((old) => !old);
@@ -1402,14 +1410,14 @@ function StudentProfileContent({
                     className="student-control student-control--secondary px-3 inline-flex flex-row items-center justify-center gap-1.5 "
                   >
                     {guardianVisible ? <EyeOff size={16} /> : <Eye size={16} />}
-                    {guardianVisible ? "Ẩn" : "Hiện"}
+                    {guardianVisible ? t("hide") : t("show")}
                   </button>
                 </div>
                 {!guardianVisible ? (
                   <div className="mt-4 flex items-center gap-3 rounded-lg border border-dashed border-ink bg-muted p-4">
                     <LockKeyhole size={16} aria-hidden="true" />
                     <span className="student-body font-semibold">
-                      Thông tin đang ẩn. Nhấn nút mắt để xem.
+                      {t("guardianHidden")}
                     </span>
                   </div>
                 ) : (
@@ -1423,7 +1431,7 @@ function StudentProfileContent({
                                 {selectedGuardian.fullName}
                               </h3>
                               <span className="rounded-md border border-ink bg-mustard px-2 py-0.5 text-meta font-bold text-ink shadow-[1px_1px_0px_var(--student-ink,#18181b)]">
-                                {RELATIONSHIPS[selectedGuardian.relationship]}
+                                {t(`relationship.${selectedGuardian.relationship}`)}
                               </span>
                             </div>
 
@@ -1431,7 +1439,7 @@ function StudentProfileContent({
                             <div className="mt-2.5 space-y-1.5 text-sm">
                               <div className="flex items-center justify-between ">
                                 <span className="student-body">
-                                  Điện thoại:
+                                  {t("phoneShort")}
                                 </span>
                                 <span className="student-body">
                                   {selectedGuardian.phone}
@@ -1442,7 +1450,7 @@ function StudentProfileContent({
                                 <span className="text-ink font-medium">
                                   {selectedGuardian.email || (
                                     <span className="student-body">
-                                      Chưa cập nhật
+                                      {t("notUpdated")}
                                     </span>
                                   )}
                                 </span>
@@ -1471,8 +1479,8 @@ function StudentProfileContent({
                           <Pencil size={15} className="shrink-0" />
                           <span>
                             {selectedGuardian
-                              ? "Chỉnh sửa người bảo hộ"
-                              : "Thêm người bảo hộ"}
+                              ? t("editGuardian")
+                              : t("addGuardian")}
                           </span>
                         </button>
                       </div>
@@ -1480,7 +1488,7 @@ function StudentProfileContent({
                     {guardianEditing && (
                       <div className="space-y-3 rounded-lg border border-ink bg-card p-4">
                         <label className="student-label block">
-                          Quan hệ
+                          {t("relationshipLabel")}
                           <select
                             className="student-field mt-1"
                             value={guardianDraft.relationship}
@@ -1493,16 +1501,16 @@ function StudentProfileContent({
                             }
                           >
                             {Object.entries(RELATIONSHIPS).map(
-                              ([key, label]) => (
+                              ([key]) => (
                                 <option key={key} value={key}>
-                                  {label}
+                                  {t(`relationship.${key}`)}
                                 </option>
                               ),
                             )}
                           </select>
                         </label>
                         <label className="student-label block">
-                          Họ và tên
+                          {t("name")}
                           <input
                             maxLength={150}
                             required
@@ -1517,7 +1525,7 @@ function StudentProfileContent({
                           />
                         </label>
                         <label className="student-label block">
-                          Điện thoại
+                          {t("phoneLabel")}
                           <input
                             type="tel"
                             maxLength={30}
@@ -1533,7 +1541,7 @@ function StudentProfileContent({
                           />
                         </label>
                         <label className="student-label block">
-                          Email (tùy chọn)
+                          {t("emailOptional")}
                           <input
                             type="email"
                             maxLength={255}
@@ -1556,7 +1564,7 @@ function StudentProfileContent({
                               role="alert"
                               className="mt-1 block student-meta font-medium text-destructive"
                             >
-                              Email không hợp lệ. Ví dụ: parent@gmail.com
+                              {t("emailExample")}
                             </span>
                           )}
                         </label>
@@ -1571,7 +1579,7 @@ function StudentProfileContent({
                             onClick={() => void saveGuardian()}
                             className="student-control student-control--action px-4"
                           >
-                            {saving ? "Đang lưu" : "Lưu người bảo hộ"}
+                            {saving ? t("saving") : t("saveGuardian")}
                           </button>
                           <button
                             type="button"
@@ -1579,7 +1587,7 @@ function StudentProfileContent({
                             onClick={() => setGuardianEditing(false)}
                             className="student-control student-control--secondary px-4"
                           >
-                            Hủy
+                            {t("cancel")}
                           </button>
                         </div>
                       </div>
@@ -1588,7 +1596,7 @@ function StudentProfileContent({
                 )}
                 <div className="mt-3 flex items-start gap-2 student-meta text-muted-foreground">
                   <ShieldCheck size={16} className="shrink-0 text-success" />
-                  Thông tin riêng tư. Chỉ hiển thị sau khi bạn bật nút mắt.
+                  {t("guardianPrivacy")}
                 </div>
               </PaperCard>
             </div>
@@ -1597,8 +1605,8 @@ function StudentProfileContent({
 
         {/* FOOTER */}
         <footer className="mt-12 flex flex-wrap items-center justify-between gap-3 border-t-2 border-dashed border-ink pt-5 student-meta font-semibold text-muted-foreground">
-          <span>✂ Nhật ký học tập · Hồ sơ học sinh</span>
-          <span>~ Dữ liệu học tập cá nhân ~</span>
+          <span>{t("footer")}</span>
+          <span>{t("footerSub")}</span>
         </footer>
       </div>
 
@@ -1615,6 +1623,7 @@ function StudentProfileContent({
 }
 
 export default function StudentProfilePage() {
+  const t = useTranslations("student.profile");
   const identity = useQuery({
     queryKey: ["student-profile"],
     queryFn: studentProfileService.get,
@@ -1654,7 +1663,7 @@ export default function StudentProfilePage() {
   ];
   if (queries.some((q) => q.isPending)) {
     return (
-      <FullPageState variant="loading" title="Đang mở sổ tay học tập..." />
+      <FullPageState variant="loading" title={t("loading")} />
     );
   }
   const profile = identity.data?.data;
@@ -1671,8 +1680,8 @@ export default function StudentProfilePage() {
     return (
       <RegionState
         variant="error"
-        title="Chưa thể tải đầy đủ hồ sơ"
-        description="Thông tin được lấy từ dữ liệu thật, không thay bằng số liệu demo."
+        title={t("error")}
+        description={t("errorDescription")}
       />
     );
   }

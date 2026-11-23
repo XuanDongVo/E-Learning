@@ -28,6 +28,7 @@ export function ActivityCard({
   topicNames: string[];
 }) {
   const t = useTranslations("student.activities.history");
+  const tCard = useTranslations("student.learning.activityCard");
   const hasPractice = activity.mode !== "TRY_HARD";
   const hasTryHard = activity.mode !== "LEARNING";
 
@@ -45,7 +46,7 @@ export function ActivityCard({
 
         <span className="student-chip">
           <Zap className="h-3.5 w-3.5 text-warning" />
-          {activity.totalQuestions} câu hỏi
+          {tCard("questions", { count: activity.totalQuestions })}
         </span>
       </div>
 
@@ -60,14 +61,14 @@ export function ActivityCard({
           </p>
         ) : (
           <p className="student-body mt-1 italic text-muted-foreground/70">
-            Thử thách bài tập rèn luyện kỹ năng và phản xạ.
+            {tCard("defaultDescription")}
           </p>
         )}
       </div>
 
       {/* ─── Tags chủ đề ─── */}
       {topicNames.length > 0 && (
-        <ul className="flex flex-wrap gap-1.5" aria-label="Topics">
+        <ul className="flex flex-wrap gap-1.5" aria-label={tCard("topics")}>
           {topicNames.map((name) => (
             <li
               key={name}
@@ -84,13 +85,13 @@ export function ActivityCard({
         {hasPractice && (
           <span className="student-chip border-info bg-info-soft text-info">
             <Sparkles className="h-3 w-3" aria-hidden="true" />
-            Luyện tập
+            {tCard("practice")}
           </span>
         )}
         {hasTryHard && (
           <span className="student-chip border-warning bg-warning-soft text-warning">
             <Flame className="h-3 w-3" aria-hidden="true" />
-            Thử thách
+            {tCard("challenge")}
           </span>
         )}
       </div>
@@ -105,7 +106,7 @@ export function ActivityCard({
                   className="h-3.5 w-3.5 text-muted-foreground"
                   aria-hidden="true"
                 />
-                <span>{activity.timeLimitSeconds}s / câu</span>
+                <span>{tCard("secondsPerQuestion", { count: activity.timeLimitSeconds })}</span>
               </span>
             ) : null}
             {activity.lives ? (
@@ -115,7 +116,7 @@ export function ActivityCard({
                   aria-hidden="true"
                 />
                 <span className="font-extrabold text-destructive">
-                  {activity.lives} mạng
+                  {tCard("lives", { count: activity.lives })}
                 </span>
               </span>
             ) : null}
@@ -126,7 +127,7 @@ export function ActivityCard({
               className="h-3.5 w-3.5 text-warning"
               aria-hidden="true"
             />
-            <span>Có gợi ý & 1 lượt thử lại</span>
+            <span>{tCard("hintRetry")}</span>
           </span>
         )}
       </div>
@@ -137,7 +138,7 @@ export function ActivityCard({
           href={`/student/units/${unitId}/activities/${activity.id}`}
           className="student-control student-control--action w-full"
         >
-            <span>Bắt đầu</span>
+            <span>{tCard("start")}</span>
             <Play className="h-4 w-4 fill-current" aria-hidden="true" />
         </Link>
         <Link

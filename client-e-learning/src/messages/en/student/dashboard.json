@@ -1,1 +1,21 @@
-{}
+{
+  "eyebrow": "LEARNING JOURNAL / LEARNUP",
+  "title": "What will I learn today?",
+  "intro": "A fresh page in your English learning journal. Choose a unit and discover something new!",
+  "explore": "Explore lessons",
+  "polaroid": "Keep learning, little by little",
+  "routeEyebrow": "YOUR LEARNING PATH",
+  "unitsTitle": "Your lessons",
+  "unitsIntro": "Explore the units available to you.",
+  "seeAllUnits": "View all units",
+  "loading": "Loading lessons",
+  "loadError": "Couldn't load lessons",
+  "loadErrorDescription": "Please try loading the units again.",
+  "retry": "Try again",
+  "empty": "No lessons yet",
+  "emptyDescription": "Your lessons will appear here when your teacher publishes units.",
+  "activityCount": "{count, plural, =0 {No practice activities yet} one {# practice activity} other {# practice activities}}",
+  "assignedTitle": "Assignments from your teacher",
+  "assignedIntro": "Check deadlines and complete assignments in their own space.",
+  "seeAssignments": "View assignments"
+}

@@ -12,6 +12,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { Link } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 import { PaperSurface } from "@/components/student-ui/paper-surface";
 import { StudentCollectionEmptyState } from "@/components/student-ui/patterns/student-collection-empty-state";
 import { StudentListPagination } from "@/components/student-ui/data-list/student-list-pagination";
@@ -27,7 +28,6 @@ import type {
 import {
   chooseKnowledgeLibraryRole,
   KNOWLEDGE_LIBRARY_ROLES,
-  KNOWLEDGE_ROLE_LABELS,
 } from "./knowledge-library-roles";
 import {
   Popover,
@@ -81,6 +81,7 @@ function KnowledgeFilterCombobox({
   disabled?: boolean;
   onChange: (value: string) => void;
 }) {
+  const t = useTranslations("student.knowledge.library");
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const labelId = useId();
@@ -140,7 +141,7 @@ function KnowledgeFilterCombobox({
               aria-label={placeholder}
             />
             <CommandList className="max-h-64">
-              <CommandEmpty>Không tìm thấy nội dung phù hợp.</CommandEmpty>
+              <CommandEmpty>{t("noComboboxResults")}</CommandEmpty>
               <CommandGroup>
                 {normalizeSearchText(allLabel).includes(normalizedQuery) && (
                   <CommandItem
@@ -182,6 +183,8 @@ function KnowledgeFilterCombobox({
 }
 
 export function StudentKnowledgeLibrary() {
+  const t = useTranslations("student.knowledge.library");
+  const tRole = useTranslations("student.knowledge.role");
   const [input, setInput] = useState("");
   const [search, setSearch] = useState("");
   const [unitId, setUnitId] = useState("");
@@ -318,16 +321,15 @@ export function StudentKnowledgeLibrary() {
         <StudentPageHeading
           eyebrow={
             <span className="inline-flex items-center gap-2">
-              <BookMarked className="size-4" aria-hidden="true" /> GÓC ĐỌC CỦA
-              BẠN · KNOWLEDGE LIBRARY
+              <BookMarked className="size-4" aria-hidden="true" /> {t("eyebrow")}
             </span>
           }
           title={
             <>
-              Sổ tay <span className="student-highlight">kiến thức</span>
+              {t("titlePrefix")} <span className="student-highlight">{t("titleHighlight")}</span>
             </>
           }
-          description="Những trang lý thuyết được thầy biên soạn. Mở một trang, đọc theo nhịp của bạn và quay lại bất cứ lúc nào."
+          description={t("intro")}
           artwork={
             <div className="student-knowledge-hero-art relative">
               <StudentIllustration
@@ -347,12 +349,10 @@ export function StudentKnowledgeLibrary() {
         />
         <div className="mt-2 flex flex-wrap items-center gap-2">
           <span className="student-chip bg-card !p-2">
-            <Sparkles className="size-3.5" aria-hidden="true" /> Học theo cách
-            của bạn
+            <Sparkles className="size-3.5" aria-hidden="true" /> {t("tagPace")}
           </span>
           <span className="student-chip bg-card !p-2">
-            <BookOpenText className="size-3.5" aria-hidden="true" /> Công thức ·
-            Ví dụ · Ghi chú
+            <BookOpenText className="size-3.5" aria-hidden="true" /> {t("tagContent")}
           </span>
         </div>
       </PaperSurface>
@@ -364,9 +364,9 @@ export function StudentKnowledgeLibrary() {
       >
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
-            <h2 className="student-section-title">Tìm một trang để đọc</h2>
+            <h2 className="student-section-title">{t("searchTitle")}</h2>
             <p className="student-body text-muted-foreground">
-              Chỉ hiển thị học liệu đã công bố thuộc khối lớp của bạn.
+              {t("searchIntro")}
             </p>
           </div>
           <StudentDoodle
@@ -376,7 +376,7 @@ export function StudentKnowledgeLibrary() {
         </div>
         <div
           role="group"
-          aria-label="Loại bài lý thuyết"
+          aria-label={t("roleFilter")}
           className="student-knowledge-role-filters flex flex-wrap gap-2"
         >
           {KNOWLEDGE_LIBRARY_ROLES.map((item) => (
@@ -397,17 +397,17 @@ export function StudentKnowledgeLibrary() {
                 setPage(1);
               }}
             >
-              {item.label}
+              {tRole(item.value)}
             </button>
           ))}
         </div>
         <div
           role="search"
-          aria-label="Tìm và lọc trang kiến thức"
+          aria-label={t("searchGroup")}
           className="grid gap-3 md:grid-cols-[minmax(0,1fr)_minmax(160px,220px)_minmax(160px,220px)]"
         >
           <label className="block space-y-1.5">
-            <span className="student-label">Tìm theo tên hoặc mô tả</span>
+            <span className="student-label">{t("searchLabel")}</span>
             <span className="relative block">
               <Search
                 className="pointer-events-none absolute left-3 top-3.5 size-4 text-muted-foreground"
@@ -417,30 +417,30 @@ export function StudentKnowledgeLibrary() {
                 type="search"
                 value={input}
                 onChange={(event) => setInput(event.target.value)}
-                placeholder="Ví dụ: thì hiện tại đơn"
-                aria-label="Tìm bài lý thuyết"
+                placeholder={t("searchPlaceholder")}
+                aria-label={t("searchAria")}
                 className="student-field w-full !pl-10 !pr-3"
               />
             </span>
           </label>
 
           <KnowledgeFilterCombobox
-            label="Theo bài học (Unit)"
-            ariaLabel="Lọc theo Unit"
+            label={t("unitFilter")}
+            ariaLabel={t("unitAria")}
             value={unitId}
             options={unitOptions}
-            allLabel="Tất cả"
-            placeholder="Tìm tên hoặc mã Unit..."
+            allLabel={t("all")}
+            placeholder={t("unitPlaceholder")}
             disabled={unitsQuery.isPending || unitsQuery.isError}
             onChange={handleUnitChange}
           />
           <KnowledgeFilterCombobox
-            label="Theo chuyên đề (Topic)"
-            ariaLabel="Lọc theo Topic"
+            label={t("topicFilter")}
+            ariaLabel={t("topicAria")}
             value={topicId}
             options={topicOptions}
-            allLabel="Tất cả Topic"
-            placeholder="Tìm tên Topic..."
+            allLabel={t("allTopics")}
+            placeholder={t("topicPlaceholder")}
             disabled={
               !unitId ||
               unitDetailQuery.isPending ||
@@ -455,33 +455,33 @@ export function StudentKnowledgeLibrary() {
         </div>
         {unitDetailQuery.isError && unitId && (
           <p role="status" className="text-sm text-destructive">
-            Không thể tải Topic của Unit này.
+            {t("unitTopicError")}
             <button
               type="button"
               className="ml-2 font-bold underline"
               onClick={() => void unitDetailQuery.refetch()}
             >
-              Thử lại
+              {t("retry")}
             </button>
           </p>
         )}
         {unitsQuery.isError && (
           <p role="status" className="text-sm text-destructive">
-            Không thể tải danh sách Unit.
+            {t("unitListError")}
             <button
               type="button"
               onClick={() => void unitsQuery.refetch()}
               className="ml-2 font-bold underline"
             >
-              Thử lại
+              {t("retry")}
             </button>
           </p>
         )}
         <div className="flex flex-wrap items-center justify-between gap-2 border-t border-dashed border-border pt-3">
           <p className="student-meta text-muted-foreground" role="status">
             {notesQuery.isPending
-              ? "Đang tìm trang phù hợp…"
-              : `${total} bài lý thuyết${hasFilters ? " phù hợp" : " đã công bố"}`}
+              ? t("searching")
+              : (hasFilters ? t("resultsFiltered", { count: total }) : t("resultsAll", { count: total }))}
           </p>
           {hasFilters && (
             <button
@@ -489,7 +489,7 @@ export function StudentKnowledgeLibrary() {
               className="student-label min-h-10 text-primary underline underline-offset-4"
               onClick={clearFilters}
             >
-              Xóa bộ lọc
+              {t("clearFilters")}
             </button>
           )}
         </div>
@@ -499,7 +499,7 @@ export function StudentKnowledgeLibrary() {
         <div
           className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3"
           role="status"
-          aria-label="Đang tải sổ tay"
+          aria-label={t("loading")}
         >
           {Array.from({ length: 6 }, (_, i) => (
             <div
@@ -514,18 +514,18 @@ export function StudentKnowledgeLibrary() {
           className="space-y-3 p-6 sm:p-8"
           role="alert"
         >
-          <h2 className="student-card-title">Chưa thể mở thư viện</h2>
+          <h2 className="student-card-title">{t("loadError")}</h2>
           <p className="student-body text-muted-foreground">
             {notesQuery.error instanceof Error
               ? notesQuery.error.message
-              : "Không thể tải bài lý thuyết."}
+              : t("loadErrorFallback")}
           </p>
           <button
             type="button"
             className="student-control student-control--action"
             onClick={() => void notesQuery.refetch()}
           >
-            Tải lại
+            {t("reload")}
           </button>
         </PaperSurface>
       ) : notes.length === 0 ? (
@@ -534,14 +534,14 @@ export function StudentKnowledgeLibrary() {
             title={
               hasFilters
                 ? role === "UNLINKED"
-                  ? "Chưa có trang đọc tự do"
-                  : "Chưa tìm thấy trang phù hợp"
-                : "Sổ tay đang chờ trang đầu tiên"
+                  ? t("emptyFree")
+                  : t("emptyFiltered")
+                : t("emptyAll")
             }
             description={
               hasFilters
-                ? "Bạn có thể chọn loại tài liệu khác, thay đổi Unit/Topic hoặc xóa bộ lọc."
-                : "Các bài lý thuyết sẽ xuất hiện khi thầy cô công bố. Bạn vẫn có thể luyện tập ở Learning Hub."
+                ? t("emptyFiltersDescription")
+                : t("emptyDescription")
             }
             illustration={
               hasFilters ? "illustration.no-results" : "illustration.no-lessons"
@@ -553,14 +553,14 @@ export function StudentKnowledgeLibrary() {
                   className="student-control student-control--action"
                   onClick={clearFilters}
                 >
-                  Xem tất cả
+                  {t("seeAll")}
                 </button>
               ) : (
                 <Link
                   href="/student/units"
                   className="student-control student-control--action"
                 >
-                  Đến Learning Hub
+                  {t("goToHub")}
                 </Link>
               )
             }
@@ -572,7 +572,7 @@ export function StudentKnowledgeLibrary() {
             ref={listRef}
             id="knowledge-note-card-list"
             tabIndex={-1}
-            aria-label="Danh sách bài lý thuyết"
+            aria-label={t("listAria")}
             className="scroll-mt-24 grid gap-4 outline-none sm:grid-cols-2 xl:grid-cols-3"
           >
             {notes.map((note, i) => (
@@ -586,9 +586,9 @@ export function StudentKnowledgeLibrary() {
           <StudentListPagination
             page={page}
             totalPages={pages}
-            pageLabel={`Trang ${page} / ${pages}`}
-            previousLabel="Trang trước"
-            nextLabel="Trang sau"
+            pageLabel={t("page", { page, pages })}
+            previousLabel={t("previousPage")}
+            nextLabel={t("nextPage")}
             onPageChange={changePage}
             disabled={notesQuery.isFetching}
             className="mx-auto max-w-md"
@@ -606,6 +606,8 @@ export function KnowledgeNoteCard({
   note: StudentKnowledgeNoteSummary;
   index: number;
 }) {
+  const t = useTranslations("student.knowledge.library");
+  const tRole = useTranslations("student.knowledge.role");
   const tag = note.units[0];
   return (
     <Link
@@ -622,13 +624,13 @@ export function KnowledgeNoteCard({
         />
       </div>
       <p className="student-meta mb-2 text-primary">
-        {tag ? `${tag.code} · ${tag.name}` : "GÓC ĐỌC TỰ DO"}
+        {tag ? `${tag.code} · ${tag.name}` : t("freeReading")}
         {note.units.length > 1 ? ` · +${note.units.length - 1} Unit` : ""}
       </p>
       <div
         role="group"
         className="mb-2 flex flex-wrap gap-1.5"
-        aria-label="Vai trò học liệu"
+        aria-label={t("roleAria")}
       >
         {(note.roles ?? []).map((item) => (
           <span
@@ -636,7 +638,7 @@ export function KnowledgeNoteCard({
             data-knowledge-role={item}
             className="student-knowledge-role-tag student-caption"
           >
-            {KNOWLEDGE_ROLE_LABELS[item]}
+            {tRole(item)}
           </span>
         ))}
       </div>
@@ -645,10 +647,10 @@ export function KnowledgeNoteCard({
       </h3>
       <p className="student-body mb-5 line-clamp-3 flex-1 text-muted-foreground">
         {note.description?.trim() ||
-          "Một trang kiến thức để bạn khám phá và ôn lại khi cần."}
+          t("defaultDescription")}
       </p>
       <span className="student-label mt-auto inline-flex items-center gap-2 border-t border-dashed border-border pt-3 text-primary">
-        Mở trang kiến thức{" "}
+        {t("openNote")}{" "}
         <ArrowRight
           className="size-4 transition-transform group-hover:translate-x-1"
           aria-hidden="true"

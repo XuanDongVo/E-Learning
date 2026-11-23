@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+
 import { useMemo, useRef, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { studentVocabularyReviewService } from "@/services/student/student-vocabulary-review.service";
@@ -28,6 +30,7 @@ export function VocabularyBrowseTab({
   cards = [],
   nowMs,
 }: VocabularyBrowseTabProps) {
+  const t = useTranslations("student.vocabulary.browse");
   const [searchTerm, setSearchTerm] = useState("");
   const [browseFilter, setBrowseFilter] = useState<"all" | "new" | "due">("all");
   const [favorites, setFavorites] = useState<Set<number>>(new Set());
@@ -121,7 +124,7 @@ export function VocabularyBrowseTab({
         <div
           className="inline-flex items-center gap-1 rounded-xl border border-border/80 bg-muted/70 p-1 text-xs font-semibold text-muted-foreground"
           role="group"
-          aria-label="Lọc trạng thái từ"
+          aria-label={t("filtersLabel")}
         >
           <button
             type="button"
@@ -131,7 +134,7 @@ export function VocabularyBrowseTab({
               : "hover:text-foreground"
               }`}
           >
-            Tất cả ({cards.length})
+            {t("all", { count: cards.length })}
           </button>
 
           <button
@@ -142,7 +145,7 @@ export function VocabularyBrowseTab({
               : "hover:text-foreground"
               }`}
           >
-            Từ mới
+            {t("new")}
           </button>
 
           <button
@@ -153,7 +156,7 @@ export function VocabularyBrowseTab({
               : "hover:text-foreground"
               }`}
           >
-            Đến hạn ({dueCards.length})
+            {t("due", { count: dueCards.length })}
           </button>
         </div>
 
@@ -163,7 +166,7 @@ export function VocabularyBrowseTab({
             type="search"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Tìm kiếm từ hoặc nghĩa..."
+            placeholder={t("search")}
             className="w-full rounded-xl border border-border bg-card py-2 pl-9 pr-3 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 student-body"
           />
         </div>
@@ -172,19 +175,19 @@ export function VocabularyBrowseTab({
       {/* List header */}
       <div className="student-vocab-list-header flex flex-col gap-2 text-xs font-medium text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
         <h3 className="student-card-title text-foreground text-sm">
-          Thuật ngữ trong phần này ({visibleBrowseCards.length})
+          {t("listTitle", { count: visibleBrowseCards.length })}
         </h3>
 
         <div className="student-vocab-list-legend flex flex-wrap items-center gap-3">
           <span className="flex items-center gap-1 student-typewriter">
             <BookOpen className="size-3.5" />
-            Chi tiết
+            {t("details")}
           </span>
 
 
           <span className="flex items-center gap-1 student-typewriter">
             <CheckCircle2 className="size-3.5 text-success" />
-            Đã thuộc ({learnedCount})
+            {t("learned", { count: learnedCount })}
           </span>
         
         </div>
@@ -192,7 +195,7 @@ export function VocabularyBrowseTab({
 
       {markMutation.isError && (
         <p role="alert" className="student-body rounded-lg border border-destructive/40 p-3 text-destructive">
-          {markMutation.error instanceof Error ? markMutation.error.message : "Không cập nhật được đánh dấu. Hãy thử lại."}
+          {markMutation.error instanceof Error ? markMutation.error.message : t("markError")}
         </p>
       )}
 
@@ -203,8 +206,7 @@ export function VocabularyBrowseTab({
           {visibleBrowseCards.length === 0 ? (
             <div className="rounded-2xl border-2 border-dashed border-border bg-card/60 p-10 text-center">
               <p className="student-body text-sm text-muted-foreground">
-                Không tìm thấy từ vựng nào phù hợp với bộ lọc hoặc từ khóa
-                &quot;{searchTerm}&quot;.
+                {t("noMatches", { search: searchTerm })}
               </p>
             </div>
           ) : (

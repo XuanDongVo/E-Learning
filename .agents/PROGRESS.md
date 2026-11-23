@@ -1194,3 +1194,12 @@ States covered: loading, source error/empty, invalid configuration, insufficient
 
 - Repaired three independent TypeScript regressions reported by `next build`: used Tiptap's `JSONContent` when asserting table JSON in the TableKit test, added gallery metadata for all approved visual registry IDs, and restored the missing `ScrapbookHeading` import in the Student Rewards leaderboard.
 - Validation: `next build` completes successfully; focused `knowledge-note-table.test.ts` passes (3/3).
+## 2026-11-22 — Student navbar and progress migration
+
+- Student navbar now exposes Home, Learning, Vocabulary, Knowledge, Assignments, Progress and Leaderboard; the Game route is intentionally excluded from navigation.
+- Added the existing `LocaleToggle` to desktop and mobile Student navigation with localized route labels for Vietnamese and English.
+- Replaced the `/student/progress` placeholder with the server-backed Student streak, Level and XP overview, reusing the existing gamification component and Indie Scrapbook primitives.
+- Removed misleading mock wording from the Vocabulary Progress milestone preview; unlocked stages remain server-backed while future stages are explicitly preview-only.
+- Game and Design Lab routes remain outside the normal Student navbar; no Game implementation or mock progress data was added.
+- Verified: changed-file ESLint passed and `npm run build` completed successfully for the Next.js client.
+

@@ -70,5 +70,276 @@
     "snapshotUnavailable": "Nội dung câu hỏi cũ không còn bản snapshot để hiển thị.",
     "promptHidden": "Câu hỏi chính chưa được mở trong lượt làm này.",
     "noStepHistory": "Chưa có bước hướng dẫn nào được thực hiện."
+  },
+  "hub": {
+    "back": "Quay lại Unit",
+    "eyebrow": "Hoạt động",
+    "title": "Luyện tập tiếng Anh",
+    "description": "Chọn một hoạt động đã được giáo viên công bố để luyện từ vựng, ngữ pháp và phản xạ.",
+    "available": "Hoạt động có thể học",
+    "selectUnit": "Hãy chọn một Unit trước",
+    "selectUnitDesc": "Đường dẫn hiện tại chưa xác định Unit cần học.",
+    "viewUnits": "Xem danh sách Unit",
+    "loadError": "Không thể tải hoạt động",
+    "empty": "Chưa có hoạt động được công bố",
+    "emptyDesc": "Giáo viên chưa công bố hoạt động nào cho Unit này.",
+    "questions": "{count} câu hỏi",
+    "practice": "Luyện tập",
+    "challenge": "Thử thách",
+    "secondsPerQuestion": "{count}s / câu",
+    "begin": "Bắt đầu hoạt động",
+    "difficulty": {
+      "EASY": "Dễ",
+      "MEDIUM": "Trung bình",
+      "HARD": "Khó",
+      "MIXED": "Hỗn hợp"
+    }
+  },
+  "start": {
+    "aria": "Bắt đầu luyện tập",
+    "back": "Quay lại",
+    "title": "Chọn cách luyện tập",
+    "retry": "Thử lại",
+    "difficultyLabel": "Độ khó câu hỏi",
+    "difficultyHint": "Độ khó do giáo viên thiết lập cho hoạt động này.",
+    "questionFocus": "Trọng tâm câu hỏi",
+    "slow": "Máy chủ phản hồi chậm, vui lòng chờ thêm chút…",
+    "starting": "Đang bắt đầu…",
+    "startButton": "Bắt đầu luyện tập",
+    "perQuestion": "{count}s/câu",
+    "lives": "{count} mạng",
+    "difficulty": {
+      "EASY": "Dễ",
+      "MEDIUM": "Trung bình",
+      "HARD": "Khó",
+      "MIXED": "Hỗn hợp"
+    },
+    "modes": {
+      "LEARNING": {
+        "title": "Luyện tập",
+        "description": "Không bấm giờ · được thử lại 1 lần · có gợi ý"
+      },
+      "TRY_HARD": {
+        "title": "Thử thách",
+        "description": "Bấm giờ từng câu · có số mạng · không thử lại"
+      }
+    },
+    "strategies": {
+      "RANDOM": {
+        "title": "Ngẫu nhiên",
+        "description": "Trộn đều các câu hỏi hiện có."
+      },
+      "WEAKNESS_PRIORITY": {
+        "title": "Ưu tiên phần còn yếu",
+        "description": "Ưu tiên những câu bạn cần luyện thêm."
+      }
+    }
+  },
+  "result": {
+    "title": {
+      "gameOver": "Hết mạng rồi!",
+      "abandoned": "Bạn đã nộp bài khi chưa làm hết",
+      "completed": "Hoàn thành luyện tập!"
+    },
+    "levelUp": "Bạn đã lên Level {level}! Cùng giữ nhịp học tập nhé!",
+    "companion": {
+      "gameOver": "Hết lượt thử thách rồi. Mình có thể xem lại câu hỏi và thử lần khác nhé!",
+      "abandoned": "Lượt này đã dừng. Khi sẵn sàng, mình có thể bắt đầu một lượt mới.",
+      "great": "Bạn vừa hoàn thành lượt luyện tập. Cùng xem những gì mình đã học nhé!",
+      "tryAgain": "Bạn đã kết thúc lượt luyện tập. Xem lại câu hỏi sẽ giúp mình hiểu bài hơn!"
+    },
+    "stats": {
+      "correct": "Câu đúng (cuối cùng)",
+      "firstTry": "Đúng ngay lần đầu",
+      "hints": "Gợi ý đã dùng",
+      "time": "Thời gian"
+    },
+    "modeSummary": "Chế độ {mode} · {count} câu hỏi",
+    "modes": {
+      "LEARNING": "Luyện tập",
+      "TRY_HARD": "Thử thách"
+    },
+    "provisional": "Điểm tạm tính · lượt chưa hoàn thành không được lưu vào thống kê",
+    "reviewTitle": "Chi tiết câu hỏi & đáp án",
+    "reviewLoading": "Đang tải lịch sử trả lời…",
+    "retry": "Thử lại",
+    "restart": "Luyện tập lại",
+    "reviewLater": "Xem lại sau",
+    "backToUnit": "Về Unit",
+    "xp": {
+      "loading": "Đang tải XP",
+      "loadFailed": "Chưa tải được kết quả XP",
+      "notEligible": "Lượt học này không thuộc chương trình Activity XP nên không có XP để hiển thị.",
+      "abandoned": "Lượt học kết thúc sớm",
+      "confirmed": "Activity XP đã chốt",
+      "level": "Level {level}",
+      "questions": "Từ câu hỏi",
+      "bonus": "Thưởng hoàn thành",
+      "lifetime": "Tổng XP tích lũy",
+      "abandonedHint": "Lượt bỏ dở không chuyển XP tạm tính vào tài khoản."
+    }
+  },
+  "runtime": {
+    "dialogs": {
+      "leaveTitle": "Rời khỏi hoạt động?",
+      "leaveDescription": "Lượt luyện tập hiện tại sẽ không được lưu hoặc tiếp tục. Bạn có chắc chắn muốn rời khỏi hoạt động?",
+      "continue": "Tiếp tục làm bài",
+      "leaving": "Đang thoát...",
+      "confirmLeave": "Xác nhận rời"
+    },
+    "header": {
+      "leaving": "Đang thoát…",
+      "leavingAria": "Đang thoát",
+      "back": "Quay lại",
+      "progress": "Tiến độ luyện tập",
+      "hinting": "Đang mở gợi ý…",
+      "hint": "Gợi ý",
+      "lives": "Còn {count} mạng",
+      "correctCount": "Số câu trả lời đúng",
+      "help": "Xem trợ giúp",
+      "settings": "Cài đặt hoạt động"
+    },
+    "footer": {
+      "retry": "Thử lại",
+      "check": "Kiểm tra",
+      "previous": "Câu trước",
+      "reset": "Làm lại",
+      "submitting": "Đang nộp…",
+      "submit": "Nộp bài",
+      "timeoutPending": "Đang xử lý hết giờ…",
+      "checking": "Đang kiểm tra…",
+      "results": "Xem kết quả",
+      "complete": "Hoàn thành",
+      "next": "Câu tiếp"
+    },
+    "guided": {
+      "stepInput": "Câu trả lời của bạn",
+      "stepPlaceholder": "Nhập câu trả lời",
+      "finalInput": "Đáp án cuối cùng",
+      "finalPlaceholder": "Nhập đáp án",
+      "stepHint": "Gợi ý: {hint}",
+      "finalHint": "Gợi ý Final: {hint}",
+      "hint": "Gợi ý",
+      "finalHintButton": "Gợi ý Final",
+      "retry": "Thử lại ngay",
+      "continue": "Tiếp tục ngay",
+      "submitStep": "Gửi câu trả lời",
+      "submitFinal": "Gửi đáp án"
+    },
+    "submitDialog": {
+      "close": "Đóng",
+      "title": "Nộp bài ngay?",
+      "unanswered": "Em còn {count} câu chưa trả lời. Các câu này sẽ được tính là bỏ qua khi nộp bài.",
+      "allAnswered": "Em đã trả lời tất cả các câu. Nộp bài để xem kết quả nhé!",
+      "unchecked": " Câu đang chọn chưa được kiểm tra sẽ không được tính.",
+      "answered": "Đã trả lời",
+      "notAnswered": "Chưa trả lời",
+      "continue": "Tiếp tục làm bài",
+      "pending": "Đang nộp…",
+      "confirm": "Xác nhận nộp bài"
+    },
+    "hint": {
+      "title": "Gợi ý từ Việt Cường",
+      "close": "Đóng gợi ý",
+      "slow": "Máy chủ phản hồi chậm, bạn vui lòng chờ thêm chút… Đáp án của bạn vẫn được giữ nguyên.",
+      "loading": "Đang lấy gợi ý…",
+      "retry": "Thử lại"
+    },
+    "feedback": {
+      "correct": "Chính xác!",
+      "retry": "Thử lại nhé!",
+      "incorrect": "Chưa chính xác",
+      "guidedCorrect": "Bạn đã trả lời đúng bước này!",
+      "correctPraise": "Bạn làm tốt lắm. Tiếp tục phát huy nhé!",
+      "retryHint": "Bạn còn một lần thử lại.",
+      "correctAnswer": "Đáp án đúng: {answer}",
+      "reviewHint": "Hãy xem lại đáp án và ghi nhớ nhé.",
+      "explanation": "Giải thích"
+    },
+    "navigator": {
+      "statuses": {
+        "correct": "đúng",
+        "wrong": "sai",
+        "picked": "đã chọn",
+        "todo": "chưa làm"
+      },
+      "questionAria": "Câu {number}, {status}{lock}",
+      "lockedSuffix": ", đang khoá",
+      "current": "Hiện tại",
+      "correct": "Đúng",
+      "wrong": "Sai",
+      "todo": "Chưa làm",
+      "select": "Chọn câu hỏi",
+      "done": "Đã làm {done}/{total}",
+      "sequential": "Làm lần lượt, không quay lại hay nhảy câu",
+      "list": "Danh sách câu hỏi",
+      "close": "Đóng",
+      "counter": "Câu {current}/{total}"
+    },
+    "answerControls": {
+      "TRUE": "Đúng",
+      "FALSE": "Sai"
+    },
+    "workspace": {
+      "mascot": {
+        "gameOver": "Bạn hết mạng rồi, nhưng đừng buồn! Cùng xem kết quả nhé!",
+        "completed": "Tuyệt vời! Bạn đã hoàn thành tất cả câu hỏi!",
+        "correct": "Giỏi quá! Việt Cường tự hào về bạn!",
+        "retry": "Chưa đúng, bạn còn một lần thử nữa nhé!",
+        "wrong": "Không sao đâu, mình cùng xem đáp án nhé!",
+        "hint": "Việt Cường vừa gợi ý rồi, xem trong khung câu hỏi nhé!",
+        "thinking": "Thấy bạn suy nghĩ lâu Việt Cường cũng hồi hộp lây nè!"
+      },
+      "timeoutError": "Không thể đồng bộ hết giờ với máy chủ. Hãy thử lại.",
+      "timeoutPending": "Hết giờ! Đang xác nhận kết quả với máy chủ…",
+      "retry": "Thử lại",
+      "mascotAlt": "Việt Cường đang cổ vũ bạn",
+      "question": "Câu {current}/{total}",
+      "types": {
+        "SINGLE_CHOICE": "Chọn một đáp án",
+        "MULTIPLE_CHOICE": "Chọn nhiều đáp án",
+        "TRUE_FALSE": "Đúng / Sai",
+        "FILL_IN_BLANK": "Điền vào chỗ trống",
+        "TYPE_ANSWER": "Nhập đáp án",
+        "ORDERING": "Sắp xếp thứ tự"
+      },
+      "truth": {
+        "TRUE": "Đúng",
+        "FALSE": "Sai"
+      },
+      "inputLabel": "Đáp án của bạn",
+      "inputPlaceholder": "Nhập đáp án",
+      "answerSlow": "Máy chủ phản hồi chậm, đáp án của bạn đang được kiểm tra…",
+      "answerRetry": "Đáp án của bạn vẫn được giữ, hãy bấm Kiểm tra để thử lại.",
+      "finishedGameOver": "Bạn đã hết mạng. Bấm “Xem kết quả” để xem bài làm của mình.",
+      "finishedComplete": "Bạn đã hoàn thành bài luyện tập! Bấm “Hoàn thành” để xem kết quả.",
+      "timeoutNotice": "Câu vừa rồi hết giờ. Bạn không bị trừ mạng."
+    }
+  },
+  "settings": {
+    "title": "Cài đặt hoạt động",
+    "description": "Âm thanh, ảnh nền và phím tắt.",
+    "closeSettings": "Đóng cài đặt",
+    "tablist": "Cài đặt hoạt động",
+    "tabs": {
+      "keys": "Phím tắt",
+      "background": "Đổi ảnh nền"
+    },
+    "sound": "Âm thanh đúng / sai",
+    "shortcutTitle": "Phím tắt khi luyện tập",
+    "shortcutHint": "Dùng trên laptop; Ctrl + H vẫn hoạt động khi đang nhập đáp án.",
+    "mobile": "Trên mobile, dùng trực tiếp các nút ở thanh trên và thanh dưới.",
+    "environment": "Không gian luyện tập",
+    "garden": "Vườn mộng mơ",
+    "calm": "Bầu trời yên bình",
+    "close": "Đóng",
+    "done": "Xong",
+    "shortcuts": {
+      "hint": "Gợi ý tiếp theo",
+      "check": "Kiểm tra / tiếp tục / thử lại",
+      "choice": "Chọn phương án 1–4",
+      "navigate": "Chuyển câu trước / sau",
+      "reset": "Làm lại câu hiện tại"
+    }
   }
 }

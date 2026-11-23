@@ -6,6 +6,7 @@ import {
   Gamepad2,
   BookOpen,
   ClipboardList,
+  CalendarDays,
   GraduationCap,
   Home,
   LogOut,
@@ -29,6 +30,7 @@ export const NAV_ITEMS = [
   { key: "studentVocabulary", href: "/student/vocabulary", icon: LibraryBig },
   { key: "studentKnowledge", href: "/student/knowledge", icon: BookMarked },
   { key: "studentAssignments", href: "/student/assignments", icon: ClipboardList },
+  { key: "studentStudyPlan", href: "/student/study-plan", icon: CalendarDays },
   { key: "studentGame", href: "/student/game", icon: Gamepad2 },
   { key: "studentLeaderboard", href: "/student/leaderboard", icon: Trophy },
 ];

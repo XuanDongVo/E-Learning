@@ -34,5 +34,6 @@
   "signOut": "Sign out",
   "openStudentMenu": "Open student menu",
   "closeStudentMenu": "Close student menu",
-  "languageSelector": "Choose language"
+  "languageSelector": "Choose language",
+  "studentStudyPlan": "Study plan"
 }

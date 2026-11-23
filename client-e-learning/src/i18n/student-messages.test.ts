@@ -18,6 +18,8 @@ import viAssignmentAttempt from "../messages/vi/student/assignment-attempt.json"
 import enAssignmentAttempt from "../messages/en/student/assignment-attempt.json";
 import viLeaderboard from "../messages/vi/student/leaderboard.json";
 import enLeaderboard from "../messages/en/student/leaderboard.json";
+import viStudyPlan from "../messages/vi/student/study-plan.json";
+import enStudyPlan from "../messages/en/student/study-plan.json";
 
 function messageKeys(value: Record<string, unknown>, prefix = ""): string[] {
   return Object.entries(value).flatMap(([key, child]) => {
@@ -38,6 +40,7 @@ const namespaces = [
   ["activities", viActivities, enActivities],
   ["assignmentAttempt", viAssignmentAttempt.assignmentAttempt, enAssignmentAttempt.assignmentAttempt],
   ["leaderboard", viLeaderboard, enLeaderboard],
+  ["studyPlan", viStudyPlan, enStudyPlan],
 ] as const;
 
 describe("Student core i18n", () => {

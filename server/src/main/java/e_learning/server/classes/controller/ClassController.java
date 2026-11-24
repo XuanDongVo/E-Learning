@@ -1,8 +1,10 @@
 package e_learning.server.classes.controller;
 
+import e_learning.server.classes.dto.ClassLeaderboardResponse;
 import e_learning.server.classes.dto.ClassResponse;
 import e_learning.server.classes.dto.CreateClassRequest;
 import e_learning.server.classes.dto.UpdateClassRequest;
+import e_learning.server.classes.service.ClassLeaderboardService;
 import e_learning.server.classes.service.ClassService;
 import e_learning.server.common.response.ApiResponse;
 import jakarta.validation.Valid;
@@ -21,6 +23,7 @@ import java.util.List;
 public class ClassController {
 
     private final ClassService classService;
+    private final ClassLeaderboardService classLeaderboardService;
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<ClassResponse>>> list(
@@ -91,6 +94,31 @@ public class ClassController {
                 ApiResponse.success(
                         "Class restored",
                         classService.restore(classId, Long.valueOf(jwt.getSubject()))
+                )
+        );
+    }
+
+    @GetMapping("/{classId}/leaderboard")
+    public ResponseEntity<ApiResponse<ClassLeaderboardResponse>> leaderboard(
+            @PathVariable Long classId,
+            @RequestParam(defaultValue = "XP") String metric,
+            @RequestParam(required = false) String period,
+            @RequestParam(required = false) String search,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @AuthenticationPrincipal Jwt jwt
+    ) {
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        classLeaderboardService.getLeaderboard(
+                                classId,
+                                metric,
+                                period,
+                                search,
+                                page,
+                                size,
+                                Long.valueOf(jwt.getSubject())
+                        )
                 )
         );
     }

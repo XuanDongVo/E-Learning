@@ -26,3 +26,38 @@ export interface ClassCardProps {
   onEdit: (classItem: Class) => void;
   onArchive: (classItem: Class) => void;
 }
+
+export type ClassLeaderboardMetric = "XP" | "STREAK";
+export type ClassLeaderboardPeriod = "TODAY" | "WEEK" | "MONTH" | "ALL";
+
+export interface ClassLeaderboardItem {
+  studentId: number;
+  fullName: string;
+  avatarKey: string | null;
+  rank: number;
+  xp: number;
+  completedSessions: number;
+  currentStreak: number;
+}
+
+export interface ClassLeaderboardResponse {
+  classId: number;
+  metric: ClassLeaderboardMetric;
+  period: ClassLeaderboardPeriod | null;
+  xpScope?: "PERIOD" | "ALL";
+  completedScope?: "PERIOD" | "ALL";
+  totalStudents: number;
+  totalElements: number;
+  page: number;
+  size: number;
+  items: ClassLeaderboardItem[];
+}
+
+export interface ClassLeaderboardParams {
+  metric?: ClassLeaderboardMetric;
+  period?: ClassLeaderboardPeriod;
+  search?: string;
+  page?: number;
+  size?: number;
+}
+

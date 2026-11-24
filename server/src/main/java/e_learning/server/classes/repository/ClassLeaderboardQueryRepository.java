@@ -22,16 +22,16 @@ public interface ClassLeaderboardQueryRepository extends Repository<ClassMember,
 
     @Query(value = """
             select
-                u.id as student_id,
-                u.full_name as full_name,
-                sp.avatar_key as avatar_key,
+                u.id as "studentId",
+                u.full_name as "fullName",
+                sp.avatar_key as "avatarKey",
                 coalesce(xp_agg.total_xp, 0) as xp,
-                coalesce(sess_agg.completed_count, 0) as completed_sessions,
+                coalesce(sess_agg.completed_count, 0) as "completedSessions",
                 case
                     when gp.last_qualified_date >= :yesterday
                     then coalesce(gp.current_streak, 0)
                     else 0
-                end as current_streak
+                end as "currentStreak"
             from class_members cm
             join users u on u.id = cm.user_id and u.role = 'STUDENT' and u.status = 'ACTIVE'
             left join student_profiles sp on sp.user_id = u.id

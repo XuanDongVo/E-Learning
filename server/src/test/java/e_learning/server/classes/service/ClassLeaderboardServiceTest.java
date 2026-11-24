@@ -217,4 +217,46 @@ class ClassLeaderboardServiceTest {
         );
         assertEquals(ErrorCode.FORBIDDEN, exForbidden.getErrorCode());
     }
+
+    @Test
+    void getLeaderboard_pagination_slicesCorrectly() {
+        when(classRepository.findById(classId)).thenReturn(Optional.of(classEntity));
+
+        var row1 = createRow(101L, "Student A", null, 1000L, 10L, 5);
+        var row2 = createRow(102L, "Student B", null, 800L, 8L, 3);
+        var row3 = createRow(103L, "Student C", null, 600L, 6L, 1);
+
+        when(queryRepository.findClassStudentMetrics(
+                eq(classId), any(LocalDate.class), eq(true), eq(true), any(LocalDateTime.class), any(LocalDateTime.class)
+        )).thenReturn(List.of(row1, row2, row3));
+
+        // Page 1, size 2 -> items 101, 102
+        ClassLeaderboardResponse page1 = service.getLeaderboard(
+                classId, "XP", "WEEK", null, 1, 2, teacherId
+        );
+        assertEquals(3, page1.totalStudents());
+        assertEquals(3, page1.totalElements());
+        assertEquals(1, page1.page());
+        assertEquals(2, page1.size());
+        assertEquals(2, page1.items().size());
+        assertEquals(101L, page1.items().get(0).studentId());
+        assertEquals(102L, page1.items().get(1).studentId());
+
+        // Page 2, size 2 -> item 103
+        ClassLeaderboardResponse page2 = service.getLeaderboard(
+                classId, "XP", "WEEK", null, 2, 2, teacherId
+        );
+        assertEquals(1, page2.items().size());
+        assertEquals(103L, page2.items().get(0).studentId());
+        assertEquals(3, page2.items().get(0).rank());
+    }
+
+    @Test
+    void getLeaderboard_invalidPeriod_throws400() {
+        when(classRepository.findById(classId)).thenReturn(Optional.of(classEntity));
+
+        assertThrows(ResponseStatusException.class, () ->
+                service.getLeaderboard(classId, "XP", "INVALID_PERIOD", null, 1, 20, teacherId)
+        );
+    }
 }

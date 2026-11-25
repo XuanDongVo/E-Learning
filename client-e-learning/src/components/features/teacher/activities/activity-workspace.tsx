@@ -15,6 +15,7 @@ import { ActivityTable } from "./activity-table";
 import { RegionState } from "@/components/feedback";
 import { SkeletonTable } from "@/components/ui/skeleton/skeleton-table";
 import { TeacherPageHeader } from "@/components/features/teacher/shared/teacher-page-header";
+import { TeacherListToolbar } from "@/components/features/teacher/shared/teacher-list-toolbar";
 import { Button } from "@/components/ui/button";
 import {
   Popover,
@@ -250,7 +251,8 @@ export function ActivityWorkspace() {
         pipoMood="wave"
       />
 
-      <div className="flex flex-col gap-3 rounded-[var(--radius-md)] border border-border-color bg-card-bg p-4 sm:flex-row sm:flex-wrap sm:items-center">
+      <TeacherListToolbar
+        search={
         <label className="relative w-full sm:w-[220px] sm:flex-1 sm:max-w-xs">
           <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <input
@@ -264,7 +266,9 @@ export function ActivityWorkspace() {
             className="h-10 w-full rounded-lg border border-border-input bg-background pl-9 pr-3 text-body outline-none focus:border-primary focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
           />
         </label>
-
+        }
+        filters={
+        <>
         <SearchableSelect
           value={activeGrade ? String(activeGrade) : ""}
           onChange={(next) => {
@@ -309,8 +313,10 @@ export function ActivityWorkspace() {
           <option value="PUBLISHED">{t("statuses.published")}</option>
           <option value="ARCHIVED">{t("statuses.archived")}</option>
         </select>
-
-        <div className="flex shrink-0 flex-wrap items-center gap-2 max-sm:w-full sm:ml-auto">
+        </>
+        }
+        actions={
+        <>
           {createHref ? (
             <Link
               href={createHref}
@@ -329,8 +335,9 @@ export function ActivityWorkspace() {
               {t("createActivity")}
             </button>
           )}
-        </div>
-      </div>
+        </>
+        }
+      />
 
       {grades.isLoading || units.isLoading || activities.isLoading ? (
         <SkeletonTable columns={5} />

@@ -70,5 +70,276 @@
     "snapshotUnavailable": "The saved question content is not available for this older session.",
     "promptHidden": "The main question was not unlocked in this session.",
     "noStepHistory": "No guided steps were completed."
+  },
+  "hub": {
+    "back": "Back to Unit",
+    "eyebrow": "Activities",
+    "title": "English practice",
+    "description": "Choose a published activity to practice English vocabulary and grammar.",
+    "available": "Available activities",
+    "selectUnit": "Select a Unit first",
+    "selectUnitDesc": "This link does not specify a Unit.",
+    "viewUnits": "Browse Units",
+    "loadError": "Could not load activities",
+    "empty": "No published activities",
+    "emptyDesc": "No activities have been published for this Unit.",
+    "questions": "{count, plural, one {# question} other {# questions}}",
+    "practice": "Practice",
+    "challenge": "Challenge",
+    "secondsPerQuestion": "{count}s per question",
+    "begin": "Start activity",
+    "difficulty": {
+      "EASY": "Easy",
+      "MEDIUM": "Medium",
+      "HARD": "Hard",
+      "MIXED": "Mixed"
+    }
+  },
+  "start": {
+    "aria": "Start practice",
+    "back": "Back",
+    "title": "Choose how to practice",
+    "retry": "Try again",
+    "difficultyLabel": "Question difficulty",
+    "difficultyHint": "Your teacher sets the difficulty for this activity.",
+    "questionFocus": "Question focus",
+    "slow": "The server is responding slowly…",
+    "starting": "Starting…",
+    "startButton": "Start practice",
+    "perQuestion": "{count}s/question",
+    "lives": "{count, plural, one {# life} other {# lives}}",
+    "difficulty": {
+      "EASY": "Easy",
+      "MEDIUM": "Medium",
+      "HARD": "Hard",
+      "MIXED": "Mixed"
+    },
+    "modes": {
+      "LEARNING": {
+        "title": "Practice",
+        "description": "No timer · one retry · hints available"
+      },
+      "TRY_HARD": {
+        "title": "Challenge",
+        "description": "Timer per question · limited lives · no retries"
+      }
+    },
+    "strategies": {
+      "RANDOM": {
+        "title": "Random",
+        "description": "Mix available questions."
+      },
+      "WEAKNESS_PRIORITY": {
+        "title": "Focus on weak areas",
+        "description": "Prioritize questions needing more practice."
+      }
+    }
+  },
+  "result": {
+    "title": {
+      "gameOver": "Out of lives!",
+      "abandoned": "Practice ended early",
+      "completed": "Practice complete!"
+    },
+    "levelUp": "You reached Level {level}! Keep learning!",
+    "companion": {
+      "gameOver": "Your challenge ended. Review the questions and try again!",
+      "abandoned": "This attempt has ended. Start another one whenever you are ready.",
+      "great": "Great practice! Review what you learned today.",
+      "tryAgain": "You finished the practice. Reviewing the questions can help you improve!"
+    },
+    "stats": {
+      "correct": "Correct answers (final)",
+      "firstTry": "Correct on first try",
+      "hints": "Hints used",
+      "time": "Time"
+    },
+    "modeSummary": "{mode} · {count, plural, one {# question} other {# questions}}",
+    "modes": {
+      "LEARNING": "Practice",
+      "TRY_HARD": "Challenge"
+    },
+    "provisional": "Estimated score · unfinished sessions are not included in statistics",
+    "reviewTitle": "Question & answer details",
+    "reviewLoading": "Loading answer history…",
+    "retry": "Try again",
+    "restart": "Practice again",
+    "reviewLater": "Review later",
+    "backToUnit": "Back to Unit",
+    "xp": {
+      "loading": "Loading XP",
+      "loadFailed": "Could not load XP results",
+      "notEligible": "This session is not eligible for Activity XP.",
+      "abandoned": "Session ended early",
+      "confirmed": "Activity XP confirmed",
+      "level": "Level {level}",
+      "questions": "Question XP",
+      "bonus": "Completion bonus",
+      "lifetime": "Lifetime XP",
+      "abandonedHint": "Unfinished sessions do not add provisional XP to your account."
+    }
+  },
+  "runtime": {
+    "dialogs": {
+      "leaveTitle": "Leave this activity?",
+      "leaveDescription": "Your current practice session will not be saved or resumed. Are you sure you want to leave?",
+      "continue": "Keep practicing",
+      "leaving": "Leaving...",
+      "confirmLeave": "Leave activity"
+    },
+    "header": {
+      "leaving": "Leaving…",
+      "leavingAria": "Leaving",
+      "back": "Back",
+      "progress": "Practice progress",
+      "hinting": "Opening hint…",
+      "hint": "Hint",
+      "lives": "{count, plural, one {# life left} other {# lives left}}",
+      "correctCount": "Correct answers",
+      "help": "View help",
+      "settings": "Activity settings"
+    },
+    "footer": {
+      "retry": "Retry",
+      "check": "Check",
+      "previous": "Previous",
+      "reset": "Reset",
+      "submitting": "Submitting…",
+      "submit": "Submit",
+      "timeoutPending": "Resolving timeout…",
+      "checking": "Checking…",
+      "results": "View results",
+      "complete": "Finish",
+      "next": "Next"
+    },
+    "guided": {
+      "stepInput": "Your answer",
+      "stepPlaceholder": "Enter your answer",
+      "finalInput": "Final answer",
+      "finalPlaceholder": "Enter your answer",
+      "stepHint": "Hint: {hint}",
+      "finalHint": "Final hint: {hint}",
+      "hint": "Hint",
+      "finalHintButton": "Final hint",
+      "retry": "Try again",
+      "continue": "Continue",
+      "submitStep": "Submit answer",
+      "submitFinal": "Submit final answer"
+    },
+    "submitDialog": {
+      "close": "Close",
+      "title": "Submit now?",
+      "unanswered": "You have {count} unanswered questions. These will be skipped upon submission.",
+      "allAnswered": "You've answered every question. Submit to see your results.",
+      "unchecked": " The current unverified answer will not count.",
+      "answered": "Answered",
+      "notAnswered": "Unanswered",
+      "continue": "Continue practicing",
+      "pending": "Submitting…",
+      "confirm": "Confirm submission"
+    },
+    "hint": {
+      "title": "Hint from Việt Cường",
+      "close": "Close hint",
+      "slow": "The server is responding slowly. Your answer is still preserved.",
+      "loading": "Getting hint…",
+      "retry": "Retry"
+    },
+    "feedback": {
+      "correct": "Correct!",
+      "retry": "Try again!",
+      "incorrect": "Not correct",
+      "guidedCorrect": "You answered this step correctly!",
+      "correctPraise": "Great job! Keep going!",
+      "retryHint": "You have one retry remaining.",
+      "correctAnswer": "Correct answer: {answer}",
+      "reviewHint": "Review and remember the correct answer.",
+      "explanation": "Explanation"
+    },
+    "navigator": {
+      "statuses": {
+        "correct": "correct",
+        "wrong": "incorrect",
+        "picked": "selected",
+        "todo": "not answered"
+      },
+      "questionAria": "Question {number}, {status}{lock}",
+      "lockedSuffix": ", locked",
+      "current": "Current",
+      "correct": "Correct",
+      "wrong": "Incorrect",
+      "todo": "Not answered",
+      "select": "Select question",
+      "done": "Completed {done}/{total}",
+      "sequential": "Complete questions in order, without going back or skipping ahead.",
+      "list": "Question list",
+      "close": "Close",
+      "counter": "Question {current}/{total}"
+    },
+    "answerControls": {
+      "TRUE": "True",
+      "FALSE": "False"
+    },
+    "workspace": {
+      "mascot": {
+        "gameOver": "Out of lives! Let's review your results.",
+        "completed": "You finished every question!",
+        "correct": "Well done! Việt Cường is proud of you!",
+        "retry": "Not quite! You have one more try.",
+        "wrong": "That's okay! Let's review the correct answer.",
+        "hint": "Việt Cường gave you a hint. Check the question!",
+        "thinking": "Take your time. Việt Cường is cheering you on!"
+      },
+      "timeoutError": "Could not synchronize the timeout. Please try again.",
+      "timeoutPending": "Time is up! Confirming your results…",
+      "retry": "Try again",
+      "mascotAlt": "Việt Cường is cheering you on",
+      "question": "Question {current}/{total}",
+      "types": {
+        "SINGLE_CHOICE": "Single choice",
+        "MULTIPLE_CHOICE": "Multiple choice",
+        "TRUE_FALSE": "True / False",
+        "FILL_IN_BLANK": "Fill in the blank",
+        "TYPE_ANSWER": "Type answer",
+        "ORDERING": "Order items"
+      },
+      "truth": {
+        "TRUE": "True",
+        "FALSE": "False"
+      },
+      "inputLabel": "Your answer",
+      "inputPlaceholder": "Enter your answer",
+      "answerSlow": "The server is responding slowly. Your answer is being checked…",
+      "answerRetry": "Your answer is preserved. Select Check to retry.",
+      "finishedGameOver": "Out of lives. Select “View results” to review your work.",
+      "finishedComplete": "You've finished. Select “Finish” to see the results.",
+      "timeoutNotice": "The previous question timed out. You did not lose a life."
+    }
+  },
+  "settings": {
+    "title": "Activity settings",
+    "description": "Sound, background, and shortcuts.",
+    "closeSettings": "Close settings",
+    "tablist": "Activity settings",
+    "tabs": {
+      "keys": "Shortcuts",
+      "background": "Change background"
+    },
+    "sound": "Correct / incorrect sounds",
+    "shortcutTitle": "Keyboard shortcuts",
+    "shortcutHint": "On a laptop, Ctrl + H works even when typing an answer.",
+    "mobile": "On mobile, use the buttons in the top and bottom bars.",
+    "environment": "Practice environment",
+    "garden": "Dreamy garden",
+    "calm": "Calm sky",
+    "close": "Close",
+    "done": "Done",
+    "shortcuts": {
+      "hint": "Next hint",
+      "check": "Check / continue / retry",
+      "choice": "Choose option 1–4",
+      "navigate": "Previous / next question",
+      "reset": "Reset current question"
+    }
   }
 }

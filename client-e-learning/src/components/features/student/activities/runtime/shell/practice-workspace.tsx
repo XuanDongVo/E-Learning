@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+
 import Image from "next/image";
 import { RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -10,7 +12,7 @@ import { HintPanel, HintStatus } from "../../hint-panel";
 import { GuidedStage } from "../guided-stage";
 import { QuestionStageView } from "../question-stage-view";
 import { AnswerResultFeedback } from "../question-stage/answer-result-feedback";
-import { TYPE_LABEL, formatAnswer, isChoice, splitKeys } from "@/utils/practice-utils";
+import { formatAnswer, isChoice, splitKeys } from "@/utils/practice-utils";
 import mascot from "../../../../../../../public/assets/practice-mascot.png";
 import type { PracticeController } from "../controller/use-practice-controller";
 
@@ -23,6 +25,7 @@ export function PracticeWorkspace({
   unitId: number;
   controller: PracticeController;
 }) {
+  const t = useTranslations("student.activities.runtime.workspace");
   const {
     tErrors, session, question, picks, locked, feedback, draft, over, hintOpen,
     questions, statuses, index, tryHard, goTo, deadlineExpired, complete,
@@ -59,7 +62,9 @@ export function PracticeWorkspace({
     displayAnswer?.answerRevealed && displayAnswer.orderingAnswer
       ? displayAnswer.orderingAnswer.items.map((item) => item.content).join(" → ")
       : displayAnswer?.answerRevealed && displayAnswer.correctAnswer
-        ? formatAnswer(
+        ? question.type === "TRUE_FALSE"
+          ? (displayAnswer.correctAnswer.trim().toUpperCase() === "TRUE" ? t("truth.TRUE") : t("truth.FALSE"))
+          : formatAnswer(
             question,
             isChoice(question) || question.type === "TRUE_FALSE"
               ? splitKeys(displayAnswer.correctAnswer)
@@ -79,17 +84,17 @@ export function PracticeWorkspace({
   const finished = over && locked;
   const mascotText = finished
     ? gameOver
-      ? "Bạn hết mạng rồi, nhưng đừng buồn! Cùng xem kết quả nhé!"
-      : "Tuyệt vời! Bạn đã hoàn thành tất cả câu hỏi!"
+      ? t("mascot.gameOver")
+      : t("mascot.completed")
     : activeFeedback
       ? activeFeedback.correct
-        ? "Giỏi quá! Việt Cường tự hào về bạn!"
+        ? t("mascot.correct")
         : activeFeedback.retryAvailable
-          ? "Chưa đúng, bạn còn một lần thử nữa nhé!"
-          : "Không sao đâu, mình cùng xem đáp án nhé!"
+          ? t("mascot.retry")
+          : t("mascot.wrong")
       : hintOpen
-        ? "Việt Cường vừa gợi ý rồi, xem trong khung câu hỏi nhé!"
-        : "Thấy bạn suy nghĩ lâu Việt Cường cũng hồi hộp lây nè!";
+        ? t("mascot.hint")
+        : t("mascot.thinking");
   const navProps = {
     statuses,
     index,
@@ -110,8 +115,8 @@ export function PracticeWorkspace({
           >
             <span>
               {timeoutError
-                ? "Không thể đồng bộ hết giờ với máy chủ. Hãy thử lại."
-                : "Hết giờ! Đang xác nhận kết quả với máy chủ…"}
+                ? t("timeoutError")
+                : t("timeoutPending")}
             </span>
             {timeoutError && (
               <Button
@@ -121,7 +126,7 @@ export function PracticeWorkspace({
                 disabled={timeoutPending}
                 onClick={retryTimeout}
               >
-                <RefreshCw size={15} /> Thử lại
+                <RefreshCw size={15} /> {t("retry")}
               </Button>
             )}
           </div>
@@ -155,7 +160,7 @@ export function PracticeWorkspace({
                 </div>
                 <Image
                   src={mascot}
-                  alt="Việt Cường đang cổ vũ bạn"
+                  alt={t("mascotAlt")}
                   width={816}
                   height={816}
                   className="size-24 object-contain lg:size-32"
@@ -165,10 +170,10 @@ export function PracticeWorkspace({
             <div className="min-w-0 rounded-[18px] bg-card-bg p-3 shadow-pop-sm sm:rounded-[24px] sm:p-5 sm:shadow-pop-lg">
                <div className="mb-3 flex flex-wrap gap-2">
                     <span className="student-chip">
-                      Câu {index + 1}/{questions.length}
+                      {t("question", { current: index + 1, total: questions.length })}
                     </span>
                     <span className="student-chip">
-                      {TYPE_LABEL[question.type]}
+                      {t(`types.${question.type}`)}
                     </span>
                   </div>
               {complete ? (
@@ -272,8 +277,8 @@ export function PracticeWorkspace({
                     ordering={question.ordering}
                     draft={question.type === "ORDERING" && locked ? submitted : draft}
                     disabled={locked || answering}
-                    inputLabel="Đáp án của bạn"
-                    inputPlaceholder="Nhập đáp án"
+                    inputLabel={t("inputLabel")}
+                    inputPlaceholder={t("inputPlaceholder")}
                     optionState={optionState}
                     feedback={resultFeedback}
                     onDraftChange={(next) => {
@@ -284,8 +289,7 @@ export function PracticeWorkspace({
                   <div aria-live="polite">
                     {answering && answerSlow && (
                       <p role="status" className="mt-4 text-sm font-semibold">
-                        Máy chủ phản hồi chậm, đáp án của bạn đang được kiểm
-                        tra…
+                        {t("answerSlow")}
                       </p>
                     )}
                     {answerMutation.isError && !answering && (
@@ -297,8 +301,7 @@ export function PracticeWorkspace({
                           answerMutation.error,
                           tErrors as (key: string) => string,
                         )}{" "}
-                        Đáp án của bạn vẫn được giữ, hãy bấm Kiểm tra để thử
-                        lại.
+                        {t("answerRetry")}
                       </p>
                     )}
                     {finish.isError && (
@@ -318,8 +321,8 @@ export function PracticeWorkspace({
                         className="mt-4 rounded-2xl border-2 border-learning bg-learning-soft px-3.5 py-3 text-sm font-extrabold text-foreground"
                       >
                         {gameOver
-                          ? "Bạn đã hết mạng. Bấm “Xem kết quả” để xem bài làm của mình."
-                          : " Bạn đã hoàn thành bài luyện tập! Bấm “Hoàn thành” để xem kết quả."}
+                          ? t("finishedGameOver")
+                          : t("finishedComplete")}
                       </div>
                     )}
                   </div>

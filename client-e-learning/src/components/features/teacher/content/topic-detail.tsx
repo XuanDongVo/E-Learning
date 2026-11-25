@@ -23,6 +23,8 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { FullPageState, PageBanner, RegionState } from "@/components/feedback";
 import { SkeletonList } from "@/components/ui/skeleton/skeleton-list";
 import { ContentBreadcrumb } from "./components/content-breadcrumb";
+import { TeacherTopicKnowledgeNotes } from "../knowledge-notes/topic-knowledge-notes";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Dialog,
   DialogContent,
@@ -205,7 +207,27 @@ export function TopicDetail({
         />
       )}
 
-      <section className="mt-5 border-y border-border py-4">
+      <Tabs defaultValue="banks" className="mt-5">
+        <TabsList aria-label="Nội dung Topic"
+          className="flex h-auto w-full flex-wrap justify-start gap-2 rounded-lg border-2 border-ink bg-card p-2 shadow-pop">
+          <TabsTrigger value="banks"
+            className="min-h-10 px-4 font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+            Ngân hàng câu hỏi
+          </TabsTrigger>
+          <TabsTrigger value="knowledge"
+            className="min-h-10 px-4 font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+            Kiến thức / Lý thuyết
+          </TabsTrigger>
+        </TabsList>
+        <TabsContent value="knowledge" className="mt-4">
+          <TeacherTopicKnowledgeNotes
+            topicId={topicId}
+            gradeId={unit.data.gradeId}
+            disabled={topic.data.status === "ARCHIVED"}
+          />
+        </TabsContent>
+        <TabsContent value="banks" className="mt-4">
+      <section className="mt-5 rounded-lg border-2 border-ink bg-card p-4 shadow-pop">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex min-w-0 items-start gap-3">
             <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-primary-soft text-primary">
@@ -252,7 +274,7 @@ export function TopicDetail({
       </section>
 
       <Dialog open={createBankOpen} onOpenChange={setCreateBankOpen}>
-        <DialogContent className="max-h-[calc(100dvh-2rem)] overflow-y-auto sm:max-w-md">
+        <DialogContent className="max-h-[calc(100dvh-2rem)] overflow-y-auto border-2 border-ink bg-card shadow-pop sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="text-card-title font-bold text-foreground">
               New Question Bank
@@ -400,6 +422,8 @@ export function TopicDetail({
           </ul>
         )}
       </section>
+        </TabsContent>
+      </Tabs>
     </>
   );
 }

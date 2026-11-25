@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+
 import { ArrowLeft, ArrowRight, Check, RefreshCw, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { QuestionNavigatorSheet } from "../../question-navigator";
@@ -13,6 +15,7 @@ export function PracticeFooter({
 }: {
   controller: PracticeController;
 }) {
+  const t = useTranslations("student.activities.runtime.footer");
   const {
     answering,
     canSubmit,
@@ -55,7 +58,7 @@ export function PracticeFooter({
     },
   };
   const showCheck = !locked && !over && hasDraft && !deadlineExpired;
-  const retryLabel = feedback?.retryAvailable ? "Thử lại" : "Kiểm tra";
+  const retryLabel = feedback?.retryAvailable ? t("retry") : t("check");
   const gameOver = controller.session?.status === "GAME_OVER";
 
   return (
@@ -72,7 +75,7 @@ export function PracticeFooter({
             onClick={goPrev}
           >
             <ArrowLeft size={14} />
-            <span className="hidden sm:inline">Câu trước</span>
+            <span className="hidden sm:inline">{t("previous")}</span>
           </Button>
           <Button
             variant="outline"
@@ -80,7 +83,7 @@ export function PracticeFooter({
             disabled={locked || answering || deadlineExpired || draft.length === 0}
             onClick={reset}
           >
-            Làm lại
+            {t("reset")}
           </Button>
           {!over ? (
             <Button
@@ -95,7 +98,7 @@ export function PracticeFooter({
               onClick={submitEarly}
             >
               <Send size={14} className="max-sm:hidden" />
-              {finish.isPending ? "Đang nộp…" : "Nộp bài"}
+              {finish.isPending ? t("submitting") : t("submit")}
             </Button>
           ) : null}
           {deadlineExpired && !over ? (
@@ -105,7 +108,7 @@ export function PracticeFooter({
               disabled={!timeoutError || timeoutPending}
               onClick={retryTimeout}
             >
-              {timeoutError ? "Thử lại" : "Đang xử lý hết giờ…"}
+              {timeoutError ? t("retry") : t("timeoutPending")}
               <RefreshCw size={16} />
             </Button>
           ) : showCheck ? (
@@ -114,7 +117,7 @@ export function PracticeFooter({
               disabled={!canSubmit}
               onClick={submit}
             >
-              {answering ? "Đang kiểm tra…" : retryLabel}
+              {answering ? t("checking") : retryLabel}
               <Check size={16} />
             </Button>
           ) : over && locked ? (
@@ -122,7 +125,7 @@ export function PracticeFooter({
               className={`${accentButton} col-span-3 w-full sm:w-auto`}
               onClick={() => setShowResult(true)}
             >
-              {gameOver ? "Xem kết quả" : "Hoàn thành"}
+              {gameOver ? t("results") : t("complete")}
               <ArrowRight size={16} />
             </Button>
           ) : (
@@ -131,7 +134,7 @@ export function PracticeFooter({
               disabled={(tryHard && !locked) || !nextOpen}
               onClick={goNext}
             >
-              Câu tiếp
+              {t("next")}
               <ArrowRight size={16} />
             </Button>
           )}

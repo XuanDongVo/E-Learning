@@ -1,3 +1,6 @@
+"use client";
+
+import { useTranslations } from "next-intl";
 import { Check, RefreshCw, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -21,6 +24,7 @@ export function AnswerResultFeedback({
   answerRevealed,
   explanation,
 }: Props) {
+  const t = useTranslations("student.activities.runtime.feedback");
   if (!feedback) return null;
 
   return (
@@ -71,27 +75,27 @@ export function AnswerResultFeedback({
           )}
         >
           {feedback.correct
-            ? "Chính xác!"
+            ? t("correct")
             : feedback.retryAvailable
-              ? "Thử lại nhé!"
-              : "Chưa chính xác"}
+              ? t("retry")
+              : t("incorrect")}
         </p>
 
         <p className="student-body mt-0.5 text-foreground">
           {feedback.correct
             ? isGuidedStep
-              ? "Bạn đã trả lời đúng bước này!"
-              : "Bạn làm tốt lắm. Tiếp tục phát huy nhé!"
+              ? t("guidedCorrect")
+              : t("correctPraise")
             : feedback.retryAvailable
-              ? "Bạn còn một lần thử lại."
+              ? t("retryHint")
               : revealedAnswer
-                ? `Đáp án đúng: ${revealedAnswer}`
-                : "Hãy xem lại đáp án và ghi nhớ nhé."}
+                ? t("correctAnswer", { answer: revealedAnswer })
+                : t("reviewHint")}
         </p>
 
         {answerRevealed && explanation && (
           <div className="mt-2 border-t border-current/15 pt-2">
-            <p className="student-label text-muted-foreground">Giải thích</p>
+            <p className="student-label text-muted-foreground">{t("explanation")}</p>
             <p className="student-body mt-1 text-muted-foreground">
               {explanation}
             </p>

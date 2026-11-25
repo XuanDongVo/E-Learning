@@ -1,3 +1,6 @@
+"use client";
+
+import { useLocale, useTranslations } from "next-intl";
 import { Award, Crown, Medal, Sparkles } from "lucide-react";
 import type { LeaderboardMetric, LeaderboardRanking } from "@/types/gamification";
 import { cn } from "@/lib/utils";
@@ -10,6 +13,8 @@ export function StudentLeaderboardPodium({
   entries: LeaderboardRanking[];
   metric: LeaderboardMetric;
 }) {
+  const t = useTranslations("student.leaderboard");
+  const locale = useLocale();
   const order = [2, 1, 3]
     .map((rank) => entries.find((entry) => entry.rank === rank))
     .filter((entry): entry is LeaderboardRanking => Boolean(entry));
@@ -17,7 +22,7 @@ export function StudentLeaderboardPodium({
   if (order.length === 0) return null;
 
   return (
-    <ol className="student-podium" aria-label="Ba vị trí dẫn đầu">
+    <ol className="student-podium" aria-label={t("podiumAria")}>
       {order.map((entry) => {
         const isFirst = entry.rank === 1;
 
@@ -61,7 +66,7 @@ export function StudentLeaderboardPodium({
               {/* Huy hiệu số thứ hạng ở góc dưới */}
               <span
                 className={cn("student-podium__rank-badge", `student-podium__rank-badge--rank-${entry.rank}`)}
-                aria-label={`Hạng ${entry.rank}`}
+                aria-label={t("podiumRank", { rank: entry.rank })}
               >
                 {entry.rank}
               </span>
@@ -80,7 +85,7 @@ export function StudentLeaderboardPodium({
 
             {/* Con dấu XP */}
             <span className={cn("student-podium__xp-pill", isFirst && "student-podium__xp-pill--first")}>
-              {entry.value.toLocaleString("vi-VN")} {metric === "XP" ? "XP" : "ngày"}
+              {metric === "XP" ? `${entry.value.toLocaleString(locale)} XP` : t("days", { count: entry.value })}
             </span>
           </li>
         );

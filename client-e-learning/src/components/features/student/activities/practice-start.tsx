@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+
 import Image from "next/image";
 import { Link } from "@/i18n/navigation";
 import { ArrowLeft, Clock3, Heart, Sparkles } from "lucide-react";
@@ -17,25 +19,6 @@ import { ScrapbookHeading } from "@/components/student-ui/scrapbook-heading";
 
 const blueBtn = "student-control student-control--action";
 const glassBtn = "student-control student-control--quiet";
-
-const MODES: Record<ActivitySessionMode, { title: string; desc: string }> = {
-  LEARNING: {
-    title: "Luyện tập",
-    desc: "Không bấm giờ · được thử lại 1 lần · có gợi ý",
-  },
-  TRY_HARD: {
-    title: "Thử thách",
-    desc: "Bấm giờ từng câu · có số mạng · không thử lại",
-  },
-};
-
-const STRATEGIES: Record<SelectionStrategy, { title: string; desc: string }> = {
-  RANDOM: { title: "Ngẫu nhiên", desc: "Trộn đều các câu hỏi hiện có." },
-  WEAKNESS_PRIORITY: {
-    title: "Ưu tiên phần còn yếu",
-    desc: "Ưu tiên những câu bạn cần luyện thêm.",
-  },
-};
 
 type Props = {
   unitId: number;
@@ -87,17 +70,17 @@ function Choice({
 }
 
 export function PracticeStart(p: Props) {
+  const t = useTranslations("student.activities.start");
   const modes = (["LEARNING", "TRY_HARD"] as const).filter(
     (m) => p.options?.activityMode === "BOTH" || p.options?.activityMode === m,
   );
   const strategies = p.options?.selectionStrategies ?? [];
-  const difficultyLabels = { EASY: "Dễ", MEDIUM: "Trung bình", HARD: "Khó", MIXED: "Hỗn hợp" } as const;
   const ready = !!p.mode && !!p.strategy && !!p.options;
 
   return (
     <section
       className="student-practice-runtime fixed inset-0 z-[45] overflow-y-auto bg-learning text-foreground"
-      aria-label="Bắt đầu luyện tập"
+      aria-label={t("aria")}
     >
       <Image
         src={garden}
@@ -112,13 +95,13 @@ export function PracticeStart(p: Props) {
            <Link href={`/student/units/${p.unitId}`}>
           <Button  variant="outline" className={`${glassBtn} px-3`}>
               <ArrowLeft size={16} />
-              <span>Quay lại</span>
+              <span>{t("back")}</span>
           </Button>
            </Link>
         </div>
 
         <PaperSurface as="section" tape tapePosition="right" className="student-practice-start-card mt-6 p-5">
-          <ScrapbookHeading as="h1" className="student-section-title">Chọn cách luyện tập</ScrapbookHeading>
+          <ScrapbookHeading as="h1" className="student-section-title">{t("title")}</ScrapbookHeading>
 
           {p.loading && (
             <SkeletonCard className="mt-4" lines={4} />
@@ -129,35 +112,35 @@ export function PracticeStart(p: Props) {
               className="mt-4"
               variant="error"
               description={p.loadError}
-              action={<Button className={`${blueBtn} mt-3`} onClick={p.onReload}>Thử lại</Button>}
+              action={<Button className={`${blueBtn} mt-3`} onClick={p.onReload}>{t("retry")}</Button>}
             />
           )}
 
           {p.options && (
             <>
               <div className="student-soft-panel mt-4 px-4 py-3">
-                <p className="student-meta text-muted-foreground">Độ khó câu hỏi</p>
-                <p className="student-label mt-1">{difficultyLabels[p.options.questionDifficulty]}</p>
-                <p className="student-body mt-1 text-muted-foreground">Độ khó do giáo viên thiết lập cho hoạt động này.</p>
+                <p className="student-meta text-muted-foreground">{t("difficultyLabel")}</p>
+                <p className="student-label mt-1">{t(`difficulty.${p.options.questionDifficulty}`)}</p>
+                <p className="student-body mt-1 text-muted-foreground">{t("difficultyHint")}</p>
               </div>
               <div className="mt-4 grid gap-3 ">
                 {modes.map((m) => (
                   <Choice 
                     key={m}
                     active={p.mode === m}
-                    title={MODES[m].title}
+                    title={t(`modes.${m}.title`)}
                     desc={
                       m === "TRY_HARD"
                         ? [
-                            MODES[m].desc,
+                            t(`modes.${m}.description`),
                             p.options?.timeLimitSeconds
-                              ? `${p.options.timeLimitSeconds}s/câu`
+                              ? t("perQuestion", { count: p.options.timeLimitSeconds })
                               : null,
-                            p.options?.lives ? `${p.options.lives} mạng` : null,
+                            p.options?.lives ? t("lives", { count: p.options.lives }) : null,
                           ]
                             .filter(Boolean)
                             .join(" · ")
-                        : MODES[m].desc
+                        : t(`modes.${m}.description`)
                     }
                     icon={
                       m === "LEARNING" ? (
@@ -176,14 +159,14 @@ export function PracticeStart(p: Props) {
 
               {strategies.length > 1 && (
                 <>
-                  <h2 className="student-card-title mt-6">Trọng tâm câu hỏi</h2>
+                  <h2 className="student-card-title mt-6">{t("questionFocus")}</h2>
                   <div className="mt-3 grid gap-3">
                     {strategies.map((s) => (
                       <Choice
                         key={s}
                         active={p.strategy === s}
-                        title={STRATEGIES[s].title}
-                        desc={STRATEGIES[s].desc}
+                        title={t(`strategies.${s}.title`)}
+                        desc={t(`strategies.${s}.description`)}
                         onClick={() => p.onStrategyChange(s)}
                       />
                     ))}
@@ -195,7 +178,7 @@ export function PracticeStart(p: Props) {
 
           {p.starting && p.slow && (
             <p role="status" className="student-label mt-4">
-              Máy chủ phản hồi chậm, vui lòng chờ thêm chút…
+              {t("slow")}
             </p>
           )}
           {p.startError && (
@@ -210,7 +193,7 @@ export function PracticeStart(p: Props) {
               disabled={!ready || p.starting}
               onClick={p.onStart}
             >
-              {p.starting ? "Đang bắt đầu…" : p.startError ? "Thử lại" : "Bắt đầu luyện tập"}
+              {p.starting ? t("starting") : p.startError ? t("retry") : t("startButton")}
             </Button>
           </div>
         </PaperSurface>

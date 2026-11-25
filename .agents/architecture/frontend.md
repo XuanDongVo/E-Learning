@@ -1,0 +1,90 @@
+# Frontend Architecture and Rules
+
+## Authentication lifecycle
+
+`api.service.ts` owns 401 recovery for JSON, multipart, and blob requests. Recovery
+is single-flight in one tab, serialized across tabs with Web Locks, and replays the
+original authentication-rejected request once. Login, refresh, and logout bypass
+recovery; `ACCOUNT_INACTIVE` never refreshes.
+
+`AuthProvider` subscribes to shared session-end events, clears React Query and
+transient runtime state, and exposes the termination reason to `AuthGuard` and the
+login screen. Do not add independent refresh loops in feature services or store
+JWT values in localStorage/sessionStorage.
+
+Use TypeScript, central types, services and query keys. Do not invent API fields or endpoints.
+
+## Activity UI
+- Unit scope.
+- Draft may be saved incomplete.
+- Publish requires READY.
+- Multiple strategies are configured on Activity; student runtime choice is separate.
+- Try Hard says seconds per question.
+- Practice has no timer.
+- No whole-Activity timer.
+- No GameTemplate control in current scope.
+
+## Assignment UI
+- Assignment Builder uses ordered Composition sections/items/blocks; drag/drop order persists on Composition, never on AssignmentQuestion.position.
+- Demo is the product prototype; localStorage/seed are not production persistence.
+- Use canonical QuestionSpec separately from Assignment Composition types.
+- Teacher preview and student runtime render identical order/grouping.
+- Whole-attempt time limit.
+- show_answers_after_submit setting.
+- No Release Answers UI.
+
+## Question/Topic UI
+- Question Editor has one optional Hint field, max 500 characters.
+- Topic formula/reference sheet is deferred; no current field/UI.
+
+## Runtime
+ActivitySession stores concrete Activity mode and selection_strategy.
+ActivitySessionQuestion.position is runtime sequence metadata only.
+AssessmentAttempt is a separate Assignment runtime contract.
+
+Student Activity runtime has one composition root and one visual renderer:
+`PracticeRunner` creates `usePracticeController` and renders
+`PracticeShell`. Controller-only hooks own keyboard, timeout and idempotency
+behavior. The shell is split into header, workspace, footer and dialogs.
+`QuestionStageView` composes QuestionPrompt, QuestionMedia, AnswerControls,
+AnswerFeedback and QuestionActions; GuidedProgress is an optional Guided-only
+slot. GuidedStage adapts Guided state into this shared renderer and is not a
+second runner or visual shell.
+
+Student Activity review uses one server-backed `ActivityReviewDetails`
+renderer in both terminal `PracticeResult` and the reloadable
+`/student/activity-sessions/{sessionId}/review` route. Review must not be rebuilt
+from transient picks or feedback kept by the runner.
+
+Student Activity cards expose a secondary History action. The route
+`/student/units/{unitId}/activities/{activityId}/history` owns terminal-session
+filters and pagination, calls `GET /v1/activities/{activityId}/sessions`, and
+links each row to the shared standalone Review route by `sessionId`. Server error
+codes are rendered through `getAppErrorMessage` and locale `error.json`, not
+feature-local copies of backend messages.
+
+Follow `ui/UI_ARCHITECTURE_GUIDELINES.md` for shared UI architecture, accessibility and responsive behavior. ADR 0032 establishes the exclusive Student visual language in `ui/INDIE_ILLUSTRATED_SCRAPBOOK_DESIGN_SYSTEM.md`; Teacher retains its existing visual language.
+
+Teacher operational lists compose search, domain filters and actions through `components/features/teacher/shared/teacher-list-toolbar.tsx`. The shared component owns only container layout and responsive wrapping; feature components continue to own query state, URL parameters, mutations, validation and navigation. Specialized editor and analytics toolbars remain feature-local.
+
+**Implemented theme isolation contract:** `app/[locale]/student/layout.tsx` activates the scoped Student theme from `styles/student/`; Teacher/base variables remain unchanged. Student feature code uses semantic aliases, typography roles and `components/student-ui` recipes instead of page-local colors or geometry. Root-mounted dialogs and Sonner are covered through the active Student body scope. Any new portal/popover/select must still be checked for scope escape, focus, contrast and reduced motion.
+
+
+## Question authoring synchronization
+
+Current Question Bank and Assignment forms share some visual controls but have separate payload/draft conversion paths; do not assume their serialization is already single-source-of-truth.
+
+Target proposed by ADR 0023:
+- Use a TypeScript discriminated union for per-type draft/spec handling, with common prompt/difficulty/explanation/hint/media metadata separated from type-specific fields.
+- Resolve per-type authoring, validation and preview rules through one registry/configuration rather than proliferating type switches.
+- Reuse mapping rules between Question Bank and Assignment while keeping feature endpoints and question ownership separate.
+- Keep teacher preview and student runtime projections separate; student models never carry correctness/accepted answer data before allowed reveal.
+- Make option order explicit in contract and persistence.
+- Verify hint read/write round trips through every create/edit/bulk path; the audited code contains older hint mapping drift.
+
+This target is a proposal, not an instruction to begin refactoring before Owner review of ADR 0023 D1–D6.
+
+
+## Assignment Composition
+
+See .agents/architecture/assignment-composition-v1.md. Preserve ordered sections/items, drag/drop, instruction/passage/image/pool blocks, groups, points/required/isExample, validation and Student Preview. Image + alt text supported in v1; audio deferred. Do not expose AUTO/MANUAL or manual grading; all Assignment submissions are auto-graded. Each scored Assignment item defaults to 1 point, teacher-editable. Expose `show_score_after_submit` separately from `show_answers_after_submit`. Production persistence uses APIs, not localStorage/seed.

@@ -1,1 +1,48 @@
-{}
+{
+  "page": {
+    "eyebrow": "THEO DÕI HỌC TẬP",
+    "title": "Tiến trình của bạn",
+    "description": "Theo dõi Level, XP, chuỗi ngày học và mốc thành tích đã được hệ thống ghi nhận.",
+    "live": "Dữ liệu thời gian thực"
+  },
+  "streak": {
+    "weekdays": {
+      "mon": "T2",
+      "tue": "T3",
+      "wed": "T4",
+      "thu": "T5",
+      "fri": "T6",
+      "sat": "T7",
+      "sun": "CN"
+    },
+    "loading": "Đang tải chuỗi ngày học và Level",
+    "error": "Chưa thể tải thành tích",
+    "errorDescription": "Bạn vẫn có thể học bình thường. Hãy thử tải lại thành tích.",
+    "retry": "Thử lại",
+    "aria": "Thành tích học tập của bạn",
+    "title": "Chuỗi ngày học",
+    "qualifiedToday": "Đã học hôm nay",
+    "notQualifiedToday": "Chưa học hôm nay",
+    "days": "{count} ngày",
+    "longest": "Dài nhất {count} ngày",
+    "calendarAria": "Lịch học từ thứ Hai đến Chủ nhật",
+    "dayDone": "đã hoàn thành Activity",
+    "dayNotDone": "chưa hoàn thành Activity",
+    "dayLearned": "đã học",
+    "dayNotLearned": "chưa học",
+    "todaySuffix": ", hôm nay",
+    "dayTooltip": "{date}: {status}",
+    "week": "Tuần này {count}/7 ngày",
+    "seeTomorrow": "Hẹn gặp bạn ngày mai!",
+    "completeToday": "Hoàn thành 1 Activity để ghi nhận hôm nay",
+    "weekProgress": "Số ngày học trong tuần",
+    "howToStreak": "Mỗi ngày chỉ cần hoàn thành một Activity để giữ chuỗi.",
+    "nextMilestone": " Mốc tiếp theo: {days} ngày (+{xp} XP).",
+    "levelTitle": "Cấp độ học tập",
+    "level": "Level {level}",
+    "lifetimeXp": "{xp} XP đã tích lũy",
+    "nextLevel": "Đạt mốc XP tiếp theo để lên Level {level}.",
+    "xpProgress": "Tiến độ XP lên cấp",
+    "xpRemaining": "Còn {xp} XP"
+  }
+}

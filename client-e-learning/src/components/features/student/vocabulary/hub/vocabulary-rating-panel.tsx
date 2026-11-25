@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+
 import type { VocabularyFsrsRating } from "@/types/student-vocabulary-review";
 
 export function VocabularyRatingPanel({
@@ -20,16 +22,17 @@ export function VocabularyRatingPanel({
   againIsLocal?: boolean;
   times?: Partial<Record<VocabularyFsrsRating, string>>;
 }) {
+  const t = useTranslations("student.vocabulary.rating");
   const options = [
-    { rating: "AGAIN", label: "Học lại", time: againIsLocal ? "Trong lượt này" : "Học từ đầu" },
-    { rating: "HARD", label: "Khó", time: times?.HARD ?? "Theo FSRS" },
-    { rating: "GOOD", label: "Tốt", time: times?.GOOD ?? "Theo FSRS" },
-    { rating: "EASY", label: "Dễ", time: times?.EASY ?? "Theo FSRS" },
+    { rating: "AGAIN", label: t("again"), time: againIsLocal ? t("againLocalTime") : t("againReviewTime") },
+    { rating: "HARD", label: t("hard"), time: times?.HARD ?? t("fsrs") },
+    { rating: "GOOD", label: t("good"), time: times?.GOOD ?? t("fsrs") },
+    { rating: "EASY", label: t("easy"), time: times?.EASY ?? t("fsrs") },
   ] as const;
   return (
-    <section className="student-vocab-rating-panel space-y-3" aria-label="Đánh giá ghi nhớ">
+    <section className="student-vocab-rating-panel space-y-3" aria-label={t("label")}>
       <h3 className="student-card-title text-center text-foreground">
-        Bạn nhớ từ này ở mức nào?
+        {t("question")}
       </h3>
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
         {options.map((option) => (
@@ -47,8 +50,8 @@ export function VocabularyRatingPanel({
       </div>
       <p className="student-caption text-center text-muted-foreground">
         {againIsLocal
-          ? "Học lại: giữ từ trong hàng đợi học của lượt này, không ghi FSRS."
-          : "Học lại: đưa từ về Học từ mới, bắt đầu lại lịch ghi nhớ. Lịch sử ôn vẫn được giữ."}
+          ? t("againLocalExplanation")
+          : t("againReviewExplanation")}
       </p>
       {onBack && (
         <button
@@ -57,7 +60,7 @@ export function VocabularyRatingPanel({
           onClick={onBack}
           className="student-control student-control--quiet w-full"
         >
-          Quay lại cách học
+          {t("back")}
         </button>
       )}
     </section>

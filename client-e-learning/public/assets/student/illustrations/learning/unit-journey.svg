@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="280" viewBox="0 0 360 280" fill="none">
+<title>Scrapbook learning journey</title>
+<path d="M63 45q15-13 102-2l2 181q-66-10-108 5z" fill="#FFFDF9" stroke="#2D2B2A" stroke-width="4" stroke-linejoin="round"/>
+<path d="M166 43q72-22 136-8l-3 187q-65-12-132 2z" fill="#E8DEC8" stroke="#2D2B2A" stroke-width="4" stroke-linejoin="round"/>
+<path d="m166 43 1 181" stroke="#2D2B2A" stroke-width="3" stroke-dasharray="6 4"/>
+<path d="m70 59 20-4m-17 17 73-6m-70 20 69-5m-67 19 67-5m-62 25 52-4m-54 15 45-3" stroke="#9B948A" stroke-width="3" stroke-linecap="round"/>
+<path d="m185 68 103-13M187 81l95-12" stroke="#6E6863" stroke-width="3" stroke-linecap="round"/>
+<path d="M193 125c10-25 46-37 68-17s-13 40-39 49 7 33 36 17" stroke="#6B8E67" stroke-width="4" stroke-linecap="round" stroke-dasharray="5 9"/>
+<circle cx="194" cy="124" r="14" fill="#FFFDF9" stroke="#2D2B2A" stroke-width="3"/><path d="m188 124 5 6 9-11" stroke="#35623B" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="m248 164 10-10 10 12-12 14z" fill="#D99B26" stroke="#2D2B2A" stroke-width="3"/>
+<path d="m123 151 26 11-11 35-29-9z" fill="#C85A32" stroke="#2D2B2A" stroke-width="3"/>
+<path d="m115 168 23 9m-21 0 18 7" stroke="#FFFDF9" stroke-width="3" stroke-linecap="round"/>
+<path d="m40 39 2-22 31-5 1 22" fill="#F3E88E" opacity=".8"/>
+<path d="m270 32 14-23 25 17-15 22" fill="#F3E88E" opacity=".7"/>
+<path d="m305 82 9 11 14-2-8 13 8 10-16-2-7 15-3-16-14-4 14-9z" fill="#D99B26" stroke="#2D2B2A" stroke-width="2.5"/>
+<path d="m45 194 7 7 10-4-4 11 9 8-11-1-7 12-2-13-12-4 12-5z" fill="#6B8E67" stroke="#2D2B2A" stroke-width="2.5"/>
+<path d="m196 239 34 5m-51 10 77 3" stroke="#C85A32" stroke-width="4" stroke-linecap="round"/>
+</svg>

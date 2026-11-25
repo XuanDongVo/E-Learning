@@ -32,6 +32,7 @@ import { AssignmentWizard } from "@/components/features/teacher/assignments/main
 import { SummaryCard } from "@/components/features/teacher/assignments/main/SummaryCard";
 import { TeacherAssignmentGuide } from "@/components/features/teacher/assignments/main/TeacherAssignmentGuide";
 import { TeacherPageHeader } from "@/components/features/teacher/shared/teacher-page-header";
+import { TeacherListToolbar } from "@/components/features/teacher/shared/teacher-list-toolbar";
 import { PageBanner } from "@/components/feedback";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -56,8 +57,9 @@ export default function TeacherAssignmentsPage() {
   const [guideOpen, setGuideOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] =
-    useState<"ALL" | "DRAFT" | "PUBLISHED" | "ARCHIVED">("ALL");
+  const [statusFilter, setStatusFilter] = useState<
+    "ALL" | "DRAFT" | "PUBLISHED" | "ARCHIVED"
+  >("ALL");
   const [form, setForm] = useState<CreateAssignmentRequest>(initialForm);
 
   const assignments = useQuery({
@@ -86,9 +88,7 @@ export default function TeacherAssignmentsPage() {
       setWizardOpen(false);
       setForm(initialForm);
       if (!response.data) {
-        toast.error(
-          t("notifications.createdWithoutId"),
-        );
+        toast.error(t("notifications.createdWithoutId"));
         return;
       }
       toast.success(t("notifications.created"));
@@ -176,7 +176,7 @@ export default function TeacherAssignmentsPage() {
                 summary.isLoading ? (
                   <Skeleton className="h-8 w-14 rounded-lg" />
                 ) : (
-                  summaryData?.openAssignmentCount ?? 0
+                  (summaryData?.openAssignmentCount ?? 0)
                 )
               }
               hint={t("summary.openHint")}
@@ -189,7 +189,7 @@ export default function TeacherAssignmentsPage() {
                 summary.isLoading ? (
                   <Skeleton className="h-8 w-16 rounded-lg" />
                 ) : (
-                  summaryData?.finalizedDeliveryCount ?? 0
+                  (summaryData?.finalizedDeliveryCount ?? 0)
                 )
               }
               hint={t("summary.finalizedHint")}
@@ -202,7 +202,7 @@ export default function TeacherAssignmentsPage() {
                 summary.isLoading ? (
                   <Skeleton className="h-8 w-14 rounded-lg" />
                 ) : (
-                  summaryData?.overdueIncompleteDeliveryCount ?? 0
+                  (summaryData?.overdueIncompleteDeliveryCount ?? 0)
                 )
               }
               hint={t("summary.overdueHint")}
@@ -229,62 +229,31 @@ export default function TeacherAssignmentsPage() {
         )}
       </section>
 
-      <section className="overflow-hidden rounded-2xl border-2 border-ink bg-card shadow-pop">
-        <div className="border-b-2 border-border px-5 py-4 bg-card">
-          <div className="flex flex-col justify-between gap-3 lg:flex-row lg:items-start">
-            <div>
-              <h2 className="text-section-title font-extrabold text-foreground">
-                {t("list.title")}
-              </h2>
-              <p className="text-body-sm text-muted-foreground">
-                {t("list.matching", { count: visibleAssignments.length })}
-              </p>
-            </div>
-            <div className="flex flex-col gap-2.5 sm:flex-row sm:flex-wrap">
-              <label className="flex h-10 items-center gap-2 rounded-xl border-2 border-border bg-card px-3.5 text-body-sm text-muted-foreground shadow-pop-sm focus-within:border-primary">
-                <Search className="size-4" />
-                <input
-                  value={search}
-                  onChange={(event) => setSearch(event.target.value)}
-                  placeholder={t("list.searchPlaceholder")}
-                  aria-label={t("list.searchLabel")}
-                  className="w-44 bg-transparent outline-none font-medium text-foreground placeholder:text-muted-foreground"
-                />
-              </label>
-              <button
-                type="button"
-                // onClick={() => setImportOpen(true)}
-                disabled
-                className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border-2 border-border bg-card px-4 text-body-sm font-bold shadow-pop-sm transition hover:bg-muted active:translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                <Upload className="size-4" /> {t("actions.importQuestions")}
-              </button>
-              <button
-                type="button"
-                onClick={openGuide}
-                className="inline-flex h-10 items-center gap-2 rounded-xl border-2 border-border bg-card px-4 text-body-sm font-bold shadow-pop-sm transition hover:bg-muted active:translate-y-0.5"
-              >
-                <BookOpen className="size-4" /> {t("actions.howToCreate")}
-              </button>
-              <button
-                type="button"
-                onClick={openWizard}
-                className="inline-flex h-10 items-center gap-2 rounded-xl border border-primary bg-primary px-4 text-body-sm font-bold text-primary-foreground shadow-pop-sm transition hover:bg-primary-hover active:translate-y-0.5"
-              >
-                <Plus className="size-4" /> {t("actions.create")}
-              </button>
-            </div>
-          </div>
-          <div className="mt-4 flex flex-wrap gap-2.5">
+      <TeacherListToolbar
+        className="rounded-xl "
+        search={
+          <label className="flex h-10 w-full items-center gap-2 rounded-xl border-2 border-border bg-card px-3.5 text-body-sm text-muted-foreground shadow-pop-sm focus-within:border-primary">
+            <Search className="size-4" />
+            <input
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder={t("list.searchPlaceholder")}
+              aria-label={t("list.searchLabel")}
+              className="min-w-0 flex-1 bg-transparent font-medium text-foreground outline-none placeholder:text-muted-foreground"
+            />
+          </label>
+        }
+        filters={
+          <>
             {(["ALL", "PUBLISHED", "DRAFT", "ARCHIVED"] as const).map(
               (status) => (
                 <button
                   key={status}
                   type="button"
                   onClick={() => setStatusFilter(status)}
-                  className={`rounded-xl border-2 px-3.5 py-1.5 text-body-sm font-bold shadow-pop-sm transition-all ${
+                  className={`h-10 rounded-xl border-2 px-3.5 text-body-sm font-bold shadow-pop-sm transition-all ${
                     statusFilter === status
-                      ? "border-primary bg-primary text-primary-foreground -translate-y-0.5"
+                      ? "-translate-y-0.5 border-primary bg-primary text-primary-foreground"
                       : "border-border bg-card hover:bg-muted hover:text-foreground"
                   }`}
                 >
@@ -298,8 +267,45 @@ export default function TeacherAssignmentsPage() {
                 </button>
               ),
             )}
-          </div>
+          </>
+        }
+        actions={
+          <>
+            <button
+              type="button"
+              // onClick={() => setImportOpen(true)}
+              disabled
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border-2 border-border bg-card px-4 text-body-sm font-bold shadow-pop-sm transition hover:bg-muted active:translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <Upload className="size-4" /> {t("actions.importQuestions")}
+            </button>
+            <button
+              type="button"
+              onClick={openGuide}
+              className="inline-flex h-10 items-center gap-2 rounded-xl border-2 border-border bg-card px-4 text-body-sm font-bold shadow-pop-sm transition hover:bg-muted active:translate-y-0.5"
+            >
+              <BookOpen className="size-4" /> {t("actions.howToCreate")}
+            </button>
+            <button
+              type="button"
+              onClick={openWizard}
+              className="inline-flex h-10 items-center gap-2 rounded-xl border border-primary bg-primary px-4 text-body-sm font-bold text-primary-foreground shadow-pop-sm transition hover:bg-primary-hover active:translate-y-0.5"
+            >
+              <Plus className="size-4" /> {t("actions.create")}
+            </button>
+          </>
+        }
+      />
+      <section className="overflow-hidden rounded-2xl border-2 border-ink bg-card shadow-pop">
+        <div className="px-5 py-4 flex flex-row items-center align-center gap-2">
+          <h2 className="text-sm font-extrabold ">
+            {t("list.title")}:
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            {t("list.matching", { count: visibleAssignments.length })}
+          </p>
         </div>
+
         <AssignmentList
           assignments={visibleAssignments}
           isLoading={assignments.isLoading}

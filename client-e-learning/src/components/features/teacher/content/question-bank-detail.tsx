@@ -37,6 +37,7 @@ import {
   questionDifficultyOptions,
 } from "@/types/content";
 import { OrderingDefinitionSummary } from "@/components/features/teacher/question-authoring/ordering/OrderingDefinitionSummary";
+import { TeacherListToolbar } from "@/components/features/teacher/shared/teacher-list-toolbar";
 
 export function QuestionBankDetail({
   bankId,
@@ -514,10 +515,10 @@ export function QuestionBankDetail({
           </div>
         </div>
 
-        {/* Toolbar & Bộ lọc */}
-        <div className="mb-4 flex flex-wrap items-center gap-2.5">
-          {/* Ô tìm kiếm */}
-          <div className="flex h-9 min-w-[220px] flex-1 items-center gap-2 rounded-lg border-2 border-ink  px-3 text-muted-foreground shadow-pop-sm transition-colors focus-within:border-primary sm:max-w-xs">
+        <TeacherListToolbar
+          className="mb-4 border-border shadow-none"
+          search={
+          <div className="flex h-10 min-w-0 w-full items-center gap-2 rounded-lg border-2 border-ink px-3 text-muted-foreground shadow-pop-sm transition-colors focus-within:border-primary">
             <Search size={14} className="shrink-0 text-muted-foreground" />
             <input
               type="text"
@@ -536,15 +537,16 @@ export function QuestionBankDetail({
               </button>
             )}
           </div>
-
-          {/* Filter Type */}
+          }
+          filters={
+          <>
           <select
             value={selectedType}
             onChange={(e) => {
               setSelectedType(e.target.value);
               setPage(1);
             }}
-            className="h-9 rounded-lg border-2 border-ink  px-2.5 text-xs font-semibold text-foreground shadow-pop-sm outline-none transition-all hover:bg-muted focus:border-primary"
+            className="h-10 w-full rounded-lg border-2 border-ink px-2.5 text-xs font-semibold text-foreground shadow-pop-sm outline-none transition-all hover:bg-muted focus:border-primary lg:w-auto"
           >
             <option value="">All Types</option>
             {questionTypeOptions.map((item) => (
@@ -554,7 +556,6 @@ export function QuestionBankDetail({
             ))}
           </select>
 
-          {/* Filter Difficulty */}
           <select
             aria-label="Filter by difficulty"
             value={selectedDifficulty}
@@ -562,7 +563,7 @@ export function QuestionBankDetail({
               setSelectedDifficulty(e.target.value);
               setPage(1);
             }}
-            className="h-9 rounded-lg border-2 border-ink  px-2.5 text-xs font-semibold text-foreground shadow-pop-sm outline-none transition-all hover:bg-muted focus:border-primary"
+            className="h-10 w-full rounded-lg border-2 border-ink px-2.5 text-xs font-semibold text-foreground shadow-pop-sm outline-none transition-all hover:bg-muted focus:border-primary lg:w-auto"
           >
             <option value="">All Difficulty</option>
             {questionDifficultyOptions.map((item) => (
@@ -572,7 +573,6 @@ export function QuestionBankDetail({
             ))}
           </select>
 
-          {/* Filter Completeness */}
           <select
             aria-label="Filter by completeness"
             value={selectedCompleteness}
@@ -582,33 +582,36 @@ export function QuestionBankDetail({
               );
               setPage(1);
             }}
-            className="h-9 rounded-lg border-2 border-ink  px-2.5 text-xs font-semibold text-foreground shadow-pop-sm outline-none transition-all hover:bg-muted focus:border-primary"
+            className="h-10 w-full rounded-lg border-2 border-ink px-2.5 text-xs font-semibold text-foreground shadow-pop-sm outline-none transition-all hover:bg-muted focus:border-primary lg:w-auto"
           >
             <option value="">All Completeness</option>
             <option value="complete">Complete</option>
             <option value="incomplete">Incomplete</option>
           </select>
-
-          {/* Button Import CSV */}
+          </>
+          }
+          actions={
+          <>
           <button
             type="button"
             onClick={() => onNavigate("import", bankId, bank?.name)}
-            className="flex h-9 items-center gap-1.5 rounded-lg border-2 border-ink bg-card px-3.5 text-xs font-bold text-foreground shadow-pop-sm transition-all hover:-translate-y-0.5 hover:bg-muted active:translate-y-0"
+            className="flex h-10 items-center justify-center gap-1.5 rounded-lg border-2 border-ink bg-card px-3.5 text-xs font-bold text-foreground shadow-pop-sm transition-all hover:-translate-y-0.5 hover:bg-muted active:translate-y-0"
           >
             <Upload size={14} className="text-primary" />
             Import CSV
           </button>
 
-          {/* Button Add questions */}
           <button
             type="button"
             onClick={() => onNavigate("bulk-create", bankId, bank?.name)}
-            className="flex h-9 items-center gap-1.5 rounded-lg border-2 border-ink bg-primary px-3.5 text-xs font-bold text-primary-foreground shadow-pop transition-all hover:-translate-y-0.5 active:translate-y-0"
+            className="flex h-10 items-center justify-center gap-1.5 rounded-lg border-2 border-ink bg-primary px-3.5 text-xs font-bold text-primary-foreground shadow-pop transition-all hover:-translate-y-0.5 active:translate-y-0"
           >
             <Plus size={15} />
             Add questions
           </button>
-        </div>
+          </>
+          }
+        />
 
         {/* Thanh Bulk Actions */}
         {selectedIds.size > 0 && (

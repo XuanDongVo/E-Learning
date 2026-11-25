@@ -15,6 +15,12 @@ export type StudentVisualAsset = {
 };
 
 export const studentVisualRegistry = {
+  "illustration.unit-journey": { src: "/assets/student/illustrations/learning/unit-journey.svg", role: "learning", width: 360, height: 280, source: "in-repo-original", license: "project-original", status: "approved" },
+  "illustration.leaderboard-podium": { src: "/assets/student/illustrations/achievements/leaderboard-podium.svg", role: "achievement", width: 340, height: 265, source: "in-repo-original", license: "project-original", status: "approved" },
+  "illustration.topic-notes": { src: "/assets/student/illustrations/learning/topic-notes.svg", role: "learning", width: 180, height: 150, source: "in-repo-original", license: "project-original", status: "approved" },
+  "scene.knowledge-shelf": { src: "/assets/student/scenes/knowledge-shelf.svg", role: "scene", width: 520, height: 340, source: "in-repo-original", license: "project-original", status: "approved" },
+  "doodle.reading-trail": { src: "/assets/student/doodles/annotations/reading-trail.svg", role: "doodle", width: 220, height: 96, source: "in-repo-original", license: "project-original", status: "approved" },
+  "doodle.bookmark-note": { src: "/assets/student/doodles/stickers/bookmark-note.svg", role: "doodle", width: 132, height: 156, source: "in-repo-original", license: "project-original", status: "approved" },
   "scene.study-desk": { src: "/assets/student/scenes/study-desk.svg", role: "scene", width: 480, height: 320, source: "in-repo-original", license: "project-original", status: "approved" },
   "scene.open-notebook": { src: "/assets/student/scenes/open-notebook.svg", role: "scene", width: 440, height: 310, source: "in-repo-original", license: "project-original", status: "approved" },
   "illustration.no-results": { src: "/assets/student/illustrations/states/no-results.svg", role: "state", width: 360, height: 300, source: "in-repo-original", license: "project-original", status: "approved" },

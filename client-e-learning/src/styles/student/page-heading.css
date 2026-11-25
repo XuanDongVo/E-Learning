@@ -1,0 +1,127 @@
+/*
+ * Student Page Heading — shared editorial hierarchy.
+ * No surface or mascot is forced onto consumers. CSS is strictly scoped
+ * to Student to preserve Teacher screens and existing portal rules.
+ */
+.student-theme .student-page-heading {
+  container-type: normal;
+}
+.student-theme .student-page-heading__content {
+  overflow-wrap: break-word;
+}
+.student-theme .student-page-heading__eyebrow {
+  display: flex;
+  width: fit-content;
+  max-width: 100%;
+  align-items: center;
+  gap: .55rem;
+  margin: 0;
+  font-size: .75rem;
+  font-weight: 800;
+  letter-spacing: .075em;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+.student-theme .student-page-heading__eyebrow::before {
+  content: "";
+  display: block;
+  flex: 0 0 9px;
+  width: 9px;
+  height: 9px;
+  border: 1.5px solid var(--student-ink);
+  border-radius: 45% 55% 52% 48%;
+  background: var(--student-mustard);
+  transform: rotate(-12deg);
+}
+.student-theme .student-page-heading__title {
+  max-width: 100%;
+  margin: 0;
+  line-height: 1.15;
+  text-wrap: balance;
+  overflow-wrap: break-word;
+}
+.student-theme .student-page-heading[data-highlight="underline"] .student-page-heading__title::after {
+  content: "";
+  display: block;
+  width: clamp(42px, 8vw, 60px);
+  height: 4px;
+  margin-top: .45rem;
+  border-radius: 5px 2px 5px 2px;
+  background: var(--student-mustard);
+  box-shadow: 1px 1px 0 var(--student-ink);
+  transform: rotate(-2deg);
+}
+.student-theme .student-page-heading[data-heading-level="h2"] .student-page-heading__title {
+  font-size: 1.625rem;
+  line-height: 1.2;
+}
+.student-theme .student-page-heading[data-heading-level="h3"] .student-page-heading__title {
+  font-size: 1.375rem;
+  line-height: 1.25;
+}
+.student-theme .student-page-heading__description {
+  max-width: 64ch;
+  margin: 0;
+  line-height: 1.65;
+  text-wrap: pretty;
+  overflow-wrap: break-word;
+}
+.student-theme .student-page-heading__actions {
+  margin-top: .35rem;
+}
+.student-theme .student-page-heading__artwork {
+  isolation: isolate;
+}
+@media (max-width: 639px) {
+  .student-theme .student-page-heading__content {
+    flex-basis: auto;
+  }
+  .student-theme .student-page-heading__artwork {
+    margin-inline: auto;
+  }
+}
+@media (min-width: 640px) {
+  .student-theme .student-page-heading[data-heading-level="h2"] .student-page-heading__title {
+    font-size: 1.75rem;
+  }
+  .student-theme .student-page-heading[data-heading-level="h3"] .student-page-heading__title {
+    font-size: 1.5rem;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .student-theme .student-page-heading__title::after,
+  .student-theme .student-page-heading__eyebrow::before {
+    transform: none;
+  }
+}
+
+/* v3: accent should read like translucent marker on paper, not a heavy banner. */
+.student-theme .student-page-heading[data-highlight="marker"] .student-page-heading__highlight {
+  padding: 0 .08em .03em;
+  background-image: linear-gradient(transparent 66%, rgba(217,155,38,.46) 66%, rgba(217,155,38,.46) 91%, transparent 91%);
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  line-height: 1.24;
+}
+.student-theme .student-page-heading[data-highlight="marker"] .student-page-heading__title::after {
+  display: none;
+}
+.student-theme .student-page-heading .student-highlight {
+  padding-inline: .08em;
+  background-image: linear-gradient(transparent 58%, rgba(200,90,50,.2) 58%, rgba(200,90,50,.2) 92%, transparent 92%);
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+.student-theme .student-page-heading__artwork img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+.student-theme .student-page-heading__actions > :is(a, button) {
+  min-height: 44px;
+}
+@media (max-width: 639px) {
+  .student-theme .student-page-heading__artwork {
+    max-width: min(100%, 180px);
+  }
+}

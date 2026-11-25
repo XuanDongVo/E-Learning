@@ -3,15 +3,15 @@
 import { useEffect, useState } from "react";
 import { Link, usePathname } from "@/i18n/navigation";
 import {
-  BarChart2,
+  Gamepad2,
   BookOpen,
   ClipboardList,
-  Gamepad2,
   GraduationCap,
   Home,
   LogOut,
   Menu,
   Trophy,
+  BookMarked,
   LibraryBig,
   X,
 } from "lucide-react";
@@ -20,18 +20,22 @@ import { useQuery } from "@tanstack/react-query";
 import { studentProfileService } from "@/services/student/student-profile.service";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/components/auth/auth-provider";
+import { useTranslations } from "next-intl";
+import { LocaleToggle } from "@/components/layout/locale-toggle";
 
 export const NAV_ITEMS = [
-  { label: "Home", href: "/student", icon: Home },
-  { label: "Learning", href: "/student/units", icon: BookOpen },
-  { label: "Vocabulary", href: "/student/vocabulary", icon: LibraryBig },
-  { label: "Assignments", href: "/student/assignments", icon: ClipboardList },
-  { label: "Game", href: "/student/game", icon: Gamepad2 },
-  { label: "Leaderboard", href: "/student/leaderboard", icon: Trophy },
+  { key: "studentHome", href: "/student", icon: Home },
+  { key: "studentLearning", href: "/student/units", icon: BookOpen },
+  { key: "studentVocabulary", href: "/student/vocabulary", icon: LibraryBig },
+  { key: "studentKnowledge", href: "/student/knowledge", icon: BookMarked },
+  { key: "studentAssignments", href: "/student/assignments", icon: ClipboardList },
+  { key: "studentGame", href: "/student/game", icon: Gamepad2 },
+  { key: "studentLeaderboard", href: "/student/leaderboard", icon: Trophy },
 ];
 
 export function StudentNavbar() {
   const pathname = usePathname();
+  const t = useTranslations("navigation");
   const { user, logout } = useAuth();
   const [open, setOpen] = useState(false);
   const ownProfile = useQuery({
@@ -46,9 +50,6 @@ export function StudentNavbar() {
   const avatarUrl = avatarMatch
     ? `https://api.dicebear.com/9.x/${avatarMatch[1]}/svg?seed=${encodeURIComponent(avatarMatch[2])}`
     : undefined;
-
-  // Đóng menu khi đổi trang
-  useEffect(() => setOpen(false), [pathname]);
 
   // Khoá cuộn trang + phím Esc khi menu mobile mở
   useEffect(() => {
@@ -92,8 +93,8 @@ export function StudentNavbar() {
 
           {/* Desktop nav */}
           <nav
-            className="hidden flex-1 items-center justify-center gap-1 lg:flex"
-            aria-label="Student navigation"
+            className="hidden flex-1 items-center justify-center gap-0.5 xl:flex"
+            aria-label={t("studentNavigation")}
           >
             {NAV_ITEMS.map((item) => {
               const active = isItemActive(item.href);
@@ -104,21 +105,22 @@ export function StudentNavbar() {
                   href={item.href}
                   aria-current={active ? "page" : undefined}
                   className={cn(
-                    "student-nav-item flex min-h-11 items-center gap-2 rounded-full px-4 text-sm font-semibold transition-colors",
+                    "student-nav-item flex min-h-11 items-center gap-2 rounded-full px-3 text-sm font-semibold transition-colors",
                     active
                       ? "bg-primary-light text-primary"
                       : "text-neutral-muted hover:bg-background-app hover:text-neutral-dark",
                   )}
                 >
                   <Icon className="h-4 w-4 shrink-0" />
-                  <span>{item.label}</span>
+                  <span>{t(item.key)}</span>
                 </Link>
               );
             })}
           </nav>
 
           {/* Desktop user */}
-          <div className="ml-auto hidden items-center gap-2 lg:flex">
+          <div className="ml-auto hidden items-center gap-2 xl:flex">
+            <LocaleToggle />
             <Link
               href="/student/profile"
               className="flex items-center gap-2.5 rounded-full py-1 pl-1 pr-3 transition-colors hover:bg-background-app"
@@ -139,8 +141,8 @@ export function StudentNavbar() {
             <button
               type="button"
               onClick={() => void logout()}
-              aria-label="Sign out"
-              title="Sign out"
+              aria-label={t("signOut")}
+              title={t("signOut")}
               className="flex h-10 w-10 items-center justify-center rounded-full text-neutral-muted transition hover:bg-background-app hover:text-neutral-dark"
             >
               <LogOut className="h-4 w-4" />
@@ -151,13 +153,16 @@ export function StudentNavbar() {
           <button
             type="button"
             onClick={() => setOpen(true)}
-            aria-label="Open menu"
+            aria-label={t("openStudentMenu")}
             aria-expanded={open}
             aria-controls="student-mobile-menu"
-            className="ml-auto flex h-11 w-11 items-center justify-center rounded-xl border border-border-color text-neutral-dark transition hover:bg-background-app lg:hidden"
+            className="ml-auto flex h-11 w-11 items-center justify-center rounded-xl border border-border-color text-neutral-dark transition hover:bg-background-app xl:hidden"
           >
             <Menu className="h-5 w-5" />
           </button>
+          <div className="xl:hidden">
+            <LocaleToggle />
+          </div>
         </div>
       </header>
 
@@ -180,7 +185,7 @@ export function StudentNavbar() {
           id="student-mobile-menu"
           role="dialog"
           aria-modal="true"
-          aria-label="Student menu"
+          aria-label={t("studentMenu")}
           className={cn(
             "student-nav-drawer absolute right-0 top-0 flex h-full w-[82%] max-w-80 flex-col border-l border-border-color bg-card-bg shadow-xl transition-transform duration-300 ease-out",
             open ? "translate-x-0" : "translate-x-full",
@@ -193,7 +198,7 @@ export function StudentNavbar() {
             <button
               type="button"
               onClick={() => setOpen(false)}
-              aria-label="Close menu"
+              aria-label={t("closeStudentMenu")}
               className="flex h-10 w-10 items-center justify-center rounded-lg text-neutral-muted hover:bg-background-app hover:text-neutral-dark"
             >
               <X className="h-5 w-5" />
@@ -202,7 +207,7 @@ export function StudentNavbar() {
 
           <nav
             className="flex-1 space-y-1 overflow-y-auto p-3"
-            aria-label="Student navigation"
+            aria-label={t("studentNavigation")}
           >
             {NAV_ITEMS.map((item) => {
               const active = isItemActive(item.href);
@@ -211,6 +216,7 @@ export function StudentNavbar() {
                 <Link
                   key={item.href}
                   href={item.href}
+                  onClick={() => setOpen(false)}
                   aria-current={active ? "page" : undefined}
                   className={cn(
                     "student-nav-item flex min-h-12 items-center gap-3 rounded-lg px-4 text-sm font-semibold transition-colors",
@@ -220,7 +226,7 @@ export function StudentNavbar() {
                   )}
                 >
                   <Icon className="h-5 w-5 shrink-0" />
-                  <span>{item.label}</span>
+                  <span>{t(item.key)}</span>
                 </Link>
               );
             })}
@@ -229,6 +235,7 @@ export function StudentNavbar() {
           <div className="flex items-center border-t border-border-color p-3">
             <Link
               href="/student/profile"
+              onClick={() => setOpen(false)}
               className="flex min-w-0 flex-1 items-center gap-3 rounded-lg p-2 hover:bg-background-app"
             >
               <Avatar className="h-10 w-10 shrink-0">
@@ -247,7 +254,7 @@ export function StudentNavbar() {
             <button
               type="button"
               onClick={() => void logout()}
-              aria-label="Sign out"
+              aria-label={t("signOut")}
               className="flex h-10 w-10 items-center justify-center rounded-lg text-neutral-muted hover:bg-background-app hover:text-neutral-dark"
             >
               <LogOut className="h-4 w-4" />

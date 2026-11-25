@@ -2,17 +2,12 @@
 
 import { Link } from "@/i18n/navigation";
 import { useMemo, useState } from "react";
-import {
-  ArrowLeft,
-  BarChart3,
-  CheckCircle2,
-  Clock,
-  Lock,
-} from "lucide-react";
+import { ArrowLeft, BarChart3, CheckCircle2, Clock, Lock } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { Button, buttonVariants } from "@/components/ui/button";
 import type { AttemptResultResponse } from "@/types/student/assignment-attempt";
 import { cn } from "@/lib/utils";
+import { StudentMascotScene } from "@/components/student-ui/visuals/pipo/student-mascot-scene";
 import { formatDateTime, formatDurationRange } from "@/utils/format";
 import { ResultQuestionCard } from "./result-question-card";
 import {
@@ -62,14 +57,13 @@ export function StudentResultView({
   return (
     <>
       <header className="flex h-14 items-center gap-3 border-b bg-card px-4 rounded-xl mb-4">
-        <Link
-          href="/student/assignments"
-          className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "gap-1.5")}
-        >
-          <ArrowLeft className="h-4 w-4" /> Danh sách bài
+        <Link href="/student/assignments" className="flex items-center gap-2">
+          <Button variant="ghost" size="sm">
+            <ArrowLeft className="h-4 w-4" /> {t("backToAssignments")}
+          </Button>
         </Link>
-        <BarChart3 className="h-4 w-4 text-primary" />
-        <h1 className="min-w-0 truncate font-semibold">Kết quả · {title}</h1>
+        <BarChart3 className="  h-4 w-4 text-primary" />
+        <h1 className="min-w-0 truncate font-semibold">{t("result.headerTitle", { title })}</h1>
         <div className="ml-auto flex items-center gap-2"></div>
       </header>
 
@@ -177,6 +171,16 @@ export function StudentResultView({
           </div>
         </div>
 
+        <StudentMascotScene
+          variant="feedback"
+          mood={timedOut ? "think" : "happy"}
+          prop="book"
+          message={timedOut
+            ? t("result.mascotTimedOut")
+            : t("result.mascotSubmitted")}
+          className="max-w-lg"
+        />
+
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_17rem]">
           <section className="space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-2">
@@ -251,13 +255,12 @@ export function StudentResultView({
                 );
               })}
             </div>
-            <Link
-              href="/student/assignments"
-              className={cn(buttonVariants({ variant: "outline" }), "mt-5 w-full")}
-            >
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              {t("backToAssignments")}
-            </Link>
+            <Button variant="outline" className="mt-5 w-full">
+              <Link href="/student/assignments">
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                {t("backToAssignments")}
+              </Link>
+            </Button>
           </aside>
         </div>
       </div>

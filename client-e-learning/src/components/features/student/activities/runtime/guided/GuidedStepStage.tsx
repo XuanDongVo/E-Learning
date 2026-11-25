@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+
 import type { ReactNode } from "react";
 import { Check, Lightbulb, RefreshCw, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -38,6 +40,7 @@ export function GuidedStepStage({
   onUseHint: () => void;
   onDismissReview: () => void;
 }) {
+  const t = useTranslations("student.activities.runtime.guided");
   return (
     <QuestionStageView
       key={`guided:${step.stepKey}:${review ? "review" : "answer"}`}
@@ -46,8 +49,8 @@ export function GuidedStepStage({
       options={step.options}
       draft={review ? [review.answer] : draft}
       disabled={pending || Boolean(review)}
-      inputLabel="Câu trả lời của bạn"
-      inputPlaceholder="Nhập câu trả lời"
+      inputLabel={t("stepInput")}
+      inputPlaceholder={t("stepPlaceholder")}
       onDraftChange={onDraftChange}
       guidedProgress={
         <GuidedProgress
@@ -61,7 +64,7 @@ export function GuidedStepStage({
           {resultFeedback}
           {hint && (
             <p className="student-body rounded-xl border border-learning/30 bg-learning-soft px-3 py-2">
-              Gợi ý: {hint}
+              {t("stepHint", { hint })}
             </p>
           )}
           {error && (
@@ -80,7 +83,7 @@ export function GuidedStepStage({
               onClick={onUseHint}
               disabled={hintPending}
             >
-              <Lightbulb size={16} /> Gợi ý
+              <Lightbulb size={16} /> {t("hint")}
             </Button>
           )}
           {review ? (
@@ -90,7 +93,7 @@ export function GuidedStepStage({
               ) : (
                 <Check size={16} />
               )}
-              {review.feedback.retryAvailable ? "Thử lại ngay" : "Tiếp tục ngay"}
+              {review.feedback.retryAvailable ? t("retry") : t("continue")}
             </Button>
           ) : (
             <Button
@@ -98,7 +101,7 @@ export function GuidedStepStage({
               onClick={onSubmit}
               disabled={!(draft[0] ?? "").trim() || pending}
             >
-              <Send size={16} /> Gửi câu trả lời
+              <Send size={16} /> {t("submitStep")}
             </Button>
           )}
         </QuestionActions>

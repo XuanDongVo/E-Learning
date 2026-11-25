@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+
 import * as Dialog from "@radix-ui/react-dialog";
 import { AlertTriangle, Send, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -27,6 +29,7 @@ export function SubmitConfirmDialog({
   pending: boolean;
   onConfirm: () => void;
 }) {
+  const t = useTranslations("student.activities.runtime.submitDialog");
   const unanswered = total - answered;
 
   return (
@@ -40,7 +43,7 @@ export function SubmitConfirmDialog({
               size="icon"
               disabled={pending}
               className={`${paperBtn} absolute right-4 top-4 size-7 rounded-full`}
-              aria-label="Đóng"
+              aria-label={t("close")}
             >
               <X size={14} />
             </Button>
@@ -51,14 +54,14 @@ export function SubmitConfirmDialog({
           </span>
 
           <Dialog.Title className="mt-4 text-lg font-extrabold">
-            Nộp bài ngay?
+            {t("title")}
           </Dialog.Title>
           <Dialog.Description className="mt-1.5 text-sm leading-6 text-muted-foreground">
             {unanswered > 0
-              ? `Em còn ${unanswered} câu chưa trả lời. Các câu này sẽ được tính là bỏ qua khi nộp bài.`
-              : "Em đã trả lời tất cả các câu. Nộp bài để xem kết quả nhé!"}
+              ? t("unanswered", { count: unanswered })
+              : t("allAnswered")}
             {hasUncheckedDraft &&
-              " Câu đang chọn chưa được kiểm tra sẽ không được tính."}
+              t("unchecked")}
           </Dialog.Description>
 
           <div className="mt-4 grid grid-cols-2 divide-x divide-border rounded-xl border-2 border-border bg-background py-3 text-center">
@@ -66,13 +69,13 @@ export function SubmitConfirmDialog({
               <p className="text-xl font-extrabold text-success">
                 {answered}
               </p>
-              <p className="text-[11px] text-muted-foreground">Đã trả lời</p>
+              <p className="text-[11px] text-muted-foreground">{t("answered")}</p>
             </div>
             <div>
               <p className="text-xl font-extrabold text-destructive">
                 {unanswered}
               </p>
-              <p className="text-[11px] text-muted-foreground">Chưa trả lời</p>
+              <p className="text-[11px] text-muted-foreground">{t("notAnswered")}</p>
             </div>
           </div>
 
@@ -84,12 +87,12 @@ export function SubmitConfirmDialog({
                 className={paperBtn}
               >
                 <X size={14} />
-                Tiếp tục làm bài
+                {t("continue")}
               </Button>
             </Dialog.Close>
             <Button className={blueBtn} disabled={pending} onClick={onConfirm}>
               <Send size={14} />
-              {pending ? "Đang nộp…" : "Xác nhận nộp bài"}
+              {pending ? t("pending") : t("confirm")}
             </Button>
           </div>
         </Dialog.Content>

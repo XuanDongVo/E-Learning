@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+
 import { useEffect, useRef, useState } from "react";
 import { Mic, Volume2 } from "lucide-react";
 import { speakVocabulary } from "@/lib/vocabulary-pronunciation";
@@ -29,6 +31,7 @@ export function VocabularyPronunciation({
   onComplete: () => void;
   onReset: () => void;
 }) {
+  const t = useTranslations("student.vocabulary.pronunciation");
   const [accent, setAccent] = useState<"UK" | "US">("US");
   const [heard, setHeard] = useState<string | null>(null);
   const [error, setError] = useState("");
@@ -47,7 +50,7 @@ export function VocabularyPronunciation({
       browser.SpeechRecognition ?? browser.webkitSpeechRecognition;
     if (!Recognition) {
       setError(
-        "Trình duyệt chưa hỗ trợ micro. Bạn có thể nghe mẫu và tự luyện đọc.",
+        t("unsupported"),
       );
       return;
     }
@@ -63,8 +66,8 @@ export function VocabularyPronunciation({
       instance.onerror = (event) =>
         setError(
           event.error === "not-allowed"
-            ? "Bạn chưa cấp quyền micro."
-            : "Không nhận được giọng nói. Bạn có thể thử lại.",
+            ? t("permissionDenied")
+            : t("notRecognized"),
         );
       instance.onend = () => {
         setListening(false);
@@ -76,19 +79,19 @@ export function VocabularyPronunciation({
       setListening(true);
     } catch {
       setListening(false);
-      setError("Không thể bật micro. Hãy thử nghe mẫu và tự luyện đọc.");
+      setError(t("cannotStart"));
     }
   };
 
   return (
     <section className="space-y-4 text-center">
       <h3 className="student-card-title text-foreground">
-        Nghe và phát âm: {card.word}
+        {t("title", { word: card.word })}
       </h3>
       <div
         className="flex justify-center gap-2"
         role="group"
-        aria-label="Chọn giọng đọc"
+        aria-label={t("chooseVoice")}
       >
         {(["UK", "US"] as const).map((voice) => (
           <button
@@ -103,7 +106,7 @@ export function VocabularyPronunciation({
             }}
             className={`student-control px-4 ${accent === voice ? "student-filter-active" : "student-control--quiet"}`}
           >
-            {voice === "UK" ? "Anh–Anh (uk)" : "Anh–Mỹ (us)"}
+            {voice === "UK" ? t("uk") : t("us")}
           </button>
         ))}
       </div>
@@ -119,7 +122,7 @@ export function VocabularyPronunciation({
             onComplete();
           }}
         >
-          <Volume2 className="size-4" /> Nghe mẫu
+          <Volume2 className="size-4" /> {t("listenSample")}
         </button>
         <button
           type="button"
@@ -127,7 +130,7 @@ export function VocabularyPronunciation({
           className="student-control student-control--action inline-flex items-center gap-2 px-4"
           onClick={start}
         >
-          <Mic className="size-4" /> {listening ? "Đang nghe..." : "Thử nói"}
+          <Mic className="size-4" /> {listening ? t("listening") : t("start")}
         </button>
       </div>
       <button
@@ -135,11 +138,11 @@ export function VocabularyPronunciation({
         className="student-control student-control--quiet px-4"
         onClick={onComplete}
       >
-        Tôi đã tự luyện đọc
+        {t("selfPractice")}
       </button>
       {heard !== null && (
         <p role="status" className="student-body text-foreground">
-          Trình duyệt nghe được: “{heard}”.
+          {t("heard", { heard })}
         </p>
       )}
       {error && (
@@ -148,8 +151,7 @@ export function VocabularyPronunciation({
         </p>
       )}
       <p className="student-caption text-muted-foreground">
-        Nhận dạng văn bản không phải chấm độ chính xác phát âm. Bạn có thể tự
-        đánh giá để tiếp tục.
+        {t("notice")}
       </p>
     </section>
   );

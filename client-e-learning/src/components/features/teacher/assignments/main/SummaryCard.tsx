@@ -25,7 +25,7 @@ export function SummaryCard({
   tone,
 }: Props) {
   return (
-    <div className="rounded-xl border border-border bg-card p-5">
+    <div className="rounded-xl border border-2 border-ink shadow-pop bg-card p-5">
       <div className="flex items-center justify-between">
         <p className="text-sm font-bold text-muted-foreground">
           {label}

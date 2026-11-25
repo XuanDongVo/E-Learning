@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+
 import { useState, useEffect, useRef, useCallback } from "react";
 import {
   Volume2,
@@ -39,6 +41,7 @@ export function VocabularyFlashcard({
   onReveal,
   onToggleFavorite,
 }: VocabularyFlashcardProps) {
+  const t = useTranslations("student.vocabulary.flashcard");
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
@@ -199,7 +202,7 @@ export function VocabularyFlashcard({
             }`}
             role="button"
             tabIndex={0}
-            aria-label={`Thẻ từ: ${currentCard.word}. Nhấn để lật xem nghĩa.`}
+            aria-label={t("frontAria", { word: currentCard.word })}
           >
             {/* Thanh công cụ mặt trước */}
             <div
@@ -220,7 +223,7 @@ export function VocabularyFlashcard({
                   type="button"
                   onClick={() => onToggleFavorite?.(currentCard.wordId)}
                   className={`rounded-lg p-2 transition-colors hover:bg-muted `}
-                  title="Gắn sao từ này"
+                  title={t("favorite")}
                 >
                   <Star className="size-4" />
                 </button>
@@ -230,7 +233,7 @@ export function VocabularyFlashcard({
                     type="button"
                     onClick={handleShuffle}
                     className="rounded-lg p-2 transition-colors hover:bg-muted hover:text-foreground"
-                    title="Xáo trộn ngẫu nhiên"
+                    title={t("shuffle")}
                   >
                     <Shuffle className="size-4" />
                   </button>
@@ -242,7 +245,7 @@ export function VocabularyFlashcard({
                   className={`rounded-lg p-2 transition-colors hover:bg-muted hover:text-foreground ${
                     showSettings ? "bg-muted text-foreground" : ""
                   }`}
-                  title="Cài đặt flashcard"
+                  title={t("settings")}
                 >
                   <Settings className="size-4" />
                 </button>
@@ -251,14 +254,14 @@ export function VocabularyFlashcard({
                 {showSettings && (
                   <div className="absolute right-0 top-full z-30 mt-2 w-64 rounded-xl border-2 border-border bg-popover p-4 text-sm  space-y-3.5">
                     <h4 className="student-card-title text-foreground text-sm">
-                      Cài đặt thẻ
+                      {t("settingsTitle")}
                     </h4>
 
                     <div className="space-y-2.5">
                       <label className="flex items-center justify-between cursor-pointer">
                         <span className="flex items-center gap-2 text-foreground student-body text-xs">
                           <Volume2 className="size-3.5 text-muted-foreground" />
-                          Tự động phát âm
+                          {t("autoSpeak")}
                         </span>
                         <input
                           type="checkbox"
@@ -276,7 +279,7 @@ export function VocabularyFlashcard({
                       <label className="flex items-center justify-between cursor-pointer">
                         <span className="flex items-center gap-2 text-foreground student-body text-xs">
                           <Eye className="size-3.5 text-muted-foreground" />
-                          Hiện ví dụ
+                          {t("showExample")}
                         </span>
                         <input
                           type="checkbox"
@@ -294,7 +297,7 @@ export function VocabularyFlashcard({
                       <label className="flex items-center justify-between cursor-pointer">
                         <span className="flex items-center gap-2 text-foreground student-body text-xs">
                           <MessageSquare className="size-3.5 text-muted-foreground" />
-                          Hiện họ từ
+                          {t("showWordFamily")}
                         </span>
                         <input
                           type="checkbox"
@@ -312,7 +315,7 @@ export function VocabularyFlashcard({
                       <label className="flex items-center justify-between cursor-pointer">
                         <span className="flex items-center gap-2 text-foreground student-body text-xs">
                           <Hash className="size-3.5 text-muted-foreground" />
-                          Hiện từ đồng nghĩa
+                          {t("showSynonyms")}
                         </span>
                         <input
                           type="checkbox"
@@ -330,7 +333,7 @@ export function VocabularyFlashcard({
                       <label className="flex items-center justify-between cursor-pointer">
                         <span className="flex items-center gap-2 text-foreground student-body text-xs">
                           <BookOpen className="size-3.5 text-muted-foreground" />
-                          Hiển thị loại từ
+                          {t("showPos")}
                         </span>
                         <input
                           type="checkbox"
@@ -348,7 +351,7 @@ export function VocabularyFlashcard({
 
                     <div className="pt-2 border-t border-border flex items-center justify-between">
                       <span className="student-body text-xs font-semibold text-foreground">
-                        Giọng đọc
+                        {t("voice")}
                       </span>
                       <div className="inline-flex rounded-lg bg-muted p-0.5">
                         <button
@@ -404,7 +407,7 @@ export function VocabularyFlashcard({
                     type="button"
                     onClick={() => playAudio("UK")}
                     className="flex items-center gap-1.5 rounded-lg border border-border/60 bg-background/80 px-2.5 py-1 transition-colors hover:border-primary/40 hover:text-foreground"
-                    title="Nghe phát âm UK"
+                    title={t("listenUk")}
                   >
                     <Volume2
                       className={`size-4 text-primary ${
@@ -420,7 +423,7 @@ export function VocabularyFlashcard({
                     type="button"
                     onClick={() => playAudio("US")}
                     className="flex items-center gap-1.5 rounded-lg border border-border/60 bg-background/80 px-2.5 py-1 transition-colors hover:border-primary/40 hover:text-foreground"
-                    title="Nghe phát âm US"
+                    title={t("listenUs")}
                   >
                     <Volume2
                       className={`size-4 text-primary ${
@@ -434,7 +437,7 @@ export function VocabularyFlashcard({
 
               {showHint && currentCard.exampleSentence && (
                 <div className="mt-2 max-w-lg rounded-xl border border-accent/40 bg-accent/15 px-4 py-2 text-sm student-body text-foreground">
-                  Gợi ý ngữ cảnh: &quot;{currentCard.exampleSentence}&quot;
+                  {t("contextHint", { example: currentCard.exampleSentence })}
                 </div>
               )}
             </div>
@@ -442,7 +445,7 @@ export function VocabularyFlashcard({
             {/* Hướng dẫn lật bên dưới */}
             <div className="text-center">
               <span className="student-typewriter text-xs text-muted-foreground">
-                Nhấn hoặc bấm phím Space để lật thẻ
+                {t("frontHint")}
               </span>
             </div>
           </div>
@@ -457,7 +460,7 @@ export function VocabularyFlashcard({
             }`}
             role="button"
             tabIndex={0}
-            aria-label={`Mặt sau thẻ ${currentCard.word}. Nhấn để lật lại mặt trước.`}
+            aria-label={t("backAria", { word: currentCard.word })}
           >
             {/* Header mặt sau */}
             <div className="flex items-center justify-between border-b border-border/50 pb-3">
@@ -472,7 +475,7 @@ export function VocabularyFlashcard({
                 )}
               </div>
               <span className="student-typewriter text-xs text-muted-foreground">
-                Mặt sau · Nhấn để lật lại
+                {t("backHint")}
               </span>
             </div>
 
@@ -483,7 +486,7 @@ export function VocabularyFlashcard({
                   <div className="overflow-hidden rounded-xl border border-border bg-background aspect-4/3 flex items-center justify-center">
                     <img
                       src={currentCard.imageUrl}
-                      alt={`Minh họa cho từ ${currentCard.word}`}
+                      alt={t("imageAlt", { word: currentCard.word })}
                       className="h-full w-full object-cover"
                     />
                   </div>
@@ -519,7 +522,7 @@ export function VocabularyFlashcard({
                 {settings.showPhrases && wordFamilies.length > 0 && (
                   <div className="space-y-1 text-sm text-foreground text-left">
                     <span className="student-typewriter text-xs font-bold text-muted-foreground">
-                      HỌ TỪ (WORD FAMILY):
+                      {t("wordFamily")}
                     </span>
                     {wordFamilies.map((item, idx) => (
                       <div
@@ -539,7 +542,7 @@ export function VocabularyFlashcard({
                 {settings.showSynonyms && synonyms.length > 0 && (
                   <div className="flex flex-wrap items-center gap-1.5 text-left pt-1">
                     <span className="student-typewriter text-xs font-bold text-muted-foreground mr-1">
-                      ĐỒNG NGHĨA:
+                      {t("synonyms")}
                     </span>
                     {synonyms.map((syn, idx) => (
                       <span
@@ -557,7 +560,7 @@ export function VocabularyFlashcard({
             {/* Hướng dẫn dưới mặt sau */}
             <div className="text-center pt-2 border-t border-border/50">
               <span className="student-typewriter text-xs text-muted-foreground">
-                Nhấn thẻ để lật lại mặt trên (tự động phát âm)
+                {t("backFlipHint")}
               </span>
             </div>
           </div>
@@ -572,7 +575,7 @@ export function VocabularyFlashcard({
               type="button"
               onClick={handlePrev}
               className="flex size-9 items-center justify-center rounded-xl border border-border bg-card text-foreground  transition-colors hover:bg-muted active:scale-95"
-              aria-label="Từ trước đó"
+              aria-label={t("previous")}
             >
               <ChevronLeft className="size-5" />
             </button>
@@ -585,14 +588,14 @@ export function VocabularyFlashcard({
               type="button"
               onClick={handleNext}
               className="flex size-9 items-center justify-center rounded-xl border border-border bg-card text-foreground  transition-colors hover:bg-muted active:scale-95"
-              aria-label="Từ tiếp theo"
+              aria-label={t("next")}
             >
               <ChevronRight className="size-5" />
             </button>
           </div>
 
           <p className="student-typewriter text-[11px] text-muted-foreground">
-            ← → chuyển từ · Space lật thẻ
+            {t("keyHint")}
           </p>
         </div>
       )}

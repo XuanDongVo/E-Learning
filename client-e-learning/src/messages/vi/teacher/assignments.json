@@ -28,7 +28,7 @@
   "statuses": { "all": "Tất cả", "active": "Đang hoạt động", "draft": "Bản nháp", "archived": "Đã lưu trữ" },
   "list": {
     "title": "Tất cả bài tập",
-    "matching": "{count} bài tập phù hợp",
+    "matching": "{count} bài tập",
     "searchPlaceholder": "Tìm kiếm bài tập...",
     "searchLabel": "Tìm kiếm bài tập",
     "questionCount": "{count} câu hỏi",

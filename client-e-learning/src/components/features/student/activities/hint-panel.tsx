@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+
 import { Lightbulb, X } from "lucide-react";
 import { useEffect, useRef } from "react";
 
@@ -8,6 +10,7 @@ type Props = { open: boolean; text: string; onClose: () => void };
 /* Gợi ý hiển thị ngay trong thẻ câu hỏi (ngay dưới tiêu đề) để người dùng thấy ngay,
    thay vì chỉ nằm trong bong bóng nhỏ của mascot. */
 export function HintPanel({ open, text, onClose }: Props) {
+  const t = useTranslations("student.activities.runtime.hint");
   const ref = useRef<HTMLDivElement>(null);
 
   // Đảm bảo gợi ý nằm trong vùng nhìn thấy (không cuộn mượt nếu người dùng giảm chuyển động)
@@ -28,12 +31,12 @@ export function HintPanel({ open, text, onClose }: Props) {
             <Lightbulb size={18} />
           </span>
           <div className="min-w-0 flex-1">
-            <p className="text-xs font-extrabold text-learning">Gợi ý từ Việt Cường</p>
+            <p className="text-xs font-extrabold text-learning">{t("title")}</p>
             <p className="mt-0.5 text-sm font-semibold leading-6 text-foreground">{text}</p>
           </div>
           <button
             type="button"
-            aria-label="Đóng gợi ý"
+            aria-label={t("close")}
             onClick={onClose}
             className="grid size-8 shrink-0 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-background hover:text-foreground"
           >
@@ -56,6 +59,7 @@ export function HintStatus({
   error?: string;
   onRetry: () => void;
 }) {
+  const t = useTranslations("student.activities.runtime.hint");
   if (!pending && !error) return null;
   return (
     <div
@@ -66,8 +70,8 @@ export function HintStatus({
       {pending ? (
         <span>
           {slow
-            ? "Máy chủ phản hồi chậm, bạn vui lòng chờ thêm chút… Đáp án của bạn vẫn được giữ nguyên."
-            : "Đang lấy gợi ý…"}
+            ? t("slow")
+            : t("loading")}
         </span>
       ) : (
         <>
@@ -77,7 +81,7 @@ export function HintStatus({
             onClick={onRetry}
             className="font-extrabold text-learning underline underline-offset-2 hover:text-learning/80"
           >
-            Thử lại
+            {t("retry")}
           </button>
         </>
       )}

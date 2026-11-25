@@ -14,6 +14,7 @@ import {
 import { useLocale, useTranslations } from "next-intl";
 import type { AttemptIntroResponse } from "@/types/student/assignment-attempt";
 import { PaperSurface } from "@/components/student-ui/paper-surface";
+import { StudentMascotScene } from "@/components/student-ui/visuals/pipo/student-mascot-scene";
 import { ScrapbookHeading } from "@/components/student-ui/scrapbook-heading";
 import { formatDueAt } from "@/utils/format";
 import { cn } from "@/lib/utils";
@@ -109,6 +110,17 @@ export function StudentAssignmentIntro({
             {assignmentTitle}
           </ScrapbookHeading>
           <p className="student-body max-w-2xl text-muted-foreground">{t("description")}</p>
+          <StudentMascotScene
+            variant="guide"
+            mood={isTimedOut ? "think" : isSubmitted ? "happy" : "wave"}
+            prop="pencil"
+            message={isNotStarted
+              ? t("mascot.notStarted")
+              : isInProgress
+                ? t("mascot.inProgress")
+                : t("mascot.finished")}
+            className="pt-2"
+          />
         </div>
       </PaperSurface>
 

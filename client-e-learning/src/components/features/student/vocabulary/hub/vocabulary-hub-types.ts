@@ -44,17 +44,28 @@ export function formatVocabularyReviewDate(value: string): string {
   });
 }
 
+/** Labels provided by the active locale; the server's dueAt remains authoritative. */
+export type VocabularyReviewDelayLabels = {
+  fsrs: string;
+  now: string;
+  underMinute: string;
+  minutes: (count: number) => string;
+  hours: (count: number) => string;
+  days: (count: number) => string;
+};
+
 /** Friendly delay only; the absolute dueAt from the server remains authoritative. */
-export function formatVocabularyReviewDelay(value?: string, nowMs = Date.now()): string {
-  if (!value) return "Theo FSRS";
+export function formatVocabularyReviewDelay(value?: string, nowMs = Date.now(), labels?: VocabularyReviewDelayLabels): string {
+  if (!value) return labels?.fsrs ?? "Theo FSRS";
   const timestamp = Date.parse(value);
-  if (!Number.isFinite(timestamp)) return "Theo FSRS";
+  if (!Number.isFinite(timestamp)) return labels?.fsrs ?? "Theo FSRS";
   const remaining = timestamp - nowMs;
-  if (remaining <= 0) return "Ngay";
-  if (remaining < 60_000) return "Dưới 1 phút";
-  if (remaining < 3_600_000) return `${Math.ceil(remaining / 60_000)} phút`;
-  if (remaining < 86_400_000) return `${Math.round(remaining / 3_600_000)} giờ`;
-  return `${Math.round(remaining / 86_400_000)} ngày`;
+  if (remaining <= 0) return labels?.now ?? "Ngay";
+  if (remaining < 60_000) return labels?.underMinute ?? "Dưới 1 phút";
+  if (remaining < 3_600_000) { const count = Math.ceil(remaining / 60_000); return labels ? labels.minutes(count) : `${count} phút`; }
+  if (remaining < 86_400_000) { const count = Math.round(remaining / 3_600_000); return labels ? labels.hours(count) : `${count} giờ`; }
+  const count = Math.round(remaining / 86_400_000);
+  return labels ? labels.days(count) : `${count} ngày`;
 }
 
 export function getVocabularyDueLabel(card: StudentVocabularyStudyCard, nowMs = Date.now()): string {

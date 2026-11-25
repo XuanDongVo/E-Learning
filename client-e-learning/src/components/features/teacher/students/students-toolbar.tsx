@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
-import { Check, ChevronsUpDown, Search, X } from "lucide-react";
+import type { ReactNode } from "react";
+import { Search, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { TeacherListToolbar } from "@/components/features/teacher/shared/teacher-list-toolbar";
 
 export interface StudentsToolbarProps {
   search: string;
@@ -62,8 +63,8 @@ export function StudentsToolbar({
     noClass;
 
   return (
-    <div className="flex flex-col gap-3 border-b border-border p-5 xl:flex-row xl:items-center bg-card rounded-lg shadow-sm border-2 border border-ink shadow-pop">
-      {/* Search */}
+    <TeacherListToolbar
+      search={
       <div className="relative w-full xl:w-72 xl:shrink-0">
         <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
 
@@ -75,9 +76,9 @@ export function StudentsToolbar({
           className="h-10 bg-background pl-9 pr-3"
         />
       </div>
-
-      {/* Filters */}
-      <div className="flex flex-wrap items-center gap-2">
+      }
+      filters={
+      <>
         <SearchableSelect
           value={classFilter}
           onChange={onClassChange}
@@ -146,13 +147,9 @@ export function StudentsToolbar({
             {t("clearFilters")}
           </Button>
         )}
-      </div>
-
-      {actions ? (
-        <div className="flex shrink-0 flex-wrap items-center gap-2 xl:ml-auto max-sm:w-full max-sm:[&>button]:flex-1">
-          {actions}
-        </div>
-      ) : null}
-    </div>
+      </>
+      }
+      actions={actions}
+    />
   );
 }

@@ -1,0 +1,334 @@
+"use client";
+
+import { useQuery } from "@tanstack/react-query";
+import { useMemo, useRef } from "react";
+import { useLocale, useTranslations } from "next-intl";
+import {
+  BookMarked,
+  BookOpenText,
+  Bookmark,
+  CalendarDays,
+  ChevronRight,
+  ArrowRight,
+  ListTree,
+} from "lucide-react";
+import { Link } from "@/i18n/navigation";
+import { PaperSurface } from "@/components/student-ui/paper-surface";
+import { StudentBackLink } from "@/components/student-ui/patterns/student-back-link";
+import { StudentIllustration } from "@/components/student-ui/visuals/student-illustration";
+import { StudentDoodle } from "@/components/student-ui/visuals/student-doodle";
+import { KnowledgeDocumentRenderer } from "@/components/features/knowledge-note/knowledge-document-renderer";
+import { extractKnowledgeNavigation } from "@/components/features/knowledge-note/knowledge-note-document";
+import { studentKnowledgeNoteService } from "@/services/student/student-knowledge-note.service";
+import type { KnowledgeDocument } from "@/types/knowledge-note";
+import { useKnowledgeReadingProgress } from "./use-knowledge-reading-progress";
+
+export function StudentKnowledgeNoteDetail({ noteId }: { noteId: number }) {
+  const t = useTranslations("student.knowledge.reader");
+  const locale = useLocale();
+  const validId = Number.isSafeInteger(noteId) && noteId > 0;
+  const readerRef = useRef<HTMLDivElement>(null);
+  const noteQuery = useQuery({
+    queryKey: ["student", "knowledge-notes", "detail", noteId],
+    queryFn: async () => (await studentKnowledgeNoteService.get(noteId)).data,
+    enabled: validId,
+    staleTime: 30_000,
+  });
+  const outline = useMemo(() => {
+    const doc = noteQuery.data?.document;
+    return doc?.type === "doc" && Array.isArray(doc.content)
+      ? extractKnowledgeNavigation(doc).outline.filter(item => item.id)
+      : [];
+  }, [noteQuery.data?.document]);
+  const { progress, activeHeadingId } = useKnowledgeReadingProgress(readerRef, outline, noteId);
+
+  if (!validId) {
+    return (
+      <StudentReadingState
+        title={t("invalidTitle")}
+        description={t("invalidDescription")}
+      />
+    );
+  }
+  if (noteQuery.isPending) {
+    return (
+      <main className="student-knowledge mx-auto max-w-6xl space-y-5 pb-12">
+        <StudentBackLink href="/student/knowledge">
+          {t("library")}
+        </StudentBackLink>
+        <PaperSurface as="section" className="space-y-3 p-6" role="status">
+          <p className="student-card-title">{t("loading")}</p>
+          <div className="h-6 w-1/2 animate-pulse rounded bg-muted" />
+          <div className="h-52 animate-pulse rounded bg-muted/70" />
+        </PaperSurface>
+      </main>
+    );
+  }
+  if (noteQuery.isError || !noteQuery.data) {
+    return (
+      <StudentReadingState
+        title={t("loadError")}
+        description={t("loadErrorDescription")}
+        retry={() => void noteQuery.refetch()}
+      />
+    );
+  }
+
+  const note = noteQuery.data;
+  const document: KnowledgeDocument = note.document;
+  if (document?.type !== "doc" || !Array.isArray(document.content)) {
+    return (
+      <StudentReadingState
+        title={t("invalidDocument")}
+        description={t("invalidDocumentDescription")}
+      />
+    );
+  }
+
+  const navigation = extractKnowledgeNavigation(document);
+  const updated = new Date(note.updatedAt);
+  const updatedLabel = Number.isNaN(updated.getTime())
+    ? null
+    : updated.toLocaleDateString(locale === "en" ? "en-US" : "vi-VN");
+
+  return (
+    <main
+      className="student-knowledge mx-auto max-w-6xl space-y-5 pb-12"
+      data-note-id={noteId}
+    >
+      <StudentBackLink href="/student/knowledge">
+        {t("back")}
+      </StudentBackLink>
+
+      <PaperSurface
+        as="section"
+        variant="kraft"
+        tape
+        emphasis="feature"
+        className="student-knowledge-article-hero relative overflow-hidden p-5 sm:p-8"
+      >
+        <div className="relative z-10 max-w-2xl space-y-3">
+          <p className="student-meta inline-flex items-center gap-2 text-primary">
+            <BookMarked className="size-4" aria-hidden="true" /> {t("eyebrow")}
+          </p>
+          <h1 className="student-page-title text-foreground">{note.title}</h1>
+          {note.description && (
+            <p className="student-reading max-w-2xl text-muted-foreground">
+              {note.description}
+            </p>
+          )}
+          <div className="flex flex-wrap items-center gap-4 pt-2 text-xs font-semibold text-muted-foreground">
+            <span className="inline-flex items-center gap-1.5">
+              <BookOpenText className="size-4" aria-hidden="true" /> {t("published")}
+            </span>
+            {updatedLabel && (
+              <span className="inline-flex items-center gap-1.5">
+                <CalendarDays className="size-4" aria-hidden="true" /> {t("updated", { date: updatedLabel })}
+              </span>
+            )}
+          </div>
+        </div>
+        <StudentIllustration
+          id="scene.open-notebook"
+          decorative
+          className="pointer-events-none absolute -bottom-16 -right-9 hidden w-56 -rotate-6 opacity-35 sm:block"
+        />
+      </PaperSurface>
+
+      <div className="student-knowledge-reading-progress sticky top-16 z-20 rounded-lg border border-border bg-card/95 px-4 py-2 shadow-sm backdrop-blur">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <span className="student-meta text-foreground">{t("progress")}</span>
+          <span className="student-meta tabular-nums text-primary">{progress}%</span>
+        </div>
+        <div role="progressbar" aria-label={t("progressAria")} aria-valuemin={0} aria-valuemax={100}
+          aria-valuenow={progress} className="mt-2 h-1.5 overflow-hidden rounded-full bg-secondary">
+          <div className="h-full rounded-full bg-primary" style={{ width: `${progress}%` }} />
+        </div>
+      </div>
+
+      <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_15.5rem]">
+        <PaperSurface
+          as="article"
+          variant="plain"
+          className="min-w-0 p-5 sm:p-8 lg:p-10"
+          aria-label={note.title}
+        >
+          {outline.length > 0 && (
+            <details className="student-knowledge-toc-mobile mb-5 rounded-lg border border-border bg-secondary/40 p-3 lg:hidden">
+              <summary className="student-label cursor-pointer py-1 text-foreground">
+                {t("tocCount", { count: outline.length })}
+              </summary>
+              <ReadingOutline outline={outline} activeHeadingId={activeHeadingId} />
+            </details>
+          )}
+          <div className="mb-5 flex items-center justify-between gap-3 border-b border-dashed border-border pb-4">
+            <p className="student-note text-lg text-muted-foreground">
+              {t("quote")}
+            </p>
+            <StudentDoodle
+              id="doodle.bookmark-note"
+              className="pointer-events-none h-12 w-auto rotate-[7deg]"
+            />
+          </div>
+          <div ref={readerRef} className="student-knowledge-reader student-reading min-w-0 text-foreground">
+            {document.content.length ? (
+              <KnowledgeDocumentRenderer document={document} />
+            ) : (
+              <p className="text-muted-foreground">
+                {t("noContent")}
+              </p>
+            )}
+          </div>
+          {note.linkedTopics?.length > 0 && (
+            <section className="student-reading-topic-links mt-9 space-y-3 border-t border-dashed border-border pt-5" aria-labelledby="reading-topic-heading">
+              <h2 id="reading-topic-heading" className="student-card-title flex items-center gap-2 text-foreground">
+                <ListTree className="size-5 text-primary" aria-hidden="true" /> {t("linkedTopics")}
+              </h2>
+              <p className="student-body text-muted-foreground">
+                {t("linkedTopicsDescription")}
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {note.linkedTopics.map(topic => (
+                  <Link key={topic.topicId}
+                    href={`/student/units/${topic.unitId}?topicId=${topic.topicId}`}
+                    className="student-control student-control--secondary inline-flex items-center gap-2 px-3">
+                    <span className="min-w-0">{topic.unitCode} · {topic.topicName}</span>
+                    <ArrowRight className="size-4 shrink-0" aria-hidden="true" />
+                  </Link>
+                ))}
+              </div>
+            </section>
+          )}
+          <div className="mt-10 border-t border-dashed border-border pt-5">
+            <Link
+              href="/student/knowledge"
+              className="student-label inline-flex min-h-11 items-center gap-2 text-primary hover:underline"
+            >
+              <BookOpenText className="size-4" aria-hidden="true" />
+              {t("browseMore")}{" "}
+              <ChevronRight className="size-4" aria-hidden="true" />
+            </Link>
+          </div>
+        </PaperSurface>
+
+        <aside
+          aria-label={t("readingNavigation")}
+          className="space-y-4 lg:sticky lg:top-24"
+        >
+          <PaperSurface
+            as="section"
+            variant="lined"
+            className="hidden p-4 sm:p-5 lg:block"
+            aria-label={t("tableOfContents")}
+          >
+            <h2 className="student-section-title flex items-center gap-2">
+              <Bookmark className="size-5 text-primary" aria-hidden="true" />{" "}
+              {t("tableOfContents")}
+            </h2>
+            {navigation.outline.length ? (
+              <ReadingOutline outline={outline} activeHeadingId={activeHeadingId} />
+            ) : (
+              <p className="student-body mt-3 text-muted-foreground">
+                {t("noHeadings")}
+              </p>
+            )}
+          </PaperSurface>
+          {navigation.keyPoints.length > 0 && (
+            <PaperSurface
+              as="section"
+              variant="kraft"
+              className="space-y-2 p-4 sm:p-5"
+            >
+              <h2 className="student-section-title flex items-center gap-2">
+                <BookMarked
+                  className="size-5 text-primary"
+                  aria-hidden="true"
+                />{" "}
+                {t("keyPoints")}
+              </h2>
+              <p className="student-caption text-muted-foreground">
+                {t("keyPointCount", { count: navigation.keyPoints.length })}
+              </p>
+              <ul className="space-y-1">
+                {navigation.keyPoints
+                  .filter((item) => item.id)
+                  .map((item) => (
+                    <li key={item.id}>
+                      <a
+                        href={`#${item.id}`}
+                        className="student-label block min-h-9 rounded-md px-2 py-2 text-primary hover:bg-card"
+                      >
+                        {item.title}
+                      </a>
+                    </li>
+                  ))}
+              </ul>
+            </PaperSurface>
+          )}
+        </aside>
+      </div>
+    </main>
+  );
+}
+
+
+function ReadingOutline({ outline, activeHeadingId }: {
+  outline: Array<{ id: string; title: string; level: 2 | 3 }>;
+  activeHeadingId: string | null;
+}) {
+  const t = useTranslations("student.knowledge.reader");
+  return (
+    <nav aria-label={t("sections")} className="mt-3">
+      <ol className="space-y-1.5">
+        {outline.map(item => (
+          <li key={item.id}>
+            <a href={`#${item.id}`}
+              aria-current={activeHeadingId === item.id ? "location" : undefined}
+              className={`student-knowledge-toc-link student-label block min-h-11 rounded-md px-3 py-2 leading-6 focus-visible:outline-2 focus-visible:outline-primary ${item.level === 3 ? "ml-3 font-medium" : ""}`}>
+              {item.title}
+            </a>
+          </li>
+        ))}
+      </ol>
+    </nav>
+  );
+}
+
+function StudentReadingState({
+  title,
+  description,
+  retry,
+}: {
+  title: string;
+  description: string;
+  retry?: () => void;
+}) {
+  const t = useTranslations("student.knowledge.reader");
+  return (
+    <main className="student-knowledge mx-auto max-w-3xl space-y-5 pb-12">
+      <StudentBackLink href="/student/knowledge">
+        {t("back")}
+      </StudentBackLink>
+      <PaperSurface as="section" className="space-y-3 p-6 sm:p-8">
+        <StudentIllustration
+          id="illustration.no-lessons"
+          decorative
+          className="mx-auto w-36"
+        />
+        <h1 className="student-page-title text-center">{title}</h1>
+        <p className="student-body text-center text-muted-foreground">
+          {description}
+        </p>
+        {retry && (
+          <button
+            type="button"
+            className="student-control student-control--action mx-auto"
+            onClick={retry}
+          >
+            {t("retry")}
+          </button>
+        )}
+      </PaperSurface>
+    </main>
+  );
+}

@@ -1,0 +1,166 @@
+## 2026-11-20 — Knowledge Note Editor v2 (client only)
+
+The Teacher Knowledge Note Editor now uses schema v2 for in-memory rich-text Learning Blocks, dynamic comparison/general tables, built-in JSON templates, and validated JSON Import/Export (including legacy schema-v1 conversion). Teacher Preview and Import/Template Preview share a v2 JSON renderer. The API remains metadata-only: Save, Publish, Topic Linking and Student reads are **not** implemented; data is lost upon leaving/reloading the Editor. See `docs/knowledge-note/PHASE_02_2_EDITOR_V2_CLIENT.md`. Validation via TS/lint/browser remains pending.
+
+## Knowledge Note Teacher Management UI 02.1 (2026-11-19)
+Teacher sidebar links to `/teacher/content/knowledge-notes`; list, create and metadata detail routes now consume the three approved Teacher APIs and existing Grade API. Search, filters, 1-based pagination, validation, loading/error/empty handling are in source. Client-only Editor/Student scaffolds stay disconnected. Runtime/API/browser verification pending. See docs/knowledge-note/TEACHER_MANAGEMENT_UI_02_1.md.
+
+## Knowledge Note Phase 01 (2026-11-19)
+Only three Teacher metadata endpoints are implemented in source: POST/GET `/v1/teacher/knowledge-notes`, GET `/v1/teacher/knowledge-notes/{id}`. Common PageResponse<T> reused. Backend module now lives at `e_learning.server.knowledge`, with teacher-specific controller/service/dto request/response. Management/Create/Detail consume these endpoints; JSONB fields use Java collection mappings rather than Jackson-specific tree nodes. Editor content remains client-only. No Student/content-save/publish/Topic-linking endpoints are enabled. See docs/knowledge-note/PHASE_01_APPROVED.md.
+
+## Knowledge Note Teacher route (2026-11-20)
+Teacher Knowledge Notes now has the canonical standalone route `/teacher/knowledge-notes` with its own navigation item after Overview. Create opens as a dialog on Management; `/teacher/knowledge-notes/new` is only a compatibility redirect. Detail/edit follow the standalone prefix and legacy `/teacher/content/knowledge-notes/**` routes are retired. Management/Create/Detail consume the approved metadata APIs. The TipTap Editor, Learning Blocks, Quick Summary and Preview operate only in client memory; content-save, publish, Student and Topic-link APIs remain unapproved and unimplemented.
+
+## Knowledge Note simplification (2026-11-19)
+Knowledge Note now targets **two effective tables** after V67: knowledge_notes (current JSON content, summary, status) and knowledge_note_topic_links. Draft/Revision entities are removed. Canonical specs: docs/knowledge-note v3.2. Phase 01 metadata APIs and Phase 02.2 client Editor exist; content persistence and later operations remain unavailable. Schema migration must be tested on PostgreSQL before deployment.
+
+## Knowledge Note scaffold — 2026-11-19 (feature/guided-reasoning-v1)
+
+V66 schema and JPA/DTO/repository/controller/service skeleton exist. Knowledge Note routes currently fail closed (HTTP 501) and UI routes only show a not-yet-implemented shell. Teacher/Student navigation and existing Unit/Topic views are intentionally not wired to the unfinished feature. See docs/knowledge-note/IMPLEMENTATION_SCAFFOLD.md for exact scope. No Knowledge Note business feature is implemented yet.
+
+## Knowledge Note planning — 2026-11-19
+ADR 0038 and docs/knowledge-note/{SRS,FRS,UIUX} v3.1 define the approved future feature. Independent Grade-scoped Notes, optional many-to-many Topic links, optional Primary, Word-like Editor and published snapshots are **not implemented**. This documentation update does not add runtime functionality.
+
+# Current Implementation State
+
+**Audit date:** 2026-11-08
+**Branch:** `feature/student-gamification`
+**Baseline:** `main` after merge of `feature/student-assignment-attempt` (PR #30)
+
+## 1. Authority model
+
+1. Accepted ADRs = approved product/architecture decisions.
+2. `.agents/CURRENT_STATE.md` = current implementation state.
+3. Active phase/spec/architecture documents = intended implementation contract.
+4. `.agents/PROGRESS.md` = concise work log and verification evidence.
+5. Historical audits/plans = traceability only.
+6. Code and migrations = final evidence of what is actually implemented.
+
+## 2. Repository baseline
+
+- Frontend: Next.js + React + TypeScript + Tailwind CSS.
+- Backend: Spring Boot + Java 21 + JPA + Flyway + PostgreSQL.
+- AssessmentAttempt finalize path is on `main` (submit, grade, PartResults, timeout job).
+
+## 3. Feature status
+
+| Area | State |
+|---|---|
+| Phase 0–6 | Baseline / DONE |
+| Phase 7 Scope A ActivitySession | Implemented; E2E open |
+| Phase 7 Scope B AssessmentAttempt | Code on `main`; E2E + hard-lock open |
+| **Phase 8 Teacher Assignment Analysis** | **Code complete on this branch; local E2E not claimed** |
+| **Activity XP Engine Phases 1–4** | **Implemented behind default-off rollout; Phase 5 validation/enablement open** |
+| **Student Streak / Level v1** | **Service/API and Rewards UI source added; tests/build/E2E pending verification** |
+| **Auth / Session lifecycle** | **Absolute seven-day session, inactive-account enforcement and frontend recovery implemented; validation deferred** |
+| **Student Design System v2 foundations** | **Controls, fields, surface roles and interactive Design Lab implemented; device/Teacher regression open** |
+| **Vocabulary Library / all-DUE Review** | **Backend and Client implemented; browser/build verification open** |
+
+### Student Design System v2 foundations
+
+- Student-scoped Content/Feature/Accent surface importance is independent from
+  plain/lined/kraft material. Feature emphasis is deliberately restrained and
+  reserved for one focal layer.
+- Shared Student controls provide 44px targets, padding, focus, pressed,
+  disabled/loading semantics; fields provide linked hint/error/success feedback.
+- The internal Design Lab supports systematic variant/state/mobile comparison
+  and annotated type-role review. It is not a production Student learning page
+  and intentionally has no mascot quota or fabricated learning data.
+- Focused lint, component tests and TypeScript pass. Authenticated viewport,
+  portal, Teacher isolation and production-build verification remain open.
+
+### Vocabulary Library / all-DUE Review
+
+- Student-authenticated Summary and paginated Learned/Due/Waiting APIs classify
+  active schedules with server time and exclude `needsRelearning` rows.
+- The Review Queue returns the complete accessible DUE snapshot with full
+  Flashcard data; it is not narrowed by browse pagination or search.
+- Vocabulary reads and word-level preview/write authorization share a
+  Vocabulary-owned access policy. Its current adapter preserves published-Unit
+  current-Grade access without making Unit the permanent FSRS owner.
+- ADR 0037 accepts V65 AGAIN reset-to-Learn behavior. No schema change or
+  Collection entity was introduced.
+- Student routes `/student/vocabulary/words` and `/student/vocabulary/review`
+  provide source-neutral Library browsing and one fixed, complete all-DUE pass.
+  They reuse Flashcard/rating UI, central query keys, shared loading/error/empty
+  primitives and error-code translations in both locales.
+
+### Auth / Session lifecycle
+
+- Login fixes an absolute seven-day session deadline; refresh rotation preserves
+  rather than extends it, and access tokens cannot outlive it.
+- Protected requests accept ACCESS tokens only and read current `users.status`
+  before controllers. INACTIVE accounts are terminated with a standard API error.
+- The frontend performs one coordinated refresh and one request replay, synchronizes
+  session termination across tabs, and clears account-scoped query/runtime state.
+- No migration or endpoint was added. Maven/Vitest/lint/type/build and authenticated
+  browser verification were explicitly skipped by owner request.
+
+### Student Streak / Level v1
+
+- `COMPLETED` ActivitySession invokes one-per-day qualification in `Asia/Ho_Chi_Minh`; replays in the same day do not advance the run. Milestones 3/7/14/30 award separate STREAK_BONUS ledger amounts 10/20/40/80, updating Lifetime XP and derived Level.
+- Existing V49 profile/day/ledger schema reused; no migration required for the accepted no-Freeze/no-backfill policy. Session → profile lock order is preserved. No historical Streak backfill.
+- Authenticated read-only gamification profile, Streak and leaderboard endpoints are implemented. Student Home owns Streak/Level; Student Rewards uses live XP/Streak Top 50, personal standing, Hall of Fame and terminal ActivitySession feed with no mock fallback.
+- PostgreSQL concurrency and authenticated E2E not yet verified. See `.agents/plans/STUDENT_STREAK_LEVEL_IMPLEMENTATION.md`.
+
+### Activity XP Engine
+
+- New eligible ActivitySessions freeze policy/Level/multiplier and persist a
+  validated per-question XP audit.
+- COMPLETED/GAME_OVER settlement atomically writes the immutable session
+  receipt, one positive PRACTICE ledger row when applicable, and profile
+  Lifetime XP/Level; ABANDONED and zero awards finalize without a reward row.
+- `GET /v1/activity-sessions/{sessionId}/result` is read-only and exposes the
+  committed receipt plus optional question audit. The Activity Result UI shows
+  XP totals and Level change and handles loading/error/legacy states.
+- V52 adds immutable `xp_lifetime_after` and `xp_level_after` receipt fields.
+  `ACTIVITY_XP_ENABLED` remains false by default. Phase 3/4 validation was
+  explicitly skipped for this task and remains required before rollout.
+
+## 4. Teacher Assignment Analysis (this branch)
+
+**Route:** `/teacher/assignments/{id}/results`  
+**Spec:** `.agents/plans/10-TEACHER_ASSIGNMENT_ANALYSIS_SPEC.md`  
+**Impl log:** `.agents/plans/11-TEACHER_ASSIGNMENT_ANALYSIS_IMPLEMENTATION.md`
+
+### Backend (`assignmentanalysis`)
+
+- `GET .../analytics/overview` — progress, score (10 buckets), class comparison + accuracy + overall band
+- `GET .../analytics/students` — filters + `PageResponse` (1-indexed)
+- `GET .../analytics/questions` — aggregate by position (skip example)
+- `GET .../students/{studentId}/attempt` — review; answer key always for teacher
+- DTOs under `dto/response/` (no `Dto` suffix); students use `common.dto.PageResponse`
+- Roster: live enrollment via `Assignment.classIds` + `ClassMember`
+- Security: covered by existing `/v1/teacher/**` → `ROLE_TEACHER`
+
+### Frontend
+
+- Modular UI under `components/features/teacher/assignments/analysis/`
+- Entry: list **Results** link (non-DRAFT) + results page route
+- Attempt review sheet; i18n `teacher.analytics.*`
+- Always `response.data` (ApiResponse wrap)
+- Sample `result/teacher-assignment-result-view.tsx` **removed**
+
+### Product decisions (locked)
+
+| Topic | Decision |
+|---|---|
+| Roster | Live `classIds` enrollment |
+| Duration | finishedAt − startedAt |
+| Overall band | HIGH ≥80 / MID ≥50 / LOW &lt;50 (median %) |
+| Accuracy | CORRECT / all non-example outcomes on terminal attempts |
+| Class comparison | Always show rows (including single class) |
+| Score range filter | Deferred |
+| Export | None |
+
+### Explicitly deferred (spec ok, not in MVP code)
+
+- Answer distribution by question type (option/blank charts)
+- Per-question detail endpoint
+- Score range filter on Students
+- IDOR tests / ownership beyond role + assignment exists
+- Hard-lock on Assignment after first attempt (runtime follow-up)
+
+## 5. Verification status
+
+No compile/test/browser run claimed for this pass. Local E2E checklist lives in `11-...IMPLEMENTATION.md`.

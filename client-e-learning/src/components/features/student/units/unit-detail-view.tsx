@@ -45,7 +45,7 @@ export function UnitDetailView({ unitId }: UnitDetailViewProps) {
   // Validate against published Unit data; never trust an arbitrary URL id.
   useEffect(() => {
     if (!unit) return;
-    const raw = new URLSearchParams(window.location.search).getDetail("topicId");
+    const raw = new URLSearchParams(window.location.search).get("topicId");
     if (!raw || !/^[1-9]\d*$/.test(raw)) return;
     const selected = Number(raw);
     if (!Number.isSafeInteger(selected)) return;

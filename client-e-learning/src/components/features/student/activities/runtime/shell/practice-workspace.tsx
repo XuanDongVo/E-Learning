@@ -66,7 +66,7 @@ export function PracticeWorkspace({
           ? (displayAnswer.correctAnswer.trim().toUpperCase() === "TRUE" ? t("truth.TRUE") : t("truth.FALSE"))
           : formatAnswer(
             question,
-            isChoice(question) || question.type === "TRUE_FALSE"
+            isChoice(question)
               ? splitKeys(displayAnswer.correctAnswer)
               : [displayAnswer.correctAnswer],
           )

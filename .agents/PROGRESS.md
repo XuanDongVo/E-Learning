@@ -1,3 +1,8 @@
+## 2026-11-25 — Frontend build TypeScript fixes
+
+- Fixed redundant `TRUE_FALSE` type comparison in the Student Activity answer formatter and corrected the Unit deep-link query lookup to `URLSearchParams.get()`.
+- `client-e-learning`: `npm run build` passed. ESLint on both changed files reported no errors and one existing `react-hooks/set-state-in-effect` warning in Unit Detail.
+
 ## 2026-11-21 — Knowledge Note 03.2.1 stabilization + 03.3 reader + 03.4 library
 
 - Fixed the Grade 7 `012_knowledge_note_reading_library.sql` seed for semicolon-delimited SQL clients by removing dollar-quoted `DO` blocks and using direct count guards. Executed and rerun successfully against local disposable PostgreSQL; eight extra fixtures and eleven supplemental/primary links were verified.
